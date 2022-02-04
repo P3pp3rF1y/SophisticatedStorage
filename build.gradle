@@ -118,7 +118,15 @@ dependencies {
     //runtimeOnly fg.deobf("slimeknights.tconstruct:TConstruct:1.16.5-3.1.0.242")
     //runtimeOnly fg.deobf("curse.maven:invtweaks-383070:3102237")
     //runtimeOnly fg.deobf("curse.maven:mekanism-268560:3206392")
-    compile project(":soph")
+
+    if (findProject(':SophisticatedBackpacks') != null) {
+        implementation project(':SophisticatedBackpacks')
+    } else {
+        //TODO add correct dependency here when ready
+        /*implementation fg.deobf (project.dependencies.create("com.github.mcjty:mcjtylib:${mcjtylib_version}") {
+            transitive = false
+        })*/
+    }
 }
 
 test {

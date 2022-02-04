@@ -1,6 +1,7 @@
 package net.p3pp3rf1y.sophisticatedstorage.block;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -36,6 +37,7 @@ public class BarrelBlock extends Block implements EntityBlock {
 
 	public BarrelBlock() {
 		super(Properties.of(Material.WOOD).strength(2.5F).sound(SoundType.WOOD));
+		registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(OPEN, false).setValue(TICKING, false));
 	}
 
 	@Override
