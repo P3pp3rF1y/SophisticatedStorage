@@ -13,7 +13,6 @@ public class CommonEventHandler {
 
 	public void registerHandlers() {
 		IEventBus eventBus = MinecraftForge.EVENT_BUS;
-
 		eventBus.addListener(this::onPlayerLoggedIn);
 		eventBus.addListener(this::onPlayerChangedDimension);
 	}
