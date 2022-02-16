@@ -1,15 +1,21 @@
 package net.p3pp3rf1y.sophisticatedstorage.block;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.BarrelBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.ContainerOpenersCounter;
 import net.minecraft.world.level.block.state.BlockState;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.SortBy;
@@ -30,6 +36,7 @@ import net.p3pp3rf1y.sophisticatedcore.util.InventorySorter;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
+import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.settings.StorageSettingsHandler;
@@ -73,9 +80,34 @@ public class StorageBlockEntity extends BlockEntity implements IStorageWrapper {
 	@Nullable
 	private String woodName = null;
 
+	private final ContainerOpenersCounter openersCounter = new ContainerOpenersCounter() {
+		protected void onOpen(Level level, BlockPos pos, BlockState state) {
+			playSound(state, SoundEvents.BARREL_OPEN);
+			updateBlockState(state, true);
+		}
+
+		protected void onClose(Level level, BlockPos pos, BlockState state) {
+			playSound(state, SoundEvents.BARREL_CLOSE);
+			updateBlockState(state, false);
+		}
+
+		protected void openerCountChanged(Level level, BlockPos pos, BlockState state, int previousOpenerCount, int newOpenerCount) {
+			//noop
+		}
+
+		protected boolean isOwnContainer(Player player) {
+			if (player.containerMenu instanceof StorageContainerMenu storageContainerMenu) {
+				return storageContainerMenu.getStorageBlockEntity() == StorageBlockEntity.this;
+			} else {
+				return false;
+			}
+		}
+	};
+	private boolean isDroppingContents = false;
+
 	public StorageBlockEntity(BlockPos pos, BlockState state) {
 		super(ModBlocks.BARREL_TILE_TYPE.get(), pos, state);
-		renderInfo = new RenderInfo(() -> this::setChanged) { //TODO extract into separate class
+		renderInfo = new RenderInfo(() -> this::setChanged) {
 			@Override
 			protected void serializeRenderInfo(CompoundTag renderInfo) {
 				renderInfoNbt = renderInfo;
@@ -126,6 +158,43 @@ public class StorageBlockEntity extends BlockEntity implements IStorageWrapper {
 		if (displayName != null) {
 			tag.putString("displayName", Component.Serializer.toJson(displayName));
 		}
+	}
+
+	public void startOpen(Player player) {
+		if (!remove && !player.isSpectator() && level != null) {
+			openersCounter.incrementOpeners(player, level, getBlockPos(), getBlockState());
+		}
+
+	}
+
+	public void stopOpen(Player player) {
+		if (!remove && !player.isSpectator() && level != null) {
+			openersCounter.decrementOpeners(player, level, getBlockPos(), getBlockState());
+		}
+	}
+
+	public void recheckOpen() {
+		if (!remove && level != null) {
+			openersCounter.recheckOpeners(level, getBlockPos(), getBlockState());
+		}
+	}
+
+	void updateBlockState(BlockState pState, boolean open) {
+		if (level == null) {
+			return;
+		}
+		level.setBlock(getBlockPos(), pState.setValue(BarrelBlock.OPEN, open), 3);
+	}
+
+	void playSound(BlockState pState, SoundEvent pSound) {
+		if (level == null) {
+			return;
+		}
+		Vec3i vec3i = pState.getValue(BarrelBlock.FACING).getNormal();
+		double d0 = worldPosition.getX() + 0.5D + vec3i.getX() / 2.0D;
+		double d1 = worldPosition.getY() + 0.5D + vec3i.getY() / 2.0D;
+		double d2 = worldPosition.getZ() + 0.5D + vec3i.getZ() / 2.0D;
+		level.playSound(null, d0, d1, d2, pSound, SoundSource.BLOCKS, 0.5F, level.random.nextFloat() * 0.1F + 0.9F);
 	}
 
 	@Override
@@ -260,7 +329,7 @@ public class StorageBlockEntity extends BlockEntity implements IStorageWrapper {
 				@Override
 				public void refreshUpgradeWrappers() {
 					super.refreshUpgradeWrappers();
-					if (!level.isClientSide && getBlockState().getBlock() instanceof IStorageBlock storageBlock) {
+					if (!isDroppingContents && level != null && !level.isClientSide && getBlockState().getBlock() instanceof IStorageBlock storageBlock) {
 						storageBlock.setTicking(level, getBlockPos(), getBlockState(), !getWrappersThatImplement(ITickableUpgrade.class).isEmpty());
 					}
 				}
@@ -405,8 +474,13 @@ public class StorageBlockEntity extends BlockEntity implements IStorageWrapper {
 		if (level == null || level.isClientSide || inventoryHandler == null) {
 			return;
 		}
-
+		isDroppingContents = true;
 		InventoryHelper.dropItems(inventoryHandler, level, worldPosition);
+
+		if (upgradeHandler != null) {
+			InventoryHelper.dropItems(upgradeHandler, level, worldPosition);
+		}
+		isDroppingContents = false;
 	}
 
 	public Optional<String> getWoodName() {

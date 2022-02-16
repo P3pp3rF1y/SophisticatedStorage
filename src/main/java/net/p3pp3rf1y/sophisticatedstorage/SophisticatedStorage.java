@@ -12,8 +12,10 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.p3pp3rf1y.sophisticatedstorage.client.ClientEventHandler;
 import net.p3pp3rf1y.sophisticatedstorage.common.CommonEventHandler;
+import net.p3pp3rf1y.sophisticatedstorage.data.DataGenerators;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
+import net.p3pp3rf1y.sophisticatedstorage.init.ModLoot;
 import net.p3pp3rf1y.sophisticatedstorage.network.StoragePacketHandler;
 
 @Mod(SophisticatedStorage.MOD_ID)
@@ -36,6 +38,8 @@ public class SophisticatedStorage {
 		ModBlocks.registerHandlers(modBus);
 		ModItems.registerHandlers(modBus);
 		modBus.addListener(SophisticatedStorage::setup);
+		modBus.addListener(DataGenerators::gatherData);
+		ModLoot.init();
 	}
 
 	private static void setup(FMLCommonSetupEvent event) {

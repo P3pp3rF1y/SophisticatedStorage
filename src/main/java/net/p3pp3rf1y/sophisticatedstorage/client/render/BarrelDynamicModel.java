@@ -44,6 +44,7 @@ import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.lwjgl.system.CallbackI;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -60,11 +61,13 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 
 	private static final String BLOCK_FOLDER = "block/";
 
+	private static final String TOP_OPEN_TEXTURE_NAME = "top_open";
+
 	static {
 		BarrelBlock.CUSTOM_TEXTURE_WOOD_TYPES.forEach(woodName -> {
 			Map<String, ResourceLocation> barrelTextures = new HashMap<>();
 			barrelTextures.put("top", SophisticatedStorage.getRL(BLOCK_FOLDER + woodName + "_barrel_top"));
-			barrelTextures.put("top_open", SophisticatedStorage.getRL(BLOCK_FOLDER + woodName + "_barrel_top_open"));
+			barrelTextures.put(TOP_OPEN_TEXTURE_NAME, SophisticatedStorage.getRL(BLOCK_FOLDER + woodName + "_barrel_top_open"));
 			barrelTextures.put("bottom", SophisticatedStorage.getRL(BLOCK_FOLDER + woodName + "_barrel_bottom"));
 			barrelTextures.put("side", SophisticatedStorage.getRL(BLOCK_FOLDER + woodName + "_barrel_side"));
 
@@ -179,21 +182,26 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 				hasAccentColor = Boolean.TRUE.equals(extraData.getData(HAS_ACCENT_COLOR));
 				if (extraData.hasProperty(WOOD_NAME)) {
 					woodName = extraData.getData(WOOD_NAME);
+					if (Boolean.TRUE.equals(state.getValue(BarrelBlock.OPEN))) {
+						woodName += "_open";
+					}
 				}
 			}
 
 			List<BakedQuad> ret = new ArrayList<>();
 
 			if (!hasMainColor || !hasAccentColor) {
-				if (woodModels.containsKey(woodName)) {
-					ret.addAll(woodModels.get(woodName).getQuads(state, side, rand, EmptyModelData.INSTANCE));
-				} else {
-					ret.addAll(woodModels.values().iterator().next().getQuads(state, side, rand, EmptyModelData.INSTANCE));
-				}
+				addWoodModelQuads(state, side, rand, ret);
 			}
 
+			addTintableModelQuads(state, side, rand, ret);
+			return ret;
+		}
+
+		private void addTintableModelQuads(@Nullable BlockState state, @Nullable Direction side, @NotNull Random rand, List<BakedQuad> ret) {
 			if (hasMainColor) {
-				ret.addAll(additionalModelParts.get(ModelPart.MAIN).getQuads(state, side, rand, EmptyModelData.INSTANCE));
+				ModelPart modePart = state != null && state.getValue(BarrelBlock.OPEN) ? ModelPart.MAIN_OPEN : ModelPart.MAIN;
+				ret.addAll(additionalModelParts.get(modePart).getQuads(state, side, rand, EmptyModelData.INSTANCE));
 			}
 			if (hasAccentColor) {
 				ret.addAll(additionalModelParts.get(ModelPart.ACCENT).getQuads(state, side, rand, EmptyModelData.INSTANCE));
@@ -202,7 +210,14 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 			if (hasMainColor || hasAccentColor) {
 				ret.addAll(additionalModelParts.get(ModelPart.METAL_BANDS).getQuads(state, side, rand, EmptyModelData.INSTANCE));
 			}
-			return ret;
+		}
+
+		private void addWoodModelQuads(@Nullable BlockState state, @Nullable Direction side, @NotNull Random rand, List<BakedQuad> ret) {
+			if (woodModels.containsKey(woodName)) {
+				ret.addAll(woodModels.get(woodName).getQuads(state, side, rand, EmptyModelData.INSTANCE));
+			} else {
+				ret.addAll(woodModels.values().iterator().next().getQuads(state, side, rand, EmptyModelData.INSTANCE));
+			}
 		}
 
 		@Override
@@ -303,9 +318,8 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 			ImmutableMap.Builder<String, UnbakedModel> woodModelsBuilder = ImmutableMap.builder();
 
 			WOOD_TEXTURES.forEach((woodName, textures) -> {
-				ImmutableMap.Builder<String, Either<Material, String>> textureMapBuilder = ImmutableMap.builder();
-				textures.forEach((textureName, rl) -> textureMapBuilder.put(textureName, Either.left(new Material(InventoryMenu.BLOCK_ATLAS, rl))));
-				woodModelsBuilder.put(woodName, new BlockModel(new ResourceLocation("minecraft:block/cube_bottom_top"), Collections.emptyList(), textureMapBuilder.build(), true, null, ItemTransforms.NO_TRANSFORMS, Collections.emptyList()));
+				addWoodModels(woodModelsBuilder, woodName, textures, false);
+				addWoodModels(woodModelsBuilder, woodName + "_open", textures, true);
 			});
 
 			ImmutableMap.Builder<ModelPart, UnbakedModel> additionalModelsBuilder = ImmutableMap.builder();
@@ -314,6 +328,20 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 			}
 
 			return new BarrelDynamicModel(woodModelsBuilder.build(), additionalModelsBuilder.build());
+		}
+
+		private void addWoodModels(ImmutableMap.Builder<String, UnbakedModel> woodModelsBuilder, String woodName, Map<String, ResourceLocation> textures, boolean open) {
+			ImmutableMap.Builder<String, Either<Material, String>> textureMapBuilder = ImmutableMap.builder();
+			textures.forEach((textureName, rl) -> {
+				if (open && textureName.equals("top") || !open && textureName.equals(TOP_OPEN_TEXTURE_NAME)) {
+					return;
+				}
+				if (open && textureName.equals(TOP_OPEN_TEXTURE_NAME)) {
+					textureName = "top";
+				}
+				textureMapBuilder.put(textureName, Either.left(new Material(InventoryMenu.BLOCK_ATLAS, rl)));
+			});
+			woodModelsBuilder.put(woodName, new BlockModel(new ResourceLocation("minecraft:block/cube_bottom_top"), Collections.emptyList(), textureMapBuilder.build(), true, null, ItemTransforms.NO_TRANSFORMS, Collections.emptyList()));
 		}
 
 		@Override

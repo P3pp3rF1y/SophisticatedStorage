@@ -4,6 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.TextComponent;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
@@ -22,7 +23,6 @@ import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.SoundType;
-import net.minecraft.world.level.block.entity.BarrelBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -33,20 +33,21 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.material.Material;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraftforge.items.IItemHandlerModifiable;
 import net.minecraftforge.network.NetworkHooks;
-import net.p3pp3rf1y.sophisticatedbackpacks.backpack.wrapper.BackpackWrapper;
 import net.p3pp3rf1y.sophisticatedcore.util.ColorHelper;
+import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
-import org.lwjgl.system.CallbackI;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
+import java.util.Random;
 import java.util.Set;
 
-public class BarrelBlock extends Block implements EntityBlock, IStorageBlock {
+public class BarrelBlock extends Block implements EntityBlock, IStorageBlock, IAdditionalDropDataBlock {
 	public static final DirectionProperty FACING = BlockStateProperties.FACING;
 	public static final BooleanProperty OPEN = BlockStateProperties.OPEN;
 	public static final BooleanProperty TICKING = BooleanProperty.create("ticking");
@@ -66,7 +67,7 @@ public class BarrelBlock extends Block implements EntityBlock, IStorageBlock {
 
 	@Override
 	public void fillItemCategory(CreativeModeTab tab, NonNullList<ItemStack> items) {
-		CUSTOM_TEXTURE_WOOD_TYPES.forEach(woodName -> items.add(getBarrelStack(woodName)));
+		CUSTOM_TEXTURE_WOOD_TYPES.forEach(woodName -> items.add(setWoodName(new ItemStack(this), woodName)));
 
 		for (DyeColor color : DyeColor.values()) {
 			ItemStack barrelStack = new ItemStack(this);
@@ -119,6 +120,11 @@ public class BarrelBlock extends Block implements EntityBlock, IStorageBlock {
 		}
 	}
 
+	@Override
+	public void tick(BlockState pState, ServerLevel level, BlockPos pos, Random pRandom) {
+		WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).ifPresent(StorageBlockEntity::recheckOpen);
+	}
+
 	@Nullable
 	@Override
 	public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> blockEntityType) {
@@ -143,8 +149,8 @@ public class BarrelBlock extends Block implements EntityBlock, IStorageBlock {
 	}
 
 	@Override
-	public int getAnalogOutputSignal(BlockState pState, Level pLevel, BlockPos pPos) {
-		return super.getAnalogOutputSignal(pState, pLevel, pPos); //TODO implement
+	public int getAnalogOutputSignal(BlockState blockState, Level level, BlockPos pos) {
+		return WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).map(be -> InventoryHelper.getAnalogOutputSignal(be.getInventoryForInputOutput())).orElse(0);
 	}
 
 	@Override
@@ -192,8 +198,7 @@ public class BarrelBlock extends Block implements EntityBlock, IStorageBlock {
 		return NBTHelper.getString(barrelStack, WOOD_NAME_TAG);
 	}
 
-	private static ItemStack getBarrelStack(String woodName) {
-		ItemStack barrelStack = new ItemStack(ModBlocks.BARREL_ITEM.get());
+	private static ItemStack setWoodName(ItemStack barrelStack, String woodName) {
 		barrelStack.getOrCreateTag().putString(WOOD_NAME_TAG, woodName);
 		return barrelStack;
 	}
@@ -212,5 +217,18 @@ public class BarrelBlock extends Block implements EntityBlock, IStorageBlock {
 
 	public static Optional<Integer> getAccentColor(ItemStack barrelStack) {
 		return NBTHelper.getInt(barrelStack, "accentColor");
+	}
+
+	@Override
+	public void addDropData(ItemStack stack, StorageBlockEntity be) {
+		int mainColor = be.getMainColor();
+		if (mainColor > -1) {
+			setMainColor(stack, mainColor);
+		}
+		int accentColor = be.getAccentColor();
+		if (accentColor > -1) {
+			setAccentColor(stack, accentColor);
+		}
+		be.getWoodName().ifPresent(n -> setWoodName(stack, n));
 	}
 }
