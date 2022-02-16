@@ -5,23 +5,28 @@ import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.constants.VanillaRecipeCategoryUid;
 import mezz.jei.api.gui.handlers.IGuiContainerHandler;
 import mezz.jei.api.helpers.IStackHelper;
+import mezz.jei.api.ingredients.subtypes.IIngredientSubtypeInterpreter;
 import mezz.jei.api.recipe.transfer.IRecipeTransferHandlerHelper;
 import mezz.jei.api.registration.IGuiHandlerRegistration;
 import mezz.jei.api.registration.IRecipeCatalystRegistration;
 import mezz.jei.api.registration.IRecipeTransferRegistration;
+import mezz.jei.api.registration.ISubtypeRegistration;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.p3pp3rf1y.sophisticatedcore.compat.jei.CraftingContainerRecipeTransferHandlerBase;
 import net.p3pp3rf1y.sophisticatedcore.compat.jei.StorageGhostIngredientHandler;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
+import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlock;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageScreen;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageSettingsScreen;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
+import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.StringJoiner;
 
 @SuppressWarnings("unused")
 @JeiPlugin
@@ -29,6 +34,18 @@ public class StoragePlugin implements IModPlugin {
 	@Override
 	public ResourceLocation getPluginUid() {
 		return new ResourceLocation(SophisticatedStorage.MOD_ID, "default");
+	}
+
+	@Override
+	public void registerItemSubtypes(ISubtypeRegistration registration) {
+		IIngredientSubtypeInterpreter<ItemStack> barrelNbtInterpreter = (itemStack, context) -> {
+				StringJoiner result = new StringJoiner(",");
+				BarrelBlock.getWoodName(itemStack).ifPresent(woodName -> result.add("woodName:" + woodName));
+				BarrelBlock.getMaincolor(itemStack).ifPresent(mainColor -> result.add("mainColor:" + mainColor));
+				BarrelBlock.getAccentColor(itemStack).ifPresent(accentColor -> result.add("accentColor:" + accentColor));
+				return "{" + result + "}";
+		};
+		registration.registerSubtypeInterpreter(ModBlocks.BARREL_ITEM.get(), barrelNbtInterpreter);
 	}
 
 	@Override

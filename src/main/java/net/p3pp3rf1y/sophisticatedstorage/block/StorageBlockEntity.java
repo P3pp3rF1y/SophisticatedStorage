@@ -68,7 +68,10 @@ public class StorageBlockEntity extends BlockEntity implements IStorageWrapper {
 	private int accentColor = -1;
 	private SortBy sortBy = SortBy.NAME;
 	private int columnsTaken = 0;
+	@Nullable
 	private Component displayName = null;
+	@Nullable
+	private String woodName = null;
 
 	public StorageBlockEntity(BlockPos pos, BlockState state) {
 		super(ModBlocks.BARREL_TILE_TYPE.get(), pos, state);
@@ -117,6 +120,12 @@ public class StorageBlockEntity extends BlockEntity implements IStorageWrapper {
 		if (numberOfUpgradeSlots > -1) {
 			tag.putInt("numberOfUpgradeSlots", numberOfUpgradeSlots);
 		}
+		if (woodName != null) {
+			tag.putString("woodName", woodName);
+		}
+		if (displayName != null) {
+			tag.putString("displayName", Component.Serializer.toJson(displayName));
+		}
 	}
 
 	@Override
@@ -136,6 +145,8 @@ public class StorageBlockEntity extends BlockEntity implements IStorageWrapper {
 		columnsTaken = NBTHelper.getInt(tag, "columnsTaken").orElse(0);
 		numberOfInventorySlots = NBTHelper.getInt(tag, "numberOfInventorySlots").orElse(0);
 		numberOfUpgradeSlots = NBTHelper.getInt(tag, "numberOfUpgradeSlots").orElse(-1);
+		woodName = NBTHelper.getString(tag, "woodName").orElse(null);
+		displayName = NBTHelper.getComponent(tag, "displayName").orElse(null);
 	}
 
 	@Nullable
@@ -283,9 +294,17 @@ public class StorageBlockEntity extends BlockEntity implements IStorageWrapper {
 		return mainColor;
 	}
 
+	public void setMainColor(int mainColor) {
+		this.mainColor = mainColor;
+	}
+
 	@Override
 	public int getAccentColor() {
 		return accentColor;
+	}
+
+	public void setAccentColor(int accentColor) {
+		this.accentColor = accentColor;
 	}
 
 	@Override
@@ -388,5 +407,17 @@ public class StorageBlockEntity extends BlockEntity implements IStorageWrapper {
 		}
 
 		InventoryHelper.dropItems(inventoryHandler, level, worldPosition);
+	}
+
+	public Optional<String> getWoodName() {
+		return Optional.ofNullable(woodName);
+	}
+
+	public void setCustomName(Component customName) {
+		displayName = customName;
+	}
+
+	public void setWoodName(String woodName) {
+		this.woodName = woodName;
 	}
 }

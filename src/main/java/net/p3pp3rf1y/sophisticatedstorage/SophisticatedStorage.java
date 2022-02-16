@@ -1,12 +1,16 @@
 package net.p3pp3rf1y.sophisticatedstorage;
 
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.CreativeModeTab;
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.fml.loading.FMLEnvironment;
+import net.p3pp3rf1y.sophisticatedstorage.client.ClientEventHandler;
 import net.p3pp3rf1y.sophisticatedstorage.common.CommonEventHandler;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
@@ -26,6 +30,9 @@ public class SophisticatedStorage {
 		IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
 		modBus.addListener(Config.COMMON::onConfigReload);
 		commonEventHandler.registerHandlers();
+		if (FMLEnvironment.dist == Dist.CLIENT) {
+			ClientEventHandler.registerHandlers();
+		}
 		ModBlocks.registerHandlers(modBus);
 		ModItems.registerHandlers(modBus);
 		modBus.addListener(SophisticatedStorage::setup);
@@ -33,5 +40,13 @@ public class SophisticatedStorage {
 
 	private static void setup(FMLCommonSetupEvent event) {
 		PACKET_HANDLER.init();
+	}
+
+	public static ResourceLocation getRL(String regName) {
+		return new ResourceLocation(getRegistryName(regName));
+	}
+
+	public static String getRegistryName(String regName) {
+		return MOD_ID + ":" + regName;
 	}
 }

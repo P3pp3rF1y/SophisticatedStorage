@@ -2,13 +2,18 @@ package net.p3pp3rf1y.sophisticatedstorage.block;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.SimpleMenuProvider;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -17,6 +22,7 @@ import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.entity.BarrelBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -28,25 +34,50 @@ import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.material.Material;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraftforge.network.NetworkHooks;
+import net.p3pp3rf1y.sophisticatedbackpacks.backpack.wrapper.BackpackWrapper;
+import net.p3pp3rf1y.sophisticatedcore.util.ColorHelper;
+import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
+import org.lwjgl.system.CallbackI;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
+import java.util.Set;
 
 public class BarrelBlock extends Block implements EntityBlock, IStorageBlock {
 	public static final DirectionProperty FACING = BlockStateProperties.FACING;
 	public static final BooleanProperty OPEN = BlockStateProperties.OPEN;
 	public static final BooleanProperty TICKING = BooleanProperty.create("ticking");
+	private static final String WOOD_NAME_TAG = "woodName";
 
 	private final int numberOfInventorySlots;
 	private final int numberOfUpgradeSlots;
+
+	public static final Set<String> CUSTOM_TEXTURE_WOOD_TYPES = Set.of("acacia", "birch", "crimson", "dark_oak", "jungle", "oak", "spruce", "warped");
 
 	public BarrelBlock(int numberOfInventorySlots, int numberOfUpgradeSlots) {
 		super(Properties.of(Material.WOOD).strength(2.5F).sound(SoundType.WOOD));
 		this.numberOfInventorySlots = numberOfInventorySlots;
 		this.numberOfUpgradeSlots = numberOfUpgradeSlots;
 		registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(OPEN, false).setValue(TICKING, false));
+	}
+
+	@Override
+	public void fillItemCategory(CreativeModeTab tab, NonNullList<ItemStack> items) {
+		CUSTOM_TEXTURE_WOOD_TYPES.forEach(woodName -> items.add(getBarrelStack(woodName)));
+
+		for (DyeColor color : DyeColor.values()) {
+			ItemStack barrelStack = new ItemStack(this);
+			setMainColor(barrelStack, ColorHelper.getColor(color.getTextureDiffuseColors()));
+			setAccentColor(barrelStack, ColorHelper.getColor(color.getTextureDiffuseColors()));
+			items.add(barrelStack);
+		}
+		ItemStack barrelStack = new ItemStack(this);
+		setMainColor(barrelStack, ColorHelper.getColor(DyeColor.YELLOW.getTextureDiffuseColors()));
+		setAccentColor(barrelStack, ColorHelper.getColor(DyeColor.LIME.getTextureDiffuseColors()));
+		items.add(barrelStack);
 	}
 
 	@Override
@@ -62,6 +93,18 @@ public class BarrelBlock extends Block implements EntityBlock, IStorageBlock {
 		});
 
 		return InteractionResult.CONSUME;
+	}
+
+	@Override
+	public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
+		WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).ifPresent(be -> {
+			if (stack.hasCustomHoverName()) {
+				be.setCustomName(stack.getHoverName());
+			}
+			getWoodName(stack).ifPresent(be::setWoodName);
+			getMaincolor(stack).ifPresent(be::setMainColor);
+			getAccentColor(stack).ifPresent(be::setAccentColor);
+		});
 	}
 
 	@Override
@@ -143,5 +186,31 @@ public class BarrelBlock extends Block implements EntityBlock, IStorageBlock {
 	@Override
 	public void setTicking(Level level, BlockPos pos, BlockState currentState, boolean ticking) {
 		level.setBlockAndUpdate(pos, currentState.setValue(TICKING, ticking));
+	}
+
+	public static Optional<String> getWoodName(ItemStack barrelStack) {
+		return NBTHelper.getString(barrelStack, WOOD_NAME_TAG);
+	}
+
+	private static ItemStack getBarrelStack(String woodName) {
+		ItemStack barrelStack = new ItemStack(ModBlocks.BARREL_ITEM.get());
+		barrelStack.getOrCreateTag().putString(WOOD_NAME_TAG, woodName);
+		return barrelStack;
+	}
+
+	private static void setMainColor(ItemStack barrelStack, int mainColor) {
+		barrelStack.getOrCreateTag().putInt("mainColor", mainColor);
+	}
+
+	public static Optional<Integer> getMaincolor(ItemStack barrelStack) {
+		return NBTHelper.getInt(barrelStack, "mainColor");
+	}
+
+	private static void setAccentColor(ItemStack barrelStack, int accentColor) {
+		barrelStack.getOrCreateTag().putInt("accentColor", accentColor);
+	}
+
+	public static Optional<Integer> getAccentColor(ItemStack barrelStack) {
+		return NBTHelper.getInt(barrelStack, "accentColor");
 	}
 }
