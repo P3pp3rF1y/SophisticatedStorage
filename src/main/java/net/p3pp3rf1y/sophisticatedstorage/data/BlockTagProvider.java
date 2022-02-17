@@ -16,7 +16,7 @@ public class BlockTagProvider extends BlockTagsProvider {
 
 	@Override
 	protected void addTags() {
-		tag(BlockTags.MINEABLE_WITH_AXE).add(ModBlocks.BARREL.get());
-		tag(BlockTags.GUARDED_BY_PIGLINS).add(ModBlocks.BARREL.get());
+		tag(BlockTags.MINEABLE_WITH_AXE).add(ModBlocks.BARREL.get(), ModBlocks.IRON_BARREL.get(), ModBlocks.GOLD_BARREL.get(), ModBlocks.DIAMOND_BARREL.get(), ModBlocks.NETHERITE_BARREL.get());
+		tag(BlockTags.GUARDED_BY_PIGLINS).add(ModBlocks.BARREL.get(), ModBlocks.IRON_BARREL.get(), ModBlocks.GOLD_BARREL.get(), ModBlocks.DIAMOND_BARREL.get(), ModBlocks.NETHERITE_BARREL.get());
 	}
 }

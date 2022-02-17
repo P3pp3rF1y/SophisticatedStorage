@@ -1,0 +1,8 @@
+{
+    "loader": "sophisticatedstorage:barrel",
+    "tierTextures": {
+        "top": "sophisticatedstorage:block/gold_barrel_top",
+        "side": "sophisticatedstorage:block/gold_barrel_side",
+        "bottom": "sophisticatedstorage:block/gold_barrel_bottom"
+    }
+}

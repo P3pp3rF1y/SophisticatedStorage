@@ -1,0 +1,8 @@
+{
+    "loader": "sophisticatedstorage:barrel",
+    "tierTextures": {
+        "top": "sophisticatedstorage:block/netherite_barrel_top",
+        "side": "sophisticatedstorage:block/netherite_barrel_side",
+        "bottom": "sophisticatedstorage:block/netherite_barrel_bottom"
+    }
+}

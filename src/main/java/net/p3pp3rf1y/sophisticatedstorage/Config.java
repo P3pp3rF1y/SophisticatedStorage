@@ -24,6 +24,12 @@ public class Config {
 	}
 
 	public static class Common {
+		public final StorageConfig woodBarrel;
+		public final StorageConfig ironBarrel;
+		public final StorageConfig goldBarrel;
+		public final StorageConfig diamondBarrel;
+		public final StorageConfig netheriteBarrel;
+
 		public final StackUpgradeConfig stackUpgrade;
 		public final FilteredUpgradeConfig compactingUpgrade;
 		public final FilteredUpgradeConfig advancedCompactingUpgrade;
@@ -55,8 +61,14 @@ public class Config {
 
 		public Common(ForgeConfigSpec.Builder builder) {
 			builder.comment("Common Settings").push("common");
-			stackUpgrade = new StackUpgradeConfig(builder);
 
+			woodBarrel = new StorageConfig(builder, "Leather Barrel", 27, 1);
+			ironBarrel = new StorageConfig(builder, "Iron Barrel", 54, 1);
+			goldBarrel = new StorageConfig(builder, "Gold Barrel", 81, 2);
+			diamondBarrel = new StorageConfig(builder, "Diamond Barrel", 108, 3);
+			netheriteBarrel = new StorageConfig(builder, "Netherite Barrel", 132, 4);
+
+			stackUpgrade = new StackUpgradeConfig(builder);
 			compactingUpgrade = new FilteredUpgradeConfig(builder, "Compacting Upgrade", "compactingUpgrade", 9, 3);
 			advancedCompactingUpgrade = new FilteredUpgradeConfig(builder, "Advanced Compacting Upgrade", "advancedCompactingUpgrade", 16, 4);
 			depositUpgrade = new FilteredUpgradeConfig(builder, "Deposit Upgrade", "depositUpgrade", 9, 3);
@@ -81,6 +93,18 @@ public class Config {
 			xpPumpUpgrade = new XpPumpUpgradeConfig(builder);
 
 			builder.pop();
+		}
+
+		public static class StorageConfig {
+			public final ForgeConfigSpec.IntValue inventorySlotCount;
+			public final ForgeConfigSpec.IntValue upgradeSlotCount;
+
+			public StorageConfig(ForgeConfigSpec.Builder builder, String storagePrefix, int inventorySlotCountDefault, int upgradeSlotCountDefault) {
+				builder.comment(storagePrefix + " Settings").push(storagePrefix.replace(" ", ""));
+				inventorySlotCount = builder.comment("Number of inventory slots in the storage").defineInRange("inventorySlotCount", inventorySlotCountDefault, 1, 180);
+				upgradeSlotCount = builder.comment("Number of upgrade slots in the storage").defineInRange("upgradeSlotCount", upgradeSlotCountDefault, 0, 10);
+				builder.pop();
+			}
 		}
 	}
 }

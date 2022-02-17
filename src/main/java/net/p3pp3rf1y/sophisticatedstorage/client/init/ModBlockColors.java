@@ -19,6 +19,6 @@ public class ModBlockColors {
 			return WorldHelper.getBlockEntity(blockDisplayReader, pos, StorageBlockEntity.class)
 					.map(be -> tintIndex == 0 ? be.getMainColor() : be.getAccentColor())
 					.orElse(-1);
-		}, ModBlocks.BARREL.get());
+		}, ModBlocks.BARREL.get(), ModBlocks.IRON_BARREL.get(), ModBlocks.GOLD_BARREL.get(), ModBlocks.DIAMOND_BARREL.get(), ModBlocks.NETHERITE_BARREL.get());
 	}
 }

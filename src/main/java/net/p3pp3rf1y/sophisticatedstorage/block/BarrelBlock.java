@@ -22,7 +22,6 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
-import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -31,9 +30,7 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
-import net.minecraft.world.level.material.Material;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraftforge.items.IItemHandlerModifiable;
 import net.minecraftforge.network.NetworkHooks;
 import net.p3pp3rf1y.sophisticatedcore.util.ColorHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
@@ -58,8 +55,8 @@ public class BarrelBlock extends Block implements EntityBlock, IStorageBlock, IA
 
 	public static final Set<String> CUSTOM_TEXTURE_WOOD_TYPES = Set.of("acacia", "birch", "crimson", "dark_oak", "jungle", "oak", "spruce", "warped");
 
-	public BarrelBlock(int numberOfInventorySlots, int numberOfUpgradeSlots) {
-		super(Properties.of(Material.WOOD).strength(2.5F).sound(SoundType.WOOD));
+	public BarrelBlock(int numberOfInventorySlots, int numberOfUpgradeSlots, Properties properties) {
+		super(properties);
 		this.numberOfInventorySlots = numberOfInventorySlots;
 		this.numberOfUpgradeSlots = numberOfUpgradeSlots;
 		registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(OPEN, false).setValue(TICKING, false));

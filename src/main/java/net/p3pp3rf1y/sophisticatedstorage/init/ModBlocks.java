@@ -5,7 +5,10 @@ import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.material.Material;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.extensions.IForgeMenuType;
 import net.minecraftforge.event.RegistryEvent;
@@ -14,6 +17,7 @@ import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
+import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
@@ -32,12 +36,25 @@ public class ModBlocks {
 
 	private static final String BARREL_REGISTRY_NAME = "barrel";
 
-	public static final RegistryObject<Block> BARREL = BLOCKS.register(BARREL_REGISTRY_NAME, () -> new BarrelBlock(27, 1));
+	public static final RegistryObject<Block> BARREL = BLOCKS.register(BARREL_REGISTRY_NAME, () -> new BarrelBlock(Config.COMMON.woodBarrel.inventorySlotCount.get(), Config.COMMON.woodBarrel.upgradeSlotCount.get(),
+			BlockBehaviour.Properties.of(Material.WOOD).strength(2.5F).sound(SoundType.WOOD)));
+	public static final RegistryObject<Block> IRON_BARREL = BLOCKS.register("iron_barrel", () -> new BarrelBlock(Config.COMMON.ironBarrel.inventorySlotCount.get(), Config.COMMON.ironBarrel.upgradeSlotCount.get(),
+			BlockBehaviour.Properties.of(Material.WOOD).strength(2.5F).sound(SoundType.WOOD)));
+	public static final RegistryObject<Block> GOLD_BARREL = BLOCKS.register("gold_barrel", () -> new BarrelBlock(Config.COMMON.goldBarrel.inventorySlotCount.get(), Config.COMMON.goldBarrel.upgradeSlotCount.get(),
+			BlockBehaviour.Properties.of(Material.WOOD).strength(2.5F).sound(SoundType.WOOD)));
+	public static final RegistryObject<Block> DIAMOND_BARREL = BLOCKS.register("diamond_barrel", () -> new BarrelBlock(Config.COMMON.diamondBarrel.inventorySlotCount.get(), Config.COMMON.diamondBarrel.upgradeSlotCount.get(),
+			BlockBehaviour.Properties.of(Material.WOOD).strength(2.5F).sound(SoundType.WOOD)));
+	public static final RegistryObject<Block> NETHERITE_BARREL = BLOCKS.register("netherite_barrel", () -> new BarrelBlock(Config.COMMON.netheriteBarrel.inventorySlotCount.get(), Config.COMMON.netheriteBarrel.upgradeSlotCount.get(),
+			BlockBehaviour.Properties.of(Material.WOOD).strength(2.5F).sound(SoundType.WOOD)));
 	public static final RegistryObject<BlockItem> BARREL_ITEM = ITEMS.register(BARREL_REGISTRY_NAME, () -> new BlockItem(BARREL.get(), new Item.Properties().tab(SophisticatedStorage.CREATIVE_TAB)));
+	public static final RegistryObject<BlockItem> IRON_BARREL_ITEM = ITEMS.register("iron_barrel", () -> new BlockItem(IRON_BARREL.get(), new Item.Properties().tab(SophisticatedStorage.CREATIVE_TAB)));
+	public static final RegistryObject<BlockItem> GOLD_BARREL_ITEM = ITEMS.register("gold_barrel", () -> new BlockItem(GOLD_BARREL.get(), new Item.Properties().tab(SophisticatedStorage.CREATIVE_TAB)));
+	public static final RegistryObject<BlockItem> DIAMOND_BARREL_ITEM = ITEMS.register("diamond_barrel", () -> new BlockItem(DIAMOND_BARREL.get(), new Item.Properties().tab(SophisticatedStorage.CREATIVE_TAB)));
+	public static final RegistryObject<BlockItem> NETHERITE_BARREL_ITEM = ITEMS.register("netherite_barrel", () -> new BlockItem(NETHERITE_BARREL.get(), new Item.Properties().tab(SophisticatedStorage.CREATIVE_TAB)));
 
 	@SuppressWarnings("ConstantConditions") //no datafixer type needed
 	public static final RegistryObject<BlockEntityType<StorageBlockEntity>> BARREL_TILE_TYPE = BLOCK_ENTITIES.register(BARREL_REGISTRY_NAME, () ->
-			BlockEntityType.Builder.of(StorageBlockEntity::new, BARREL.get())
+			BlockEntityType.Builder.of(StorageBlockEntity::new, BARREL.get(), IRON_BARREL.get(), GOLD_BARREL.get(), DIAMOND_BARREL.get(), NETHERITE_BARREL.get())
 					.build(null));
 
 	public static final RegistryObject<MenuType<StorageContainerMenu>> STORAGE_CONTAINER_TYPE = CONTAINERS.register("storage",
