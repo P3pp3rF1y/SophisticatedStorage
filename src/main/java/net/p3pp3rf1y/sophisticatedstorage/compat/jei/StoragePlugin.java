@@ -40,7 +40,7 @@ public class StoragePlugin implements IModPlugin {
 	public void registerItemSubtypes(ISubtypeRegistration registration) {
 		IIngredientSubtypeInterpreter<ItemStack> barrelNbtInterpreter = (itemStack, context) -> {
 				StringJoiner result = new StringJoiner(",");
-				BarrelBlock.getWoodName(itemStack).ifPresent(woodName -> result.add("woodName:" + woodName));
+				BarrelBlock.getWoodType(itemStack).ifPresent(woodName -> result.add("woodName:" + woodName));
 				BarrelBlock.getMaincolor(itemStack).ifPresent(mainColor -> result.add("mainColor:" + mainColor));
 				BarrelBlock.getAccentColor(itemStack).ifPresent(accentColor -> result.add("accentColor:" + accentColor));
 				return "{" + result + "}";

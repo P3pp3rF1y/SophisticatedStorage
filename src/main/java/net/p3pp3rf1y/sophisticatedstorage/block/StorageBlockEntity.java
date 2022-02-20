@@ -17,6 +17,7 @@ import net.minecraft.world.level.block.BarrelBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.ContainerOpenersCounter;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.WoodType;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.SortBy;
 import net.p3pp3rf1y.sophisticatedcore.inventory.IItemHandlerSimpleInserter;
@@ -34,6 +35,7 @@ import net.p3pp3rf1y.sophisticatedcore.upgrades.stack.StackUpgradeItem;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.InventorySorter;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
+import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
@@ -78,7 +80,9 @@ public class StorageBlockEntity extends BlockEntity implements IStorageWrapper {
 	@Nullable
 	private Component displayName = null;
 	@Nullable
-	private String woodName = null;
+	private WoodType woodType = null;
+
+	private boolean updateBlockRender = false;
 
 	private final ContainerOpenersCounter openersCounter = new ContainerOpenersCounter() {
 		protected void onOpen(Level level, BlockPos pos, BlockState state) {
@@ -121,8 +125,16 @@ public class StorageBlockEntity extends BlockEntity implements IStorageWrapper {
 		settingsHandler = new StorageSettingsHandler(contentsNbt, this::setChanged, () -> inventoryHandler, () -> renderInfo);
 	}
 
+	public boolean isOpen() {
+		return openersCounter.getOpenerCount() > 0;
+	}
+
+	public Optional<Component> getCustomName() {
+		return Optional.ofNullable(displayName);
+	}
+
 	@Override
-	protected void saveAdditional(CompoundTag tag) {
+	public void saveAdditional(CompoundTag tag) {
 		super.saveAdditional(tag);
 		saveData(tag);
 	}
@@ -152,11 +164,14 @@ public class StorageBlockEntity extends BlockEntity implements IStorageWrapper {
 		if (numberOfUpgradeSlots > -1) {
 			tag.putInt("numberOfUpgradeSlots", numberOfUpgradeSlots);
 		}
-		if (woodName != null) {
-			tag.putString("woodName", woodName);
+		if (woodType != null) {
+			tag.putString("woodType", woodType.name());
 		}
 		if (displayName != null) {
 			tag.putString("displayName", Component.Serializer.toJson(displayName));
+		}
+		if (updateBlockRender) {
+			tag.putBoolean("updateBlockRender", true);
 		}
 	}
 
@@ -203,8 +218,9 @@ public class StorageBlockEntity extends BlockEntity implements IStorageWrapper {
 		loadData(tag);
 	}
 
-	private void loadData(CompoundTag tag) {
+	public void loadData(CompoundTag tag) {
 		contentsNbt = tag.getCompound("contents");
+		onContentsNbtUpdated();
 		renderInfoNbt = tag.getCompound("renderInfo");
 		contentsUuid = NBTHelper.getTagValue(tag, UUID_TAG, CompoundTag::getCompound).map(NbtUtils::loadUUID).orElse(null);
 		mainColor = NBTHelper.getInt(tag, MAIN_COLOR_TAG).orElse(-1);
@@ -214,8 +230,9 @@ public class StorageBlockEntity extends BlockEntity implements IStorageWrapper {
 		columnsTaken = NBTHelper.getInt(tag, "columnsTaken").orElse(0);
 		numberOfInventorySlots = NBTHelper.getInt(tag, "numberOfInventorySlots").orElse(0);
 		numberOfUpgradeSlots = NBTHelper.getInt(tag, "numberOfUpgradeSlots").orElse(-1);
-		woodName = NBTHelper.getString(tag, "woodName").orElse(null);
+		woodType = NBTHelper.getString(tag, "woodType").flatMap(woodTypeName -> WoodType.values().filter(wt -> wt.name().equals(woodTypeName)).findFirst()).orElse(null);
 		displayName = NBTHelper.getComponent(tag, "displayName").orElse(null);
+		updateBlockRender = true;
 	}
 
 	@Nullable
@@ -232,6 +249,13 @@ public class StorageBlockEntity extends BlockEntity implements IStorageWrapper {
 		}
 
 		loadData(tag);
+		if (tag.getBoolean("updateBlockRender")) {
+			WorldHelper.notifyBlockUpdate(this);
+		}
+	}
+
+	public void setUpdateBlockRender() {
+		updateBlockRender = true;
 	}
 
 	@Override
@@ -483,15 +507,25 @@ public class StorageBlockEntity extends BlockEntity implements IStorageWrapper {
 		isDroppingContents = false;
 	}
 
-	public Optional<String> getWoodName() {
-		return Optional.ofNullable(woodName);
+	public Optional<WoodType> getWoodType() {
+		return Optional.ofNullable(woodType);
 	}
 
 	public void setCustomName(Component customName) {
 		displayName = customName;
+		setChanged();
 	}
 
-	public void setWoodName(String woodName) {
-		this.woodName = woodName;
+	public void setWoodType(WoodType woodType) {
+		this.woodType = woodType;
+		setChanged();
+	}
+
+	public void increaseSize(int additionalInventorySlots, int additionalUpgradeSlots) {
+		numberOfInventorySlots += additionalInventorySlots;
+		numberOfUpgradeSlots += additionalUpgradeSlots;
+
+		getInventoryHandler().increaseSize(additionalInventorySlots);
+		getUpgradeHandler().increaseSize(additionalUpgradeSlots);
 	}
 }

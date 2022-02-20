@@ -1,0 +1,6 @@
+{
+    "parent": "item/generated",
+    "textures": {
+        "layer0": "sophisticatedstorage:item/diamond_to_netherite_tier_upgrade"
+    }
+}

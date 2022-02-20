@@ -37,15 +37,15 @@ public class ModBlocks {
 
 	private static final String BARREL_REGISTRY_NAME = "barrel";
 
-	public static final RegistryObject<Block> BARREL = BLOCKS.register(BARREL_REGISTRY_NAME, () -> new BarrelBlock(Config.COMMON.woodBarrel.inventorySlotCount.get(), Config.COMMON.woodBarrel.upgradeSlotCount.get(),
+	public static final RegistryObject<BarrelBlock> BARREL = BLOCKS.register(BARREL_REGISTRY_NAME, () -> new BarrelBlock(Config.COMMON.woodBarrel.inventorySlotCount.get(), Config.COMMON.woodBarrel.upgradeSlotCount.get(),
 			BlockBehaviour.Properties.of(Material.WOOD).strength(2.5F).sound(SoundType.WOOD)));
-	public static final RegistryObject<Block> IRON_BARREL = BLOCKS.register("iron_barrel", () -> new BarrelBlock(Config.COMMON.ironBarrel.inventorySlotCount.get(), Config.COMMON.ironBarrel.upgradeSlotCount.get(),
+	public static final RegistryObject<BarrelBlock> IRON_BARREL = BLOCKS.register("iron_barrel", () -> new BarrelBlock(Config.COMMON.ironBarrel.inventorySlotCount.get(), Config.COMMON.ironBarrel.upgradeSlotCount.get(),
 			BlockBehaviour.Properties.of(Material.WOOD).strength(2.5F).sound(SoundType.WOOD)));
-	public static final RegistryObject<Block> GOLD_BARREL = BLOCKS.register("gold_barrel", () -> new BarrelBlock(Config.COMMON.goldBarrel.inventorySlotCount.get(), Config.COMMON.goldBarrel.upgradeSlotCount.get(),
+	public static final RegistryObject<BarrelBlock> GOLD_BARREL = BLOCKS.register("gold_barrel", () -> new BarrelBlock(Config.COMMON.goldBarrel.inventorySlotCount.get(), Config.COMMON.goldBarrel.upgradeSlotCount.get(),
 			BlockBehaviour.Properties.of(Material.WOOD).strength(2.5F).sound(SoundType.WOOD)));
-	public static final RegistryObject<Block> DIAMOND_BARREL = BLOCKS.register("diamond_barrel", () -> new BarrelBlock(Config.COMMON.diamondBarrel.inventorySlotCount.get(), Config.COMMON.diamondBarrel.upgradeSlotCount.get(),
+	public static final RegistryObject<BarrelBlock> DIAMOND_BARREL = BLOCKS.register("diamond_barrel", () -> new BarrelBlock(Config.COMMON.diamondBarrel.inventorySlotCount.get(), Config.COMMON.diamondBarrel.upgradeSlotCount.get(),
 			BlockBehaviour.Properties.of(Material.WOOD).strength(2.5F).sound(SoundType.WOOD)));
-	public static final RegistryObject<Block> NETHERITE_BARREL = BLOCKS.register("netherite_barrel", () -> new BarrelBlock(Config.COMMON.netheriteBarrel.inventorySlotCount.get(), Config.COMMON.netheriteBarrel.upgradeSlotCount.get(),
+	public static final RegistryObject<BarrelBlock> NETHERITE_BARREL = BLOCKS.register("netherite_barrel", () -> new BarrelBlock(Config.COMMON.netheriteBarrel.inventorySlotCount.get(), Config.COMMON.netheriteBarrel.upgradeSlotCount.get(),
 			BlockBehaviour.Properties.of(Material.WOOD).strength(2.5F).sound(SoundType.WOOD)));
 	public static final RegistryObject<BlockItem> BARREL_ITEM = ITEMS.register(BARREL_REGISTRY_NAME, () -> new BlockItemBase(BARREL.get(), new Item.Properties(), SophisticatedStorage.CREATIVE_TAB));
 	public static final RegistryObject<BlockItem> IRON_BARREL_ITEM = ITEMS.register("iron_barrel", () -> new BlockItemBase(IRON_BARREL.get(), new Item.Properties(), SophisticatedStorage.CREATIVE_TAB));

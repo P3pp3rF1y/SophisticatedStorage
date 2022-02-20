@@ -30,6 +30,7 @@ import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.WoodType;
 import net.minecraftforge.client.model.IModelConfiguration;
 import net.minecraftforge.client.model.IModelLoader;
 import net.minecraftforge.client.model.data.EmptyModelData;
@@ -63,7 +64,8 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 	private static final String TOP_OPEN_TEXTURE_NAME = "top_open";
 
 	static {
-		BarrelBlock.CUSTOM_TEXTURE_WOOD_TYPES.forEach(woodName -> {
+		BarrelBlock.CUSTOM_TEXTURE_WOOD_TYPES.forEach(woodType -> {
+			String woodName = woodType.name();
 			Map<String, ResourceLocation> barrelTextures = new HashMap<>();
 			barrelTextures.put("top", SophisticatedStorage.getRL(BLOCK_FOLDER + woodName + "_barrel_top"));
 			barrelTextures.put(TOP_OPEN_TEXTURE_NAME, SophisticatedStorage.getRL(BLOCK_FOLDER + woodName + "_barrel_top_open"));
@@ -176,8 +178,8 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 		@Override
 		public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, @NotNull Random rand, @NotNull IModelData extraData) {
 			String woodName = null;
-			boolean hasMainColor = false;
-			boolean hasAccentColor = false;
+			boolean hasMainColor;
+			boolean hasAccentColor;
 			if (state != null) {
 				hasMainColor = Boolean.TRUE.equals(extraData.getData(HAS_MAIN_COLOR));
 				hasAccentColor = Boolean.TRUE.equals(extraData.getData(HAS_ACCENT_COLOR));
@@ -278,7 +280,7 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 						ModelDataMap.Builder builder = new ModelDataMap.Builder();
 						builder.withInitial(HAS_MAIN_COLOR, be.getMainColor() > -1);
 						builder.withInitial(HAS_ACCENT_COLOR, be.getAccentColor() > -1);
-						be.getWoodName().ifPresent(n -> builder.withInitial(WOOD_NAME, n));
+						be.getWoodType().ifPresent(n -> builder.withInitial(WOOD_NAME, n.name()));
 						return (IModelData) builder.build();
 					}).orElse(EmptyModelData.INSTANCE);
 		}
@@ -314,7 +316,7 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 		@Nullable
 		@Override
 		public BakedModel resolve(BakedModel model, ItemStack stack, @Nullable ClientLevel level, @Nullable LivingEntity entity, int seed) {
-			barrelBakedModel.barrelWoodName = BarrelBlock.getWoodName(stack).orElse(null);
+			barrelBakedModel.barrelWoodName = BarrelBlock.getWoodType(stack).map(WoodType::name).orElse(null);
 			barrelBakedModel.barrelHasMainColor = BarrelBlock.getMaincolor(stack).isPresent();
 			barrelBakedModel.barrelHasAccentColor = BarrelBlock.getAccentColor(stack).isPresent();
 			return barrelBakedModel;

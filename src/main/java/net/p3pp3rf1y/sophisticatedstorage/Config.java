@@ -62,7 +62,7 @@ public class Config {
 		public Common(ForgeConfigSpec.Builder builder) {
 			builder.comment("Common Settings").push("common");
 
-			woodBarrel = new StorageConfig(builder, "Leather Barrel", 27, 1);
+			woodBarrel = new StorageConfig(builder, "Wood Barrel", 27, 1);
 			ironBarrel = new StorageConfig(builder, "Iron Barrel", 54, 1);
 			goldBarrel = new StorageConfig(builder, "Gold Barrel", 81, 2);
 			diamondBarrel = new StorageConfig(builder, "Diamond Barrel", 108, 3);

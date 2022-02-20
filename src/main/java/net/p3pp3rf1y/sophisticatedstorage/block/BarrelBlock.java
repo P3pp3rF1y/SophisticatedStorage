@@ -30,6 +30,7 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.block.state.properties.WoodType;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraftforge.network.NetworkHooks;
 import net.p3pp3rf1y.sophisticatedcore.util.ColorHelper;
@@ -48,12 +49,12 @@ public class BarrelBlock extends Block implements EntityBlock, IStorageBlock, IA
 	public static final DirectionProperty FACING = BlockStateProperties.FACING;
 	public static final BooleanProperty OPEN = BlockStateProperties.OPEN;
 	public static final BooleanProperty TICKING = BooleanProperty.create("ticking");
-	private static final String WOOD_NAME_TAG = "woodName";
+	private static final String WOOD_TYPE_TAG = "woodType";
 
 	private final int numberOfInventorySlots;
 	private final int numberOfUpgradeSlots;
 
-	public static final Set<String> CUSTOM_TEXTURE_WOOD_TYPES = Set.of("acacia", "birch", "crimson", "dark_oak", "jungle", "oak", "spruce", "warped");
+	public static final Set<WoodType> CUSTOM_TEXTURE_WOOD_TYPES = Set.of(WoodType.ACACIA, WoodType.BIRCH, WoodType.CRIMSON, WoodType.DARK_OAK, WoodType.JUNGLE, WoodType.OAK, WoodType.SPRUCE, WoodType.WARPED);
 
 	public BarrelBlock(int numberOfInventorySlots, int numberOfUpgradeSlots, Properties properties) {
 		super(properties);
@@ -64,7 +65,7 @@ public class BarrelBlock extends Block implements EntityBlock, IStorageBlock, IA
 
 	@Override
 	public void fillItemCategory(CreativeModeTab tab, NonNullList<ItemStack> items) {
-		CUSTOM_TEXTURE_WOOD_TYPES.forEach(woodName -> items.add(setWoodName(new ItemStack(this), woodName)));
+		CUSTOM_TEXTURE_WOOD_TYPES.forEach(woodType -> items.add(setWoodType(new ItemStack(this), woodType)));
 
 		for (DyeColor color : DyeColor.values()) {
 			ItemStack barrelStack = new ItemStack(this);
@@ -99,7 +100,7 @@ public class BarrelBlock extends Block implements EntityBlock, IStorageBlock, IA
 			if (stack.hasCustomHoverName()) {
 				be.setCustomName(stack.getHoverName());
 			}
-			getWoodName(stack).ifPresent(be::setWoodName);
+			getWoodType(stack).ifPresent(be::setWoodType);
 			getMaincolor(stack).ifPresent(be::setMainColor);
 			getAccentColor(stack).ifPresent(be::setAccentColor);
 		});
@@ -136,7 +137,7 @@ public class BarrelBlock extends Block implements EntityBlock, IStorageBlock, IA
 
 	@Nullable
 	@Override
-	public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+	public StorageBlockEntity newBlockEntity(BlockPos pos, BlockState state) {
 		return new StorageBlockEntity(pos, state);
 	}
 
@@ -191,12 +192,13 @@ public class BarrelBlock extends Block implements EntityBlock, IStorageBlock, IA
 		level.setBlockAndUpdate(pos, currentState.setValue(TICKING, ticking));
 	}
 
-	public static Optional<String> getWoodName(ItemStack barrelStack) {
-		return NBTHelper.getString(barrelStack, WOOD_NAME_TAG);
+	public static Optional<WoodType> getWoodType(ItemStack barrelStack) {
+		return NBTHelper.getString(barrelStack, WOOD_TYPE_TAG)
+				.flatMap(woodType -> WoodType.values().filter(wt -> wt.name().equals(woodType)).findFirst());
 	}
 
-	private static ItemStack setWoodName(ItemStack barrelStack, String woodName) {
-		barrelStack.getOrCreateTag().putString(WOOD_NAME_TAG, woodName);
+	private static ItemStack setWoodType(ItemStack barrelStack, WoodType woodType) {
+		barrelStack.getOrCreateTag().putString(WOOD_TYPE_TAG, woodType.name());
 		return barrelStack;
 	}
 
@@ -226,6 +228,6 @@ public class BarrelBlock extends Block implements EntityBlock, IStorageBlock, IA
 		if (accentColor > -1) {
 			setAccentColor(stack, accentColor);
 		}
-		be.getWoodName().ifPresent(n -> setWoodName(stack, n));
+		be.getWoodType().ifPresent(n -> setWoodType(stack, n));
 	}
 }
