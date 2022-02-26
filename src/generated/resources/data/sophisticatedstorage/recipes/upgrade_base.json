@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "conditions": [
+    {
+      "itemRegistryName": "sophisticatedstorage:upgrade_base",
+      "type": "sophisticatedcore:item_enabled"
+    }
+  ],
+  "pattern": [
+    "PIP",
+    "IPI",
+    "PIP"
+  ],
+  "key": {
+    "P": {
+      "tag": "minecraft:planks"
+    },
+    "I": {
+      "tag": "forge:ingots/iron"
+    }
+  },
+  "result": {
+    "item": "sophisticatedstorage:upgrade_base"
+  }
+}

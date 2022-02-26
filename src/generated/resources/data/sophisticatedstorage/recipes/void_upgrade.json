@@ -1,0 +1,31 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "conditions": [
+    {
+      "itemRegistryName": "sophisticatedstorage:void_upgrade",
+      "type": "sophisticatedcore:item_enabled"
+    }
+  ],
+  "pattern": [
+    " E ",
+    "OBO",
+    "ROR"
+  ],
+  "key": {
+    "B": {
+      "item": "sophisticatedstorage:upgrade_base"
+    },
+    "E": {
+      "tag": "forge:ender_pearls"
+    },
+    "O": {
+      "tag": "forge:obsidian"
+    },
+    "R": {
+      "tag": "forge:dusts/redstone"
+    }
+  },
+  "result": {
+    "item": "sophisticatedstorage:void_upgrade"
+  }
+}

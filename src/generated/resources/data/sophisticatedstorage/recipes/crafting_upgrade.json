@@ -1,0 +1,31 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "conditions": [
+    {
+      "itemRegistryName": "sophisticatedstorage:crafting_upgrade",
+      "type": "sophisticatedcore:item_enabled"
+    }
+  ],
+  "pattern": [
+    " T ",
+    "IBI",
+    " C "
+  ],
+  "key": {
+    "B": {
+      "item": "sophisticatedstorage:upgrade_base"
+    },
+    "C": {
+      "tag": "forge:chests"
+    },
+    "I": {
+      "tag": "forge:ingots/iron"
+    },
+    "T": {
+      "item": "minecraft:crafting_table"
+    }
+  },
+  "result": {
+    "item": "sophisticatedstorage:crafting_upgrade"
+  }
+}

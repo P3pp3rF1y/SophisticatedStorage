@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "conditions": [
+    {
+      "itemRegistryName": "sophisticatedstorage:basic_to_iron_tier_upgrade",
+      "type": "sophisticatedcore:item_enabled"
+    }
+  ],
+  "pattern": [
+    "III",
+    "IRI",
+    "III"
+  ],
+  "key": {
+    "R": {
+      "item": "minecraft:redstone_torch"
+    },
+    "I": {
+      "tag": "forge:ingots/iron"
+    }
+  },
+  "result": {
+    "item": "sophisticatedstorage:basic_to_iron_tier_upgrade"
+  }
+}

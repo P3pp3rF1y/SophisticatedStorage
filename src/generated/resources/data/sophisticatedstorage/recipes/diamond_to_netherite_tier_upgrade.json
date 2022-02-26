@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "conditions": [
+    {
+      "itemRegistryName": "sophisticatedstorage:diamond_to_netherite_tier_upgrade",
+      "type": "sophisticatedcore:item_enabled"
+    }
+  ],
+  "ingredients": [
+    {
+      "item": "minecraft:redstone_torch"
+    },
+    {
+      "tag": "forge:ingots/netherite"
+    }
+  ],
+  "result": {
+    "item": "sophisticatedstorage:diamond_to_netherite_tier_upgrade"
+  }
+}

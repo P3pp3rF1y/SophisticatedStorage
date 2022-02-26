@@ -1,0 +1,27 @@
+{
+  "type": "sophisticatedcore:upgrade_next_tier",
+  "conditions": [
+    {
+      "itemRegistryName": "sophisticatedstorage:advanced_filter_upgrade",
+      "type": "sophisticatedcore:item_enabled"
+    }
+  ],
+  "pattern": [
+    "GPG",
+    "RRR"
+  ],
+  "key": {
+    "G": {
+      "tag": "forge:ingots/gold"
+    },
+    "R": {
+      "tag": "forge:dusts/redstone"
+    },
+    "P": {
+      "item": "sophisticatedstorage:filter_upgrade"
+    }
+  },
+  "result": {
+    "item": "sophisticatedstorage:advanced_filter_upgrade"
+  }
+}

@@ -4,6 +4,7 @@ import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -26,6 +27,9 @@ import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageScreen;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageSettingsScreen;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageSettingsContainer;
+import net.p3pp3rf1y.sophisticatedstorage.crafting.SmithingStorageUpgradeRecipe;
+import net.p3pp3rf1y.sophisticatedstorage.crafting.StorageDyeRecipe;
+import net.p3pp3rf1y.sophisticatedstorage.crafting.StorageTierUpgradeRecipe;
 
 public class ModBlocks {
 	private ModBlocks() {}
@@ -70,6 +74,13 @@ public class ModBlocks {
 		BLOCK_ENTITIES.register(modBus);
 		CONTAINERS.register(modBus);
 		modBus.addGenericListener(MenuType.class, ModBlocks::registerContainers);
+		modBus.addGenericListener(RecipeSerializer.class, ModBlocks::registerRecipeSerializers);
+	}
+
+	public static void registerRecipeSerializers(RegistryEvent.Register<RecipeSerializer<?>> evt) {
+		evt.getRegistry().register(StorageDyeRecipe.SERIALIZER.setRegistryName(SophisticatedStorage.MOD_ID, "storage_dye"));
+		evt.getRegistry().register(StorageTierUpgradeRecipe.SERIALIZER.setRegistryName(SophisticatedStorage.MOD_ID, "storage_tier_upgrade"));
+		evt.getRegistry().register(SmithingStorageUpgradeRecipe.SERIALIZER.setRegistryName(SophisticatedStorage.MOD_ID, "smithing_storage_upgrade"));
 	}
 
 	private static void registerContainers(RegistryEvent.Register<MenuType<?>> evt) {

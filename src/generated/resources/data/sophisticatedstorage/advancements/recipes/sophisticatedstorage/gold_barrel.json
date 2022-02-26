@@ -1,0 +1,34 @@
+{
+  "parent": "minecraft:recipes/root",
+  "rewards": {
+    "recipes": [
+      "sophisticatedstorage:gold_barrel"
+    ]
+  },
+  "criteria": {
+    "has_iron_barrel": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "sophisticatedstorage:iron_barrel"
+            ]
+          }
+        ]
+      }
+    },
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "sophisticatedstorage:gold_barrel"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_iron_barrel",
+      "has_the_recipe"
+    ]
+  ]
+}

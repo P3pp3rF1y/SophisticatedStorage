@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "conditions": [
+    {
+      "itemRegistryName": "sophisticatedstorage:stack_upgrade_tier_1",
+      "type": "sophisticatedcore:item_enabled"
+    }
+  ],
+  "pattern": [
+    "LLL",
+    "LBL",
+    "LLL"
+  ],
+  "key": {
+    "B": {
+      "item": "sophisticatedstorage:upgrade_base"
+    },
+    "L": {
+      "tag": "minecraft:logs"
+    }
+  },
+  "result": {
+    "item": "sophisticatedstorage:stack_upgrade_tier_1"
+  }
+}

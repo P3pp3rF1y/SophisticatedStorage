@@ -1,0 +1,29 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "conditions": [
+    {
+      "itemRegistryName": "sophisticatedstorage:barrel",
+      "type": "sophisticatedcore:item_enabled"
+    }
+  ],
+  "pattern": [
+    "PSP",
+    "PRP",
+    "PSP"
+  ],
+  "key": {
+    "P": {
+      "item": "minecraft:jungle_planks"
+    },
+    "S": {
+      "item": "minecraft:jungle_slab"
+    },
+    "R": {
+      "item": "minecraft:redstone_torch"
+    }
+  },
+  "result": {
+    "item": "sophisticatedstorage:barrel",
+    "nbt": "{woodType:\"jungle\"}"
+  }
+}

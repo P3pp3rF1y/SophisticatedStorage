@@ -1,0 +1,31 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "conditions": [
+    {
+      "itemRegistryName": "sophisticatedstorage:blasting_upgrade",
+      "type": "sophisticatedcore:item_enabled"
+    }
+  ],
+  "pattern": [
+    "RIR",
+    "IBI",
+    "RFR"
+  ],
+  "key": {
+    "B": {
+      "item": "sophisticatedstorage:upgrade_base"
+    },
+    "R": {
+      "tag": "forge:dusts/redstone"
+    },
+    "I": {
+      "tag": "forge:ingots/iron"
+    },
+    "F": {
+      "item": "minecraft:blast_furnace"
+    }
+  },
+  "result": {
+    "item": "sophisticatedstorage:blasting_upgrade"
+  }
+}

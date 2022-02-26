@@ -1,0 +1,34 @@
+{
+  "parent": "minecraft:recipes/root",
+  "rewards": {
+    "recipes": [
+      "sophisticatedstorage:pickup_upgrade"
+    ]
+  },
+  "criteria": {
+    "has_upgrade_base": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "sophisticatedstorage:upgrade_base"
+            ]
+          }
+        ]
+      }
+    },
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "sophisticatedstorage:pickup_upgrade"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_upgrade_base",
+      "has_the_recipe"
+    ]
+  ]
+}

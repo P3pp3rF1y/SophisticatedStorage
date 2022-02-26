@@ -1,0 +1,31 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "conditions": [
+    {
+      "itemRegistryName": "sophisticatedstorage:jukebox_upgrade",
+      "type": "sophisticatedcore:item_enabled"
+    }
+  ],
+  "pattern": [
+    " J ",
+    "IBI",
+    " R "
+  ],
+  "key": {
+    "B": {
+      "item": "sophisticatedstorage:upgrade_base"
+    },
+    "R": {
+      "tag": "forge:dusts/redstone"
+    },
+    "I": {
+      "tag": "forge:ingots/iron"
+    },
+    "J": {
+      "item": "minecraft:jukebox"
+    }
+  },
+  "result": {
+    "item": "sophisticatedstorage:jukebox_upgrade"
+  }
+}

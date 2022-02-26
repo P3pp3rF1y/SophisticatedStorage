@@ -1,0 +1,25 @@
+{
+  "type": "sophisticatedstorage:storage_tier_upgrade",
+  "conditions": [
+    {
+      "itemRegistryName": "sophisticatedstorage:iron_barrel",
+      "type": "sophisticatedcore:item_enabled"
+    }
+  ],
+  "pattern": [
+    "III",
+    "IBI",
+    "III"
+  ],
+  "key": {
+    "I": {
+      "tag": "forge:ingots/iron"
+    },
+    "B": {
+      "item": "sophisticatedstorage:barrel"
+    }
+  },
+  "result": {
+    "item": "sophisticatedstorage:iron_barrel"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "conditions": [
+    {
+      "itemRegistryName": "sophisticatedstorage:auto_blasting_upgrade",
+      "type": "sophisticatedcore:item_enabled"
+    }
+  ],
+  "pattern": [
+    "III",
+    "ISI",
+    "TTT"
+  ],
+  "key": {
+    "S": {
+      "item": "sophisticatedstorage:auto_smelting_upgrade"
+    },
+    "I": {
+      "tag": "forge:ingots/iron"
+    },
+    "T": {
+      "item": "minecraft:smooth_stone"
+    }
+  },
+  "result": {
+    "item": "sophisticatedstorage:auto_blasting_upgrade"
+  }
+}

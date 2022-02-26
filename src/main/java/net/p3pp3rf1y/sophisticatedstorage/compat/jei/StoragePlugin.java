@@ -9,6 +9,7 @@ import mezz.jei.api.ingredients.subtypes.IIngredientSubtypeInterpreter;
 import mezz.jei.api.recipe.transfer.IRecipeTransferHandlerHelper;
 import mezz.jei.api.registration.IGuiHandlerRegistration;
 import mezz.jei.api.registration.IRecipeCatalystRegistration;
+import mezz.jei.api.registration.IRecipeRegistration;
 import mezz.jei.api.registration.IRecipeTransferRegistration;
 import mezz.jei.api.registration.ISubtypeRegistration;
 import net.minecraft.client.renderer.Rect2i;
@@ -39,11 +40,11 @@ public class StoragePlugin implements IModPlugin {
 	@Override
 	public void registerItemSubtypes(ISubtypeRegistration registration) {
 		IIngredientSubtypeInterpreter<ItemStack> barrelNbtInterpreter = (itemStack, context) -> {
-				StringJoiner result = new StringJoiner(",");
-				BarrelBlock.getWoodType(itemStack).ifPresent(woodName -> result.add("woodName:" + woodName));
-				BarrelBlock.getMaincolor(itemStack).ifPresent(mainColor -> result.add("mainColor:" + mainColor));
-				BarrelBlock.getAccentColor(itemStack).ifPresent(accentColor -> result.add("accentColor:" + accentColor));
-				return "{" + result + "}";
+			StringJoiner result = new StringJoiner(",");
+			BarrelBlock.getWoodType(itemStack).ifPresent(woodName -> result.add("woodName:" + woodName));
+			BarrelBlock.getMaincolorFromStack(itemStack).ifPresent(mainColor -> result.add("mainColor:" + mainColor));
+			BarrelBlock.getAccentColorFromStack(itemStack).ifPresent(accentColor -> result.add("accentColor:" + accentColor));
+			return "{" + result + "}";
 		};
 		registration.registerSubtypeInterpreter(ModBlocks.BARREL_ITEM.get(), barrelNbtInterpreter);
 		registration.registerSubtypeInterpreter(ModBlocks.IRON_BARREL_ITEM.get(), barrelNbtInterpreter);
@@ -73,6 +74,13 @@ public class StoragePlugin implements IModPlugin {
 		});
 
 		registration.addGhostIngredientHandler(StorageScreen.class, new StorageGhostIngredientHandler<>());
+	}
+
+	@Override
+	public void registerRecipes(IRecipeRegistration registration) {
+		registration.addRecipes(DyeRecipesMaker.getRecipes(), VanillaRecipeCategoryUid.CRAFTING);
+		registration.addRecipes(TierUpgradeRecipesMaker.getCraftingRecipes(), VanillaRecipeCategoryUid.CRAFTING);
+		registration.addRecipes(TierUpgradeRecipesMaker.getSmithingRecipes(), VanillaRecipeCategoryUid.SMITHING);
 	}
 
 	@Override

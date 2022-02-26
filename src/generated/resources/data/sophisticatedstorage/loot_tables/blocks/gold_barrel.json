@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "name": "main",
+      "rolls": 1.0,
+      "bonus_rolls": 0.0,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "sophisticatedstorage:gold_barrel"
+        }
+      ],
+      "functions": [
+        {
+          "function": "minecraft:copy_name",
+          "source": "block_entity"
+        },
+        {
+          "function": "sophisticatedstorage:copy_storage_data"
+        }
+      ]
+    }
+  ]
+}

@@ -149,7 +149,7 @@ public class ModItems {
 	public static final RegistryObject<PumpUpgradeItem> ADVANCED_PUMP_UPGRADE = ITEMS.register("advanced_pump_upgrade", () -> new PumpUpgradeItem(true, true, SophisticatedStorage.CREATIVE_TAB, Config.COMMON.pumpUpgrade));
 	public static final RegistryObject<XpPumpUpgradeItem> XP_PUMP_UPGRADE = ITEMS.register("xp_pump_upgrade", () -> new XpPumpUpgradeItem(SophisticatedStorage.CREATIVE_TAB, Config.COMMON.xpPumpUpgrade));
 	public static final RegistryObject<StorageTierUpgradeItem> BASIC_TIER_UPGRADE = ITEMS.register("basic_tier_upgrade", () -> new StorageTierUpgradeItem(StorageTierUpgradeItem.TierUpgrade.BASIC, true));
-	public static final RegistryObject<StorageTierUpgradeItem> WOOD_TO_IRON_TIER_UPGRADE = ITEMS.register("basic_to_iron_tier_upgrade", () -> new StorageTierUpgradeItem(StorageTierUpgradeItem.TierUpgrade.BASIC_TO_IRON));
+	public static final RegistryObject<StorageTierUpgradeItem> BASIC_TO_IRON_TIER_UPGRADE = ITEMS.register("basic_to_iron_tier_upgrade", () -> new StorageTierUpgradeItem(StorageTierUpgradeItem.TierUpgrade.BASIC_TO_IRON));
 	public static final RegistryObject<StorageTierUpgradeItem> IRON_TO_GOLD_TIER_UPGRADE = ITEMS.register("iron_to_gold_tier_upgrade", () -> new StorageTierUpgradeItem(StorageTierUpgradeItem.TierUpgrade.IRON_TO_GOLD));
 	public static final RegistryObject<StorageTierUpgradeItem> GOLD_TO_DIAMOND_TIER_UPGRADE = ITEMS.register("gold_to_diamond_tier_upgrade", () -> new StorageTierUpgradeItem(StorageTierUpgradeItem.TierUpgrade.GOLD_TO_DIAMOND));
 	public static final RegistryObject<StorageTierUpgradeItem> DIAMOND_TO_NETHERITE_TIER_UPGRADE = ITEMS.register("diamond_to_netherite_tier_upgrade", () -> new StorageTierUpgradeItem(StorageTierUpgradeItem.TierUpgrade.DIAMOND_TO_NETHERITE));

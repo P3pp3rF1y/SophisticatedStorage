@@ -10,5 +10,6 @@ public class DataGenerators {
 		DataGenerator generator = evt.getGenerator();
 		generator.addProvider(new BlockTagProvider(generator, evt.getExistingFileHelper()));
 		generator.addProvider(new StorageBlockLootProvider(generator));
+		generator.addProvider(new StorageRecipeProvider(generator));
 	}
 }

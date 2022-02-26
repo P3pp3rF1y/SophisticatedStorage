@@ -1,0 +1,34 @@
+{
+  "parent": "minecraft:recipes/root",
+  "rewards": {
+    "recipes": [
+      "sophisticatedstorage:magnet_upgrade"
+    ]
+  },
+  "criteria": {
+    "has_pickup_upgrade": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "sophisticatedstorage:pickup_upgrade"
+            ]
+          }
+        ]
+      }
+    },
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "sophisticatedstorage:magnet_upgrade"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_pickup_upgrade",
+      "has_the_recipe"
+    ]
+  ]
+}

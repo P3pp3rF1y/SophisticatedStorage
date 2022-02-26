@@ -1,0 +1,34 @@
+{
+  "parent": "minecraft:recipes/root",
+  "rewards": {
+    "recipes": [
+      "sophisticatedstorage:stack_upgrade_tier_4"
+    ]
+  },
+  "criteria": {
+    "has_upgrade_base": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "sophisticatedstorage:stack_upgrade_tier_3"
+            ]
+          }
+        ]
+      }
+    },
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "sophisticatedstorage:stack_upgrade_tier_4"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_upgrade_base",
+      "has_the_recipe"
+    ]
+  ]
+}

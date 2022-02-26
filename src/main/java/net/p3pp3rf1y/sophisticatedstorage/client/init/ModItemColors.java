@@ -16,9 +16,9 @@ public class ModItemColors {
 				return -1;
 			}
 			if (tintIndex == 0) {
-				return BarrelBlock.getMaincolor(stack).orElse(-1);
+				return BarrelBlock.getMaincolorFromStack(stack).orElse(-1);
 			} else {
-				return BarrelBlock.getAccentColor(stack).orElse(-1);
+				return BarrelBlock.getAccentColorFromStack(stack).orElse(-1);
 			}
 		}, ModBlocks.BARREL_ITEM.get(), ModBlocks.IRON_BARREL_ITEM.get(), ModBlocks.GOLD_BARREL_ITEM.get(), ModBlocks.DIAMOND_BARREL_ITEM.get(), ModBlocks.NETHERITE_BARREL_ITEM.get());
 	}

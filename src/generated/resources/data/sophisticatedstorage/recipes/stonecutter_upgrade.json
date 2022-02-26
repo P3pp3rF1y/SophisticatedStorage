@@ -1,0 +1,31 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "conditions": [
+    {
+      "itemRegistryName": "sophisticatedstorage:stonecutter_upgrade",
+      "type": "sophisticatedcore:item_enabled"
+    }
+  ],
+  "pattern": [
+    " S ",
+    "IBI",
+    " R "
+  ],
+  "key": {
+    "B": {
+      "item": "sophisticatedstorage:upgrade_base"
+    },
+    "R": {
+      "tag": "forge:dusts/redstone"
+    },
+    "I": {
+      "tag": "forge:ingots/iron"
+    },
+    "S": {
+      "item": "minecraft:stonecutter"
+    }
+  },
+  "result": {
+    "item": "sophisticatedstorage:stonecutter_upgrade"
+  }
+}

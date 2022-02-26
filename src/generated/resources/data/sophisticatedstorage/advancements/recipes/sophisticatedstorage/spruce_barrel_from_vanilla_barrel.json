@@ -1,0 +1,34 @@
+{
+  "parent": "minecraft:recipes/root",
+  "rewards": {
+    "recipes": [
+      "sophisticatedstorage:spruce_barrel_from_vanilla_barrel"
+    ]
+  },
+  "criteria": {
+    "has_vanilla_barrel": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "minecraft:barrel"
+            ]
+          }
+        ]
+      }
+    },
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "sophisticatedstorage:spruce_barrel_from_vanilla_barrel"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_vanilla_barrel",
+      "has_the_recipe"
+    ]
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "parent": "minecraft:recipes/root",
+  "rewards": {
+    "recipes": [
+      "sophisticatedstorage:netherite_barrel"
+    ]
+  },
+  "criteria": {
+    "has_diamond_barrel": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "sophisticatedstorage:diamond_barrel"
+            ]
+          }
+        ]
+      }
+    },
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "sophisticatedstorage:netherite_barrel"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_diamond_barrel",
+      "has_the_recipe"
+    ]
+  ]
+}

@@ -317,8 +317,8 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 		@Override
 		public BakedModel resolve(BakedModel model, ItemStack stack, @Nullable ClientLevel level, @Nullable LivingEntity entity, int seed) {
 			barrelBakedModel.barrelWoodName = BarrelBlock.getWoodType(stack).map(WoodType::name).orElse(null);
-			barrelBakedModel.barrelHasMainColor = BarrelBlock.getMaincolor(stack).isPresent();
-			barrelBakedModel.barrelHasAccentColor = BarrelBlock.getAccentColor(stack).isPresent();
+			barrelBakedModel.barrelHasMainColor =  BarrelBlock.getMaincolorFromStack(stack).isPresent();
+			barrelBakedModel.barrelHasAccentColor = BarrelBlock.getAccentColorFromStack(stack).isPresent();
 			return barrelBakedModel;
 		}
 	}

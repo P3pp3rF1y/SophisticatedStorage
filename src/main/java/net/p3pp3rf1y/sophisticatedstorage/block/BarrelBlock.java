@@ -45,7 +45,7 @@ import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 
-public class BarrelBlock extends Block implements EntityBlock, IStorageBlock, IAdditionalDropDataBlock {
+public class BarrelBlock extends Block implements EntityBlock, IStorageBlock, IAdditionalDropDataBlock, ITintableBlock {
 	public static final DirectionProperty FACING = BlockStateProperties.FACING;
 	public static final BooleanProperty OPEN = BlockStateProperties.OPEN;
 	public static final BooleanProperty TICKING = BooleanProperty.create("ticking");
@@ -101,8 +101,8 @@ public class BarrelBlock extends Block implements EntityBlock, IStorageBlock, IA
 				be.setCustomName(stack.getHoverName());
 			}
 			getWoodType(stack).ifPresent(be::setWoodType);
-			getMaincolor(stack).ifPresent(be::setMainColor);
-			getAccentColor(stack).ifPresent(be::setAccentColor);
+			getMaincolorFromStack(stack).ifPresent(be::setMainColor);
+			getAccentColorFromStack(stack).ifPresent(be::setAccentColor);
 		});
 	}
 
@@ -197,24 +197,46 @@ public class BarrelBlock extends Block implements EntityBlock, IStorageBlock, IA
 				.flatMap(woodType -> WoodType.values().filter(wt -> wt.name().equals(woodType)).findFirst());
 	}
 
-	private static ItemStack setWoodType(ItemStack barrelStack, WoodType woodType) {
+	public static ItemStack setWoodType(ItemStack barrelStack, WoodType woodType) {
 		barrelStack.getOrCreateTag().putString(WOOD_TYPE_TAG, woodType.name());
 		return barrelStack;
 	}
 
-	private static void setMainColor(ItemStack barrelStack, int mainColor) {
+	private void removeWoodType(ItemStack barrelStack) {
+		barrelStack.getOrCreateTag().remove(WOOD_TYPE_TAG);
+	}
+
+	@Override
+	public void setMainColor(ItemStack barrelStack, int mainColor) {
+		if (getAccentColorFromStack(barrelStack).isPresent()) {
+			removeWoodType(barrelStack);
+		}
 		barrelStack.getOrCreateTag().putInt("mainColor", mainColor);
 	}
 
-	public static Optional<Integer> getMaincolor(ItemStack barrelStack) {
+	@Override
+	public Optional<Integer> getMainColor(ItemStack barrelStack) {
+		return getMaincolorFromStack(barrelStack);
+	}
+
+	public static Optional<Integer> getMaincolorFromStack(ItemStack barrelStack) {
 		return NBTHelper.getInt(barrelStack, "mainColor");
 	}
 
-	private static void setAccentColor(ItemStack barrelStack, int accentColor) {
+	@Override
+	public void setAccentColor(ItemStack barrelStack, int accentColor) {
+		if (getMaincolorFromStack(barrelStack).isPresent()) {
+			removeWoodType(barrelStack);
+		}
 		barrelStack.getOrCreateTag().putInt("accentColor", accentColor);
 	}
 
-	public static Optional<Integer> getAccentColor(ItemStack barrelStack) {
+	@Override
+	public Optional<Integer> getAccentColor(ItemStack stack) {
+		return getAccentColorFromStack(stack);
+	}
+
+	public static Optional<Integer> getAccentColorFromStack(ItemStack barrelStack) {
 		return NBTHelper.getInt(barrelStack, "accentColor");
 	}
 

@@ -1,6 +1,10 @@
 {
   "replace": false,
   "values": [
-    "sophisticatedstorage:barrel"
+    "sophisticatedstorage:barrel",
+    "sophisticatedstorage:iron_barrel",
+    "sophisticatedstorage:gold_barrel",
+    "sophisticatedstorage:diamond_barrel",
+    "sophisticatedstorage:netherite_barrel"
   ]
 }
