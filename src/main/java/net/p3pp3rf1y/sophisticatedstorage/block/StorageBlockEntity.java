@@ -1,6 +1,7 @@
 package net.p3pp3rf1y.sophisticatedstorage.block;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
@@ -18,6 +19,9 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.ContainerOpenersCounter;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.WoodType;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.items.CapabilityItemHandler;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.SortBy;
 import net.p3pp3rf1y.sophisticatedcore.inventory.IItemHandlerSimpleInserter;
@@ -527,5 +531,13 @@ public class StorageBlockEntity extends BlockEntity implements IStorageWrapper {
 
 		getInventoryHandler().increaseSize(additionalInventorySlots);
 		getUpgradeHandler().increaseSize(additionalUpgradeSlots);
+	}
+
+	@Override
+	public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) {
+		if (cap == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY){
+			return LazyOptional.of(this::getInventoryForInputOutput).cast();
+		}
+		return super.getCapability(cap, side);
 	}
 }
