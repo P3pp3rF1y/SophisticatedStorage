@@ -140,11 +140,15 @@ public class StorageBlockEntity extends BlockEntity implements IStorageWrapper {
 	@Override
 	public void saveAdditional(CompoundTag tag) {
 		super.saveAdditional(tag);
+		saveContents(tag);
 		saveData(tag);
 	}
 
-	private void saveData(CompoundTag tag) {
+	private void saveContents(CompoundTag tag) {
 		tag.put("contents", contentsNbt);
+	}
+
+	private void saveData(CompoundTag tag) {
 		tag.put("renderInfo", renderInfoNbt);
 		if (contentsUuid != null) {
 			tag.put(UUID_TAG, NbtUtils.createUUID(contentsUuid));
@@ -219,12 +223,16 @@ public class StorageBlockEntity extends BlockEntity implements IStorageWrapper {
 	@Override
 	public void load(CompoundTag tag) {
 		super.load(tag);
+		loadContents(tag);
 		loadData(tag);
 	}
 
-	public void loadData(CompoundTag tag) {
+	private void loadContents(CompoundTag tag) {
 		contentsNbt = tag.getCompound("contents");
 		onContentsNbtUpdated();
+	}
+
+	public void loadData(CompoundTag tag) {
 		renderInfoNbt = tag.getCompound("renderInfo");
 		contentsUuid = NBTHelper.getTagValue(tag, UUID_TAG, CompoundTag::getCompound).map(NbtUtils::loadUUID).orElse(null);
 		mainColor = NBTHelper.getInt(tag, MAIN_COLOR_TAG).orElse(-1);
