@@ -1,7 +1,6 @@
 package net.p3pp3rf1y.sophisticatedstorage.client.gui;
 
 import com.google.common.collect.ImmutableMap;
-import net.minecraft.core.BlockPos;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.Tab;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.Position;
 import net.p3pp3rf1y.sophisticatedcore.settings.SettingsContainerBase;
@@ -29,16 +28,13 @@ public class StorageSettingsTabControl extends StorageSettingsTabControlBase {
 		SETTINGS_TAB_FACTORIES = builder.build();
 	}
 
-	private final BlockPos storageBlockPos;
-
 	protected StorageSettingsTabControl(StorageSettingsScreen screen, Position position) {
 		super(screen, position);
-		storageBlockPos = screen.getMenu().getBlockPosition();
 	}
 
 	@Override
 	protected Tab instantiateReturnBackTab() {
-		return new BackToStorageTab(new Position(x, getTopY()), storageBlockPos);
+		return new BackToStorageTab(new Position(x, getTopY()), screen.getMenu().getBlockPosition());
 	}
 
 	@Override

@@ -10,14 +10,21 @@ public class ModBlockColors {
 	private ModBlockColors() {}
 
 	public static void init() {
-		BlockColors blockColors = Minecraft.getInstance().getBlockColors();
+		Minecraft minecraft = Minecraft.getInstance();
+		BlockColors blockColors = minecraft.getBlockColors();
 
 		blockColors.register((state, blockDisplayReader, pos, tintIndex) -> {
-			if (tintIndex < 0 || tintIndex > 1 || pos == null) {
+			if (tintIndex < 0 || pos == null) {
 				return -1;
 			}
 			return WorldHelper.getBlockEntity(blockDisplayReader, pos, StorageBlockEntity.class)
-					.map(be -> tintIndex == 0 ? be.getMainColor() : be.getAccentColor())
+					.map(be -> {
+						if (tintIndex > 999) {
+							return tintIndex == 1000 ? be.getMainColor() : be.getAccentColor();
+						} else {
+							return minecraft.getItemColors().getColor(be.getRenderInfo().getItemDisplayRenderInfo().getItem(), tintIndex);
+						}
+					})
 					.orElse(-1);
 		}, ModBlocks.BARREL.get(), ModBlocks.IRON_BARREL.get(), ModBlocks.GOLD_BARREL.get(), ModBlocks.DIAMOND_BARREL.get(), ModBlocks.NETHERITE_BARREL.get());
 	}

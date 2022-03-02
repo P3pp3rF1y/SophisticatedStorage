@@ -12,10 +12,10 @@ public class ModItemColors {
 		ItemColors itemColors = Minecraft.getInstance().getItemColors();
 
 		itemColors.register((stack, tintIndex) -> {
-			if (tintIndex < 0 || tintIndex > 1) {
+			if (tintIndex < 1000 || tintIndex > 1001) {
 				return -1;
 			}
-			if (tintIndex == 0) {
+			if (tintIndex == 1000) {
 				return BarrelBlock.getMaincolorFromStack(stack).orElse(-1);
 			} else {
 				return BarrelBlock.getAccentColorFromStack(stack).orElse(-1);

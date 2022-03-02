@@ -46,7 +46,6 @@ import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.settings.StorageSettingsHandler;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.Comparator;
@@ -68,7 +67,8 @@ public class StorageBlockEntity extends BlockEntity implements IStorageWrapper {
 	@Nullable
 	private UpgradeHandler upgradeHandler = null;
 	private CompoundTag contentsNbt = new CompoundTag();
-	private final SettingsHandler settingsHandler;
+	private CompoundTag settingsNbt = new CompoundTag();
+	private SettingsHandler settingsHandler;
 	private final RenderInfo renderInfo;
 	private CompoundTag renderInfoNbt = new CompoundTag();
 	@Nullable
@@ -115,7 +115,12 @@ public class StorageBlockEntity extends BlockEntity implements IStorageWrapper {
 
 	public StorageBlockEntity(BlockPos pos, BlockState state) {
 		super(ModBlocks.BARREL_TILE_TYPE.get(), pos, state);
-		renderInfo = new RenderInfo(() -> this::setChanged) {
+		renderInfo = new RenderInfo(() -> () -> {
+			setChanged();
+			if (level != null && level.isClientSide) { //TODO this needs to get a dynamic behavior for frequently changing item
+				WorldHelper.notifyBlockUpdate(StorageBlockEntity.this);
+			}
+		}) {
 			@Override
 			protected void serializeRenderInfo(CompoundTag renderInfo) {
 				renderInfoNbt = renderInfo;
@@ -126,7 +131,10 @@ public class StorageBlockEntity extends BlockEntity implements IStorageWrapper {
 				return Optional.of(renderInfoNbt);
 			}
 		};
-		settingsHandler = new StorageSettingsHandler(contentsNbt, this::setChanged, () -> inventoryHandler, () -> renderInfo);
+		settingsHandler = new StorageSettingsHandler(settingsNbt, () -> {
+			setChanged();
+			WorldHelper.notifyBlockUpdate(this);
+		}, () -> inventoryHandler, () -> renderInfo);
 	}
 
 	public boolean isOpen() {
@@ -149,6 +157,7 @@ public class StorageBlockEntity extends BlockEntity implements IStorageWrapper {
 	}
 
 	private void saveData(CompoundTag tag) {
+		tag.put("settings", settingsNbt);
 		tag.put("renderInfo", renderInfoNbt);
 		if (contentsUuid != null) {
 			tag.put(UUID_TAG, NbtUtils.createUUID(contentsUuid));
@@ -233,7 +242,10 @@ public class StorageBlockEntity extends BlockEntity implements IStorageWrapper {
 	}
 
 	public void loadData(CompoundTag tag) {
+		settingsNbt = tag.getCompound("settings");
+		settingsHandler.reloadFrom(settingsNbt);
 		renderInfoNbt = tag.getCompound("renderInfo");
+		renderInfo.deserializeFrom(renderInfoNbt);
 		contentsUuid = NBTHelper.getTagValue(tag, UUID_TAG, CompoundTag::getCompound).map(NbtUtils::loadUUID).orElse(null);
 		mainColor = NBTHelper.getInt(tag, MAIN_COLOR_TAG).orElse(-1);
 		accentColor = NBTHelper.getInt(tag, ACCENT_COLOR_TAG).orElse(-1);
@@ -244,7 +256,13 @@ public class StorageBlockEntity extends BlockEntity implements IStorageWrapper {
 		numberOfUpgradeSlots = NBTHelper.getInt(tag, "numberOfUpgradeSlots").orElse(-1);
 		woodType = NBTHelper.getString(tag, "woodType").flatMap(woodTypeName -> WoodType.values().filter(wt -> wt.name().equals(woodTypeName)).findFirst()).orElse(null);
 		displayName = NBTHelper.getComponent(tag, "displayName").orElse(null);
-		updateBlockRender = true;
+		if (level != null && level.isClientSide) {
+			if (tag.getBoolean("updateBlockRender")) {
+				WorldHelper.notifyBlockUpdate(this);
+			}
+		} else {
+			updateBlockRender = true;
+		}
 	}
 
 	@Nullable
@@ -261,9 +279,6 @@ public class StorageBlockEntity extends BlockEntity implements IStorageWrapper {
 		}
 
 		loadData(tag);
-		if (tag.getBoolean("updateBlockRender")) {
-			WorldHelper.notifyBlockUpdate(this);
-		}
 	}
 
 	public void setUpdateBlockRender() {
@@ -314,6 +329,7 @@ public class StorageBlockEntity extends BlockEntity implements IStorageWrapper {
 				return true;
 			}
 		};
+		inventoryHandler.addListener(getSettingsHandler().getTypeCategory(ItemDisplaySettingsCategory.class)::itemChanged);
 	}
 
 	private int getNumberOfInventorySlots() {
@@ -357,7 +373,7 @@ public class StorageBlockEntity extends BlockEntity implements IStorageWrapper {
 				inventoryIOHandler = null;
 			}) {
 				@Override
-				public boolean isItemValid(int slot, @NotNull ItemStack stack) {
+				public boolean isItemValid(int slot, ItemStack stack) {
 					//noinspection ConstantConditions - by this time the upgrade has registryName so it can't be null
 					return super.isItemValid(slot, stack) && (stack.isEmpty() || SophisticatedStorage.MOD_ID.equals(stack.getItem().getRegistryName().getNamespace()) || stack.is(ModItems.STORAGE_UPGRADE_TAG));
 				}
@@ -543,7 +559,7 @@ public class StorageBlockEntity extends BlockEntity implements IStorageWrapper {
 
 	@Override
 	public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) {
-		if (cap == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY){
+		if (cap == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
 			return LazyOptional.of(this::getInventoryForInputOutput).cast();
 		}
 		return super.getCapability(cap, side);

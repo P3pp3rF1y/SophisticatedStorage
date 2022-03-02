@@ -16,6 +16,7 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
@@ -32,6 +33,8 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.network.NetworkHooks;
 import net.p3pp3rf1y.sophisticatedcore.util.ColorHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
@@ -50,6 +53,7 @@ public class BarrelBlock extends Block implements EntityBlock, IStorageBlock, IA
 	public static final BooleanProperty OPEN = BlockStateProperties.OPEN;
 	public static final BooleanProperty TICKING = BooleanProperty.create("ticking");
 	private static final String WOOD_TYPE_TAG = "woodType";
+	private static final VoxelShape SLIGHTLY_BIGGER_SHAPE = box(0.01, 0.01, 0.01, 15.99, 15.99, 15.99);
 
 	private final int numberOfInventorySlots;
 	private final int numberOfUpgradeSlots;
@@ -61,6 +65,16 @@ public class BarrelBlock extends Block implements EntityBlock, IStorageBlock, IA
 		this.numberOfInventorySlots = numberOfInventorySlots;
 		this.numberOfUpgradeSlots = numberOfUpgradeSlots;
 		registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(OPEN, false).setValue(TICKING, false));
+	}
+
+	@Override
+	public boolean isCollisionShapeFullBlock(BlockState pState, BlockGetter pLevel, BlockPos pPos) {
+		return false;
+	}
+
+	@Override
+	public VoxelShape getShape(BlockState pState, BlockGetter pLevel, BlockPos pPos, CollisionContext pContext) {
+		return SLIGHTLY_BIGGER_SHAPE;
 	}
 
 	@Override

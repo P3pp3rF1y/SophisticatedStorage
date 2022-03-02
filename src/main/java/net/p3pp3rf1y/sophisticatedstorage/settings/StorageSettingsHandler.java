@@ -13,4 +13,20 @@ public class StorageSettingsHandler extends SettingsHandler {
 	public StorageSettingsHandler(CompoundTag contentsNbt, Runnable markContentsDirty, Supplier<InventoryHandler> inventoryHandlerSupplier, Supplier<RenderInfo> renderInfoSupplier) {
 		super(contentsNbt, markContentsDirty, SOPHISTICATED_STORAGE_SETTINGS_PLAYER_TAG, inventoryHandlerSupplier, renderInfoSupplier);
 	}
+
+	@Override
+	protected CompoundTag getSettingsNbtFromContentsNbt(CompoundTag contentsNbt) {
+		return contentsNbt;
+	}
+
+	@Override
+	protected void saveCategoryNbt(CompoundTag settingsNbt, String categoryName, CompoundTag tag) {
+		contentsNbt.put(categoryName, tag);
+	}
+
+	@Override
+	public void reloadFrom(CompoundTag contentsNbt) {
+		this.contentsNbt = contentsNbt;
+		super.reloadFrom(contentsNbt);
+	}
 }
