@@ -146,7 +146,11 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 		);
 
 		private static QuadTransformer getDirectionRotationTransform(Direction dir) {
-			return new QuadTransformer(new Transformation(null, dir.getRotation(), null, null));
+			Quaternion rotation = dir.getRotation();
+			if (dir.getAxis().isVertical()) {
+				rotation.mul(Vector3f.YP.rotationDegrees(180.0F));
+			}
+			return new QuadTransformer(new Transformation(null, rotation, null, null));
 		}
 
 		private static QuadTransformer getDirectionMoveBackToSide(Direction dir, float distFromCenter) {
