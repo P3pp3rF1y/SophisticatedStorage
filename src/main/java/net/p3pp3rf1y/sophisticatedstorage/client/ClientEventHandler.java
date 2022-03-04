@@ -3,6 +3,7 @@ package net.p3pp3rf1y.sophisticatedstorage.client;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.inventory.InventoryMenu;
+import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
@@ -13,6 +14,7 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.client.init.ModBlockColors;
 import net.p3pp3rf1y.sophisticatedstorage.client.init.ModItemColors;
+import net.p3pp3rf1y.sophisticatedstorage.client.render.BarrelBlockEntityRenderer;
 import net.p3pp3rf1y.sophisticatedstorage.client.render.BarrelDynamicModel;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 
@@ -25,6 +27,7 @@ public class ClientEventHandler {
 		modBus.addListener(ClientEventHandler::onModelRegistry);
 		modBus.addListener(ClientEventHandler::loadComplete);
 		modBus.addListener(ClientEventHandler::clientSetup);
+		modBus.addListener(ClientEventHandler::registerEntityRenderers);
 	}
 
 	private static void onModelRegistry(ModelRegistryEvent event) {
@@ -45,6 +48,10 @@ public class ClientEventHandler {
 		}
 
 		BarrelDynamicModel.WOOD_TEXTURES.forEach((name, textures) -> textures.values().forEach(event::addSprite));
+	}
+
+	private static void registerEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {
+		event.registerBlockEntityRenderer(ModBlocks.BARREL_TILE_TYPE.get(), BarrelBlockEntityRenderer::new);
 	}
 
 	private static void loadComplete(FMLLoadCompleteEvent event) {

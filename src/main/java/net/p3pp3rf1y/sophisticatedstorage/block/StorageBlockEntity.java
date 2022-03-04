@@ -1,5 +1,8 @@
 package net.p3pp3rf1y.sophisticatedstorage.block;
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.entity.ItemRenderer;
+import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
@@ -22,6 +25,7 @@ import net.minecraft.world.level.block.state.properties.WoodType;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraftforge.items.ItemHandlerHelper;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.SortBy;
 import net.p3pp3rf1y.sophisticatedcore.inventory.IItemHandlerSimpleInserter;
@@ -54,8 +58,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public class StorageBlockEntity extends BlockEntity implements IStorageWrapper {
+	private static final int DYNAMIC_CHECK_WINDOW_TICKS = 100;
+	private static final int MAX_ITEM_CHANGES_IN_WINDOW = 4;
 	private static final String UUID_TAG = "uuid";
 	private static final String MAIN_COLOR_TAG = "mainColor";
 	private static final String ACCENT_COLOR_TAG = "accentColor";
@@ -88,6 +96,11 @@ public class StorageBlockEntity extends BlockEntity implements IStorageWrapper {
 
 	private boolean updateBlockRender = false;
 
+	private long lastItemChangeTime = 0;
+	private final int[] itemChangeExpirationTimes = new int[MAX_ITEM_CHANGES_IN_WINDOW];
+	private boolean dynamicRenderer = false;
+	private ItemStack lastRenderItem = ItemStack.EMPTY;
+
 	private final ContainerOpenersCounter openersCounter = new ContainerOpenersCounter() {
 		protected void onOpen(Level level, BlockPos pos, BlockState state) {
 			playSound(state, SoundEvents.BARREL_OPEN);
@@ -115,12 +128,7 @@ public class StorageBlockEntity extends BlockEntity implements IStorageWrapper {
 
 	public StorageBlockEntity(BlockPos pos, BlockState state) {
 		super(ModBlocks.BARREL_TILE_TYPE.get(), pos, state);
-		renderInfo = new RenderInfo(() -> () -> {
-			setChanged();
-			if (level != null && level.isClientSide) { //TODO this needs to get a dynamic behavior for frequently changing item
-				WorldHelper.notifyBlockUpdate(StorageBlockEntity.this);
-			}
-		}) {
+		renderInfo = new RenderInfo(getSaveHandler()) {
 			@Override
 			protected void serializeRenderInfo(CompoundTag renderInfo) {
 				renderInfoNbt = renderInfo;
@@ -135,6 +143,62 @@ public class StorageBlockEntity extends BlockEntity implements IStorageWrapper {
 			setChanged();
 			WorldHelper.notifyBlockUpdate(this);
 		}, () -> inventoryHandler, () -> renderInfo);
+	}
+
+	public boolean hasDynamicRenderer() {
+		return dynamicRenderer;
+	}
+
+	private Supplier<Consumer<RenderInfo>> getSaveHandler() {
+		return () -> ri -> {
+			setChanged();
+			if (level != null && level.isClientSide) {
+				ItemStack item = ri.getItemDisplayRenderInfo().getItem();
+				if (ItemHandlerHelper.canItemStacksStack(lastRenderItem, item)) {
+					return;
+				}
+				lastRenderItem = item;
+
+				boolean wasDynamic = dynamicRenderer;
+				checkForItemModelCustomRenderer(item);
+
+				if (!updateItemChangeExpirations()) {
+					dynamicRenderer = true;
+				}
+
+				if (!dynamicRenderer || !wasDynamic) {
+					WorldHelper.notifyBlockUpdate(StorageBlockEntity.this);
+				}
+			} else {
+				WorldHelper.notifyBlockUpdate(StorageBlockEntity.this);
+			}
+		};
+	}
+
+	private void checkForItemModelCustomRenderer(ItemStack item) {
+		Supplier<Runnable> modelUpdate = () -> () -> {
+			Minecraft minecraft = Minecraft.getInstance();
+			ItemRenderer itemRenderer = minecraft.getItemRenderer();
+			BakedModel model = itemRenderer.getModel(item, null, minecraft.player, 0);
+			dynamicRenderer = model.isCustomRenderer();
+		};
+		modelUpdate.get().run();
+	}
+
+	private boolean updateItemChangeExpirations() {
+		boolean timeSet = false;
+		//noinspection ConstantConditions - only called when level was already checked not to be null
+		int timeDiff = (int) Math.min(DYNAMIC_CHECK_WINDOW_TICKS, level.getGameTime() - lastItemChangeTime);
+		lastItemChangeTime = level.getGameTime();
+		for (int i = 0; i < itemChangeExpirationTimes.length; i++) {
+			int val = Math.max(0, itemChangeExpirationTimes[i] - timeDiff);
+			if (!timeSet && val == 0) {
+				timeSet = true;
+				val = DYNAMIC_CHECK_WINDOW_TICKS;
+			}
+			itemChangeExpirationTimes[i] = val;
+		}
+		return timeSet;
 	}
 
 	public boolean isOpen() {
