@@ -33,6 +33,7 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.network.NetworkHooks;
@@ -65,6 +66,13 @@ public class BarrelBlock extends Block implements EntityBlock, IStorageBlock, IA
 		this.numberOfInventorySlots = numberOfInventorySlots;
 		this.numberOfUpgradeSlots = numberOfUpgradeSlots;
 		registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(OPEN, false).setValue(TICKING, false));
+	}
+
+	@Override
+	public ItemStack getCloneItemStack(BlockState state, HitResult target, BlockGetter world, BlockPos pos, Player player) {
+		ItemStack stack = new ItemStack(this);
+		addWoodAndTintData(stack, world, pos);
+		return stack;
 	}
 
 	@Override
@@ -252,6 +260,12 @@ public class BarrelBlock extends Block implements EntityBlock, IStorageBlock, IA
 
 	public static Optional<Integer> getAccentColorFromStack(ItemStack barrelStack) {
 		return NBTHelper.getInt(barrelStack, "accentColor");
+	}
+
+	public void addWoodAndTintData(ItemStack stack, BlockGetter level, BlockPos pos) {
+		WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).ifPresent(be -> {
+			addDropData(stack, be);
+		});
 	}
 
 	@Override
