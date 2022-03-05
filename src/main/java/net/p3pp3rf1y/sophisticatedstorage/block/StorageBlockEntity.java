@@ -58,7 +58,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class StorageBlockEntity extends BlockEntity implements IStorageWrapper {
@@ -128,7 +127,7 @@ public class StorageBlockEntity extends BlockEntity implements IStorageWrapper {
 
 	public StorageBlockEntity(BlockPos pos, BlockState state) {
 		super(ModBlocks.BARREL_TILE_TYPE.get(), pos, state);
-		renderInfo = new RenderInfo(getSaveHandler()) {
+		renderInfo = new RenderInfo(() -> this::setChanged) {
 			@Override
 			protected void serializeRenderInfo(CompoundTag renderInfo) {
 				renderInfoNbt = renderInfo;
@@ -143,36 +142,34 @@ public class StorageBlockEntity extends BlockEntity implements IStorageWrapper {
 			setChanged();
 			WorldHelper.notifyBlockUpdate(this);
 		}, () -> inventoryHandler, () -> renderInfo);
+		renderInfo.setChangeListener(this::onRenderInfoUpdated);
 	}
 
 	public boolean hasDynamicRenderer() {
 		return dynamicRenderer;
 	}
 
-	private Supplier<Consumer<RenderInfo>> getSaveHandler() {
-		return () -> ri -> {
-			setChanged();
-			if (level != null && level.isClientSide) {
-				ItemStack item = ri.getItemDisplayRenderInfo().getItem();
-				if (ItemHandlerHelper.canItemStacksStack(lastRenderItem, item)) {
-					return;
-				}
-				lastRenderItem = item;
+	private void onRenderInfoUpdated(RenderInfo ri) {
+		if (level != null && level.isClientSide) {
+			ItemStack item = ri.getItemDisplayRenderInfo().getItem();
+			if (ItemHandlerHelper.canItemStacksStack(lastRenderItem, item)) {
+				return;
+			}
+			lastRenderItem = item;
 
-				boolean wasDynamic = dynamicRenderer;
-				checkForItemModelCustomRenderer(item);
+			boolean wasDynamic = dynamicRenderer;
+			checkForItemModelCustomRenderer(item);
 
-				if (!updateItemChangeExpirations()) {
-					dynamicRenderer = true;
-				}
+			if (!updateItemChangeExpirations()) {
+				dynamicRenderer = true;
+			}
 
-				if (!dynamicRenderer || !wasDynamic) {
-					WorldHelper.notifyBlockUpdate(StorageBlockEntity.this);
-				}
-			} else {
+			if (!dynamicRenderer || !wasDynamic) {
 				WorldHelper.notifyBlockUpdate(StorageBlockEntity.this);
 			}
-		};
+		} else {
+			WorldHelper.notifyBlockUpdate(StorageBlockEntity.this);
+		}
 	}
 
 	private void checkForItemModelCustomRenderer(ItemStack item) {
