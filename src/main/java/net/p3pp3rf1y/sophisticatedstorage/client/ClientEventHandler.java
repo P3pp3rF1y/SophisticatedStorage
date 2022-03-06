@@ -17,6 +17,7 @@ import net.p3pp3rf1y.sophisticatedstorage.client.init.ModItemColors;
 import net.p3pp3rf1y.sophisticatedstorage.client.render.BarrelBlockEntityRenderer;
 import net.p3pp3rf1y.sophisticatedstorage.client.render.BarrelDynamicModel;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
+import net.p3pp3rf1y.sophisticatedstorage.init.ModParticles;
 
 public class ClientEventHandler {
 	private ClientEventHandler() {}
@@ -28,6 +29,7 @@ public class ClientEventHandler {
 		modBus.addListener(ClientEventHandler::loadComplete);
 		modBus.addListener(ClientEventHandler::clientSetup);
 		modBus.addListener(ClientEventHandler::registerEntityRenderers);
+		modBus.addListener(ModParticles::registerFactories);
 	}
 
 	private static void onModelRegistry(ModelRegistryEvent event) {

@@ -1,5 +1,7 @@
 package net.p3pp3rf1y.sophisticatedstorage.block;
 
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
@@ -7,6 +9,7 @@ import net.minecraft.network.chat.TextComponent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stats;
+import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.SimpleMenuProvider;
@@ -36,11 +39,15 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.client.IBlockRenderProperties;
 import net.minecraftforge.network.NetworkHooks;
 import net.p3pp3rf1y.sophisticatedcore.util.ColorHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
+import net.p3pp3rf1y.sophisticatedstorage.client.particle.CustomTintTerrainParticle;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 
@@ -48,6 +55,7 @@ import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
+import java.util.function.Consumer;
 
 public class BarrelBlock extends Block implements EntityBlock, IStorageBlock, IAdditionalDropDataBlock, ITintableBlock {
 	public static final DirectionProperty FACING = BlockStateProperties.FACING;
@@ -99,6 +107,44 @@ public class BarrelBlock extends Block implements EntityBlock, IStorageBlock, IA
 		setMainColor(barrelStack, ColorHelper.getColor(DyeColor.YELLOW.getTextureDiffuseColors()));
 		setAccentColor(barrelStack, ColorHelper.getColor(DyeColor.LIME.getTextureDiffuseColors()));
 		items.add(barrelStack);
+	}
+
+	@OnlyIn(Dist.CLIENT)
+	@Override
+	public void initializeClient(Consumer<IBlockRenderProperties> consumer) {
+		consumer.accept(new IBlockRenderProperties() {
+			@Override
+			public boolean addDestroyEffects(BlockState state, Level level, BlockPos pos, ParticleEngine manager) {
+				if (state.getBlock() != BarrelBlock.this || !(level instanceof ClientLevel clientLevel)) {
+					return false;
+				}
+
+				VoxelShape voxelshape = state.getShape(level, pos);
+				voxelshape.forAllBoxes((minX, minY, minZ, maxX, maxY, maxZ) -> {
+					double d1 = Math.min(1.0D, maxX - minX);
+					double d2 = Math.min(1.0D, maxY - minY);
+					double d3 = Math.min(1.0D, maxZ - minZ);
+					int i = Math.max(2, Mth.ceil(d1 / 0.25D));
+					int j = Math.max(2, Mth.ceil(d2 / 0.25D));
+					int k = Math.max(2, Mth.ceil(d3 / 0.25D));
+
+					for (int l = 0; l < i; ++l) {
+						for (int i1 = 0; i1 < j; ++i1) {
+							for (int j1 = 0; j1 < k; ++j1) {
+								double d4 = (l + 0.5D) / i;
+								double d5 = (i1 + 0.5D) / j;
+								double d6 = (j1 + 0.5D) / k;
+								double d7 = d4 * d1 + minX;
+								double d8 = d5 * d2 + minY;
+								double d9 = d6 * d3 + minZ;
+								manager.add(new CustomTintTerrainParticle(clientLevel, pos.getX() + d7, pos.getY() + d8, pos.getZ() + d9, d4 - 0.5D, d5 - 0.5D, d6 - 0.5D, state, pos).updateSprite(state, pos));
+							}
+						}
+					}
+				});
+				return true;
+			}
+		});
 	}
 
 	@Override
