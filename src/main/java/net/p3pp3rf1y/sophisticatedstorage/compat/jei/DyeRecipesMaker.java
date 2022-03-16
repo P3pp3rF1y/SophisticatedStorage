@@ -14,16 +14,17 @@ import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.ITintableBlock;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 public class DyeRecipesMaker {
 	private DyeRecipesMaker() {}
 
-	public static Collection<CraftingRecipe> getRecipes() {
-		Set<CraftingRecipe> recipes = new HashSet<>();
+	public static List<CraftingRecipe> getRecipes() {
+		List<CraftingRecipe> recipes = new ArrayList<>();
 		Map<Block, ItemStack[]> blocks = Map.of(
 				ModBlocks.BARREL.get(), getBarrelWoodStacks(ModBlocks.BARREL.get()),
 				ModBlocks.IRON_BARREL.get(), getBarrelWoodStacks(ModBlocks.IRON_BARREL.get()),
@@ -43,7 +44,7 @@ public class DyeRecipesMaker {
 		return ret.toArray(new ItemStack[0]);
 	}
 
-	private static void addMultipleColorsRecipe(Set<CraftingRecipe> recipes, Map<Block, ItemStack[]> blocks) {
+	private static void addMultipleColorsRecipe(List<CraftingRecipe> recipes, Map<Block, ItemStack[]> blocks) {
 		blocks.forEach((block, stacks) -> {
 			if (block instanceof ITintableBlock tintableBlock) {
 				NonNullList<Ingredient> ingredients = NonNullList.create();
@@ -60,7 +61,7 @@ public class DyeRecipesMaker {
 		});
 	}
 
-	private static void addSingleColorRecipes(Set<CraftingRecipe> recipes, Map<Block, ItemStack[]> blocks) {
+	private static void addSingleColorRecipes(List<CraftingRecipe> recipes, Map<Block, ItemStack[]> blocks) {
 		for (DyeColor color : DyeColor.values()) {
 			blocks.forEach((block, stacks) -> {
 				if (block instanceof ITintableBlock tintableBlock) {

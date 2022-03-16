@@ -2,6 +2,7 @@ package net.p3pp3rf1y.sophisticatedstorage;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.level.block.Block;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.ModLoadingContext;
@@ -41,7 +42,7 @@ public class SophisticatedStorage {
 		modBus.addListener(SophisticatedStorage::setup);
 		modBus.addListener(DataGenerators::gatherData);
 		ModParticles.registerParticles(modBus);
-		ModLoot.init();
+		modBus.addGenericListener(Block.class, ModLoot::registerLootFunction);
 	}
 
 	private static void setup(FMLCommonSetupEvent event) {

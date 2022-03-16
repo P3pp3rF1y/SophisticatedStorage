@@ -1,11 +1,15 @@
 package net.p3pp3rf1y.sophisticatedstorage.data;
 
+import net.minecraft.advancements.critereon.InventoryChangeTrigger;
+import net.minecraft.advancements.critereon.ItemPredicate;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.recipes.FinishedRecipe;
 import net.minecraft.data.recipes.RecipeProvider;
 import net.minecraft.data.recipes.SpecialRecipeBuilder;
 import net.minecraft.data.recipes.UpgradeRecipeBuilder;
 import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -30,6 +34,7 @@ import java.util.function.Consumer;
 public class StorageRecipeProvider extends RecipeProvider {
 	private static final String HAS_UPGRADE_BASE_CRITERION_NAME = "has_upgrade_base";
 	private static final String HAS_REDSTONE_TORCH_CRITERION_NAME = "has_redstone_torch";
+	private static final String HAS_SMELTING_UPGRADE = "has_smelting_upgrade";
 
 	public StorageRecipeProvider(DataGenerator generatorIn) {
 		super(generatorIn);
@@ -247,7 +252,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('R', Tags.Items.DUSTS_REDSTONE)
 				.define('H', Items.HOPPER)
 				.define('S', ModItems.SMELTING_UPGRADE.get())
-				.unlockedBy("has_smelting_upgrade", has(ModItems.SMELTING_UPGRADE.get()))
+				.unlockedBy(HAS_SMELTING_UPGRADE, has(ModItems.SMELTING_UPGRADE.get()))
 				.save(consumer);
 
 		ShapeBasedRecipeBuilder.shaped(ModItems.CRAFTING_UPGRADE.get())
@@ -350,7 +355,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.pattern(" L ")
 				.define('S', ModItems.SMELTING_UPGRADE.get())
 				.define('L', ItemTags.LOGS)
-				.unlockedBy("has_smelting_upgrade", has(ModItems.SMELTING_UPGRADE.get()))
+				.unlockedBy(HAS_SMELTING_UPGRADE, has(ModItems.SMELTING_UPGRADE.get()))
 				.save(consumer, SophisticatedStorage.getRL("smoking_upgrade_from_smelting_upgrade"));
 
 		ShapeBasedRecipeBuilder.shaped(ModItems.AUTO_SMOKING_UPGRADE.get(), UpgradeNextTierRecipe.SERIALIZER)
@@ -392,7 +397,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('S', ModItems.SMELTING_UPGRADE.get())
 				.define('I', Tags.Items.INGOTS_IRON)
 				.define('T', Items.SMOOTH_STONE)
-				.unlockedBy("has_smelting_upgrade", has(ModItems.SMELTING_UPGRADE.get()))
+				.unlockedBy(HAS_SMELTING_UPGRADE, has(ModItems.SMELTING_UPGRADE.get()))
 				.save(consumer, SophisticatedStorage.getRL("blasting_upgrade_from_smelting_upgrade"));
 
 		ShapeBasedRecipeBuilder.shaped(ModItems.AUTO_BLASTING_UPGRADE.get(), UpgradeNextTierRecipe.SERIALIZER)
@@ -470,5 +475,9 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('R', Blocks.REDSTONE_TORCH)
 				.unlockedBy("has_" + woodType.name() + "_plank", has(planks))
 				.save(consumer, SophisticatedStorage.getRL(woodType.name() + "_barrel"));
+	}
+
+	private static InventoryChangeTrigger.TriggerInstance has(TagKey<Item> tag) {
+		return inventoryTrigger(ItemPredicate.Builder.item().of(tag).build());
 	}
 }

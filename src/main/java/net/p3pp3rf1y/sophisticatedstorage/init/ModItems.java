@@ -1,14 +1,14 @@
 package net.p3pp3rf1y.sophisticatedstorage.init;
 
+import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.crafting.BlastingRecipe;
 import net.minecraft.world.item.crafting.SmeltingRecipe;
 import net.minecraft.world.item.crafting.SmokingRecipe;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.common.ForgeTagHandler;
-import net.minecraftforge.common.Tags;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.DistExecutor;
@@ -93,7 +93,7 @@ public class ModItems {
 
 	public static final ResourceLocation STORAGE_UPGRADE_TAG_NAME = new ResourceLocation(SophisticatedStorage.MOD_ID, "upgrade");
 
-	public static final Tags.IOptionalNamedTag<Item> STORAGE_UPGRADE_TAG = ForgeTagHandler.createOptionalTag(ForgeRegistries.ITEMS, STORAGE_UPGRADE_TAG_NAME);
+	public static final TagKey<Item> STORAGE_UPGRADE_TAG = TagKey.create(Registry.ITEM_REGISTRY, STORAGE_UPGRADE_TAG_NAME);
 
 	public static final RegistryObject<PickupUpgradeItem> PICKUP_UPGRADE = ITEMS.register("pickup_upgrade",
 			() -> new PickupUpgradeItem(Config.COMMON.pickupUpgrade.filterSlots::get, SophisticatedStorage.CREATIVE_TAB));

@@ -20,24 +20,23 @@ import net.p3pp3rf1y.sophisticatedstorage.crafting.SmithingStorageUpgradeRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.StorageTierUpgradeRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 
-import java.util.Collection;
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 import java.util.function.Consumer;
 
 public class TierUpgradeRecipesMaker {
 	private TierUpgradeRecipesMaker() {}
 
-	public static Collection<UpgradeRecipe> getSmithingRecipes() {
-		Set<UpgradeRecipe> recipes = new HashSet<>();
+	public static List<UpgradeRecipe> getSmithingRecipes() {
+		List<UpgradeRecipe> recipes = new ArrayList<>();
 		addItemSmithingUpgradeRecipes(recipes, ModBlocks.DIAMOND_BARREL_ITEM.get(), "netherite_barrel");
 
 		return recipes;
 	}
 
-	public static Collection<CraftingRecipe> getCraftingRecipes() {
-		Set<CraftingRecipe> recipes = new HashSet<>();
+	public static List<CraftingRecipe> getCraftingRecipes() {
+		List<CraftingRecipe> recipes = new ArrayList<>();
 
 		addItemUpgradeRecipes(recipes, ModBlocks.BARREL_ITEM.get(), "iron_barrel");
 		addItemUpgradeRecipes(recipes, ModBlocks.IRON_BARREL_ITEM.get(), "gold_barrel");
@@ -46,7 +45,7 @@ public class TierUpgradeRecipesMaker {
 		return recipes;
 	}
 
-	private static void addItemUpgradeRecipes(Set<CraftingRecipe> recipes, Item storageItem, String recipeName) {
+	private static void addItemUpgradeRecipes(List<CraftingRecipe> recipes, Item storageItem, String recipeName) {
 		RecipeManager recipeManager = Minecraft.getInstance().level.getRecipeManager();
 
 		NonNullList<ItemStack> items = NonNullList.create();
@@ -87,7 +86,7 @@ public class TierUpgradeRecipesMaker {
 		});
 	}
 
-	private static void addItemSmithingUpgradeRecipes(Set<UpgradeRecipe> recipes, Item storageItem, String recipeName) {
+	private static void addItemSmithingUpgradeRecipes(List<UpgradeRecipe> recipes, Item storageItem, String recipeName) {
 		RecipeManager recipeManager = Minecraft.getInstance().level.getRecipeManager();
 
 		NonNullList<ItemStack> items = NonNullList.create();

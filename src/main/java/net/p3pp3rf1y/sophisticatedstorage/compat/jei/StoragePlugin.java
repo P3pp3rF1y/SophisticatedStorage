@@ -2,7 +2,7 @@ package net.p3pp3rf1y.sophisticatedstorage.compat.jei;
 
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
-import mezz.jei.api.constants.VanillaRecipeCategoryUid;
+import mezz.jei.api.constants.RecipeTypes;
 import mezz.jei.api.gui.handlers.IGuiContainerHandler;
 import mezz.jei.api.helpers.IStackHelper;
 import mezz.jei.api.ingredients.subtypes.IIngredientSubtypeInterpreter;
@@ -78,14 +78,14 @@ public class StoragePlugin implements IModPlugin {
 
 	@Override
 	public void registerRecipes(IRecipeRegistration registration) {
-		registration.addRecipes(DyeRecipesMaker.getRecipes(), VanillaRecipeCategoryUid.CRAFTING);
-		registration.addRecipes(TierUpgradeRecipesMaker.getCraftingRecipes(), VanillaRecipeCategoryUid.CRAFTING);
-		registration.addRecipes(TierUpgradeRecipesMaker.getSmithingRecipes(), VanillaRecipeCategoryUid.SMITHING);
+		registration.addRecipes(RecipeTypes.CRAFTING, DyeRecipesMaker.getRecipes());
+		registration.addRecipes(RecipeTypes.CRAFTING, TierUpgradeRecipesMaker.getCraftingRecipes());
+		registration.addRecipes(RecipeTypes.SMITHING, TierUpgradeRecipesMaker.getSmithingRecipes());
 	}
 
 	@Override
 	public void registerRecipeCatalysts(IRecipeCatalystRegistration registration) {
-		registration.addRecipeCatalyst(new ItemStack(ModItems.CRAFTING_UPGRADE.get()), VanillaRecipeCategoryUid.CRAFTING);
+		registration.addRecipeCatalyst(new ItemStack(ModItems.CRAFTING_UPGRADE.get()), RecipeTypes.CRAFTING);
 	}
 
 	@Override
@@ -97,7 +97,7 @@ public class StoragePlugin implements IModPlugin {
 			public Class<StorageContainerMenu> getContainerClass() {
 				return StorageContainerMenu.class;
 			}
-		}, VanillaRecipeCategoryUid.CRAFTING);
+		}, RecipeTypes.CRAFTING);
 	}
 
 }
