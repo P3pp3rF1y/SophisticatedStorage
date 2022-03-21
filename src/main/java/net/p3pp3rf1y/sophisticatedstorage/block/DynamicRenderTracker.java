@@ -9,8 +9,6 @@ import net.minecraftforge.items.ItemHandlerHelper;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 
-import java.util.function.Supplier;
-
 public class DynamicRenderTracker implements IDynamicRenderTracker {
 	private static final int DYNAMIC_CHECK_WINDOW_TICKS = 100;
 	private static final int MAX_ITEM_CHANGES_IN_WINDOW = 4;
@@ -50,13 +48,10 @@ public class DynamicRenderTracker implements IDynamicRenderTracker {
 	}
 
 	private void checkForItemModelCustomRenderer(ItemStack item) {
-		Supplier<Runnable> modelUpdate = () -> () -> {
-			Minecraft minecraft = Minecraft.getInstance();
-			ItemRenderer itemRenderer = minecraft.getItemRenderer();
-			BakedModel model = itemRenderer.getModel(item, null, minecraft.player, 0);
-			dynamicRenderer = model.isCustomRenderer();
-		};
-		modelUpdate.get().run();
+		Minecraft minecraft = Minecraft.getInstance();
+		ItemRenderer itemRenderer = minecraft.getItemRenderer();
+		BakedModel model = itemRenderer.getModel(item, null, minecraft.player, 0);
+		dynamicRenderer = model.isCustomRenderer();
 	}
 
 	private boolean updateItemChangeExpirations() {
@@ -81,6 +76,6 @@ public class DynamicRenderTracker implements IDynamicRenderTracker {
 
 	@Override
 	public boolean isDynamicRenderer() {
-		return IDynamicRenderTracker.super.isDynamicRenderer();
+		return dynamicRenderer;
 	}
 }

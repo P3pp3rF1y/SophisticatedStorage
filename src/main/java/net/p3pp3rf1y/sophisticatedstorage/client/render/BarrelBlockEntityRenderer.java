@@ -11,6 +11,7 @@ import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.world.item.ItemStack;
+import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
 
@@ -26,7 +27,8 @@ public class BarrelBlockEntityRenderer implements BlockEntityRenderer<StorageBlo
 		}
 
 		Minecraft minecraft = Minecraft.getInstance();
-		ItemStack item = blockEntity.getRenderInfo().getItemDisplayRenderInfo().getItem();
+		RenderInfo.ItemDisplayRenderInfo itemDisplayRenderInfo = blockEntity.getRenderInfo().getItemDisplayRenderInfo();
+		ItemStack item = itemDisplayRenderInfo.getItem();
 
 		if (item.isEmpty()) {
 			return;
@@ -41,7 +43,7 @@ public class BarrelBlockEntityRenderer implements BlockEntityRenderer<StorageBlo
 		poseStack.translate(normal.getX() * 0.55, normal.getY() * 0.55, normal.getZ() * 0.55);
 		poseStack.mulPose(facing.getRotation());
 		if (facing.getAxis().isHorizontal()) {
-			poseStack.mulPose(Vector3f.YP.rotationDegrees(180));
+			poseStack.mulPose(Vector3f.YN.rotationDegrees(180f + itemDisplayRenderInfo.getRotation()));
 		}
 		poseStack.mulPose(Vector3f.XP.rotationDegrees(90));
 		poseStack.scale(0.75f, 0.75f, 0.75f);

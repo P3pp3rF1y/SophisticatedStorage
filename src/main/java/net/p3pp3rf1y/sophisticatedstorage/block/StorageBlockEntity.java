@@ -132,7 +132,7 @@ public class StorageBlockEntity extends BlockEntity implements IStorageWrapper {
 			setChanged();
 			WorldHelper.notifyBlockUpdate(this);
 		}, () -> inventoryHandler, () -> renderInfo);
-		renderInfo.setChangeListener(dynamicRenderTracker::onRenderInfoUpdated);
+		renderInfo.setChangeListener(ri -> dynamicRenderTracker.onRenderInfoUpdated(ri));
 	}
 
 	@Override

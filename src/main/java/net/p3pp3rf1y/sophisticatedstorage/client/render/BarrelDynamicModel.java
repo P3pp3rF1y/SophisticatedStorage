@@ -45,6 +45,7 @@ import net.minecraftforge.client.model.data.ModelDataMap;
 import net.minecraftforge.client.model.data.ModelProperty;
 import net.minecraftforge.client.model.geometry.IModelGeometry;
 import net.minecraftforge.common.model.TransformationHelper;
+import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlock;
@@ -165,6 +166,7 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 		private static final ModelProperty<Boolean> HAS_MAIN_COLOR = new ModelProperty<>();
 		private static final ModelProperty<Boolean> HAS_ACCENT_COLOR = new ModelProperty<>();
 		private static final ModelProperty<ItemStack> DISPLAY_ITEM = new ModelProperty<>();
+		private static final ModelProperty<Integer> DISPLAY_ITEM_ROTATION = new ModelProperty<>();
 		private static final Map<ItemTransforms.TransformType, Transformation> TRANSFORMS;
 		private static final ItemTransforms ITEM_TRANSFORMS;
 
@@ -228,8 +230,8 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 			//noinspection ConstantConditions -
 			ITEM_TRANSFORMS = new ItemTransforms(fromTransformation(TRANSFORMS.get(ItemTransforms.TransformType.THIRD_PERSON_LEFT_HAND)), fromTransformation(TRANSFORMS.get(ItemTransforms.TransformType.THIRD_PERSON_RIGHT_HAND)),
 					fromTransformation(TRANSFORMS.get(ItemTransforms.TransformType.FIRST_PERSON_LEFT_HAND)), fromTransformation(TRANSFORMS.get(ItemTransforms.TransformType.FIRST_PERSON_RIGHT_HAND)),
-							fromTransformation(TRANSFORMS.get(ItemTransforms.TransformType.HEAD)), fromTransformation(TRANSFORMS.get(ItemTransforms.TransformType.GUI)),
-									fromTransformation(TRANSFORMS.get(ItemTransforms.TransformType.GROUND)), fromTransformation(TRANSFORMS.get(ItemTransforms.TransformType.FIXED)));
+					fromTransformation(TRANSFORMS.get(ItemTransforms.TransformType.HEAD)), fromTransformation(TRANSFORMS.get(ItemTransforms.TransformType.GUI)),
+					fromTransformation(TRANSFORMS.get(ItemTransforms.TransformType.GROUND)), fromTransformation(TRANSFORMS.get(ItemTransforms.TransformType.FIXED)));
 		}
 
 		private static ItemTransform fromTransformation(Transformation transformation) {
@@ -282,19 +284,23 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 				ItemRenderer itemRenderer = minecraft.getItemRenderer();
 				BakedModel model = itemRenderer.getModel(displayItem, null, minecraft.player, 0);
 				ret.clear();
+				int rotation = extraData.getData(DISPLAY_ITEM_ROTATION);
 				for (Direction face : Direction.values()) {
-					addRenderedItemSide(state, rand, ret, model, face);
+					addRenderedItemSide(state, rand, ret, model, rotation, face);
 				}
-				addRenderedItemSide(state, rand, ret, model, null);
+				addRenderedItemSide(state, rand, ret, model, rotation, null);
 			}
 		}
 
-		private void addRenderedItemSide(BlockState state, Random rand, List<BakedQuad> ret, BakedModel model, @Nullable Direction s) {
+		private void addRenderedItemSide(BlockState state, Random rand, List<BakedQuad> ret, BakedModel model, int rotation, @Nullable Direction s) {
 			List<BakedQuad> quads = model.getQuads(null, s, rand);
 			quads = MOVE_TO_CORNER.processMany(quads);
 			quads = FLIP_AND_SCALE.processMany(quads);
 			quads = new QuadTransformer(TransformationHelper.toTransformation(model.getTransforms().getTransform(ItemTransforms.TransformType.FIXED))).processMany(quads);
 			quads = ROTATE_90_DEGREES.processMany(quads);
+			if (rotation != 0) {
+				quads = getDisplayRotation(rotation).processMany(quads);
+			}
 			Direction facing = state.getValue(BarrelBlock.FACING);
 			quads = DIRECTION_ROTATES.get(facing).processMany(quads);
 
@@ -305,6 +311,12 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 			}
 
 			ret.addAll(quads);
+		}
+
+		private static final Map<Integer, QuadTransformer> DISPLAY_ROTATIONS = new HashMap<>();
+
+		private QuadTransformer getDisplayRotation(int rotation) {
+			return DISPLAY_ROTATIONS.computeIfAbsent(rotation, r -> new QuadTransformer(new Transformation(null, Vector3f.YN.rotationDegrees(rotation), null, null)));
 		}
 
 		private void addTintableModelQuads(@Nullable BlockState state, @Nullable Direction side, Random rand, List<BakedQuad> ret, boolean hasMainColor, boolean hasAccentColor) {
@@ -384,7 +396,9 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 						ModelDataMap.Builder builder = new ModelDataMap.Builder();
 						builder.withInitial(HAS_MAIN_COLOR, be.getMainColor() > -1);
 						builder.withInitial(HAS_ACCENT_COLOR, be.getAccentColor() > -1);
-						builder.withInitial(DISPLAY_ITEM, be.getRenderInfo().getItemDisplayRenderInfo().getItem());
+						RenderInfo.ItemDisplayRenderInfo itemDisplayRenderInfo = be.getRenderInfo().getItemDisplayRenderInfo();
+						builder.withInitial(DISPLAY_ITEM, itemDisplayRenderInfo.getItem());
+						builder.withInitial(DISPLAY_ITEM_ROTATION, itemDisplayRenderInfo.getRotation());
 						be.getWoodType().ifPresent(n -> builder.withInitial(WOOD_NAME, n.name()));
 						return (IModelData) builder.build();
 					}).orElse(EmptyModelData.INSTANCE);
