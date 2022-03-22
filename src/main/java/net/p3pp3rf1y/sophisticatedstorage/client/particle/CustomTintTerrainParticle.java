@@ -4,7 +4,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleProvider;
-import net.minecraft.client.particle.SpriteSet;
 import net.minecraft.client.particle.TerrainParticle;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;
@@ -25,18 +24,13 @@ public class CustomTintTerrainParticle extends TerrainParticle {
 	}
 
 	public static class Factory implements ParticleProvider<CustomTintTerrainParticleData> {
-		private final SpriteSet spriteSet;
-
-		public Factory(SpriteSet spriteSet) {
-			this.spriteSet = spriteSet;
-		}
-
 		@Nullable
 		@Override
 		public Particle createParticle(CustomTintTerrainParticleData type, ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed) {
 			BlockPos pos = new BlockPos(x, y, z);
-			CustomTintTerrainParticle particle = new CustomTintTerrainParticle(level, x, y, z, xSpeed, ySpeed, zSpeed, level.getBlockState(pos), pos);
-			particle.pickSprite(spriteSet);
+			BlockState state = level.getBlockState(pos);
+			CustomTintTerrainParticle particle = new CustomTintTerrainParticle(level, x, y, z, xSpeed, ySpeed, zSpeed, state, pos);
+			particle.updateSprite(state, pos);
 			return particle;
 		}
 	}
