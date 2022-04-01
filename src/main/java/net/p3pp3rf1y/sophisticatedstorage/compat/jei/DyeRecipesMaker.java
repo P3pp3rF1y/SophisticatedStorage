@@ -13,6 +13,7 @@ import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.ITintableBlock;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
+import net.p3pp3rf1y.sophisticatedstorage.item.BarrelBlockItem;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -40,7 +41,7 @@ public class DyeRecipesMaker {
 
 	private static ItemStack[] getBarrelWoodStacks(BarrelBlock barrelBlock) {
 		Set<ItemStack> ret = new HashSet<>();
-		BarrelBlock.CUSTOM_TEXTURE_WOOD_TYPES.forEach(woodType -> ret.add(BarrelBlock.setWoodType(new ItemStack(barrelBlock), woodType)));
+		BarrelBlock.CUSTOM_TEXTURE_WOOD_TYPES.forEach(woodType -> ret.add(BarrelBlockItem.setWoodType(new ItemStack(barrelBlock), woodType)));
 		return ret.toArray(new ItemStack[0]);
 	}
 

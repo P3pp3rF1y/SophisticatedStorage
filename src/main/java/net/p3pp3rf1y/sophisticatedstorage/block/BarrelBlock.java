@@ -45,12 +45,12 @@ import net.minecraftforge.client.IBlockRenderProperties;
 import net.minecraftforge.network.NetworkHooks;
 import net.p3pp3rf1y.sophisticatedcore.util.ColorHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
-import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.client.particle.CustomTintTerrainParticle;
 import net.p3pp3rf1y.sophisticatedstorage.client.particle.CustomTintTerrainParticleData;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
+import net.p3pp3rf1y.sophisticatedstorage.item.BarrelBlockItem;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
@@ -62,7 +62,6 @@ public class BarrelBlock extends Block implements EntityBlock, IStorageBlock, IA
 	public static final DirectionProperty FACING = BlockStateProperties.FACING;
 	public static final BooleanProperty OPEN = BlockStateProperties.OPEN;
 	public static final BooleanProperty TICKING = BooleanProperty.create("ticking");
-	private static final String WOOD_TYPE_TAG = "woodType";
 	private static final VoxelShape SLIGHTLY_BIGGER_SHAPE = box(0.01, 0.01, 0.01, 15.99, 15.99, 15.99);
 
 	private final int numberOfInventorySlots;
@@ -96,7 +95,7 @@ public class BarrelBlock extends Block implements EntityBlock, IStorageBlock, IA
 
 	@Override
 	public void fillItemCategory(CreativeModeTab tab, NonNullList<ItemStack> items) {
-		CUSTOM_TEXTURE_WOOD_TYPES.forEach(woodType -> items.add(setWoodType(new ItemStack(this), woodType)));
+		CUSTOM_TEXTURE_WOOD_TYPES.forEach(woodType -> items.add(BarrelBlockItem.setWoodType(new ItemStack(this), woodType)));
 
 		for (DyeColor color : DyeColor.values()) {
 			ItemStack barrelStack = new ItemStack(this);
@@ -175,9 +174,9 @@ public class BarrelBlock extends Block implements EntityBlock, IStorageBlock, IA
 			if (stack.hasCustomHoverName()) {
 				be.setCustomName(stack.getHoverName());
 			}
-			getWoodType(stack).ifPresent(be::setWoodType);
-			getMaincolorFromStack(stack).ifPresent(be::setMainColor);
-			getAccentColorFromStack(stack).ifPresent(be::setAccentColor);
+			BarrelBlockItem.getWoodType(stack).ifPresent(be::setWoodType);
+			BarrelBlockItem.getMaincolorFromStack(stack).ifPresent(be::setMainColor);
+			BarrelBlockItem.getAccentColorFromStack(stack).ifPresent(be::setAccentColor);
 		});
 	}
 
@@ -267,23 +266,13 @@ public class BarrelBlock extends Block implements EntityBlock, IStorageBlock, IA
 		level.setBlockAndUpdate(pos, currentState.setValue(TICKING, ticking));
 	}
 
-	public static Optional<WoodType> getWoodType(ItemStack barrelStack) {
-		return NBTHelper.getString(barrelStack, WOOD_TYPE_TAG)
-				.flatMap(woodType -> WoodType.values().filter(wt -> wt.name().equals(woodType)).findFirst());
-	}
-
-	public static ItemStack setWoodType(ItemStack barrelStack, WoodType woodType) {
-		barrelStack.getOrCreateTag().putString(WOOD_TYPE_TAG, woodType.name());
-		return barrelStack;
-	}
-
 	private void removeWoodType(ItemStack barrelStack) {
-		barrelStack.getOrCreateTag().remove(WOOD_TYPE_TAG);
+		barrelStack.getOrCreateTag().remove(BarrelBlockItem.WOOD_TYPE_TAG);
 	}
 
 	@Override
 	public void setMainColor(ItemStack barrelStack, int mainColor) {
-		if (getAccentColorFromStack(barrelStack).isPresent()) {
+		if (BarrelBlockItem.getAccentColorFromStack(barrelStack).isPresent()) {
 			removeWoodType(barrelStack);
 		}
 		barrelStack.getOrCreateTag().putInt("mainColor", mainColor);
@@ -291,16 +280,12 @@ public class BarrelBlock extends Block implements EntityBlock, IStorageBlock, IA
 
 	@Override
 	public Optional<Integer> getMainColor(ItemStack barrelStack) {
-		return getMaincolorFromStack(barrelStack);
-	}
-
-	public static Optional<Integer> getMaincolorFromStack(ItemStack barrelStack) {
-		return NBTHelper.getInt(barrelStack, "mainColor");
+		return BarrelBlockItem.getMaincolorFromStack(barrelStack);
 	}
 
 	@Override
 	public void setAccentColor(ItemStack barrelStack, int accentColor) {
-		if (getMaincolorFromStack(barrelStack).isPresent()) {
+		if (BarrelBlockItem.getMaincolorFromStack(barrelStack).isPresent()) {
 			removeWoodType(barrelStack);
 		}
 		barrelStack.getOrCreateTag().putInt("accentColor", accentColor);
@@ -308,11 +293,7 @@ public class BarrelBlock extends Block implements EntityBlock, IStorageBlock, IA
 
 	@Override
 	public Optional<Integer> getAccentColor(ItemStack stack) {
-		return getAccentColorFromStack(stack);
-	}
-
-	public static Optional<Integer> getAccentColorFromStack(ItemStack barrelStack) {
-		return NBTHelper.getInt(barrelStack, "accentColor");
+		return BarrelBlockItem.getAccentColorFromStack(stack);
 	}
 
 	public void addWoodAndTintData(ItemStack stack, BlockGetter level, BlockPos pos) {
@@ -331,6 +312,6 @@ public class BarrelBlock extends Block implements EntityBlock, IStorageBlock, IA
 		if (accentColor > -1) {
 			setAccentColor(stack, accentColor);
 		}
-		be.getWoodType().ifPresent(n -> setWoodType(stack, n));
+		be.getWoodType().ifPresent(n -> BarrelBlockItem.setWoodType(stack, n));
 	}
 }

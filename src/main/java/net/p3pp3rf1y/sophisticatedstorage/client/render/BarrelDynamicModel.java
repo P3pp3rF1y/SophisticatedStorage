@@ -50,6 +50,7 @@ import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
+import net.p3pp3rf1y.sophisticatedstorage.item.BarrelBlockItem;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -435,9 +436,9 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 		@Nullable
 		@Override
 		public BakedModel resolve(BakedModel model, ItemStack stack, @Nullable ClientLevel level, @Nullable LivingEntity entity, int seed) {
-			barrelBakedModel.barrelWoodName = BarrelBlock.getWoodType(stack).map(WoodType::name).orElse(null);
-			barrelBakedModel.barrelHasMainColor = BarrelBlock.getMaincolorFromStack(stack).isPresent();
-			barrelBakedModel.barrelHasAccentColor = BarrelBlock.getAccentColorFromStack(stack).isPresent();
+			barrelBakedModel.barrelWoodName = BarrelBlockItem.getWoodType(stack).map(WoodType::name).orElse(null);
+			barrelBakedModel.barrelHasMainColor = BarrelBlockItem.getMaincolorFromStack(stack).isPresent();
+			barrelBakedModel.barrelHasAccentColor = BarrelBlockItem.getAccentColorFromStack(stack).isPresent();
 			return barrelBakedModel;
 		}
 	}

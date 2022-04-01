@@ -4,6 +4,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.SettingsScreen;
+import net.p3pp3rf1y.sophisticatedcore.client.gui.controls.ItemButton;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.Position;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.TranslationHelper;
 import net.p3pp3rf1y.sophisticatedcore.settings.globaloverridable.GlobalOverridableSettingsContainer;
@@ -19,6 +20,7 @@ public class StorageGlobalOverridableSettingsTab extends GlobalOverridableSettin
 
 	public StorageGlobalOverridableSettingsTab(GlobalOverridableSettingsContainer container, Position position, SettingsScreen screen) {
 		super(container, position, screen, CONTEXT_TOOLTIP, new TranslatableComponent(StorageTranslationHelper.INSTANCE.translSettingsButton("context_storage")),
-				StorageTranslationHelper.INSTANCE.translSettings("storage"), StorageTranslationHelper.INSTANCE.translSettingsTooltip("storage"));
+				StorageTranslationHelper.INSTANCE.translSettings("storage"), StorageTranslationHelper.INSTANCE.translSettingsTooltip("storage"),
+				onTabIconClicked -> new ItemButton(new Position(position.x() + 1, position.y() + 4), onTabIconClicked, container.getSettingsContainer().getStorageWrapper().getWrappedStorageStack(), new TranslatableComponent("gui.sophisticatedstorage.narrate.global_tab_button")));
 	}
 }

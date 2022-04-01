@@ -18,7 +18,6 @@ import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
-import net.p3pp3rf1y.sophisticatedcore.util.BlockItemBase;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlock;
@@ -30,6 +29,7 @@ import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageSettingsContainer;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.SmithingStorageUpgradeRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.StorageDyeRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.StorageTierUpgradeRecipe;
+import net.p3pp3rf1y.sophisticatedstorage.item.BarrelBlockItem;
 
 public class ModBlocks {
 	private ModBlocks() {}
@@ -51,11 +51,11 @@ public class ModBlocks {
 			BlockBehaviour.Properties.of(Material.WOOD).strength(2.5F).sound(SoundType.WOOD)));
 	public static final RegistryObject<BarrelBlock> NETHERITE_BARREL = BLOCKS.register("netherite_barrel", () -> new BarrelBlock(Config.COMMON.netheriteBarrel.inventorySlotCount.get(), Config.COMMON.netheriteBarrel.upgradeSlotCount.get(),
 			BlockBehaviour.Properties.of(Material.WOOD).strength(2.5F).sound(SoundType.WOOD)));
-	public static final RegistryObject<BlockItem> BARREL_ITEM = ITEMS.register(BARREL_REGISTRY_NAME, () -> new BlockItemBase(BARREL.get(), new Item.Properties(), SophisticatedStorage.CREATIVE_TAB));
-	public static final RegistryObject<BlockItem> IRON_BARREL_ITEM = ITEMS.register("iron_barrel", () -> new BlockItemBase(IRON_BARREL.get(), new Item.Properties(), SophisticatedStorage.CREATIVE_TAB));
-	public static final RegistryObject<BlockItem> GOLD_BARREL_ITEM = ITEMS.register("gold_barrel", () -> new BlockItemBase(GOLD_BARREL.get(), new Item.Properties(), SophisticatedStorage.CREATIVE_TAB));
-	public static final RegistryObject<BlockItem> DIAMOND_BARREL_ITEM = ITEMS.register("diamond_barrel", () -> new BlockItemBase(DIAMOND_BARREL.get(), new Item.Properties(), SophisticatedStorage.CREATIVE_TAB));
-	public static final RegistryObject<BlockItem> NETHERITE_BARREL_ITEM = ITEMS.register("netherite_barrel", () -> new BlockItemBase(NETHERITE_BARREL.get(), new Item.Properties(), SophisticatedStorage.CREATIVE_TAB));
+	public static final RegistryObject<BlockItem> BARREL_ITEM = ITEMS.register(BARREL_REGISTRY_NAME, () -> new BarrelBlockItem(BARREL.get(), new Item.Properties(), SophisticatedStorage.CREATIVE_TAB));
+	public static final RegistryObject<BlockItem> IRON_BARREL_ITEM = ITEMS.register("iron_barrel", () -> new BarrelBlockItem(IRON_BARREL.get(), new Item.Properties(), SophisticatedStorage.CREATIVE_TAB));
+	public static final RegistryObject<BlockItem> GOLD_BARREL_ITEM = ITEMS.register("gold_barrel", () -> new BarrelBlockItem(GOLD_BARREL.get(), new Item.Properties(), SophisticatedStorage.CREATIVE_TAB));
+	public static final RegistryObject<BlockItem> DIAMOND_BARREL_ITEM = ITEMS.register("diamond_barrel", () -> new BarrelBlockItem(DIAMOND_BARREL.get(), new Item.Properties(), SophisticatedStorage.CREATIVE_TAB));
+	public static final RegistryObject<BlockItem> NETHERITE_BARREL_ITEM = ITEMS.register("netherite_barrel", () -> new BarrelBlockItem(NETHERITE_BARREL.get(), new Item.Properties(), SophisticatedStorage.CREATIVE_TAB));
 
 	@SuppressWarnings("ConstantConditions") //no datafixer type needed
 	public static final RegistryObject<BlockEntityType<StorageBlockEntity>> BARREL_TILE_TYPE = BLOCK_ENTITIES.register(BARREL_REGISTRY_NAME, () ->
