@@ -66,7 +66,6 @@ public class BarrelBlock extends Block implements EntityBlock, IStorageBlock, IA
 	public static final DirectionProperty FACING = BlockStateProperties.FACING;
 	public static final BooleanProperty OPEN = BlockStateProperties.OPEN;
 	public static final BooleanProperty TICKING = BooleanProperty.create("ticking");
-	private static final VoxelShape SLIGHTLY_SMALLER_SHAPE = box(0.01, 0.01, 0.01, 15.99, 15.99, 15.99);
 	private static final VoxelShape ITEM_ENTITY_COLLISION_SHAPE = box(0.1, 0.1, 0.1, 15.9, 15.9, 15.9);
 
 	private final int numberOfInventorySlots;
@@ -109,12 +108,6 @@ public class BarrelBlock extends Block implements EntityBlock, IStorageBlock, IA
 	@Override
 	public boolean isCollisionShapeFullBlock(BlockState pState, BlockGetter pLevel, BlockPos pPos) {
 		return false;
-	}
-
-	@SuppressWarnings("deprecation")
-	@Override
-	public VoxelShape getShape(BlockState pState, BlockGetter pLevel, BlockPos pPos, CollisionContext pContext) {
-		return SLIGHTLY_SMALLER_SHAPE;
 	}
 
 	@Override
