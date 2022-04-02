@@ -13,7 +13,9 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.SimpleMenuProvider;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.DyeColor;
@@ -38,11 +40,13 @@ import net.minecraft.world.level.block.state.properties.WoodType;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.EntityCollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.IBlockRenderProperties;
 import net.minecraftforge.network.NetworkHooks;
+import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.util.ColorHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
@@ -62,7 +66,8 @@ public class BarrelBlock extends Block implements EntityBlock, IStorageBlock, IA
 	public static final DirectionProperty FACING = BlockStateProperties.FACING;
 	public static final BooleanProperty OPEN = BlockStateProperties.OPEN;
 	public static final BooleanProperty TICKING = BooleanProperty.create("ticking");
-	private static final VoxelShape SLIGHTLY_BIGGER_SHAPE = box(0.01, 0.01, 0.01, 15.99, 15.99, 15.99);
+	private static final VoxelShape SLIGHTLY_SMALLER_SHAPE = box(0.01, 0.01, 0.01, 15.99, 15.99, 15.99);
+	private static final VoxelShape ITEM_ENTITY_COLLISION_SHAPE = box(0.1, 0.1, 0.1, 15.9, 15.9, 15.9);
 
 	private final int numberOfInventorySlots;
 	private final int numberOfUpgradeSlots;
@@ -83,14 +88,33 @@ public class BarrelBlock extends Block implements EntityBlock, IStorageBlock, IA
 		return stack;
 	}
 
+	@SuppressWarnings("deprecation")
+	@Override
+	public void entityInside(BlockState state, Level world, BlockPos pos, Entity entity) {
+		super.entityInside(state, world, pos, entity);
+		if (!world.isClientSide && entity instanceof ItemEntity itemEntity) {
+			WorldHelper.getBlockEntity(world, pos, StorageBlockEntity.class).ifPresent(te -> tryToPickup(world, itemEntity, te));
+		}
+	}
+
+	private void tryToPickup(Level world, ItemEntity itemEntity, IStorageWrapper w) {
+		ItemStack remainingStack = itemEntity.getItem().copy();
+		remainingStack = InventoryHelper.runPickupOnPickupResponseUpgrades(world, w.getUpgradeHandler(), remainingStack, false);
+		if (remainingStack.getCount() < itemEntity.getItem().getCount()) {
+			itemEntity.setItem(remainingStack);
+		}
+	}
+
+	@SuppressWarnings("deprecation")
 	@Override
 	public boolean isCollisionShapeFullBlock(BlockState pState, BlockGetter pLevel, BlockPos pPos) {
 		return false;
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public VoxelShape getShape(BlockState pState, BlockGetter pLevel, BlockPos pPos, CollisionContext pContext) {
-		return SLIGHTLY_BIGGER_SHAPE;
+		return SLIGHTLY_SMALLER_SHAPE;
 	}
 
 	@Override
@@ -153,6 +177,7 @@ public class BarrelBlock extends Block implements EntityBlock, IStorageBlock, IA
 		});
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
 		if (level.isClientSide) {
@@ -180,6 +205,7 @@ public class BarrelBlock extends Block implements EntityBlock, IStorageBlock, IA
 		});
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean isMoving) {
 		if (!state.is(newState.getBlock())) {
@@ -192,6 +218,7 @@ public class BarrelBlock extends Block implements EntityBlock, IStorageBlock, IA
 		}
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public void tick(BlockState pState, ServerLevel level, BlockPos pos, Random pRandom) {
 		WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).ifPresent(StorageBlockEntity::recheckOpen);
@@ -215,11 +242,13 @@ public class BarrelBlock extends Block implements EntityBlock, IStorageBlock, IA
 		return new StorageBlockEntity(pos, state);
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public boolean hasAnalogOutputSignal(BlockState pState) {
 		return true;
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public int getAnalogOutputSignal(BlockState blockState, Level level, BlockPos pos) {
 		return WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).map(be -> InventoryHelper.getAnalogOutputSignal(be.getInventoryForInputOutput())).orElse(0);
@@ -230,6 +259,7 @@ public class BarrelBlock extends Block implements EntityBlock, IStorageBlock, IA
 		return state.setValue(FACING, direction.rotate(state.getValue(FACING)));
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public BlockState mirror(BlockState pState, Mirror pMirror) {
 		return pState.rotate(pMirror.getRotation(pState.getValue(FACING)));
@@ -291,15 +321,19 @@ public class BarrelBlock extends Block implements EntityBlock, IStorageBlock, IA
 		barrelStack.getOrCreateTag().putInt("accentColor", accentColor);
 	}
 
+	@SuppressWarnings("deprecation")
+	@Override
+	public VoxelShape getCollisionShape(BlockState pState, BlockGetter pLevel, BlockPos pPos, CollisionContext pContext) {
+		return pContext instanceof EntityCollisionContext entityCollisionContext && entityCollisionContext.getEntity() instanceof ItemEntity ? ITEM_ENTITY_COLLISION_SHAPE : super.getCollisionShape(pState, pLevel, pPos, pContext);
+	}
+
 	@Override
 	public Optional<Integer> getAccentColor(ItemStack stack) {
 		return BarrelBlockItem.getAccentColorFromStack(stack);
 	}
 
 	public void addWoodAndTintData(ItemStack stack, BlockGetter level, BlockPos pos) {
-		WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).ifPresent(be -> {
-			addDropData(stack, be);
-		});
+		WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).ifPresent(be -> addDropData(stack, be));
 	}
 
 	@Override
