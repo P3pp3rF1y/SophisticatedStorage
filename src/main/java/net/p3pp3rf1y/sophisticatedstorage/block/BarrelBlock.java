@@ -1,5 +1,7 @@
 package net.p3pp3rf1y.sophisticatedstorage.block;
 
+import com.mojang.math.Vector3f;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.core.BlockPos;
@@ -47,6 +49,11 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.IBlockRenderProperties;
 import net.minecraftforge.network.NetworkHooks;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
+import net.p3pp3rf1y.sophisticatedcore.api.IUpgradeRenderer;
+import net.p3pp3rf1y.sophisticatedcore.client.render.UpgradeRenderRegistry;
+import net.p3pp3rf1y.sophisticatedcore.renderdata.IUpgradeRenderData;
+import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
+import net.p3pp3rf1y.sophisticatedcore.renderdata.UpgradeRenderDataType;
 import net.p3pp3rf1y.sophisticatedcore.util.ColorHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
@@ -341,5 +348,35 @@ public class BarrelBlock extends Block implements EntityBlock, IStorageBlock, IA
 		}
 		be.getWoodType().ifPresent(n -> BarrelBlockItem.setWoodType(stack, n));
 		be.getCustomName().ifPresent(stack::setHoverName);
+	}
+
+	@Override
+	public void animateTick(BlockState state, Level level, BlockPos pos, Random rand) {
+		WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).ifPresent(te -> {
+			RenderInfo renderInfo = te.getRenderInfo();
+			renderUpgrades(level, rand, pos, state.getValue(FACING), renderInfo);
+		});
+
+	}
+
+	private static void renderUpgrades(Level level, Random rand, BlockPos pos, Direction facing, RenderInfo renderInfo) {
+		if (Minecraft.getInstance().isPaused()) {
+			return;
+		}
+		renderInfo.getUpgradeRenderData().forEach((type, data) -> UpgradeRenderRegistry.getUpgradeRenderer(type).ifPresent(renderer -> renderUpgrade(renderer, level, rand, pos, facing, type, data)));
+	}
+
+	private static Vector3f getMiddleFacePoint(BlockPos pos, Direction facing, Vector3f vector) {
+		Vector3f point = vector.copy();
+		point.add(0, 0, 0.6f);
+		point.transform(Vector3f.XP.rotationDegrees(-90.0F));
+		point.transform(facing.getRotation());
+		point.add(pos.getX() + 0.5f, pos.getY() + 0.5f, pos.getZ() + 0.5f);
+		return point;
+	}
+
+	private static <T extends IUpgradeRenderData> void renderUpgrade(IUpgradeRenderer<T> renderer, Level level, Random rand, BlockPos pos, Direction facing, UpgradeRenderDataType<?> type, IUpgradeRenderData data) {
+		//noinspection unchecked
+		type.cast(data).ifPresent(renderData -> renderer.render(level, rand, vector -> getMiddleFacePoint(pos, facing, vector), (T) renderData));
 	}
 }
