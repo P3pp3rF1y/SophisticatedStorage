@@ -325,7 +325,6 @@ public class StorageBlockEntity extends BlockEntity implements IStorageWrapper {
 		return getInventoryHandler();
 	}
 
-	//TODO make sure that inventory handlers are properly refreshed if that require to be based on upgrade changes - definitely IO handler needs to be when filter upgrades are put in
 	@Override
 	public InventoryHandler getInventoryHandler() {
 		if (inventoryHandler == null) {

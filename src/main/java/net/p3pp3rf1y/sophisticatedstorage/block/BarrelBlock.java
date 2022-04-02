@@ -347,5 +347,6 @@ public class BarrelBlock extends Block implements EntityBlock, IStorageBlock, IA
 			setAccentColor(stack, accentColor);
 		}
 		be.getWoodType().ifPresent(n -> BarrelBlockItem.setWoodType(stack, n));
+		be.getCustomName().ifPresent(stack::setHoverName);
 	}
 }
