@@ -258,7 +258,7 @@ public class StorageBlockEntity extends BlockEntity implements IStorageWrapper {
 		settingsHandler.reloadFrom(settingsNbt);
 		renderInfoNbt = tag.getCompound("renderInfo");
 		renderInfo.deserializeFrom(renderInfoNbt);
-		contentsUuid = NBTHelper.getTagValue(tag, UUID_TAG, CompoundTag::getCompound).map(NbtUtils::loadUUID).orElse(null);
+		contentsUuid = NBTHelper.getTagValue(tag, UUID_TAG, CompoundTag::get).map(NbtUtils::loadUUID).orElse(null);
 		mainColor = NBTHelper.getInt(tag, MAIN_COLOR_TAG).orElse(-1);
 		accentColor = NBTHelper.getInt(tag, ACCENT_COLOR_TAG).orElse(-1);
 		openTabId = NBTHelper.getInt(tag, OPEN_TAB_ID_TAG).orElse(-1);
