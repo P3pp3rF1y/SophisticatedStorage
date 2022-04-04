@@ -81,7 +81,7 @@ public class BarrelBlock extends Block implements EntityBlock, IStorageBlock, IA
 	public static final Set<WoodType> CUSTOM_TEXTURE_WOOD_TYPES = Set.of(WoodType.ACACIA, WoodType.BIRCH, WoodType.CRIMSON, WoodType.DARK_OAK, WoodType.JUNGLE, WoodType.OAK, WoodType.SPRUCE, WoodType.WARPED);
 
 	public BarrelBlock(int numberOfInventorySlots, int numberOfUpgradeSlots, Properties properties) {
-		super(properties);
+		super(properties.noOcclusion());
 		this.numberOfInventorySlots = numberOfInventorySlots;
 		this.numberOfUpgradeSlots = numberOfUpgradeSlots;
 		registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(OPEN, false).setValue(TICKING, false));
