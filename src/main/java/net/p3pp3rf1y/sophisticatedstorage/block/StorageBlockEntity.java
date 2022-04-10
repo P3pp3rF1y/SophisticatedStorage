@@ -9,13 +9,13 @@ import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BarrelBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.ContainerOpenersCounter;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.WoodType;
@@ -44,8 +44,6 @@ import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
-import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
-import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.settings.StorageSettingsHandler;
 
@@ -57,7 +55,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
-public class StorageBlockEntity extends BlockEntity implements IStorageWrapper {
+public abstract class StorageBlockEntity extends BlockEntity implements IStorageWrapper {
 	private static final String UUID_TAG = "uuid";
 	private static final String MAIN_COLOR_TAG = "mainColor";
 	private static final String ACCENT_COLOR_TAG = "accentColor";
@@ -92,33 +90,12 @@ public class StorageBlockEntity extends BlockEntity implements IStorageWrapper {
 
 	private IDynamicRenderTracker dynamicRenderTracker = IDynamicRenderTracker.NOOP;
 
-	private final ContainerOpenersCounter openersCounter = new ContainerOpenersCounter() {
-		protected void onOpen(Level level, BlockPos pos, BlockState state) {
-			playSound(state, SoundEvents.BARREL_OPEN);
-			updateBlockState(state, true);
-		}
+	protected abstract ContainerOpenersCounter getOpenersCounter();
 
-		protected void onClose(Level level, BlockPos pos, BlockState state) {
-			playSound(state, SoundEvents.BARREL_CLOSE);
-			updateBlockState(state, false);
-		}
-
-		protected void openerCountChanged(Level level, BlockPos pos, BlockState state, int previousOpenerCount, int newOpenerCount) {
-			//noop
-		}
-
-		protected boolean isOwnContainer(Player player) {
-			if (player.containerMenu instanceof StorageContainerMenu storageContainerMenu) {
-				return storageContainerMenu.getStorageBlockEntity() == StorageBlockEntity.this;
-			} else {
-				return false;
-			}
-		}
-	};
 	private boolean isDroppingContents = false;
 
-	public StorageBlockEntity(BlockPos pos, BlockState state) {
-		super(ModBlocks.BARREL_TILE_TYPE.get(), pos, state);
+	protected StorageBlockEntity(BlockPos pos, BlockState state, BlockEntityType<? extends StorageBlockEntity> blockEntityType) {
+		super(blockEntityType, pos, state);
 		renderInfo = new RenderInfo(() -> this::setChanged) {
 			@Override
 			protected void serializeRenderInfo(CompoundTag renderInfo) {
@@ -150,7 +127,7 @@ public class StorageBlockEntity extends BlockEntity implements IStorageWrapper {
 	}
 
 	public boolean isOpen() {
-		return openersCounter.getOpenerCount() > 0;
+		return getOpenersCounter().getOpenerCount() > 0;
 	}
 
 	public Optional<Component> getCustomName() {
@@ -206,20 +183,20 @@ public class StorageBlockEntity extends BlockEntity implements IStorageWrapper {
 
 	public void startOpen(Player player) {
 		if (!remove && !player.isSpectator() && level != null) {
-			openersCounter.incrementOpeners(player, level, getBlockPos(), getBlockState());
+			getOpenersCounter().incrementOpeners(player, level, getBlockPos(), getBlockState());
 		}
 
 	}
 
 	public void stopOpen(Player player) {
 		if (!remove && !player.isSpectator() && level != null) {
-			openersCounter.decrementOpeners(player, level, getBlockPos(), getBlockState());
+			getOpenersCounter().decrementOpeners(player, level, getBlockPos(), getBlockState());
 		}
 	}
 
 	public void recheckOpen() {
 		if (!remove && level != null) {
-			openersCounter.recheckOpeners(level, getBlockPos(), getBlockState());
+			getOpenersCounter().recheckOpeners(level, getBlockPos(), getBlockState());
 		}
 	}
 
@@ -230,11 +207,11 @@ public class StorageBlockEntity extends BlockEntity implements IStorageWrapper {
 		level.setBlock(getBlockPos(), pState.setValue(BarrelBlock.OPEN, open), 3);
 	}
 
-	void playSound(BlockState pState, SoundEvent pSound) {
+	void playSound(BlockState state, SoundEvent pSound) {
 		if (level == null) {
 			return;
 		}
-		Vec3i vec3i = pState.getValue(BarrelBlock.FACING).getNormal();
+		Vec3i vec3i = state.getValue(BarrelBlock.FACING).getNormal();
 		double d0 = worldPosition.getX() + 0.5D + vec3i.getX() / 2.0D;
 		double d1 = worldPosition.getY() + 0.5D + vec3i.getY() / 2.0D;
 		double d2 = worldPosition.getZ() + 0.5D + vec3i.getZ() / 2.0D;

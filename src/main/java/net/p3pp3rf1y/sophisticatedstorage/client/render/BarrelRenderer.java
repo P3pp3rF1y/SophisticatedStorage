@@ -6,20 +6,15 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
-import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.world.item.ItemStack;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
-import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlock;
+import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockBase;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
 
-public class BarrelBlockEntityRenderer implements BlockEntityRenderer<StorageBlockEntity> {
-	public BarrelBlockEntityRenderer(BlockEntityRendererProvider.Context context) {
-
-	}
-
+public class BarrelRenderer implements BlockEntityRenderer<StorageBlockEntity> {
 	@Override
 	public void render(StorageBlockEntity blockEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
 		if (!blockEntity.hasDynamicRenderer()) {
@@ -34,7 +29,7 @@ public class BarrelBlockEntityRenderer implements BlockEntityRenderer<StorageBlo
 			return;
 		}
 
-		Direction facing = blockEntity.getBlockState().getValue(BarrelBlock.FACING);
+		Direction facing = blockEntity.getBlockState().getValue(StorageBlockBase.FACING);
 		BakedModel itemModel = minecraft.getItemRenderer().getModel(item, null, minecraft.player, 0);
 
 		poseStack.pushPose();

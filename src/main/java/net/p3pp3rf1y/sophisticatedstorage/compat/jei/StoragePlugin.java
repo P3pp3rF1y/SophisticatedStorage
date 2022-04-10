@@ -23,7 +23,8 @@ import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageSettingsScreen;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
-import net.p3pp3rf1y.sophisticatedstorage.item.BarrelBlockItem;
+import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
+import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,18 +40,23 @@ public class StoragePlugin implements IModPlugin {
 
 	@Override
 	public void registerItemSubtypes(ISubtypeRegistration registration) {
-		IIngredientSubtypeInterpreter<ItemStack> barrelNbtInterpreter = (itemStack, context) -> {
+		IIngredientSubtypeInterpreter<ItemStack> woodStorageNbtInterpreter = (itemStack, context) -> {
 			StringJoiner result = new StringJoiner(",");
-			BarrelBlockItem.getWoodType(itemStack).ifPresent(woodName -> result.add("woodName:" + woodName));
-			BarrelBlockItem.getMaincolorFromStack(itemStack).ifPresent(mainColor -> result.add("mainColor:" + mainColor));
-			BarrelBlockItem.getAccentColorFromStack(itemStack).ifPresent(accentColor -> result.add("accentColor:" + accentColor));
+			WoodStorageBlockItem.getWoodType(itemStack).ifPresent(woodName -> result.add("woodName:" + woodName));
+			StorageBlockItem.getMaincolorFromStack(itemStack).ifPresent(mainColor -> result.add("mainColor:" + mainColor));
+			StorageBlockItem.getAccentColorFromStack(itemStack).ifPresent(accentColor -> result.add("accentColor:" + accentColor));
 			return "{" + result + "}";
 		};
-		registration.registerSubtypeInterpreter(ModBlocks.BARREL_ITEM.get(), barrelNbtInterpreter);
-		registration.registerSubtypeInterpreter(ModBlocks.IRON_BARREL_ITEM.get(), barrelNbtInterpreter);
-		registration.registerSubtypeInterpreter(ModBlocks.GOLD_BARREL_ITEM.get(), barrelNbtInterpreter);
-		registration.registerSubtypeInterpreter(ModBlocks.DIAMOND_BARREL_ITEM.get(), barrelNbtInterpreter);
-		registration.registerSubtypeInterpreter(ModBlocks.NETHERITE_BARREL_ITEM.get(), barrelNbtInterpreter);
+		registration.registerSubtypeInterpreter(ModBlocks.BARREL_ITEM.get(), woodStorageNbtInterpreter);
+		registration.registerSubtypeInterpreter(ModBlocks.IRON_BARREL_ITEM.get(), woodStorageNbtInterpreter);
+		registration.registerSubtypeInterpreter(ModBlocks.GOLD_BARREL_ITEM.get(), woodStorageNbtInterpreter);
+		registration.registerSubtypeInterpreter(ModBlocks.DIAMOND_BARREL_ITEM.get(), woodStorageNbtInterpreter);
+		registration.registerSubtypeInterpreter(ModBlocks.NETHERITE_BARREL_ITEM.get(), woodStorageNbtInterpreter);
+		registration.registerSubtypeInterpreter(ModBlocks.CHEST_ITEM.get(), woodStorageNbtInterpreter);
+		registration.registerSubtypeInterpreter(ModBlocks.IRON_CHEST_ITEM.get(), woodStorageNbtInterpreter);
+		registration.registerSubtypeInterpreter(ModBlocks.GOLD_CHEST_ITEM.get(), woodStorageNbtInterpreter);
+		registration.registerSubtypeInterpreter(ModBlocks.DIAMOND_CHEST_ITEM.get(), woodStorageNbtInterpreter);
+		registration.registerSubtypeInterpreter(ModBlocks.NETHERITE_CHEST_ITEM.get(), woodStorageNbtInterpreter);
 	}
 
 	@Override

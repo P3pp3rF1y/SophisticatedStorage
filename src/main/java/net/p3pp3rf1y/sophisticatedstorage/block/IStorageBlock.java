@@ -9,7 +9,5 @@ public interface IStorageBlock {
 
 	int getNumberOfUpgradeSlots();
 
-	boolean isTicking(BlockState state);
-
 	void setTicking(Level level, BlockPos pos, BlockState currentState, boolean ticking);
 }

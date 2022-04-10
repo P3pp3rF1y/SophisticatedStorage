@@ -9,7 +9,7 @@ import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.SimpleRecipeSerializer;
 import net.p3pp3rf1y.sophisticatedcore.crafting.StorageDyeRecipeBase;
 import net.p3pp3rf1y.sophisticatedcore.util.ColorHelper;
-import net.p3pp3rf1y.sophisticatedstorage.block.ITintableBlock;
+import net.p3pp3rf1y.sophisticatedstorage.block.ITintableBlockItem;
 
 import java.util.List;
 
@@ -26,17 +26,17 @@ public class StorageDyeRecipe extends StorageDyeRecipeBase {
 
 	@Override
 	protected boolean isStorageItem(Item item) {
-		return item instanceof BlockItem blockItem && blockItem.getBlock() instanceof ITintableBlock;
+		return item instanceof BlockItem blockItem && blockItem.getBlock() instanceof ITintableBlockItem;
 	}
 
 	@Override
 	protected void applyColors(ItemStack coloredStorage, List<DyeColor> mainDyes, List<DyeColor> trimDyes) {
-		if (coloredStorage.getItem() instanceof BlockItem blockItem && blockItem.getBlock() instanceof ITintableBlock tintableBlock) {
+		if (coloredStorage.getItem() instanceof BlockItem blockItem && blockItem instanceof ITintableBlockItem tintableBlockItem) {
 			if (!mainDyes.isEmpty()) {
-				tintableBlock.setMainColor(coloredStorage, ColorHelper.calculateColor(tintableBlock.getMainColor(coloredStorage).orElse(0), 0, mainDyes));
+				tintableBlockItem.setMainColor(coloredStorage, ColorHelper.calculateColor(tintableBlockItem.getMainColor(coloredStorage).orElse(0), 0, mainDyes));
 			}
 			if (!trimDyes.isEmpty()) {
-				tintableBlock.setAccentColor(coloredStorage, ColorHelper.calculateColor(tintableBlock.getAccentColor(coloredStorage).orElse(0), 0, trimDyes));
+				tintableBlockItem.setAccentColor(coloredStorage, ColorHelper.calculateColor(tintableBlockItem.getAccentColor(coloredStorage).orElse(0), 0, trimDyes));
 			}
 		}
 	}

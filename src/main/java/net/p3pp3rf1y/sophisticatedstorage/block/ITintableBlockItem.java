@@ -4,7 +4,7 @@ import net.minecraft.world.item.ItemStack;
 
 import java.util.Optional;
 
-public interface ITintableBlock {
+public interface ITintableBlockItem {
 	void setMainColor(ItemStack stack, int mainColor);
 
 	void setAccentColor(ItemStack stack, int accentColor);

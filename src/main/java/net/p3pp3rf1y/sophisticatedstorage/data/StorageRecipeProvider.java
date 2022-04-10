@@ -27,7 +27,7 @@ import net.p3pp3rf1y.sophisticatedstorage.crafting.StorageDyeRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.StorageTierUpgradeRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
-import net.p3pp3rf1y.sophisticatedstorage.item.BarrelBlockItem;
+import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
 
 import java.util.function.Consumer;
 
@@ -53,7 +53,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 		woodBarrelRecipe(consumer, WoodType.SPRUCE, Blocks.SPRUCE_PLANKS, Blocks.SPRUCE_SLAB);
 		woodBarrelRecipe(consumer, WoodType.WARPED, Blocks.WARPED_PLANKS, Blocks.WARPED_SLAB);
 
-		ShapelessBasedRecipeBuilder.shapeless(BarrelBlockItem.setWoodType(new ItemStack(ModBlocks.BARREL_ITEM.get()), WoodType.SPRUCE))
+		ShapelessBasedRecipeBuilder.shapeless(WoodStorageBlockItem.setWoodType(new ItemStack(ModBlocks.BARREL_ITEM.get()), WoodType.SPRUCE))
 				.requires(Blocks.BARREL)
 				.requires(Blocks.REDSTONE_TORCH)
 				.unlockedBy("has_vanilla_barrel", has(Blocks.BARREL))
@@ -466,7 +466,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 	}
 
 	private void woodBarrelRecipe(Consumer<FinishedRecipe> consumer, WoodType woodType, Block planks, Block slab) {
-		ShapeBasedRecipeBuilder.shaped(BarrelBlockItem.setWoodType(new ItemStack(ModBlocks.BARREL_ITEM.get()), woodType))
+		ShapeBasedRecipeBuilder.shaped(WoodStorageBlockItem.setWoodType(new ItemStack(ModBlocks.BARREL_ITEM.get()), woodType))
 				.pattern("PSP")
 				.pattern("PRP")
 				.pattern("PSP")

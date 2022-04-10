@@ -50,7 +50,9 @@ import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
-import net.p3pp3rf1y.sophisticatedstorage.item.BarrelBlockItem;
+import net.p3pp3rf1y.sophisticatedstorage.block.WoodStorageBlockBase;
+import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
+import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -71,7 +73,7 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 	private static final String TOP_OPEN_TEXTURE_NAME = "top_open";
 
 	static {
-		BarrelBlock.CUSTOM_TEXTURE_WOOD_TYPES.forEach(woodType -> {
+		WoodStorageBlockBase.CUSTOM_TEXTURE_WOOD_TYPES.forEach(woodType -> {
 			String woodName = woodType.name();
 			Map<String, ResourceLocation> barrelTextures = new HashMap<>();
 			barrelTextures.put("top", SophisticatedStorage.getRL(BLOCK_FOLDER + woodName + "_barrel_top"));
@@ -228,13 +230,14 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 			));
 			TRANSFORMS = builder.build();
 
-			//noinspection ConstantConditions -
+			//noinspection ConstantConditions,deprecation
 			ITEM_TRANSFORMS = new ItemTransforms(fromTransformation(TRANSFORMS.get(ItemTransforms.TransformType.THIRD_PERSON_LEFT_HAND)), fromTransformation(TRANSFORMS.get(ItemTransforms.TransformType.THIRD_PERSON_RIGHT_HAND)),
 					fromTransformation(TRANSFORMS.get(ItemTransforms.TransformType.FIRST_PERSON_LEFT_HAND)), fromTransformation(TRANSFORMS.get(ItemTransforms.TransformType.FIRST_PERSON_RIGHT_HAND)),
 					fromTransformation(TRANSFORMS.get(ItemTransforms.TransformType.HEAD)), fromTransformation(TRANSFORMS.get(ItemTransforms.TransformType.GUI)),
 					fromTransformation(TRANSFORMS.get(ItemTransforms.TransformType.GROUND)), fromTransformation(TRANSFORMS.get(ItemTransforms.TransformType.FIXED)));
 		}
 
+		@SuppressWarnings("deprecation")
 		private static ItemTransform fromTransformation(Transformation transformation) {
 			return new ItemTransform(transformation.getLeftRotation().toXYZ(), transformation.getTranslation(), transformation.getScale());
 		}
@@ -436,9 +439,9 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 		@Nullable
 		@Override
 		public BakedModel resolve(BakedModel model, ItemStack stack, @Nullable ClientLevel level, @Nullable LivingEntity entity, int seed) {
-			barrelBakedModel.barrelWoodName = BarrelBlockItem.getWoodType(stack).map(WoodType::name).orElse(null);
-			barrelBakedModel.barrelHasMainColor = BarrelBlockItem.getMaincolorFromStack(stack).isPresent();
-			barrelBakedModel.barrelHasAccentColor = BarrelBlockItem.getAccentColorFromStack(stack).isPresent();
+			barrelBakedModel.barrelWoodName = WoodStorageBlockItem.getWoodType(stack).map(WoodType::name).orElse(null);
+			barrelBakedModel.barrelHasMainColor = StorageBlockItem.getMaincolorFromStack(stack).isPresent();
+			barrelBakedModel.barrelHasAccentColor = StorageBlockItem.getAccentColorFromStack(stack).isPresent();
 			return barrelBakedModel;
 		}
 	}

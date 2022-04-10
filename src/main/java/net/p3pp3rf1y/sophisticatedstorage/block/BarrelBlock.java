@@ -1,12 +1,9 @@
 package net.p3pp3rf1y.sophisticatedstorage.block;
 
-import com.mojang.math.Vector3f;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -15,13 +12,10 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.SimpleMenuProvider;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.monster.piglin.PiglinAi;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -30,17 +24,12 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
-import net.minecraft.world.level.block.state.properties.WoodType;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.EntityCollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -48,89 +37,29 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.IBlockRenderProperties;
 import net.minecraftforge.network.NetworkHooks;
-import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
-import net.p3pp3rf1y.sophisticatedcore.api.IUpgradeRenderer;
-import net.p3pp3rf1y.sophisticatedcore.client.render.UpgradeRenderRegistry;
-import net.p3pp3rf1y.sophisticatedcore.renderdata.IUpgradeRenderData;
-import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
-import net.p3pp3rf1y.sophisticatedcore.renderdata.UpgradeRenderDataType;
-import net.p3pp3rf1y.sophisticatedcore.util.ColorHelper;
-import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.client.particle.CustomTintTerrainParticle;
 import net.p3pp3rf1y.sophisticatedstorage.client.particle.CustomTintTerrainParticleData;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
-import net.p3pp3rf1y.sophisticatedstorage.item.BarrelBlockItem;
 
 import javax.annotation.Nullable;
-import java.util.Optional;
 import java.util.Random;
-import java.util.Set;
 import java.util.function.Consumer;
 
-public class BarrelBlock extends Block implements EntityBlock, IStorageBlock, IAdditionalDropDataBlock, ITintableBlock {
-	public static final DirectionProperty FACING = BlockStateProperties.FACING;
+public class BarrelBlock extends WoodStorageBlockBase implements EntityBlock, IAdditionalDropDataBlock {
 	public static final BooleanProperty OPEN = BlockStateProperties.OPEN;
-	public static final BooleanProperty TICKING = BooleanProperty.create("ticking");
 	private static final VoxelShape ITEM_ENTITY_COLLISION_SHAPE = box(0.1, 0.1, 0.1, 15.9, 15.9, 15.9);
 
-	private final int numberOfInventorySlots;
-	private final int numberOfUpgradeSlots;
-
-	public static final Set<WoodType> CUSTOM_TEXTURE_WOOD_TYPES = Set.of(WoodType.ACACIA, WoodType.BIRCH, WoodType.CRIMSON, WoodType.DARK_OAK, WoodType.JUNGLE, WoodType.OAK, WoodType.SPRUCE, WoodType.WARPED);
-
 	public BarrelBlock(int numberOfInventorySlots, int numberOfUpgradeSlots, Properties properties) {
-		super(properties.noOcclusion());
-		this.numberOfInventorySlots = numberOfInventorySlots;
-		this.numberOfUpgradeSlots = numberOfUpgradeSlots;
+		super(properties.noOcclusion(), numberOfInventorySlots, numberOfUpgradeSlots);
 		registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(OPEN, false).setValue(TICKING, false));
-	}
-
-	@Override
-	public ItemStack getCloneItemStack(BlockState state, HitResult target, BlockGetter world, BlockPos pos, Player player) {
-		ItemStack stack = new ItemStack(this);
-		addWoodAndTintData(stack, world, pos);
-		return stack;
-	}
-
-	@SuppressWarnings("deprecation")
-	@Override
-	public void entityInside(BlockState state, Level world, BlockPos pos, Entity entity) {
-		super.entityInside(state, world, pos, entity);
-		if (!world.isClientSide && entity instanceof ItemEntity itemEntity) {
-			WorldHelper.getBlockEntity(world, pos, StorageBlockEntity.class).ifPresent(te -> tryToPickup(world, itemEntity, te));
-		}
-	}
-
-	private void tryToPickup(Level world, ItemEntity itemEntity, IStorageWrapper w) {
-		ItemStack remainingStack = itemEntity.getItem().copy();
-		remainingStack = InventoryHelper.runPickupOnPickupResponseUpgrades(world, w.getUpgradeHandler(), remainingStack, false);
-		if (remainingStack.getCount() < itemEntity.getItem().getCount()) {
-			itemEntity.setItem(remainingStack);
-		}
 	}
 
 	@SuppressWarnings("deprecation")
 	@Override
 	public boolean isCollisionShapeFullBlock(BlockState pState, BlockGetter pLevel, BlockPos pPos) {
 		return false;
-	}
-
-	@Override
-	public void fillItemCategory(CreativeModeTab tab, NonNullList<ItemStack> items) {
-		CUSTOM_TEXTURE_WOOD_TYPES.forEach(woodType -> items.add(BarrelBlockItem.setWoodType(new ItemStack(this), woodType)));
-
-		for (DyeColor color : DyeColor.values()) {
-			ItemStack barrelStack = new ItemStack(this);
-			setMainColor(barrelStack, ColorHelper.getColor(color.getTextureDiffuseColors()));
-			setAccentColor(barrelStack, ColorHelper.getColor(color.getTextureDiffuseColors()));
-			items.add(barrelStack);
-		}
-		ItemStack barrelStack = new ItemStack(this);
-		setMainColor(barrelStack, ColorHelper.getColor(DyeColor.YELLOW.getTextureDiffuseColors()));
-		setAccentColor(barrelStack, ColorHelper.getColor(DyeColor.LIME.getTextureDiffuseColors()));
-		items.add(barrelStack);
 	}
 
 	@Override
@@ -188,70 +117,16 @@ public class BarrelBlock extends Block implements EntityBlock, IStorageBlock, IA
 			player.awardStat(Stats.OPEN_BARREL);
 			NetworkHooks.openGui((ServerPlayer) player, new SimpleMenuProvider((w, p, pl) -> new StorageContainerMenu(w, pl, pos),
 					WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).map(StorageBlockEntity::getDisplayName).orElse(TextComponent.EMPTY)), pos);
+			PiglinAi.angerNearbyPiglins(player, true);
 		});
 
 		return InteractionResult.CONSUME;
-	}
-
-	@Override
-	public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
-		WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).ifPresent(be -> {
-			if (stack.hasCustomHoverName()) {
-				be.setCustomName(stack.getHoverName());
-			}
-			BarrelBlockItem.getWoodType(stack).ifPresent(be::setWoodType);
-			BarrelBlockItem.getMaincolorFromStack(stack).ifPresent(be::setMainColor);
-			BarrelBlockItem.getAccentColorFromStack(stack).ifPresent(be::setAccentColor);
-		});
-	}
-
-	@SuppressWarnings("deprecation")
-	@Override
-	public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean isMoving) {
-		if (!state.is(newState.getBlock())) {
-			WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).ifPresent(b -> {
-				b.dropContents();
-				level.updateNeighbourForOutputSignal(pos, this);
-			});
-
-			super.onRemove(state, level, pos, newState, isMoving);
-		}
 	}
 
 	@SuppressWarnings("deprecation")
 	@Override
 	public void tick(BlockState pState, ServerLevel level, BlockPos pos, Random pRandom) {
 		WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).ifPresent(StorageBlockEntity::recheckOpen);
-	}
-
-	@Nullable
-	@Override
-	public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> blockEntityType) {
-		return !level.isClientSide && Boolean.TRUE.equals(state.getValue(TICKING)) ? createTickerHelper(blockEntityType, ModBlocks.BARREL_TILE_TYPE.get(), (l, blockPos, blockState, storageBlockEntity) -> StorageBlockEntity.serverTick(l, blockPos, storageBlockEntity)) : null;
-	}
-
-	@Nullable
-	protected static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(BlockEntityType<A> typePassedIn, BlockEntityType<E> typeExpected, BlockEntityTicker<? super E> blockEntityTicker) {
-		//noinspection unchecked
-		return typeExpected == typePassedIn ? (BlockEntityTicker<A>) blockEntityTicker : null;
-	}
-
-	@Nullable
-	@Override
-	public StorageBlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-		return new StorageBlockEntity(pos, state);
-	}
-
-	@SuppressWarnings("deprecation")
-	@Override
-	public boolean hasAnalogOutputSignal(BlockState pState) {
-		return true;
-	}
-
-	@SuppressWarnings("deprecation")
-	@Override
-	public int getAnalogOutputSignal(BlockState blockState, Level level, BlockPos pos) {
-		return WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).map(be -> InventoryHelper.getAnalogOutputSignal(be.getInventoryForInputOutput())).orElse(0);
 	}
 
 	@Override
@@ -276,107 +151,20 @@ public class BarrelBlock extends Block implements EntityBlock, IStorageBlock, IA
 		return defaultBlockState().setValue(FACING, blockPlaceContext.getNearestLookingDirection().getOpposite());
 	}
 
-	@Override
-	public int getNumberOfInventorySlots() {
-		return numberOfInventorySlots;
-	}
-
-	@Override
-	public int getNumberOfUpgradeSlots() {
-		return numberOfUpgradeSlots;
-	}
-
-	@Override
-	public boolean isTicking(BlockState state) {
-		return state.getValue(TICKING);
-	}
-
-	@Override
-	public void setTicking(Level level, BlockPos pos, BlockState currentState, boolean ticking) {
-		level.setBlockAndUpdate(pos, currentState.setValue(TICKING, ticking));
-	}
-
-	private void removeWoodType(ItemStack barrelStack) {
-		barrelStack.getOrCreateTag().remove(BarrelBlockItem.WOOD_TYPE_TAG);
-	}
-
-	@Override
-	public void setMainColor(ItemStack barrelStack, int mainColor) {
-		if (BarrelBlockItem.getAccentColorFromStack(barrelStack).isPresent()) {
-			removeWoodType(barrelStack);
-		}
-		barrelStack.getOrCreateTag().putInt("mainColor", mainColor);
-	}
-
-	@Override
-	public Optional<Integer> getMainColor(ItemStack barrelStack) {
-		return BarrelBlockItem.getMaincolorFromStack(barrelStack);
-	}
-
-	@Override
-	public void setAccentColor(ItemStack barrelStack, int accentColor) {
-		if (BarrelBlockItem.getMaincolorFromStack(barrelStack).isPresent()) {
-			removeWoodType(barrelStack);
-		}
-		barrelStack.getOrCreateTag().putInt("accentColor", accentColor);
-	}
-
 	@SuppressWarnings("deprecation")
 	@Override
 	public VoxelShape getCollisionShape(BlockState pState, BlockGetter pLevel, BlockPos pPos, CollisionContext pContext) {
 		return pContext instanceof EntityCollisionContext entityCollisionContext && entityCollisionContext.getEntity() instanceof ItemEntity ? ITEM_ENTITY_COLLISION_SHAPE : super.getCollisionShape(pState, pLevel, pPos, pContext);
 	}
 
+	@Nullable
 	@Override
-	public Optional<Integer> getAccentColor(ItemStack stack) {
-		return BarrelBlockItem.getAccentColorFromStack(stack);
-	}
-
-	public void addWoodAndTintData(ItemStack stack, BlockGetter level, BlockPos pos) {
-		WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).ifPresent(be -> addDropData(stack, be));
+	public StorageBlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+		return new BarrelBlockEntity(pos, state);
 	}
 
 	@Override
-	public void addDropData(ItemStack stack, StorageBlockEntity be) {
-		int mainColor = be.getMainColor();
-		if (mainColor > -1) {
-			setMainColor(stack, mainColor);
-		}
-		int accentColor = be.getAccentColor();
-		if (accentColor > -1) {
-			setAccentColor(stack, accentColor);
-		}
-		be.getWoodType().ifPresent(n -> BarrelBlockItem.setWoodType(stack, n));
-		be.getCustomName().ifPresent(stack::setHoverName);
-	}
-
-	@Override
-	public void animateTick(BlockState state, Level level, BlockPos pos, Random rand) {
-		WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).ifPresent(te -> {
-			RenderInfo renderInfo = te.getRenderInfo();
-			renderUpgrades(level, rand, pos, state.getValue(FACING), renderInfo);
-		});
-
-	}
-
-	private static void renderUpgrades(Level level, Random rand, BlockPos pos, Direction facing, RenderInfo renderInfo) {
-		if (Minecraft.getInstance().isPaused()) {
-			return;
-		}
-		renderInfo.getUpgradeRenderData().forEach((type, data) -> UpgradeRenderRegistry.getUpgradeRenderer(type).ifPresent(renderer -> renderUpgrade(renderer, level, rand, pos, facing, type, data)));
-	}
-
-	private static Vector3f getMiddleFacePoint(BlockPos pos, Direction facing, Vector3f vector) {
-		Vector3f point = vector.copy();
-		point.add(0, 0, 0.6f);
-		point.transform(Vector3f.XP.rotationDegrees(-90.0F));
-		point.transform(facing.getRotation());
-		point.add(pos.getX() + 0.5f, pos.getY() + 0.5f, pos.getZ() + 0.5f);
-		return point;
-	}
-
-	private static <T extends IUpgradeRenderData> void renderUpgrade(IUpgradeRenderer<T> renderer, Level level, Random rand, BlockPos pos, Direction facing, UpgradeRenderDataType<?> type, IUpgradeRenderData data) {
-		//noinspection unchecked
-		type.cast(data).ifPresent(renderData -> renderer.render(level, rand, vector -> getMiddleFacePoint(pos, facing, vector), (T) renderData));
+	protected BlockEntityType<? extends StorageBlockEntity> getBlockEntityType() {
+		return ModBlocks.BARREL_BLOCK_ENTITY_TYPE.get();
 	}
 }
