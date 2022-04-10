@@ -21,7 +21,6 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -29,6 +28,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.EntityCollisionContext;
@@ -47,7 +47,9 @@ import javax.annotation.Nullable;
 import java.util.Random;
 import java.util.function.Consumer;
 
-public class BarrelBlock extends WoodStorageBlockBase implements EntityBlock, IAdditionalDropDataBlock {
+public class BarrelBlock extends WoodStorageBlockBase {
+	public static final DirectionProperty FACING = BlockStateProperties.FACING;
+
 	public static final BooleanProperty OPEN = BlockStateProperties.OPEN;
 	private static final VoxelShape ITEM_ENTITY_COLLISION_SHAPE = box(0.1, 0.1, 0.1, 15.9, 15.9, 15.9);
 
@@ -166,5 +168,10 @@ public class BarrelBlock extends WoodStorageBlockBase implements EntityBlock, IA
 	@Override
 	protected BlockEntityType<? extends StorageBlockEntity> getBlockEntityType() {
 		return ModBlocks.BARREL_BLOCK_ENTITY_TYPE.get();
+	}
+
+	@Override
+	protected Direction getFacing(BlockState state) {
+		return state.getValue(FACING);
 	}
 }

@@ -4,6 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.BarrelBlock;
 import net.minecraft.world.level.block.entity.ContainerOpenersCounter;
 import net.minecraft.world.level.block.state.BlockState;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
@@ -43,5 +44,10 @@ public class BarrelBlockEntity extends StorageBlockEntity{
 		super(pos, state, ModBlocks.BARREL_BLOCK_ENTITY_TYPE.get());
 	}
 
-
+	void updateBlockState(BlockState pState, boolean open) {
+		if (level == null) {
+			return;
+		}
+		level.setBlock(getBlockPos(), pState.setValue(BarrelBlock.OPEN, open), 3);
+	}
 }

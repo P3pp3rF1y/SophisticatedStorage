@@ -11,7 +11,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.world.item.ItemStack;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
-import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockBase;
+import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
 
 public class BarrelRenderer implements BlockEntityRenderer<StorageBlockEntity> {
@@ -29,7 +29,7 @@ public class BarrelRenderer implements BlockEntityRenderer<StorageBlockEntity> {
 			return;
 		}
 
-		Direction facing = blockEntity.getBlockState().getValue(StorageBlockBase.FACING);
+		Direction facing = blockEntity.getBlockState().getValue(BarrelBlock.FACING);
 		BakedModel itemModel = minecraft.getItemRenderer().getModel(item, null, minecraft.player, 0);
 
 		poseStack.pushPose();

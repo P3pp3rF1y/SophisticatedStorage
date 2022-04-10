@@ -19,8 +19,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
+import net.p3pp3rf1y.sophisticatedstorage.block.ChestBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.ChestBlockEntity;
-import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockBase;
 import net.p3pp3rf1y.sophisticatedstorage.block.WoodStorageBlockBase;
 import net.p3pp3rf1y.sophisticatedstorage.client.ClientEventHandler;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
@@ -72,7 +72,7 @@ public class ChestRenderer implements BlockEntityRenderer<ChestBlockEntity> {
 	public void render(ChestBlockEntity chestEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedlight, int packedOverlay) {
 		BlockState blockstate = chestEntity.getBlockState();
 		poseStack.pushPose();
-		float f = blockstate.getValue(StorageBlockBase.FACING).toYRot();
+		float f = blockstate.getValue(ChestBlock.FACING).toYRot();
 		poseStack.translate(0.5D, 0.5D, 0.5D);
 		poseStack.mulPose(Vector3f.YP.rotationDegrees(-f));
 		poseStack.translate(-0.5D, -0.5D, -0.5D);

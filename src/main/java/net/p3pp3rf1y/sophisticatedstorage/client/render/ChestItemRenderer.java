@@ -10,9 +10,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
+import net.p3pp3rf1y.sophisticatedstorage.block.ChestBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.ChestBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.block.ITintableBlockItem;
-import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockBase;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
 
 public class ChestItemRenderer extends BlockEntityWithoutLevelRenderer {
@@ -29,7 +29,7 @@ public class ChestItemRenderer extends BlockEntityWithoutLevelRenderer {
 			return;
 		}
 		//
-		ChestBlockEntity chestBlockEntity = new ChestBlockEntity(BlockPos.ZERO, blockItem.getBlock().defaultBlockState().setValue(StorageBlockBase.FACING, Direction.SOUTH));
+		ChestBlockEntity chestBlockEntity = new ChestBlockEntity(BlockPos.ZERO, blockItem.getBlock().defaultBlockState().setValue(ChestBlock.FACING, Direction.SOUTH));
 		WoodStorageBlockItem.getWoodType(pStack).ifPresent(chestBlockEntity::setWoodType);
 		if (pStack.getItem() instanceof ITintableBlockItem tintableBlockItem) {
 			tintableBlockItem.getMainColor(pStack).ifPresent(chestBlockEntity::setMainColor);

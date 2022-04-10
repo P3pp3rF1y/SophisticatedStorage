@@ -9,13 +9,12 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.api.IUpgradeRenderer;
 import net.p3pp3rf1y.sophisticatedcore.client.render.UpgradeRenderRegistry;
@@ -28,8 +27,7 @@ import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import javax.annotation.Nullable;
 import java.util.Random;
 
-public abstract class StorageBlockBase extends Block implements IStorageBlock {
-	public static final DirectionProperty FACING = BlockStateProperties.FACING;
+public abstract class StorageBlockBase extends Block implements IStorageBlock, EntityBlock {
 	public static final BooleanProperty TICKING = BooleanProperty.create("ticking");
 	protected final int numberOfInventorySlots;
 	protected final int numberOfUpgradeSlots;
@@ -39,6 +37,9 @@ public abstract class StorageBlockBase extends Block implements IStorageBlock {
 		this.numberOfInventorySlots = numberOfInventorySlots;
 		this.numberOfUpgradeSlots = numberOfUpgradeSlots;
 	}
+
+	@Override
+	public abstract StorageBlockEntity newBlockEntity(BlockPos pPos, BlockState pState);
 
 	@Nullable
 	protected static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(BlockEntityType<A> typePassedIn, BlockEntityType<E> typeExpected, BlockEntityTicker<? super E> blockEntityTicker) {
@@ -85,6 +86,7 @@ public abstract class StorageBlockBase extends Block implements IStorageBlock {
 	}
 
 	@Nullable
+	@Override
 	public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> blockEntityType) {
 		return !level.isClientSide && Boolean.TRUE.equals(state.getValue(StorageBlockBase.TICKING)) ? StorageBlockBase.createTickerHelper(blockEntityType, getBlockEntityType(), (l, blockPos, blockState, storageBlockEntity) -> StorageBlockEntity.serverTick(l, blockPos, storageBlockEntity)) : null;
 	}
@@ -135,8 +137,10 @@ public abstract class StorageBlockBase extends Block implements IStorageBlock {
 	public void animateTick(BlockState state, Level level, BlockPos pos, Random rand) {
 		WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).ifPresent(te -> {
 			RenderInfo renderInfo = te.getRenderInfo();
-			renderUpgrades(level, rand, pos, state.getValue(FACING), renderInfo);
+			renderUpgrades(level, rand, pos, getFacing(state), renderInfo);
 		});
 
 	}
+
+	protected abstract Direction getFacing(BlockState state);
 }

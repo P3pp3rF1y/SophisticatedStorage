@@ -13,7 +13,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.BarrelBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.ContainerOpenersCounter;
@@ -200,18 +199,11 @@ public abstract class StorageBlockEntity extends BlockEntity implements IStorage
 		}
 	}
 
-	void updateBlockState(BlockState pState, boolean open) {
-		if (level == null) {
-			return;
-		}
-		level.setBlock(getBlockPos(), pState.setValue(BarrelBlock.OPEN, open), 3);
-	}
-
 	void playSound(BlockState state, SoundEvent pSound) {
-		if (level == null) {
+		if (level == null || !(state.getBlock() instanceof StorageBlockBase storageBlock)) {
 			return;
 		}
-		Vec3i vec3i = state.getValue(BarrelBlock.FACING).getNormal();
+		Vec3i vec3i = storageBlock.getFacing(state).getNormal();
 		double d0 = worldPosition.getX() + 0.5D + vec3i.getX() / 2.0D;
 		double d1 = worldPosition.getY() + 0.5D + vec3i.getY() / 2.0D;
 		double d2 = worldPosition.getZ() + 0.5D + vec3i.getZ() / 2.0D;

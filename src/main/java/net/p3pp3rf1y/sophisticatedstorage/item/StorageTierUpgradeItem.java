@@ -14,8 +14,10 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.entity.BarrelBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -26,7 +28,7 @@ import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryHandler;
 import net.p3pp3rf1y.sophisticatedcore.util.ItemBase;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
-import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlock;
+import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockBase;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageTranslationHelper;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
@@ -39,20 +41,26 @@ import java.util.function.Predicate;
 public class StorageTierUpgradeItem extends ItemBase {
 	private static final Map<TierUpgrade, Map<Block, TierUpgradeDefinition<?>>> TIER_UPGRADE_DEFINITIONS = Map.of(
 			TierUpgrade.BASIC, Map.of(
-					Blocks.BARREL, new VanillaTierUpgradeDefinition<>(BlockStateProperties.FACING, BarrelBlockEntity.class, blockEntity -> blockEntity.openersCounter.getOpenerCount() > 0, ModBlocks.BARREL.get(), WoodType.SPRUCE)
+					Blocks.BARREL, new VanillaTierUpgradeDefinition<>(BlockStateProperties.FACING, BarrelBlockEntity.class, blockEntity -> blockEntity.openersCounter.getOpenerCount() > 0, ModBlocks.BARREL.get(), WoodType.SPRUCE),
+					Blocks.CHEST, new VanillaTierUpgradeDefinition<>(ChestBlock.FACING, ChestBlockEntity.class, chestBlockEntity -> chestBlockEntity.openersCounter.getOpenerCount() > 0, ModBlocks.CHEST.get(), WoodType.OAK)
 			),
 			TierUpgrade.BASIC_TO_IRON, Map.of(
 					Blocks.BARREL, new VanillaTierUpgradeDefinition<>(BlockStateProperties.FACING, BarrelBlockEntity.class, blockEntity -> blockEntity.openersCounter.getOpenerCount() > 0, ModBlocks.IRON_BARREL.get(), WoodType.SPRUCE),
-					ModBlocks.BARREL.get(), new StorageTierUpgradeDefinition(BlockStateProperties.FACING, ModBlocks.IRON_BARREL.get())
+					Blocks.CHEST, new VanillaTierUpgradeDefinition<>(ChestBlock.FACING, ChestBlockEntity.class, blockEntity -> blockEntity.openersCounter.getOpenerCount() > 0, ModBlocks.IRON_CHEST.get(), WoodType.OAK),
+					ModBlocks.BARREL.get(), new StorageTierUpgradeDefinition(BlockStateProperties.FACING, ModBlocks.IRON_BARREL.get()),
+					ModBlocks.CHEST.get(), new StorageTierUpgradeDefinition(ChestBlock.FACING, ModBlocks.IRON_CHEST.get())
 			),
 			TierUpgrade.IRON_TO_GOLD, Map.of(
-					ModBlocks.IRON_BARREL.get(), new StorageTierUpgradeDefinition(BlockStateProperties.FACING, ModBlocks.GOLD_BARREL.get())
+					ModBlocks.IRON_BARREL.get(), new StorageTierUpgradeDefinition(BlockStateProperties.FACING, ModBlocks.GOLD_BARREL.get()),
+					ModBlocks.IRON_CHEST.get(), new StorageTierUpgradeDefinition(ChestBlock.FACING, ModBlocks.GOLD_CHEST.get())
 			),
 			TierUpgrade.GOLD_TO_DIAMOND, Map.of(
-					ModBlocks.GOLD_BARREL.get(), new StorageTierUpgradeDefinition(BlockStateProperties.FACING, ModBlocks.DIAMOND_BARREL.get())
+					ModBlocks.GOLD_BARREL.get(), new StorageTierUpgradeDefinition(BlockStateProperties.FACING, ModBlocks.DIAMOND_BARREL.get()),
+					ModBlocks.GOLD_CHEST.get(), new StorageTierUpgradeDefinition(ChestBlock.FACING, ModBlocks.DIAMOND_CHEST.get())
 			),
 			TierUpgrade.DIAMOND_TO_NETHERITE, Map.of(
-					ModBlocks.DIAMOND_BARREL.get(), new StorageTierUpgradeDefinition(BlockStateProperties.FACING, ModBlocks.NETHERITE_BARREL.get())
+					ModBlocks.DIAMOND_BARREL.get(), new StorageTierUpgradeDefinition(BlockStateProperties.FACING, ModBlocks.NETHERITE_BARREL.get()),
+					ModBlocks.DIAMOND_CHEST.get(), new StorageTierUpgradeDefinition(ChestBlock.FACING, ModBlocks.NETHERITE_CHEST.get())
 			)
 	);
 
@@ -114,7 +122,7 @@ public class StorageTierUpgradeItem extends ItemBase {
 	}
 
 	private static class StorageTierUpgradeDefinition extends TierUpgradeDefinition<StorageBlockEntity> {
-		private StorageTierUpgradeDefinition(DirectionProperty facingProperty, BarrelBlock newBlock) {
+		private StorageTierUpgradeDefinition(DirectionProperty facingProperty, StorageBlockBase newBlock) {
 			super(facingProperty, StorageBlockEntity.class, StorageBlockEntity::isOpen, newBlock);
 		}
 
@@ -147,7 +155,7 @@ public class StorageTierUpgradeItem extends ItemBase {
 	private static class VanillaTierUpgradeDefinition<B extends RandomizableContainerBlockEntity> extends TierUpgradeDefinition<B> {
 		private final @Nullable WoodType woodType;
 
-		private VanillaTierUpgradeDefinition(DirectionProperty facingProperty, Class<B> blockEntityClass, Predicate<B> isOpen, BarrelBlock newBlock, @Nullable WoodType woodType) {
+		private VanillaTierUpgradeDefinition(DirectionProperty facingProperty, Class<B> blockEntityClass, Predicate<B> isOpen, StorageBlockBase newBlock, @Nullable WoodType woodType) {
 			super(facingProperty, blockEntityClass, isOpen, newBlock);
 			this.woodType = woodType;
 		}
@@ -208,11 +216,11 @@ public class StorageTierUpgradeItem extends ItemBase {
 		private final DirectionProperty facingProperty;
 		private final Class<B> blockEntityClass;
 		private final Predicate<B> isOpen;
-		private final BarrelBlock newBlock;
+		private final StorageBlockBase newBlock;
 
 		private TierUpgradeDefinition(DirectionProperty facingProperty,
 				Class<B> blockEntityClass, Predicate<B> isOpen,
-				BarrelBlock newBlock) {
+				StorageBlockBase newBlock) {
 			this.facingProperty = facingProperty;
 			this.blockEntityClass = blockEntityClass;
 			this.isOpen = isOpen;
@@ -225,7 +233,7 @@ public class StorageTierUpgradeItem extends ItemBase {
 
 		public Predicate<B> isOpen() {return isOpen;}
 
-		public BarrelBlock newBlock() {return newBlock;}
+		public StorageBlockBase newBlock() {return newBlock;}
 
 		abstract boolean upgradeStorage(@Nullable Player player, BlockPos pos, Level level, BlockState state, B b);
 	}

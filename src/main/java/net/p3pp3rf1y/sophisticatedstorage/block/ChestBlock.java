@@ -18,7 +18,7 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.SoundType;
@@ -29,6 +29,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.material.Material;
@@ -46,7 +47,8 @@ import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
 import javax.annotation.Nullable;
 import java.util.Random;
 
-public class ChestBlock extends WoodStorageBlockBase implements EntityBlock, IAdditionalDropDataBlock {
+public class ChestBlock extends WoodStorageBlockBase {
+	public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
 	public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
 	protected static final VoxelShape AABB = Block.box(1.0D, 0.0D, 1.0D, 15.0D, 14.0D, 15.0D);
 
@@ -165,5 +167,10 @@ public class ChestBlock extends WoodStorageBlockBase implements EntityBlock, IAd
 	@Override
 	protected BlockEntityType<? extends StorageBlockEntity> getBlockEntityType() {
 		return ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get();
+	}
+
+	@Override
+	protected Direction getFacing(BlockState state) {
+		return state.getValue(FACING);
 	}
 }
