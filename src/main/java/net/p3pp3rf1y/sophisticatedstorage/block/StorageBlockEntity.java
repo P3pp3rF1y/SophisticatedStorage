@@ -99,6 +99,7 @@ public abstract class StorageBlockEntity extends BlockEntity implements IStorage
 			@Override
 			protected void serializeRenderInfo(CompoundTag renderInfo) {
 				renderInfoNbt = renderInfo;
+				WorldHelper.notifyBlockUpdate(StorageBlockEntity.this);
 			}
 
 			@Override
