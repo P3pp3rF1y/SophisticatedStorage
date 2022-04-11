@@ -1,0 +1,34 @@
+{
+  "parent": "minecraft:recipes/root",
+  "rewards": {
+    "recipes": [
+      "sophisticatedstorage:birch_chest"
+    ]
+  },
+  "criteria": {
+    "has_birch_plank": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "minecraft:birch_planks"
+            ]
+          }
+        ]
+      }
+    },
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "sophisticatedstorage:birch_chest"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_birch_plank",
+      "has_the_recipe"
+    ]
+  ]
+}

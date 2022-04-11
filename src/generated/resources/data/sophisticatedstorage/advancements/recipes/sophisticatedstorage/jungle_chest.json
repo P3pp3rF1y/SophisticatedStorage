@@ -1,0 +1,34 @@
+{
+  "parent": "minecraft:recipes/root",
+  "rewards": {
+    "recipes": [
+      "sophisticatedstorage:jungle_chest"
+    ]
+  },
+  "criteria": {
+    "has_jungle_plank": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "minecraft:jungle_planks"
+            ]
+          }
+        ]
+      }
+    },
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "sophisticatedstorage:jungle_chest"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_jungle_plank",
+      "has_the_recipe"
+    ]
+  ]
+}

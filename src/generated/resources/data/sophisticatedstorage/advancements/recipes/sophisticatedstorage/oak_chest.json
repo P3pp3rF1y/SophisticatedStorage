@@ -1,0 +1,34 @@
+{
+  "parent": "minecraft:recipes/root",
+  "rewards": {
+    "recipes": [
+      "sophisticatedstorage:oak_chest"
+    ]
+  },
+  "criteria": {
+    "has_oak_plank": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "minecraft:oak_planks"
+            ]
+          }
+        ]
+      }
+    },
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "sophisticatedstorage:oak_chest"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_oak_plank",
+      "has_the_recipe"
+    ]
+  ]
+}

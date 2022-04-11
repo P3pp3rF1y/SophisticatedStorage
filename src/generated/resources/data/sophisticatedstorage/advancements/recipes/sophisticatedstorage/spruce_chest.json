@@ -1,0 +1,34 @@
+{
+  "parent": "minecraft:recipes/root",
+  "rewards": {
+    "recipes": [
+      "sophisticatedstorage:spruce_chest"
+    ]
+  },
+  "criteria": {
+    "has_spruce_plank": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "minecraft:spruce_planks"
+            ]
+          }
+        ]
+      }
+    },
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "sophisticatedstorage:spruce_chest"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_spruce_plank",
+      "has_the_recipe"
+    ]
+  ]
+}

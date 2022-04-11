@@ -91,6 +91,53 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.unlocks("has_diamond_barrel", has(ModBlocks.DIAMOND_BARREL_ITEM.get()))
 				.save(consumer, RegistryHelper.getItemKey(ModBlocks.NETHERITE_BARREL_ITEM.get()));
 
+		woodChestRecipe(consumer, WoodType.ACACIA, Blocks.ACACIA_PLANKS);
+		woodChestRecipe(consumer, WoodType.BIRCH, Blocks.BIRCH_PLANKS);
+		woodChestRecipe(consumer, WoodType.CRIMSON, Blocks.CRIMSON_PLANKS);
+		woodChestRecipe(consumer, WoodType.DARK_OAK, Blocks.DARK_OAK_PLANKS);
+		woodChestRecipe(consumer, WoodType.JUNGLE, Blocks.JUNGLE_PLANKS);
+		woodChestRecipe(consumer, WoodType.OAK, Blocks.OAK_PLANKS);
+		woodChestRecipe(consumer, WoodType.SPRUCE, Blocks.SPRUCE_PLANKS);
+		woodChestRecipe(consumer, WoodType.WARPED, Blocks.WARPED_PLANKS);
+
+		ShapelessBasedRecipeBuilder.shapeless(WoodStorageBlockItem.setWoodType(new ItemStack(ModBlocks.CHEST_ITEM.get()), WoodType.OAK))
+				.requires(Blocks.CHEST)
+				.requires(Blocks.REDSTONE_TORCH)
+				.unlockedBy("has_vanilla_chest", has(Blocks.CHEST))
+				.save(consumer, SophisticatedStorage.getRL("oak_chest_from_vanilla_chest"));
+
+		ShapeBasedRecipeBuilder.shaped(ModBlocks.IRON_CHEST_ITEM.get(), StorageTierUpgradeRecipe.SERIALIZER)
+				.pattern("III")
+				.pattern("ICI")
+				.pattern("III")
+				.define('I', Tags.Items.INGOTS_IRON)
+				.define('C', ModBlocks.CHEST_ITEM.get())
+				.unlockedBy("has_chest", has(ModBlocks.CHEST_ITEM.get()))
+				.save(consumer);
+
+		ShapeBasedRecipeBuilder.shaped(ModBlocks.GOLD_CHEST_ITEM.get(), StorageTierUpgradeRecipe.SERIALIZER)
+				.pattern("GGG")
+				.pattern("GCG")
+				.pattern("GGG")
+				.define('G', Tags.Items.INGOTS_GOLD)
+				.define('C', ModBlocks.IRON_CHEST_ITEM.get())
+				.unlockedBy("has_iron_chest", has(ModBlocks.IRON_CHEST_ITEM.get()))
+				.save(consumer);
+
+		ShapeBasedRecipeBuilder.shaped(ModBlocks.DIAMOND_CHEST_ITEM.get(), StorageTierUpgradeRecipe.SERIALIZER)
+				.pattern("DDD")
+				.pattern("DCD")
+				.pattern("DDD")
+				.define('D', Tags.Items.GEMS_DIAMOND)
+				.define('C', ModBlocks.GOLD_CHEST_ITEM.get())
+				.unlockedBy("has_gold_chest", has(ModBlocks.GOLD_CHEST_ITEM.get()))
+				.save(consumer);
+
+		new UpgradeRecipeBuilder(SmithingStorageUpgradeRecipe.SERIALIZER, Ingredient.of(ModBlocks.DIAMOND_CHEST_ITEM.get()),
+				Ingredient.of(Items.NETHERITE_INGOT), ModBlocks.NETHERITE_CHEST_ITEM.get())
+				.unlocks("has_diamond_chest", has(ModBlocks.DIAMOND_CHEST_ITEM.get()))
+				.save(consumer, RegistryHelper.getItemKey(ModBlocks.NETHERITE_CHEST_ITEM.get()));
+
 		ShapeBasedRecipeBuilder.shaped(ModItems.UPGRADE_BASE.get())
 				.pattern("PIP")
 				.pattern("IPI")
@@ -475,6 +522,17 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('R', Blocks.REDSTONE_TORCH)
 				.unlockedBy("has_" + woodType.name() + "_plank", has(planks))
 				.save(consumer, SophisticatedStorage.getRL(woodType.name() + "_barrel"));
+	}
+
+	private void woodChestRecipe(Consumer<FinishedRecipe> consumer, WoodType woodType, Block planks) {
+		ShapeBasedRecipeBuilder.shaped(WoodStorageBlockItem.setWoodType(new ItemStack(ModBlocks.CHEST_ITEM.get()), woodType))
+				.pattern("PPP")
+				.pattern("PRP")
+				.pattern("PPP")
+				.define('P', planks)
+				.define('R', Blocks.REDSTONE_TORCH)
+				.unlockedBy("has_" + woodType.name() + "_plank", has(planks))
+				.save(consumer, SophisticatedStorage.getRL(woodType.name() + "_chest"));
 	}
 
 	private static InventoryChangeTrigger.TriggerInstance has(TagKey<Item> tag) {

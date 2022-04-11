@@ -31,6 +31,7 @@ public class TierUpgradeRecipesMaker {
 	public static List<UpgradeRecipe> getSmithingRecipes() {
 		List<UpgradeRecipe> recipes = new ArrayList<>();
 		addItemSmithingUpgradeRecipes(recipes, ModBlocks.DIAMOND_BARREL_ITEM.get(), "netherite_barrel");
+		addItemSmithingUpgradeRecipes(recipes, ModBlocks.DIAMOND_CHEST_ITEM.get(), "netherite_chest");
 
 		return recipes;
 	}
@@ -41,14 +42,19 @@ public class TierUpgradeRecipesMaker {
 		addItemUpgradeRecipes(recipes, ModBlocks.BARREL_ITEM.get(), "iron_barrel");
 		addItemUpgradeRecipes(recipes, ModBlocks.IRON_BARREL_ITEM.get(), "gold_barrel");
 		addItemUpgradeRecipes(recipes, ModBlocks.GOLD_BARREL_ITEM.get(), "diamond_barrel");
+		addItemUpgradeRecipes(recipes, ModBlocks.CHEST_ITEM.get(), "iron_chest");
+		addItemUpgradeRecipes(recipes, ModBlocks.IRON_CHEST_ITEM.get(), "gold_chest");
+		addItemUpgradeRecipes(recipes, ModBlocks.GOLD_CHEST_ITEM.get(), "diamond_chest");
 
 		return recipes;
 	}
 
 	private static void addItemUpgradeRecipes(List<CraftingRecipe> recipes, Item storageItem, String recipeName) {
+		//noinspection ConstantConditions
 		RecipeManager recipeManager = Minecraft.getInstance().level.getRecipeManager();
 
 		NonNullList<ItemStack> items = NonNullList.create();
+		//noinspection ConstantConditions
 		storageItem.fillItemCategory(storageItem.getItemCategory(), items);
 
 		recipeManager.byKey(SophisticatedStorage.getRL(recipeName)).ifPresent((Consumer<Recipe<?>>) r -> {
@@ -79,6 +85,7 @@ public class TierUpgradeRecipesMaker {
 					i++;
 				}
 				ItemStack result = recipe.assemble(craftinginventory);
+				//noinspection ConstantConditions
 				ResourceLocation id = new ResourceLocation(SophisticatedStorage.MOD_ID, "tier_upgrade_" + item.getItem().getRegistryName().getPath() + result.getOrCreateTag().toString().toLowerCase(Locale.ROOT).replaceAll("[{\",}:\s]", "_"));
 
 				recipes.add(new ShapedRecipe(id, "", recipe.getRecipeWidth(), recipe.getRecipeHeight(), ingredientsCopy, result));
@@ -87,9 +94,11 @@ public class TierUpgradeRecipesMaker {
 	}
 
 	private static void addItemSmithingUpgradeRecipes(List<UpgradeRecipe> recipes, Item storageItem, String recipeName) {
+		//noinspection ConstantConditions
 		RecipeManager recipeManager = Minecraft.getInstance().level.getRecipeManager();
 
 		NonNullList<ItemStack> items = NonNullList.create();
+		//noinspection ConstantConditions
 		storageItem.fillItemCategory(storageItem.getItemCategory(), items);
 
 		recipeManager.byKey(SophisticatedStorage.getRL(recipeName)).ifPresent((Consumer<Recipe<?>>) r -> {
@@ -104,6 +113,7 @@ public class TierUpgradeRecipesMaker {
 				container.setItem(1, additionItems[0]);
 
 				ItemStack result = recipe.assemble(container);
+				//noinspection ConstantConditions
 				ResourceLocation id = new ResourceLocation(SophisticatedStorage.MOD_ID, "tier_upgrade_" + item.getItem().getRegistryName().getPath() + result.getOrCreateTag().toString().toLowerCase(Locale.ROOT).replaceAll("[{\",}:\s]", "_"));
 
 				recipes.add(new UpgradeRecipe(id, Ingredient.of(item), recipe.addition, result));
