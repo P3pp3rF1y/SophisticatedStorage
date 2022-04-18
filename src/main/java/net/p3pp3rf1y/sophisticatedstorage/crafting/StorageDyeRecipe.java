@@ -26,7 +26,7 @@ public class StorageDyeRecipe extends StorageDyeRecipeBase {
 
 	@Override
 	protected boolean isStorageItem(Item item) {
-		return item instanceof BlockItem blockItem && blockItem.getBlock() instanceof ITintableBlockItem;
+		return item instanceof BlockItem blockItem && blockItem instanceof ITintableBlockItem;
 	}
 
 	@Override

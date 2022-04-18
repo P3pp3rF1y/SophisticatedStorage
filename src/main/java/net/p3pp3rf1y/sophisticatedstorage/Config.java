@@ -36,6 +36,12 @@ public class Config {
 		public final StorageConfig diamondChest;
 		public final StorageConfig netheriteChest;
 
+		public final StorageConfig shulkerBox;
+		public final StorageConfig ironShulkerBox;
+		public final StorageConfig goldShulkerBox;
+		public final StorageConfig diamondShulkerBox;
+		public final StorageConfig netheriteShulkerBox;
+
 		public final StackUpgradeConfig stackUpgrade;
 		public final FilteredUpgradeConfig compactingUpgrade;
 		public final FilteredUpgradeConfig advancedCompactingUpgrade;
@@ -79,6 +85,12 @@ public class Config {
 			goldChest = new StorageConfig(builder, "Gold Chest", 81, 2);
 			diamondChest = new StorageConfig(builder, "Diamond Chest", 108, 3);
 			netheriteChest = new StorageConfig(builder, "Netherite Chest", 132, 4);
+
+			shulkerBox = new StorageConfig(builder, "Shulker Box", 27, 1);
+			ironShulkerBox = new StorageConfig(builder, "Iron Shulker Box", 54, 1);
+			goldShulkerBox = new StorageConfig(builder, "Gold Shulker Box", 81, 2);
+			diamondShulkerBox = new StorageConfig(builder, "Diamond Shulker Box", 108, 3);
+			netheriteShulkerBox = new StorageConfig(builder, "Netherite Shulker Box", 132, 4);
 
 			stackUpgrade = new StackUpgradeConfig(builder);
 			compactingUpgrade = new FilteredUpgradeConfig(builder, "Compacting Upgrade", "compactingUpgrade", 9, 3);

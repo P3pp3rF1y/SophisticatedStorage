@@ -136,8 +136,8 @@ public class ChestBlock extends WoodStorageBlockBase {
 				be.setCustomName(stack.getHoverName());
 			}
 			WoodStorageBlockItem.getWoodType(stack).ifPresent(be::setWoodType);
-			StorageBlockItem.getMaincolorFromStack(stack).ifPresent(be::setMainColor);
-			StorageBlockItem.getAccentColorFromStack(stack).ifPresent(be::setAccentColor);
+			StorageBlockItem.getMaincolorFromStack(stack).ifPresent(be.getStorageWrapper()::setMainColor);
+			StorageBlockItem.getAccentColorFromStack(stack).ifPresent(be.getStorageWrapper()::setAccentColor);
 		});
 	}
 

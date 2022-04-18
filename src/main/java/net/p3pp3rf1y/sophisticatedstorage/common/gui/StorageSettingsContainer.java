@@ -21,7 +21,7 @@ public class StorageSettingsContainer extends SettingsContainer<IStorageWrapper>
 	}
 
 	private static IStorageWrapper getWrapper(Level level, BlockPos pos) {
-		return WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).map(be -> (IStorageWrapper) be).orElse(NoopStorageWrapper.INSTANCE);
+		return WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).map(be -> (IStorageWrapper) be.getStorageWrapper()).orElse(NoopStorageWrapper.INSTANCE);
 	}
 
 	@Override

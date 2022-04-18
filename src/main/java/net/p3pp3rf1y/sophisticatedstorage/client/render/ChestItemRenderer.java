@@ -32,8 +32,8 @@ public class ChestItemRenderer extends BlockEntityWithoutLevelRenderer {
 		ChestBlockEntity chestBlockEntity = new ChestBlockEntity(BlockPos.ZERO, blockItem.getBlock().defaultBlockState().setValue(ChestBlock.FACING, Direction.SOUTH));
 		WoodStorageBlockItem.getWoodType(pStack).ifPresent(chestBlockEntity::setWoodType);
 		if (pStack.getItem() instanceof ITintableBlockItem tintableBlockItem) {
-			tintableBlockItem.getMainColor(pStack).ifPresent(chestBlockEntity::setMainColor);
-			tintableBlockItem.getAccentColor(pStack).ifPresent(chestBlockEntity::setAccentColor);
+			tintableBlockItem.getMainColor(pStack).ifPresent(chestBlockEntity.getStorageWrapper()::setMainColor);
+			tintableBlockItem.getAccentColor(pStack).ifPresent(chestBlockEntity.getStorageWrapper()::setAccentColor);
 		}
 		var blockentityrenderer = blockEntityRenderDispatcher.getRenderer(chestBlockEntity);
 		if (blockentityrenderer != null) {

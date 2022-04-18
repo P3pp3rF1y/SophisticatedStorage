@@ -33,11 +33,11 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 
 	public void addDropData(ItemStack stack, StorageBlockEntity be) {
 		if (stack.getItem() instanceof ITintableBlockItem tintableBlockItem) {
-			int mainColor = be.getMainColor();
+			int mainColor = be.getStorageWrapper().getMainColor();
 			if (mainColor > -1) {
 				tintableBlockItem.setMainColor(stack, mainColor);
 			}
-			int accentColor = be.getAccentColor();
+			int accentColor = be.getStorageWrapper().getAccentColor();
 			if (accentColor > -1) {
 				tintableBlockItem.setAccentColor(stack, accentColor);
 			}
@@ -80,8 +80,8 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 				be.setCustomName(stack.getHoverName());
 			}
 			WoodStorageBlockItem.getWoodType(stack).ifPresent(be::setWoodType);
-			StorageBlockItem.getMaincolorFromStack(stack).ifPresent(be::setMainColor);
-			StorageBlockItem.getAccentColorFromStack(stack).ifPresent(be::setAccentColor);
+			StorageBlockItem.getMaincolorFromStack(stack).ifPresent(be.getStorageWrapper()::setMainColor);
+			StorageBlockItem.getAccentColorFromStack(stack).ifPresent(be.getStorageWrapper()::setAccentColor);
 		});
 	}
 }

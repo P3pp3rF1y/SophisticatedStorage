@@ -5,6 +5,11 @@
     "sophisticatedstorage:iron_barrel",
     "sophisticatedstorage:gold_barrel",
     "sophisticatedstorage:diamond_barrel",
-    "sophisticatedstorage:netherite_barrel"
+    "sophisticatedstorage:netherite_barrel",
+    "sophisticatedstorage:chest",
+    "sophisticatedstorage:iron_chest",
+    "sophisticatedstorage:gold_chest",
+    "sophisticatedstorage:diamond_chest",
+    "sophisticatedstorage:netherite_chest"
   ]
 }

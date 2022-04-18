@@ -85,13 +85,13 @@ public class ChestRenderer implements BlockEntityRenderer<ChestBlockEntity> {
 			VertexConsumer vertexconsumer = WOOD_MATERIALS.get(wt).buffer(bufferSource, RenderType::entityCutout);
 			renderBottomAndLid(poseStack, vertexconsumer, finalLidAngle, packedlight, packedOverlay);
 		});
-		if (chestEntity.getMainColor() > -1) {
+		if (chestEntity.getStorageWrapper().getMainColor() > -1) {
 			VertexConsumer vertexconsumer = TINTABLE_MAIN_MATERIAL.buffer(bufferSource, RenderType::entityCutout);
-			renderBottomAndLidWithTint(poseStack, vertexconsumer, lidAngle, packedlight, packedOverlay, chestEntity.getMainColor());
+			renderBottomAndLidWithTint(poseStack, vertexconsumer, lidAngle, packedlight, packedOverlay, chestEntity.getStorageWrapper().getMainColor());
 		}
-		if (chestEntity.getAccentColor() > -1) {
+		if (chestEntity.getStorageWrapper().getAccentColor() > -1) {
 			VertexConsumer vertexconsumer = TINTABLE_ACCENT_MATERIAL.buffer(bufferSource, RenderType::entityCutout);
-			renderBottomAndLidWithTint(poseStack, vertexconsumer, lidAngle, packedlight, packedOverlay, chestEntity.getAccentColor());
+			renderBottomAndLidWithTint(poseStack, vertexconsumer, lidAngle, packedlight, packedOverlay, chestEntity.getStorageWrapper().getAccentColor());
 		}
 		Material tierMaterial = getTierMaterial(blockstate.getBlock());
 		VertexConsumer vertexconsumer = tierMaterial.buffer(bufferSource, RenderType::entityCutout);

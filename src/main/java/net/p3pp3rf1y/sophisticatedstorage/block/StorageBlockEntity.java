@@ -4,7 +4,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
@@ -23,63 +22,16 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.CapabilityItemHandler;
-import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
-import net.p3pp3rf1y.sophisticatedcore.common.gui.SortBy;
-import net.p3pp3rf1y.sophisticatedcore.inventory.IItemHandlerSimpleInserter;
-import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryHandler;
-import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryIOHandler;
-import net.p3pp3rf1y.sophisticatedcore.inventory.ItemStackKey;
-import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
-import net.p3pp3rf1y.sophisticatedcore.settings.SettingsHandler;
-import net.p3pp3rf1y.sophisticatedcore.settings.itemdisplay.ItemDisplaySettingsCategory;
-import net.p3pp3rf1y.sophisticatedcore.settings.memory.MemorySettingsCategory;
-import net.p3pp3rf1y.sophisticatedcore.settings.nosort.NoSortSettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.ITickableUpgrade;
-import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeHandler;
-import net.p3pp3rf1y.sophisticatedcore.upgrades.stack.StackUpgradeItem;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
-import net.p3pp3rf1y.sophisticatedcore.util.InventorySorter;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
-import net.p3pp3rf1y.sophisticatedstorage.Config;
-import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
-import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
-import net.p3pp3rf1y.sophisticatedstorage.settings.StorageSettingsHandler;
 
 import javax.annotation.Nullable;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
 
-public abstract class StorageBlockEntity extends BlockEntity implements IStorageWrapper {
-	private static final String UUID_TAG = "uuid";
-	private static final String MAIN_COLOR_TAG = "mainColor";
-	private static final String ACCENT_COLOR_TAG = "accentColor";
-	private static final String OPEN_TAB_ID_TAG = "openTabId";
-	@Nullable
-	private InventoryHandler inventoryHandler = null;
-	@Nullable
-	private InventoryIOHandler inventoryIOHandler = null;
-	@Nullable
-	private UpgradeHandler upgradeHandler = null;
-	private CompoundTag contentsNbt = new CompoundTag();
-	private CompoundTag settingsNbt = new CompoundTag();
-	private final SettingsHandler settingsHandler;
-	private final RenderInfo renderInfo;
-	private CompoundTag renderInfoNbt = new CompoundTag();
-	@Nullable
-	private UUID contentsUuid = null;
-	private int openTabId = -1;
-
-	private int numberOfInventorySlots = 0;
-	private int numberOfUpgradeSlots = -1;
-	private int mainColor = -1;
-	private int accentColor = -1;
-	private SortBy sortBy = SortBy.NAME;
-	private int columnsTaken = 0;
+public abstract class StorageBlockEntity extends BlockEntity {
+	private final StorageWrapper storageWrapper;
 	@Nullable
 	private Component displayName = null;
 	@Nullable
@@ -95,23 +47,46 @@ public abstract class StorageBlockEntity extends BlockEntity implements IStorage
 
 	protected StorageBlockEntity(BlockPos pos, BlockState state, BlockEntityType<? extends StorageBlockEntity> blockEntityType) {
 		super(blockEntityType, pos, state);
-		renderInfo = new RenderInfo(() -> this::setChanged) {
+		storageWrapper = new StorageWrapper(() -> this::setChanged, () -> WorldHelper.notifyBlockUpdate(this), () -> {
+			setChanged();
+			WorldHelper.notifyBlockUpdate(this);
+		}) {
+
 			@Override
-			protected void serializeRenderInfo(CompoundTag renderInfo) {
-				renderInfoNbt = renderInfo;
-				WorldHelper.notifyBlockUpdate(StorageBlockEntity.this);
+			public ItemStack getWrappedStorageStack() {
+				BlockPos pos = getBlockPos();
+				return getBlockState().getBlock().getCloneItemStack(getBlockState(), new BlockHitResult(new Vec3(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5), Direction.DOWN, pos, true), getLevel(), pos, null);
 			}
 
 			@Override
-			protected Optional<CompoundTag> getRenderInfoTag() {
-				return Optional.of(renderInfoNbt);
+			protected void onUpgradeRefresh() {
+				if (!isDroppingContents && level != null && !level.isClientSide && getBlockState().getBlock() instanceof IStorageBlock storageBlock) {
+					storageBlock.setTicking(level, getBlockPos(), getBlockState(), !storageWrapper.getUpgradeHandler().getWrappersThatImplement(ITickableUpgrade.class).isEmpty());
+				}
+			}
+
+			@Override
+			protected int getDefaultNumberOfInventorySlots() {
+				if (getBlockState().getBlock() instanceof IStorageBlock storageBlock) {
+					return storageBlock.getNumberOfInventorySlots();
+				}
+				return 0;
+			}
+
+			@Override
+			protected boolean isAllowedInStorage(ItemStack stack) {
+				return StorageBlockEntity.this.isAllowedInStorage(stack);
+			}
+
+			@Override
+			protected int getDefaultNumberOfUpgradeSlots() {
+				if (getBlockState().getBlock() instanceof IStorageBlock storageBlock) {
+					return storageBlock.getNumberOfUpgradeSlots();
+				}
+				return 0;
 			}
 		};
-		settingsHandler = new StorageSettingsHandler(settingsNbt, () -> {
-			setChanged();
-			WorldHelper.notifyBlockUpdate(this);
-		}, () -> inventoryHandler, () -> renderInfo);
-		renderInfo.setChangeListener(ri -> dynamicRenderTracker.onRenderInfoUpdated(ri));
+		storageWrapper.getRenderInfo().setChangeListener(ri -> dynamicRenderTracker.onRenderInfoUpdated(ri));
 	}
 
 	@Override
@@ -137,39 +112,15 @@ public abstract class StorageBlockEntity extends BlockEntity implements IStorage
 	@Override
 	public void saveAdditional(CompoundTag tag) {
 		super.saveAdditional(tag);
-		saveContents(tag);
+		saveStorageWrapper(tag);
 		saveData(tag);
 	}
 
-	private void saveContents(CompoundTag tag) {
-		tag.put("contents", contentsNbt);
+	private void saveStorageWrapper(CompoundTag tag) {
+		tag.put("storageWrapper", storageWrapper.save(new CompoundTag()));
 	}
 
 	private void saveData(CompoundTag tag) {
-		tag.put("settings", settingsNbt);
-		tag.put("renderInfo", renderInfoNbt);
-		if (contentsUuid != null) {
-			tag.put(UUID_TAG, NbtUtils.createUUID(contentsUuid));
-		}
-		if (mainColor != 0) {
-			tag.putInt(MAIN_COLOR_TAG, mainColor);
-		}
-		if (accentColor != 0) {
-			tag.putInt(ACCENT_COLOR_TAG, accentColor);
-		}
-		if (openTabId >= 0) {
-			tag.putInt(OPEN_TAB_ID_TAG, openTabId);
-		}
-		tag.putString("sortBy", sortBy.getSerializedName());
-		if (columnsTaken > 0) {
-			tag.putInt("columnsTaken", columnsTaken);
-		}
-		if (numberOfInventorySlots > 0) {
-			tag.putInt("numberOfInventorySlots", numberOfInventorySlots);
-		}
-		if (numberOfUpgradeSlots > -1) {
-			tag.putInt("numberOfUpgradeSlots", numberOfUpgradeSlots);
-		}
 		if (woodType != null) {
 			tag.putString("woodType", woodType.name());
 		}
@@ -214,28 +165,15 @@ public abstract class StorageBlockEntity extends BlockEntity implements IStorage
 	@Override
 	public void load(CompoundTag tag) {
 		super.load(tag);
-		loadContents(tag);
+		loadStorageWrapper(tag);
 		loadData(tag);
 	}
 
-	private void loadContents(CompoundTag tag) {
-		contentsNbt = tag.getCompound("contents");
-		onContentsNbtUpdated();
+	private void loadStorageWrapper(CompoundTag tag) {
+		NBTHelper.getCompound(tag, "storageWrapper").ifPresent(storageWrapper::load);
 	}
 
 	public void loadData(CompoundTag tag) {
-		settingsNbt = tag.getCompound("settings");
-		settingsHandler.reloadFrom(settingsNbt);
-		renderInfoNbt = tag.getCompound("renderInfo");
-		renderInfo.deserializeFrom(renderInfoNbt);
-		contentsUuid = NBTHelper.getTagValue(tag, UUID_TAG, CompoundTag::get).map(NbtUtils::loadUUID).orElse(null);
-		mainColor = NBTHelper.getInt(tag, MAIN_COLOR_TAG).orElse(-1);
-		accentColor = NBTHelper.getInt(tag, ACCENT_COLOR_TAG).orElse(-1);
-		openTabId = NBTHelper.getInt(tag, OPEN_TAB_ID_TAG).orElse(-1);
-		sortBy = NBTHelper.getString(tag, "sortBy").map(SortBy::fromName).orElse(SortBy.NAME);
-		columnsTaken = NBTHelper.getInt(tag, "columnsTaken").orElse(0);
-		numberOfInventorySlots = NBTHelper.getInt(tag, "numberOfInventorySlots").orElse(0);
-		numberOfUpgradeSlots = NBTHelper.getInt(tag, "numberOfUpgradeSlots").orElse(-1);
 		woodType = NBTHelper.getString(tag, "woodType").flatMap(woodTypeName -> WoodType.values().filter(wt -> wt.name().equals(woodTypeName)).findFirst()).orElse(null);
 		displayName = NBTHelper.getComponent(tag, "displayName").orElse(null);
 		if (level != null && level.isClientSide) {
@@ -260,6 +198,7 @@ public abstract class StorageBlockEntity extends BlockEntity implements IStorage
 			return;
 		}
 
+		loadStorageWrapper(tag);
 		loadData(tag);
 	}
 
@@ -270,12 +209,17 @@ public abstract class StorageBlockEntity extends BlockEntity implements IStorage
 	@Override
 	public CompoundTag getUpdateTag() {
 		CompoundTag tag = super.getUpdateTag();
+		saveStorageWrapper(tag);
 		saveData(tag);
 		return tag;
 	}
 
 	public static void serverTick(Level level, BlockPos blockPos, StorageBlockEntity storageBlockEntity) {
-		storageBlockEntity.getUpgradeHandler().getWrappersThatImplement(ITickableUpgrade.class).forEach(upgrade -> upgrade.tick(null, level, blockPos));
+		storageBlockEntity.getStorageWrapper().getUpgradeHandler().getWrappersThatImplement(ITickableUpgrade.class).forEach(upgrade -> upgrade.tick(null, level, blockPos));
+	}
+
+	public StorageWrapper getStorageWrapper() {
+		return storageWrapper;
 	}
 
 	public Component getDisplayName() {
@@ -285,240 +229,19 @@ public abstract class StorageBlockEntity extends BlockEntity implements IStorage
 		return getBlockState().getBlock().getName();
 	}
 
-	@Override
-	public void setSaveHandler(Runnable saveHandler) {
-		//noop
-	}
-
-	@Override
-	public IItemHandlerSimpleInserter getInventoryForUpgradeProcessing() {
-		return getInventoryHandler();
-	}
-
-	@Override
-	public InventoryHandler getInventoryHandler() {
-		if (inventoryHandler == null) {
-			initInventoryHandler();
-		}
-		return inventoryHandler;
-	}
-
-	private void initInventoryHandler() {
-		inventoryHandler = new InventoryHandler(getNumberOfInventorySlots(), this, contentsNbt, this::setChanged, StackUpgradeItem.getInventorySlotLimit(this), Config.COMMON.stackUpgrade) {
-			@Override
-			protected boolean isAllowed(ItemStack stack) {
-				return true;
-			}
-		};
-		inventoryHandler.addListener(getSettingsHandler().getTypeCategory(ItemDisplaySettingsCategory.class)::itemChanged);
-	}
-
-	private int getNumberOfInventorySlots() {
-		if (numberOfInventorySlots > 0) {
-			return numberOfInventorySlots;
-		}
-		if (getBlockState().getBlock() instanceof IStorageBlock storageBlock) {
-			numberOfInventorySlots = storageBlock.getNumberOfInventorySlots();
-			setChanged();
-		}
-
-		return numberOfInventorySlots;
-	}
-
-	@Override
-	public int getNumberOfSlotRows() {
-		int itemInventorySlots = getNumberOfInventorySlots();
-		return (int) Math.ceil(itemInventorySlots <= 81 ? (double) itemInventorySlots / 9 : (double) itemInventorySlots / 12);
-	}
-
-	@Override
-	public IItemHandlerSimpleInserter getInventoryForInputOutput() {
-		if (inventoryIOHandler == null) {
-			inventoryIOHandler = new InventoryIOHandler(this);
-		}
-		return inventoryIOHandler.getFilteredItemHandler();
-	}
-
-	public SettingsHandler getSettingsHandler() {
-		return settingsHandler;
-	}
-
-	public UpgradeHandler getUpgradeHandler() {
-		if (upgradeHandler == null) {
-			upgradeHandler = new UpgradeHandler(getNumberOfUpgradeSlots(), this, contentsNbt, this::setChanged, () -> {
-				if (inventoryHandler != null) {
-					inventoryHandler.clearListeners();
-					inventoryHandler.setSlotLimit(StackUpgradeItem.getInventorySlotLimit(this));
-				}
-				getInventoryHandler().addListener(getSettingsHandler().getTypeCategory(ItemDisplaySettingsCategory.class)::itemChanged);
-				inventoryIOHandler = null;
-			}) {
-				@Override
-				public boolean isItemValid(int slot, ItemStack stack) {
-					//noinspection ConstantConditions - by this time the upgrade has registryName so it can't be null
-					return super.isItemValid(slot, stack) && (stack.isEmpty() || SophisticatedStorage.MOD_ID.equals(stack.getItem().getRegistryName().getNamespace()) || stack.is(ModItems.STORAGE_UPGRADE_TAG));
-				}
-
-				@Override
-				public void refreshUpgradeWrappers() {
-					super.refreshUpgradeWrappers();
-					if (!isDroppingContents && level != null && !level.isClientSide && getBlockState().getBlock() instanceof IStorageBlock storageBlock) {
-						storageBlock.setTicking(level, getBlockPos(), getBlockState(), !getWrappersThatImplement(ITickableUpgrade.class).isEmpty());
-					}
-				}
-			};
-		}
-		return upgradeHandler;
-	}
-
-	private int getNumberOfUpgradeSlots() {
-		if (numberOfUpgradeSlots > -1) {
-			return numberOfUpgradeSlots;
-		}
-		if (getBlockState().getBlock() instanceof IStorageBlock storageBlock) {
-			numberOfUpgradeSlots = storageBlock.getNumberOfUpgradeSlots();
-			setChanged();
-		}
-
-		return numberOfUpgradeSlots;
-	}
-
-	public Optional<UUID> getContentsUuid() {
-		if (contentsUuid == null) {
-			contentsUuid = UUID.randomUUID();
-			setChanged();
-		}
-		return Optional.of(contentsUuid);
-	}
-
-	@Override
-	public int getMainColor() {
-		return mainColor;
-	}
-
-	public void setMainColor(int mainColor) {
-		this.mainColor = mainColor;
-	}
-
-	@Override
-	public int getAccentColor() {
-		return accentColor;
-	}
-
-	public void setAccentColor(int accentColor) {
-		this.accentColor = accentColor;
-	}
-
-	@Override
-	public Optional<Integer> getOpenTabId() {
-		return openTabId >= 0 ? Optional.of(openTabId) : Optional.empty();
-	}
-
-	@Override
-	public void setOpenTabId(int openTabId) {
-		this.openTabId = openTabId;
-		setChanged();
-	}
-
-	@Override
-	public void removeOpenTabId() {
-		openTabId = -1;
-		setChanged();
-	}
-
-	@Override
-	public void setColors(int mainColor, int accentColor) {
-		this.mainColor = mainColor;
-		this.accentColor = accentColor;
-		setChanged();
-	}
-
-	@Override
-	public void setSortBy(SortBy sortBy) {
-		this.sortBy = sortBy;
-		setChanged();
-	}
-
-	@Override
-	public SortBy getSortBy() {
-		return sortBy;
-	}
-
-	@Override
-	public void sort() {
-		Set<Integer> slotIndexesExcludedFromSort = new HashSet<>();
-		slotIndexesExcludedFromSort.addAll(getSettingsHandler().getTypeCategory(NoSortSettingsCategory.class).getNoSortSlots());
-		slotIndexesExcludedFromSort.addAll(getSettingsHandler().getTypeCategory(MemorySettingsCategory.class).getSlotIndexes());
-		InventorySorter.sortHandler(getInventoryHandler(), getComparator(), slotIndexesExcludedFromSort);
-	}
-
-	private Comparator<Map.Entry<ItemStackKey, Integer>> getComparator() {
-		return switch (getSortBy()) {
-			case COUNT -> InventorySorter.BY_COUNT;
-			case TAGS -> InventorySorter.BY_TAGS;
-			case NAME -> InventorySorter.BY_NAME;
-		};
-	}
-
-	@Override
-	public void onContentsNbtUpdated() {
-		inventoryHandler = null;
-		upgradeHandler = null;
-		refreshInventoryForUpgradeProcessing();
-	}
-
-	@Override
-	public void refreshInventoryForUpgradeProcessing() {
-		refreshInventoryForInputOutput();
-	}
-
-	@Override
-	public void refreshInventoryForInputOutput() {
-		inventoryIOHandler = null;
-	}
-
-	@Override
-	public void setPersistent(boolean persistent) {
-		//noop
-	}
-
-	@Override
-	public void fillWithLoot(Player playerEntity) {
-		//noop
-	}
-
-	@Override
-	public RenderInfo getRenderInfo() {
-		return renderInfo;
-	}
-
-	@Override
-	public void setColumnsTaken(int columnsTaken) {
-		this.columnsTaken = columnsTaken;
-		setChanged();
-	}
-
-	@Override
-	public int getColumnsTaken() {
-		return columnsTaken;
-	}
-
-	@Override
-	public ItemStack getWrappedStorageStack() {
-		BlockPos pos = getBlockPos();
-		return getBlockState().getBlock().getCloneItemStack(getBlockState(), new BlockHitResult(new Vec3(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5), Direction.DOWN, pos, true), getLevel(), pos, null);
+	@SuppressWarnings("unused") //stack param used in override
+	protected boolean isAllowedInStorage(ItemStack stack) {
+		return true;
 	}
 
 	public void dropContents() {
-		if (level == null || level.isClientSide || inventoryHandler == null) {
+		if (level == null || level.isClientSide) {
 			return;
 		}
 		isDroppingContents = true;
-		InventoryHelper.dropItems(inventoryHandler, level, worldPosition);
+		InventoryHelper.dropItems(storageWrapper.getInventoryHandler(), level, worldPosition);
 
-		if (upgradeHandler != null) {
-			InventoryHelper.dropItems(upgradeHandler, level, worldPosition);
-		}
+		InventoryHelper.dropItems(storageWrapper.getUpgradeHandler(), level, worldPosition);
 		isDroppingContents = false;
 	}
 
@@ -536,18 +259,10 @@ public abstract class StorageBlockEntity extends BlockEntity implements IStorage
 		setChanged();
 	}
 
-	public void increaseSize(int additionalInventorySlots, int additionalUpgradeSlots) {
-		numberOfInventorySlots += additionalInventorySlots;
-		numberOfUpgradeSlots += additionalUpgradeSlots;
-
-		getInventoryHandler().increaseSize(additionalInventorySlots);
-		getUpgradeHandler().increaseSize(additionalUpgradeSlots);
-	}
-
 	@Override
 	public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) {
 		if (cap == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
-			return LazyOptional.of(this::getInventoryForInputOutput).cast();
+			return LazyOptional.of(getStorageWrapper()::getInventoryForInputOutput).cast();
 		}
 		return super.getCapability(cap, side);
 	}

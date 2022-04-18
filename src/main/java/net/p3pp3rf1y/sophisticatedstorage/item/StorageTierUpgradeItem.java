@@ -111,6 +111,10 @@ public class StorageTierUpgradeItem extends ItemBase {
 
 		Player player = context.getPlayer();
 
+		if (player == null) {
+			return InteractionResult.PASS;
+		}
+
 		if (!def.upgradeStorage(player, pos, level, state, be)) {
 			return InteractionResult.PASS;
 		}
@@ -137,10 +141,10 @@ public class StorageTierUpgradeItem extends ItemBase {
 			newBlockState = newBlockState.setValue(facingProperty(), facing);
 			StorageBlockEntity newBlockEntity = newBlock().newBlockEntity(pos, newBlockState);
 			//noinspection ConstantConditions - all storage blocks create a block entity so no chancde of null here
-			int newInventorySize = newBlockEntity.getInventoryHandler().getSlots();
-			int newUpgradeSize = newBlockEntity.getUpgradeHandler().getSlots();
+			int newInventorySize = newBlockEntity.getStorageWrapper().getInventoryHandler().getSlots();
+			int newUpgradeSize = newBlockEntity.getStorageWrapper().getUpgradeHandler().getSlots();
 			newBlockEntity.load(beTag);
-			newBlockEntity.increaseSize(newInventorySize - newBlockEntity.getInventoryHandler().getSlots(), newUpgradeSize - newBlockEntity.getUpgradeHandler().getSlots());
+			newBlockEntity.getStorageWrapper().increaseSize(newInventorySize - newBlockEntity.getStorageWrapper().getInventoryHandler().getSlots(), newUpgradeSize - newBlockEntity.getStorageWrapper().getUpgradeHandler().getSlots());
 
 			level.removeBlockEntity(pos);
 			level.removeBlock(pos, false);
@@ -197,7 +201,7 @@ public class StorageTierUpgradeItem extends ItemBase {
 			if (customName != null) {
 				newBe.setCustomName(customName);
 			}
-			InventoryHandler inventoryHandler = newBe.getInventoryHandler();
+			InventoryHandler inventoryHandler = newBe.getStorageWrapper().getInventoryHandler();
 			if (inventoryHandler.getSlots() < items.size()) {
 				inventoryHandler.setSize(items.size());
 			}

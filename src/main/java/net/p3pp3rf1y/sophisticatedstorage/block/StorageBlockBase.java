@@ -73,7 +73,7 @@ public abstract class StorageBlockBase extends Block implements IStorageBlock, E
 	public void entityInside(BlockState state, Level world, BlockPos pos, Entity entity) {
 		super.entityInside(state, world, pos, entity);
 		if (!world.isClientSide && entity instanceof ItemEntity itemEntity) {
-			WorldHelper.getBlockEntity(world, pos, StorageBlockEntity.class).ifPresent(te -> tryToPickup(world, itemEntity, te));
+			WorldHelper.getBlockEntity(world, pos, StorageBlockEntity.class).ifPresent(te -> tryToPickup(world, itemEntity, te.getStorageWrapper()));
 		}
 	}
 
@@ -117,7 +117,7 @@ public abstract class StorageBlockBase extends Block implements IStorageBlock, E
 	@SuppressWarnings("deprecation")
 	@Override
 	public int getAnalogOutputSignal(BlockState blockState, Level level, BlockPos pos) {
-		return WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).map(be -> InventoryHelper.getAnalogOutputSignal(be.getInventoryForInputOutput())).orElse(0);
+		return WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).map(be -> InventoryHelper.getAnalogOutputSignal(be.getStorageWrapper().getInventoryForInputOutput())).orElse(0);
 	}
 
 	@SuppressWarnings("deprecation")
@@ -125,18 +125,24 @@ public abstract class StorageBlockBase extends Block implements IStorageBlock, E
 	public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean isMoving) {
 		if (!state.is(newState.getBlock())) {
 			WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).ifPresent(b -> {
-				b.dropContents();
+				if (shouldDropContents()) {
+					b.dropContents();
+				}
 				level.updateNeighbourForOutputSignal(pos, this);
 			});
-
-			super.onRemove(state, level, pos, newState, isMoving);
 		}
+
+		super.onRemove(state, level, pos, newState, isMoving);
+	}
+
+	protected boolean shouldDropContents() {
+		return true;
 	}
 
 	@Override
 	public void animateTick(BlockState state, Level level, BlockPos pos, Random rand) {
-		WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).ifPresent(te -> {
-			RenderInfo renderInfo = te.getRenderInfo();
+		WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).ifPresent(be -> {
+			RenderInfo renderInfo = be.getStorageWrapper().getRenderInfo();
 			renderUpgrades(level, rand, pos, getFacing(state), renderInfo);
 		});
 

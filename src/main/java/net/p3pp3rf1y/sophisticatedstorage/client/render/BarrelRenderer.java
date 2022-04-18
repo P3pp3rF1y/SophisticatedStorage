@@ -22,7 +22,7 @@ public class BarrelRenderer implements BlockEntityRenderer<StorageBlockEntity> {
 		}
 
 		Minecraft minecraft = Minecraft.getInstance();
-		RenderInfo.ItemDisplayRenderInfo itemDisplayRenderInfo = blockEntity.getRenderInfo().getItemDisplayRenderInfo();
+		RenderInfo.ItemDisplayRenderInfo itemDisplayRenderInfo = blockEntity.getStorageWrapper().getRenderInfo().getItemDisplayRenderInfo();
 		ItemStack item = itemDisplayRenderInfo.getItem();
 
 		if (item.isEmpty()) {

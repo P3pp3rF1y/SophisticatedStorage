@@ -31,27 +31,20 @@ import net.minecraftforge.client.model.geometry.IModelGeometry;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
-import net.p3pp3rf1y.sophisticatedstorage.block.WoodStorageBlockBase;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.function.Function;
 
-public class ChestDynamicModel implements IModelGeometry<ChestDynamicModel> {
+public class ShulkerBoxDynamicModel implements IModelGeometry<ShulkerBoxDynamicModel> {
 	private static final String BLOCK_BREAK_FOLDER = "block/break/";
-	public static final Map<String, ResourceLocation> WOOD_BREAK_TEXTURES = new HashMap<>();
-	public static final ResourceLocation TINTABLE_BREAK_TEXTURE = SophisticatedStorage.getRL(BLOCK_BREAK_FOLDER + "tintable_chest");
-
-	static {
-		WoodStorageBlockBase.CUSTOM_TEXTURE_WOOD_TYPES.forEach(woodType -> WOOD_BREAK_TEXTURES.put(woodType.name(), SophisticatedStorage.getRL(BLOCK_BREAK_FOLDER + woodType.name() + "_chest")));
-	}
+	public static final ResourceLocation TINTABLE_BREAK_TEXTURE = SophisticatedStorage.getRL(BLOCK_BREAK_FOLDER + "tintable_shulker_box");
+	public static final ResourceLocation MAIN_BREAK_TEXTURE = SophisticatedStorage.getRL(BLOCK_BREAK_FOLDER + "shulker_box");
 
 	@Override
 	public BakedModel bake(IModelConfiguration owner, ModelBakery bakery, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelTransform, ItemOverrides overrides, ResourceLocation modelLocation) {
@@ -64,7 +57,6 @@ public class ChestDynamicModel implements IModelGeometry<ChestDynamicModel> {
 	}
 
 	private static class ChestBakedModel implements BakedModel {
-		private static final ModelProperty<String> WOOD_NAME = new ModelProperty<>();
 		private static final ModelProperty<Boolean> HAS_MAIN_COLOR = new ModelProperty<>();
 
 		@Override
@@ -92,11 +84,10 @@ public class ChestDynamicModel implements IModelGeometry<ChestDynamicModel> {
 			return true;
 		}
 
-		@SuppressWarnings("java:S1874")
+		@SuppressWarnings("deprecation")
 		@Override
 		public TextureAtlasSprite getParticleIcon() {
 			BakedModel model = Minecraft.getInstance().getModelManager().getModel(BlockModelShaper.stateToModelLocation(Blocks.OAK_PLANKS.defaultBlockState()));
-			//noinspection deprecation
 			return model.getParticleIcon();
 		}
 
@@ -107,7 +98,6 @@ public class ChestDynamicModel implements IModelGeometry<ChestDynamicModel> {
 					.map(be -> {
 						ModelDataMap.Builder builder = new ModelDataMap.Builder();
 						builder.withInitial(HAS_MAIN_COLOR, be.getStorageWrapper().getMainColor() > -1);
-						be.getWoodType().ifPresent(n -> builder.withInitial(WOOD_NAME, n.name()));
 						return (IModelData) builder.build();
 					}).orElse(EmptyModelData.INSTANCE);
 		}
@@ -115,8 +105,8 @@ public class ChestDynamicModel implements IModelGeometry<ChestDynamicModel> {
 		@Override
 		public TextureAtlasSprite getParticleIcon(@NotNull IModelData data) {
 			ResourceLocation texture = TINTABLE_BREAK_TEXTURE;
-			if (Boolean.FALSE.equals(data.getData(HAS_MAIN_COLOR)) && data.hasProperty(WOOD_NAME) && WOOD_BREAK_TEXTURES.containsKey(data.getData(WOOD_NAME))) {
-				texture = WOOD_BREAK_TEXTURES.get(data.getData(WOOD_NAME));
+			if (Boolean.FALSE.equals(data.getData(HAS_MAIN_COLOR))) {
+				texture = MAIN_BREAK_TEXTURE;
 			}
 			return Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(texture);
 		}
@@ -127,12 +117,12 @@ public class ChestDynamicModel implements IModelGeometry<ChestDynamicModel> {
 		}
 	}
 
-	public static final class Loader implements IModelLoader<ChestDynamicModel> {
+	public static final class Loader implements IModelLoader<ShulkerBoxDynamicModel> {
 		public static final Loader INSTANCE = new Loader();
 
 		@Override
-		public ChestDynamicModel read(JsonDeserializationContext deserializationContext, JsonObject modelContents) {
-			return new ChestDynamicModel();
+		public ShulkerBoxDynamicModel read(JsonDeserializationContext deserializationContext, JsonObject modelContents) {
+			return new ShulkerBoxDynamicModel();
 		}
 
 		@Override

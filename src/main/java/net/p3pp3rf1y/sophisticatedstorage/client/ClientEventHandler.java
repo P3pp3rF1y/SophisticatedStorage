@@ -22,6 +22,8 @@ import net.p3pp3rf1y.sophisticatedstorage.client.render.BarrelDynamicModel;
 import net.p3pp3rf1y.sophisticatedstorage.client.render.BarrelRenderer;
 import net.p3pp3rf1y.sophisticatedstorage.client.render.ChestDynamicModel;
 import net.p3pp3rf1y.sophisticatedstorage.client.render.ChestRenderer;
+import net.p3pp3rf1y.sophisticatedstorage.client.render.ShulkerBoxDynamicModel;
+import net.p3pp3rf1y.sophisticatedstorage.client.render.ShulkerBoxRenderer;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModParticles;
 
@@ -45,6 +47,7 @@ public class ClientEventHandler {
 	private static void onModelRegistry(ModelRegistryEvent event) {
 		ModelLoaderRegistry.registerLoader(SophisticatedStorage.getRL("barrel"), BarrelDynamicModel.Loader.INSTANCE);
 		ModelLoaderRegistry.registerLoader(SophisticatedStorage.getRL("chest"), ChestDynamicModel.Loader.INSTANCE);
+		ModelLoaderRegistry.registerLoader(SophisticatedStorage.getRL("shulker_box"), ShulkerBoxDynamicModel.Loader.INSTANCE);
 	}
 
 	public static void registerLayer(EntityRenderersEvent.RegisterLayerDefinitions event) {
@@ -61,10 +64,26 @@ public class ClientEventHandler {
 
 	private static void stitchTextures(TextureStitchEvent.Pre event) {
 		stitchBlockAtlasTextures(event);
-		stitchChestWoodTextures(event);
+		stitchChestTextures(event);
+		stitchShulkerBoxTextures(event);
 	}
 
-	private static void stitchChestWoodTextures(TextureStitchEvent.Pre event) {
+	private static void stitchShulkerBoxTextures(TextureStitchEvent.Pre event) {
+		if (!event.getAtlas().location().equals(Sheets.SHULKER_SHEET)) {
+			return;
+		}
+
+		event.addSprite(ShulkerBoxRenderer.BASE_TIER_MATERIAL.texture());
+		event.addSprite(ShulkerBoxRenderer.IRON_TIER_MATERIAL.texture());
+		event.addSprite(ShulkerBoxRenderer.GOLD_TIER_MATERIAL.texture());
+		event.addSprite(ShulkerBoxRenderer.DIAMOND_TIER_MATERIAL.texture());
+		event.addSprite(ShulkerBoxRenderer.NETHERITE_TIER_MATERIAL.texture());
+		event.addSprite(ShulkerBoxRenderer.TINTABLE_MAIN_MATERIAL.texture());
+		event.addSprite(ShulkerBoxRenderer.TINTABLE_ACCENT_MATERIAL.texture());
+		event.addSprite(ShulkerBoxRenderer.NO_TINT_MATERIAL.texture());
+	}
+
+	private static void stitchChestTextures(TextureStitchEvent.Pre event) {
 		if (!event.getAtlas().location().equals(Sheets.CHEST_SHEET)) {
 			return;
 		}
@@ -87,11 +106,14 @@ public class ClientEventHandler {
 		BarrelDynamicModel.WOOD_TEXTURES.forEach((name, textures) -> textures.values().forEach(event::addSprite));
 		ChestDynamicModel.WOOD_BREAK_TEXTURES.forEach((name, texture) -> event.addSprite(texture));
 		event.addSprite(ChestDynamicModel.TINTABLE_BREAK_TEXTURE);
+		event.addSprite(ShulkerBoxDynamicModel.TINTABLE_BREAK_TEXTURE);
+		event.addSprite(ShulkerBoxDynamicModel.MAIN_BREAK_TEXTURE);
 	}
 
 	private static void registerEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {
 		event.registerBlockEntityRenderer(ModBlocks.BARREL_BLOCK_ENTITY_TYPE.get(), context -> new BarrelRenderer());
 		event.registerBlockEntityRenderer(ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get(), ChestRenderer::new);
+		event.registerBlockEntityRenderer(ModBlocks.SHULKER_BOX_BLOCK_ENTITY_TYPE.get(), ShulkerBoxRenderer::new);
 	}
 
 	private static void loadComplete(FMLLoadCompleteEvent event) {

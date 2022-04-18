@@ -288,7 +288,8 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 				ItemRenderer itemRenderer = minecraft.getItemRenderer();
 				BakedModel model = itemRenderer.getModel(displayItem, null, minecraft.player, 0);
 				ret.clear();
-				int rotation = extraData.getData(DISPLAY_ITEM_ROTATION);
+				Integer rotationData = extraData.getData(DISPLAY_ITEM_ROTATION);
+				int rotation = rotationData == null ? 0 : rotationData;
 				for (Direction face : Direction.values()) {
 					addRenderedItemSide(state, rand, ret, model, rotation, face);
 				}
@@ -296,6 +297,7 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 			}
 		}
 
+		@SuppressWarnings("deprecation")
 		private void addRenderedItemSide(BlockState state, Random rand, List<BakedQuad> ret, BakedModel model, int rotation, @Nullable Direction s) {
 			List<BakedQuad> quads = model.getQuads(null, s, rand);
 			quads = MOVE_TO_CORNER.processMany(quads);
@@ -369,11 +371,13 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 			return false;
 		}
 
+		@SuppressWarnings("deprecation")
 		@Override
 		public TextureAtlasSprite getParticleIcon() {
 			return woodModels.values().iterator().next().getParticleIcon();
 		}
 
+		@SuppressWarnings("deprecation")
 		@Override
 		public ItemTransforms getTransforms() {
 			return ITEM_TRANSFORMS;
@@ -398,9 +402,9 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 			return WorldHelper.getBlockEntity(world, pos, StorageBlockEntity.class)
 					.map(be -> {
 						ModelDataMap.Builder builder = new ModelDataMap.Builder();
-						builder.withInitial(HAS_MAIN_COLOR, be.getMainColor() > -1);
-						builder.withInitial(HAS_ACCENT_COLOR, be.getAccentColor() > -1);
-						RenderInfo.ItemDisplayRenderInfo itemDisplayRenderInfo = be.getRenderInfo().getItemDisplayRenderInfo();
+						builder.withInitial(HAS_MAIN_COLOR, be.getStorageWrapper().getMainColor() > -1);
+						builder.withInitial(HAS_ACCENT_COLOR, be.getStorageWrapper().getAccentColor() > -1);
+						RenderInfo.ItemDisplayRenderInfo itemDisplayRenderInfo = be.getStorageWrapper().getRenderInfo().getItemDisplayRenderInfo();
 						builder.withInitial(DISPLAY_ITEM, itemDisplayRenderInfo.getItem());
 						builder.withInitial(DISPLAY_ITEM_ROTATION, itemDisplayRenderInfo.getRotation());
 						be.getWoodType().ifPresent(n -> builder.withInitial(WOOD_NAME, n.name()));
