@@ -106,9 +106,9 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 	public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
 		WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).ifPresent(be -> {
 			NBTHelper.getUniqueId(stack, "uuid").ifPresent(uuid -> {
-				ShulkerStorage shulkerStorage = ShulkerStorage.get();
-				be.load(shulkerStorage.getOrCreateShulkerBoxContents(uuid));
-				shulkerStorage.removeShulkerBoxContents(uuid);
+				ShulkerBoxStorage shulkerBoxStorage = ShulkerBoxStorage.get();
+				be.load(shulkerBoxStorage.getOrCreateShulkerBoxContents(uuid));
+				shulkerBoxStorage.removeShulkerBoxContents(uuid);
 			});
 
 			if (stack.hasCustomHoverName()) {
@@ -175,10 +175,10 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 	}
 
 	private void addShulkerContentsToStack(ItemStack stack, StorageBlockEntity be) {
+		UUID shulkerBoxUuid = be.getStorageWrapper().getContentsUuid().orElse(UUID.randomUUID());
 		CompoundTag shulkerContents = be.saveWithoutMetadata();
 		if (!shulkerContents.isEmpty()) {
-			UUID shulkerBoxUuid = UUID.randomUUID();
-			ShulkerStorage.get().setShulkerBoxContents(shulkerBoxUuid, shulkerContents);
+			ShulkerBoxStorage.get().setShulkerBoxContents(shulkerBoxUuid, shulkerContents);
 			NBTHelper.setUniqueId(stack, "uuid", shulkerBoxUuid);
 		}
 		be.getCustomName().ifPresent(stack::setHoverName);

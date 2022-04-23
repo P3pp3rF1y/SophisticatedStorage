@@ -18,34 +18,34 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
-public class ShulkerStorage extends SavedData {
+public class ShulkerBoxStorage extends SavedData {
 	private static final String SAVED_DATA_NAME = SophisticatedStorage.MOD_ID;
 
 	private final Map<UUID, CompoundTag> shulkerContents = new HashMap<>();
-	private static final ShulkerStorage clientStorageCopy = new ShulkerStorage();
+	private static final ShulkerBoxStorage clientStorageCopy = new ShulkerBoxStorage();
 
-	private ShulkerStorage() {}
+	private ShulkerBoxStorage() {}
 
-	public static ShulkerStorage get() {
+	public static ShulkerBoxStorage get() {
 		if (Thread.currentThread().getThreadGroup() == SidedThreadGroups.SERVER) {
 			MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
 			if (server != null) {
 				ServerLevel overworld = server.getLevel(Level.OVERWORLD);
 				//noinspection ConstantConditions - by this time overworld is loaded
 				DimensionDataStorage storage = overworld.getDataStorage();
-				return storage.computeIfAbsent(ShulkerStorage::load, ShulkerStorage::new, SAVED_DATA_NAME);
+				return storage.computeIfAbsent(ShulkerBoxStorage::load, ShulkerBoxStorage::new, SAVED_DATA_NAME);
 			}
 		}
 		return clientStorageCopy;
 	}
 
-	public static ShulkerStorage load(CompoundTag nbt) {
-		ShulkerStorage storage = new ShulkerStorage();
+	public static ShulkerBoxStorage load(CompoundTag nbt) {
+		ShulkerBoxStorage storage = new ShulkerBoxStorage();
 		readShulkerContents(nbt, storage);
 		return storage;
 	}
 
-	private static void readShulkerContents(CompoundTag nbt, ShulkerStorage storage) {
+	private static void readShulkerContents(CompoundTag nbt, ShulkerBoxStorage storage) {
 		for (Tag n : nbt.getList("shulkerBoxContents", Tag.TAG_COMPOUND)) {
 			CompoundTag uuidContentsPair = (CompoundTag) n;
 			UUID uuid = NbtUtils.loadUUID(Objects.requireNonNull(uuidContentsPair.get("uuid")));

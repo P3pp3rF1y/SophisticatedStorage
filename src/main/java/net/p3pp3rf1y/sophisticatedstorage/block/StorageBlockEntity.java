@@ -29,6 +29,7 @@ import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
+import java.util.UUID;
 
 public abstract class StorageBlockEntity extends BlockEntity {
 	private final StorageWrapper storageWrapper;
@@ -51,6 +52,15 @@ public abstract class StorageBlockEntity extends BlockEntity {
 			setChanged();
 			WorldHelper.notifyBlockUpdate(this);
 		}) {
+
+			@Override
+			public Optional<UUID> getContentsUuid() {
+				if (contentsUuid == null) {
+					contentsUuid = UUID.randomUUID();
+					save();
+				}
+				return Optional.of(contentsUuid);
+			}
 
 			@Override
 			public ItemStack getWrappedStorageStack() {

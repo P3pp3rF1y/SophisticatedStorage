@@ -51,17 +51,18 @@ public abstract class StorageWrapper implements IStorageWrapper {
 	private final SettingsHandler settingsHandler;
 	private final RenderInfo renderInfo;
 	private CompoundTag renderInfoNbt = new CompoundTag();
-	@Nullable
-	private UUID contentsUuid = null;
-	private int openTabId = -1;
 
+	@Nullable
+	protected UUID contentsUuid = null;
+
+	private int openTabId = -1;
 	private int numberOfInventorySlots = 0;
+
 	private int numberOfUpgradeSlots = -1;
 	private SortBy sortBy = SortBy.NAME;
 	private int columnsTaken = 0;
 	private int mainColor = -1;
 	private int accentColor = -1;
-
 	protected StorageWrapper(Supplier<Runnable> getSaveHandler, Runnable onSerializeRenderInfo, Runnable markContentsDirty) {
 		this.getSaveHandler = getSaveHandler;
 		renderInfo = new RenderInfo(getSaveHandler) {
@@ -79,6 +80,10 @@ public abstract class StorageWrapper implements IStorageWrapper {
 		settingsHandler = new StorageSettingsHandler(settingsNbt, markContentsDirty, () -> inventoryHandler, () -> renderInfo);
 	}
 
+	public void setContentsUuid(@Nullable UUID contentsUuid) {
+		this.contentsUuid = contentsUuid;
+	}
+
 	@Override
 	public SettingsHandler getSettingsHandler() {
 		return settingsHandler;
@@ -87,7 +92,7 @@ public abstract class StorageWrapper implements IStorageWrapper {
 	@Override
 	public UpgradeHandler getUpgradeHandler() {
 		if (upgradeHandler == null) {
-			upgradeHandler = new UpgradeHandler(getNumberOfUpgradeSlots(), this, contentsNbt, getSaveHandler.get(), () -> {
+			upgradeHandler = new UpgradeHandler(getNumberOfUpgradeSlots(), this, getContentsNbt(), getSaveHandler.get(), () -> {
 				if (inventoryHandler != null) {
 					inventoryHandler.clearListeners();
 					inventoryHandler.setSlotLimit(StackUpgradeItem.getInventorySlotLimit(this));
@@ -128,7 +133,7 @@ public abstract class StorageWrapper implements IStorageWrapper {
 
 	private void saveContents(CompoundTag tag) {
 		if (!contentsNbt.isEmpty()) {
-			tag.put("contents", contentsNbt);
+			tag.put("contents", getContentsNbt());
 		}
 	}
 
@@ -201,13 +206,17 @@ public abstract class StorageWrapper implements IStorageWrapper {
 	}
 
 	private void initInventoryHandler() {
-		inventoryHandler = new InventoryHandler(getNumberOfInventorySlots(), this, contentsNbt, getSaveHandler.get(), StackUpgradeItem.getInventorySlotLimit(this), Config.COMMON.stackUpgrade) {
+		inventoryHandler = new InventoryHandler(getNumberOfInventorySlots(), this, getContentsNbt(), getSaveHandler.get(), StackUpgradeItem.getInventorySlotLimit(this), Config.COMMON.stackUpgrade) {
 			@Override
 			protected boolean isAllowed(ItemStack stack) {
 				return isAllowedInStorage(stack);
 			}
 		};
 		inventoryHandler.addListener(getSettingsHandler().getTypeCategory(ItemDisplaySettingsCategory.class)::itemChanged);
+	}
+
+	protected CompoundTag getContentsNbt() {
+		return contentsNbt;
 	}
 
 	private int getNumberOfInventorySlots() {
@@ -220,7 +229,7 @@ public abstract class StorageWrapper implements IStorageWrapper {
 		return numberOfInventorySlots;
 	}
 
-	private void save() {
+	protected void save() {
 		getSaveHandler.get().run();
 	}
 
@@ -253,14 +262,6 @@ public abstract class StorageWrapper implements IStorageWrapper {
 	}
 
 	protected abstract int getDefaultNumberOfUpgradeSlots();
-
-	public Optional<UUID> getContentsUuid() {
-		if (contentsUuid == null) {
-			contentsUuid = UUID.randomUUID();
-			save();
-		}
-		return Optional.of(contentsUuid);
-	}
 
 	@Override
 	public int getMainColor() {

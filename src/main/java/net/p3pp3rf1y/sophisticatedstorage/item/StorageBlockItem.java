@@ -11,7 +11,10 @@ import java.util.Optional;
 
 public class StorageBlockItem extends BlockItemBase implements ITintableBlockItem {
 	public StorageBlockItem(Block block) {
-		super(block, new Properties(), SophisticatedStorage.CREATIVE_TAB);
+		this(block, new Properties());
+	}
+	public StorageBlockItem(Block block, Properties properties) {
+		super(block, properties, SophisticatedStorage.CREATIVE_TAB);
 	}
 
 	public static Optional<Integer> getMaincolorFromStack(ItemStack barrelStack) {

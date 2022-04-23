@@ -89,7 +89,8 @@ public class ShulkerBoxBlockEntity extends StorageBlockEntity {
 	protected boolean isAllowedInStorage(ItemStack stack) {
 		//TODO add config with other things that can't go in
 		//TODO add backpacks compat so that they can't go in
-		return !(Block.byItem(stack.getItem()) instanceof ShulkerBoxBlock);
+		Block block = Block.byItem(stack.getItem());
+		return !(block instanceof ShulkerBoxBlock) && !(block instanceof net.minecraft.world.level.block.ShulkerBoxBlock);
 	}
 
 	private static void doNeighborUpdates(Level level, BlockPos pos, BlockState state) {
