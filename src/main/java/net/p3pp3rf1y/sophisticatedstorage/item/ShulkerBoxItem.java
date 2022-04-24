@@ -22,17 +22,19 @@ import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.common.util.NonNullLazy;
 import net.minecraftforge.fml.DistExecutor;
+import net.p3pp3rf1y.sophisticatedcore.api.IStashStorageItem;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.TranslationHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
-import net.p3pp3rf1y.sophisticatedcore.util.NoopStorageWrapper;
 import net.p3pp3rf1y.sophisticatedstorage.block.IStorageBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.ShulkerBoxBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.ShulkerBoxStorage;
+import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageWrapper;
 import net.p3pp3rf1y.sophisticatedstorage.client.render.ShulkerBoxItemRenderer;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
@@ -40,7 +42,7 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
-public class ShulkerBoxItem extends StorageBlockItem {
+public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageItem {
 	public ShulkerBoxItem(Block block) {
 		super(block, new Properties().stacksTo(1));
 	}
@@ -107,10 +109,11 @@ public class ShulkerBoxItem extends StorageBlockItem {
 		return new ICapabilityProvider() {
 			private IStorageWrapper wrapper = null;
 
+			@Nonnull
 			@Override
 			public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) {
-				initWrapper();
-				if (cap == CapabilityStorageWrapper.getCapabilityInstance()) {
+				if (stack.getCount() == 1 && cap == CapabilityStorageWrapper.getCapabilityInstance()) {
+					initWrapper();
 					return LazyOptional.of(() -> wrapper).cast();
 				}
 				return LazyOptional.empty();
@@ -118,49 +121,73 @@ public class ShulkerBoxItem extends StorageBlockItem {
 
 			private void initWrapper() {
 				if (wrapper == null) {
-					NBTHelper.getUniqueId(stack, "uuid").ifPresentOrElse(uuid -> {
-						CompoundTag compoundtag = ShulkerBoxStorage.get().getOrCreateShulkerBoxContents(uuid).getCompound("storageWrapper");
-						StorageWrapper storageWrapper = new StorageWrapper(() -> () -> {}, () -> {}, () -> {}) {
-							@Override
-							public Optional<UUID> getContentsUuid() {
-								return Optional.of(uuid);
+					UUID uuid = NBTHelper.getUniqueId(stack, "uuid").orElseGet(() -> {
+								UUID newUuid = UUID.randomUUID();
+								NBTHelper.setUniqueId(stack, "uuid", newUuid);
+								CompoundTag mainTag = new CompoundTag();
+								CompoundTag storageWrapperTag = new CompoundTag();
+								storageWrapperTag.put("contents", new CompoundTag());
+								mainTag.put(StorageBlockEntity.STORAGE_WRAPPER_TAG, storageWrapperTag);
+								ShulkerBoxStorage.get().setShulkerBoxContents(newUuid, mainTag);
+								return newUuid;
 							}
+					);
+					StorageWrapper storageWrapper = new StorageWrapper(() -> () -> {}, () -> {}, () -> {}) {
+						@Override
+						public Optional<UUID> getContentsUuid() {
+							return Optional.of(uuid);
+						}
 
-							@Override
-							protected CompoundTag getContentsNbt() {
-								return ShulkerBoxStorage.get().getOrCreateShulkerBoxContents(uuid).getCompound("storageWrapper").getCompound("contents");
-							}
+						@Override
+						protected CompoundTag getContentsNbt() {
+							return ShulkerBoxStorage.get().getOrCreateShulkerBoxContents(uuid).getCompound(StorageBlockEntity.STORAGE_WRAPPER_TAG).getCompound("contents");
+						}
 
-							@Override
-							protected void onUpgradeRefresh() {
-								//noop - there should be no upgrade refresh happening here
-							}
+						@Override
+						protected void onUpgradeRefresh() {
+							//noop - there should be no upgrade refresh happening here
+						}
 
-							@Override
-							protected int getDefaultNumberOfInventorySlots() {
-								return getBlock() instanceof IStorageBlock storageBlock ? storageBlock.getNumberOfInventorySlots() : 0;
-							}
+						@Override
+						protected int getDefaultNumberOfInventorySlots() {
+							return getBlock() instanceof IStorageBlock storageBlock ? storageBlock.getNumberOfInventorySlots() : 0;
+						}
 
-							@Override
-							protected boolean isAllowedInStorage(ItemStack stack) {
-								//TODO add config with other things that can't go in
-								//TODO add backpacks compat so that they can't go in
-								Block block = Block.byItem(stack.getItem());
-								return !(block instanceof ShulkerBoxBlock) && !(block instanceof net.minecraft.world.level.block.ShulkerBoxBlock);
-							}
+						@Override
+						protected boolean isAllowedInStorage(ItemStack stack) {
+							//TODO add config with other things that can't go in
+							//TODO add backpacks compat so that they can't go in
+							Block block = Block.byItem(stack.getItem());
+							return !(block instanceof ShulkerBoxBlock) && !(block instanceof net.minecraft.world.level.block.ShulkerBoxBlock);
+						}
 
-							@Override
-							protected int getDefaultNumberOfUpgradeSlots() {
-								return getBlock() instanceof IStorageBlock storageBlock ? storageBlock.getNumberOfUpgradeSlots() : 0;
-							}
-						};
-						storageWrapper.load(compoundtag);
-						storageWrapper.setContentsUuid(uuid); //setting here because client side the uuid isn't in contentsnbt before this data is synced from server and it would create a new one otherwise
-						wrapper = storageWrapper;
-					}, () -> wrapper = NoopStorageWrapper.INSTANCE);
+						@Override
+						protected int getDefaultNumberOfUpgradeSlots() {
+							return getBlock() instanceof IStorageBlock storageBlock ? storageBlock.getNumberOfUpgradeSlots() : 0;
+						}
+					};
+					CompoundTag compoundtag = ShulkerBoxStorage.get().getOrCreateShulkerBoxContents(uuid).getCompound(StorageBlockEntity.STORAGE_WRAPPER_TAG);
+					storageWrapper.load(compoundtag);
+					storageWrapper.setContentsUuid(uuid); //setting here because client side the uuid isn't in contentsnbt before this data is synced from server and it would create a new one otherwise
+					wrapper = storageWrapper;
 				}
 			}
 		};
+	}
+
+	@Override
+	public Optional<TooltipComponent> getInventoryTooltip(ItemStack stack) {
+		return Optional.of(new ContentsTooltip(stack));
+	}
+
+	@Override
+	public ItemStack stash(ItemStack storageStack, ItemStack stack) {
+		return storageStack.getCapability(CapabilityStorageWrapper.getCapabilityInstance()).map(wrapper -> wrapper.getInventoryForUpgradeProcessing().insertItem(stack, false)).orElse(stack);
+	}
+
+	@Override
+	public boolean isItemStashable(ItemStack storageStack, ItemStack stack) {
+		return storageStack.getCapability(CapabilityStorageWrapper.getCapabilityInstance()).map(wrapper -> wrapper.getInventoryForUpgradeProcessing().isItemValid(0, stack)).orElse(false);
 	}
 
 	public record ContentsTooltip(ItemStack shulkerItem) implements TooltipComponent {

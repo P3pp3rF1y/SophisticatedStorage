@@ -27,11 +27,13 @@ import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.UUID;
 
 public abstract class StorageBlockEntity extends BlockEntity {
+	public static final String STORAGE_WRAPPER_TAG = "storageWrapper";
 	private final StorageWrapper storageWrapper;
 	@Nullable
 	private Component displayName = null;
@@ -127,7 +129,7 @@ public abstract class StorageBlockEntity extends BlockEntity {
 	}
 
 	private void saveStorageWrapper(CompoundTag tag) {
-		tag.put("storageWrapper", storageWrapper.save(new CompoundTag()));
+		tag.put(STORAGE_WRAPPER_TAG, storageWrapper.save(new CompoundTag()));
 	}
 
 	private void saveData(CompoundTag tag) {
@@ -180,7 +182,7 @@ public abstract class StorageBlockEntity extends BlockEntity {
 	}
 
 	private void loadStorageWrapper(CompoundTag tag) {
-		NBTHelper.getCompound(tag, "storageWrapper").ifPresent(storageWrapper::load);
+		NBTHelper.getCompound(tag, STORAGE_WRAPPER_TAG).ifPresent(storageWrapper::load);
 	}
 
 	public void loadData(CompoundTag tag) {
@@ -269,6 +271,7 @@ public abstract class StorageBlockEntity extends BlockEntity {
 		setChanged();
 	}
 
+	@Nonnull
 	@Override
 	public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) {
 		if (cap == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
