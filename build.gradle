@@ -104,18 +104,8 @@ sourceSets.main.resources {
 dependencies {
     minecraft "net.minecraftforge:forge:${project.minecraft_version}-${project.forge_version}"
 
-//    compileOnly fg.deobf("mezz.jei:jei-${jei_mc_version}:${jei_version}:api")
-//    runtimeOnly fg.deobf("mezz.jei:jei-${jei_mc_version}:${jei_version}")
-    compileOnly fg.deobf("curse.maven:jei-238222:3696757")
-    runtimeOnly fg.deobf("curse.maven:jei-238222:3696757")    //compileOnly fg.deobf("vazkii.botania:Botania:${botania_version}:api")
-    //runtimeOnly fg.deobf("vazkii.botania:Botania:${botania_version}")
-    //compileOnly fg.deobf("vazkii.patchouli:Patchouli:${patchouli_version}:api")
-    //runtimeOnly fg.deobf("vazkii.patchouli:Patchouli:${patchouli_version}")
-
-    //runtimeOnly fg.deobf("slimeknights.mantle:Mantle:1.16.5-1.6.115")
-    //runtimeOnly fg.deobf("slimeknights.tconstruct:TConstruct:1.16.5-3.1.0.242")
-    //runtimeOnly fg.deobf("curse.maven:invtweaks-383070:3102237")
-    //runtimeOnly fg.deobf("curse.maven:mekanism-268560:3206392")
+    compileOnly fg.deobf("mezz.jei:jei-${jei_mc_version}:${jei_version}:api")
+    runtimeOnly fg.deobf("mezz.jei:jei-${jei_mc_version}:${jei_version}")
 
     if (findProject(':SophisticatedBackpacks') != null) {
         implementation project(':SophisticatedBackpacks')
