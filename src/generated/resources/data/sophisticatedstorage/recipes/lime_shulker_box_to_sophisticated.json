@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "conditions": [
+    {
+      "itemRegistryName": "sophisticatedstorage:shulker_box",
+      "type": "sophisticatedcore:item_enabled"
+    }
+  ],
+  "ingredients": [
+    {
+      "item": "minecraft:lime_shulker_box"
+    },
+    {
+      "item": "minecraft:redstone_torch"
+    }
+  ],
+  "result": {
+    "item": "sophisticatedstorage:shulker_box",
+    "nbt": "{accentColor:8439583,mainColor:8439583}"
+  }
+}

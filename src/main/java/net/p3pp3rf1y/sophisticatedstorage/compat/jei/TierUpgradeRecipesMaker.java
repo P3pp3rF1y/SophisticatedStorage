@@ -32,6 +32,7 @@ public class TierUpgradeRecipesMaker {
 		List<UpgradeRecipe> recipes = new ArrayList<>();
 		addItemSmithingUpgradeRecipes(recipes, ModBlocks.DIAMOND_BARREL_ITEM.get(), "netherite_barrel");
 		addItemSmithingUpgradeRecipes(recipes, ModBlocks.DIAMOND_CHEST_ITEM.get(), "netherite_chest");
+		addItemSmithingUpgradeRecipes(recipes, ModBlocks.DIAMOND_SHULKER_BOX_ITEM.get(), "netherite_shulker_box");
 
 		return recipes;
 	}
@@ -45,6 +46,9 @@ public class TierUpgradeRecipesMaker {
 		addItemUpgradeRecipes(recipes, ModBlocks.CHEST_ITEM.get(), "iron_chest");
 		addItemUpgradeRecipes(recipes, ModBlocks.IRON_CHEST_ITEM.get(), "gold_chest");
 		addItemUpgradeRecipes(recipes, ModBlocks.GOLD_CHEST_ITEM.get(), "diamond_chest");
+		addItemUpgradeRecipes(recipes, ModBlocks.SHULKER_BOX_ITEM.get(), "iron_shulker_box");
+		addItemUpgradeRecipes(recipes, ModBlocks.IRON_SHULKER_BOX_ITEM.get(), "gold_shulker_box");
+		addItemUpgradeRecipes(recipes, ModBlocks.GOLD_SHULKER_BOX_ITEM.get(), "diamond_shulker_box");
 
 		return recipes;
 	}

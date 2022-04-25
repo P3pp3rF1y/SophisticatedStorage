@@ -9,6 +9,7 @@ import net.minecraft.data.recipes.SpecialRecipeBuilder;
 import net.minecraft.data.recipes.UpgradeRecipeBuilder;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -44,100 +45,123 @@ public class StorageRecipeProvider extends RecipeProvider {
 	protected void buildCraftingRecipes(Consumer<FinishedRecipe> consumer) {
 		SpecialRecipeBuilder.special(StorageDyeRecipe.SERIALIZER).save(consumer, SophisticatedStorage.getRegistryName("storage_dye"));
 
-		woodBarrelRecipe(consumer, WoodType.ACACIA, Blocks.ACACIA_PLANKS, Blocks.ACACIA_SLAB);
-		woodBarrelRecipe(consumer, WoodType.BIRCH, Blocks.BIRCH_PLANKS, Blocks.BIRCH_SLAB);
-		woodBarrelRecipe(consumer, WoodType.CRIMSON, Blocks.CRIMSON_PLANKS, Blocks.CRIMSON_SLAB);
-		woodBarrelRecipe(consumer, WoodType.DARK_OAK, Blocks.DARK_OAK_PLANKS, Blocks.DARK_OAK_SLAB);
-		woodBarrelRecipe(consumer, WoodType.JUNGLE, Blocks.JUNGLE_PLANKS, Blocks.JUNGLE_SLAB);
-		woodBarrelRecipe(consumer, WoodType.OAK, Blocks.OAK_PLANKS, Blocks.OAK_SLAB);
-		woodBarrelRecipe(consumer, WoodType.SPRUCE, Blocks.SPRUCE_PLANKS, Blocks.SPRUCE_SLAB);
-		woodBarrelRecipe(consumer, WoodType.WARPED, Blocks.WARPED_PLANKS, Blocks.WARPED_SLAB);
+		addBarrelRecipes(consumer);
+		addChestRecipes(consumer);
+		addShulkerBoxRecipes(consumer);
+		addUpgradeRecipes(consumer);
+		addTierUpgradeRecipes(consumer);
+	}
 
-		ShapelessBasedRecipeBuilder.shapeless(WoodStorageBlockItem.setWoodType(new ItemStack(ModBlocks.BARREL_ITEM.get()), WoodType.SPRUCE))
-				.requires(Blocks.BARREL)
-				.requires(Blocks.REDSTONE_TORCH)
-				.unlockedBy("has_vanilla_barrel", has(Blocks.BARREL))
-				.save(consumer, SophisticatedStorage.getRL("spruce_barrel_from_vanilla_barrel"));
+	private void addShulkerBoxRecipes(Consumer<FinishedRecipe> consumer) {
+		ShapeBasedRecipeBuilder.shaped(ModBlocks.SHULKER_BOX_ITEM.get())
+				.pattern(" S")
+				.pattern("RC")
+				.pattern(" S")
+				.define('R', Items.REDSTONE_TORCH)
+				.define('S', Items.SHULKER_SHELL)
+				.define('C', Tags.Items.CHESTS)
+				.unlockedBy("has_shulker_shell", has(Items.SHULKER_SHELL))
+				.save(consumer);
 
-		ShapeBasedRecipeBuilder.shaped(ModBlocks.IRON_BARREL_ITEM.get(), StorageTierUpgradeRecipe.SERIALIZER)
+		ShapelessBasedRecipeBuilder.shapeless(ModBlocks.SHULKER_BOX_ITEM.get())
+				.requires(Items.SHULKER_BOX).requires(Items.REDSTONE_TORCH)
+				.save(consumer, "shulker_box_from_vanilla_shulker_box");
+
+		tintedShulkerBoxRecipe(consumer, Blocks.BLACK_SHULKER_BOX, DyeColor.BLACK);
+		tintedShulkerBoxRecipe(consumer, Blocks.BLUE_SHULKER_BOX, DyeColor.BLUE);
+		tintedShulkerBoxRecipe(consumer, Blocks.BROWN_SHULKER_BOX, DyeColor.BROWN);
+		tintedShulkerBoxRecipe(consumer, Blocks.CYAN_SHULKER_BOX, DyeColor.CYAN);
+		tintedShulkerBoxRecipe(consumer, Blocks.GRAY_SHULKER_BOX, DyeColor.GRAY);
+		tintedShulkerBoxRecipe(consumer, Blocks.GREEN_SHULKER_BOX, DyeColor.GREEN);
+		tintedShulkerBoxRecipe(consumer, Blocks.LIGHT_BLUE_SHULKER_BOX, DyeColor.LIGHT_BLUE);
+		tintedShulkerBoxRecipe(consumer, Blocks.LIGHT_GRAY_SHULKER_BOX, DyeColor.LIGHT_GRAY);
+		tintedShulkerBoxRecipe(consumer, Blocks.LIME_SHULKER_BOX, DyeColor.LIME);
+		tintedShulkerBoxRecipe(consumer, Blocks.MAGENTA_SHULKER_BOX, DyeColor.MAGENTA);
+		tintedShulkerBoxRecipe(consumer, Blocks.ORANGE_SHULKER_BOX, DyeColor.ORANGE);
+		tintedShulkerBoxRecipe(consumer, Blocks.PINK_SHULKER_BOX, DyeColor.PINK);
+		tintedShulkerBoxRecipe(consumer, Blocks.PURPLE_SHULKER_BOX, DyeColor.PURPLE);
+		tintedShulkerBoxRecipe(consumer, Blocks.RED_SHULKER_BOX, DyeColor.RED);
+		tintedShulkerBoxRecipe(consumer, Blocks.WHITE_SHULKER_BOX, DyeColor.WHITE);
+		tintedShulkerBoxRecipe(consumer, Blocks.YELLOW_SHULKER_BOX, DyeColor.YELLOW);
+
+		ShapeBasedRecipeBuilder.shaped(ModBlocks.IRON_SHULKER_BOX_ITEM.get(), StorageTierUpgradeRecipe.SERIALIZER)
 				.pattern("III")
-				.pattern("IBI")
+				.pattern("ISI")
 				.pattern("III")
+				.define('S', ModBlocks.SHULKER_BOX_ITEM.get())
 				.define('I', Tags.Items.INGOTS_IRON)
-				.define('B', ModBlocks.BARREL_ITEM.get())
-				.unlockedBy("has_barrel", has(ModBlocks.BARREL_ITEM.get()))
+				.unlockedBy("has_shulker_box", has(ModBlocks.SHULKER_BOX_ITEM.get()))
 				.save(consumer);
 
-		ShapeBasedRecipeBuilder.shaped(ModBlocks.GOLD_BARREL_ITEM.get(), StorageTierUpgradeRecipe.SERIALIZER)
+		ShapeBasedRecipeBuilder.shaped(ModBlocks.GOLD_SHULKER_BOX_ITEM.get(), StorageTierUpgradeRecipe.SERIALIZER)
 				.pattern("GGG")
-				.pattern("GBG")
+				.pattern("GSG")
 				.pattern("GGG")
+				.define('S', ModBlocks.IRON_SHULKER_BOX_ITEM.get())
 				.define('G', Tags.Items.INGOTS_GOLD)
-				.define('B', ModBlocks.IRON_BARREL_ITEM.get())
-				.unlockedBy("has_iron_barrel", has(ModBlocks.IRON_BARREL_ITEM.get()))
+				.unlockedBy("has_iron_shulker_box", has(ModBlocks.IRON_SHULKER_BOX_ITEM.get()))
 				.save(consumer);
 
-		ShapeBasedRecipeBuilder.shaped(ModBlocks.DIAMOND_BARREL_ITEM.get(), StorageTierUpgradeRecipe.SERIALIZER)
+		ShapeBasedRecipeBuilder.shaped(ModBlocks.DIAMOND_SHULKER_BOX_ITEM.get(), StorageTierUpgradeRecipe.SERIALIZER)
 				.pattern("DDD")
-				.pattern("DBD")
+				.pattern("DSD")
 				.pattern("DDD")
+				.define('S', ModBlocks.GOLD_SHULKER_BOX_ITEM.get())
 				.define('D', Tags.Items.GEMS_DIAMOND)
-				.define('B', ModBlocks.GOLD_BARREL_ITEM.get())
-				.unlockedBy("has_gold_barrel", has(ModBlocks.GOLD_BARREL_ITEM.get()))
+				.unlockedBy("has_gold_shulker_box", has(ModBlocks.GOLD_SHULKER_BOX_ITEM.get()))
 				.save(consumer);
 
-		new UpgradeRecipeBuilder(SmithingStorageUpgradeRecipe.SERIALIZER, Ingredient.of(ModBlocks.DIAMOND_BARREL_ITEM.get()),
-				Ingredient.of(Items.NETHERITE_INGOT), ModBlocks.NETHERITE_BARREL_ITEM.get())
-				.unlocks("has_diamond_barrel", has(ModBlocks.DIAMOND_BARREL_ITEM.get()))
-				.save(consumer, RegistryHelper.getItemKey(ModBlocks.NETHERITE_BARREL_ITEM.get()));
+		new UpgradeRecipeBuilder(SmithingStorageUpgradeRecipe.SERIALIZER, Ingredient.of(ModBlocks.DIAMOND_SHULKER_BOX_ITEM.get()),
+				Ingredient.of(Items.NETHERITE_INGOT), ModBlocks.NETHERITE_SHULKER_BOX_ITEM.get())
+				.unlocks("has_diamond_shulker_box", has(ModBlocks.DIAMOND_SHULKER_BOX_ITEM.get()))
+				.save(consumer, RegistryHelper.getItemKey(ModBlocks.NETHERITE_SHULKER_BOX_ITEM.get()));
+	}
 
-		woodChestRecipe(consumer, WoodType.ACACIA, Blocks.ACACIA_PLANKS);
-		woodChestRecipe(consumer, WoodType.BIRCH, Blocks.BIRCH_PLANKS);
-		woodChestRecipe(consumer, WoodType.CRIMSON, Blocks.CRIMSON_PLANKS);
-		woodChestRecipe(consumer, WoodType.DARK_OAK, Blocks.DARK_OAK_PLANKS);
-		woodChestRecipe(consumer, WoodType.JUNGLE, Blocks.JUNGLE_PLANKS);
-		woodChestRecipe(consumer, WoodType.OAK, Blocks.OAK_PLANKS);
-		woodChestRecipe(consumer, WoodType.SPRUCE, Blocks.SPRUCE_PLANKS);
-		woodChestRecipe(consumer, WoodType.WARPED, Blocks.WARPED_PLANKS);
+	private void addTierUpgradeRecipes(Consumer<FinishedRecipe> consumer) {
+		ShapeBasedRecipeBuilder.shaped(ModItems.BASIC_TIER_UPGRADE.get())
+				.pattern(" S ")
+				.pattern("SRS")
+				.pattern(" S ")
+				.define('R', Items.REDSTONE_TORCH)
+				.define('S', Items.STICK)
+				.unlockedBy(HAS_REDSTONE_TORCH_CRITERION_NAME, has(Items.REDSTONE_TORCH))
+				.save(consumer);
 
-		ShapelessBasedRecipeBuilder.shapeless(WoodStorageBlockItem.setWoodType(new ItemStack(ModBlocks.CHEST_ITEM.get()), WoodType.OAK))
-				.requires(Blocks.CHEST)
-				.requires(Blocks.REDSTONE_TORCH)
-				.unlockedBy("has_vanilla_chest", has(Blocks.CHEST))
-				.save(consumer, SophisticatedStorage.getRL("oak_chest_from_vanilla_chest"));
-
-		ShapeBasedRecipeBuilder.shaped(ModBlocks.IRON_CHEST_ITEM.get(), StorageTierUpgradeRecipe.SERIALIZER)
+		ShapeBasedRecipeBuilder.shaped(ModItems.BASIC_TO_IRON_TIER_UPGRADE.get())
 				.pattern("III")
-				.pattern("ICI")
+				.pattern("IRI")
 				.pattern("III")
+				.define('R', Items.REDSTONE_TORCH)
 				.define('I', Tags.Items.INGOTS_IRON)
-				.define('C', ModBlocks.CHEST_ITEM.get())
-				.unlockedBy("has_chest", has(ModBlocks.CHEST_ITEM.get()))
+				.unlockedBy(HAS_REDSTONE_TORCH_CRITERION_NAME, has(Items.REDSTONE_TORCH))
 				.save(consumer);
 
-		ShapeBasedRecipeBuilder.shaped(ModBlocks.GOLD_CHEST_ITEM.get(), StorageTierUpgradeRecipe.SERIALIZER)
+		ShapeBasedRecipeBuilder.shaped(ModItems.IRON_TO_GOLD_TIER_UPGRADE.get())
 				.pattern("GGG")
-				.pattern("GCG")
+				.pattern("GRG")
 				.pattern("GGG")
+				.define('R', Items.REDSTONE_TORCH)
 				.define('G', Tags.Items.INGOTS_GOLD)
-				.define('C', ModBlocks.IRON_CHEST_ITEM.get())
-				.unlockedBy("has_iron_chest", has(ModBlocks.IRON_CHEST_ITEM.get()))
+				.unlockedBy(HAS_REDSTONE_TORCH_CRITERION_NAME, has(Items.REDSTONE_TORCH))
 				.save(consumer);
 
-		ShapeBasedRecipeBuilder.shaped(ModBlocks.DIAMOND_CHEST_ITEM.get(), StorageTierUpgradeRecipe.SERIALIZER)
+		ShapeBasedRecipeBuilder.shaped(ModItems.GOLD_TO_DIAMOND_TIER_UPGRADE.get())
 				.pattern("DDD")
-				.pattern("DCD")
+				.pattern("DRD")
 				.pattern("DDD")
+				.define('R', Items.REDSTONE_TORCH)
 				.define('D', Tags.Items.GEMS_DIAMOND)
-				.define('C', ModBlocks.GOLD_CHEST_ITEM.get())
-				.unlockedBy("has_gold_chest", has(ModBlocks.GOLD_CHEST_ITEM.get()))
+				.unlockedBy(HAS_REDSTONE_TORCH_CRITERION_NAME, has(Items.REDSTONE_TORCH))
 				.save(consumer);
 
-		new UpgradeRecipeBuilder(SmithingStorageUpgradeRecipe.SERIALIZER, Ingredient.of(ModBlocks.DIAMOND_CHEST_ITEM.get()),
-				Ingredient.of(Items.NETHERITE_INGOT), ModBlocks.NETHERITE_CHEST_ITEM.get())
-				.unlocks("has_diamond_chest", has(ModBlocks.DIAMOND_CHEST_ITEM.get()))
-				.save(consumer, RegistryHelper.getItemKey(ModBlocks.NETHERITE_CHEST_ITEM.get()));
+		ShapelessBasedRecipeBuilder.shapeless(ModItems.DIAMOND_TO_NETHERITE_TIER_UPGRADE.get())
+				.requires(Items.REDSTONE_TORCH)
+				.requires(Tags.Items.INGOTS_NETHERITE)
+				.unlockedBy(HAS_REDSTONE_TORCH_CRITERION_NAME, has(Items.REDSTONE_TORCH))
+				.save(consumer);
+	}
 
+	private void addUpgradeRecipes(Consumer<FinishedRecipe> consumer) {
 		ShapeBasedRecipeBuilder.shaped(ModItems.UPGRADE_BASE.get())
 				.pattern("PIP")
 				.pattern("IPI")
@@ -468,48 +492,104 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('T', Items.SMOOTH_STONE)
 				.unlockedBy("has_auto_smelting_upgrade", has(ModItems.AUTO_SMELTING_UPGRADE.get()))
 				.save(consumer, SophisticatedStorage.getRL("auto_blasting_upgrade_from_auto_smelting_upgrade"));
+	}
 
-		ShapeBasedRecipeBuilder.shaped(ModItems.BASIC_TIER_UPGRADE.get())
-				.pattern(" S ")
-				.pattern("SRS")
-				.pattern(" S ")
-				.define('R', Items.REDSTONE_TORCH)
-				.define('S', Items.STICK)
-				.unlockedBy(HAS_REDSTONE_TORCH_CRITERION_NAME, has(Items.REDSTONE_TORCH))
-				.save(consumer);
+	private void addChestRecipes(Consumer<FinishedRecipe> consumer) {
+		woodChestRecipe(consumer, WoodType.ACACIA, Blocks.ACACIA_PLANKS);
+		woodChestRecipe(consumer, WoodType.BIRCH, Blocks.BIRCH_PLANKS);
+		woodChestRecipe(consumer, WoodType.CRIMSON, Blocks.CRIMSON_PLANKS);
+		woodChestRecipe(consumer, WoodType.DARK_OAK, Blocks.DARK_OAK_PLANKS);
+		woodChestRecipe(consumer, WoodType.JUNGLE, Blocks.JUNGLE_PLANKS);
+		woodChestRecipe(consumer, WoodType.OAK, Blocks.OAK_PLANKS);
+		woodChestRecipe(consumer, WoodType.SPRUCE, Blocks.SPRUCE_PLANKS);
+		woodChestRecipe(consumer, WoodType.WARPED, Blocks.WARPED_PLANKS);
 
-		ShapeBasedRecipeBuilder.shaped(ModItems.BASIC_TO_IRON_TIER_UPGRADE.get())
+		ShapelessBasedRecipeBuilder.shapeless(WoodStorageBlockItem.setWoodType(new ItemStack(ModBlocks.CHEST_ITEM.get()), WoodType.OAK))
+				.requires(Blocks.CHEST)
+				.requires(Blocks.REDSTONE_TORCH)
+				.unlockedBy("has_vanilla_chest", has(Blocks.CHEST))
+				.save(consumer, SophisticatedStorage.getRL("oak_chest_from_vanilla_chest"));
+
+		ShapeBasedRecipeBuilder.shaped(ModBlocks.IRON_CHEST_ITEM.get(), StorageTierUpgradeRecipe.SERIALIZER)
 				.pattern("III")
-				.pattern("IRI")
+				.pattern("ICI")
 				.pattern("III")
-				.define('R', Items.REDSTONE_TORCH)
 				.define('I', Tags.Items.INGOTS_IRON)
-				.unlockedBy(HAS_REDSTONE_TORCH_CRITERION_NAME, has(Items.REDSTONE_TORCH))
+				.define('C', ModBlocks.CHEST_ITEM.get())
+				.unlockedBy("has_chest", has(ModBlocks.CHEST_ITEM.get()))
 				.save(consumer);
 
-		ShapeBasedRecipeBuilder.shaped(ModItems.IRON_TO_GOLD_TIER_UPGRADE.get())
+		ShapeBasedRecipeBuilder.shaped(ModBlocks.GOLD_CHEST_ITEM.get(), StorageTierUpgradeRecipe.SERIALIZER)
 				.pattern("GGG")
-				.pattern("GRG")
+				.pattern("GCG")
 				.pattern("GGG")
-				.define('R', Items.REDSTONE_TORCH)
 				.define('G', Tags.Items.INGOTS_GOLD)
-				.unlockedBy(HAS_REDSTONE_TORCH_CRITERION_NAME, has(Items.REDSTONE_TORCH))
+				.define('C', ModBlocks.IRON_CHEST_ITEM.get())
+				.unlockedBy("has_iron_chest", has(ModBlocks.IRON_CHEST_ITEM.get()))
 				.save(consumer);
 
-		ShapeBasedRecipeBuilder.shaped(ModItems.GOLD_TO_DIAMOND_TIER_UPGRADE.get())
+		ShapeBasedRecipeBuilder.shaped(ModBlocks.DIAMOND_CHEST_ITEM.get(), StorageTierUpgradeRecipe.SERIALIZER)
 				.pattern("DDD")
-				.pattern("DRD")
+				.pattern("DCD")
 				.pattern("DDD")
-				.define('R', Items.REDSTONE_TORCH)
 				.define('D', Tags.Items.GEMS_DIAMOND)
-				.unlockedBy(HAS_REDSTONE_TORCH_CRITERION_NAME, has(Items.REDSTONE_TORCH))
+				.define('C', ModBlocks.GOLD_CHEST_ITEM.get())
+				.unlockedBy("has_gold_chest", has(ModBlocks.GOLD_CHEST_ITEM.get()))
 				.save(consumer);
 
-		ShapelessBasedRecipeBuilder.shapeless(ModItems.DIAMOND_TO_NETHERITE_TIER_UPGRADE.get())
-				.requires(Items.REDSTONE_TORCH)
-				.requires(Tags.Items.INGOTS_NETHERITE)
-				.unlockedBy(HAS_REDSTONE_TORCH_CRITERION_NAME, has(Items.REDSTONE_TORCH))
+		new UpgradeRecipeBuilder(SmithingStorageUpgradeRecipe.SERIALIZER, Ingredient.of(ModBlocks.DIAMOND_CHEST_ITEM.get()),
+				Ingredient.of(Items.NETHERITE_INGOT), ModBlocks.NETHERITE_CHEST_ITEM.get())
+				.unlocks("has_diamond_chest", has(ModBlocks.DIAMOND_CHEST_ITEM.get()))
+				.save(consumer, RegistryHelper.getItemKey(ModBlocks.NETHERITE_CHEST_ITEM.get()));
+	}
+
+	private void addBarrelRecipes(Consumer<FinishedRecipe> consumer) {
+		woodBarrelRecipe(consumer, WoodType.ACACIA, Blocks.ACACIA_PLANKS, Blocks.ACACIA_SLAB);
+		woodBarrelRecipe(consumer, WoodType.BIRCH, Blocks.BIRCH_PLANKS, Blocks.BIRCH_SLAB);
+		woodBarrelRecipe(consumer, WoodType.CRIMSON, Blocks.CRIMSON_PLANKS, Blocks.CRIMSON_SLAB);
+		woodBarrelRecipe(consumer, WoodType.DARK_OAK, Blocks.DARK_OAK_PLANKS, Blocks.DARK_OAK_SLAB);
+		woodBarrelRecipe(consumer, WoodType.JUNGLE, Blocks.JUNGLE_PLANKS, Blocks.JUNGLE_SLAB);
+		woodBarrelRecipe(consumer, WoodType.OAK, Blocks.OAK_PLANKS, Blocks.OAK_SLAB);
+		woodBarrelRecipe(consumer, WoodType.SPRUCE, Blocks.SPRUCE_PLANKS, Blocks.SPRUCE_SLAB);
+		woodBarrelRecipe(consumer, WoodType.WARPED, Blocks.WARPED_PLANKS, Blocks.WARPED_SLAB);
+
+		ShapelessBasedRecipeBuilder.shapeless(WoodStorageBlockItem.setWoodType(new ItemStack(ModBlocks.BARREL_ITEM.get()), WoodType.SPRUCE))
+				.requires(Blocks.BARREL)
+				.requires(Blocks.REDSTONE_TORCH)
+				.unlockedBy("has_vanilla_barrel", has(Blocks.BARREL))
+				.save(consumer, SophisticatedStorage.getRL("spruce_barrel_from_vanilla_barrel"));
+
+		ShapeBasedRecipeBuilder.shaped(ModBlocks.IRON_BARREL_ITEM.get(), StorageTierUpgradeRecipe.SERIALIZER)
+				.pattern("III")
+				.pattern("IBI")
+				.pattern("III")
+				.define('I', Tags.Items.INGOTS_IRON)
+				.define('B', ModBlocks.BARREL_ITEM.get())
+				.unlockedBy("has_barrel", has(ModBlocks.BARREL_ITEM.get()))
 				.save(consumer);
+
+		ShapeBasedRecipeBuilder.shaped(ModBlocks.GOLD_BARREL_ITEM.get(), StorageTierUpgradeRecipe.SERIALIZER)
+				.pattern("GGG")
+				.pattern("GBG")
+				.pattern("GGG")
+				.define('G', Tags.Items.INGOTS_GOLD)
+				.define('B', ModBlocks.IRON_BARREL_ITEM.get())
+				.unlockedBy("has_iron_barrel", has(ModBlocks.IRON_BARREL_ITEM.get()))
+				.save(consumer);
+
+		ShapeBasedRecipeBuilder.shaped(ModBlocks.DIAMOND_BARREL_ITEM.get(), StorageTierUpgradeRecipe.SERIALIZER)
+				.pattern("DDD")
+				.pattern("DBD")
+				.pattern("DDD")
+				.define('D', Tags.Items.GEMS_DIAMOND)
+				.define('B', ModBlocks.GOLD_BARREL_ITEM.get())
+				.unlockedBy("has_gold_barrel", has(ModBlocks.GOLD_BARREL_ITEM.get()))
+				.save(consumer);
+
+		new UpgradeRecipeBuilder(SmithingStorageUpgradeRecipe.SERIALIZER, Ingredient.of(ModBlocks.DIAMOND_BARREL_ITEM.get()),
+				Ingredient.of(Items.NETHERITE_INGOT), ModBlocks.NETHERITE_BARREL_ITEM.get())
+				.unlocks("has_diamond_barrel", has(ModBlocks.DIAMOND_BARREL_ITEM.get()))
+				.save(consumer, RegistryHelper.getItemKey(ModBlocks.NETHERITE_BARREL_ITEM.get()));
 	}
 
 	private void woodBarrelRecipe(Consumer<FinishedRecipe> consumer, WoodType woodType, Block planks, Block slab) {
@@ -537,5 +617,12 @@ public class StorageRecipeProvider extends RecipeProvider {
 
 	private static InventoryChangeTrigger.TriggerInstance has(TagKey<Item> tag) {
 		return inventoryTrigger(ItemPredicate.Builder.item().of(tag).build());
+	}
+
+	private void tintedShulkerBoxRecipe(Consumer<FinishedRecipe> consumer, Block vanillaShulkerBox, DyeColor dyeColor) {
+		String vanillaShulkerBoxName = vanillaShulkerBox.getRegistryName().getPath();
+		ShapelessBasedRecipeBuilder.shapeless(ModBlocks.SHULKER_BOX.get().getTintedStack(dyeColor)).requires(vanillaShulkerBox).requires(Items.REDSTONE_TORCH)
+				.unlockedBy("has_" + vanillaShulkerBoxName, has(vanillaShulkerBox))
+				.save(consumer, SophisticatedStorage.getRL(vanillaShulkerBoxName + "_to_sophisticated"));
 	}
 }

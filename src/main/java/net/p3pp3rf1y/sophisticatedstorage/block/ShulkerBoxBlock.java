@@ -124,11 +124,7 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 		items.add(new ItemStack(this));
 
 		for (DyeColor color : DyeColor.values()) {
-			ItemStack storageStack = new ItemStack(this);
-			if (storageStack.getItem() instanceof ITintableBlockItem tintableBlockItem) {
-				tintableBlockItem.setMainColor(storageStack, ColorHelper.getColor(color.getTextureDiffuseColors()));
-				tintableBlockItem.setAccentColor(storageStack, ColorHelper.getColor(color.getTextureDiffuseColors()));
-			}
+			ItemStack storageStack = getTintedStack(color);
 			items.add(storageStack);
 		}
 		ItemStack storageStack = new ItemStack(this);
@@ -137,6 +133,15 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 			tintableBlockItem.setAccentColor(storageStack, ColorHelper.getColor(DyeColor.LIME.getTextureDiffuseColors()));
 		}
 		items.add(storageStack);
+	}
+
+	public ItemStack getTintedStack(DyeColor color) {
+		ItemStack storageStack = new ItemStack(this);
+		if (storageStack.getItem() instanceof ITintableBlockItem tintableBlockItem) {
+			tintableBlockItem.setMainColor(storageStack, ColorHelper.getColor(color.getTextureDiffuseColors()));
+			tintableBlockItem.setAccentColor(storageStack, ColorHelper.getColor(color.getTextureDiffuseColors()));
+		}
+		return storageStack;
 	}
 
 	private static boolean canOpen(BlockState pState, Level pLevel, BlockPos pPos, ShulkerBoxBlockEntity pBlockEntity) {

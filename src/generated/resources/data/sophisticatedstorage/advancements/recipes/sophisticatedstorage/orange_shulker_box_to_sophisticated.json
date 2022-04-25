@@ -1,0 +1,34 @@
+{
+  "parent": "minecraft:recipes/root",
+  "rewards": {
+    "recipes": [
+      "sophisticatedstorage:orange_shulker_box_to_sophisticated"
+    ]
+  },
+  "criteria": {
+    "has_orange_shulker_box": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "minecraft:orange_shulker_box"
+            ]
+          }
+        ]
+      }
+    },
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "sophisticatedstorage:orange_shulker_box_to_sophisticated"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_orange_shulker_box",
+      "has_the_recipe"
+    ]
+  ]
+}

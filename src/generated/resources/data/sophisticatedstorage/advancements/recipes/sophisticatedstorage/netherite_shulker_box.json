@@ -1,0 +1,34 @@
+{
+  "parent": "minecraft:recipes/root",
+  "rewards": {
+    "recipes": [
+      "sophisticatedstorage:netherite_shulker_box"
+    ]
+  },
+  "criteria": {
+    "has_diamond_shulker_box": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "sophisticatedstorage:diamond_shulker_box"
+            ]
+          }
+        ]
+      }
+    },
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "sophisticatedstorage:netherite_shulker_box"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_diamond_shulker_box",
+      "has_the_recipe"
+    ]
+  ]
+}
