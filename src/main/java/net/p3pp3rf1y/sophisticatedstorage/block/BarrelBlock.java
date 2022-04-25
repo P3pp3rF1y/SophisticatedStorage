@@ -60,7 +60,7 @@ public class BarrelBlock extends WoodStorageBlockBase {
 
 	@SuppressWarnings("deprecation")
 	@Override
-	public boolean isCollisionShapeFullBlock(BlockState pState, BlockGetter pLevel, BlockPos pPos) {
+	public boolean isCollisionShapeFullBlock(BlockState state, BlockGetter level, BlockPos pos) {
 		return false;
 	}
 
@@ -127,7 +127,7 @@ public class BarrelBlock extends WoodStorageBlockBase {
 
 	@SuppressWarnings("deprecation")
 	@Override
-	public void tick(BlockState pState, ServerLevel level, BlockPos pos, Random pRandom) {
+	public void tick(BlockState state, ServerLevel level, BlockPos pos, Random random) {
 		WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).ifPresent(StorageBlockEntity::recheckOpen);
 	}
 
@@ -138,8 +138,8 @@ public class BarrelBlock extends WoodStorageBlockBase {
 
 	@SuppressWarnings("deprecation")
 	@Override
-	public BlockState mirror(BlockState pState, Mirror pMirror) {
-		return pState.rotate(pMirror.getRotation(pState.getValue(FACING)));
+	public BlockState mirror(BlockState state, Mirror mirror) {
+		return state.rotate(mirror.getRotation(state.getValue(FACING)));
 	}
 
 	@Override
@@ -155,8 +155,8 @@ public class BarrelBlock extends WoodStorageBlockBase {
 
 	@SuppressWarnings("deprecation")
 	@Override
-	public VoxelShape getCollisionShape(BlockState pState, BlockGetter pLevel, BlockPos pPos, CollisionContext pContext) {
-		return pContext instanceof EntityCollisionContext entityCollisionContext && entityCollisionContext.getEntity() instanceof ItemEntity ? ITEM_ENTITY_COLLISION_SHAPE : super.getCollisionShape(pState, pLevel, pPos, pContext);
+	public VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+		return context instanceof EntityCollisionContext entityCollisionContext && entityCollisionContext.getEntity() instanceof ItemEntity ? ITEM_ENTITY_COLLISION_SHAPE : super.getCollisionShape(state, level, pos, context);
 	}
 
 	@Nullable

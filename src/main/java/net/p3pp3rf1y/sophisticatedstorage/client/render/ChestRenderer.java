@@ -51,8 +51,8 @@ public class ChestRenderer implements BlockEntityRenderer<ChestBlockEntity> {
 		WoodStorageBlockBase.CUSTOM_TEXTURE_WOOD_TYPES.forEach(woodType -> WOOD_MATERIALS.put(woodType, new Material(Sheets.CHEST_SHEET, SophisticatedStorage.getRL(ENTITY_CHEST_FOLDER + woodType.name()))));
 	}
 
-	public ChestRenderer(BlockEntityRendererProvider.Context pContext) {
-		ModelPart modelpart = pContext.bakeLayer(ClientEventHandler.CHEST_LAYER);
+	public ChestRenderer(BlockEntityRendererProvider.Context context) {
+		ModelPart modelpart = context.bakeLayer(ClientEventHandler.CHEST_LAYER);
 		bottomPart = modelpart.getChild(BOTTOM);
 		lidPart = modelpart.getChild(LID);
 		lockPart = modelpart.getChild(LOCK);

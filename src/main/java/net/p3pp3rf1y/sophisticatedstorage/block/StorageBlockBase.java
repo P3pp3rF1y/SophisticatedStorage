@@ -39,7 +39,7 @@ public abstract class StorageBlockBase extends Block implements IStorageBlock, E
 	}
 
 	@Override
-	public abstract StorageBlockEntity newBlockEntity(BlockPos pPos, BlockState pState);
+	public abstract StorageBlockEntity newBlockEntity(BlockPos pos, BlockState state);
 
 	@Nullable
 	protected static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(BlockEntityType<A> typePassedIn, BlockEntityType<E> typeExpected, BlockEntityTicker<? super E> blockEntityTicker) {
@@ -110,7 +110,7 @@ public abstract class StorageBlockBase extends Block implements IStorageBlock, E
 
 	@SuppressWarnings("deprecation")
 	@Override
-	public boolean hasAnalogOutputSignal(BlockState pState) {
+	public boolean hasAnalogOutputSignal(BlockState state) {
 		return true;
 	}
 

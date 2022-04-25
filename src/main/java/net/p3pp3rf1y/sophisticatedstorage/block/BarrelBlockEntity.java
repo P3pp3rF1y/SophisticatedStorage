@@ -44,10 +44,10 @@ public class BarrelBlockEntity extends StorageBlockEntity{
 		super(pos, state, ModBlocks.BARREL_BLOCK_ENTITY_TYPE.get());
 	}
 
-	void updateBlockState(BlockState pState, boolean open) {
+	void updateBlockState(BlockState state, boolean open) {
 		if (level == null) {
 			return;
 		}
-		level.setBlock(getBlockPos(), pState.setValue(BarrelBlock.OPEN, open), 3);
+		level.setBlock(getBlockPos(), state.setValue(BarrelBlock.OPEN, open), 3);
 	}
 }

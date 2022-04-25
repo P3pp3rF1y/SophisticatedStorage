@@ -60,7 +60,7 @@ public class ShulkerBoxDynamicModel implements IModelGeometry<ShulkerBoxDynamicM
 		private static final ModelProperty<Boolean> HAS_MAIN_COLOR = new ModelProperty<>();
 
 		@Override
-		public List<BakedQuad> getQuads(@Nullable BlockState pState, @Nullable Direction pSide, Random pRand) {
+		public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, Random rand) {
 			return Collections.emptyList();
 		}
 
@@ -126,7 +126,7 @@ public class ShulkerBoxDynamicModel implements IModelGeometry<ShulkerBoxDynamicM
 		}
 
 		@Override
-		public void onResourceManagerReload(ResourceManager pResourceManager) {
+		public void onResourceManagerReload(ResourceManager resourceManager) {
 			//noop
 		}
 	}

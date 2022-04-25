@@ -55,6 +55,7 @@ import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
 import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -242,6 +243,7 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 			return new ItemTransform(transformation.getLeftRotation().toXYZ(), transformation.getTranslation(), transformation.getScale());
 		}
 
+		@Nonnull
 		@Override
 		public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, Random rand, IModelData extraData) {
 			String woodName = null;
@@ -397,6 +399,7 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 			return getParticleIcon();
 		}
 
+		@Nonnull
 		@Override
 		public IModelData getModelData(BlockAndTintGetter world, BlockPos pos, BlockState state, IModelData tileData) {
 			return WorldHelper.getBlockEntity(world, pos, StorageBlockEntity.class)
@@ -502,7 +505,7 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 		}
 
 		@Override
-		public void onResourceManagerReload(ResourceManager pResourceManager) {
+		public void onResourceManagerReload(ResourceManager resourceManager) {
 			//noop
 		}
 	}

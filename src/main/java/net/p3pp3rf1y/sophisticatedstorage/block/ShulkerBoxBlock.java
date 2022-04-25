@@ -72,11 +72,11 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 
 	@Override
 	@Nullable
-	public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level pLevel, BlockState pState, BlockEntityType<T> pBlockEntityType) {
-		return createTickerHelper(pBlockEntityType, ModBlocks.SHULKER_BOX_BLOCK_ENTITY_TYPE.get(), (level, pos, state, blockEntity) -> {
-			ShulkerBoxBlockEntity.tick(level, pos, state, blockEntity);
-			if (!level.isClientSide) {
-				StorageBlockEntity.serverTick(level, pos, blockEntity);
+	public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> blockEntityType) {
+		return createTickerHelper(blockEntityType, ModBlocks.SHULKER_BOX_BLOCK_ENTITY_TYPE.get(), (l, pos, s, blockEntity) -> {
+			ShulkerBoxBlockEntity.tick(l, pos, s, blockEntity);
+			if (!l.isClientSide) {
+				StorageBlockEntity.serverTick(l, pos, blockEntity);
 			}
 		});
 	}
@@ -144,33 +144,33 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 		return storageStack;
 	}
 
-	private static boolean canOpen(BlockState pState, Level pLevel, BlockPos pPos, ShulkerBoxBlockEntity pBlockEntity) {
-		if (pBlockEntity.getAnimationStatus() != ShulkerBoxBlockEntity.AnimationStatus.CLOSED) {
+	private static boolean canOpen(BlockState state, Level level, BlockPos pos, ShulkerBoxBlockEntity blockEntity) {
+		if (blockEntity.getAnimationStatus() != ShulkerBoxBlockEntity.AnimationStatus.CLOSED) {
 			return true;
 		} else {
-			AABB aabb = Shulker.getProgressDeltaAabb(pState.getValue(FACING), 0.0F, 0.5F).move(pPos).deflate(1.0E-6D);
-			return pLevel.noCollision(aabb);
+			AABB aabb = Shulker.getProgressDeltaAabb(state.getValue(FACING), 0.0F, 0.5F).move(pos).deflate(1.0E-6D);
+			return level.noCollision(aabb);
 		}
 	}
 
 	@Override
-	public void playerWillDestroy(Level pLevel, BlockPos pPos, BlockState pState, Player pPlayer) {
-		BlockEntity blockentity = pLevel.getBlockEntity(pPos);
-		if (blockentity instanceof ShulkerBoxBlockEntity shulkerBoxBlockEntity && !pLevel.isClientSide && pPlayer.isCreative()) {
+	public void playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
+		BlockEntity blockentity = level.getBlockEntity(pos);
+		if (blockentity instanceof ShulkerBoxBlockEntity shulkerBoxBlockEntity && !level.isClientSide && player.isCreative()) {
 			ItemStack shulkerBoxDrop = new ItemStack(this);
 			addShulkerContentsToStack(shulkerBoxDrop, shulkerBoxBlockEntity);
 
-			ItemEntity itementity = new ItemEntity(pLevel, pPos.getX() + 0.5D, pPos.getY() + 0.5D, pPos.getZ() + 0.5D, shulkerBoxDrop);
+			ItemEntity itementity = new ItemEntity(level, pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, shulkerBoxDrop);
 			itementity.setDefaultPickUpDelay();
-			pLevel.addFreshEntity(itementity);
+			level.addFreshEntity(itementity);
 		}
 
-		super.playerWillDestroy(pLevel, pPos, pState, pPlayer);
+		super.playerWillDestroy(level, pos, state, player);
 	}
 
 	@SuppressWarnings("deprecation")
 	@Override
-	public PushReaction getPistonPushReaction(BlockState pState) {
+	public PushReaction getPistonPushReaction(BlockState state) {
 		return PushReaction.DESTROY;
 	}
 
@@ -201,16 +201,16 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 
 	@SuppressWarnings("deprecation")
 	@Override
-	public VoxelShape getShape(BlockState pState, BlockGetter pLevel, BlockPos pPos, CollisionContext pContext) {
-		BlockEntity blockentity = pLevel.getBlockEntity(pPos);
-		return blockentity instanceof ShulkerBoxBlockEntity shulkerBoxBlockEntity ? Shapes.create(shulkerBoxBlockEntity.getBoundingBox(pState)) : Shapes.block();
+	public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+		BlockEntity blockentity = level.getBlockEntity(pos);
+		return blockentity instanceof ShulkerBoxBlockEntity shulkerBoxBlockEntity ? Shapes.create(shulkerBoxBlockEntity.getBoundingBox(state)) : Shapes.block();
 	}
 
 	@SuppressWarnings("deprecation")
 	@Override
-	public ItemStack getCloneItemStack(BlockGetter pLevel, BlockPos pPos, BlockState pState) {
-		ItemStack stack = super.getCloneItemStack(pLevel, pPos, pState);
-		WorldHelper.getBlockEntity(pLevel, pPos, ShulkerBoxBlockEntity.class).ifPresent(be -> addShulkerContentsToStack(stack, be));
+	public ItemStack getCloneItemStack(BlockGetter level, BlockPos pos, BlockState state) {
+		ItemStack stack = super.getCloneItemStack(level, pos, state);
+		WorldHelper.getBlockEntity(level, pos, ShulkerBoxBlockEntity.class).ifPresent(be -> addShulkerContentsToStack(stack, be));
 		return stack;
 	}
 
@@ -222,8 +222,8 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 
 	@SuppressWarnings("deprecation")
 	@Override
-	public BlockState mirror(BlockState pState, Mirror pMirror) {
-		return pState.rotate(pMirror.getRotation(pState.getValue(FACING)));
+	public BlockState mirror(BlockState state, Mirror mirror) {
+		return state.rotate(mirror.getRotation(state.getValue(FACING)));
 	}
 
 	@Override
@@ -233,18 +233,18 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 
 	@SuppressWarnings("deprecation")
 	@Override
-	public RenderShape getRenderShape(BlockState pState) {
+	public RenderShape getRenderShape(BlockState state) {
 		return RenderShape.ENTITYBLOCK_ANIMATED;
 	}
 
 	@Override
-	public BlockState getStateForPlacement(BlockPlaceContext pContext) {
-		return defaultBlockState().setValue(FACING, pContext.getClickedFace());
+	public BlockState getStateForPlacement(BlockPlaceContext context) {
+		return defaultBlockState().setValue(FACING, context.getClickedFace());
 	}
 
 	@Override
-	protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> pBuilder) {
-		pBuilder.add(FACING);
+	protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+		builder.add(FACING);
 	}
 
 	@Override

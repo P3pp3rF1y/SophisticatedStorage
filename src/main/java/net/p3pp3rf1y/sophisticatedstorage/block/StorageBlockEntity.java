@@ -163,7 +163,7 @@ public abstract class StorageBlockEntity extends BlockEntity {
 		}
 	}
 
-	void playSound(BlockState state, SoundEvent pSound) {
+	void playSound(BlockState state, SoundEvent sound) {
 		if (level == null || !(state.getBlock() instanceof StorageBlockBase storageBlock)) {
 			return;
 		}
@@ -171,7 +171,7 @@ public abstract class StorageBlockEntity extends BlockEntity {
 		double d0 = worldPosition.getX() + 0.5D + vec3i.getX() / 2.0D;
 		double d1 = worldPosition.getY() + 0.5D + vec3i.getY() / 2.0D;
 		double d2 = worldPosition.getZ() + 0.5D + vec3i.getZ() / 2.0D;
-		level.playSound(null, d0, d1, d2, pSound, SoundSource.BLOCKS, 0.5F, level.random.nextFloat() * 0.1F + 0.9F);
+		level.playSound(null, d0, d1, d2, sound, SoundSource.BLOCKS, 0.5F, level.random.nextFloat() * 0.1F + 0.9F);
 	}
 
 	@Override

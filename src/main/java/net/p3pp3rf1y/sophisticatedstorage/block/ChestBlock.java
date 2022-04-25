@@ -59,31 +59,31 @@ public class ChestBlock extends WoodStorageBlockBase {
 
 	@SuppressWarnings("deprecation")
 	@Override
-	public RenderShape getRenderShape(BlockState pState) {
+	public RenderShape getRenderShape(BlockState state) {
 		return RenderShape.ENTITYBLOCK_ANIMATED;
 	}
 
 	@SuppressWarnings("deprecation")
 	@Override
-	public BlockState updateShape(BlockState pState, Direction pFacing, BlockState pFacingState, LevelAccessor pLevel, BlockPos pCurrentPos, BlockPos pFacingPos) {
-		if (Boolean.TRUE.equals(pState.getValue(WATERLOGGED))) {
-			pLevel.scheduleTick(pCurrentPos, Fluids.WATER, Fluids.WATER.getTickDelay(pLevel));
+	public BlockState updateShape(BlockState state, Direction facing, BlockState facingState, LevelAccessor level, BlockPos currentPos, BlockPos facingPos) {
+		if (Boolean.TRUE.equals(state.getValue(WATERLOGGED))) {
+			level.scheduleTick(currentPos, Fluids.WATER, Fluids.WATER.getTickDelay(level));
 		}
 
-		return super.updateShape(pState, pFacing, pFacingState, pLevel, pCurrentPos, pFacingPos);
+		return super.updateShape(state, facing, facingState, level, currentPos, facingPos);
 	}
 
 	@SuppressWarnings("deprecation")
 	@Override
-	public VoxelShape getShape(BlockState pState, BlockGetter pLevel, BlockPos pPos, CollisionContext pContext) {
+	public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
 		return AABB;
 	}
 
 	@Nullable
 	@Override
-	public BlockState getStateForPlacement(BlockPlaceContext pContext) {
-		Direction direction = pContext.getHorizontalDirection().getOpposite();
-		FluidState fluidstate = pContext.getLevel().getFluidState(pContext.getClickedPos());
+	public BlockState getStateForPlacement(BlockPlaceContext context) {
+		Direction direction = context.getHorizontalDirection().getOpposite();
+		FluidState fluidstate = context.getLevel().getFluidState(context.getClickedPos());
 
 		return defaultBlockState().setValue(FACING, direction).setValue(WATERLOGGED, fluidstate.getType() == Fluids.WATER);
 	}
@@ -96,8 +96,8 @@ public class ChestBlock extends WoodStorageBlockBase {
 
 	@SuppressWarnings("deprecation")
 	@Override
-	public FluidState getFluidState(BlockState pState) {
-		return Boolean.TRUE.equals(pState.getValue(WATERLOGGED)) ? Fluids.WATER.getSource(false) : super.getFluidState(pState);
+	public FluidState getFluidState(BlockState state) {
+		return Boolean.TRUE.equals(state.getValue(WATERLOGGED)) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
 	}
 
 	@SuppressWarnings("deprecation")
@@ -125,7 +125,7 @@ public class ChestBlock extends WoodStorageBlockBase {
 
 	@SuppressWarnings("deprecation")
 	@Override
-	public boolean isCollisionShapeFullBlock(BlockState pState, BlockGetter pLevel, BlockPos pPos) {
+	public boolean isCollisionShapeFullBlock(BlockState state, BlockGetter level, BlockPos pos) {
 		return false;
 	}
 
@@ -143,8 +143,8 @@ public class ChestBlock extends WoodStorageBlockBase {
 
 	@SuppressWarnings("deprecation")
 	@Override
-	public BlockState mirror(BlockState pState, Mirror pMirror) {
-		return pState.rotate(pMirror.getRotation(pState.getValue(FACING)));
+	public BlockState mirror(BlockState state, Mirror mirror) {
+		return state.rotate(mirror.getRotation(state.getValue(FACING)));
 	}
 
 	@Override
@@ -154,7 +154,7 @@ public class ChestBlock extends WoodStorageBlockBase {
 
 	@SuppressWarnings("deprecation")
 	@Override
-	public boolean isPathfindable(BlockState pState, BlockGetter pLevel, BlockPos pPos, PathComputationType pType) {
+	public boolean isPathfindable(BlockState state, BlockGetter level, BlockPos pos, PathComputationType type) {
 		return false;
 	}
 

@@ -82,7 +82,6 @@ public class ShulkerBoxBlockEntity extends StorageBlockEntity {
 			}
 			case OPENED -> progress = 1.0F;
 		}
-
 	}
 
 	@Override
@@ -126,8 +125,8 @@ public class ShulkerBoxBlockEntity extends StorageBlockEntity {
 		return openersCounter;
 	}
 
-	public float getProgress(float pPartialTicks) {
-		return Mth.lerp(pPartialTicks, progressOld, progress);
+	public float getProgress(float partialTicks) {
+		return Mth.lerp(partialTicks, progressOld, progress);
 	}
 
 	public boolean isClosed() {

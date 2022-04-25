@@ -92,15 +92,15 @@ public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageIte
 	}
 
 	@Override
-	public void onDestroyed(ItemEntity pItemEntity) {
-		Level level = pItemEntity.level;
+	public void onDestroyed(ItemEntity itemEntity) {
+		Level level = itemEntity.level;
 		if (level.isClientSide) {
 			return;
 		}
-		ItemStack itemstack = pItemEntity.getItem();
+		ItemStack itemstack = itemEntity.getItem();
 		itemstack.getCapability(CapabilityStorageWrapper.getCapabilityInstance()).ifPresent(storageWrapper -> {
-			InventoryHelper.dropItems(storageWrapper.getInventoryHandler(), level, pItemEntity.getX(), pItemEntity.getY(), pItemEntity.getZ());
-			InventoryHelper.dropItems(storageWrapper.getUpgradeHandler(), level, pItemEntity.getX(), pItemEntity.getY(), pItemEntity.getZ());
+			InventoryHelper.dropItems(storageWrapper.getInventoryHandler(), level, itemEntity.getX(), itemEntity.getY(), itemEntity.getZ());
+			InventoryHelper.dropItems(storageWrapper.getUpgradeHandler(), level, itemEntity.getX(), itemEntity.getY(), itemEntity.getZ());
 		});
 	}
 
