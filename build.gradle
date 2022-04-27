@@ -163,8 +163,8 @@ publishing {
             name = "GitHubPackages"
             url = uri("https://maven.pkg.github.com/P3pp3rF1y/SophisticatedStorage")
             credentials {
-                username = project.findProperty("gpr.user") ?: System.getenv("GPR_USER")
-                password = project.findProperty("gpr.key") ?: System.getenv("GPR_API_KEY")
+                username = System.getenv("GITHUB_ACTOR")
+                password = System.getenv("GITHUB_TOKEN")
             }
         }
     }
