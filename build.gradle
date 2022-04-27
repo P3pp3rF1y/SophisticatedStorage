@@ -85,9 +85,6 @@ minecraft {
             //property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
             workingDirectory project.file('run')
             mods {
-                sophisticatedbackpacks {
-                    source project(':SophisticatedBackpacks').sourceSets.main
-                }
                 sophisticatedstorage {
                     source sourceSets.main
                 }
