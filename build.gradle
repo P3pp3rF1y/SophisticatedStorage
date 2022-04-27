@@ -107,13 +107,11 @@ dependencies {
     compileOnly fg.deobf("mezz.jei:jei-${jei_mc_version}:${jei_version}:api")
     runtimeOnly fg.deobf("mezz.jei:jei-${jei_mc_version}:${jei_version}")
 
-    if (findProject(':SophisticatedBackpacks') != null) {
-        implementation project(':SophisticatedBackpacks')
+    if (findProject(':SophisticatedCore') != null) {
+        implementation project(':SophisticatedCore')
     } else {
-        //TODO add correct dependency here when ready
-        /*implementation fg.deobf (project.dependencies.create("com.github.mcjty:mcjtylib:${mcjtylib_version}") {
-            transitive = false
-        })*/
+        compileOnly fg.deobf("curse.maven:sophisticatedcore-618298:${sc_cf_file_id}")
+        runtimeOnly fg.deobf("curse.maven:sophisticatedcore-618298:${sc_cf_file_id}")
     }
 }
 
