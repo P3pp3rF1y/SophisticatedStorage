@@ -258,7 +258,7 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 	}
 
 	@Override
-	protected Direction getFacing(BlockState state) {
+	public Direction getFacing(BlockState state) {
 		return state.getValue(FACING);
 	}
 

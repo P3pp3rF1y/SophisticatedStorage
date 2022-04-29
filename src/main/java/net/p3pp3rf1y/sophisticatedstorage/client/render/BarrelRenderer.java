@@ -10,8 +10,9 @@ import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.state.BlockState;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
-import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlock;
+import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockBase;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
 
 public class BarrelRenderer implements BlockEntityRenderer<StorageBlockEntity> {
@@ -21,6 +22,10 @@ public class BarrelRenderer implements BlockEntityRenderer<StorageBlockEntity> {
 			return;
 		}
 
+		renderDisplayItem(blockEntity, poseStack, bufferSource, packedLight, packedOverlay, 0.5, 0.55);
+	}
+
+	public static void renderDisplayItem(StorageBlockEntity blockEntity, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, double yCenterTranslation, double blockSideOffset) {
 		Minecraft minecraft = Minecraft.getInstance();
 		RenderInfo.ItemDisplayRenderInfo itemDisplayRenderInfo = blockEntity.getStorageWrapper().getRenderInfo().getItemDisplayRenderInfo();
 		ItemStack item = itemDisplayRenderInfo.getItem();
@@ -29,13 +34,17 @@ public class BarrelRenderer implements BlockEntityRenderer<StorageBlockEntity> {
 			return;
 		}
 
-		Direction facing = blockEntity.getBlockState().getValue(BarrelBlock.FACING);
+		BlockState blockState = blockEntity.getBlockState();
+		if (!(blockState.getBlock() instanceof StorageBlockBase storageBlock)) {
+			return;
+		}
+		Direction facing = storageBlock.getFacing(blockState);
 		BakedModel itemModel = minecraft.getItemRenderer().getModel(item, null, minecraft.player, 0);
 
 		poseStack.pushPose();
-		poseStack.translate(0.5, 0.5, 0.5);
+		poseStack.translate(0.5, yCenterTranslation, 0.5);
 		Vec3i normal = facing.getNormal();
-		poseStack.translate(normal.getX() * 0.55, normal.getY() * 0.55, normal.getZ() * 0.55);
+		poseStack.translate(normal.getX() * blockSideOffset, normal.getY() * blockSideOffset, normal.getZ() * blockSideOffset);
 		poseStack.mulPose(facing.getRotation());
 		if (facing.getAxis().isHorizontal()) {
 			poseStack.mulPose(Vector3f.YN.rotationDegrees(180f + itemDisplayRenderInfo.getRotation()));

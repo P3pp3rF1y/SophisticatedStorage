@@ -98,6 +98,8 @@ public class ChestRenderer implements BlockEntityRenderer<ChestBlockEntity> {
 		renderBottomAndLid(poseStack, vertexconsumer, lidAngle, packedlight, packedOverlay);
 		renderLock(poseStack, vertexconsumer, lidAngle, packedlight, packedOverlay);
 		poseStack.popPose();
+
+		BarrelRenderer.renderDisplayItem(chestEntity, poseStack, bufferSource, packedlight, packedOverlay, 0.5 * (14.0 / 16), 0.5 * (15.0 / 16) + 0.05);
 	}
 
 	private void renderBottomAndLid(PoseStack poseStack, VertexConsumer consumer, float lidAngle, int packedLight, int packedOverlay) {

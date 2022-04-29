@@ -148,5 +148,5 @@ public abstract class StorageBlockBase extends Block implements IStorageBlock, E
 
 	}
 
-	protected abstract Direction getFacing(BlockState state);
+	public abstract Direction getFacing(BlockState state);
 }
