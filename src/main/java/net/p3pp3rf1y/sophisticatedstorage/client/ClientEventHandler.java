@@ -10,6 +10,7 @@ import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent;
@@ -17,14 +18,15 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.client.init.ModBlockColors;
 import net.p3pp3rf1y.sophisticatedstorage.client.init.ModItemColors;
+import net.p3pp3rf1y.sophisticatedstorage.client.init.ModParticles;
 import net.p3pp3rf1y.sophisticatedstorage.client.render.BarrelDynamicModel;
 import net.p3pp3rf1y.sophisticatedstorage.client.render.BarrelRenderer;
 import net.p3pp3rf1y.sophisticatedstorage.client.render.ChestDynamicModel;
 import net.p3pp3rf1y.sophisticatedstorage.client.render.ChestRenderer;
+import net.p3pp3rf1y.sophisticatedstorage.client.render.ClientShulkerContentsTooltip;
 import net.p3pp3rf1y.sophisticatedstorage.client.render.ShulkerBoxDynamicModel;
 import net.p3pp3rf1y.sophisticatedstorage.client.render.ShulkerBoxRenderer;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
-import net.p3pp3rf1y.sophisticatedstorage.init.ModParticles;
 
 public class ClientEventHandler {
 	private ClientEventHandler() {}
@@ -41,6 +43,8 @@ public class ClientEventHandler {
 		modBus.addListener(ClientEventHandler::clientSetup);
 		modBus.addListener(ClientEventHandler::registerEntityRenderers);
 		modBus.addListener(ModParticles::registerFactories);
+		IEventBus eventBus = MinecraftForge.EVENT_BUS;
+		eventBus.addListener(ClientShulkerContentsTooltip::onWorldLoad);
 	}
 
 	private static void onModelRegistry(ModelRegistryEvent event) {

@@ -5,7 +5,6 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.MinecraftForgeClient;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
@@ -51,8 +50,6 @@ public class SophisticatedStorage {
 		modBus.addListener(CapabilityStorageWrapper::onRegister);
 		ModParticles.registerParticles(modBus);
 		modBus.addGenericListener(Block.class, ModLoot::registerLootFunction);
-		IEventBus eventBus = MinecraftForge.EVENT_BUS;
-		eventBus.addListener(ClientShulkerContentsTooltip::onWorldLoad);
 	}
 
 	private static void clientSetup(FMLClientSetupEvent event) {
