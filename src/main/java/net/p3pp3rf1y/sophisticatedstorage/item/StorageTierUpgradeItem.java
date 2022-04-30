@@ -1,5 +1,6 @@
 package net.p3pp3rf1y.sophisticatedstorage.item;
 
+import com.google.common.collect.ImmutableMap;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -8,6 +9,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
@@ -15,21 +17,26 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ChestBlock;
+import net.minecraft.world.level.block.ShulkerBoxBlock;
 import net.minecraft.world.level.block.entity.BarrelBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
+import net.minecraft.world.level.block.entity.ShulkerBoxBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.TranslationHelper;
 import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryHandler;
+import net.p3pp3rf1y.sophisticatedcore.util.ColorHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.ItemBase;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockBase;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
+import net.p3pp3rf1y.sophisticatedstorage.block.StorageWrapper;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageTranslationHelper;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import org.jetbrains.annotations.Nullable;
@@ -40,27 +47,65 @@ import java.util.function.Predicate;
 
 public class StorageTierUpgradeItem extends ItemBase {
 	private static final Map<TierUpgrade, Map<Block, TierUpgradeDefinition<?>>> TIER_UPGRADE_DEFINITIONS = Map.of(
-			TierUpgrade.BASIC, Map.of(
-					Blocks.BARREL, new VanillaTierUpgradeDefinition<>(BlockStateProperties.FACING, BarrelBlockEntity.class, blockEntity -> blockEntity.openersCounter.getOpenerCount() > 0, ModBlocks.BARREL.get(), WoodType.SPRUCE),
-					Blocks.CHEST, new VanillaTierUpgradeDefinition<>(ChestBlock.FACING, ChestBlockEntity.class, chestBlockEntity -> chestBlockEntity.openersCounter.getOpenerCount() > 0, ModBlocks.CHEST.get(), WoodType.OAK)
-			),
-			TierUpgrade.BASIC_TO_IRON, Map.of(
-					Blocks.BARREL, new VanillaTierUpgradeDefinition<>(BlockStateProperties.FACING, BarrelBlockEntity.class, blockEntity -> blockEntity.openersCounter.getOpenerCount() > 0, ModBlocks.IRON_BARREL.get(), WoodType.SPRUCE),
-					Blocks.CHEST, new VanillaTierUpgradeDefinition<>(ChestBlock.FACING, ChestBlockEntity.class, blockEntity -> blockEntity.openersCounter.getOpenerCount() > 0, ModBlocks.IRON_CHEST.get(), WoodType.OAK),
-					ModBlocks.BARREL.get(), new StorageTierUpgradeDefinition(BlockStateProperties.FACING, ModBlocks.IRON_BARREL.get()),
-					ModBlocks.CHEST.get(), new StorageTierUpgradeDefinition(ChestBlock.FACING, ModBlocks.IRON_CHEST.get())
-			),
+			TierUpgrade.BASIC, new ImmutableMap.Builder<Block, TierUpgradeDefinition<?>>()
+					.put(Blocks.BARREL, new VanillaTierUpgradeDefinition<>(BlockStateProperties.FACING, BarrelBlockEntity.class, blockEntity -> blockEntity.openersCounter.getOpenerCount() > 0, ModBlocks.BARREL.get(), WoodType.SPRUCE))
+					.put(Blocks.CHEST, new VanillaTierUpgradeDefinition<>(ChestBlock.FACING, ChestBlockEntity.class, chestBlockEntity -> chestBlockEntity.openersCounter.getOpenerCount() > 0, ModBlocks.CHEST.get(), WoodType.OAK))
+					.put(Blocks.SHULKER_BOX, new VanillaTierUpgradeDefinition<>(ShulkerBoxBlock.FACING, ShulkerBoxBlockEntity.class, shulkerBoxBlockEntity -> shulkerBoxBlockEntity.openCount > 0, ModBlocks.SHULKER_BOX.get(), null))
+					.put(Blocks.WHITE_SHULKER_BOX, new VanillaTintedShulkerBoxTierUpgradeDefinition(DyeColor.WHITE, ModBlocks.SHULKER_BOX.get()))
+					.put(Blocks.ORANGE_SHULKER_BOX, new VanillaTintedShulkerBoxTierUpgradeDefinition(DyeColor.ORANGE, ModBlocks.SHULKER_BOX.get()))
+					.put(Blocks.MAGENTA_SHULKER_BOX, new VanillaTintedShulkerBoxTierUpgradeDefinition(DyeColor.MAGENTA, ModBlocks.SHULKER_BOX.get()))
+					.put(Blocks.LIGHT_BLUE_SHULKER_BOX, new VanillaTintedShulkerBoxTierUpgradeDefinition(DyeColor.LIGHT_BLUE, ModBlocks.SHULKER_BOX.get()))
+					.put(Blocks.YELLOW_SHULKER_BOX, new VanillaTintedShulkerBoxTierUpgradeDefinition(DyeColor.YELLOW, ModBlocks.SHULKER_BOX.get()))
+					.put(Blocks.LIME_SHULKER_BOX, new VanillaTintedShulkerBoxTierUpgradeDefinition(DyeColor.LIME, ModBlocks.SHULKER_BOX.get()))
+					.put(Blocks.PINK_SHULKER_BOX, new VanillaTintedShulkerBoxTierUpgradeDefinition(DyeColor.PINK, ModBlocks.SHULKER_BOX.get()))
+					.put(Blocks.GRAY_SHULKER_BOX, new VanillaTintedShulkerBoxTierUpgradeDefinition(DyeColor.GRAY, ModBlocks.SHULKER_BOX.get()))
+					.put(Blocks.LIGHT_GRAY_SHULKER_BOX, new VanillaTintedShulkerBoxTierUpgradeDefinition(DyeColor.LIGHT_GRAY, ModBlocks.SHULKER_BOX.get()))
+					.put(Blocks.CYAN_SHULKER_BOX, new VanillaTintedShulkerBoxTierUpgradeDefinition(DyeColor.CYAN, ModBlocks.SHULKER_BOX.get()))
+					.put(Blocks.PURPLE_SHULKER_BOX, new VanillaTintedShulkerBoxTierUpgradeDefinition(DyeColor.PURPLE, ModBlocks.SHULKER_BOX.get()))
+					.put(Blocks.BLUE_SHULKER_BOX, new VanillaTintedShulkerBoxTierUpgradeDefinition(DyeColor.BLUE, ModBlocks.SHULKER_BOX.get()))
+					.put(Blocks.BROWN_SHULKER_BOX, new VanillaTintedShulkerBoxTierUpgradeDefinition(DyeColor.BROWN, ModBlocks.SHULKER_BOX.get()))
+					.put(Blocks.GREEN_SHULKER_BOX, new VanillaTintedShulkerBoxTierUpgradeDefinition(DyeColor.GREEN, ModBlocks.SHULKER_BOX.get()))
+					.put(Blocks.RED_SHULKER_BOX, new VanillaTintedShulkerBoxTierUpgradeDefinition(DyeColor.RED, ModBlocks.SHULKER_BOX.get()))
+					.put(Blocks.BLACK_SHULKER_BOX, new VanillaTintedShulkerBoxTierUpgradeDefinition(DyeColor.BLACK, ModBlocks.SHULKER_BOX.get()))
+					.build(),
+			TierUpgrade.BASIC_TO_IRON, new ImmutableMap.Builder<Block, TierUpgradeDefinition<?>>()
+					.put(Blocks.BARREL, new VanillaTierUpgradeDefinition<>(BlockStateProperties.FACING, BarrelBlockEntity.class, blockEntity -> blockEntity.openersCounter.getOpenerCount() > 0, ModBlocks.IRON_BARREL.get(), WoodType.SPRUCE))
+					.put(Blocks.CHEST, new VanillaTierUpgradeDefinition<>(ChestBlock.FACING, ChestBlockEntity.class, blockEntity -> blockEntity.openersCounter.getOpenerCount() > 0, ModBlocks.IRON_CHEST.get(), WoodType.OAK))
+					.put(Blocks.SHULKER_BOX, new VanillaTierUpgradeDefinition<>(ShulkerBoxBlock.FACING, ShulkerBoxBlockEntity.class, blockEntity -> blockEntity.openCount > 0, ModBlocks.IRON_SHULKER_BOX.get(), null))
+					.put(Blocks.WHITE_SHULKER_BOX, new VanillaTintedShulkerBoxTierUpgradeDefinition(DyeColor.WHITE, ModBlocks.IRON_SHULKER_BOX.get()))
+					.put(Blocks.ORANGE_SHULKER_BOX, new VanillaTintedShulkerBoxTierUpgradeDefinition(DyeColor.ORANGE, ModBlocks.IRON_SHULKER_BOX.get()))
+					.put(Blocks.MAGENTA_SHULKER_BOX, new VanillaTintedShulkerBoxTierUpgradeDefinition(DyeColor.MAGENTA, ModBlocks.IRON_SHULKER_BOX.get()))
+					.put(Blocks.LIGHT_BLUE_SHULKER_BOX, new VanillaTintedShulkerBoxTierUpgradeDefinition(DyeColor.LIGHT_BLUE, ModBlocks.IRON_SHULKER_BOX.get()))
+					.put(Blocks.YELLOW_SHULKER_BOX, new VanillaTintedShulkerBoxTierUpgradeDefinition(DyeColor.YELLOW, ModBlocks.IRON_SHULKER_BOX.get()))
+					.put(Blocks.LIME_SHULKER_BOX, new VanillaTintedShulkerBoxTierUpgradeDefinition(DyeColor.LIME, ModBlocks.IRON_SHULKER_BOX.get()))
+					.put(Blocks.PINK_SHULKER_BOX, new VanillaTintedShulkerBoxTierUpgradeDefinition(DyeColor.PINK, ModBlocks.IRON_SHULKER_BOX.get()))
+					.put(Blocks.GRAY_SHULKER_BOX, new VanillaTintedShulkerBoxTierUpgradeDefinition(DyeColor.GRAY, ModBlocks.IRON_SHULKER_BOX.get()))
+					.put(Blocks.LIGHT_GRAY_SHULKER_BOX, new VanillaTintedShulkerBoxTierUpgradeDefinition(DyeColor.LIGHT_GRAY, ModBlocks.IRON_SHULKER_BOX.get()))
+					.put(Blocks.CYAN_SHULKER_BOX, new VanillaTintedShulkerBoxTierUpgradeDefinition(DyeColor.CYAN, ModBlocks.IRON_SHULKER_BOX.get()))
+					.put(Blocks.PURPLE_SHULKER_BOX, new VanillaTintedShulkerBoxTierUpgradeDefinition(DyeColor.PURPLE, ModBlocks.IRON_SHULKER_BOX.get()))
+					.put(Blocks.BLUE_SHULKER_BOX, new VanillaTintedShulkerBoxTierUpgradeDefinition(DyeColor.BLUE, ModBlocks.IRON_SHULKER_BOX.get()))
+					.put(Blocks.BROWN_SHULKER_BOX, new VanillaTintedShulkerBoxTierUpgradeDefinition(DyeColor.BROWN, ModBlocks.IRON_SHULKER_BOX.get()))
+					.put(Blocks.GREEN_SHULKER_BOX, new VanillaTintedShulkerBoxTierUpgradeDefinition(DyeColor.GREEN, ModBlocks.IRON_SHULKER_BOX.get()))
+					.put(Blocks.RED_SHULKER_BOX, new VanillaTintedShulkerBoxTierUpgradeDefinition(DyeColor.RED, ModBlocks.IRON_SHULKER_BOX.get()))
+					.put(Blocks.BLACK_SHULKER_BOX, new VanillaTintedShulkerBoxTierUpgradeDefinition(DyeColor.BLACK, ModBlocks.IRON_SHULKER_BOX.get()))
+					.put(ModBlocks.BARREL.get(), new StorageTierUpgradeDefinition(BlockStateProperties.FACING, ModBlocks.IRON_BARREL.get()))
+					.put(ModBlocks.CHEST.get(), new StorageTierUpgradeDefinition(ChestBlock.FACING, ModBlocks.IRON_CHEST.get()))
+					.put(ModBlocks.SHULKER_BOX.get(), new StorageTierUpgradeDefinition(BlockStateProperties.FACING, ModBlocks.IRON_SHULKER_BOX.get()))
+					.build(),
 			TierUpgrade.IRON_TO_GOLD, Map.of(
 					ModBlocks.IRON_BARREL.get(), new StorageTierUpgradeDefinition(BlockStateProperties.FACING, ModBlocks.GOLD_BARREL.get()),
-					ModBlocks.IRON_CHEST.get(), new StorageTierUpgradeDefinition(ChestBlock.FACING, ModBlocks.GOLD_CHEST.get())
+					ModBlocks.IRON_CHEST.get(), new StorageTierUpgradeDefinition(ChestBlock.FACING, ModBlocks.GOLD_CHEST.get()),
+					ModBlocks.IRON_SHULKER_BOX.get(), new StorageTierUpgradeDefinition(BlockStateProperties.FACING, ModBlocks.GOLD_SHULKER_BOX.get())
 			),
 			TierUpgrade.GOLD_TO_DIAMOND, Map.of(
 					ModBlocks.GOLD_BARREL.get(), new StorageTierUpgradeDefinition(BlockStateProperties.FACING, ModBlocks.DIAMOND_BARREL.get()),
-					ModBlocks.GOLD_CHEST.get(), new StorageTierUpgradeDefinition(ChestBlock.FACING, ModBlocks.DIAMOND_CHEST.get())
+					ModBlocks.GOLD_CHEST.get(), new StorageTierUpgradeDefinition(ChestBlock.FACING, ModBlocks.DIAMOND_CHEST.get()),
+					ModBlocks.GOLD_SHULKER_BOX.get(), new StorageTierUpgradeDefinition(BlockStateProperties.FACING, ModBlocks.DIAMOND_SHULKER_BOX.get())
 			),
 			TierUpgrade.DIAMOND_TO_NETHERITE, Map.of(
 					ModBlocks.DIAMOND_BARREL.get(), new StorageTierUpgradeDefinition(BlockStateProperties.FACING, ModBlocks.NETHERITE_BARREL.get()),
-					ModBlocks.DIAMOND_CHEST.get(), new StorageTierUpgradeDefinition(ChestBlock.FACING, ModBlocks.NETHERITE_CHEST.get())
+					ModBlocks.DIAMOND_CHEST.get(), new StorageTierUpgradeDefinition(ChestBlock.FACING, ModBlocks.NETHERITE_CHEST.get()),
+					ModBlocks.DIAMOND_SHULKER_BOX.get(), new StorageTierUpgradeDefinition(BlockStateProperties.FACING, ModBlocks.NETHERITE_SHULKER_BOX.get())
 			)
 	);
 
@@ -156,12 +201,28 @@ public class StorageTierUpgradeItem extends ItemBase {
 		}
 	}
 
+	private static class VanillaTintedShulkerBoxTierUpgradeDefinition extends VanillaTierUpgradeDefinition<ShulkerBoxBlockEntity> {
+		private VanillaTintedShulkerBoxTierUpgradeDefinition(DyeColor color, net.p3pp3rf1y.sophisticatedstorage.block.ShulkerBoxBlock newBlock) {
+			super(ShulkerBoxBlock.FACING, ShulkerBoxBlockEntity.class, shulkerBoxBlockEntity -> shulkerBoxBlockEntity.openCount > 0, newBlock, null, color);
+		}
+	}
+
 	private static class VanillaTierUpgradeDefinition<B extends RandomizableContainerBlockEntity> extends TierUpgradeDefinition<B> {
 		private final @Nullable WoodType woodType;
+		private final int color;
 
-		private VanillaTierUpgradeDefinition(DirectionProperty facingProperty, Class<B> blockEntityClass, Predicate<B> isOpen, StorageBlockBase newBlock, @Nullable WoodType woodType) {
+		private VanillaTierUpgradeDefinition(EnumProperty<Direction> facingProperty, Class<B> blockEntityClass, Predicate<B> isOpen, StorageBlockBase newBlock, @Nullable WoodType woodType) {
+			this(facingProperty, blockEntityClass, isOpen, newBlock, woodType, -1);
+		}
+
+		private VanillaTierUpgradeDefinition(EnumProperty<Direction> facingProperty, Class<B> blockEntityClass, Predicate<B> isOpen, StorageBlockBase newBlock, @Nullable WoodType woodType, DyeColor color) {
+			this(facingProperty, blockEntityClass, isOpen, newBlock, woodType, ColorHelper.getColor(color.getTextureDiffuseColors()));
+		}
+
+		private VanillaTierUpgradeDefinition(EnumProperty<Direction> facingProperty, Class<B> blockEntityClass, Predicate<B> isOpen, StorageBlockBase newBlock, @Nullable WoodType woodType, int color) {
 			super(facingProperty, blockEntityClass, isOpen, newBlock);
 			this.woodType = woodType;
+			this.color = color;
 		}
 
 		public @Nullable WoodType woodType() {return woodType;}
@@ -201,7 +262,8 @@ public class StorageTierUpgradeItem extends ItemBase {
 			if (customName != null) {
 				newBe.setCustomName(customName);
 			}
-			InventoryHandler inventoryHandler = newBe.getStorageWrapper().getInventoryHandler();
+			StorageWrapper storageWrapper = newBe.getStorageWrapper();
+			InventoryHandler inventoryHandler = storageWrapper.getInventoryHandler();
 			if (inventoryHandler.getSlots() < items.size()) {
 				inventoryHandler.setSize(items.size());
 			}
@@ -213,16 +275,21 @@ public class StorageTierUpgradeItem extends ItemBase {
 			if (woodType != null) {
 				newBe.setWoodType(woodType);
 			}
+
+			if (color > -1) {
+				storageWrapper.setMainColor(color);
+				storageWrapper.setAccentColor(color);
+			}
 		}
 	}
 
 	private abstract static class TierUpgradeDefinition<B extends BlockEntity> {
-		private final DirectionProperty facingProperty;
+		private final EnumProperty<Direction> facingProperty;
 		private final Class<B> blockEntityClass;
 		private final Predicate<B> isOpen;
 		private final StorageBlockBase newBlock;
 
-		private TierUpgradeDefinition(DirectionProperty facingProperty,
+		private TierUpgradeDefinition(EnumProperty<Direction> facingProperty,
 				Class<B> blockEntityClass, Predicate<B> isOpen,
 				StorageBlockBase newBlock) {
 			this.facingProperty = facingProperty;
@@ -231,7 +298,7 @@ public class StorageTierUpgradeItem extends ItemBase {
 			this.newBlock = newBlock;
 		}
 
-		public DirectionProperty facingProperty() {return facingProperty;}
+		public EnumProperty<Direction> facingProperty() {return facingProperty;}
 
 		public Class<B> blockEntityClass() {return blockEntityClass;}
 
