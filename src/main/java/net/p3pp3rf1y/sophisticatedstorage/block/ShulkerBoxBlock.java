@@ -38,6 +38,7 @@ import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.EntityCollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.network.NetworkHooks;
@@ -53,6 +54,7 @@ import java.util.UUID;
 
 public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDropDataBlock {
 	public static final EnumProperty<Direction> FACING = DirectionalBlock.FACING;
+	private static final VoxelShape ITEM_ENTITY_COLLISION_SHAPE = box(0.1, 0.1, 0.1, 15.9, 15.9, 15.9);
 
 	public ShulkerBoxBlock(int numberOfInventorySlots, int numberOfUpgradeSlots) {
 		super(getProperties(), numberOfInventorySlots, numberOfUpgradeSlots);
@@ -264,6 +266,18 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 
 	@Override
 	protected boolean shouldDropContents() {
+		return false;
+	}
+
+	@SuppressWarnings("deprecation")
+	@Override
+	public VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+		return context instanceof EntityCollisionContext entityCollisionContext && entityCollisionContext.getEntity() instanceof ItemEntity ? ITEM_ENTITY_COLLISION_SHAPE : super.getCollisionShape(state, level, pos, context);
+	}
+
+	@SuppressWarnings("deprecation")
+	@Override
+	public boolean isCollisionShapeFullBlock(BlockState state, BlockGetter level, BlockPos pos) {
 		return false;
 	}
 }
