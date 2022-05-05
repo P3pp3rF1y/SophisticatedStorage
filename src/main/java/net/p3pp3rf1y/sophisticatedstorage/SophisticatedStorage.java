@@ -4,17 +4,14 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.MinecraftForgeClient;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.p3pp3rf1y.sophisticatedstorage.client.ClientEventHandler;
-import net.p3pp3rf1y.sophisticatedstorage.client.render.ClientShulkerContentsTooltip;
 import net.p3pp3rf1y.sophisticatedstorage.common.CommonEventHandler;
 import net.p3pp3rf1y.sophisticatedstorage.data.DataGenerators;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
@@ -22,7 +19,6 @@ import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModLoot;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModParticles;
 import net.p3pp3rf1y.sophisticatedstorage.item.CapabilityStorageWrapper;
-import net.p3pp3rf1y.sophisticatedstorage.item.ShulkerBoxItem;
 import net.p3pp3rf1y.sophisticatedstorage.network.StoragePacketHandler;
 
 @Mod(SophisticatedStorage.MOD_ID)
@@ -45,15 +41,10 @@ public class SophisticatedStorage {
 		ModBlocks.registerHandlers(modBus);
 		ModItems.registerHandlers(modBus);
 		modBus.addListener(SophisticatedStorage::setup);
-		modBus.addListener(SophisticatedStorage::clientSetup);
 		modBus.addListener(DataGenerators::gatherData);
 		modBus.addListener(CapabilityStorageWrapper::onRegister);
 		ModParticles.registerParticles(modBus);
 		modBus.addGenericListener(Block.class, ModLoot::registerLootFunction);
-	}
-
-	private static void clientSetup(FMLClientSetupEvent event) {
-		MinecraftForgeClient.registerTooltipComponentFactory(ShulkerBoxItem.ContentsTooltip.class, ClientShulkerContentsTooltip::new);
 	}
 
 	private static void setup(FMLCommonSetupEvent event) {

@@ -1,21 +1,34 @@
 package net.p3pp3rf1y.sophisticatedstorage.client;
 
+import com.mojang.blaze3d.platform.InputConstants;
+import net.minecraft.client.KeyMapping;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.MouseHandler;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.InventoryMenu;
+import net.minecraft.world.inventory.Slot;
+import net.minecraftforge.client.ClientRegistry;
+import net.minecraftforge.client.MinecraftForgeClient;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.client.event.ModelRegistryEvent;
+import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
+import net.minecraftforge.client.settings.IKeyConflictContext;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
+import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageScreen;
+import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageTranslationHelper;
 import net.p3pp3rf1y.sophisticatedstorage.client.init.ModBlockColors;
 import net.p3pp3rf1y.sophisticatedstorage.client.init.ModItemColors;
 import net.p3pp3rf1y.sophisticatedstorage.client.init.ModParticles;
@@ -26,10 +39,33 @@ import net.p3pp3rf1y.sophisticatedstorage.client.render.ChestRenderer;
 import net.p3pp3rf1y.sophisticatedstorage.client.render.ClientShulkerContentsTooltip;
 import net.p3pp3rf1y.sophisticatedstorage.client.render.ShulkerBoxDynamicModel;
 import net.p3pp3rf1y.sophisticatedstorage.client.render.ShulkerBoxRenderer;
+import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
+import net.p3pp3rf1y.sophisticatedstorage.item.ShulkerBoxItem;
+
+import static net.minecraftforge.client.settings.KeyConflictContext.GUI;
 
 public class ClientEventHandler {
 	private ClientEventHandler() {}
+
+	private static final String KEYBIND_SOPHISTICATEDSTORAGE_CATEGORY = "keybind.sophisticatedstorage.category";
+	private static final int MIDDLE_BUTTON = 2;
+	public static final KeyMapping SORT_KEYBIND = new KeyMapping(StorageTranslationHelper.INSTANCE.translKeybind("sort"),
+			StorageGuiKeyConflictContext.INSTANCE, InputConstants.Type.MOUSE.getOrCreate(MIDDLE_BUTTON), KEYBIND_SOPHISTICATEDSTORAGE_CATEGORY);
+
+	private static class StorageGuiKeyConflictContext implements IKeyConflictContext {
+		public static final StorageGuiKeyConflictContext INSTANCE = new StorageGuiKeyConflictContext();
+
+		@Override
+		public boolean isActive() {
+			return GUI.isActive() && Minecraft.getInstance().screen instanceof StorageScreen;
+		}
+
+		@Override
+		public boolean conflicts(IKeyConflictContext other) {
+			return this == other;
+		}
+	}
 
 	private static final ResourceLocation CHEST_RL = new ResourceLocation(SophisticatedStorage.MOD_ID, "chest");
 	public static final ModelLayerLocation CHEST_LAYER = new ModelLayerLocation(CHEST_RL, "main");
@@ -45,6 +81,37 @@ public class ClientEventHandler {
 		modBus.addListener(ModParticles::registerFactories);
 		IEventBus eventBus = MinecraftForge.EVENT_BUS;
 		eventBus.addListener(ClientShulkerContentsTooltip::onWorldLoad);
+		eventBus.addListener(EventPriority.HIGH, ClientEventHandler::handleGuiMouseKeyPress);
+		eventBus.addListener(EventPriority.HIGH, ClientEventHandler::handleGuiKeyPress);
+	}
+
+
+	public static void handleGuiKeyPress(ScreenEvent.KeyboardKeyPressedEvent.Pre event) {
+		if (SORT_KEYBIND.isActiveAndMatches(InputConstants.getKey(event.getKeyCode(), event.getScanCode())) && tryCallSort(event.getScreen())) {
+			event.setCanceled(true);
+		}
+	}
+
+	public static void handleGuiMouseKeyPress(ScreenEvent.MouseClickedEvent.Pre event) {
+		InputConstants.Key input = InputConstants.Type.MOUSE.getOrCreate(event.getButton());
+		if (SORT_KEYBIND.isActiveAndMatches(input) && tryCallSort(event.getScreen())) {
+			event.setCanceled(true);
+		}
+	}
+
+	private static boolean tryCallSort(Screen gui) {
+		Minecraft mc = Minecraft.getInstance();
+		if (mc.player != null && mc.player.containerMenu instanceof StorageContainerMenu container && gui instanceof StorageScreen screen) {
+			MouseHandler mh = mc.mouseHandler;
+			double mouseX = mh.xpos() * mc.getWindow().getGuiScaledWidth() / mc.getWindow().getScreenWidth();
+			double mouseY = mh.ypos() * mc.getWindow().getGuiScaledHeight() / mc.getWindow().getScreenHeight();
+			Slot selectedSlot = screen.findSlot(mouseX, mouseY);
+			if (selectedSlot != null && !container.isPlayersInventorySlot(selectedSlot.index)) {
+				container.sort();
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private static void onModelRegistry(ModelRegistryEvent event) {
@@ -63,6 +130,10 @@ public class ClientEventHandler {
 		ItemBlockRenderTypes.setRenderLayer(ModBlocks.GOLD_BARREL.get(), RenderType.cutout());
 		ItemBlockRenderTypes.setRenderLayer(ModBlocks.DIAMOND_BARREL.get(), RenderType.cutout());
 		ItemBlockRenderTypes.setRenderLayer(ModBlocks.NETHERITE_BARREL.get(), RenderType.cutout());
+
+		MinecraftForgeClient.registerTooltipComponentFactory(ShulkerBoxItem.ContentsTooltip.class, ClientShulkerContentsTooltip::new);
+
+		event.enqueueWork(() -> ClientRegistry.registerKeyBinding(SORT_KEYBIND));
 	}
 
 	private static void stitchTextures(TextureStitchEvent.Pre event) {
