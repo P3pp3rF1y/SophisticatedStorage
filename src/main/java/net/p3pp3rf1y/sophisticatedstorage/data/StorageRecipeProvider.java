@@ -615,10 +615,6 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.save(consumer, SophisticatedStorage.getRL(woodType.name() + "_chest"));
 	}
 
-	private static InventoryChangeTrigger.TriggerInstance has(TagKey<Item> tag) {
-		return inventoryTrigger(ItemPredicate.Builder.item().of(tag).build());
-	}
-
 	private void tintedShulkerBoxRecipe(Consumer<FinishedRecipe> consumer, Block vanillaShulkerBox, DyeColor dyeColor) {
 		String vanillaShulkerBoxName = vanillaShulkerBox.getRegistryName().getPath();
 		ShapelessBasedRecipeBuilder.shapeless(ModBlocks.SHULKER_BOX.get().getTintedStack(dyeColor)).requires(vanillaShulkerBox).requires(Items.REDSTONE_TORCH)

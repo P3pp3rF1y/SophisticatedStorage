@@ -132,7 +132,7 @@ public abstract class StorageWrapper implements IStorageWrapper {
 	}
 
 	private void saveContents(CompoundTag tag) {
-		tag.put("contents", getContentsNbt());
+		tag.put("contents", getContentsNbt().copy());
 	}
 
 	private void saveData(CompoundTag tag) {
