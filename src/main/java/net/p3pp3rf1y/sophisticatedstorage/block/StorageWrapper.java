@@ -38,6 +38,7 @@ public abstract class StorageWrapper implements IStorageWrapper {
 	private static final String ACCENT_COLOR_TAG = "accentColor";
 	private static final String UUID_TAG = "uuid";
 	private static final String OPEN_TAB_ID_TAG = "openTabId";
+	public static final String CONTENTS_TAG = "contents";
 	private final Supplier<Runnable> getSaveHandler;
 
 	@Nullable
@@ -122,20 +123,14 @@ public abstract class StorageWrapper implements IStorageWrapper {
 	public CompoundTag save(CompoundTag tag) {
 		saveContents(tag);
 		saveData(tag);
-		if (mainColor != 0) {
-			tag.putInt(MAIN_COLOR_TAG, mainColor);
-		}
-		if (accentColor != 0) {
-			tag.putInt(ACCENT_COLOR_TAG, accentColor);
-		}
 		return tag;
 	}
 
 	private void saveContents(CompoundTag tag) {
-		tag.put("contents", getContentsNbt().copy());
+		tag.put(CONTENTS_TAG, getContentsNbt().copy());
 	}
 
-	private void saveData(CompoundTag tag) {
+	CompoundTag saveData(CompoundTag tag) {
 		if (!settingsNbt.isEmpty()) {
 			tag.put("settings", settingsNbt);
 		}
@@ -158,16 +153,21 @@ public abstract class StorageWrapper implements IStorageWrapper {
 		if (numberOfUpgradeSlots > -1) {
 			tag.putInt("numberOfUpgradeSlots", numberOfUpgradeSlots);
 		}
+		if (mainColor != 0) {
+			tag.putInt(MAIN_COLOR_TAG, mainColor);
+		}
+		if (accentColor != 0) {
+			tag.putInt(ACCENT_COLOR_TAG, accentColor);
+		}
+		return tag;
 	}
 
 	public void load(CompoundTag tag) {
 		loadContents(tag);
 		loadData(tag);
-		mainColor = NBTHelper.getInt(tag, MAIN_COLOR_TAG).orElse(-1);
-		accentColor = NBTHelper.getInt(tag, ACCENT_COLOR_TAG).orElse(-1);
 	}
 
-	public void loadData(CompoundTag tag) {
+	private void loadData(CompoundTag tag) {
 		settingsNbt = tag.getCompound("settings");
 		settingsHandler.reloadFrom(settingsNbt);
 		renderInfoNbt = tag.getCompound("renderInfo");
@@ -178,11 +178,15 @@ public abstract class StorageWrapper implements IStorageWrapper {
 		columnsTaken = NBTHelper.getInt(tag, "columnsTaken").orElse(0);
 		numberOfInventorySlots = NBTHelper.getInt(tag, "numberOfInventorySlots").orElse(0);
 		numberOfUpgradeSlots = NBTHelper.getInt(tag, "numberOfUpgradeSlots").orElse(-1);
+		mainColor = NBTHelper.getInt(tag, MAIN_COLOR_TAG).orElse(-1);
+		accentColor = NBTHelper.getInt(tag, ACCENT_COLOR_TAG).orElse(-1);
 	}
 
 	private void loadContents(CompoundTag tag) {
-		contentsNbt = tag.getCompound("contents");
-		onContentsNbtUpdated();
+		if (tag.contains(CONTENTS_TAG)) {
+			contentsNbt = tag.getCompound(CONTENTS_TAG);
+			onContentsNbtUpdated();
+		}
 	}
 
 	@Override

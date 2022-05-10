@@ -132,6 +132,10 @@ public abstract class StorageBlockEntity extends BlockEntity {
 		tag.put(STORAGE_WRAPPER_TAG, storageWrapper.save(new CompoundTag()));
 	}
 
+	private void saveStorageWrapperClientData(CompoundTag tag) {
+		tag.put(STORAGE_WRAPPER_TAG, storageWrapper.saveData(new CompoundTag()));
+	}
+
 	private void saveData(CompoundTag tag) {
 		if (woodType != null) {
 			tag.putString("woodType", woodType.name());
@@ -221,7 +225,7 @@ public abstract class StorageBlockEntity extends BlockEntity {
 	@Override
 	public CompoundTag getUpdateTag() {
 		CompoundTag tag = super.getUpdateTag();
-		saveStorageWrapper(tag);
+		saveStorageWrapperClientData(tag);
 		saveData(tag);
 		return tag;
 	}
