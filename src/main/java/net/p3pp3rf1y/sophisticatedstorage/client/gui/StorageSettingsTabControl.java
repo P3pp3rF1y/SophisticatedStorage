@@ -6,7 +6,7 @@ import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.Position;
 import net.p3pp3rf1y.sophisticatedcore.settings.SettingsContainerBase;
 import net.p3pp3rf1y.sophisticatedcore.settings.SettingsTab;
 import net.p3pp3rf1y.sophisticatedcore.settings.StorageSettingsTabControlBase;
-import net.p3pp3rf1y.sophisticatedcore.settings.globaloverridable.GlobalOverridableSettingsCategory;
+import net.p3pp3rf1y.sophisticatedcore.settings.main.MainSettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.settings.itemdisplay.ItemDisplaySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.settings.itemdisplay.ItemDisplaySettingsTab;
 import net.p3pp3rf1y.sophisticatedcore.settings.memory.MemorySettingsCategory;
@@ -21,7 +21,7 @@ public class StorageSettingsTabControl extends StorageSettingsTabControlBase {
 
 	static {
 		ImmutableMap.Builder<String, ISettingsTabFactory<?, ?>> builder = new ImmutableMap.Builder<>();
-		addFactory(builder, GlobalOverridableSettingsCategory.NAME, StorageGlobalOverridableSettingsTab::new);
+		addFactory(builder, MainSettingsCategory.NAME, StorageMainSettingsTab::new);
 		addFactory(builder, NoSortSettingsCategory.NAME, NoSortSettingsTab::new);
 		addFactory(builder, MemorySettingsCategory.NAME, MemorySettingsTab::new);
 		addFactory(builder, ItemDisplaySettingsCategory.NAME, ItemDisplaySettingsTab::new);

@@ -7,18 +7,18 @@ import net.p3pp3rf1y.sophisticatedcore.client.gui.SettingsScreen;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.controls.ItemButton;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.Position;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.TranslationHelper;
-import net.p3pp3rf1y.sophisticatedcore.settings.globaloverridable.GlobalOverridableSettingsContainer;
-import net.p3pp3rf1y.sophisticatedcore.settings.globaloverridable.GlobalOverridableSettingsTab;
+import net.p3pp3rf1y.sophisticatedcore.settings.main.MainSettingsContainer;
+import net.p3pp3rf1y.sophisticatedcore.settings.main.MainSettingsTab;
 
 import java.util.List;
 
-public class StorageGlobalOverridableSettingsTab extends GlobalOverridableSettingsTab {
+public class StorageMainSettingsTab extends MainSettingsTab<MainSettingsContainer> {
 	private static final List<Component> CONTEXT_TOOLTIP = List.of(
 			new TranslatableComponent(TranslationHelper.INSTANCE.translSettingsButton("context_storage.tooltip")),
 			new TranslatableComponent(TranslationHelper.INSTANCE.translSettingsButton("context_storage.tooltip_detail")).withStyle(ChatFormatting.GRAY)
 	);
 
-	public StorageGlobalOverridableSettingsTab(GlobalOverridableSettingsContainer container, Position position, SettingsScreen screen) {
+	public StorageMainSettingsTab(MainSettingsContainer container, Position position, SettingsScreen screen) {
 		super(container, position, screen, CONTEXT_TOOLTIP, new TranslatableComponent(StorageTranslationHelper.INSTANCE.translSettingsButton("context_storage")),
 				StorageTranslationHelper.INSTANCE.translSettings("storage"), StorageTranslationHelper.INSTANCE.translSettingsTooltip("storage"),
 				onTabIconClicked -> new ItemButton(new Position(position.x() + 1, position.y() + 4), onTabIconClicked, container.getSettingsContainer().getStorageWrapper().getWrappedStorageStack(), new TranslatableComponent("gui.sophisticatedstorage.narrate.global_tab_button")));

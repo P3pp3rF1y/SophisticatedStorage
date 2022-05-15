@@ -188,7 +188,6 @@
     "gui.sophisticatedstorage.settings.buttons.context_storage": "Storage",
     "gui.sophisticatedstorage.settings.buttons.context_storage.tooltip": "This Storage's settings",
     "gui.sophisticatedstorage.settings.buttons.context_storage.tooltip_detail": "Inherited from player or overriden for this storage",
-    "gui.sophisticatedstorage.tooltip.stack_count": "Count: %s",
     "keybind.sophisticatedstorage.category": "Sophisticated Storage",
     "keybind.sophisticatedstorage.sort": "Sort Storage"
 }
