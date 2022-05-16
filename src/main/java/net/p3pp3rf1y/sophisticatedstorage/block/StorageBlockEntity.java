@@ -78,7 +78,7 @@ public abstract class StorageBlockEntity extends BlockEntity {
 			}
 
 			@Override
-			protected int getDefaultNumberOfInventorySlots() {
+			public int getDefaultNumberOfInventorySlots() {
 				if (getBlockState().getBlock() instanceof IStorageBlock storageBlock) {
 					return storageBlock.getNumberOfInventorySlots();
 				}
@@ -91,7 +91,7 @@ public abstract class StorageBlockEntity extends BlockEntity {
 			}
 
 			@Override
-			protected int getDefaultNumberOfUpgradeSlots() {
+			public int getDefaultNumberOfUpgradeSlots() {
 				if (getBlockState().getBlock() instanceof IStorageBlock storageBlock) {
 					return storageBlock.getNumberOfUpgradeSlots();
 				}

@@ -57,9 +57,9 @@ public abstract class StorageWrapper implements IStorageWrapper {
 	protected UUID contentsUuid = null;
 
 	private int openTabId = -1;
-	private int numberOfInventorySlots = 0;
+	protected int numberOfInventorySlots = 0;
 
-	private int numberOfUpgradeSlots = -1;
+	protected int numberOfUpgradeSlots = -1;
 	private SortBy sortBy = SortBy.NAME;
 	private int columnsTaken = 0;
 	private int mainColor = -1;
@@ -176,10 +176,14 @@ public abstract class StorageWrapper implements IStorageWrapper {
 		openTabId = NBTHelper.getInt(tag, OPEN_TAB_ID_TAG).orElse(-1);
 		sortBy = NBTHelper.getString(tag, "sortBy").map(SortBy::fromName).orElse(SortBy.NAME);
 		columnsTaken = NBTHelper.getInt(tag, "columnsTaken").orElse(0);
-		numberOfInventorySlots = NBTHelper.getInt(tag, "numberOfInventorySlots").orElse(0);
-		numberOfUpgradeSlots = NBTHelper.getInt(tag, "numberOfUpgradeSlots").orElse(-1);
+		loadSlotNumbers(tag);
 		mainColor = NBTHelper.getInt(tag, MAIN_COLOR_TAG).orElse(-1);
 		accentColor = NBTHelper.getInt(tag, ACCENT_COLOR_TAG).orElse(-1);
+	}
+
+	protected void loadSlotNumbers(CompoundTag tag) {
+		numberOfInventorySlots = NBTHelper.getInt(tag, "numberOfInventorySlots").orElse(0);
+		numberOfUpgradeSlots = NBTHelper.getInt(tag, "numberOfUpgradeSlots").orElse(-1);
 	}
 
 	private void loadContents(CompoundTag tag) {
@@ -235,7 +239,7 @@ public abstract class StorageWrapper implements IStorageWrapper {
 		getSaveHandler.get().run();
 	}
 
-	protected abstract int getDefaultNumberOfInventorySlots();
+	public abstract int getDefaultNumberOfInventorySlots();
 
 	protected abstract boolean isAllowedInStorage(ItemStack stack);
 
@@ -263,7 +267,7 @@ public abstract class StorageWrapper implements IStorageWrapper {
 		return numberOfUpgradeSlots;
 	}
 
-	protected abstract int getDefaultNumberOfUpgradeSlots();
+	public abstract int getDefaultNumberOfUpgradeSlots();
 
 	@Override
 	public int getMainColor() {

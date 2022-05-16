@@ -42,12 +42,14 @@ import net.minecraft.world.phys.shapes.EntityCollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.network.NetworkHooks;
+import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryHandler;
+import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeHandler;
 import net.p3pp3rf1y.sophisticatedcore.util.ColorHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
-import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
+import net.p3pp3rf1y.sophisticatedstorage.item.ShulkerBoxItem;
 
 import javax.annotation.Nullable;
 import java.util.UUID;
@@ -116,8 +118,16 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 			if (stack.hasCustomHoverName()) {
 				be.setCustomName(stack.getHoverName());
 			}
-			StorageBlockItem.getMaincolorFromStack(stack).ifPresent(be.getStorageWrapper()::setMainColor);
-			StorageBlockItem.getAccentColorFromStack(stack).ifPresent(be.getStorageWrapper()::setAccentColor);
+			if (stack.getItem() instanceof ShulkerBoxItem shulkerBoxItem) {
+				StorageWrapper storageWrapper = be.getStorageWrapper();
+				shulkerBoxItem.getMainColor(stack).ifPresent(storageWrapper::setMainColor);
+				shulkerBoxItem.getAccentColor(stack).ifPresent(storageWrapper::setAccentColor);
+				InventoryHandler inventoryHandler = storageWrapper.getInventoryHandler();
+				UpgradeHandler upgradeHandler = storageWrapper.getUpgradeHandler();
+				storageWrapper.increaseSize(shulkerBoxItem.getNumberOfInventorySlots(stack) - inventoryHandler.getSlots(),
+						shulkerBoxItem.getNumberOfUpgradeSlots(stack) - upgradeHandler.getSlots());
+			}
+			be.setChanged();
 		});
 	}
 
@@ -182,22 +192,25 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 	}
 
 	private void addShulkerContentsToStack(ItemStack stack, StorageBlockEntity be) {
-		UUID shulkerBoxUuid = be.getStorageWrapper().getContentsUuid().orElse(UUID.randomUUID());
+		StorageWrapper storageWrapper = be.getStorageWrapper();
+		UUID shulkerBoxUuid = storageWrapper.getContentsUuid().orElse(UUID.randomUUID());
 		CompoundTag shulkerContents = be.saveWithoutMetadata();
 		if (!shulkerContents.isEmpty()) {
 			ShulkerBoxStorage.get().setShulkerBoxContents(shulkerBoxUuid, shulkerContents);
 			NBTHelper.setUniqueId(stack, "uuid", shulkerBoxUuid);
 		}
 		be.getCustomName().ifPresent(stack::setHoverName);
-		if (stack.getItem() instanceof StorageBlockItem storageBlockItem) {
-			int mainColor = be.getStorageWrapper().getMainColor();
+		if (stack.getItem() instanceof ShulkerBoxItem shulkerBoxItem) {
+			int mainColor = storageWrapper.getMainColor();
 			if (mainColor > -1) {
-				storageBlockItem.setMainColor(stack, mainColor);
+				shulkerBoxItem.setMainColor(stack, mainColor);
 			}
-			int accentColor = be.getStorageWrapper().getAccentColor();
+			int accentColor = storageWrapper.getAccentColor();
 			if (accentColor > -1) {
-				storageBlockItem.setAccentColor(stack, accentColor);
+				shulkerBoxItem.setAccentColor(stack, accentColor);
 			}
+			shulkerBoxItem.setNumberOfInventorySlots(stack, storageWrapper.getInventoryHandler().getSlots());
+			shulkerBoxItem.setNumberOfUpgradeSlots(stack, storageWrapper.getUpgradeHandler().getSlots());
 		}
 	}
 
