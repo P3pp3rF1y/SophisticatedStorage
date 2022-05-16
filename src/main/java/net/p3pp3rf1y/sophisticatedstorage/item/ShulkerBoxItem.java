@@ -123,7 +123,7 @@ public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageIte
 			private void initWrapper() {
 				if (wrapper == null) {
 					UUID uuid = NBTHelper.getUniqueId(stack, "uuid").orElse(null);
-					StorageWrapper storageWrapper = new StackStorageWrapper(() -> {
+					StorageWrapper storageWrapper = new StackStorageWrapper(stack, () -> {
 						UUID newUuid = UUID.randomUUID();
 						NBTHelper.setUniqueId(stack, "uuid", newUuid);
 						CompoundTag mainTag = new CompoundTag();
@@ -165,11 +165,29 @@ public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageIte
 		}
 	}
 
+	public void setNumberOfInventorySlots(ItemStack shulkerBoxStack, int numberOfInventorySlots) {
+		NBTHelper.putInt(shulkerBoxStack.getOrCreateTag(), "numberOfInventorySlots", numberOfInventorySlots);
+	}
+
+	public int getNumberOfInventorySlots(ItemStack shulkerBoxStack) {
+		return NBTHelper.getInt(shulkerBoxStack, "numberOfInventorySlots").orElse(shulkerBoxStack.getCapability(CapabilityStorageWrapper.getCapabilityInstance()).map(StorageWrapper::getDefaultNumberOfInventorySlots).orElse(1));
+	}
+
+	public int getNumberOfUpgradeSlots(ItemStack shulkerBoxStack) {
+		return NBTHelper.getInt(shulkerBoxStack, "numberOfUpgradeSlots").orElse(shulkerBoxStack.getCapability(CapabilityStorageWrapper.getCapabilityInstance()).map(StorageWrapper::getDefaultNumberOfUpgradeSlots).orElse(1));
+	}
+
+	public void setNumberOfUpgradeSlots(ItemStack shulkerBoxStack, int numberOfUpgradeSlots) {
+		NBTHelper.putInt(shulkerBoxStack.getOrCreateTag(), "numberOfUpgradeSlots", numberOfUpgradeSlots);
+	}
+
 	private class StackStorageWrapper extends StorageWrapper {
+		private final ItemStack shulkerBoxStack;
 		private final Supplier<UUID> getNewUuid;
 
-		public StackStorageWrapper(Supplier<UUID> getNewUuid) {
+		public StackStorageWrapper(ItemStack shulkerBoxStack, Supplier<UUID> getNewUuid) {
 			super(() -> () -> {}, () -> {}, () -> {});
+			this.shulkerBoxStack = shulkerBoxStack;
 			this.getNewUuid = getNewUuid;
 		}
 
@@ -193,8 +211,14 @@ public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageIte
 		}
 
 		@Override
-		protected int getDefaultNumberOfInventorySlots() {
+		public int getDefaultNumberOfInventorySlots() {
 			return getBlock() instanceof IStorageBlock storageBlock ? storageBlock.getNumberOfInventorySlots() : 0;
+		}
+
+		@Override
+		protected void loadSlotNumbers(CompoundTag tag) {
+			numberOfInventorySlots = NBTHelper.getInt(shulkerBoxStack, "numberOfInventorySlots").orElse(0);
+			numberOfUpgradeSlots = NBTHelper.getInt(shulkerBoxStack, "numberOfUpgradeSlots").orElse(0);
 		}
 
 		@Override
@@ -206,7 +230,7 @@ public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageIte
 		}
 
 		@Override
-		protected int getDefaultNumberOfUpgradeSlots() {
+		public int getDefaultNumberOfUpgradeSlots() {
 			return getBlock() instanceof IStorageBlock storageBlock ? storageBlock.getNumberOfUpgradeSlots() : 0;
 		}
 	}

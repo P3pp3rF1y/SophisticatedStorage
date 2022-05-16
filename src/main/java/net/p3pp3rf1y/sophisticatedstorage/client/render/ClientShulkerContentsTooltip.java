@@ -5,7 +5,6 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.event.world.WorldEvent;
-import net.p3pp3rf1y.sophisticatedcore.util.NoopStorageWrapper;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.item.CapabilityStorageWrapper;
 import net.p3pp3rf1y.sophisticatedstorage.item.ShulkerBoxItem;
@@ -24,7 +23,7 @@ public class ClientShulkerContentsTooltip extends net.p3pp3rf1y.sophisticatedcor
 
 	@Override
 	public void renderImage(Font font, int leftX, int topY, PoseStack poseStack, ItemRenderer itemRenderer, int blitOffset) {
-		renderTooltip(shulkerItem.getCapability(CapabilityStorageWrapper.getCapabilityInstance()).orElse(NoopStorageWrapper.INSTANCE), font, leftX, topY, poseStack, itemRenderer, blitOffset);
+		shulkerItem.getCapability(CapabilityStorageWrapper.getCapabilityInstance()).ifPresent(wrapper -> renderTooltip(wrapper, font, leftX, topY, poseStack, itemRenderer, blitOffset));
 	}
 
 	public ClientShulkerContentsTooltip(ShulkerBoxItem.ContentsTooltip tooltip) {
