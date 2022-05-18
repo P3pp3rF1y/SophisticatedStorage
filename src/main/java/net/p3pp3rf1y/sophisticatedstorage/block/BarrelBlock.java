@@ -46,6 +46,7 @@ import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import javax.annotation.Nullable;
 import java.util.Random;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public class BarrelBlock extends WoodStorageBlockBase {
 	public static final DirectionProperty FACING = BlockStateProperties.FACING;
@@ -53,8 +54,8 @@ public class BarrelBlock extends WoodStorageBlockBase {
 	public static final BooleanProperty OPEN = BlockStateProperties.OPEN;
 	private static final VoxelShape ITEM_ENTITY_COLLISION_SHAPE = box(0.1, 0.1, 0.1, 15.9, 15.9, 15.9);
 
-	public BarrelBlock(int numberOfInventorySlots, int numberOfUpgradeSlots, Properties properties) {
-		super(properties.noOcclusion(), numberOfInventorySlots, numberOfUpgradeSlots);
+	public BarrelBlock(Supplier<Integer> numberOfInventorySlotsSupplier, Supplier<Integer> numberOfUpgradeSlotsSupplier, Properties properties) {
+		super(properties.noOcclusion(), numberOfInventorySlotsSupplier, numberOfUpgradeSlotsSupplier);
 		registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(OPEN, false).setValue(TICKING, false));
 	}
 

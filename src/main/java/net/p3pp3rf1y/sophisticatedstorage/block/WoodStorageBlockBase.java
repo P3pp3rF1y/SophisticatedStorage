@@ -19,12 +19,13 @@ import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
 
 import javax.annotation.Nullable;
 import java.util.Set;
+import java.util.function.Supplier;
 
 public abstract class WoodStorageBlockBase extends StorageBlockBase implements IAdditionalDropDataBlock {
 	public static final Set<WoodType> CUSTOM_TEXTURE_WOOD_TYPES = Set.of(WoodType.ACACIA, WoodType.BIRCH, WoodType.CRIMSON, WoodType.DARK_OAK, WoodType.JUNGLE, WoodType.OAK, WoodType.SPRUCE, WoodType.WARPED);
 
-	protected WoodStorageBlockBase(Properties properties, int numberOfInventorySlots, int numberOfUpgradeSlots) {
-		super(properties, numberOfInventorySlots, numberOfUpgradeSlots);
+	protected WoodStorageBlockBase(Properties properties, Supplier<Integer> numberOfInventorySlotsSupplier, Supplier<Integer> numberOfUpgradeSlotsSupplier) {
+		super(properties, numberOfInventorySlotsSupplier, numberOfUpgradeSlotsSupplier);
 	}
 
 	public void addWoodAndTintData(ItemStack stack, BlockGetter level, BlockPos pos) {

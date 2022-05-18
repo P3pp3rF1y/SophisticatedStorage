@@ -26,16 +26,17 @@ import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 
 import javax.annotation.Nullable;
 import java.util.Random;
+import java.util.function.Supplier;
 
 public abstract class StorageBlockBase extends Block implements IStorageBlock, EntityBlock {
 	public static final BooleanProperty TICKING = BooleanProperty.create("ticking");
-	protected final int numberOfInventorySlots;
-	protected final int numberOfUpgradeSlots;
+	protected final Supplier<Integer> numberOfInventorySlotsSupplier;
+	protected final Supplier<Integer> numberOfUpgradeSlotsSupplier;
 
-	protected StorageBlockBase(Properties properties, int numberOfInventorySlots, int numberOfUpgradeSlots) {
+	protected StorageBlockBase(Properties properties, Supplier<Integer> numberOfInventorySlotsSupplier, Supplier<Integer> numberOfUpgradeSlotsSupplier) {
 		super(properties);
-		this.numberOfInventorySlots = numberOfInventorySlots;
-		this.numberOfUpgradeSlots = numberOfUpgradeSlots;
+		this.numberOfInventorySlotsSupplier = numberOfInventorySlotsSupplier;
+		this.numberOfUpgradeSlotsSupplier = numberOfUpgradeSlotsSupplier;
 	}
 
 	@Override
@@ -95,12 +96,12 @@ public abstract class StorageBlockBase extends Block implements IStorageBlock, E
 
 	@Override
 	public int getNumberOfInventorySlots() {
-		return numberOfInventorySlots;
+		return numberOfInventorySlotsSupplier.get();
 	}
 
 	@Override
 	public int getNumberOfUpgradeSlots() {
-		return numberOfUpgradeSlots;
+		return numberOfUpgradeSlotsSupplier.get();
 	}
 
 	@Override
