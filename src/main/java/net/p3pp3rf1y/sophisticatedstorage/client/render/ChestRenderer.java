@@ -27,6 +27,7 @@ import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 public class ChestRenderer implements BlockEntityRenderer<ChestBlockEntity> {
 	private static final String BOTTOM = "bottom";
@@ -81,15 +82,18 @@ public class ChestRenderer implements BlockEntityRenderer<ChestBlockEntity> {
 		lidAngle = 1.0F - lidAngle * lidAngle * lidAngle;
 
 		float finalLidAngle = lidAngle;
-		chestEntity.getWoodType().ifPresent(wt -> {
-			VertexConsumer vertexconsumer = WOOD_MATERIALS.get(wt).buffer(bufferSource, RenderType::entityCutout);
+		boolean hasMainColor = chestEntity.getStorageWrapper().hasMainColor();
+		boolean hasAccentColor = chestEntity.getStorageWrapper().hasAccentColor();
+		Optional<WoodType> woodType = chestEntity.getWoodType();
+		if (woodType.isPresent() || !(hasMainColor && hasAccentColor)) {
+			VertexConsumer vertexconsumer = WOOD_MATERIALS.get(woodType.orElse(WoodType.ACACIA)).buffer(bufferSource, RenderType::entityCutout);
 			renderBottomAndLid(poseStack, vertexconsumer, finalLidAngle, packedlight, packedOverlay);
-		});
-		if (chestEntity.getStorageWrapper().getMainColor() > -1) {
+		}
+		if (hasMainColor) {
 			VertexConsumer vertexconsumer = TINTABLE_MAIN_MATERIAL.buffer(bufferSource, RenderType::entityCutout);
 			renderBottomAndLidWithTint(poseStack, vertexconsumer, lidAngle, packedlight, packedOverlay, chestEntity.getStorageWrapper().getMainColor());
 		}
-		if (chestEntity.getStorageWrapper().getAccentColor() > -1) {
+		if (hasAccentColor) {
 			VertexConsumer vertexconsumer = TINTABLE_ACCENT_MATERIAL.buffer(bufferSource, RenderType::entityCutout);
 			renderBottomAndLidWithTint(poseStack, vertexconsumer, lidAngle, packedlight, packedOverlay, chestEntity.getStorageWrapper().getAccentColor());
 		}

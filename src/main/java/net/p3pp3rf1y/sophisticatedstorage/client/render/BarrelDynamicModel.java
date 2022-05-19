@@ -62,6 +62,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 import java.util.function.Function;
@@ -405,12 +406,17 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 			return WorldHelper.getBlockEntity(world, pos, StorageBlockEntity.class)
 					.map(be -> {
 						ModelDataMap.Builder builder = new ModelDataMap.Builder();
-						builder.withInitial(HAS_MAIN_COLOR, be.getStorageWrapper().getMainColor() > -1);
-						builder.withInitial(HAS_ACCENT_COLOR, be.getStorageWrapper().getAccentColor() > -1);
+						boolean hasMainColor = be.getStorageWrapper().hasMainColor();
+						builder.withInitial(HAS_MAIN_COLOR, hasMainColor);
+						boolean hasAccentColor = be.getStorageWrapper().hasAccentColor();
+						builder.withInitial(HAS_ACCENT_COLOR, hasAccentColor);
 						RenderInfo.ItemDisplayRenderInfo itemDisplayRenderInfo = be.getStorageWrapper().getRenderInfo().getItemDisplayRenderInfo();
 						builder.withInitial(DISPLAY_ITEM, itemDisplayRenderInfo.getItem());
 						builder.withInitial(DISPLAY_ITEM_ROTATION, itemDisplayRenderInfo.getRotation());
-						be.getWoodType().ifPresent(n -> builder.withInitial(WOOD_NAME, n.name()));
+						Optional<WoodType> woodType = be.getWoodType();
+						if (woodType.isPresent() || !(hasMainColor && hasAccentColor)) {
+							builder.withInitial(WOOD_NAME, woodType.orElse(WoodType.ACACIA).name());
+						}
 						return (IModelData) builder.build();
 					}).orElse(EmptyModelData.INSTANCE);
 		}
@@ -446,9 +452,10 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 		@Nullable
 		@Override
 		public BakedModel resolve(BakedModel model, ItemStack stack, @Nullable ClientLevel level, @Nullable LivingEntity entity, int seed) {
-			barrelBakedModel.barrelWoodName = WoodStorageBlockItem.getWoodType(stack).map(WoodType::name).orElse(null);
 			barrelBakedModel.barrelHasMainColor = StorageBlockItem.getMaincolorFromStack(stack).isPresent();
 			barrelBakedModel.barrelHasAccentColor = StorageBlockItem.getAccentColorFromStack(stack).isPresent();
+			barrelBakedModel.barrelWoodName = WoodStorageBlockItem.getWoodType(stack).map(WoodType::name)
+					.orElse(barrelBakedModel.barrelHasAccentColor && barrelBakedModel.barrelHasMainColor ? null : WoodType.ACACIA.name());
 			return barrelBakedModel;
 		}
 	}

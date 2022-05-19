@@ -190,7 +190,8 @@ public abstract class StorageBlockEntity extends BlockEntity {
 	}
 
 	public void loadData(CompoundTag tag) {
-		woodType = NBTHelper.getString(tag, "woodType").flatMap(woodTypeName -> WoodType.values().filter(wt -> wt.name().equals(woodTypeName)).findFirst()).orElse(null);
+		woodType = NBTHelper.getString(tag, "woodType").flatMap(woodTypeName -> WoodType.values().filter(wt -> wt.name().equals(woodTypeName)).findFirst())
+				.orElse(storageWrapper.hasMainColor() && storageWrapper.hasAccentColor() ? null : WoodType.ACACIA);
 		displayName = NBTHelper.getComponent(tag, "displayName").orElse(null);
 		if (level != null && level.isClientSide) {
 			if (tag.getBoolean("updateBlockRender")) {

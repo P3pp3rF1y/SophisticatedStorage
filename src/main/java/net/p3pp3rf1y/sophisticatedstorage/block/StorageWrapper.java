@@ -274,6 +274,10 @@ public abstract class StorageWrapper implements IStorageWrapper {
 		return mainColor;
 	}
 
+	public boolean hasMainColor() {
+		return mainColor > -1;
+	}
+
 	public void setMainColor(int mainColor) {
 		this.mainColor = mainColor;
 	}
@@ -281,6 +285,10 @@ public abstract class StorageWrapper implements IStorageWrapper {
 	@Override
 	public int getAccentColor() {
 		return accentColor;
+	}
+
+	public boolean hasAccentColor() {
+		return accentColor > -1;
 	}
 
 	public void setAccentColor(int accentColor) {
