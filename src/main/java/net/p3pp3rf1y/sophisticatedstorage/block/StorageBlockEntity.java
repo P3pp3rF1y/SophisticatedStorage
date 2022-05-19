@@ -6,7 +6,9 @@ import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player;
@@ -29,6 +31,7 @@ import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -243,7 +246,12 @@ public abstract class StorageBlockEntity extends BlockEntity {
 		if (displayName != null) {
 			return displayName;
 		}
-		return getBlockState().getBlock().getName();
+		return getWoodType().map(this::makeWoodStorageDescriptionId).orElse(getBlockState().getBlock().getName());
+	}
+
+	private Component makeWoodStorageDescriptionId(WoodType wt) {
+		ResourceLocation id = Objects.requireNonNull(getBlockState().getBlock().getRegistryName());
+		return new TranslatableComponent("item." + id.getNamespace() + "." + wt.name() + "_" + id.getPath().replace('/', '.'));
 	}
 
 	@SuppressWarnings("unused") //stack param used in override
