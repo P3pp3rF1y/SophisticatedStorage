@@ -10,7 +10,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 
-public class ChestBlockEntity extends StorageBlockEntity {
+public class ChestBlockEntity extends WoodStorageBlockEntity {
 	private final ChestLidController chestLidController = new ChestLidController();
 
 	private final ContainerOpenersCounter openersCounter = new ContainerOpenersCounter() {

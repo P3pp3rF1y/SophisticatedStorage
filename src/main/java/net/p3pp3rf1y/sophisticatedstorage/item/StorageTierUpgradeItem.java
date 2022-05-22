@@ -37,6 +37,7 @@ import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockBase;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageWrapper;
+import net.p3pp3rf1y.sophisticatedstorage.block.WoodStorageBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageTranslationHelper;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import org.jetbrains.annotations.Nullable;
@@ -272,8 +273,8 @@ public class StorageTierUpgradeItem extends ItemBase {
 				inventoryHandler.setStackInSlot(slot, items.get(slot));
 			}
 
-			if (woodType != null) {
-				newBe.setWoodType(woodType);
+			if (woodType != null && newBe instanceof WoodStorageBlockEntity wbe) {
+				wbe.setWoodType(woodType);
 			}
 
 			if (color > -1) {

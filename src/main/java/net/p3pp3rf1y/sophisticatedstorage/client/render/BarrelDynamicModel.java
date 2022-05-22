@@ -49,8 +49,8 @@ import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlock;
-import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.block.WoodStorageBlockBase;
+import net.p3pp3rf1y.sophisticatedstorage.block.WoodStorageBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
 import org.jetbrains.annotations.Nullable;
@@ -403,7 +403,7 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 		@Nonnull
 		@Override
 		public IModelData getModelData(BlockAndTintGetter world, BlockPos pos, BlockState state, IModelData tileData) {
-			return WorldHelper.getBlockEntity(world, pos, StorageBlockEntity.class)
+			return WorldHelper.getBlockEntity(world, pos, WoodStorageBlockEntity.class)
 					.map(be -> {
 						ModelDataMap.Builder builder = new ModelDataMap.Builder();
 						boolean hasMainColor = be.getStorageWrapper().hasMainColor();
