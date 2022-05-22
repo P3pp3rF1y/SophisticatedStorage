@@ -390,10 +390,14 @@ public abstract class StorageWrapper implements IStorageWrapper {
 	}
 
 	public void increaseSize(int additionalInventorySlots, int additionalUpgradeSlots) {
-		numberOfInventorySlots += additionalInventorySlots;
-		numberOfUpgradeSlots += additionalUpgradeSlots;
+		if (additionalInventorySlots > 0) {
+			numberOfInventorySlots += additionalInventorySlots;
+			getInventoryHandler().increaseSize(additionalInventorySlots);
+		}
 
-		getInventoryHandler().increaseSize(additionalInventorySlots);
-		getUpgradeHandler().increaseSize(additionalUpgradeSlots);
+		if (additionalUpgradeSlots > 0) {
+			numberOfUpgradeSlots += additionalUpgradeSlots;
+			getUpgradeHandler().increaseSize(additionalUpgradeSlots);
+		}
 	}
 }
