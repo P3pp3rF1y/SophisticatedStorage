@@ -16,7 +16,6 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.ContainerOpenersCounter;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.WoodType;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.capabilities.Capability;
@@ -36,9 +35,7 @@ public abstract class StorageBlockEntity extends BlockEntity {
 	public static final String STORAGE_WRAPPER_TAG = "storageWrapper";
 	private final StorageWrapper storageWrapper;
 	@Nullable
-	private Component displayName = null;
-	@Nullable
-	private WoodType woodType = null;
+	protected Component displayName = null;
 
 	private boolean updateBlockRender = false;
 
@@ -136,10 +133,7 @@ public abstract class StorageBlockEntity extends BlockEntity {
 		tag.put(STORAGE_WRAPPER_TAG, storageWrapper.saveData(new CompoundTag()));
 	}
 
-	private void saveData(CompoundTag tag) {
-		if (woodType != null) {
-			tag.putString("woodType", woodType.name());
-		}
+	protected void saveData(CompoundTag tag) {
 		if (displayName != null) {
 			tag.putString("displayName", Component.Serializer.toJson(displayName));
 		}
@@ -190,7 +184,6 @@ public abstract class StorageBlockEntity extends BlockEntity {
 	}
 
 	public void loadData(CompoundTag tag) {
-		woodType = NBTHelper.getString(tag, "woodType").flatMap(woodTypeName -> WoodType.values().filter(wt -> wt.name().equals(woodTypeName)).findFirst()).orElse(null);
 		displayName = NBTHelper.getComponent(tag, "displayName").orElse(null);
 		if (level != null && level.isClientSide) {
 			if (tag.getBoolean("updateBlockRender")) {
@@ -261,17 +254,8 @@ public abstract class StorageBlockEntity extends BlockEntity {
 		isDroppingContents = false;
 	}
 
-	public Optional<WoodType> getWoodType() {
-		return Optional.ofNullable(woodType);
-	}
-
 	public void setCustomName(Component customName) {
 		displayName = customName;
-		setChanged();
-	}
-
-	public void setWoodType(WoodType woodType) {
-		this.woodType = woodType;
 		setChanged();
 	}
 

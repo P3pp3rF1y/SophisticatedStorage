@@ -170,11 +170,13 @@ public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageIte
 	}
 
 	public int getNumberOfInventorySlots(ItemStack shulkerBoxStack) {
-		return NBTHelper.getInt(shulkerBoxStack, "numberOfInventorySlots").orElse(shulkerBoxStack.getCapability(CapabilityStorageWrapper.getCapabilityInstance()).map(StorageWrapper::getDefaultNumberOfInventorySlots).orElse(1));
+		int defaultNumberOfInventorySlots = shulkerBoxStack.getCapability(CapabilityStorageWrapper.getCapabilityInstance()).map(StorageWrapper::getDefaultNumberOfInventorySlots).orElse(1);
+		return NBTHelper.getInt(shulkerBoxStack, "numberOfInventorySlots").map(inventorySlots -> Math.max(inventorySlots, defaultNumberOfInventorySlots)).orElse(defaultNumberOfInventorySlots);
 	}
 
 	public int getNumberOfUpgradeSlots(ItemStack shulkerBoxStack) {
-		return NBTHelper.getInt(shulkerBoxStack, "numberOfUpgradeSlots").orElse(shulkerBoxStack.getCapability(CapabilityStorageWrapper.getCapabilityInstance()).map(StorageWrapper::getDefaultNumberOfUpgradeSlots).orElse(1));
+		int defaultNumberOfUpgradeSlots = shulkerBoxStack.getCapability(CapabilityStorageWrapper.getCapabilityInstance()).map(StorageWrapper::getDefaultNumberOfUpgradeSlots).orElse(1);
+		return NBTHelper.getInt(shulkerBoxStack, "numberOfUpgradeSlots").map(numberOfUpgradeSlots -> Math.max(numberOfUpgradeSlots, defaultNumberOfUpgradeSlots)).orElse(defaultNumberOfUpgradeSlots);
 	}
 
 	public void setNumberOfUpgradeSlots(ItemStack shulkerBoxStack, int numberOfUpgradeSlots) {

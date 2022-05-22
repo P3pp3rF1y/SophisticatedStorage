@@ -29,7 +29,7 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 	}
 
 	public void addWoodAndTintData(ItemStack stack, BlockGetter level, BlockPos pos) {
-		WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).ifPresent(be -> addDropData(stack, be));
+		WorldHelper.getBlockEntity(level, pos, WoodStorageBlockEntity.class).ifPresent(be -> addDropData(stack, be));
 	}
 
 	public void addDropData(ItemStack stack, StorageBlockEntity be) {
@@ -43,7 +43,9 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 				tintableBlockItem.setAccentColor(stack, accentColor);
 			}
 		}
-		be.getWoodType().ifPresent(n -> WoodStorageBlockItem.setWoodType(stack, n));
+		if (be instanceof WoodStorageBlockEntity wbe) {
+			wbe.getWoodType().ifPresent(n -> WoodStorageBlockItem.setWoodType(stack, n));
+		}
 		be.getCustomName().ifPresent(stack::setHoverName);
 	}
 
@@ -76,7 +78,7 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 
 	@Override
 	public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
-		WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).ifPresent(be -> {
+		WorldHelper.getBlockEntity(level, pos, WoodStorageBlockEntity.class).ifPresent(be -> {
 			if (stack.hasCustomHoverName()) {
 				be.setCustomName(stack.getHoverName());
 			}

@@ -9,10 +9,8 @@ import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.SimpleMenuProvider;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.piglin.PiglinAi;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -41,8 +39,6 @@ import net.minecraftforge.network.NetworkHooks;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
-import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
-import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
 
 import javax.annotation.Nullable;
 import java.util.Random;
@@ -128,18 +124,6 @@ public class ChestBlock extends WoodStorageBlockBase {
 	@Override
 	public boolean isCollisionShapeFullBlock(BlockState state, BlockGetter level, BlockPos pos) {
 		return false;
-	}
-
-	@Override
-	public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
-		WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).ifPresent(be -> {
-			if (stack.hasCustomHoverName()) {
-				be.setCustomName(stack.getHoverName());
-			}
-			WoodStorageBlockItem.getWoodType(stack).ifPresent(be::setWoodType);
-			StorageBlockItem.getMaincolorFromStack(stack).ifPresent(be.getStorageWrapper()::setMainColor);
-			StorageBlockItem.getAccentColorFromStack(stack).ifPresent(be.getStorageWrapper()::setAccentColor);
-		});
 	}
 
 	@SuppressWarnings("deprecation")

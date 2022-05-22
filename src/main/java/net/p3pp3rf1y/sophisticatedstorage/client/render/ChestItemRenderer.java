@@ -10,10 +10,13 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.state.properties.WoodType;
 import net.p3pp3rf1y.sophisticatedstorage.block.ChestBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.ChestBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.block.ITintableBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
+
+import java.util.Optional;
 
 public class ChestItemRenderer extends BlockEntityWithoutLevelRenderer {
 	private final BlockEntityRenderDispatcher blockEntityRenderDispatcher;
@@ -30,10 +33,13 @@ public class ChestItemRenderer extends BlockEntityWithoutLevelRenderer {
 		}
 		//
 		ChestBlockEntity chestBlockEntity = new ChestBlockEntity(BlockPos.ZERO, blockItem.getBlock().defaultBlockState().setValue(ChestBlock.FACING, Direction.SOUTH));
-		WoodStorageBlockItem.getWoodType(stack).ifPresent(chestBlockEntity::setWoodType);
 		if (stack.getItem() instanceof ITintableBlockItem tintableBlockItem) {
 			tintableBlockItem.getMainColor(stack).ifPresent(chestBlockEntity.getStorageWrapper()::setMainColor);
 			tintableBlockItem.getAccentColor(stack).ifPresent(chestBlockEntity.getStorageWrapper()::setAccentColor);
+		}
+		Optional<WoodType> woodType = WoodStorageBlockItem.getWoodType(stack);
+		if (woodType.isPresent() || !(chestBlockEntity.getStorageWrapper().hasAccentColor() && chestBlockEntity.getStorageWrapper().hasMainColor())) {
+			chestBlockEntity.setWoodType(woodType.orElse(WoodType.ACACIA));
 		}
 		var blockentityrenderer = blockEntityRenderDispatcher.getRenderer(chestBlockEntity);
 		if (blockentityrenderer != null) {

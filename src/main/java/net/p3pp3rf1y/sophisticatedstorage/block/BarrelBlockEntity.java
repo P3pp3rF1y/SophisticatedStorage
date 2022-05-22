@@ -10,7 +10,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 
-public class BarrelBlockEntity extends StorageBlockEntity{
+public class BarrelBlockEntity extends WoodStorageBlockEntity {
 	private final ContainerOpenersCounter openersCounter = new ContainerOpenersCounter() {
 		protected void onOpen(Level level, BlockPos pos, BlockState state) {
 			playSound(state, SoundEvents.BARREL_OPEN);

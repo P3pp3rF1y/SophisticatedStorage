@@ -30,8 +30,8 @@ import net.minecraftforge.client.model.data.ModelProperty;
 import net.minecraftforge.client.model.geometry.IModelGeometry;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
-import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.block.WoodStorageBlockBase;
+import net.p3pp3rf1y.sophisticatedstorage.block.WoodStorageBlockEntity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -103,7 +103,7 @@ public class ChestDynamicModel implements IModelGeometry<ChestDynamicModel> {
 		@NotNull
 		@Override
 		public IModelData getModelData(@NotNull BlockAndTintGetter level, @NotNull BlockPos pos, @NotNull BlockState state, @NotNull IModelData modelData) {
-			return WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class)
+			return WorldHelper.getBlockEntity(level, pos, WoodStorageBlockEntity.class)
 					.map(be -> {
 						ModelDataMap.Builder builder = new ModelDataMap.Builder();
 						builder.withInitial(HAS_MAIN_COLOR, be.getStorageWrapper().getMainColor() > -1);

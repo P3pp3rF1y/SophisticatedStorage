@@ -30,7 +30,8 @@ public class BlockTagProvider extends BlockTagsProvider {
 				ModBlocks.SHULKER_BOX.get(), ModBlocks.IRON_SHULKER_BOX.get(), ModBlocks.GOLD_SHULKER_BOX.get(), ModBlocks.DIAMOND_SHULKER_BOX.get(), ModBlocks.NETHERITE_SHULKER_BOX.get()
 		);
 		tag(Tags.Blocks.CHESTS).add(ModBlocks.CHEST.get(), ModBlocks.IRON_CHEST.get(), ModBlocks.GOLD_CHEST.get(), ModBlocks.DIAMOND_CHEST.get(), ModBlocks.NETHERITE_CHEST.get());
-		tag(Tags.Blocks.CHESTS_WOODEN).add(ModBlocks.CHEST.get(), ModBlocks.IRON_CHEST.get(), ModBlocks.GOLD_CHEST.get(), ModBlocks.DIAMOND_CHEST.get(), ModBlocks.NETHERITE_CHEST.get());
+		tag(Tags.Blocks.CHESTS_WOODEN).add(ModBlocks.CHEST.get());
 		tag(Tags.Blocks.BARRELS).add(ModBlocks.BARREL.get(), ModBlocks.IRON_BARREL.get(), ModBlocks.GOLD_BARREL.get(), ModBlocks.DIAMOND_BARREL.get(), ModBlocks.NETHERITE_BARREL.get());
+		tag(Tags.Blocks.BARRELS_WOODEN).add(ModBlocks.BARREL.get());
 	}
 }
