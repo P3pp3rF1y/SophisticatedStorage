@@ -55,8 +55,8 @@ public class StorageContainerMenu extends StorageContainerMenuBase<IStorageWrapp
 	}
 
 	@Override
-	protected StorageContainerMenuBase<IStorageWrapper>.StorageUpgradeSlot instantiateUpgradeSlot(UpgradeHandler upgradeHandler, int slotIndex, int yPosition) {
-		return new StorageUpgradeSlot(upgradeHandler, slotIndex, yPosition);
+	protected StorageContainerMenuBase<IStorageWrapper>.StorageUpgradeSlot instantiateUpgradeSlot(UpgradeHandler upgradeHandler, int slotIndex) {
+		return new StorageUpgradeSlot(upgradeHandler, slotIndex);
 	}
 
 	@Override

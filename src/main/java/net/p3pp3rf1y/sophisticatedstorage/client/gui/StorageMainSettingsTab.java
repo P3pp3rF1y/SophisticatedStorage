@@ -6,7 +6,6 @@ import net.minecraft.network.chat.TranslatableComponent;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.SettingsScreen;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.controls.ItemButton;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.Position;
-import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.TranslationHelper;
 import net.p3pp3rf1y.sophisticatedcore.settings.main.MainSettingsContainer;
 import net.p3pp3rf1y.sophisticatedcore.settings.main.MainSettingsTab;
 
@@ -14,8 +13,8 @@ import java.util.List;
 
 public class StorageMainSettingsTab extends MainSettingsTab<MainSettingsContainer> {
 	private static final List<Component> CONTEXT_TOOLTIP = List.of(
-			new TranslatableComponent(TranslationHelper.INSTANCE.translSettingsButton("context_storage.tooltip")),
-			new TranslatableComponent(TranslationHelper.INSTANCE.translSettingsButton("context_storage.tooltip_detail")).withStyle(ChatFormatting.GRAY)
+			new TranslatableComponent(StorageTranslationHelper.INSTANCE.translSettingsButton("context_storage.tooltip")),
+			new TranslatableComponent(StorageTranslationHelper.INSTANCE.translSettingsButton("context_storage.tooltip_detail")).withStyle(ChatFormatting.GRAY)
 	);
 
 	public StorageMainSettingsTab(MainSettingsContainer container, Position position, SettingsScreen screen) {
