@@ -3,6 +3,7 @@ package net.p3pp3rf1y.sophisticatedstorage.compat.jei;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.constants.RecipeTypes;
+import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.handlers.IGuiContainerHandler;
 import mezz.jei.api.helpers.IStackHelper;
 import mezz.jei.api.ingredients.subtypes.IIngredientSubtypeInterpreter;
@@ -47,16 +48,16 @@ public class StoragePlugin implements IModPlugin {
 			StorageBlockItem.getAccentColorFromStack(itemStack).ifPresent(accentColor -> result.add("accentColor:" + accentColor));
 			return "{" + result + "}";
 		};
-		registration.registerSubtypeInterpreter(ModBlocks.BARREL_ITEM.get(), woodStorageNbtInterpreter);
-		registration.registerSubtypeInterpreter(ModBlocks.IRON_BARREL_ITEM.get(), woodStorageNbtInterpreter);
-		registration.registerSubtypeInterpreter(ModBlocks.GOLD_BARREL_ITEM.get(), woodStorageNbtInterpreter);
-		registration.registerSubtypeInterpreter(ModBlocks.DIAMOND_BARREL_ITEM.get(), woodStorageNbtInterpreter);
-		registration.registerSubtypeInterpreter(ModBlocks.NETHERITE_BARREL_ITEM.get(), woodStorageNbtInterpreter);
-		registration.registerSubtypeInterpreter(ModBlocks.CHEST_ITEM.get(), woodStorageNbtInterpreter);
-		registration.registerSubtypeInterpreter(ModBlocks.IRON_CHEST_ITEM.get(), woodStorageNbtInterpreter);
-		registration.registerSubtypeInterpreter(ModBlocks.GOLD_CHEST_ITEM.get(), woodStorageNbtInterpreter);
-		registration.registerSubtypeInterpreter(ModBlocks.DIAMOND_CHEST_ITEM.get(), woodStorageNbtInterpreter);
-		registration.registerSubtypeInterpreter(ModBlocks.NETHERITE_CHEST_ITEM.get(), woodStorageNbtInterpreter);
+		registration.registerSubtypeInterpreter(VanillaTypes.ITEM_STACK, ModBlocks.BARREL_ITEM.get(), woodStorageNbtInterpreter);
+		registration.registerSubtypeInterpreter(VanillaTypes.ITEM_STACK, ModBlocks.IRON_BARREL_ITEM.get(), woodStorageNbtInterpreter);
+		registration.registerSubtypeInterpreter(VanillaTypes.ITEM_STACK, ModBlocks.GOLD_BARREL_ITEM.get(), woodStorageNbtInterpreter);
+		registration.registerSubtypeInterpreter(VanillaTypes.ITEM_STACK, ModBlocks.DIAMOND_BARREL_ITEM.get(), woodStorageNbtInterpreter);
+		registration.registerSubtypeInterpreter(VanillaTypes.ITEM_STACK, ModBlocks.NETHERITE_BARREL_ITEM.get(), woodStorageNbtInterpreter);
+		registration.registerSubtypeInterpreter(VanillaTypes.ITEM_STACK, ModBlocks.CHEST_ITEM.get(), woodStorageNbtInterpreter);
+		registration.registerSubtypeInterpreter(VanillaTypes.ITEM_STACK, ModBlocks.IRON_CHEST_ITEM.get(), woodStorageNbtInterpreter);
+		registration.registerSubtypeInterpreter(VanillaTypes.ITEM_STACK, ModBlocks.GOLD_CHEST_ITEM.get(), woodStorageNbtInterpreter);
+		registration.registerSubtypeInterpreter(VanillaTypes.ITEM_STACK, ModBlocks.DIAMOND_CHEST_ITEM.get(), woodStorageNbtInterpreter);
+		registration.registerSubtypeInterpreter(VanillaTypes.ITEM_STACK, ModBlocks.NETHERITE_CHEST_ITEM.get(), woodStorageNbtInterpreter);
 
 		IIngredientSubtypeInterpreter<ItemStack> shulkerBoxNbtInterpreter = (itemStack, context) -> {
 			StringJoiner result = new StringJoiner(",");
@@ -64,11 +65,11 @@ public class StoragePlugin implements IModPlugin {
 			StorageBlockItem.getAccentColorFromStack(itemStack).ifPresent(accentColor -> result.add("accentColor:" + accentColor));
 			return "{" + result + "}";
 		};
-		registration.registerSubtypeInterpreter(ModBlocks.SHULKER_BOX_ITEM.get(), shulkerBoxNbtInterpreter);
-		registration.registerSubtypeInterpreter(ModBlocks.IRON_SHULKER_BOX_ITEM.get(), shulkerBoxNbtInterpreter);
-		registration.registerSubtypeInterpreter(ModBlocks.GOLD_SHULKER_BOX_ITEM.get(), shulkerBoxNbtInterpreter);
-		registration.registerSubtypeInterpreter(ModBlocks.DIAMOND_SHULKER_BOX_ITEM.get(), shulkerBoxNbtInterpreter);
-		registration.registerSubtypeInterpreter(ModBlocks.NETHERITE_SHULKER_BOX_ITEM.get(), shulkerBoxNbtInterpreter);
+		registration.registerSubtypeInterpreter(VanillaTypes.ITEM_STACK, ModBlocks.SHULKER_BOX_ITEM.get(), shulkerBoxNbtInterpreter);
+		registration.registerSubtypeInterpreter(VanillaTypes.ITEM_STACK, ModBlocks.IRON_SHULKER_BOX_ITEM.get(), shulkerBoxNbtInterpreter);
+		registration.registerSubtypeInterpreter(VanillaTypes.ITEM_STACK, ModBlocks.GOLD_SHULKER_BOX_ITEM.get(), shulkerBoxNbtInterpreter);
+		registration.registerSubtypeInterpreter(VanillaTypes.ITEM_STACK, ModBlocks.DIAMOND_SHULKER_BOX_ITEM.get(), shulkerBoxNbtInterpreter);
+		registration.registerSubtypeInterpreter(VanillaTypes.ITEM_STACK, ModBlocks.NETHERITE_SHULKER_BOX_ITEM.get(), shulkerBoxNbtInterpreter);
 	}
 
 	@Override

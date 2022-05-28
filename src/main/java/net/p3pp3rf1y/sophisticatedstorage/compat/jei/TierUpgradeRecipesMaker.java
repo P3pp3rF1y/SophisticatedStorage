@@ -68,6 +68,9 @@ public class TierUpgradeRecipesMaker {
 			NonNullList<Ingredient> ingredients = recipe.getIngredients();
 
 			items.forEach(item -> {
+				if (!item.hasTag()) {
+					return;
+				}
 				CraftingContainer craftinginventory = new CraftingContainer(new AbstractContainerMenu(null, -1) {
 					public boolean stillValid(Player playerIn) {
 						return false;
@@ -111,6 +114,9 @@ public class TierUpgradeRecipesMaker {
 			}
 
 			items.forEach(item -> {
+				if (!item.hasTag()) {
+					return;
+				}
 				SimpleContainer container = new SimpleContainer(2);
 				container.setItem(0, item);
 				ItemStack[] additionItems = recipe.addition.getItems();
