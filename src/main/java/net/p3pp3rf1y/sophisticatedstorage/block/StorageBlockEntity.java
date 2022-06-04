@@ -267,4 +267,8 @@ public abstract class StorageBlockEntity extends BlockEntity {
 		}
 		return super.getCapability(cap, side);
 	}
+
+	public boolean shouldDropContents() {
+		return true;
+	}
 }

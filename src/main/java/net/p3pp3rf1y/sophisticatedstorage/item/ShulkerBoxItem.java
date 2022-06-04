@@ -27,9 +27,8 @@ import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.TranslationHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
-import net.p3pp3rf1y.sophisticatedstorage.block.IStorageBlock;
+import net.p3pp3rf1y.sophisticatedstorage.block.ItemContentsStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.ShulkerBoxBlock;
-import net.p3pp3rf1y.sophisticatedstorage.block.ShulkerBoxStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageWrapper;
 import net.p3pp3rf1y.sophisticatedstorage.client.render.ShulkerBoxItemRenderer;
@@ -41,7 +40,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageItem {
 	public ShulkerBoxItem(Block block) {
@@ -81,7 +79,7 @@ public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageIte
 		DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
 			Minecraft mc = Minecraft.getInstance();
 			if (Screen.hasShiftDown() || (mc.player != null && !mc.player.containerMenu.getCarried().isEmpty())) {
-				ret.set(new ContentsTooltip(stack));
+				ret.set(new StorageContentsTooltip(stack));
 			}
 		});
 		return Optional.ofNullable(ret.get());
@@ -123,18 +121,17 @@ public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageIte
 			private void initWrapper() {
 				if (wrapper == null) {
 					UUID uuid = NBTHelper.getUniqueId(stack, "uuid").orElse(null);
-					StorageWrapper storageWrapper = new StackStorageWrapper(stack, () -> {
-						UUID newUuid = UUID.randomUUID();
-						NBTHelper.setUniqueId(stack, "uuid", newUuid);
-						CompoundTag mainTag = new CompoundTag();
-						CompoundTag storageWrapperTag = new CompoundTag();
-						storageWrapperTag.put("contents", new CompoundTag());
-						mainTag.put(StorageBlockEntity.STORAGE_WRAPPER_TAG, storageWrapperTag);
-						ShulkerBoxStorage.get().setShulkerBoxContents(newUuid, mainTag);
-						return newUuid;
-					});
+					StorageWrapper storageWrapper = new StackStorageWrapper(stack) {
+						@Override
+						protected boolean isAllowedInStorage(ItemStack stack) {
+							//TODO add config with other things that can't go in
+							//TODO add backpacks compat so that they can't go in
+							Block block = Block.byItem(stack.getItem());
+							return !(block instanceof ShulkerBoxBlock) && !(block instanceof net.minecraft.world.level.block.ShulkerBoxBlock);
+						}
+					};
 					if (uuid != null) {
-						CompoundTag compoundtag = ShulkerBoxStorage.get().getOrCreateShulkerBoxContents(uuid).getCompound(StorageBlockEntity.STORAGE_WRAPPER_TAG);
+						CompoundTag compoundtag = ItemContentsStorage.get().getOrCreateStorageContents(uuid).getCompound(StorageBlockEntity.STORAGE_WRAPPER_TAG);
 						storageWrapper.load(compoundtag);
 						storageWrapper.setContentsUuid(uuid); //setting here because client side the uuid isn't in contentsnbt before this data is synced from server and it would create a new one otherwise
 					}
@@ -146,7 +143,7 @@ public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageIte
 
 	@Override
 	public Optional<TooltipComponent> getInventoryTooltip(ItemStack stack) {
-		return Optional.of(new ContentsTooltip(stack));
+		return Optional.of(new StorageContentsTooltip(stack));
 	}
 
 	@Override
@@ -157,12 +154,6 @@ public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageIte
 	@Override
 	public boolean isItemStashable(ItemStack storageStack, ItemStack stack) {
 		return storageStack.getCapability(CapabilityStorageWrapper.getCapabilityInstance()).map(wrapper -> wrapper.getInventoryForUpgradeProcessing().isItemValid(0, stack)).orElse(false);
-	}
-
-	public record ContentsTooltip(ItemStack shulkerItem) implements TooltipComponent {
-		public ItemStack getShulkerItem() {
-			return shulkerItem;
-		}
 	}
 
 	public void setNumberOfInventorySlots(ItemStack shulkerBoxStack, int numberOfInventorySlots) {
@@ -181,59 +172,5 @@ public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageIte
 
 	public void setNumberOfUpgradeSlots(ItemStack shulkerBoxStack, int numberOfUpgradeSlots) {
 		NBTHelper.putInt(shulkerBoxStack.getOrCreateTag(), "numberOfUpgradeSlots", numberOfUpgradeSlots);
-	}
-
-	private class StackStorageWrapper extends StorageWrapper {
-		private final ItemStack shulkerBoxStack;
-		private final Supplier<UUID> getNewUuid;
-
-		public StackStorageWrapper(ItemStack shulkerBoxStack, Supplier<UUID> getNewUuid) {
-			super(() -> () -> {}, () -> {}, () -> {});
-			this.shulkerBoxStack = shulkerBoxStack;
-			this.getNewUuid = getNewUuid;
-		}
-
-		@Override
-		public Optional<UUID> getContentsUuid() {
-			return Optional.ofNullable(contentsUuid);
-		}
-
-		@Override
-		protected CompoundTag getContentsNbt() {
-			if (contentsUuid == null) {
-				contentsUuid = getNewUuid.get();
-			}
-			//noinspection ConstantConditions - uuid is initiated above if null
-			return ShulkerBoxStorage.get().getOrCreateShulkerBoxContents(contentsUuid).getCompound(StorageBlockEntity.STORAGE_WRAPPER_TAG).getCompound("contents");
-		}
-
-		@Override
-		protected void onUpgradeRefresh() {
-			//noop - there should be no upgrade refresh happening here
-		}
-
-		@Override
-		public int getDefaultNumberOfInventorySlots() {
-			return getBlock() instanceof IStorageBlock storageBlock ? storageBlock.getNumberOfInventorySlots() : 0;
-		}
-
-		@Override
-		protected void loadSlotNumbers(CompoundTag tag) {
-			numberOfInventorySlots = NBTHelper.getInt(shulkerBoxStack, "numberOfInventorySlots").orElse(0);
-			numberOfUpgradeSlots = NBTHelper.getInt(shulkerBoxStack, "numberOfUpgradeSlots").orElse(0);
-		}
-
-		@Override
-		protected boolean isAllowedInStorage(ItemStack stack) {
-			//TODO add config with other things that can't go in
-			//TODO add backpacks compat so that they can't go in
-			Block block = Block.byItem(stack.getItem());
-			return !(block instanceof ShulkerBoxBlock) && !(block instanceof net.minecraft.world.level.block.ShulkerBoxBlock);
-		}
-
-		@Override
-		public int getDefaultNumberOfUpgradeSlots() {
-			return getBlock() instanceof IStorageBlock storageBlock ? storageBlock.getNumberOfUpgradeSlots() : 0;
-		}
 	}
 }

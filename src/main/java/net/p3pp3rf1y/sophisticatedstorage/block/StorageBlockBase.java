@@ -126,7 +126,7 @@ public abstract class StorageBlockBase extends Block implements IStorageBlock, E
 	public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean isMoving) {
 		if (!state.is(newState.getBlock())) {
 			WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).ifPresent(b -> {
-				if (shouldDropContents()) {
+				if (b.shouldDropContents()) {
 					b.dropContents();
 				}
 				level.updateNeighbourForOutputSignal(pos, this);
@@ -136,9 +136,6 @@ public abstract class StorageBlockBase extends Block implements IStorageBlock, E
 		super.onRemove(state, level, pos, newState, isMoving);
 	}
 
-	protected boolean shouldDropContents() {
-		return true;
-	}
 
 	@Override
 	public void animateTick(BlockState state, Level level, BlockPos pos, Random rand) {

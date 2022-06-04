@@ -47,6 +47,7 @@ public class ChestRenderer implements BlockEntityRenderer<ChestBlockEntity> {
 	public static final Material NETHERITE_TIER_MATERIAL = new Material(Sheets.CHEST_SHEET, SophisticatedStorage.getRL(ENTITY_CHEST_FOLDER + "netherite_tier"));
 	public static final Material TINTABLE_MAIN_MATERIAL = new Material(Sheets.CHEST_SHEET, SophisticatedStorage.getRL(ENTITY_CHEST_FOLDER + "tintable_main"));
 	public static final Material TINTABLE_ACCENT_MATERIAL = new Material(Sheets.CHEST_SHEET, SophisticatedStorage.getRL(ENTITY_CHEST_FOLDER + "tintable_accent"));
+	public static final Material PACKED_MATERIAL = new Material(Sheets.CHEST_SHEET, SophisticatedStorage.getRL(ENTITY_CHEST_FOLDER + "packed"));
 
 	static {
 		WoodStorageBlockBase.CUSTOM_TEXTURE_WOOD_TYPES.forEach(woodType -> WOOD_MATERIALS.put(woodType, new Material(Sheets.CHEST_SHEET, SophisticatedStorage.getRL(ENTITY_CHEST_FOLDER + woodType.name()))));
@@ -103,7 +104,16 @@ public class ChestRenderer implements BlockEntityRenderer<ChestBlockEntity> {
 		renderLock(poseStack, vertexconsumer, lidAngle, packedlight, packedOverlay);
 		poseStack.popPose();
 
-		BarrelRenderer.renderDisplayItem(chestEntity, poseStack, bufferSource, packedlight, packedOverlay, 0.5 * (14.0 / 16), 0.5 * (15.0 / 16) + 0.05);
+		if (chestEntity.isPacked()) {
+			VertexConsumer consumer = PACKED_MATERIAL.buffer(bufferSource, RenderType::entityCutout);
+			poseStack.pushPose();
+			poseStack.translate(-0.005D, -0.005D, -0.005D);
+			poseStack.scale(1.01f, 1.01f, 1.01f);
+			renderBottomAndLid(poseStack, consumer, finalLidAngle, packedlight, packedOverlay);
+			poseStack.popPose();
+		} else {
+			BarrelRenderer.renderDisplayItem(chestEntity, poseStack, bufferSource, packedlight, packedOverlay, 0.5 * (14.0 / 16), 0.5 * (15.0 / 16) + 0.05);
+		}
 	}
 
 	private void renderBottomAndLid(PoseStack poseStack, VertexConsumer consumer, float lidAngle, int packedLight, int packedOverlay) {

@@ -41,6 +41,7 @@ public class ChestItemRenderer extends BlockEntityWithoutLevelRenderer {
 		if (woodType.isPresent() || !(chestBlockEntity.getStorageWrapper().hasAccentColor() && chestBlockEntity.getStorageWrapper().hasMainColor())) {
 			chestBlockEntity.setWoodType(woodType.orElse(WoodType.ACACIA));
 		}
+		chestBlockEntity.setPacked(WoodStorageBlockItem.isPacked(stack));
 		var blockentityrenderer = blockEntityRenderDispatcher.getRenderer(chestBlockEntity);
 		if (blockentityrenderer != null) {
 			blockentityrenderer.render(chestBlockEntity, 0.0F, poseStack, buffer, packedLight, packedOverlay);

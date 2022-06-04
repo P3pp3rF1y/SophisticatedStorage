@@ -36,12 +36,12 @@ import net.p3pp3rf1y.sophisticatedstorage.client.render.BarrelDynamicModel;
 import net.p3pp3rf1y.sophisticatedstorage.client.render.BarrelRenderer;
 import net.p3pp3rf1y.sophisticatedstorage.client.render.ChestDynamicModel;
 import net.p3pp3rf1y.sophisticatedstorage.client.render.ChestRenderer;
-import net.p3pp3rf1y.sophisticatedstorage.client.render.ClientShulkerContentsTooltip;
+import net.p3pp3rf1y.sophisticatedstorage.client.render.ClientStorageContentsTooltip;
 import net.p3pp3rf1y.sophisticatedstorage.client.render.ShulkerBoxDynamicModel;
 import net.p3pp3rf1y.sophisticatedstorage.client.render.ShulkerBoxRenderer;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
-import net.p3pp3rf1y.sophisticatedstorage.item.ShulkerBoxItem;
+import net.p3pp3rf1y.sophisticatedstorage.item.StorageContentsTooltip;
 
 import static net.minecraftforge.client.settings.KeyConflictContext.GUI;
 
@@ -80,7 +80,7 @@ public class ClientEventHandler {
 		modBus.addListener(ClientEventHandler::registerEntityRenderers);
 		modBus.addListener(ModParticles::registerFactories);
 		IEventBus eventBus = MinecraftForge.EVENT_BUS;
-		eventBus.addListener(ClientShulkerContentsTooltip::onWorldLoad);
+		eventBus.addListener(ClientStorageContentsTooltip::onWorldLoad);
 		eventBus.addListener(EventPriority.HIGH, ClientEventHandler::handleGuiMouseKeyPress);
 		eventBus.addListener(EventPriority.HIGH, ClientEventHandler::handleGuiKeyPress);
 	}
@@ -131,7 +131,7 @@ public class ClientEventHandler {
 		ItemBlockRenderTypes.setRenderLayer(ModBlocks.DIAMOND_BARREL.get(), RenderType.cutout());
 		ItemBlockRenderTypes.setRenderLayer(ModBlocks.NETHERITE_BARREL.get(), RenderType.cutout());
 
-		MinecraftForgeClient.registerTooltipComponentFactory(ShulkerBoxItem.ContentsTooltip.class, ClientShulkerContentsTooltip::new);
+		MinecraftForgeClient.registerTooltipComponentFactory(StorageContentsTooltip.class, ClientStorageContentsTooltip::new);
 
 		event.enqueueWork(() -> ClientRegistry.registerKeyBinding(SORT_KEYBIND));
 	}
@@ -170,6 +170,7 @@ public class ClientEventHandler {
 		event.addSprite(ChestRenderer.NETHERITE_TIER_MATERIAL.texture());
 		event.addSprite(ChestRenderer.TINTABLE_MAIN_MATERIAL.texture());
 		event.addSprite(ChestRenderer.TINTABLE_ACCENT_MATERIAL.texture());
+		event.addSprite(ChestRenderer.PACKED_MATERIAL.texture());
 	}
 
 	private static void stitchBlockAtlasTextures(TextureStitchEvent.Pre event) {

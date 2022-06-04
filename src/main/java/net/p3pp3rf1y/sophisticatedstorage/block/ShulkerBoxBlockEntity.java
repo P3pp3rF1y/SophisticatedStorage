@@ -29,6 +29,7 @@ public class ShulkerBoxBlockEntity extends StorageBlockEntity {
 		protected void onOpen(Level level, BlockPos pos, BlockState state) {
 			animationStatus = AnimationStatus.OPENING;
 			playSound(state, SoundEvents.SHULKER_BOX_OPEN);
+			//noinspection ConstantConditions
 			doNeighborUpdates(getLevel(), worldPosition, getBlockState());
 		}
 
@@ -36,6 +37,7 @@ public class ShulkerBoxBlockEntity extends StorageBlockEntity {
 		protected void onClose(Level level, BlockPos pos, BlockState state) {
 			animationStatus = AnimationStatus.CLOSING;
 			playSound(state, SoundEvents.SHULKER_BOX_CLOSE);
+			//noinspection ConstantConditions
 			doNeighborUpdates(getLevel(), worldPosition, getBlockState());
 		}
 
@@ -131,6 +133,11 @@ public class ShulkerBoxBlockEntity extends StorageBlockEntity {
 
 	public boolean isClosed() {
 		return animationStatus == AnimationStatus.CLOSED;
+	}
+
+	@Override
+	public boolean shouldDropContents() {
+		return false;
 	}
 
 	public enum AnimationStatus {

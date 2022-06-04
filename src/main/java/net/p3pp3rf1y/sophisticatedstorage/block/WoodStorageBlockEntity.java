@@ -18,6 +18,7 @@ public abstract class WoodStorageBlockEntity extends StorageBlockEntity{
 	@Nullable
 	private WoodType woodType = null;
 
+	private boolean packed = false;
 	protected WoodStorageBlockEntity(BlockPos pos, BlockState state, BlockEntityType<? extends StorageBlockEntity> blockEntityType) {
 		super(pos, state, blockEntityType);
 	}
@@ -28,6 +29,7 @@ public abstract class WoodStorageBlockEntity extends StorageBlockEntity{
 		if (woodType != null) {
 			tag.putString("woodType", woodType.name());
 		}
+		tag.putBoolean("packed", packed);
 	}
 
 	@Override
@@ -35,6 +37,7 @@ public abstract class WoodStorageBlockEntity extends StorageBlockEntity{
 		super.loadData(tag);
 		woodType = NBTHelper.getString(tag, "woodType").flatMap(woodTypeName -> WoodType.values().filter(wt -> wt.name().equals(woodTypeName)).findFirst())
 				.orElse(getStorageWrapper().hasMainColor() && getStorageWrapper().hasAccentColor() ? null : WoodType.ACACIA);
+		packed = tag.getBoolean("packed");
 	}
 
 	public Optional<WoodType> getWoodType() {
@@ -56,5 +59,18 @@ public abstract class WoodStorageBlockEntity extends StorageBlockEntity{
 	private Component makeWoodStorageDescriptionId(WoodType wt) {
 		ResourceLocation id = Objects.requireNonNull(getBlockState().getBlock().getRegistryName());
 		return new TranslatableComponent("item." + id.getNamespace() + "." + wt.name() + "_" + id.getPath().replace('/', '.'));
+	}
+
+	public boolean isPacked() {
+		return packed;
+	}
+
+	public void setPacked(boolean packed) {
+		this.packed = packed;
+	}
+
+	@Override
+	public boolean shouldDropContents() {
+		return !isPacked();
 	}
 }

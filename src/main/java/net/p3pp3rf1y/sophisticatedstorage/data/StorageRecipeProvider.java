@@ -1,16 +1,12 @@
 package net.p3pp3rf1y.sophisticatedstorage.data;
 
-import net.minecraft.advancements.critereon.InventoryChangeTrigger;
-import net.minecraft.advancements.critereon.ItemPredicate;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.recipes.FinishedRecipe;
 import net.minecraft.data.recipes.RecipeProvider;
 import net.minecraft.data.recipes.SpecialRecipeBuilder;
 import net.minecraft.data.recipes.UpgradeRecipeBuilder;
 import net.minecraft.tags.ItemTags;
-import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -50,6 +46,12 @@ public class StorageRecipeProvider extends RecipeProvider {
 		addShulkerBoxRecipes(consumer);
 		addUpgradeRecipes(consumer);
 		addTierUpgradeRecipes(consumer);
+
+		ShapelessBasedRecipeBuilder.shapeless(ModItems.PACKING_TAPE.get())
+				.requires(Tags.Items.SLIMEBALLS)
+				.requires(Items.PAPER)
+				.unlockedBy("has_slime", has(Tags.Items.SLIMEBALLS))
+				.save(consumer);
 	}
 
 	private void addShulkerBoxRecipes(Consumer<FinishedRecipe> consumer) {
@@ -616,6 +618,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 	}
 
 	private void tintedShulkerBoxRecipe(Consumer<FinishedRecipe> consumer, Block vanillaShulkerBox, DyeColor dyeColor) {
+		//noinspection ConstantConditions
 		String vanillaShulkerBoxName = vanillaShulkerBox.getRegistryName().getPath();
 		ShapelessBasedRecipeBuilder.shapeless(ModBlocks.SHULKER_BOX.get().getTintedStack(dyeColor)).requires(vanillaShulkerBox).requires(Items.REDSTONE_TORCH)
 				.unlockedBy("has_" + vanillaShulkerBoxName, has(vanillaShulkerBox))

@@ -150,7 +150,6 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 				Direction.WEST, getDirectionMoveBackToSide(Direction.WEST, 0.55f),
 				Direction.EAST, getDirectionMoveBackToSide(Direction.EAST, 0.55f)
 		);
-
 		private static QuadTransformer getDirectionRotationTransform(Direction dir) {
 			Quaternion rotation = dir.getRotation();
 			if (dir.getAxis().isVertical()) {
@@ -167,7 +166,9 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 			return new QuadTransformer(new Transformation(offset, null, null, null));
 		}
 
+
 		private static final ModelProperty<String> WOOD_NAME = new ModelProperty<>();
+		private static final ModelProperty<Boolean> IS_PACKED = new ModelProperty<>();
 		private static final ModelProperty<Boolean> HAS_MAIN_COLOR = new ModelProperty<>();
 		private static final ModelProperty<Boolean> HAS_ACCENT_COLOR = new ModelProperty<>();
 		private static final ModelProperty<ItemStack> DISPLAY_ITEM = new ModelProperty<>();
@@ -182,6 +183,7 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 		private String barrelWoodName = null;
 		private boolean barrelHasMainColor = false;
 		private boolean barrelHasAccentColor = false;
+		public boolean barrelIsPacked;
 
 		public BarrelBakedModel(Map<String, BakedModel> woodModels, Map<ModelPart, BakedModel> additionalModelParts) {
 			this.woodModels = woodModels;
@@ -250,6 +252,7 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 			String woodName = null;
 			boolean hasMainColor;
 			boolean hasAccentColor;
+			boolean isPacked;
 			if (state != null) {
 				hasMainColor = Boolean.TRUE.equals(extraData.getData(HAS_MAIN_COLOR));
 				hasAccentColor = Boolean.TRUE.equals(extraData.getData(HAS_ACCENT_COLOR));
@@ -259,10 +262,12 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 						woodName += "_open";
 					}
 				}
+				isPacked = extraData.hasProperty(IS_PACKED) && Boolean.TRUE.equals(extraData.getData(IS_PACKED));
 			} else {
 				woodName = barrelWoodName;
 				hasMainColor = barrelHasMainColor;
 				hasAccentColor = barrelHasAccentColor;
+				isPacked = barrelIsPacked;
 			}
 
 			List<BakedQuad> ret = new ArrayList<>();
@@ -275,8 +280,16 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 
 			ret.addAll(additionalModelParts.get(ModelPart.TIER).getQuads(state, side, rand, EmptyModelData.INSTANCE));
 
-			addDisplayItemQuads(state, side, rand, ret, extraData);
+			if (isPacked) {
+				addPackedModelQuads(state, side, rand, ret);
+			} else {
+				addDisplayItemQuads(state, side, rand, ret, extraData);
+			}
 			return ret;
+		}
+
+		private void addPackedModelQuads(@Nullable BlockState state, @Nullable Direction side, Random rand, List<BakedQuad> ret) {
+			ret.addAll(additionalModelParts.get(ModelPart.PACKED).getQuads(state, side, rand, EmptyModelData.INSTANCE));
 		}
 
 		private void addDisplayItemQuads(@Nullable BlockState state, @Nullable Direction side, Random rand, List<BakedQuad> ret, IModelData extraData) {
@@ -413,6 +426,7 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 						RenderInfo.ItemDisplayRenderInfo itemDisplayRenderInfo = be.getStorageWrapper().getRenderInfo().getItemDisplayRenderInfo();
 						builder.withInitial(DISPLAY_ITEM, itemDisplayRenderInfo.getItem());
 						builder.withInitial(DISPLAY_ITEM_ROTATION, itemDisplayRenderInfo.getRotation());
+						builder.withInitial(IS_PACKED, be.isPacked());
 						Optional<WoodType> woodType = be.getWoodType();
 						if (woodType.isPresent() || !(hasMainColor && hasAccentColor)) {
 							builder.withInitial(WOOD_NAME, woodType.orElse(WoodType.ACACIA).name());
@@ -456,6 +470,7 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 			barrelBakedModel.barrelHasAccentColor = StorageBlockItem.getAccentColorFromStack(stack).isPresent();
 			barrelBakedModel.barrelWoodName = WoodStorageBlockItem.getWoodType(stack).map(WoodType::name)
 					.orElse(barrelBakedModel.barrelHasAccentColor && barrelBakedModel.barrelHasMainColor ? null : WoodType.ACACIA.name());
+			barrelBakedModel.barrelIsPacked = WoodStorageBlockItem.isPacked(stack);
 			return barrelBakedModel;
 		}
 	}
@@ -522,7 +537,8 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 		ACCENT(SophisticatedStorage.getRL("block/barrel_tintable_accent")),
 		MAIN(SophisticatedStorage.getRL("block/barrel_tintable_main")),
 		MAIN_OPEN(SophisticatedStorage.getRL("block/barrel_tintable_main_open")),
-		TIER(new ResourceLocation("minecraft:block/cube_bottom_top"));
+		TIER(new ResourceLocation("minecraft:block/cube_bottom_top")),
+		PACKED(SophisticatedStorage.getRL("block/barrel_packed"));
 
 		private final ResourceLocation modelName;
 
