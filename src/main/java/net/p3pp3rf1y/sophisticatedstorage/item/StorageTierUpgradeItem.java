@@ -151,7 +151,7 @@ public class StorageTierUpgradeItem extends ItemBase {
 
 	private <B extends BlockEntity> InteractionResult tryUpgradeStorage(ItemStack stack, UseOnContext context, BlockPos pos, Level level, BlockState state, TierUpgradeDefinition<B> def, BlockEntity blockEntity) {
 		B be = def.blockEntityClass().cast(blockEntity);
-		if (def.isOpen().test(be)) {
+		if (def.isUpgradingBlocked().test(be)) {
 			return InteractionResult.PASS;
 		}
 
@@ -173,7 +173,7 @@ public class StorageTierUpgradeItem extends ItemBase {
 
 	private static class StorageTierUpgradeDefinition extends TierUpgradeDefinition<StorageBlockEntity> {
 		private StorageTierUpgradeDefinition(DirectionProperty facingProperty, StorageBlockBase newBlock) {
-			super(facingProperty, StorageBlockEntity.class, StorageBlockEntity::isOpen, newBlock);
+			super(facingProperty, StorageBlockEntity.class, storageBlockEntity -> storageBlockEntity.isOpen() || (storageBlockEntity instanceof WoodStorageBlockEntity wbe && wbe.isPacked()), newBlock);
 		}
 
 		@Override
@@ -212,16 +212,16 @@ public class StorageTierUpgradeItem extends ItemBase {
 		private final @Nullable WoodType woodType;
 		private final int color;
 
-		private VanillaTierUpgradeDefinition(EnumProperty<Direction> facingProperty, Class<B> blockEntityClass, Predicate<B> isOpen, StorageBlockBase newBlock, @Nullable WoodType woodType) {
-			this(facingProperty, blockEntityClass, isOpen, newBlock, woodType, -1);
+		private VanillaTierUpgradeDefinition(EnumProperty<Direction> facingProperty, Class<B> blockEntityClass, Predicate<B> isUpgradingBlocked, StorageBlockBase newBlock, @Nullable WoodType woodType) {
+			this(facingProperty, blockEntityClass, isUpgradingBlocked, newBlock, woodType, -1);
 		}
 
-		private VanillaTierUpgradeDefinition(EnumProperty<Direction> facingProperty, Class<B> blockEntityClass, Predicate<B> isOpen, StorageBlockBase newBlock, @Nullable WoodType woodType, DyeColor color) {
-			this(facingProperty, blockEntityClass, isOpen, newBlock, woodType, ColorHelper.getColor(color.getTextureDiffuseColors()));
+		private VanillaTierUpgradeDefinition(EnumProperty<Direction> facingProperty, Class<B> blockEntityClass, Predicate<B> isUpgradingBlocked, StorageBlockBase newBlock, @Nullable WoodType woodType, DyeColor color) {
+			this(facingProperty, blockEntityClass, isUpgradingBlocked, newBlock, woodType, ColorHelper.getColor(color.getTextureDiffuseColors()));
 		}
 
-		private VanillaTierUpgradeDefinition(EnumProperty<Direction> facingProperty, Class<B> blockEntityClass, Predicate<B> isOpen, StorageBlockBase newBlock, @Nullable WoodType woodType, int color) {
-			super(facingProperty, blockEntityClass, isOpen, newBlock);
+		private VanillaTierUpgradeDefinition(EnumProperty<Direction> facingProperty, Class<B> blockEntityClass, Predicate<B> isUpgradingBlocked, StorageBlockBase newBlock, @Nullable WoodType woodType, int color) {
+			super(facingProperty, blockEntityClass, isUpgradingBlocked, newBlock);
 			this.woodType = woodType;
 			this.color = color;
 		}
@@ -287,15 +287,15 @@ public class StorageTierUpgradeItem extends ItemBase {
 	private abstract static class TierUpgradeDefinition<B extends BlockEntity> {
 		private final EnumProperty<Direction> facingProperty;
 		private final Class<B> blockEntityClass;
-		private final Predicate<B> isOpen;
+		private final Predicate<B> isUpgradingBlocked;
 		private final StorageBlockBase newBlock;
 
 		private TierUpgradeDefinition(EnumProperty<Direction> facingProperty,
-				Class<B> blockEntityClass, Predicate<B> isOpen,
+				Class<B> blockEntityClass, Predicate<B> isUpgradingBlocked,
 				StorageBlockBase newBlock) {
 			this.facingProperty = facingProperty;
 			this.blockEntityClass = blockEntityClass;
-			this.isOpen = isOpen;
+			this.isUpgradingBlocked = isUpgradingBlocked;
 			this.newBlock = newBlock;
 		}
 
@@ -303,7 +303,7 @@ public class StorageTierUpgradeItem extends ItemBase {
 
 		public Class<B> blockEntityClass() {return blockEntityClass;}
 
-		public Predicate<B> isOpen() {return isOpen;}
+		public Predicate<B> isUpgradingBlocked() {return isUpgradingBlocked;}
 
 		public StorageBlockBase newBlock() {return newBlock;}
 

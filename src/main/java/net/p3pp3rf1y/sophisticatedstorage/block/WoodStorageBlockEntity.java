@@ -1,6 +1,7 @@
 package net.p3pp3rf1y.sophisticatedstorage.block;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TranslatableComponent;
@@ -8,7 +9,11 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.WoodType;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.items.CapabilityItemHandler;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
@@ -72,5 +77,15 @@ public abstract class WoodStorageBlockEntity extends StorageBlockEntity{
 	@Override
 	public boolean shouldDropContents() {
 		return !isPacked();
+	}
+
+	@NotNull
+	@Override
+	public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) {
+		if (isPacked() && cap == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
+			return LazyOptional.empty();
+		}
+
+		return super.getCapability(cap, side);
 	}
 }
