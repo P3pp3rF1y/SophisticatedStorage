@@ -190,5 +190,6 @@
     "gui.sophisticatedstorage.settings.buttons.context_storage.tooltip": "This Storage's settings",
     "gui.sophisticatedstorage.settings.buttons.context_storage.tooltip_detail": "Inherited from player or overriden for this storage",
     "keybind.sophisticatedstorage.category": "Sophisticated Storage",
-    "keybind.sophisticatedstorage.sort": "Sort Storage"
+    "keybind.sophisticatedstorage.sort": "Sort Storage",
+    "gui.sophisticatedstorage.status.too_many_item_entity_drops": "Can't break the %s as it would cause too many (%s) item entities to drop from it\nConsider using %s or break it while holding Shift to skip this check"
 }
