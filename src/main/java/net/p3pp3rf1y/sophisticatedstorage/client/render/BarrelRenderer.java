@@ -14,11 +14,12 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockBase;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
+import net.p3pp3rf1y.sophisticatedstorage.block.WoodStorageBlockEntity;
 
-public class BarrelRenderer implements BlockEntityRenderer<StorageBlockEntity> {
+public class BarrelRenderer implements BlockEntityRenderer<WoodStorageBlockEntity> {
 	@Override
-	public void render(StorageBlockEntity blockEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
-		if (!blockEntity.hasDynamicRenderer()) {
+	public void render(WoodStorageBlockEntity blockEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
+		if (!blockEntity.hasDynamicRenderer() || blockEntity.isPacked()) {
 			return;
 		}
 

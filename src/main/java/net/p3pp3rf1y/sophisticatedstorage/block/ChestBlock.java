@@ -11,6 +11,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.monster.piglin.PiglinAi;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -100,18 +101,26 @@ public class ChestBlock extends WoodStorageBlockBase {
 	@SuppressWarnings("deprecation")
 	@Override
 	public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
-		if (level.isClientSide) {
-			return InteractionResult.SUCCESS;
-		}
+		return WorldHelper.getBlockEntity(level, pos, WoodStorageBlockEntity.class).map(b -> {
+			ItemStack stackInHand = player.getItemInHand(hand);
+			if (b.isPacked()) {
+				return InteractionResult.PASS;
+			}
+			if (level.isClientSide) {
+				return InteractionResult.SUCCESS;
+			}
 
-		WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).ifPresent(b -> {
+			if (tryPackBlock(player, hand, b, stackInHand)) {
+				return InteractionResult.SUCCESS;
+			}
+
 			player.awardStat(Stats.CUSTOM.get(Stats.OPEN_CHEST));
 			NetworkHooks.openGui((ServerPlayer) player, new SimpleMenuProvider((w, p, pl) -> new StorageContainerMenu(w, pl, pos),
 					WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).map(StorageBlockEntity::getDisplayName).orElse(TextComponent.EMPTY)), pos);
 			PiglinAi.angerNearbyPiglins(player, true);
-		});
 
-		return InteractionResult.CONSUME;
+			return InteractionResult.CONSUME;
+		}).orElse(InteractionResult.PASS);
 	}
 
 	@org.jetbrains.annotations.Nullable

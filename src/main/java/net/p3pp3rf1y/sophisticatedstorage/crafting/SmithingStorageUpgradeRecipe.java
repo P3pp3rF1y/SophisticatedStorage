@@ -5,10 +5,12 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.UpgradeRecipe;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 import net.p3pp3rf1y.sophisticatedcore.crafting.IWrapperRecipe;
 import net.p3pp3rf1y.sophisticatedcore.crafting.RecipeWrapperSerializer;
 import net.p3pp3rf1y.sophisticatedstorage.block.IStorageBlock;
+import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -21,6 +23,11 @@ public class SmithingStorageUpgradeRecipe extends UpgradeRecipe implements IWrap
 		super(compose.getId(), compose.base,
 				compose.addition, compose.getResultItem());
 		this.compose = compose;
+	}
+
+	@Override
+	public boolean matches(Container pInv, Level pLevel) {
+		return super.matches(pInv, pLevel) && getStorage(pInv).map(storage -> !(storage.getItem() instanceof WoodStorageBlockItem) || !WoodStorageBlockItem.isPacked(storage)).orElse(false);
 	}
 
 	@Override

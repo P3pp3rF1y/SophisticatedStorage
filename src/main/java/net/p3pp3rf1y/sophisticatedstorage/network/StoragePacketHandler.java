@@ -10,7 +10,7 @@ public class StoragePacketHandler extends PacketHandler {
 	@Override
 	public void init() {
 		registerMessage(OpenStorageInventoryMessage.class, OpenStorageInventoryMessage::encode, OpenStorageInventoryMessage::decode, OpenStorageInventoryMessage::onMessage);
-		registerMessage(RequestShulkerBoxContentsMessage.class, RequestShulkerBoxContentsMessage::encode, RequestShulkerBoxContentsMessage::decode, RequestShulkerBoxContentsMessage::onMessage);
-		registerMessage(ShulkerBoxContentsMessage.class, ShulkerBoxContentsMessage::encode, ShulkerBoxContentsMessage::decode, ShulkerBoxContentsMessage::onMessage);
+		registerMessage(RequestStorageContentsMessage.class, RequestStorageContentsMessage::encode, RequestStorageContentsMessage::decode, RequestStorageContentsMessage::onMessage);
+		registerMessage(StorageContentsMessage.class, StorageContentsMessage::encode, StorageContentsMessage::decode, StorageContentsMessage::onMessage);
 	}
 }

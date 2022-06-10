@@ -7,13 +7,13 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.event.world.WorldEvent;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.item.CapabilityStorageWrapper;
-import net.p3pp3rf1y.sophisticatedstorage.item.ShulkerBoxItem;
-import net.p3pp3rf1y.sophisticatedstorage.network.RequestShulkerBoxContentsMessage;
+import net.p3pp3rf1y.sophisticatedstorage.item.StorageContentsTooltip;
+import net.p3pp3rf1y.sophisticatedstorage.network.RequestStorageContentsMessage;
 
 import java.util.UUID;
 
-public class ClientShulkerContentsTooltip extends net.p3pp3rf1y.sophisticatedcore.client.render.ClientStorageContentsTooltip {
-	private final ItemStack shulkerItem;
+public class ClientStorageContentsTooltip extends net.p3pp3rf1y.sophisticatedcore.client.render.ClientStorageContentsTooltip {
+	private final ItemStack storageItem;
 
 	@SuppressWarnings("unused") //parameter needs to be there so that addListener logic would know which event this method listens to
 	public static void onWorldLoad(WorldEvent.Load event) {
@@ -23,15 +23,15 @@ public class ClientShulkerContentsTooltip extends net.p3pp3rf1y.sophisticatedcor
 
 	@Override
 	public void renderImage(Font font, int leftX, int topY, PoseStack poseStack, ItemRenderer itemRenderer, int blitOffset) {
-		shulkerItem.getCapability(CapabilityStorageWrapper.getCapabilityInstance()).ifPresent(wrapper -> renderTooltip(wrapper, font, leftX, topY, poseStack, itemRenderer, blitOffset));
+		storageItem.getCapability(CapabilityStorageWrapper.getCapabilityInstance()).ifPresent(wrapper -> renderTooltip(wrapper, font, leftX, topY, poseStack, itemRenderer, blitOffset));
 	}
 
-	public ClientShulkerContentsTooltip(ShulkerBoxItem.ContentsTooltip tooltip) {
-		shulkerItem = tooltip.getShulkerItem();
+	public ClientStorageContentsTooltip(StorageContentsTooltip tooltip) {
+		storageItem = tooltip.getStorageItem();
 	}
 
 	@Override
 	protected void sendInventorySyncRequest(UUID uuid) {
-		SophisticatedStorage.PACKET_HANDLER.sendToServer(new RequestShulkerBoxContentsMessage(uuid));
+		SophisticatedStorage.PACKET_HANDLER.sendToServer(new RequestStorageContentsMessage(uuid));
 	}
 }

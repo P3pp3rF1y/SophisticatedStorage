@@ -66,6 +66,8 @@ public class Config {
 		public final PumpUpgradeConfig pumpUpgrade;
 		public final XpPumpUpgradeConfig xpPumpUpgrade;
 
+		public final ForgeConfigSpec.IntValue tooManyItemEntityDrops;
+
 		@SuppressWarnings("unused") //need the Event parameter for forge reflection to understand what event this listens to
 		public void onConfigReload(ModConfigEvent.Reloading event) {
 			stackUpgrade.clearNonStackableItems();
@@ -115,7 +117,7 @@ public class Config {
 			autoBlastingUpgrade = new AutoCookingUpgradeConfig(builder, "Auto-Blasting Upgrade", "autoBlastingUpgrade");
 			pumpUpgrade = new PumpUpgradeConfig(builder);
 			xpPumpUpgrade = new XpPumpUpgradeConfig(builder);
-
+			tooManyItemEntityDrops = builder.comment("Threshold of number of item entities dropped from chest / barrel above which break is canceled (unless shift key is pressed) and message is displayed explaining to player many drops and packing tape use").defineInRange("tooManyItemEntityDrops", 200, 0, 1000);
 			builder.pop();
 		}
 

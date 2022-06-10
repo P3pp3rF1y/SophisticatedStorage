@@ -42,13 +42,14 @@ import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageTranslationHelper;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 
 public class StorageTierUpgradeItem extends ItemBase {
 	private static final Map<TierUpgrade, Map<Block, TierUpgradeDefinition<?>>> TIER_UPGRADE_DEFINITIONS = Map.of(
-			TierUpgrade.BASIC, new ImmutableMap.Builder<Block, TierUpgradeDefinition<?>>()
+			TierUpgrade.BASIC, new HashMap<>(new ImmutableMap.Builder<Block, TierUpgradeDefinition<?>>()
 					.put(Blocks.BARREL, new VanillaTierUpgradeDefinition<>(BlockStateProperties.FACING, BarrelBlockEntity.class, blockEntity -> blockEntity.openersCounter.getOpenerCount() > 0, ModBlocks.BARREL.get(), WoodType.SPRUCE))
 					.put(Blocks.CHEST, new VanillaTierUpgradeDefinition<>(ChestBlock.FACING, ChestBlockEntity.class, chestBlockEntity -> chestBlockEntity.openersCounter.getOpenerCount() > 0, ModBlocks.CHEST.get(), WoodType.OAK))
 					.put(Blocks.SHULKER_BOX, new VanillaTierUpgradeDefinition<>(ShulkerBoxBlock.FACING, ShulkerBoxBlockEntity.class, shulkerBoxBlockEntity -> shulkerBoxBlockEntity.openCount > 0, ModBlocks.SHULKER_BOX.get(), null))
@@ -68,8 +69,9 @@ public class StorageTierUpgradeItem extends ItemBase {
 					.put(Blocks.GREEN_SHULKER_BOX, new VanillaTintedShulkerBoxTierUpgradeDefinition(DyeColor.GREEN, ModBlocks.SHULKER_BOX.get()))
 					.put(Blocks.RED_SHULKER_BOX, new VanillaTintedShulkerBoxTierUpgradeDefinition(DyeColor.RED, ModBlocks.SHULKER_BOX.get()))
 					.put(Blocks.BLACK_SHULKER_BOX, new VanillaTintedShulkerBoxTierUpgradeDefinition(DyeColor.BLACK, ModBlocks.SHULKER_BOX.get()))
-					.build(),
-			TierUpgrade.BASIC_TO_IRON, new ImmutableMap.Builder<Block, TierUpgradeDefinition<?>>()
+					.build()
+			),
+			TierUpgrade.BASIC_TO_IRON, new HashMap<>(new ImmutableMap.Builder<Block, TierUpgradeDefinition<?>>()
 					.put(Blocks.BARREL, new VanillaTierUpgradeDefinition<>(BlockStateProperties.FACING, BarrelBlockEntity.class, blockEntity -> blockEntity.openersCounter.getOpenerCount() > 0, ModBlocks.IRON_BARREL.get(), WoodType.SPRUCE))
 					.put(Blocks.CHEST, new VanillaTierUpgradeDefinition<>(ChestBlock.FACING, ChestBlockEntity.class, blockEntity -> blockEntity.openersCounter.getOpenerCount() > 0, ModBlocks.IRON_CHEST.get(), WoodType.OAK))
 					.put(Blocks.SHULKER_BOX, new VanillaTierUpgradeDefinition<>(ShulkerBoxBlock.FACING, ShulkerBoxBlockEntity.class, blockEntity -> blockEntity.openCount > 0, ModBlocks.IRON_SHULKER_BOX.get(), null))
@@ -92,23 +94,28 @@ public class StorageTierUpgradeItem extends ItemBase {
 					.put(ModBlocks.BARREL.get(), new StorageTierUpgradeDefinition(BlockStateProperties.FACING, ModBlocks.IRON_BARREL.get()))
 					.put(ModBlocks.CHEST.get(), new StorageTierUpgradeDefinition(ChestBlock.FACING, ModBlocks.IRON_CHEST.get()))
 					.put(ModBlocks.SHULKER_BOX.get(), new StorageTierUpgradeDefinition(BlockStateProperties.FACING, ModBlocks.IRON_SHULKER_BOX.get()))
-					.build(),
-			TierUpgrade.IRON_TO_GOLD, Map.of(
+					.build()
+			),
+			TierUpgrade.IRON_TO_GOLD, new HashMap<>(Map.of(
 					ModBlocks.IRON_BARREL.get(), new StorageTierUpgradeDefinition(BlockStateProperties.FACING, ModBlocks.GOLD_BARREL.get()),
 					ModBlocks.IRON_CHEST.get(), new StorageTierUpgradeDefinition(ChestBlock.FACING, ModBlocks.GOLD_CHEST.get()),
 					ModBlocks.IRON_SHULKER_BOX.get(), new StorageTierUpgradeDefinition(BlockStateProperties.FACING, ModBlocks.GOLD_SHULKER_BOX.get())
-			),
-			TierUpgrade.GOLD_TO_DIAMOND, Map.of(
+			)),
+			TierUpgrade.GOLD_TO_DIAMOND, new HashMap<>(Map.of(
 					ModBlocks.GOLD_BARREL.get(), new StorageTierUpgradeDefinition(BlockStateProperties.FACING, ModBlocks.DIAMOND_BARREL.get()),
 					ModBlocks.GOLD_CHEST.get(), new StorageTierUpgradeDefinition(ChestBlock.FACING, ModBlocks.DIAMOND_CHEST.get()),
 					ModBlocks.GOLD_SHULKER_BOX.get(), new StorageTierUpgradeDefinition(BlockStateProperties.FACING, ModBlocks.DIAMOND_SHULKER_BOX.get())
-			),
-			TierUpgrade.DIAMOND_TO_NETHERITE, Map.of(
+			)),
+			TierUpgrade.DIAMOND_TO_NETHERITE, new HashMap<>(Map.of(
 					ModBlocks.DIAMOND_BARREL.get(), new StorageTierUpgradeDefinition(BlockStateProperties.FACING, ModBlocks.NETHERITE_BARREL.get()),
 					ModBlocks.DIAMOND_CHEST.get(), new StorageTierUpgradeDefinition(ChestBlock.FACING, ModBlocks.NETHERITE_CHEST.get()),
 					ModBlocks.DIAMOND_SHULKER_BOX.get(), new StorageTierUpgradeDefinition(BlockStateProperties.FACING, ModBlocks.NETHERITE_SHULKER_BOX.get())
-			)
+			))
 	);
+
+	public static void addTierUpgradeDefinition(TierUpgrade tier, Block block, TierUpgradeDefinition<?> tierUpgradeDefinition) {
+		TIER_UPGRADE_DEFINITIONS.get(tier).put(block, tierUpgradeDefinition);
+	}
 
 	private final TierUpgrade tier;
 	private final boolean hasTooltip;
@@ -151,7 +158,7 @@ public class StorageTierUpgradeItem extends ItemBase {
 
 	private <B extends BlockEntity> InteractionResult tryUpgradeStorage(ItemStack stack, UseOnContext context, BlockPos pos, Level level, BlockState state, TierUpgradeDefinition<B> def, BlockEntity blockEntity) {
 		B be = def.blockEntityClass().cast(blockEntity);
-		if (def.isOpen().test(be)) {
+		if (def.isUpgradingBlocked().test(be)) {
 			return InteractionResult.PASS;
 		}
 
@@ -173,7 +180,7 @@ public class StorageTierUpgradeItem extends ItemBase {
 
 	private static class StorageTierUpgradeDefinition extends TierUpgradeDefinition<StorageBlockEntity> {
 		private StorageTierUpgradeDefinition(DirectionProperty facingProperty, StorageBlockBase newBlock) {
-			super(facingProperty, StorageBlockEntity.class, StorageBlockEntity::isOpen, newBlock);
+			super(facingProperty, StorageBlockEntity.class, storageBlockEntity -> storageBlockEntity.isOpen() || (storageBlockEntity instanceof WoodStorageBlockEntity wbe && wbe.isPacked()), newBlock);
 		}
 
 		@Override
@@ -208,20 +215,20 @@ public class StorageTierUpgradeItem extends ItemBase {
 		}
 	}
 
-	private static class VanillaTierUpgradeDefinition<B extends RandomizableContainerBlockEntity> extends TierUpgradeDefinition<B> {
+	public static class VanillaTierUpgradeDefinition<B extends RandomizableContainerBlockEntity> extends TierUpgradeDefinition<B> {
 		private final @Nullable WoodType woodType;
 		private final int color;
 
-		private VanillaTierUpgradeDefinition(EnumProperty<Direction> facingProperty, Class<B> blockEntityClass, Predicate<B> isOpen, StorageBlockBase newBlock, @Nullable WoodType woodType) {
-			this(facingProperty, blockEntityClass, isOpen, newBlock, woodType, -1);
+		public VanillaTierUpgradeDefinition(EnumProperty<Direction> facingProperty, Class<B> blockEntityClass, Predicate<B> isUpgradingBlocked, StorageBlockBase newBlock, @Nullable WoodType woodType) {
+			this(facingProperty, blockEntityClass, isUpgradingBlocked, newBlock, woodType, -1);
 		}
 
-		private VanillaTierUpgradeDefinition(EnumProperty<Direction> facingProperty, Class<B> blockEntityClass, Predicate<B> isOpen, StorageBlockBase newBlock, @Nullable WoodType woodType, DyeColor color) {
-			this(facingProperty, blockEntityClass, isOpen, newBlock, woodType, ColorHelper.getColor(color.getTextureDiffuseColors()));
+		private VanillaTierUpgradeDefinition(EnumProperty<Direction> facingProperty, Class<B> blockEntityClass, Predicate<B> isUpgradingBlocked, StorageBlockBase newBlock, @Nullable WoodType woodType, DyeColor color) {
+			this(facingProperty, blockEntityClass, isUpgradingBlocked, newBlock, woodType, ColorHelper.getColor(color.getTextureDiffuseColors()));
 		}
 
-		private VanillaTierUpgradeDefinition(EnumProperty<Direction> facingProperty, Class<B> blockEntityClass, Predicate<B> isOpen, StorageBlockBase newBlock, @Nullable WoodType woodType, int color) {
-			super(facingProperty, blockEntityClass, isOpen, newBlock);
+		private VanillaTierUpgradeDefinition(EnumProperty<Direction> facingProperty, Class<B> blockEntityClass, Predicate<B> isUpgradingBlocked, StorageBlockBase newBlock, @Nullable WoodType woodType, int color) {
+			super(facingProperty, blockEntityClass, isUpgradingBlocked, newBlock);
 			this.woodType = woodType;
 			this.color = color;
 		}
@@ -287,15 +294,15 @@ public class StorageTierUpgradeItem extends ItemBase {
 	private abstract static class TierUpgradeDefinition<B extends BlockEntity> {
 		private final EnumProperty<Direction> facingProperty;
 		private final Class<B> blockEntityClass;
-		private final Predicate<B> isOpen;
+		private final Predicate<B> isUpgradingBlocked;
 		private final StorageBlockBase newBlock;
 
 		private TierUpgradeDefinition(EnumProperty<Direction> facingProperty,
-				Class<B> blockEntityClass, Predicate<B> isOpen,
+				Class<B> blockEntityClass, Predicate<B> isUpgradingBlocked,
 				StorageBlockBase newBlock) {
 			this.facingProperty = facingProperty;
 			this.blockEntityClass = blockEntityClass;
-			this.isOpen = isOpen;
+			this.isUpgradingBlocked = isUpgradingBlocked;
 			this.newBlock = newBlock;
 		}
 
@@ -303,7 +310,7 @@ public class StorageTierUpgradeItem extends ItemBase {
 
 		public Class<B> blockEntityClass() {return blockEntityClass;}
 
-		public Predicate<B> isOpen() {return isOpen;}
+		public Predicate<B> isUpgradingBlocked() {return isUpgradingBlocked;}
 
 		public StorageBlockBase newBlock() {return newBlock;}
 

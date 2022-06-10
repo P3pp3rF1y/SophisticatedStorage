@@ -3,6 +3,7 @@ package net.p3pp3rf1y.sophisticatedstorage.client.init;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
@@ -33,7 +34,8 @@ public class ModBlockColors {
 					if (tintIndex > 999) {
 						return tintIndex == 1000 ? be.getStorageWrapper().getMainColor() : be.getStorageWrapper().getAccentColor();
 					} else {
-						return Minecraft.getInstance().getItemColors().getColor(be.getStorageWrapper().getRenderInfo().getItemDisplayRenderInfo().getItem(), tintIndex);
+						ItemStack renderItem = be.getStorageWrapper().getRenderInfo().getItemDisplayRenderInfo().getItem();
+						return renderItem.isEmpty() ? -1 : Minecraft.getInstance().getItemColors().getColor(renderItem, tintIndex);
 					}
 				})
 				.orElse(-1);

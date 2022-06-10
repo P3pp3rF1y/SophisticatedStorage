@@ -111,9 +111,9 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 	public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
 		WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).ifPresent(be -> {
 			NBTHelper.getUniqueId(stack, "uuid").ifPresent(uuid -> {
-				ShulkerBoxStorage shulkerBoxStorage = ShulkerBoxStorage.get();
-				be.load(shulkerBoxStorage.getOrCreateShulkerBoxContents(uuid));
-				shulkerBoxStorage.removeShulkerBoxContents(uuid);
+				ItemContentsStorage itemContentsStorage = ItemContentsStorage.get();
+				be.load(itemContentsStorage.getOrCreateStorageContents(uuid));
+				itemContentsStorage.removeStorageContents(uuid);
 			});
 
 			if (stack.hasCustomHoverName()) {
@@ -197,9 +197,13 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 		UUID shulkerBoxUuid = storageWrapper.getContentsUuid().orElse(UUID.randomUUID());
 		CompoundTag shulkerContents = be.saveWithoutMetadata();
 		if (!shulkerContents.isEmpty()) {
-			ShulkerBoxStorage.get().setShulkerBoxContents(shulkerBoxUuid, shulkerContents);
+			ItemContentsStorage.get().setStorageContents(shulkerBoxUuid, shulkerContents);
 			NBTHelper.setUniqueId(stack, "uuid", shulkerBoxUuid);
 		}
+		addBasicPropertiesToStack(stack, be, storageWrapper);
+	}
+
+	private void addBasicPropertiesToStack(ItemStack stack, StorageBlockEntity be, StorageWrapper storageWrapper) {
 		be.getCustomName().ifPresent(stack::setHoverName);
 		if (stack.getItem() instanceof ShulkerBoxItem shulkerBoxItem) {
 			int mainColor = storageWrapper.getMainColor();
@@ -226,7 +230,10 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 	@Override
 	public ItemStack getCloneItemStack(BlockGetter level, BlockPos pos, BlockState state) {
 		ItemStack stack = super.getCloneItemStack(level, pos, state);
-		WorldHelper.getBlockEntity(level, pos, ShulkerBoxBlockEntity.class).ifPresent(be -> addShulkerContentsToStack(stack, be));
+		WorldHelper.getBlockEntity(level, pos, ShulkerBoxBlockEntity.class).ifPresent(be -> {
+			StorageWrapper storageWrapper = be.getStorageWrapper();
+			addBasicPropertiesToStack(stack, be, storageWrapper);
+		});
 		return stack;
 	}
 
@@ -276,11 +283,6 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 	@Override
 	public Direction getFacing(BlockState state) {
 		return state.getValue(FACING);
-	}
-
-	@Override
-	protected boolean shouldDropContents() {
-		return false;
 	}
 
 	@SuppressWarnings("deprecation")

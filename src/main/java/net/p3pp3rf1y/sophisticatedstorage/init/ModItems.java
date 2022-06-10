@@ -159,6 +159,8 @@ public class ModItems {
 
 	public static final RegistryObject<ItemBase> UPGRADE_BASE = ITEMS.register("upgrade_base", () -> new ItemBase(new Item.Properties().stacksTo(16), SophisticatedStorage.CREATIVE_TAB));
 
+	public static final RegistryObject<ItemBase> PACKING_TAPE = ITEMS.register("packing_tape", ()-> new ItemBase(new Item.Properties().stacksTo(1).durability(4), SophisticatedStorage.CREATIVE_TAB));
+
 	public static void registerHandlers(IEventBus modBus) {
 		ITEMS.register(modBus);
 		modBus.addGenericListener(MenuType.class, ModItems::registerContainers);

@@ -2,6 +2,8 @@ package net.p3pp3rf1y.sophisticatedstorage.block;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.CreativeModeTab;
@@ -13,12 +15,15 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import net.minecraft.world.phys.HitResult;
 import net.p3pp3rf1y.sophisticatedcore.util.ColorHelper;
+import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
+import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
 
 import javax.annotation.Nullable;
 import java.util.Set;
+import java.util.UUID;
 import java.util.function.Supplier;
 
 public abstract class WoodStorageBlockBase extends StorageBlockBase implements IAdditionalDropDataBlock {
@@ -28,25 +33,40 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 		super(properties, numberOfInventorySlotsSupplier, numberOfUpgradeSlotsSupplier);
 	}
 
-	public void addWoodAndTintData(ItemStack stack, BlockGetter level, BlockPos pos) {
-		WorldHelper.getBlockEntity(level, pos, WoodStorageBlockEntity.class).ifPresent(be -> addDropData(stack, be));
+	public void addNameWoodAndTintData(ItemStack stack, BlockGetter level, BlockPos pos) {
+		WorldHelper.getBlockEntity(level, pos, WoodStorageBlockEntity.class).ifPresent(be -> addNameWoodAndTintData(stack, be));
 	}
 
 	public void addDropData(ItemStack stack, StorageBlockEntity be) {
+		if (be instanceof WoodStorageBlockEntity wbe) {
+			addNameWoodAndTintData(stack, wbe);
+			if (wbe.isPacked()) {
+				wbe.setPacked(false);
+				StorageWrapper storageWrapper = be.getStorageWrapper();
+				UUID storageUuid = storageWrapper.getContentsUuid().orElse(UUID.randomUUID());
+				CompoundTag storageContents = be.saveWithoutMetadata();
+				if (!storageContents.isEmpty()) {
+					ItemContentsStorage.get().setStorageContents(storageUuid, storageContents);
+					NBTHelper.setUniqueId(stack, "uuid", storageUuid);
+				}
+				WoodStorageBlockItem.setPacked(stack, true);
+			}
+		}
+	}
+
+	private void addNameWoodAndTintData(ItemStack stack, WoodStorageBlockEntity wbe) {
 		if (stack.getItem() instanceof ITintableBlockItem tintableBlockItem) {
-			int mainColor = be.getStorageWrapper().getMainColor();
+			int mainColor = wbe.getStorageWrapper().getMainColor();
 			if (mainColor > -1) {
 				tintableBlockItem.setMainColor(stack, mainColor);
 			}
-			int accentColor = be.getStorageWrapper().getAccentColor();
+			int accentColor = wbe.getStorageWrapper().getAccentColor();
 			if (accentColor > -1) {
 				tintableBlockItem.setAccentColor(stack, accentColor);
 			}
 		}
-		if (be instanceof WoodStorageBlockEntity wbe) {
-			wbe.getWoodType().ifPresent(n -> WoodStorageBlockItem.setWoodType(stack, n));
-		}
-		be.getCustomName().ifPresent(stack::setHoverName);
+		wbe.getCustomName().ifPresent(stack::setHoverName);
+		wbe.getWoodType().ifPresent(n -> WoodStorageBlockItem.setWoodType(stack, n));
 	}
 
 	@Override
@@ -72,13 +92,19 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 	@Override
 	public ItemStack getCloneItemStack(BlockState state, HitResult target, BlockGetter world, BlockPos pos, Player player) {
 		ItemStack stack = new ItemStack(this);
-		addWoodAndTintData(stack, world, pos);
+		addNameWoodAndTintData(stack, world, pos);
 		return stack;
 	}
 
 	@Override
 	public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
 		WorldHelper.getBlockEntity(level, pos, WoodStorageBlockEntity.class).ifPresent(be -> {
+			NBTHelper.getUniqueId(stack, "uuid").ifPresent(uuid -> {
+				ItemContentsStorage itemContentsStorage = ItemContentsStorage.get();
+				be.load(itemContentsStorage.getOrCreateStorageContents(uuid));
+				itemContentsStorage.removeStorageContents(uuid);
+			});
+
 			if (stack.hasCustomHoverName()) {
 				be.setCustomName(stack.getHoverName());
 			}
@@ -86,5 +112,20 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 			StorageBlockItem.getMaincolorFromStack(stack).ifPresent(be.getStorageWrapper()::setMainColor);
 			StorageBlockItem.getAccentColorFromStack(stack).ifPresent(be.getStorageWrapper()::setAccentColor);
 		});
+	}
+
+	protected boolean tryPackBlock(Player player, InteractionHand hand, WoodStorageBlockEntity b, ItemStack stackInHand) {
+		if (stackInHand.getItem() == ModItems.PACKING_TAPE.get()) {
+			if (!player.isCreative()) {
+				stackInHand.setDamageValue(stackInHand.getDamageValue() + 1);
+				if (stackInHand.getDamageValue() >= stackInHand.getMaxDamage()) {
+					player.setItemInHand(hand, ItemStack.EMPTY);
+				}
+			}
+			b.setPacked(true);
+			WorldHelper.notifyBlockUpdate(b);
+			return true;
+		}
+		return false;
 	}
 }

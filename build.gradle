@@ -1,6 +1,5 @@
 buildscript {
     repositories {
-        jcenter()
         maven {
             name = "forge"
             url = "https://maven.minecraftforge.net"
@@ -102,12 +101,16 @@ dependencies {
 
     compileOnly fg.deobf("mezz.jei:jei-${jei_mc_version}:${jei_version}:api")
     runtimeOnly fg.deobf("mezz.jei:jei-${jei_mc_version}:${jei_version}")
+    compileOnly fg.deobf("curse.maven:quark-243121:${quark_cf_file_id}")
+    compileOnly fg.deobf("curse.maven:autoreglib-250363:${autoreglib_cf_file_id}")
 
     if (findProject(':SophisticatedCore') != null) {
         implementation project(':SophisticatedCore')
     } else {
         compileOnly fg.deobf("curse.maven:sophisticatedcore-618298:${sc_cf_file_id}")
         runtimeOnly fg.deobf("curse.maven:sophisticatedcore-618298:${sc_cf_file_id}")
+        runtimeOnly fg.deobf("curse.maven:quark-243121:${quark_cf_file_id}")
+        runtimeOnly fg.deobf("curse.maven:autoreglib-250363:${autoreglib_cf_file_id}")
     }
 }
 

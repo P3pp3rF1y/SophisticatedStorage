@@ -1,16 +1,13 @@
 package net.p3pp3rf1y.sophisticatedstorage.data;
 
-import net.minecraft.advancements.critereon.InventoryChangeTrigger;
-import net.minecraft.advancements.critereon.ItemPredicate;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.recipes.FinishedRecipe;
 import net.minecraft.data.recipes.RecipeProvider;
 import net.minecraft.data.recipes.SpecialRecipeBuilder;
 import net.minecraft.data.recipes.UpgradeRecipeBuilder;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
-import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -18,6 +15,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import net.minecraftforge.common.Tags;
+import net.minecraftforge.common.crafting.conditions.ModLoadedCondition;
+import net.minecraftforge.registries.ForgeRegistries;
 import net.p3pp3rf1y.sophisticatedcore.crafting.ShapeBasedRecipeBuilder;
 import net.p3pp3rf1y.sophisticatedcore.crafting.ShapelessBasedRecipeBuilder;
 import net.p3pp3rf1y.sophisticatedcore.crafting.UpgradeNextTierRecipe;
@@ -50,6 +49,12 @@ public class StorageRecipeProvider extends RecipeProvider {
 		addShulkerBoxRecipes(consumer);
 		addUpgradeRecipes(consumer);
 		addTierUpgradeRecipes(consumer);
+
+		ShapelessBasedRecipeBuilder.shapeless(ModItems.PACKING_TAPE.get())
+				.requires(Tags.Items.SLIMEBALLS)
+				.requires(Items.PAPER)
+				.unlockedBy("has_slime", has(Tags.Items.SLIMEBALLS))
+				.save(consumer);
 	}
 
 	private void addShulkerBoxRecipes(Consumer<FinishedRecipe> consumer) {
@@ -541,6 +546,34 @@ public class StorageRecipeProvider extends RecipeProvider {
 				Ingredient.of(Items.NETHERITE_INGOT), ModBlocks.NETHERITE_CHEST_ITEM.get())
 				.unlocks("has_diamond_chest", has(ModBlocks.DIAMOND_CHEST_ITEM.get()))
 				.save(consumer, RegistryHelper.getItemKey(ModBlocks.NETHERITE_CHEST_ITEM.get()));
+
+		addQuarkChestRecipes(consumer);
+	}
+
+	private void addQuarkChestRecipes(Consumer<FinishedRecipe> consumer) {
+		addQuarkChestRecipe(consumer, "oak_chest", WoodType.OAK);
+		addQuarkChestRecipe(consumer, "acacia_chest", WoodType.ACACIA);
+		addQuarkChestRecipe(consumer, "birch_chest", WoodType.BIRCH);
+		addQuarkChestRecipe(consumer, "crimson_chest", WoodType.CRIMSON);
+		addQuarkChestRecipe(consumer, "dark_oak_chest", WoodType.DARK_OAK);
+		addQuarkChestRecipe(consumer, "jungle_chest", WoodType.JUNGLE);
+		addQuarkChestRecipe(consumer, "spruce_chest", WoodType.SPRUCE);
+		addQuarkChestRecipe(consumer, "warped_chest", WoodType.WARPED);
+	}
+
+	private void addQuarkChestRecipe(Consumer<FinishedRecipe> consumer, String name, WoodType woodType) {
+		Block chestBlock = getBlock("quark:" + name);
+		ShapelessBasedRecipeBuilder.shapeless(WoodStorageBlockItem.setWoodType(new ItemStack(ModBlocks.CHEST_ITEM.get()), woodType))
+				.requires(chestBlock)
+				.requires(Blocks.REDSTONE_TORCH)
+				.condition(new ModLoadedCondition("quark"))
+				.unlockedBy("has_quark" + name, has(chestBlock))
+				.save(consumer, SophisticatedStorage.getRL(woodType.name() + "_chest_from_quark_" + name));
+	}
+
+	private Block getBlock(String registryName) {
+		//noinspection ConstantConditions - could only fail in dev environment and crashing is preferred here to fix issues early
+		return ForgeRegistries.BLOCKS.getValue(new ResourceLocation(registryName));
 	}
 
 	private void addBarrelRecipes(Consumer<FinishedRecipe> consumer) {
@@ -616,6 +649,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 	}
 
 	private void tintedShulkerBoxRecipe(Consumer<FinishedRecipe> consumer, Block vanillaShulkerBox, DyeColor dyeColor) {
+		//noinspection ConstantConditions
 		String vanillaShulkerBoxName = vanillaShulkerBox.getRegistryName().getPath();
 		ShapelessBasedRecipeBuilder.shapeless(ModBlocks.SHULKER_BOX.get().getTintedStack(dyeColor)).requires(vanillaShulkerBox).requires(Items.REDSTONE_TORCH)
 				.unlockedBy("has_" + vanillaShulkerBoxName, has(vanillaShulkerBox))
