@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "conditions": [
+    {
+      "modid": "quark",
+      "type": "forge:mod_loaded"
+    },
+    {
+      "itemRegistryName": "sophisticatedstorage:chest",
+      "type": "sophisticatedcore:item_enabled"
+    }
+  ],
+  "ingredients": [
+    {
+      "item": "quark:acacia_chest"
+    },
+    {
+      "item": "minecraft:redstone_torch"
+    }
+  ],
+  "result": {
+    "item": "sophisticatedstorage:chest",
+    "nbt": "{woodType:\"acacia\"}"
+  }
+}
