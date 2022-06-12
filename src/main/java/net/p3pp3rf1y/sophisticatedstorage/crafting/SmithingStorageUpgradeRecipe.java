@@ -41,6 +41,11 @@ public class SmithingStorageUpgradeRecipe extends UpgradeRecipe implements IWrap
 		return Objects.requireNonNull(ObfuscationReflectionHelper.getPrivateValue(UpgradeRecipe.class, this, "f_44520_"));
 	}
 
+	@Override
+	public boolean isSpecial() {
+		return true;
+	}
+
 	private Optional<ItemStack> getStorage(Container inv) {
 		ItemStack slotStack = inv.getItem(0);
 		if (slotStack.getItem() instanceof BlockItem blockItem && blockItem.getBlock() instanceof IStorageBlock) {
