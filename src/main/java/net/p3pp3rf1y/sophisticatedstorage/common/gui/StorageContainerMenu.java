@@ -77,8 +77,9 @@ public class StorageContainerMenu extends StorageContainerMenuBase<IStorageWrapp
 	}
 
 	@Override
-	public void detectSettingsChangeAndReload() {
+	public boolean detectSettingsChangeAndReload() {
 		//TODO figure out if there's a need for anything here - like what happens if another player changes settings, in that case the expectation would be this player can see those changes happening
+		return false;
 	}
 
 	@Override

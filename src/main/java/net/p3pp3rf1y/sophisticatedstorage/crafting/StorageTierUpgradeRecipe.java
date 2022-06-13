@@ -38,13 +38,18 @@ public class StorageTierUpgradeRecipe extends ShapedRecipe implements IWrapperRe
 	public ItemStack assemble(CraftingContainer inv) {
 		ItemStack upgradedStorage = super.assemble(inv);
 		getOriginalStorage(inv).ifPresent(originalStorage -> upgradedStorage.setTag(originalStorage.getTag()));
-		upgradedStorage.getCapability(CapabilityStorageWrapper.getCapabilityInstance()).ifPresent(wrapper -> {
-			if (upgradedStorage.getItem() instanceof ShulkerBoxItem shulkerBoxItem) {
-				shulkerBoxItem.setNumberOfInventorySlots(upgradedStorage, wrapper.getDefaultNumberOfInventorySlots());
-				shulkerBoxItem.setNumberOfUpgradeSlots(upgradedStorage, wrapper.getDefaultNumberOfUpgradeSlots());
-			}
-		});
+		if (upgradedStorage.getItem() instanceof ShulkerBoxItem shulkerBoxItem) {
+			upgradedStorage.getCapability(CapabilityStorageWrapper.getCapabilityInstance()).ifPresent(wrapper -> {
+					shulkerBoxItem.setNumberOfInventorySlots(upgradedStorage, wrapper.getDefaultNumberOfInventorySlots());
+					shulkerBoxItem.setNumberOfUpgradeSlots(upgradedStorage, wrapper.getDefaultNumberOfUpgradeSlots());
+			});
+		}
 		return upgradedStorage;
+	}
+
+	@Override
+	public boolean isSpecial() {
+		return true;
 	}
 
 	private Optional<ItemStack> getOriginalStorage(CraftingContainer inv) {
