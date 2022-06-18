@@ -15,6 +15,7 @@ import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.minecraft.world.item.crafting.UpgradeRecipe;
+import net.minecraftforge.registries.ForgeRegistries;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.SmithingStorageUpgradeRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.StorageTierUpgradeRecipe;
@@ -69,6 +70,11 @@ public class TierUpgradeRecipesMaker {
 
 			items.forEach(item -> {
 				CraftingContainer craftinginventory = new CraftingContainer(new AbstractContainerMenu(null, -1) {
+					@Override
+					public ItemStack quickMoveStack(Player pPlayer, int pIndex) {
+						return ItemStack.EMPTY;
+					}
+
 					public boolean stillValid(Player playerIn) {
 						return false;
 					}
@@ -90,7 +96,7 @@ public class TierUpgradeRecipesMaker {
 				}
 				ItemStack result = recipe.assemble(craftinginventory);
 				//noinspection ConstantConditions
-				ResourceLocation id = new ResourceLocation(SophisticatedStorage.MOD_ID, "tier_upgrade_" + item.getItem().getRegistryName().getPath() + result.getOrCreateTag().toString().toLowerCase(Locale.ROOT).replaceAll("[{\",}:\s]", "_"));
+				ResourceLocation id = new ResourceLocation(SophisticatedStorage.MOD_ID, "tier_upgrade_" + ForgeRegistries.ITEMS.getKey(item.getItem()).getPath() + result.getOrCreateTag().toString().toLowerCase(Locale.ROOT).replaceAll("[{\",}:\s]", "_"));
 
 				recipes.add(new ShapedRecipe(id, "", recipe.getRecipeWidth(), recipe.getRecipeHeight(), ingredientsCopy, result));
 			});
@@ -118,7 +124,7 @@ public class TierUpgradeRecipesMaker {
 
 				ItemStack result = recipe.assemble(container);
 				//noinspection ConstantConditions
-				ResourceLocation id = new ResourceLocation(SophisticatedStorage.MOD_ID, "tier_upgrade_" + item.getItem().getRegistryName().getPath() + result.getOrCreateTag().toString().toLowerCase(Locale.ROOT).replaceAll("[{\",}:\s]", "_"));
+				ResourceLocation id = new ResourceLocation(SophisticatedStorage.MOD_ID, "tier_upgrade_" + ForgeRegistries.ITEMS.getKey(item.getItem()).getPath() + result.getOrCreateTag().toString().toLowerCase(Locale.ROOT).replaceAll("[{\",}:\s]", "_"));
 
 				recipes.add(new UpgradeRecipe(id, Ingredient.of(item), recipe.addition, result));
 			});

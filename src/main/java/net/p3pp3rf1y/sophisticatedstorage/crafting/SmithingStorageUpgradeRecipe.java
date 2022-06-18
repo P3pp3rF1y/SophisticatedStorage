@@ -10,13 +10,13 @@ import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 import net.p3pp3rf1y.sophisticatedcore.crafting.IWrapperRecipe;
 import net.p3pp3rf1y.sophisticatedcore.crafting.RecipeWrapperSerializer;
 import net.p3pp3rf1y.sophisticatedstorage.block.IStorageBlock;
+import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
 
 import java.util.Objects;
 import java.util.Optional;
 
 public class SmithingStorageUpgradeRecipe extends UpgradeRecipe implements IWrapperRecipe<UpgradeRecipe> {
-	public static final Serializer SERIALIZER = new Serializer();
 	private final UpgradeRecipe compose;
 
 	public SmithingStorageUpgradeRecipe(UpgradeRecipe compose) {
@@ -55,8 +55,8 @@ public class SmithingStorageUpgradeRecipe extends UpgradeRecipe implements IWrap
 	}
 
 	@Override
-	public Serializer getSerializer() {
-		return SERIALIZER;
+	public RecipeSerializer<?> getSerializer() {
+		return ModBlocks.SMITHING_STORAGE_UPGRADE_RECIPE_SERIALIZER.get();
 	}
 
 	@Override

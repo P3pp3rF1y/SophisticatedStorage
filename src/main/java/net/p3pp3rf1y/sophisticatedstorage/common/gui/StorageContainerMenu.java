@@ -2,7 +2,7 @@ package net.p3pp3rf1y.sophisticatedstorage.common.gui;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Inventory;
@@ -68,7 +68,7 @@ public class StorageContainerMenu extends StorageContainerMenuBase<IStorageWrapp
 			return;
 		}
 		getBlockPosition().ifPresent(pos -> NetworkHooks.openGui((ServerPlayer) player, new SimpleMenuProvider((w, p, pl) -> new StorageSettingsContainer(w, pl, pos),
-				new TranslatableComponent(StorageTranslationHelper.INSTANCE.translGui("settings.title"))), storageBlockEntity.getBlockPos()));
+				Component.translatable(StorageTranslationHelper.INSTANCE.translGui("settings.title"))), storageBlockEntity.getBlockPos()));
 	}
 
 	@Override

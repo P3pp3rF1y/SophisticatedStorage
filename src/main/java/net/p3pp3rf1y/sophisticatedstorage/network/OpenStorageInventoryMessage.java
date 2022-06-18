@@ -2,7 +2,7 @@ package net.p3pp3rf1y.sophisticatedstorage.network;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraftforge.network.NetworkEvent;
@@ -39,6 +39,6 @@ public class OpenStorageInventoryMessage {
 		}
 
 		NetworkHooks.openGui(player, new SimpleMenuProvider((w, p, pl) -> new StorageContainerMenu(w, pl, msg.pos),
-				WorldHelper.getBlockEntity(player.level, msg.pos, StorageBlockEntity.class).map(StorageBlockEntity::getDisplayName).orElse(TextComponent.EMPTY)), msg.pos);
+				WorldHelper.getBlockEntity(player.level, msg.pos, StorageBlockEntity.class).map(StorageBlockEntity::getDisplayName).orElse(Component.empty())), msg.pos);
 	}
 }

@@ -1,10 +1,7 @@
 package net.p3pp3rf1y.sophisticatedstorage.common;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.Util;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -30,6 +27,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class CommonEventHandler {
 	private static final int AVERAGE_MAX_ITEM_ENTITY_DROP_COUNT = 20;
+
 	public void registerHandlers() {
 		IEventBus eventBus = MinecraftForge.EVENT_BUS;
 		eventBus.addListener(this::onPlayerLoggedIn);
@@ -70,15 +68,11 @@ public class CommonEventHandler {
 			if (droppedItemEntityCount.get() > Config.COMMON.tooManyItemEntityDrops.get()) {
 				event.setCanceled(true);
 				ItemBase packingTapeItem = ModItems.PACKING_TAPE.get();
-				Component packingTapeItemName = packingTapeItem.getName(new ItemStack(packingTapeItem));
-				if (packingTapeItemName instanceof TranslatableComponent c) {
-					c.withStyle(ChatFormatting.GREEN);
-				}
-				player.sendMessage(StorageTranslationHelper.INSTANCE.translStatusMessage("too_many_item_entity_drops",
+				Component packingTapeItemName = packingTapeItem.getName(new ItemStack(packingTapeItem)).copy().withStyle(ChatFormatting.GREEN);
+				player.sendSystemMessage(StorageTranslationHelper.INSTANCE.translStatusMessage("too_many_item_entity_drops",
 						event.getState().getBlock().getName().withStyle(ChatFormatting.GREEN),
-						new TextComponent(String.valueOf(droppedItemEntityCount.get())).withStyle(ChatFormatting.RED),
-								packingTapeItemName),
-						Util.NIL_UUID
+						Component.literal(String.valueOf(droppedItemEntityCount.get())).withStyle(ChatFormatting.RED),
+						packingTapeItemName)
 				);
 			}
 		});

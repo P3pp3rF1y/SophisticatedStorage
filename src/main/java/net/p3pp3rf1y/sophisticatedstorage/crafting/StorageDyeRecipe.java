@@ -6,22 +6,21 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeSerializer;
-import net.minecraft.world.item.crafting.SimpleRecipeSerializer;
 import net.p3pp3rf1y.sophisticatedcore.crafting.StorageDyeRecipeBase;
 import net.p3pp3rf1y.sophisticatedcore.util.ColorHelper;
 import net.p3pp3rf1y.sophisticatedstorage.block.ITintableBlockItem;
+import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 
 import java.util.List;
 
 public class StorageDyeRecipe extends StorageDyeRecipeBase {
-	public static final SimpleRecipeSerializer<StorageDyeRecipe> SERIALIZER = new SimpleRecipeSerializer<>(StorageDyeRecipe::new);
 	public StorageDyeRecipe(ResourceLocation registryName) {
 		super(registryName);
 	}
 
 	@Override
 	public RecipeSerializer<?> getSerializer() {
-		return SERIALIZER;
+		return ModBlocks.STORAGE_DYE_RECIPE_SERIALIZER.get();
 	}
 
 	@Override

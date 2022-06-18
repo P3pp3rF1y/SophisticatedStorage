@@ -8,8 +8,8 @@ public class DataGenerators {
 
 	public static void gatherData(GatherDataEvent evt) {
 		DataGenerator generator = evt.getGenerator();
-		generator.addProvider(new BlockTagProvider(generator, evt.getExistingFileHelper()));
-		generator.addProvider(new StorageBlockLootProvider(generator));
-		generator.addProvider(new StorageRecipeProvider(generator));
+		generator.addProvider(evt.includeServer(), new BlockTagProvider(generator, evt.getExistingFileHelper()));
+		generator.addProvider(evt.includeServer(), new StorageBlockLootProvider(generator));
+		generator.addProvider(evt.includeServer(), new StorageRecipeProvider(generator));
 	}
 }

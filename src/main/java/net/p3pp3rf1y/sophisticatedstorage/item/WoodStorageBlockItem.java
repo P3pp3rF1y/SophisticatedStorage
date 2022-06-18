@@ -6,8 +6,6 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.ItemStack;
@@ -20,6 +18,7 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.fml.DistExecutor;
+import net.minecraftforge.registries.ForgeRegistries;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.TranslationHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
@@ -61,12 +60,12 @@ public class WoodStorageBlockItem extends StorageBlockItem {
 		if (isPacked(stack)) {
 			if (flagIn == TooltipFlag.Default.ADVANCED) {
 				stack.getCapability(CapabilityStorageWrapper.getCapabilityInstance())
-						.ifPresent(w -> w.getContentsUuid().ifPresent(uuid -> tooltip.add(new TextComponent("UUID: " + uuid).withStyle(ChatFormatting.DARK_GRAY))));
+						.ifPresent(w -> w.getContentsUuid().ifPresent(uuid -> tooltip.add(Component.literal("UUID: " + uuid).withStyle(ChatFormatting.DARK_GRAY))));
 			}
 			if (!Screen.hasShiftDown()) {
-				tooltip.add(new TranslatableComponent(
+				tooltip.add(Component.translatable(
 						TranslationHelper.INSTANCE.translItemTooltip("storage") + ".press_for_contents",
-						new TranslatableComponent(TranslationHelper.INSTANCE.translItemTooltip("storage") + ".shift").withStyle(ChatFormatting.AQUA)
+						Component.translatable(TranslationHelper.INSTANCE.translItemTooltip("storage") + ".shift").withStyle(ChatFormatting.AQUA)
 				).withStyle(ChatFormatting.GRAY));
 			}
 		}
@@ -154,7 +153,7 @@ public class WoodStorageBlockItem extends StorageBlockItem {
 	}
 
 	private String makeWoodStorageDescriptionId(WoodType wt) {
-		ResourceLocation id = Objects.requireNonNull(getRegistryName());
+		ResourceLocation id = Objects.requireNonNull(ForgeRegistries.ITEMS.getKey(this));
 		return "item." + id.getNamespace() + "." + wt.name() + "_" + id.getPath().replace('/', '.');
 	}
 

@@ -29,6 +29,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.ItemStack;
@@ -63,7 +64,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Random;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -248,7 +248,7 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 
 		@Nonnull
 		@Override
-		public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, Random rand, IModelData extraData) {
+		public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, RandomSource rand, IModelData extraData) {
 			String woodName = null;
 			boolean hasMainColor;
 			boolean hasAccentColor;
@@ -288,11 +288,11 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 			return ret;
 		}
 
-		private void addPackedModelQuads(@Nullable BlockState state, @Nullable Direction side, Random rand, List<BakedQuad> ret) {
+		private void addPackedModelQuads(@Nullable BlockState state, @Nullable Direction side, RandomSource rand, List<BakedQuad> ret) {
 			ret.addAll(additionalModelParts.get(ModelPart.PACKED).getQuads(state, side, rand, EmptyModelData.INSTANCE));
 		}
 
-		private void addDisplayItemQuads(@Nullable BlockState state, @Nullable Direction side, Random rand, List<BakedQuad> ret, IModelData extraData) {
+		private void addDisplayItemQuads(@Nullable BlockState state, @Nullable Direction side, RandomSource rand, List<BakedQuad> ret, IModelData extraData) {
 			if (state == null || side != null) {
 				return;
 			}
@@ -314,7 +314,7 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 		}
 
 		@SuppressWarnings("deprecation")
-		private void addRenderedItemSide(BlockState state, Random rand, List<BakedQuad> ret, BakedModel model, int rotation, @Nullable Direction s) {
+		private void addRenderedItemSide(BlockState state, RandomSource rand, List<BakedQuad> ret, BakedModel model, int rotation, @Nullable Direction s) {
 			List<BakedQuad> quads = model.getQuads(null, s, rand);
 			quads = MOVE_TO_CORNER.processMany(quads);
 			quads = FLIP_AND_SCALE.processMany(quads);
@@ -341,7 +341,7 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 			return DISPLAY_ROTATIONS.computeIfAbsent(rotation, r -> new QuadTransformer(new Transformation(null, Vector3f.YN.rotationDegrees(rotation), null, null)));
 		}
 
-		private void addTintableModelQuads(@Nullable BlockState state, @Nullable Direction side, Random rand, List<BakedQuad> ret, boolean hasMainColor, boolean hasAccentColor) {
+		private void addTintableModelQuads(@Nullable BlockState state, @Nullable Direction side, RandomSource rand, List<BakedQuad> ret, boolean hasMainColor, boolean hasAccentColor) {
 			if (hasMainColor) {
 				ModelPart modePart = state != null && state.getValue(BarrelBlock.OPEN) ? ModelPart.MAIN_OPEN : ModelPart.MAIN;
 				ret.addAll(additionalModelParts.get(modePart).getQuads(state, side, rand, EmptyModelData.INSTANCE));
@@ -355,7 +355,7 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 			}
 		}
 
-		private void addWoodModelQuads(@Nullable BlockState state, @Nullable Direction side, Random rand, List<BakedQuad> ret, @Nullable String woodName) {
+		private void addWoodModelQuads(@Nullable BlockState state, @Nullable Direction side, RandomSource rand, List<BakedQuad> ret, @Nullable String woodName) {
 			if (woodName == null) {
 				return;
 			}
