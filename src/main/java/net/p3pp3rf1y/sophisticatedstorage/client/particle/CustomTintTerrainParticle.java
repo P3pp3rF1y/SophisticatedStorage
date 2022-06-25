@@ -27,8 +27,8 @@ public class CustomTintTerrainParticle extends TerrainParticle {
 		@Nullable
 		@Override
 		public Particle createParticle(CustomTintTerrainParticleData type, ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed) {
-			BlockPos pos = new BlockPos(x, y, z);
-			BlockState state = level.getBlockState(pos);
+			BlockPos pos = type.getPos();
+			BlockState state = type.getState();
 			CustomTintTerrainParticle particle = new CustomTintTerrainParticle(level, x, y, z, xSpeed, ySpeed, zSpeed, state, pos);
 			particle.updateSprite(state, pos);
 			return particle;
