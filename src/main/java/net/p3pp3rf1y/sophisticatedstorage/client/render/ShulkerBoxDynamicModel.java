@@ -16,19 +16,16 @@ import net.minecraft.client.resources.model.UnbakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.client.model.IModelConfiguration;
-import net.minecraftforge.client.model.IModelLoader;
-import net.minecraftforge.client.model.data.EmptyModelData;
-import net.minecraftforge.client.model.data.IModelData;
-import net.minecraftforge.client.model.data.ModelDataMap;
+import net.minecraftforge.client.model.data.ModelData;
 import net.minecraftforge.client.model.data.ModelProperty;
-import net.minecraftforge.client.model.geometry.IModelGeometry;
+import net.minecraftforge.client.model.geometry.IGeometryBakingContext;
+import net.minecraftforge.client.model.geometry.IGeometryLoader;
+import net.minecraftforge.client.model.geometry.IUnbakedGeometry;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
@@ -41,18 +38,18 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 
-public class ShulkerBoxDynamicModel implements IModelGeometry<ShulkerBoxDynamicModel> {
+public class ShulkerBoxDynamicModel implements IUnbakedGeometry<ShulkerBoxDynamicModel> {
 	private static final String BLOCK_BREAK_FOLDER = "block/break/";
 	public static final ResourceLocation TINTABLE_BREAK_TEXTURE = SophisticatedStorage.getRL(BLOCK_BREAK_FOLDER + "tintable_shulker_box");
 	public static final ResourceLocation MAIN_BREAK_TEXTURE = SophisticatedStorage.getRL(BLOCK_BREAK_FOLDER + "shulker_box");
 
 	@Override
-	public BakedModel bake(IModelConfiguration owner, ModelBakery bakery, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelTransform, ItemOverrides overrides, ResourceLocation modelLocation) {
+	public BakedModel bake(IGeometryBakingContext context, ModelBakery bakery, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelTransform, ItemOverrides overrides, ResourceLocation modelLocation) {
 		return new ChestBakedModel();
 	}
 
 	@Override
-	public Collection<Material> getTextures(IModelConfiguration owner, Function<ResourceLocation, UnbakedModel> modelGetter, Set<Pair<String, String>> missingTextureErrors) {
+	public Collection<Material> getMaterials(IGeometryBakingContext context, Function<ResourceLocation, UnbakedModel> modelGetter, Set<Pair<String, String>> missingTextureErrors) {
 		return Collections.emptySet();
 	}
 
@@ -93,19 +90,19 @@ public class ShulkerBoxDynamicModel implements IModelGeometry<ShulkerBoxDynamicM
 
 		@NotNull
 		@Override
-		public IModelData getModelData(@NotNull BlockAndTintGetter level, @NotNull BlockPos pos, @NotNull BlockState state, @NotNull IModelData modelData) {
+		public ModelData getModelData(@NotNull BlockAndTintGetter level, @NotNull BlockPos pos, @NotNull BlockState state, @NotNull ModelData modelData) {
 			return WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class)
 					.map(be -> {
-						ModelDataMap.Builder builder = new ModelDataMap.Builder();
-						builder.withInitial(HAS_MAIN_COLOR, be.getStorageWrapper().getMainColor() > -1);
-						return (IModelData) builder.build();
-					}).orElse(EmptyModelData.INSTANCE);
+						ModelData.Builder builder = ModelData.builder();
+						builder.with(HAS_MAIN_COLOR, be.getStorageWrapper().getMainColor() > -1);
+						return builder.build();
+					}).orElse(ModelData.EMPTY);
 		}
 
 		@Override
-		public TextureAtlasSprite getParticleIcon(@NotNull IModelData data) {
+		public TextureAtlasSprite getParticleIcon(@NotNull ModelData data) {
 			ResourceLocation texture = TINTABLE_BREAK_TEXTURE;
-			if (Boolean.FALSE.equals(data.getData(HAS_MAIN_COLOR))) {
+			if (Boolean.FALSE.equals(data.get(HAS_MAIN_COLOR))) {
 				texture = MAIN_BREAK_TEXTURE;
 			}
 			return Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(texture);
@@ -117,17 +114,12 @@ public class ShulkerBoxDynamicModel implements IModelGeometry<ShulkerBoxDynamicM
 		}
 	}
 
-	public static final class Loader implements IModelLoader<ShulkerBoxDynamicModel> {
+	public static final class Loader implements IGeometryLoader<ShulkerBoxDynamicModel> {
 		public static final Loader INSTANCE = new Loader();
 
 		@Override
-		public ShulkerBoxDynamicModel read(JsonDeserializationContext deserializationContext, JsonObject modelContents) {
+		public ShulkerBoxDynamicModel read(JsonObject modelContents, JsonDeserializationContext deserializationContext) {
 			return new ShulkerBoxDynamicModel();
-		}
-
-		@Override
-		public void onResourceManagerReload(ResourceManager resourceManager) {
-			//noop
 		}
 	}
 }
