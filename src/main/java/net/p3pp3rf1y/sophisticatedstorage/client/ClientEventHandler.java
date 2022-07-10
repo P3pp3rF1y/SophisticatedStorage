@@ -6,24 +6,20 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.MouseHandler;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.model.geom.ModelLayerLocation;
-import net.minecraft.client.renderer.ItemBlockRenderTypes;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.inventory.Slot;
-import net.minecraftforge.client.ClientRegistry;
-import net.minecraftforge.client.MinecraftForgeClient;
 import net.minecraftforge.client.event.EntityRenderersEvent;
-import net.minecraftforge.client.event.ModelRegistryEvent;
+import net.minecraftforge.client.event.ModelEvent;
+import net.minecraftforge.client.event.RegisterClientTooltipComponentFactoriesEvent;
+import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.client.event.TextureStitchEvent;
-import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.client.settings.IKeyConflictContext;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
@@ -76,23 +72,24 @@ public class ClientEventHandler {
 		modBus.addListener(ClientEventHandler::onModelRegistry);
 		modBus.addListener(ClientEventHandler::loadComplete);
 		modBus.addListener(ClientEventHandler::registerLayer);
-		modBus.addListener(ClientEventHandler::clientSetup);
+		modBus.addListener(ClientEventHandler::registerTooltipComponent);
 		modBus.addListener(ClientEventHandler::registerEntityRenderers);
-		modBus.addListener(ModParticles::registerFactories);
+		modBus.addListener(ModParticles::registerProviders);
+		modBus.addListener(ClientEventHandler::registerKeyMappings);
+
 		IEventBus eventBus = MinecraftForge.EVENT_BUS;
 		eventBus.addListener(ClientStorageContentsTooltip::onWorldLoad);
 		eventBus.addListener(EventPriority.HIGH, ClientEventHandler::handleGuiMouseKeyPress);
 		eventBus.addListener(EventPriority.HIGH, ClientEventHandler::handleGuiKeyPress);
 	}
 
-
-	public static void handleGuiKeyPress(ScreenEvent.KeyboardKeyPressedEvent.Pre event) {
+	public static void handleGuiKeyPress(ScreenEvent.KeyPressed.Pre event) {
 		if (SORT_KEYBIND.isActiveAndMatches(InputConstants.getKey(event.getKeyCode(), event.getScanCode())) && tryCallSort(event.getScreen())) {
 			event.setCanceled(true);
 		}
 	}
 
-	public static void handleGuiMouseKeyPress(ScreenEvent.MouseClickedEvent.Pre event) {
+	public static void handleGuiMouseKeyPress(ScreenEvent.MouseButtonPressed.Pre event) {
 		InputConstants.Key input = InputConstants.Type.MOUSE.getOrCreate(event.getButton());
 		if (SORT_KEYBIND.isActiveAndMatches(input) && tryCallSort(event.getScreen())) {
 			event.setCanceled(true);
@@ -114,26 +111,22 @@ public class ClientEventHandler {
 		return false;
 	}
 
-	private static void onModelRegistry(ModelRegistryEvent event) {
-		ModelLoaderRegistry.registerLoader(SophisticatedStorage.getRL("barrel"), BarrelDynamicModel.Loader.INSTANCE);
-		ModelLoaderRegistry.registerLoader(SophisticatedStorage.getRL("chest"), ChestDynamicModel.Loader.INSTANCE);
-		ModelLoaderRegistry.registerLoader(SophisticatedStorage.getRL("shulker_box"), ShulkerBoxDynamicModel.Loader.INSTANCE);
+	private static void onModelRegistry(ModelEvent.RegisterGeometryLoaders event) {
+		event.register("barrel", BarrelDynamicModel.Loader.INSTANCE);
+		event.register("chest", ChestDynamicModel.Loader.INSTANCE);
+		event.register("shulker_box", ShulkerBoxDynamicModel.Loader.INSTANCE);
 	}
 
 	public static void registerLayer(EntityRenderersEvent.RegisterLayerDefinitions event) {
 		event.registerLayerDefinition(CHEST_LAYER, () -> ChestRenderer.createSingleBodyLayer(true));
 	}
 
-	private static void clientSetup(FMLClientSetupEvent event) {
-		ItemBlockRenderTypes.setRenderLayer(ModBlocks.BARREL.get(), RenderType.cutout());
-		ItemBlockRenderTypes.setRenderLayer(ModBlocks.IRON_BARREL.get(), RenderType.cutout());
-		ItemBlockRenderTypes.setRenderLayer(ModBlocks.GOLD_BARREL.get(), RenderType.cutout());
-		ItemBlockRenderTypes.setRenderLayer(ModBlocks.DIAMOND_BARREL.get(), RenderType.cutout());
-		ItemBlockRenderTypes.setRenderLayer(ModBlocks.NETHERITE_BARREL.get(), RenderType.cutout());
+	private static void registerKeyMappings(RegisterKeyMappingsEvent event) {
+		event.register(SORT_KEYBIND);
+	}
 
-		MinecraftForgeClient.registerTooltipComponentFactory(StorageContentsTooltip.class, ClientStorageContentsTooltip::new);
-
-		event.enqueueWork(() -> ClientRegistry.registerKeyBinding(SORT_KEYBIND));
+	private static void registerTooltipComponent(RegisterClientTooltipComponentFactoriesEvent event) {
+		event.register(StorageContentsTooltip.class, ClientStorageContentsTooltip::new);
 	}
 
 	private static void stitchTextures(TextureStitchEvent.Pre event) {

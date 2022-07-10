@@ -16,19 +16,16 @@ import net.minecraft.client.resources.model.UnbakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.client.model.IModelConfiguration;
-import net.minecraftforge.client.model.IModelLoader;
-import net.minecraftforge.client.model.data.EmptyModelData;
-import net.minecraftforge.client.model.data.IModelData;
-import net.minecraftforge.client.model.data.ModelDataMap;
+import net.minecraftforge.client.model.data.ModelData;
 import net.minecraftforge.client.model.data.ModelProperty;
-import net.minecraftforge.client.model.geometry.IModelGeometry;
+import net.minecraftforge.client.model.geometry.IGeometryBakingContext;
+import net.minecraftforge.client.model.geometry.IGeometryLoader;
+import net.minecraftforge.client.model.geometry.IUnbakedGeometry;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.WoodStorageBlockBase;
@@ -44,7 +41,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
-public class ChestDynamicModel implements IModelGeometry<ChestDynamicModel> {
+public class ChestDynamicModel implements IUnbakedGeometry<ChestDynamicModel> {
 	private static final String BLOCK_BREAK_FOLDER = "block/break/";
 	public static final Map<String, ResourceLocation> WOOD_BREAK_TEXTURES = new HashMap<>();
 	public static final ResourceLocation TINTABLE_BREAK_TEXTURE = SophisticatedStorage.getRL(BLOCK_BREAK_FOLDER + "tintable_chest");
@@ -54,12 +51,12 @@ public class ChestDynamicModel implements IModelGeometry<ChestDynamicModel> {
 	}
 
 	@Override
-	public BakedModel bake(IModelConfiguration owner, ModelBakery bakery, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelTransform, ItemOverrides overrides, ResourceLocation modelLocation) {
+	public BakedModel bake(IGeometryBakingContext context, ModelBakery bakery, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelTransform, ItemOverrides overrides, ResourceLocation modelLocation) {
 		return new ChestBakedModel();
 	}
 
 	@Override
-	public Collection<Material> getTextures(IModelConfiguration owner, Function<ResourceLocation, UnbakedModel> modelGetter, Set<Pair<String, String>> missingTextureErrors) {
+	public Collection<Material> getMaterials(IGeometryBakingContext context, Function<ResourceLocation, UnbakedModel> modelGetter, Set<Pair<String, String>> missingTextureErrors) {
 		return Collections.emptySet();
 	}
 
@@ -102,21 +99,21 @@ public class ChestDynamicModel implements IModelGeometry<ChestDynamicModel> {
 
 		@NotNull
 		@Override
-		public IModelData getModelData(@NotNull BlockAndTintGetter level, @NotNull BlockPos pos, @NotNull BlockState state, @NotNull IModelData modelData) {
+		public ModelData getModelData(@NotNull BlockAndTintGetter level, @NotNull BlockPos pos, @NotNull BlockState state, @NotNull ModelData modelData) {
 			return WorldHelper.getBlockEntity(level, pos, WoodStorageBlockEntity.class)
 					.map(be -> {
-						ModelDataMap.Builder builder = new ModelDataMap.Builder();
-						builder.withInitial(HAS_MAIN_COLOR, be.getStorageWrapper().getMainColor() > -1);
-						be.getWoodType().ifPresent(n -> builder.withInitial(WOOD_NAME, n.name()));
-						return (IModelData) builder.build();
-					}).orElse(EmptyModelData.INSTANCE);
+						ModelData.Builder builder = ModelData.builder();
+						builder.with(HAS_MAIN_COLOR, be.getStorageWrapper().getMainColor() > -1);
+						be.getWoodType().ifPresent(n -> builder.with(WOOD_NAME, n.name()));
+						return builder.build();
+					}).orElse(ModelData.EMPTY);
 		}
 
 		@Override
-		public TextureAtlasSprite getParticleIcon(@NotNull IModelData data) {
+		public TextureAtlasSprite getParticleIcon(@NotNull ModelData data) {
 			ResourceLocation texture = TINTABLE_BREAK_TEXTURE;
-			if (Boolean.FALSE.equals(data.getData(HAS_MAIN_COLOR)) && data.hasProperty(WOOD_NAME) && WOOD_BREAK_TEXTURES.containsKey(data.getData(WOOD_NAME))) {
-				texture = WOOD_BREAK_TEXTURES.get(data.getData(WOOD_NAME));
+			if (Boolean.FALSE.equals(data.get(HAS_MAIN_COLOR)) && data.has(WOOD_NAME) && WOOD_BREAK_TEXTURES.containsKey(data.get(WOOD_NAME))) {
+				texture = WOOD_BREAK_TEXTURES.get(data.get(WOOD_NAME));
 			}
 			return Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(texture);
 		}
@@ -127,17 +124,12 @@ public class ChestDynamicModel implements IModelGeometry<ChestDynamicModel> {
 		}
 	}
 
-	public static final class Loader implements IModelLoader<ChestDynamicModel> {
+	public static final class Loader implements IGeometryLoader<ChestDynamicModel> {
 		public static final Loader INSTANCE = new Loader();
 
 		@Override
-		public ChestDynamicModel read(JsonDeserializationContext deserializationContext, JsonObject modelContents) {
+		public ChestDynamicModel read(JsonObject modelContents, JsonDeserializationContext deserializationContext) {
 			return new ChestDynamicModel();
-		}
-
-		@Override
-		public void onResourceManagerReload(ResourceManager resourceManager) {
-			//noop
 		}
 	}
 }

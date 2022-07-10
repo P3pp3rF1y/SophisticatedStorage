@@ -37,7 +37,7 @@ import net.minecraft.world.phys.shapes.EntityCollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.IBlockRenderProperties;
+import net.minecraftforge.client.extensions.common.IClientBlockExtensions;
 import net.minecraftforge.network.NetworkHooks;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.client.particle.CustomTintTerrainParticle;
@@ -74,8 +74,8 @@ public class BarrelBlock extends WoodStorageBlockBase {
 
 	@OnlyIn(Dist.CLIENT)
 	@Override
-	public void initializeClient(Consumer<IBlockRenderProperties> consumer) {
-		consumer.accept(new IBlockRenderProperties() {
+	public void initializeClient(Consumer<IClientBlockExtensions> consumer) {
+		consumer.accept(new IClientBlockExtensions() {
 			@Override
 			public boolean addDestroyEffects(BlockState state, Level level, BlockPos pos, ParticleEngine manager) {
 				if (state.getBlock() != BarrelBlock.this || !(level instanceof ClientLevel clientLevel)) {

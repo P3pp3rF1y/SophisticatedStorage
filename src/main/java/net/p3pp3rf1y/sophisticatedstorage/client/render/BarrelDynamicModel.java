@@ -12,6 +12,7 @@ import com.mojang.math.Transformation;
 import com.mojang.math.Vector3f;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.BlockModel;
 import net.minecraft.client.renderer.block.model.ItemOverrides;
@@ -28,7 +29,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.inventory.InventoryMenu;
@@ -36,16 +36,14 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.WoodType;
-import net.minecraftforge.client.model.IModelConfiguration;
-import net.minecraftforge.client.model.IModelLoader;
-import net.minecraftforge.client.model.QuadTransformer;
-import net.minecraftforge.client.model.data.EmptyModelData;
-import net.minecraftforge.client.model.data.IDynamicBakedModel;
-import net.minecraftforge.client.model.data.IModelData;
-import net.minecraftforge.client.model.data.ModelDataMap;
+import net.minecraftforge.client.ChunkRenderTypeSet;
+import net.minecraftforge.client.model.IDynamicBakedModel;
+import net.minecraftforge.client.model.IQuadTransformer;
+import net.minecraftforge.client.model.data.ModelData;
 import net.minecraftforge.client.model.data.ModelProperty;
-import net.minecraftforge.client.model.geometry.IModelGeometry;
-import net.minecraftforge.common.model.TransformationHelper;
+import net.minecraftforge.client.model.geometry.IGeometryBakingContext;
+import net.minecraftforge.client.model.geometry.IGeometryLoader;
+import net.minecraftforge.client.model.geometry.IUnbakedGeometry;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
@@ -54,9 +52,10 @@ import net.p3pp3rf1y.sophisticatedstorage.block.WoodStorageBlockBase;
 import net.p3pp3rf1y.sophisticatedstorage.block.WoodStorageBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -67,7 +66,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 
-public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
+public class BarrelDynamicModel implements IUnbakedGeometry<BarrelDynamicModel> {
 	public static final Map<String, Map<String, ResourceLocation>> WOOD_TEXTURES = new HashMap<>();
 
 	private static final String BLOCK_FOLDER = "block/";
@@ -96,7 +95,7 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 	}
 
 	@Override
-	public BakedModel bake(IModelConfiguration owner, ModelBakery bakery, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelTransform, ItemOverrides overrides, ResourceLocation modelLocation) {
+	public BakedModel bake(IGeometryBakingContext context, ModelBakery bakery, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelTransform, ItemOverrides overrides, ResourceLocation modelLocation) {
 		ImmutableMap.Builder<String, BakedModel> builder = ImmutableMap.builder();
 		woodModels.forEach((woodName, model) -> {
 			BakedModel bakedModel = model.bake(bakery, spriteGetter, modelTransform, modelLocation);
@@ -115,7 +114,7 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 	}
 
 	@Override
-	public Collection<Material> getTextures(IModelConfiguration owner, Function<ResourceLocation, UnbakedModel> modelGetter, Set<Pair<String, String>> missingTextureErrors) {
+	public Collection<Material> getMaterials(IGeometryBakingContext context, Function<ResourceLocation, UnbakedModel> modelGetter, Set<Pair<String, String>> missingTextureErrors) {
 		ImmutableSet.Builder<Material> builder = ImmutableSet.builder();
 		woodModels.forEach((woodName, model) -> builder.addAll(model.getMaterials(modelGetter, missingTextureErrors)));
 		additionalModelParts.forEach((modelPart, model) -> builder.addAll(model.getMaterials(modelGetter, missingTextureErrors)));
@@ -123,10 +122,10 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 	}
 
 	private static class BarrelBakedModel implements IDynamicBakedModel {
-		private static final QuadTransformer MOVE_TO_CORNER = new QuadTransformer(new Transformation(new Vector3f(-.5f, -.5f, -.5f), null, null, null));
-		private static final QuadTransformer FLIP_AND_SCALE = new QuadTransformer(new Transformation(null, Vector3f.YN.rotationDegrees(180), new Vector3f(0.75f, 0.75f, 0.75f), null));
-		private static final QuadTransformer ROTATE_90_DEGREES = new QuadTransformer(new Transformation(null, Vector3f.XN.rotationDegrees(90), null, null));
-		private static final Map<Direction, QuadTransformer> DIRECTION_ROTATES = Map.of(
+		private static final IQuadTransformer MOVE_TO_CORNER = IQuadTransformer.applying(new Transformation(new Vector3f(-.5f, -.5f, -.5f), null, null, null));
+		private static final IQuadTransformer FLIP_AND_SCALE = IQuadTransformer.applying(new Transformation(null, Vector3f.YN.rotationDegrees(180), new Vector3f(0.75f, 0.75f, 0.75f), null));
+		private static final IQuadTransformer ROTATE_90_DEGREES = IQuadTransformer.applying(new Transformation(null, Vector3f.XN.rotationDegrees(90), null, null));
+		private static final Map<Direction, IQuadTransformer> DIRECTION_ROTATES = Map.of(
 				Direction.UP, getDirectionRotationTransform(Direction.UP),
 				Direction.DOWN, getDirectionRotationTransform(Direction.DOWN),
 				Direction.NORTH, getDirectionRotationTransform(Direction.NORTH),
@@ -134,7 +133,7 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 				Direction.WEST, getDirectionRotationTransform(Direction.WEST),
 				Direction.EAST, getDirectionRotationTransform(Direction.EAST)
 		);
-		private static final Map<Direction, QuadTransformer> DIRECTION_MOVES = Map.of(
+		private static final Map<Direction, IQuadTransformer> DIRECTION_MOVES = Map.of(
 				Direction.UP, getDirectionMoveBackToSide(Direction.UP, 0.5f),
 				Direction.DOWN, getDirectionMoveBackToSide(Direction.DOWN, 0.5f),
 				Direction.NORTH, getDirectionMoveBackToSide(Direction.NORTH, 0.5f),
@@ -142,7 +141,7 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 				Direction.WEST, getDirectionMoveBackToSide(Direction.WEST, 0.5f),
 				Direction.EAST, getDirectionMoveBackToSide(Direction.EAST, 0.5f)
 		);
-		private static final Map<Direction, QuadTransformer> DIRECTION_MOVES_3D_ITEMS = Map.of(
+		private static final Map<Direction, IQuadTransformer> DIRECTION_MOVES_3D_ITEMS = Map.of(
 				Direction.UP, getDirectionMoveBackToSide(Direction.UP, 0.55f),
 				Direction.DOWN, getDirectionMoveBackToSide(Direction.DOWN, 0.55f),
 				Direction.NORTH, getDirectionMoveBackToSide(Direction.NORTH, 0.55f),
@@ -150,22 +149,22 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 				Direction.WEST, getDirectionMoveBackToSide(Direction.WEST, 0.55f),
 				Direction.EAST, getDirectionMoveBackToSide(Direction.EAST, 0.55f)
 		);
-		private static QuadTransformer getDirectionRotationTransform(Direction dir) {
+
+		private static IQuadTransformer getDirectionRotationTransform(Direction dir) {
 			Quaternion rotation = dir.getRotation();
 			if (dir.getAxis().isVertical()) {
 				rotation.mul(Vector3f.YP.rotationDegrees(180.0F));
 			}
-			return new QuadTransformer(new Transformation(null, rotation, null, null));
+			return IQuadTransformer.applying(new Transformation(null, rotation, null, null));
 		}
 
-		private static QuadTransformer getDirectionMoveBackToSide(Direction dir, float distFromCenter) {
+		private static IQuadTransformer getDirectionMoveBackToSide(Direction dir, float distFromCenter) {
 			Vec3i normal = dir.getNormal();
 			Vector3f offset = new Vector3f(distFromCenter, distFromCenter, distFromCenter);
 			offset.mul(normal.getX(), normal.getY(), normal.getZ());
 			offset.add(.5f, .5f, .5f);
-			return new QuadTransformer(new Transformation(offset, null, null, null));
+			return IQuadTransformer.applying(new Transformation(offset, null, null, null));
 		}
-
 
 		private static final ModelProperty<String> WOOD_NAME = new ModelProperty<>();
 		private static final ModelProperty<Boolean> IS_PACKED = new ModelProperty<>();
@@ -241,28 +240,27 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 					fromTransformation(TRANSFORMS.get(ItemTransforms.TransformType.GROUND)), fromTransformation(TRANSFORMS.get(ItemTransforms.TransformType.FIXED)));
 		}
 
-		@SuppressWarnings("deprecation")
 		private static ItemTransform fromTransformation(Transformation transformation) {
 			return new ItemTransform(transformation.getLeftRotation().toXYZ(), transformation.getTranslation(), transformation.getScale());
 		}
 
 		@Nonnull
 		@Override
-		public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, RandomSource rand, IModelData extraData) {
+		public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, RandomSource rand, ModelData extraData, @Nullable RenderType renderType) {
 			String woodName = null;
 			boolean hasMainColor;
 			boolean hasAccentColor;
 			boolean isPacked;
 			if (state != null) {
-				hasMainColor = Boolean.TRUE.equals(extraData.getData(HAS_MAIN_COLOR));
-				hasAccentColor = Boolean.TRUE.equals(extraData.getData(HAS_ACCENT_COLOR));
-				if (extraData.hasProperty(WOOD_NAME)) {
-					woodName = extraData.getData(WOOD_NAME);
+				hasMainColor = Boolean.TRUE.equals(extraData.get(HAS_MAIN_COLOR));
+				hasAccentColor = Boolean.TRUE.equals(extraData.get(HAS_ACCENT_COLOR));
+				if (extraData.has(WOOD_NAME)) {
+					woodName = extraData.get(WOOD_NAME);
 					if (Boolean.TRUE.equals(state.getValue(BarrelBlock.OPEN))) {
 						woodName += "_open";
 					}
 				}
-				isPacked = extraData.hasProperty(IS_PACKED) && Boolean.TRUE.equals(extraData.getData(IS_PACKED));
+				isPacked = extraData.has(IS_PACKED) && Boolean.TRUE.equals(extraData.get(IS_PACKED));
 			} else {
 				woodName = barrelWoodName;
 				hasMainColor = barrelHasMainColor;
@@ -273,38 +271,39 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 			List<BakedQuad> ret = new ArrayList<>();
 
 			if (!hasMainColor || !hasAccentColor) {
-				addWoodModelQuads(state, side, rand, ret, woodName);
+				addWoodModelQuads(state, side, rand, ret, woodName, renderType);
 			}
 
-			addTintableModelQuads(state, side, rand, ret, hasMainColor, hasAccentColor);
+			addTintableModelQuads(state, side, rand, ret, hasMainColor, hasAccentColor, renderType);
 
-			ret.addAll(additionalModelParts.get(ModelPart.TIER).getQuads(state, side, rand, EmptyModelData.INSTANCE));
+			ret.addAll(additionalModelParts.get(ModelPart.TIER).getQuads(state, side, rand, ModelData.EMPTY, renderType));
 
 			if (isPacked) {
-				addPackedModelQuads(state, side, rand, ret);
+				addPackedModelQuads(state, side, rand, ret, renderType);
 			} else {
 				addDisplayItemQuads(state, side, rand, ret, extraData);
 			}
 			return ret;
 		}
 
-		private void addPackedModelQuads(@Nullable BlockState state, @Nullable Direction side, RandomSource rand, List<BakedQuad> ret) {
-			ret.addAll(additionalModelParts.get(ModelPart.PACKED).getQuads(state, side, rand, EmptyModelData.INSTANCE));
+		private void addPackedModelQuads(@Nullable BlockState state, @Nullable Direction side, RandomSource rand, List<BakedQuad> ret,
+				@Nullable RenderType renderType) {
+			ret.addAll(additionalModelParts.get(ModelPart.PACKED).getQuads(state, side, rand, ModelData.EMPTY, renderType));
 		}
 
-		private void addDisplayItemQuads(@Nullable BlockState state, @Nullable Direction side, RandomSource rand, List<BakedQuad> ret, IModelData extraData) {
+		private void addDisplayItemQuads(@Nullable BlockState state, @Nullable Direction side, RandomSource rand, List<BakedQuad> ret, ModelData extraData) {
 			if (state == null || side != null) {
 				return;
 			}
 
-			ItemStack displayItem = extraData.getData(DISPLAY_ITEM);
+			ItemStack displayItem = extraData.get(DISPLAY_ITEM);
 
 			if (displayItem != null && !displayItem.isEmpty()) {
 				Minecraft minecraft = Minecraft.getInstance();
 				ItemRenderer itemRenderer = minecraft.getItemRenderer();
 				BakedModel model = itemRenderer.getModel(displayItem, null, minecraft.player, 0);
 				ret.clear();
-				Integer rotationData = extraData.getData(DISPLAY_ITEM_ROTATION);
+				Integer rotationData = extraData.get(DISPLAY_ITEM_ROTATION);
 				int rotation = rotationData == null ? 0 : rotationData;
 				for (Direction face : Direction.values()) {
 					addRenderedItemSide(state, rand, ret, model, rotation, face);
@@ -313,57 +312,73 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 			}
 		}
 
+		private Transformation toTransformation(ItemTransform transform) {
+			if (transform.equals(ItemTransform.NO_TRANSFORM)) {
+				return Transformation.identity();
+			}
+
+			return new Transformation(transform.translation, quatFromXYZ(transform.rotation, true), transform.scale, null);
+		}
+
+		public Quaternion quatFromXYZ(Vector3f xyz, boolean degrees) {
+			return new Quaternion(xyz.x(), xyz.y(), xyz.z(), degrees);
+		}
+
 		@SuppressWarnings("deprecation")
 		private void addRenderedItemSide(BlockState state, RandomSource rand, List<BakedQuad> ret, BakedModel model, int rotation, @Nullable Direction s) {
 			List<BakedQuad> quads = model.getQuads(null, s, rand);
-			quads = MOVE_TO_CORNER.processMany(quads);
-			quads = FLIP_AND_SCALE.processMany(quads);
-			quads = new QuadTransformer(TransformationHelper.toTransformation(model.getTransforms().getTransform(ItemTransforms.TransformType.FIXED))).processMany(quads);
-			quads = ROTATE_90_DEGREES.processMany(quads);
+			quads = MOVE_TO_CORNER.process(quads);
+			quads = FLIP_AND_SCALE.process(quads);
+			quads = IQuadTransformer.applying(toTransformation(model.getTransforms().getTransform(ItemTransforms.TransformType.FIXED))).process(quads);
+			quads = ROTATE_90_DEGREES.process(quads);
 			if (rotation != 0) {
-				quads = getDisplayRotation(rotation).processMany(quads);
+				quads = getDisplayRotation(rotation).process(quads);
 			}
 			Direction facing = state.getValue(BarrelBlock.FACING);
-			quads = DIRECTION_ROTATES.get(facing).processMany(quads);
+			quads = DIRECTION_ROTATES.get(facing).process(quads);
 
 			if (model.isGui3d()) {
-				quads = DIRECTION_MOVES_3D_ITEMS.get(facing).processMany(quads);
+				quads = DIRECTION_MOVES_3D_ITEMS.get(facing).process(quads);
 			} else {
-				quads = DIRECTION_MOVES.get(facing).processMany(quads);
+				quads = DIRECTION_MOVES.get(facing).process(quads);
 			}
 
 			ret.addAll(quads);
 		}
 
-		private static final Map<Integer, QuadTransformer> DISPLAY_ROTATIONS = new HashMap<>();
+		private static final Map<Integer, IQuadTransformer> DISPLAY_ROTATIONS = new HashMap<>();
 
-		private QuadTransformer getDisplayRotation(int rotation) {
-			return DISPLAY_ROTATIONS.computeIfAbsent(rotation, r -> new QuadTransformer(new Transformation(null, Vector3f.YN.rotationDegrees(rotation), null, null)));
+		private IQuadTransformer getDisplayRotation(int rotation) {
+			return DISPLAY_ROTATIONS.computeIfAbsent(rotation, r -> IQuadTransformer.applying(new Transformation(null, Vector3f.YN.rotationDegrees(rotation), null, null)));
 		}
 
-		private void addTintableModelQuads(@Nullable BlockState state, @Nullable Direction side, RandomSource rand, List<BakedQuad> ret, boolean hasMainColor, boolean hasAccentColor) {
+		private void addTintableModelQuads(
+				@Nullable BlockState state, @Nullable Direction side, RandomSource rand, List<BakedQuad> ret, boolean hasMainColor, boolean hasAccentColor,
+				@Nullable RenderType renderType) {
 			if (hasMainColor) {
 				ModelPart modePart = state != null && state.getValue(BarrelBlock.OPEN) ? ModelPart.MAIN_OPEN : ModelPart.MAIN;
-				ret.addAll(additionalModelParts.get(modePart).getQuads(state, side, rand, EmptyModelData.INSTANCE));
+				ret.addAll(additionalModelParts.get(modePart).getQuads(state, side, rand, ModelData.EMPTY, renderType));
 			}
 			if (hasAccentColor) {
-				ret.addAll(additionalModelParts.get(ModelPart.ACCENT).getQuads(state, side, rand, EmptyModelData.INSTANCE));
+				ret.addAll(additionalModelParts.get(ModelPart.ACCENT).getQuads(state, side, rand, ModelData.EMPTY, renderType));
 			}
 
 			if (hasMainColor || hasAccentColor) {
-				ret.addAll(additionalModelParts.get(ModelPart.METAL_BANDS).getQuads(state, side, rand, EmptyModelData.INSTANCE));
+				ret.addAll(additionalModelParts.get(ModelPart.METAL_BANDS).getQuads(state, side, rand, ModelData.EMPTY, renderType));
 			}
 		}
 
-		private void addWoodModelQuads(@Nullable BlockState state, @Nullable Direction side, RandomSource rand, List<BakedQuad> ret, @Nullable String woodName) {
+		private void addWoodModelQuads(
+				@Nullable BlockState state, @Nullable Direction side, RandomSource rand, List<BakedQuad> ret, @Nullable String woodName,
+				@Nullable RenderType renderType) {
 			if (woodName == null) {
 				return;
 			}
 
 			if (woodModels.containsKey(woodName)) {
-				ret.addAll(woodModels.get(woodName).getQuads(state, side, rand, EmptyModelData.INSTANCE));
+				ret.addAll(woodModels.get(woodName).getQuads(state, side, rand, ModelData.EMPTY, renderType));
 			} else {
-				ret.addAll(woodModels.values().iterator().next().getQuads(state, side, rand, EmptyModelData.INSTANCE));
+				ret.addAll(woodModels.values().iterator().next().getQuads(state, side, rand, ModelData.EMPTY, renderType));
 			}
 		}
 
@@ -400,11 +415,11 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 		}
 
 		@Override
-		public TextureAtlasSprite getParticleIcon(IModelData data) {
-			if (data.hasProperty(HAS_MAIN_COLOR) && Boolean.TRUE.equals(data.getData(HAS_MAIN_COLOR))) {
+		public TextureAtlasSprite getParticleIcon(ModelData data) {
+			if (data.has(HAS_MAIN_COLOR) && Boolean.TRUE.equals(data.get(HAS_MAIN_COLOR))) {
 				return additionalModelParts.get(ModelPart.MAIN).getParticleIcon(data);
-			} else if (data.hasProperty(WOOD_NAME)) {
-				String name = data.getData(WOOD_NAME);
+			} else if (data.has(WOOD_NAME)) {
+				String name = data.get(WOOD_NAME);
 				if (!woodModels.containsKey(name)) {
 					return getParticleIcon();
 				}
@@ -415,24 +430,24 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 
 		@Nonnull
 		@Override
-		public IModelData getModelData(BlockAndTintGetter world, BlockPos pos, BlockState state, IModelData tileData) {
+		public ModelData getModelData(BlockAndTintGetter world, BlockPos pos, BlockState state, ModelData tileData) {
 			return WorldHelper.getBlockEntity(world, pos, WoodStorageBlockEntity.class)
 					.map(be -> {
-						ModelDataMap.Builder builder = new ModelDataMap.Builder();
+						ModelData.Builder builder = ModelData.builder();
 						boolean hasMainColor = be.getStorageWrapper().hasMainColor();
-						builder.withInitial(HAS_MAIN_COLOR, hasMainColor);
+						builder.with(HAS_MAIN_COLOR, hasMainColor);
 						boolean hasAccentColor = be.getStorageWrapper().hasAccentColor();
-						builder.withInitial(HAS_ACCENT_COLOR, hasAccentColor);
+						builder.with(HAS_ACCENT_COLOR, hasAccentColor);
 						RenderInfo.ItemDisplayRenderInfo itemDisplayRenderInfo = be.getStorageWrapper().getRenderInfo().getItemDisplayRenderInfo();
-						builder.withInitial(DISPLAY_ITEM, itemDisplayRenderInfo.getItem());
-						builder.withInitial(DISPLAY_ITEM_ROTATION, itemDisplayRenderInfo.getRotation());
-						builder.withInitial(IS_PACKED, be.isPacked());
+						builder.with(DISPLAY_ITEM, itemDisplayRenderInfo.getItem());
+						builder.with(DISPLAY_ITEM_ROTATION, itemDisplayRenderInfo.getRotation());
+						builder.with(IS_PACKED, be.isPacked());
 						Optional<WoodType> woodType = be.getWoodType();
 						if (woodType.isPresent() || !(hasMainColor && hasAccentColor)) {
-							builder.withInitial(WOOD_NAME, woodType.orElse(WoodType.ACACIA).name());
+							builder.with(WOOD_NAME, woodType.orElse(WoodType.ACACIA).name());
 						}
-						return (IModelData) builder.build();
-					}).orElse(EmptyModelData.INSTANCE);
+						return builder.build();
+					}).orElse(ModelData.EMPTY);
 		}
 
 		@Override
@@ -441,19 +456,23 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 		}
 
 		@Override
-		public BakedModel handlePerspective(ItemTransforms.TransformType cameraTransformType, PoseStack matrixStack) {
-			if (cameraTransformType == ItemTransforms.TransformType.NONE) {
+		public BakedModel applyTransform(ItemTransforms.TransformType transformType, PoseStack poseStack, boolean applyLeftHandTransform) {
+			if (transformType == ItemTransforms.TransformType.NONE) {
 				return this;
 			}
 
-			Transformation tr = TRANSFORMS.get(cameraTransformType);
+			Transformation tr = TRANSFORMS.get(transformType);
 
 			if (!tr.isIdentity()) {
-				tr.push(matrixStack);
+				tr.push(poseStack);
 			}
 			return this;
 		}
 
+		@Override
+		public ChunkRenderTypeSet getRenderTypes(@NotNull BlockState state, @NotNull RandomSource rand, @NotNull ModelData data) {
+			return ChunkRenderTypeSet.of(RenderType.cutout());
+		}
 	}
 
 	private static class BarrelItemOverrides extends ItemOverrides {
@@ -475,11 +494,11 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 		}
 	}
 
-	public static final class Loader implements IModelLoader<BarrelDynamicModel> {
+	public static final class Loader implements IGeometryLoader<BarrelDynamicModel> {
 		public static final Loader INSTANCE = new Loader();
 
 		@Override
-		public BarrelDynamicModel read(JsonDeserializationContext deserializationContext, JsonObject modelContents) {
+		public BarrelDynamicModel read(JsonObject modelContents, JsonDeserializationContext deserializationContext) {
 			ImmutableMap.Builder<String, UnbakedModel> woodModelsBuilder = ImmutableMap.builder();
 
 			WOOD_TEXTURES.forEach((woodName, textures) -> {
@@ -524,11 +543,6 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 				textureMapBuilder.put(textureName, Either.left(new Material(InventoryMenu.BLOCK_ATLAS, rl)));
 			});
 			woodModelsBuilder.put(woodName, new BlockModel(new ResourceLocation("minecraft:block/cube_bottom_top"), Collections.emptyList(), textureMapBuilder.build(), true, null, ItemTransforms.NO_TRANSFORMS, Collections.emptyList()));
-		}
-
-		@Override
-		public void onResourceManagerReload(ResourceManager resourceManager) {
-			//noop
 		}
 	}
 
