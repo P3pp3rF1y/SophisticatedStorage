@@ -117,7 +117,6 @@ public class ShulkerBoxBlockEntity extends StorageBlockEntity {
 						entity.move(MoverType.SHULKER_BOX, new Vec3((aabb.getXsize() + 0.01D) * direction.getStepX(), (aabb.getYsize() + 0.01D) * direction.getStepY(), (aabb.getZsize() + 0.01D) * direction.getStepZ()));
 					}
 				}
-
 			}
 		}
 	}
@@ -138,6 +137,11 @@ public class ShulkerBoxBlockEntity extends StorageBlockEntity {
 	@Override
 	public boolean shouldDropContents() {
 		return false;
+	}
+
+	@Override
+	public boolean canBeConnected() {
+		return true;
 	}
 
 	public enum AnimationStatus {

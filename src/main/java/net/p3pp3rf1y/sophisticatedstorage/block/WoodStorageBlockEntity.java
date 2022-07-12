@@ -88,4 +88,14 @@ public abstract class WoodStorageBlockEntity extends StorageBlockEntity{
 
 		return super.getCapability(cap, side);
 	}
+
+	@Override
+	public boolean canConnectStorages() {
+		return !packed;
+	}
+
+	@Override
+	public boolean canBeConnected() {
+		return !packed;
+	}
 }
