@@ -1,6 +1,7 @@
 package net.p3pp3rf1y.sophisticatedstorage.init;
 
 import net.minecraft.client.gui.screens.MenuScreens;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -18,12 +19,15 @@ import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
+import net.p3pp3rf1y.sophisticatedcore.util.BlockItemBase;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.block.ChestBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.ChestBlockEntity;
+import net.p3pp3rf1y.sophisticatedstorage.block.ControllerBlock;
+import net.p3pp3rf1y.sophisticatedstorage.block.ControllerBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.block.ShulkerBoxBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.ShulkerBoxBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageScreen;
@@ -40,6 +44,7 @@ import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
 public class ModBlocks {
 	private ModBlocks() {}
 
+	public static final TagKey<Item> BASE_TIER_WOODEN_STORAGE_TAG = TagKey.create(ForgeRegistries.ITEMS.getRegistryKey(), SophisticatedStorage.getRL("base_tier_wooden_storage"));
 	private static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, SophisticatedStorage.MOD_ID);
 	private static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, SophisticatedStorage.MOD_ID);
 	private static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITIES, SophisticatedStorage.MOD_ID);
@@ -86,6 +91,9 @@ public class ModBlocks {
 	public static final RegistryObject<BlockItem> DIAMOND_SHULKER_BOX_ITEM = ITEMS.register("diamond_shulker_box", () -> new ShulkerBoxItem(DIAMOND_SHULKER_BOX.get()));
 	public static final RegistryObject<BlockItem> NETHERITE_SHULKER_BOX_ITEM = ITEMS.register("netherite_shulker_box", () -> new ShulkerBoxItem(NETHERITE_SHULKER_BOX.get()));
 
+	public static final RegistryObject<ControllerBlock> CONTROLLER = BLOCKS.register("controller", () -> new ControllerBlock(BlockBehaviour.Properties.of(Material.STONE)));
+	public static final RegistryObject<BlockItem> CONTROLLER_ITEM = ITEMS.register("controller", () -> new BlockItemBase(CONTROLLER.get(), new Item.Properties(), SophisticatedStorage.CREATIVE_TAB));
+
 	@SuppressWarnings("ConstantConditions") //no datafixer type needed
 	public static final RegistryObject<BlockEntityType<BarrelBlockEntity>> BARREL_BLOCK_ENTITY_TYPE = BLOCK_ENTITIES.register(BARREL_REG_NAME, () ->
 			BlockEntityType.Builder.of(BarrelBlockEntity::new, BARREL.get(), IRON_BARREL.get(), GOLD_BARREL.get(), DIAMOND_BARREL.get(), NETHERITE_BARREL.get())
@@ -99,6 +107,11 @@ public class ModBlocks {
 	@SuppressWarnings("ConstantConditions") //no datafixer type needed
 	public static final RegistryObject<BlockEntityType<ShulkerBoxBlockEntity>> SHULKER_BOX_BLOCK_ENTITY_TYPE = BLOCK_ENTITIES.register(SHULKER_BOX_REG_NAME, () ->
 			BlockEntityType.Builder.of(ShulkerBoxBlockEntity::new, SHULKER_BOX.get(), IRON_SHULKER_BOX.get(), GOLD_SHULKER_BOX.get(), DIAMOND_SHULKER_BOX.get(), NETHERITE_SHULKER_BOX.get())
+					.build(null));
+
+	@SuppressWarnings("ConstantConditions") //no datafixer type needed
+	public static final RegistryObject<BlockEntityType<ControllerBlockEntity>> CONTROLLER_BLOCK_ENTITY_TYPE = BLOCK_ENTITIES.register("controller", () ->
+			BlockEntityType.Builder.of(ControllerBlockEntity::new, CONTROLLER.get())
 					.build(null));
 
 	public static final RegistryObject<MenuType<StorageContainerMenu>> STORAGE_CONTAINER_TYPE = CONTAINERS.register("storage",

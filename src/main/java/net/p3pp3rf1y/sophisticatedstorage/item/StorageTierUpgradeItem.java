@@ -197,13 +197,13 @@ public class StorageTierUpgradeItem extends ItemBase {
 			int newInventorySize = newBlockEntity.getStorageWrapper().getInventoryHandler().getSlots();
 			int newUpgradeSize = newBlockEntity.getStorageWrapper().getUpgradeHandler().getSlots();
 			newBlockEntity.load(beTag);
-			newBlockEntity.getStorageWrapper().increaseSize(newInventorySize - newBlockEntity.getStorageWrapper().getInventoryHandler().getSlots(), newUpgradeSize - newBlockEntity.getStorageWrapper().getUpgradeHandler().getSlots());
 
 			level.removeBlockEntity(pos);
 			level.removeBlock(pos, false);
 
 			level.setBlock(pos, newBlockState, 3);
 			level.setBlockEntity(newBlockEntity);
+			newBlockEntity.increaseStorageSize(newInventorySize - newBlockEntity.getStorageWrapper().getInventoryHandler().getSlots(), newUpgradeSize - newBlockEntity.getStorageWrapper().getUpgradeHandler().getSlots());
 			WorldHelper.notifyBlockUpdate(newBlockEntity);
 			return true;
 		}
@@ -254,6 +254,7 @@ public class StorageTierUpgradeItem extends ItemBase {
 			setStorageItemsNameAndWoodType(newBlockEntity, customName, items, woodType());
 			newBlockEntity.setUpdateBlockRender();
 			replaceBlockAndBlockEntity(newBlockState, newBlockEntity, pos, level);
+			newBlockEntity.tryToAddToController();
 			WorldHelper.notifyBlockUpdate(newBlockEntity);
 			return true;
 		}

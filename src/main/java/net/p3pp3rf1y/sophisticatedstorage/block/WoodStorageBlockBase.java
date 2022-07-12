@@ -111,6 +111,8 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 			WoodStorageBlockItem.getWoodType(stack).ifPresent(be::setWoodType);
 			StorageBlockItem.getMaincolorFromStack(stack).ifPresent(be.getStorageWrapper()::setMainColor);
 			StorageBlockItem.getAccentColorFromStack(stack).ifPresent(be.getStorageWrapper()::setAccentColor);
+
+			be.tryToAddToController();
 		});
 	}
 
@@ -123,6 +125,9 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 				}
 			}
 			b.setPacked(true);
+
+			b.removeFromController();
+
 			WorldHelper.notifyBlockUpdate(b);
 			return true;
 		}
