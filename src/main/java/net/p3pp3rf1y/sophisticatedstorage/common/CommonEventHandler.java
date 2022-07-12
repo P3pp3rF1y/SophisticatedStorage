@@ -8,7 +8,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.event.world.BlockEvent;
+import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.p3pp3rf1y.sophisticatedcore.SophisticatedCore;
 import net.p3pp3rf1y.sophisticatedcore.network.SyncPlayerSettingsMessage;
@@ -37,12 +37,12 @@ public class CommonEventHandler {
 
 	private void onPlayerChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
 		String playerTagName = StorageSettingsHandler.SOPHISTICATED_STORAGE_SETTINGS_PLAYER_TAG;
-		SophisticatedCore.PACKET_HANDLER.sendToClient((ServerPlayer) event.getPlayer(), new SyncPlayerSettingsMessage(playerTagName, SettingsManager.getPlayerSettingsTag(event.getPlayer(), playerTagName)));
+		SophisticatedCore.PACKET_HANDLER.sendToClient((ServerPlayer) event.getEntity(), new SyncPlayerSettingsMessage(playerTagName, SettingsManager.getPlayerSettingsTag(event.getEntity(), playerTagName)));
 	}
 
 	private void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
 		String playerTagName = StorageSettingsHandler.SOPHISTICATED_STORAGE_SETTINGS_PLAYER_TAG;
-		SophisticatedCore.PACKET_HANDLER.sendToClient((ServerPlayer) event.getPlayer(), new SyncPlayerSettingsMessage(playerTagName, SettingsManager.getPlayerSettingsTag(event.getPlayer(), playerTagName)));
+		SophisticatedCore.PACKET_HANDLER.sendToClient((ServerPlayer) event.getEntity(), new SyncPlayerSettingsMessage(playerTagName, SettingsManager.getPlayerSettingsTag(event.getEntity(), playerTagName)));
 	}
 
 	private void onBlockBreak(BlockEvent.BreakEvent event) {

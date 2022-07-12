@@ -67,7 +67,7 @@ public class StorageContainerMenu extends StorageContainerMenuBase<IStorageWrapp
 			sendToServer(data -> data.putString(ACTION_TAG, "openSettings"));
 			return;
 		}
-		getBlockPosition().ifPresent(pos -> NetworkHooks.openGui((ServerPlayer) player, new SimpleMenuProvider((w, p, pl) -> new StorageSettingsContainer(w, pl, pos),
+		getBlockPosition().ifPresent(pos -> NetworkHooks.openScreen((ServerPlayer) player, new SimpleMenuProvider((w, p, pl) -> new StorageSettingsContainer(w, pl, pos),
 				Component.translatable(StorageTranslationHelper.INSTANCE.translGui("settings.title"))), storageBlockEntity.getBlockPos()));
 	}
 

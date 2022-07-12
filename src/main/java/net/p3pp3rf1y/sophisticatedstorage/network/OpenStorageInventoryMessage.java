@@ -38,7 +38,7 @@ public class OpenStorageInventoryMessage {
 			return;
 		}
 
-		NetworkHooks.openGui(player, new SimpleMenuProvider((w, p, pl) -> new StorageContainerMenu(w, pl, msg.pos),
+		NetworkHooks.openScreen(player, new SimpleMenuProvider((w, p, pl) -> new StorageContainerMenu(w, pl, msg.pos),
 				WorldHelper.getBlockEntity(player.level, msg.pos, StorageBlockEntity.class).map(StorageBlockEntity::getDisplayName).orElse(Component.empty())), msg.pos);
 	}
 }
