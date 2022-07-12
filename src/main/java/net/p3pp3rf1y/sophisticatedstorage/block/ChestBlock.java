@@ -115,7 +115,7 @@ public class ChestBlock extends WoodStorageBlockBase {
 			}
 
 			player.awardStat(Stats.CUSTOM.get(Stats.OPEN_CHEST));
-			NetworkHooks.openGui((ServerPlayer) player, new SimpleMenuProvider((w, p, pl) -> new StorageContainerMenu(w, pl, pos),
+			NetworkHooks.openScreen((ServerPlayer) player, new SimpleMenuProvider((w, p, pl) -> new StorageContainerMenu(w, pl, pos),
 					WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).map(StorageBlockEntity::getDisplayName).orElse(Component.empty())), pos);
 			PiglinAi.angerNearbyPiglins(player, true);
 

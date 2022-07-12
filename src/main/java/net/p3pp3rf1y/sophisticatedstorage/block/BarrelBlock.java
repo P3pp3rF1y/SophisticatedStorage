@@ -127,7 +127,7 @@ public class BarrelBlock extends WoodStorageBlockBase {
 			}
 
 			player.awardStat(Stats.OPEN_BARREL);
-			NetworkHooks.openGui((ServerPlayer) player, new SimpleMenuProvider((w, p, pl) -> new StorageContainerMenu(w, pl, pos),
+			NetworkHooks.openScreen((ServerPlayer) player, new SimpleMenuProvider((w, p, pl) -> new StorageContainerMenu(w, pl, pos),
 					WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).map(StorageBlockEntity::getDisplayName).orElse(Component.empty())), pos);
 			PiglinAi.angerNearbyPiglins(player, true);
 			return InteractionResult.CONSUME;

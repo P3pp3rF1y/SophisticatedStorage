@@ -99,7 +99,7 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 
 		WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).ifPresent(b -> {
 			player.awardStat(Stats.CUSTOM.get(Stats.OPEN_SHULKER_BOX));
-			NetworkHooks.openGui((ServerPlayer) player, new SimpleMenuProvider((w, p, pl) -> new StorageContainerMenu(w, pl, pos),
+			NetworkHooks.openScreen((ServerPlayer) player, new SimpleMenuProvider((w, p, pl) -> new StorageContainerMenu(w, pl, pos),
 					WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).map(StorageBlockEntity::getDisplayName).orElse(Component.empty())), pos);
 			PiglinAi.angerNearbyPiglins(player, true);
 		});
