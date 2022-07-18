@@ -381,7 +381,7 @@ public abstract class StorageWrapper implements IStorageWrapper {
 	}
 
 	@Override
-	public void setColumnsTaken(int columnsTaken) {
+	public void setColumnsTaken(int columnsTaken, boolean hasChanged) {
 		this.columnsTaken = columnsTaken;
 		save();
 	}
@@ -394,7 +394,7 @@ public abstract class StorageWrapper implements IStorageWrapper {
 	public void increaseSize(int additionalInventorySlots, int additionalUpgradeSlots) {
 		if (additionalInventorySlots > 0) {
 			numberOfInventorySlots += additionalInventorySlots;
-			getInventoryHandler().increaseSize(additionalInventorySlots);
+			getInventoryHandler().changeSlots(additionalInventorySlots);
 		}
 
 		if (additionalUpgradeSlots > 0) {
