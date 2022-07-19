@@ -97,6 +97,15 @@ public class StorageRecipeProvider extends RecipeProvider {
 		tintedShulkerBoxRecipe(consumer, Blocks.WHITE_SHULKER_BOX, DyeColor.WHITE);
 		tintedShulkerBoxRecipe(consumer, Blocks.YELLOW_SHULKER_BOX, DyeColor.YELLOW);
 
+		ShapeBasedRecipeBuilder.shaped(ModBlocks.SHULKER_BOX_ITEM.get(), ModBlocks.SHULKER_BOX_FROM_CHEST_RECIPE_SERIALIZER.get())
+				.pattern("S")
+				.pattern("C")
+				.pattern("S")
+				.define('C', ModBlocks.CHEST_ITEM.get())
+				.define('S', Items.SHULKER_SHELL)
+				.unlockedBy("has_chest", has(ModBlocks.CHEST_ITEM.get()))
+				.save(consumer, SophisticatedStorage.getRL("shulker_from_chest"));
+
 		ShapeBasedRecipeBuilder.shaped(ModBlocks.IRON_SHULKER_BOX_ITEM.get(), ModBlocks.STORAGE_TIER_UPGRADE_RECIPE_SERIALIZER.get())
 				.pattern("III")
 				.pattern("ISI")
@@ -105,6 +114,15 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('I', Tags.Items.INGOTS_IRON)
 				.unlockedBy("has_shulker_box", has(ModBlocks.SHULKER_BOX_ITEM.get()))
 				.save(consumer);
+
+		ShapeBasedRecipeBuilder.shaped(ModBlocks.IRON_SHULKER_BOX_ITEM.get(), ModBlocks.SHULKER_BOX_FROM_CHEST_RECIPE_SERIALIZER.get())
+				.pattern("S")
+				.pattern("C")
+				.pattern("S")
+				.define('C', ModBlocks.IRON_CHEST_ITEM.get())
+				.define('S', Items.SHULKER_SHELL)
+				.unlockedBy("has_iron_chest", has(ModBlocks.IRON_CHEST_ITEM.get()))
+				.save(consumer, SophisticatedStorage.getRL("iron_shulker_from_iron_chest"));
 
 		ShapeBasedRecipeBuilder.shaped(ModBlocks.GOLD_SHULKER_BOX_ITEM.get(), ModBlocks.STORAGE_TIER_UPGRADE_RECIPE_SERIALIZER.get())
 				.pattern("GGG")
@@ -115,6 +133,15 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.unlockedBy("has_iron_shulker_box", has(ModBlocks.IRON_SHULKER_BOX_ITEM.get()))
 				.save(consumer);
 
+		ShapeBasedRecipeBuilder.shaped(ModBlocks.GOLD_SHULKER_BOX_ITEM.get(), ModBlocks.SHULKER_BOX_FROM_CHEST_RECIPE_SERIALIZER.get())
+				.pattern("S")
+				.pattern("C")
+				.pattern("S")
+				.define('C', ModBlocks.GOLD_CHEST_ITEM.get())
+				.define('S', Items.SHULKER_SHELL)
+				.unlockedBy("has_gold_chest", has(ModBlocks.GOLD_CHEST_ITEM.get()))
+				.save(consumer, SophisticatedStorage.getRL("gold_shulker_from_gold_chest"));
+
 		ShapeBasedRecipeBuilder.shaped(ModBlocks.DIAMOND_SHULKER_BOX_ITEM.get(), ModBlocks.STORAGE_TIER_UPGRADE_RECIPE_SERIALIZER.get())
 				.pattern("DDD")
 				.pattern("DSD")
@@ -123,6 +150,24 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('D', Tags.Items.GEMS_DIAMOND)
 				.unlockedBy("has_gold_shulker_box", has(ModBlocks.GOLD_SHULKER_BOX_ITEM.get()))
 				.save(consumer);
+
+		ShapeBasedRecipeBuilder.shaped(ModBlocks.DIAMOND_SHULKER_BOX_ITEM.get(), ModBlocks.SHULKER_BOX_FROM_CHEST_RECIPE_SERIALIZER.get())
+				.pattern("S")
+				.pattern("C")
+				.pattern("S")
+				.define('C', ModBlocks.DIAMOND_CHEST_ITEM.get())
+				.define('S', Items.SHULKER_SHELL)
+				.unlockedBy("has_diamond_chest", has(ModBlocks.DIAMOND_CHEST_ITEM.get()))
+				.save(consumer, SophisticatedStorage.getRL("diamond_shulker_from_diamond_chest"));
+
+		ShapeBasedRecipeBuilder.shaped(ModBlocks.NETHERITE_SHULKER_BOX_ITEM.get(), ModBlocks.SHULKER_BOX_FROM_CHEST_RECIPE_SERIALIZER.get())
+				.pattern("S")
+				.pattern("C")
+				.pattern("S")
+				.define('C', ModBlocks.NETHERITE_CHEST_ITEM.get())
+				.define('S', Items.SHULKER_SHELL)
+				.unlockedBy("has_netherite_chest", has(ModBlocks.NETHERITE_CHEST_ITEM.get()))
+				.save(consumer, SophisticatedStorage.getRL("netherite_shulker_from_netherite_chest"));
 
 		new UpgradeRecipeBuilder(ModBlocks.SMITHING_STORAGE_UPGRADE_RECIPE_SERIALIZER.get(), Ingredient.of(ModBlocks.DIAMOND_SHULKER_BOX_ITEM.get()),
 				Ingredient.of(Items.NETHERITE_INGOT), ModBlocks.NETHERITE_SHULKER_BOX_ITEM.get())

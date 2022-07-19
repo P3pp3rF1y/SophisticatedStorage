@@ -13,7 +13,9 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.Material;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.extensions.IForgeMenuType;
+import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
@@ -35,6 +37,7 @@ import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageScreen;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageSettingsScreen;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageSettingsContainer;
+import net.p3pp3rf1y.sophisticatedstorage.crafting.ShulkerBoxFromChestRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.SmithingStorageUpgradeRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.StorageDyeRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.StorageTierUpgradeRecipe;
@@ -125,6 +128,7 @@ public class ModBlocks {
 	public static final RegistryObject<SimpleRecipeSerializer<?>> STORAGE_DYE_RECIPE_SERIALIZER = RECIPE_SERIALIZERS.register("storage_dye", () -> new SimpleRecipeSerializer<>(StorageDyeRecipe::new));
 	public static final RegistryObject<RecipeSerializer<?>> STORAGE_TIER_UPGRADE_RECIPE_SERIALIZER = RECIPE_SERIALIZERS.register("storage_tier_upgrade", StorageTierUpgradeRecipe.Serializer::new);
 	public static final RegistryObject<RecipeSerializer<?>> SMITHING_STORAGE_UPGRADE_RECIPE_SERIALIZER = RECIPE_SERIALIZERS.register("smithing_storage_upgrade", SmithingStorageUpgradeRecipe.Serializer::new);
+	public static final RegistryObject<RecipeSerializer<?>> SHULKER_BOX_FROM_CHEST_RECIPE_SERIALIZER = RECIPE_SERIALIZERS.register("shulker_box_from_chest", ShulkerBoxFromChestRecipe.Serializer::new);
 
 	public static void registerHandlers(IEventBus modBus) {
 		BLOCKS.register(modBus);
@@ -133,6 +137,11 @@ public class ModBlocks {
 		MENU_TYPES.register(modBus);
 		RECIPE_SERIALIZERS.register(modBus);
 		modBus.addListener(ModBlocks::registerContainers);
+		MinecraftForge.EVENT_BUS.addListener(ModBlocks::onResourceReload);
+	}
+
+	private static void onResourceReload(AddReloadListenerEvent event) {
+		ShulkerBoxFromChestRecipe.REGISTERED_RECIPES.clear();
 	}
 
 	private static void registerContainers(FMLClientSetupEvent evt) {
