@@ -20,7 +20,6 @@ import net.minecraftforge.client.settings.IKeyConflictContext;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageScreen;
@@ -70,12 +69,13 @@ public class ClientEventHandler {
 		IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
 		modBus.addListener(ClientEventHandler::stitchTextures);
 		modBus.addListener(ClientEventHandler::onModelRegistry);
-		modBus.addListener(ClientEventHandler::loadComplete);
 		modBus.addListener(ClientEventHandler::registerLayer);
 		modBus.addListener(ClientEventHandler::registerTooltipComponent);
 		modBus.addListener(ClientEventHandler::registerEntityRenderers);
 		modBus.addListener(ModParticles::registerProviders);
 		modBus.addListener(ClientEventHandler::registerKeyMappings);
+		modBus.addListener(ModItemColors::registerItemColorHandlers);
+		modBus.addListener(ModBlockColors::registerBlockColorHandlers);
 
 		IEventBus eventBus = MinecraftForge.EVENT_BUS;
 		eventBus.addListener(ClientStorageContentsTooltip::onWorldLoad);
@@ -103,7 +103,7 @@ public class ClientEventHandler {
 			double mouseX = mh.xpos() * mc.getWindow().getGuiScaledWidth() / mc.getWindow().getScreenWidth();
 			double mouseY = mh.ypos() * mc.getWindow().getGuiScaledHeight() / mc.getWindow().getScreenHeight();
 			Slot selectedSlot = screen.findSlot(mouseX, mouseY);
-			if (selectedSlot != null && !container.isPlayersInventorySlot(selectedSlot.index)) {
+			if (selectedSlot != null && container.isNotPlayersInventorySlot(selectedSlot.index)) {
 				container.sort();
 				return true;
 			}
@@ -182,12 +182,5 @@ public class ClientEventHandler {
 		event.registerBlockEntityRenderer(ModBlocks.BARREL_BLOCK_ENTITY_TYPE.get(), context -> new BarrelRenderer());
 		event.registerBlockEntityRenderer(ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get(), ChestRenderer::new);
 		event.registerBlockEntityRenderer(ModBlocks.SHULKER_BOX_BLOCK_ENTITY_TYPE.get(), ShulkerBoxRenderer::new);
-	}
-
-	private static void loadComplete(FMLLoadCompleteEvent event) {
-		event.enqueueWork(() -> {
-			ModItemColors.init();
-			ModBlockColors.init();
-		});
 	}
 }

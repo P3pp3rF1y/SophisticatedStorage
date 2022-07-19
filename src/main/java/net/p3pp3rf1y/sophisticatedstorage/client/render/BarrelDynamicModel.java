@@ -172,8 +172,9 @@ public class BarrelDynamicModel implements IUnbakedGeometry<BarrelDynamicModel> 
 		private static final ModelProperty<Boolean> HAS_ACCENT_COLOR = new ModelProperty<>();
 		private static final ModelProperty<ItemStack> DISPLAY_ITEM = new ModelProperty<>();
 		private static final ModelProperty<Integer> DISPLAY_ITEM_ROTATION = new ModelProperty<>();
-		private static final Map<ItemTransforms.TransformType, Transformation> TRANSFORMS;
 		private static final ItemTransforms ITEM_TRANSFORMS;
+
+		private static final Vector3f DEFAULT_ROTATION = new Vector3f(0.0F, 0.0F, 0.0F);
 
 		private final Map<String, BakedModel> woodModels;
 		private final Map<ModelPart, BakedModel> additionalModelParts;
@@ -190,63 +191,53 @@ public class BarrelDynamicModel implements IUnbakedGeometry<BarrelDynamicModel> 
 		}
 
 		static {
-			ImmutableMap.Builder<ItemTransforms.TransformType, Transformation> builder = ImmutableMap.builder();
-			builder.put(ItemTransforms.TransformType.THIRD_PERSON_LEFT_HAND, new Transformation(
-					new Vector3f(0, 2.5f / 16f, 0),
-					new Quaternion(75, 45, 0, true),
-					new Vector3f(0.375f, 0.375f, 0.375f), null
-			));
-			builder.put(ItemTransforms.TransformType.THIRD_PERSON_RIGHT_HAND, new Transformation(
-					new Vector3f(0, 2.5f / 16f, 0),
-					new Quaternion(75, 45, 0, true),
-					new Vector3f(0.375f, 0.375f, 0.375f), null
-			));
-			builder.put(ItemTransforms.TransformType.FIRST_PERSON_LEFT_HAND, new Transformation(
-					new Vector3f(0, 0, 0),
-					new Quaternion(0, 225, 0, true),
-					new Vector3f(0.4f, 0.4f, 0.4f), null
-			));
-			builder.put(ItemTransforms.TransformType.FIRST_PERSON_RIGHT_HAND, new Transformation(
-					new Vector3f(0, 0, 0),
-					new Quaternion(0, 45, 0, true),
-					new Vector3f(0.4f, 0.4f, 0.4f), null
-			));
-			builder.put(ItemTransforms.TransformType.HEAD, new Transformation(
-					new Vector3f(0, 14.25f / 16f, 0),
-					new Quaternion(0, 0, 0, true),
-					new Vector3f(1, 1, 1), null
-			));
-			builder.put(ItemTransforms.TransformType.GUI, new Transformation(
-					new Vector3f(0, 0, 0),
-					new Quaternion(30, 225, 0, true),
-					new Vector3f(0.625f, 0.625f, 0.625f), null
-			));
-			builder.put(ItemTransforms.TransformType.GROUND, new Transformation(
-					new Vector3f(0, 3 / 16f, 0),
-					new Quaternion(0, 0, 0, true),
-					new Vector3f(0.25f, 0.25f, 0.25f), null
-			));
-			builder.put(ItemTransforms.TransformType.FIXED, new Transformation(
-					new Vector3f(0, 0, 0),
-					new Quaternion(0, 0, 0, true),
-					new Vector3f(0.5f, 0.5f, 0.5f), null
-			));
-			TRANSFORMS = builder.build();
-
-			//noinspection ConstantConditions,deprecation
-			ITEM_TRANSFORMS = new ItemTransforms(fromTransformation(TRANSFORMS.get(ItemTransforms.TransformType.THIRD_PERSON_LEFT_HAND)), fromTransformation(TRANSFORMS.get(ItemTransforms.TransformType.THIRD_PERSON_RIGHT_HAND)),
-					fromTransformation(TRANSFORMS.get(ItemTransforms.TransformType.FIRST_PERSON_LEFT_HAND)), fromTransformation(TRANSFORMS.get(ItemTransforms.TransformType.FIRST_PERSON_RIGHT_HAND)),
-					fromTransformation(TRANSFORMS.get(ItemTransforms.TransformType.HEAD)), fromTransformation(TRANSFORMS.get(ItemTransforms.TransformType.GUI)),
-					fromTransformation(TRANSFORMS.get(ItemTransforms.TransformType.GROUND)), fromTransformation(TRANSFORMS.get(ItemTransforms.TransformType.FIXED)));
-		}
-
-		private static ItemTransform fromTransformation(Transformation transformation) {
-			return new ItemTransform(transformation.getLeftRotation().toXYZ(), transformation.getTranslation(), transformation.getScale());
+			ITEM_TRANSFORMS = new ItemTransforms(
+					new ItemTransform(
+							new Vector3f(75, 45, 0),
+							new Vector3f(0, 2.5f / 16f, 0),
+							new Vector3f(0.375f, 0.375f, 0.375f), DEFAULT_ROTATION
+					),
+					new ItemTransform(
+							new Vector3f(75, 45, 0),
+							new Vector3f(0, 2.5f / 16f, 0),
+							new Vector3f(0.375f, 0.375f, 0.375f), DEFAULT_ROTATION
+					),
+					new ItemTransform(
+							new Vector3f(0, 225, 0),
+							new Vector3f(0, 0, 0),
+							new Vector3f(0.4f, 0.4f, 0.4f), DEFAULT_ROTATION
+					),
+					new ItemTransform(
+							new Vector3f(0, 45, 0),
+							new Vector3f(0, 0, 0),
+							new Vector3f(0.4f, 0.4f, 0.4f), DEFAULT_ROTATION
+					),
+					new ItemTransform(
+							new Vector3f(0, 0, 0),
+							new Vector3f(0, 14.25f / 16f, 0),
+							new Vector3f(1, 1, 1), DEFAULT_ROTATION
+					),
+					new ItemTransform(
+							new Vector3f(30, 225, 0),
+							new Vector3f(0, 0, 0),
+							new Vector3f(0.625f, 0.625f, 0.625f), DEFAULT_ROTATION
+					),
+					new ItemTransform(
+							new Vector3f(0, 0, 0),
+							new Vector3f(0, 3 / 16f, 0),
+							new Vector3f(0.25f, 0.25f, 0.25f), DEFAULT_ROTATION
+					),
+					new ItemTransform(
+							new Vector3f(0, 0, 0),
+							new Vector3f(0, 0, 0),
+							new Vector3f(0.5f, 0.5f, 0.5f), DEFAULT_ROTATION
+					), ImmutableMap.of());
 		}
 
 		@Nonnull
 		@Override
-		public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, RandomSource rand, ModelData extraData, @Nullable RenderType renderType) {
+		public List<BakedQuad> getQuads(
+				@Nullable BlockState state, @Nullable Direction side, RandomSource rand, ModelData extraData, @Nullable RenderType renderType) {
 			String woodName = null;
 			boolean hasMainColor;
 			boolean hasAccentColor;
@@ -461,11 +452,8 @@ public class BarrelDynamicModel implements IUnbakedGeometry<BarrelDynamicModel> 
 				return this;
 			}
 
-			Transformation tr = TRANSFORMS.get(transformType);
+			ITEM_TRANSFORMS.getTransform(transformType).apply(applyLeftHandTransform, poseStack);
 
-			if (!tr.isIdentity()) {
-				tr.push(poseStack);
-			}
 			return this;
 		}
 
@@ -485,7 +473,7 @@ public class BarrelDynamicModel implements IUnbakedGeometry<BarrelDynamicModel> 
 		@Nullable
 		@Override
 		public BakedModel resolve(BakedModel model, ItemStack stack, @Nullable ClientLevel level, @Nullable LivingEntity entity, int seed) {
-			barrelBakedModel.barrelHasMainColor = StorageBlockItem.getMaincolorFromStack(stack).isPresent();
+			barrelBakedModel.barrelHasMainColor = StorageBlockItem.getMainColorFromStack(stack).isPresent();
 			barrelBakedModel.barrelHasAccentColor = StorageBlockItem.getAccentColorFromStack(stack).isPresent();
 			barrelBakedModel.barrelWoodName = WoodStorageBlockItem.getWoodType(stack).map(WoodType::name)
 					.orElse(barrelBakedModel.barrelHasAccentColor && barrelBakedModel.barrelHasMainColor ? null : WoodType.ACACIA.name());

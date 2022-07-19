@@ -99,9 +99,8 @@ sourceSets.main.resources {
 dependencies {
     minecraft "net.minecraftforge:forge:${project.minecraft_version}-${project.forge_version}"
 
-    //compileOnly fg.deobf("mezz.jei:jei-${jei_mc_version}-api:${jei_version}")
     compileOnly fg.deobf("mezz.jei:jei-${jei_mc_version}:${jei_version}")
-    //runtimeOnly fg.deobf("mezz.jei:jei-${jei_mc_version}:${jei_version}")
+    runtimeOnly fg.deobf("mezz.jei:jei-${jei_mc_version}:${jei_version}")
 //    compileOnly fg.deobf("curse.maven:quark-243121:${quark_cf_file_id}")
 //    compileOnly fg.deobf("curse.maven:autoreglib-250363:${autoreglib_cf_file_id}")
 

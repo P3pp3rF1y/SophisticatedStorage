@@ -97,7 +97,7 @@ public class WoodStorageBlockItem extends StorageBlockItem {
 
 	@Override
 	public void setAccentColor(ItemStack storageStack, int accentColor) {
-		if (StorageBlockItem.getMaincolorFromStack(storageStack).isPresent()) {
+		if (StorageBlockItem.getMainColorFromStack(storageStack).isPresent()) {
 			removeWoodType(storageStack);
 		}
 		super.setAccentColor(storageStack, accentColor);

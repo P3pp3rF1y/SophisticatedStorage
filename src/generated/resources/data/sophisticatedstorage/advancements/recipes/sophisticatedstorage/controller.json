@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "rewards": {
+    "recipes": [
+      "sophisticatedstorage:controller"
+    ]
+  },
+  "criteria": {
+    "has_base_tier_wooden_storage": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "tag": "sophisticatedstorage:base_tier_wooden_storage"
+          }
+        ]
+      }
+    },
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "sophisticatedstorage:controller"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_base_tier_wooden_storage",
+      "has_the_recipe"
+    ]
+  ]
+}

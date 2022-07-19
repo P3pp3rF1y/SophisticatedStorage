@@ -1,5 +1,6 @@
 package net.p3pp3rf1y.sophisticatedstorage.crafting;
 
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
@@ -13,16 +14,20 @@ import net.p3pp3rf1y.sophisticatedstorage.block.IStorageBlock;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
 
+import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 public class SmithingStorageUpgradeRecipe extends UpgradeRecipe implements IWrapperRecipe<UpgradeRecipe> {
+	public static final Set<ResourceLocation> REGISTERED_RECIPES = new LinkedHashSet<>();
 	private final UpgradeRecipe compose;
 
 	public SmithingStorageUpgradeRecipe(UpgradeRecipe compose) {
 		super(compose.getId(), compose.base,
 				compose.addition, compose.getResultItem());
 		this.compose = compose;
+		REGISTERED_RECIPES.add(compose.getId());
 	}
 
 	@Override
