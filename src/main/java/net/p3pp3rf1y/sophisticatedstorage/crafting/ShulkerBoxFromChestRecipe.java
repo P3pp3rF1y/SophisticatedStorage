@@ -13,13 +13,13 @@ import net.p3pp3rf1y.sophisticatedstorage.block.ChestBlock;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
 
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Optional;
 import java.util.Set;
 
 public class ShulkerBoxFromChestRecipe extends ShapedRecipe implements IWrapperRecipe<ShapedRecipe> {
 	public static final Serializer SERIALIZER = new Serializer();
-	public static final Set<ResourceLocation> REGISTERED_RECIPES = new HashSet<>();
+	public static final Set<ResourceLocation> REGISTERED_RECIPES = new LinkedHashSet<>();
 
 	private final ShapedRecipe compose;
 
