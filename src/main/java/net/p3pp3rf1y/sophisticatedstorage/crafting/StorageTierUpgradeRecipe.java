@@ -1,5 +1,6 @@
 package net.p3pp3rf1y.sophisticatedstorage.crafting;
 
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
@@ -14,14 +15,18 @@ import net.p3pp3rf1y.sophisticatedstorage.item.CapabilityStorageWrapper;
 import net.p3pp3rf1y.sophisticatedstorage.item.ShulkerBoxItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
 
+import java.util.LinkedHashSet;
 import java.util.Optional;
+import java.util.Set;
 
 public class StorageTierUpgradeRecipe extends ShapedRecipe implements IWrapperRecipe<ShapedRecipe> {
+	public static final Set<ResourceLocation> REGISTERED_RECIPES = new LinkedHashSet<>();
 	private final ShapedRecipe compose;
 
 	public StorageTierUpgradeRecipe(ShapedRecipe compose) {
 		super(compose.getId(), compose.getGroup(), compose.getRecipeWidth(), compose.getRecipeHeight(), compose.getIngredients(), compose.getResultItem());
 		this.compose = compose;
+		REGISTERED_RECIPES.add(compose.getId());
 	}
 
 	@Override
