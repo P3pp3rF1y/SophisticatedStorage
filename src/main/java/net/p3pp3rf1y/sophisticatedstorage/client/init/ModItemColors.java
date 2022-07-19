@@ -16,7 +16,7 @@ public class ModItemColors {
 				return -1;
 			}
 			if (tintIndex == 1000) {
-				return StorageBlockItem.getMaincolorFromStack(stack).orElse(-1);
+				return StorageBlockItem.getMainColorFromStack(stack).orElse(-1);
 			} else {
 				return StorageBlockItem.getAccentColorFromStack(stack).orElse(-1);
 			}

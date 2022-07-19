@@ -1,0 +1,25 @@
+{
+  "type": "sophisticatedstorage:shulker_box_from_chest",
+  "conditions": [
+    {
+      "itemRegistryName": "sophisticatedstorage:shulker_box",
+      "type": "sophisticatedcore:item_enabled"
+    }
+  ],
+  "pattern": [
+    "S",
+    "C",
+    "S"
+  ],
+  "key": {
+    "C": {
+      "item": "sophisticatedstorage:chest"
+    },
+    "S": {
+      "item": "minecraft:shulker_shell"
+    }
+  },
+  "result": {
+    "item": "sophisticatedstorage:shulker_box"
+  }
+}

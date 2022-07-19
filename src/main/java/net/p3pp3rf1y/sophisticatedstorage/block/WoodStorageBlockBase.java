@@ -109,7 +109,7 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 				be.setCustomName(stack.getHoverName());
 			}
 			WoodStorageBlockItem.getWoodType(stack).ifPresent(be::setWoodType);
-			StorageBlockItem.getMaincolorFromStack(stack).ifPresent(be.getStorageWrapper()::setMainColor);
+			StorageBlockItem.getMainColorFromStack(stack).ifPresent(be.getStorageWrapper()::setMainColor);
 			StorageBlockItem.getAccentColorFromStack(stack).ifPresent(be.getStorageWrapper()::setAccentColor);
 
 			be.tryToAddToController();

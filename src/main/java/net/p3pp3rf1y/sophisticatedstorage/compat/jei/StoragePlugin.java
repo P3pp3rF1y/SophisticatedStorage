@@ -48,7 +48,7 @@ public class StoragePlugin implements IModPlugin {
 		IIngredientSubtypeInterpreter<ItemStack> woodStorageNbtInterpreter = (itemStack, context) -> {
 			StringJoiner result = new StringJoiner(",");
 			WoodStorageBlockItem.getWoodType(itemStack).ifPresent(woodName -> result.add("woodName:" + woodName));
-			StorageBlockItem.getMaincolorFromStack(itemStack).ifPresent(mainColor -> result.add("mainColor:" + mainColor));
+			StorageBlockItem.getMainColorFromStack(itemStack).ifPresent(mainColor -> result.add("mainColor:" + mainColor));
 			StorageBlockItem.getAccentColorFromStack(itemStack).ifPresent(accentColor -> result.add("accentColor:" + accentColor));
 			return "{" + result + "}";
 		};
@@ -65,7 +65,7 @@ public class StoragePlugin implements IModPlugin {
 
 		IIngredientSubtypeInterpreter<ItemStack> shulkerBoxNbtInterpreter = (itemStack, context) -> {
 			StringJoiner result = new StringJoiner(",");
-			StorageBlockItem.getMaincolorFromStack(itemStack).ifPresent(mainColor -> result.add("mainColor:" + mainColor));
+			StorageBlockItem.getMainColorFromStack(itemStack).ifPresent(mainColor -> result.add("mainColor:" + mainColor));
 			StorageBlockItem.getAccentColorFromStack(itemStack).ifPresent(accentColor -> result.add("accentColor:" + accentColor));
 			return "{" + result + "}";
 		};
@@ -115,6 +115,7 @@ public class StoragePlugin implements IModPlugin {
 		registration.addRecipes(RecipeTypes.CRAFTING, TierUpgradeRecipesMaker.getCraftingRecipes());
 		registration.addRecipes(RecipeTypes.SMITHING, TierUpgradeRecipesMaker.getSmithingRecipes());
 		registration.addRecipes(RecipeTypes.CRAFTING, ControllerRecipesMaker.getRecipes());
+		registration.addRecipes(RecipeTypes.CRAFTING, ShulkerBoxFromChestRecipesMaker.getRecipes());
 	}
 
 	@Override

@@ -12,7 +12,9 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.Material;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.extensions.IForgeMenuType;
+import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.DistExecutor;
@@ -34,6 +36,7 @@ import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageScreen;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageSettingsScreen;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageSettingsContainer;
+import net.p3pp3rf1y.sophisticatedstorage.crafting.ShulkerBoxFromChestRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.SmithingStorageUpgradeRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.StorageDyeRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.StorageTierUpgradeRecipe;
@@ -127,12 +130,18 @@ public class ModBlocks {
 		CONTAINERS.register(modBus);
 		modBus.addGenericListener(MenuType.class, ModBlocks::registerContainers);
 		modBus.addGenericListener(RecipeSerializer.class, ModBlocks::registerRecipeSerializers);
+		MinecraftForge.EVENT_BUS.addListener(ModBlocks::onResourceReload);
 	}
 
 	public static void registerRecipeSerializers(RegistryEvent.Register<RecipeSerializer<?>> evt) {
 		evt.getRegistry().register(StorageDyeRecipe.SERIALIZER.setRegistryName(SophisticatedStorage.MOD_ID, "storage_dye"));
 		evt.getRegistry().register(StorageTierUpgradeRecipe.SERIALIZER.setRegistryName(SophisticatedStorage.MOD_ID, "storage_tier_upgrade"));
 		evt.getRegistry().register(SmithingStorageUpgradeRecipe.SERIALIZER.setRegistryName(SophisticatedStorage.MOD_ID, "smithing_storage_upgrade"));
+		evt.getRegistry().register(ShulkerBoxFromChestRecipe.SERIALIZER.setRegistryName(SophisticatedStorage.MOD_ID, "shulker_box_from_chest"));
+	}
+
+	private static void onResourceReload(AddReloadListenerEvent event) {
+		ShulkerBoxFromChestRecipe.REGISTERED_RECIPES.clear();
 	}
 
 	private static void registerContainers(RegistryEvent.Register<MenuType<?>> evt) {
