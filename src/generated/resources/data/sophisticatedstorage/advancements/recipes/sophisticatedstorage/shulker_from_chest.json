@@ -1,0 +1,34 @@
+{
+  "parent": "minecraft:recipes/root",
+  "rewards": {
+    "recipes": [
+      "sophisticatedstorage:shulker_from_chest"
+    ]
+  },
+  "criteria": {
+    "has_chest": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "sophisticatedstorage:chest"
+            ]
+          }
+        ]
+      }
+    },
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "sophisticatedstorage:shulker_from_chest"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_chest",
+      "has_the_recipe"
+    ]
+  ]
+}

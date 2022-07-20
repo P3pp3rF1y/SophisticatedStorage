@@ -68,7 +68,7 @@ public class BarrelBlock extends WoodStorageBlockBase {
 
 	@Override
 	public boolean addLandingEffects(BlockState state1, ServerLevel level, BlockPos pos, BlockState state2, LivingEntity entity, int numberOfParticles) {
-		level.sendParticles(new CustomTintTerrainParticleData(state1), entity.getX(), entity.getY(), entity.getZ(), numberOfParticles, 0.0D, 0.0D, 0.0D, 0.15D);
+		level.sendParticles(new CustomTintTerrainParticleData(state1, pos), entity.getX(), entity.getY(), entity.getZ(), numberOfParticles, 0.0D, 0.0D, 0.0D, 0.15D);
 		return true;
 	}
 

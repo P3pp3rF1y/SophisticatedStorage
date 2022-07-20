@@ -7,15 +7,19 @@ import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.handlers.IGuiContainerHandler;
 import mezz.jei.api.helpers.IStackHelper;
 import mezz.jei.api.ingredients.subtypes.IIngredientSubtypeInterpreter;
+import mezz.jei.api.recipe.IRecipeManager;
 import mezz.jei.api.recipe.transfer.IRecipeTransferHandlerHelper;
 import mezz.jei.api.registration.IGuiHandlerRegistration;
 import mezz.jei.api.registration.IRecipeCatalystRegistration;
 import mezz.jei.api.registration.IRecipeRegistration;
 import mezz.jei.api.registration.IRecipeTransferRegistration;
 import mezz.jei.api.registration.ISubtypeRegistration;
+import mezz.jei.api.runtime.IJeiRuntime;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingRecipe;
+import net.p3pp3rf1y.sophisticatedcore.compat.jei.ClientRecipeHelper;
 import net.p3pp3rf1y.sophisticatedcore.compat.jei.CraftingContainerRecipeTransferHandlerBase;
 import net.p3pp3rf1y.sophisticatedcore.compat.jei.StorageGhostIngredientHandler;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
@@ -28,6 +32,7 @@ import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.StringJoiner;
 
@@ -44,7 +49,7 @@ public class StoragePlugin implements IModPlugin {
 		IIngredientSubtypeInterpreter<ItemStack> woodStorageNbtInterpreter = (itemStack, context) -> {
 			StringJoiner result = new StringJoiner(",");
 			WoodStorageBlockItem.getWoodType(itemStack).ifPresent(woodName -> result.add("woodName:" + woodName));
-			StorageBlockItem.getMaincolorFromStack(itemStack).ifPresent(mainColor -> result.add("mainColor:" + mainColor));
+			StorageBlockItem.getMainColorFromStack(itemStack).ifPresent(mainColor -> result.add("mainColor:" + mainColor));
 			StorageBlockItem.getAccentColorFromStack(itemStack).ifPresent(accentColor -> result.add("accentColor:" + accentColor));
 			return "{" + result + "}";
 		};
@@ -61,7 +66,7 @@ public class StoragePlugin implements IModPlugin {
 
 		IIngredientSubtypeInterpreter<ItemStack> shulkerBoxNbtInterpreter = (itemStack, context) -> {
 			StringJoiner result = new StringJoiner(",");
-			StorageBlockItem.getMaincolorFromStack(itemStack).ifPresent(mainColor -> result.add("mainColor:" + mainColor));
+			StorageBlockItem.getMainColorFromStack(itemStack).ifPresent(mainColor -> result.add("mainColor:" + mainColor));
 			StorageBlockItem.getAccentColorFromStack(itemStack).ifPresent(accentColor -> result.add("accentColor:" + accentColor));
 			return "{" + result + "}";
 		};
@@ -96,10 +101,22 @@ public class StoragePlugin implements IModPlugin {
 	}
 
 	@Override
+	public void onRuntimeAvailable(IJeiRuntime jeiRuntime) {
+		IRecipeManager recipeManager = jeiRuntime.getRecipeManager();
+		ClientRecipeHelper.getRecipeByKey(ModBlocks.CONTROLLER_ITEM.getId()).ifPresent(controllerRecipe -> {
+			if (controllerRecipe instanceof CraftingRecipe craftingRecipe) {
+				recipeManager.hideRecipes(RecipeTypes.CRAFTING, Collections.singleton(craftingRecipe));
+			}
+		});
+	}
+
+	@Override
 	public void registerRecipes(IRecipeRegistration registration) {
 		registration.addRecipes(RecipeTypes.CRAFTING, DyeRecipesMaker.getRecipes());
 		registration.addRecipes(RecipeTypes.CRAFTING, TierUpgradeRecipesMaker.getCraftingRecipes());
 		registration.addRecipes(RecipeTypes.SMITHING, TierUpgradeRecipesMaker.getSmithingRecipes());
+		registration.addRecipes(RecipeTypes.CRAFTING, ControllerRecipesMaker.getRecipes());
+		registration.addRecipes(RecipeTypes.CRAFTING, ShulkerBoxFromChestRecipesMaker.getRecipes());
 	}
 
 	@Override

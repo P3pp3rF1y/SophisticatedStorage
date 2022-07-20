@@ -21,6 +21,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.CapabilityItemHandler;
+import net.p3pp3rf1y.sophisticatedcore.controller.IControllableStorage;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.ITickableUpgrade;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
@@ -28,10 +29,11 @@ import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
-public abstract class StorageBlockEntity extends BlockEntity {
+public abstract class StorageBlockEntity extends BlockEntity implements IControllableStorage {
 	public static final String STORAGE_WRAPPER_TAG = "storageWrapper";
 	private final StorageWrapper storageWrapper;
 	@Nullable
@@ -40,6 +42,9 @@ public abstract class StorageBlockEntity extends BlockEntity {
 	private boolean updateBlockRender = false;
 
 	private IDynamicRenderTracker dynamicRenderTracker = IDynamicRenderTracker.NOOP;
+
+	@Nullable
+	private BlockPos controllerPos = null;
 
 	protected abstract ContainerOpenersCounter getOpenersCounter();
 
@@ -123,6 +128,7 @@ public abstract class StorageBlockEntity extends BlockEntity {
 		super.saveAdditional(tag);
 		saveStorageWrapper(tag);
 		saveData(tag);
+		saveControllerPos(tag);
 	}
 
 	private void saveStorageWrapper(CompoundTag tag) {
@@ -177,10 +183,17 @@ public abstract class StorageBlockEntity extends BlockEntity {
 		super.load(tag);
 		loadStorageWrapper(tag);
 		loadData(tag);
+		loadControllerPos(tag);
 	}
 
 	private void loadStorageWrapper(CompoundTag tag) {
 		NBTHelper.getCompound(tag, STORAGE_WRAPPER_TAG).ifPresent(storageWrapper::load);
+	}
+
+	@Override
+	public void onLoad() {
+		super.onLoad();
+		registerWithControllerOnLoad();
 	}
 
 	public void loadData(CompoundTag tag) {
@@ -227,6 +240,7 @@ public abstract class StorageBlockEntity extends BlockEntity {
 		storageBlockEntity.getStorageWrapper().getUpgradeHandler().getWrappersThatImplement(ITickableUpgrade.class).forEach(upgrade -> upgrade.tick(null, level, blockPos));
 	}
 
+	@Override
 	public StorageWrapper getStorageWrapper() {
 		return storageWrapper;
 	}
@@ -241,6 +255,14 @@ public abstract class StorageBlockEntity extends BlockEntity {
 	@SuppressWarnings("unused") //stack param used in override
 	protected boolean isAllowedInStorage(ItemStack stack) {
 		return true;
+	}
+
+	public void increaseStorageSize(int additionalInventorySlots, int additionalUpgradeSlots) {
+		int currentInventorySlots = getStorageWrapper().getInventoryHandler().getSlots();
+		getStorageWrapper().increaseSize(additionalInventorySlots, additionalUpgradeSlots);
+		if (additionalInventorySlots > 0) {
+			changeSlots(currentInventorySlots + additionalInventorySlots);
+		}
 	}
 
 	public void dropContents() {
@@ -270,5 +292,31 @@ public abstract class StorageBlockEntity extends BlockEntity {
 
 	public boolean shouldDropContents() {
 		return true;
+	}
+
+	@Override
+	public void setControllerPos(BlockPos controllerPos) {
+		this.controllerPos = controllerPos;
+		setChanged();
+	}
+
+	@Override
+	public Optional<BlockPos> getControllerPos() {
+		return Optional.ofNullable(controllerPos);
+	}
+
+	@Override
+	public void removeControllerPos() {
+		controllerPos = null;
+	}
+
+	@Override
+	public BlockPos getStorageBlockPos() {
+		return getBlockPos();
+	}
+
+	@Override
+	public Level getStorageBlockLevel() {
+		return Objects.requireNonNull(getLevel());
 	}
 }

@@ -17,7 +17,7 @@ public class StorageBlockItem extends BlockItemBase implements ITintableBlockIte
 		super(block, properties, SophisticatedStorage.CREATIVE_TAB);
 	}
 
-	public static Optional<Integer> getMaincolorFromStack(ItemStack barrelStack) {
+	public static Optional<Integer> getMainColorFromStack(ItemStack barrelStack) {
 		return NBTHelper.getInt(barrelStack, "mainColor");
 	}
 
@@ -32,7 +32,7 @@ public class StorageBlockItem extends BlockItemBase implements ITintableBlockIte
 
 	@Override
 	public Optional<Integer> getMainColor(ItemStack storageStack) {
-		return StorageBlockItem.getMaincolorFromStack(storageStack);
+		return StorageBlockItem.getMainColorFromStack(storageStack);
 	}
 
 	@Override
