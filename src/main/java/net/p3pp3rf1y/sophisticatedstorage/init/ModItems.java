@@ -119,9 +119,9 @@ public class ModItems {
 	public static final RegistryObject<CompactingUpgradeItem> ADVANCED_COMPACTING_UPGRADE = ITEMS.register("advanced_compacting_upgrade",
 			() -> new CompactingUpgradeItem(true, Config.COMMON.advancedCompactingUpgrade.filterSlots::get, SophisticatedStorage.CREATIVE_TAB));
 	public static final RegistryObject<VoidUpgradeItem> VOID_UPGRADE = ITEMS.register("void_upgrade",
-			() -> new VoidUpgradeItem(Config.COMMON.voidUpgrade.filterSlots::get, SophisticatedStorage.CREATIVE_TAB));
+			() -> new VoidUpgradeItem(Config.COMMON.voidUpgrade, SophisticatedStorage.CREATIVE_TAB));
 	public static final RegistryObject<VoidUpgradeItem> ADVANCED_VOID_UPGRADE = ITEMS.register("advanced_void_upgrade",
-			() -> new VoidUpgradeItem(Config.COMMON.advancedVoidUpgrade.filterSlots::get, SophisticatedStorage.CREATIVE_TAB));
+			() -> new VoidUpgradeItem(Config.COMMON.advancedVoidUpgrade, SophisticatedStorage.CREATIVE_TAB));
 	public static final RegistryObject<SmeltingUpgradeItem> SMELTING_UPGRADE = ITEMS.register("smelting_upgrade",
 			() -> new SmeltingUpgradeItem(SophisticatedStorage.CREATIVE_TAB, Config.COMMON.smeltingUpgrade));
 	public static final RegistryObject<AutoSmeltingUpgradeItem> AUTO_SMELTING_UPGRADE = ITEMS.register("auto_smelting_upgrade",
