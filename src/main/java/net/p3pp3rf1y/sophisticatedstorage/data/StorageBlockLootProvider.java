@@ -5,6 +5,7 @@ import net.minecraft.data.DataGenerator;
 import net.minecraft.data.DataProvider;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.LootTables;
@@ -46,6 +47,7 @@ public class StorageBlockLootProvider implements DataProvider {
 		tables.put(ModBlocks.GOLD_SHULKER_BOX.getId(), getStorage(ModBlocks.GOLD_SHULKER_BOX_ITEM.get()));
 		tables.put(ModBlocks.DIAMOND_SHULKER_BOX.getId(), getStorage(ModBlocks.DIAMOND_SHULKER_BOX_ITEM.get()));
 		tables.put(ModBlocks.NETHERITE_SHULKER_BOX.getId(), getStorage(ModBlocks.NETHERITE_SHULKER_BOX_ITEM.get()));
+		tables.put(ModBlocks.CONTROLLER.getId(), createSingleItemTable(ModBlocks.CONTROLLER_ITEM.get()));
 
 		for (Map.Entry<ResourceLocation, LootTable.Builder> e : tables.entrySet()) {
 			Path path = getPath(generator.getOutputFolder(), e.getKey());
@@ -68,5 +70,9 @@ public class StorageBlockLootProvider implements DataProvider {
 				.apply(CopyNameFunction.copyName(CopyNameFunction.NameSource.BLOCK_ENTITY))
 				.apply(CopyStorageDataFunction.builder());
 		return LootTable.lootTable().withPool(pool);
+	}
+
+	protected static LootTable.Builder createSingleItemTable(ItemLike item) {
+		return LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(item)));
 	}
 }
