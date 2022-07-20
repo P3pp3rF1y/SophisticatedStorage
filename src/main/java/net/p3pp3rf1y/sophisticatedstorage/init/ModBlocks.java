@@ -95,7 +95,7 @@ public class ModBlocks {
 	public static final RegistryObject<BlockItem> DIAMOND_SHULKER_BOX_ITEM = ITEMS.register("diamond_shulker_box", () -> new ShulkerBoxItem(DIAMOND_SHULKER_BOX.get()));
 	public static final RegistryObject<BlockItem> NETHERITE_SHULKER_BOX_ITEM = ITEMS.register("netherite_shulker_box", () -> new ShulkerBoxItem(NETHERITE_SHULKER_BOX.get()));
 
-	public static final RegistryObject<ControllerBlock> CONTROLLER = BLOCKS.register("controller", () -> new ControllerBlock(BlockBehaviour.Properties.of(Material.STONE)));
+	public static final RegistryObject<ControllerBlock> CONTROLLER = BLOCKS.register("controller", () -> new ControllerBlock(BlockBehaviour.Properties.of(Material.STONE).requiresCorrectToolForDrops().strength(3F, 6.0F)));
 	public static final RegistryObject<BlockItem> CONTROLLER_ITEM = ITEMS.register("controller", () -> new BlockItemBase(CONTROLLER.get(), new Item.Properties(), SophisticatedStorage.CREATIVE_TAB));
 
 	@SuppressWarnings("ConstantConditions") //no datafixer type needed

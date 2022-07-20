@@ -1,5 +1,6 @@
 {
     "itemGroup.sophisticatedstorage": "精妙存储",
+    "item.sophisticatedstorage.packing_tape": "包装带",
     "item.sophisticatedstorage.barrel": "木桶",
     "item.sophisticatedstorage.oak_barrel": "橡木桶",
     "item.sophisticatedstorage.spruce_barrel": "云杉木桶",
@@ -189,5 +190,6 @@
     "gui.sophisticatedstorage.settings.buttons.context_storage.tooltip": "该容器的设置",
     "gui.sophisticatedstorage.settings.buttons.context_storage.tooltip_detail": "继承自玩家设置，或为该容器单独覆写",
     "keybind.sophisticatedstorage.category": "精妙存储",
-    "keybind.sophisticatedstorage.sort": "整理容器"
+    "keybind.sophisticatedstorage.sort": "整理容器",
+    "gui.sophisticatedstorage.status.too_many_item_entity_drops": "无法破坏该%s，将会导致过多（%s）掉落物实体从中掉落\n请考虑使用%s或者按住Shift进行破坏来跳过此项检查"
 }
