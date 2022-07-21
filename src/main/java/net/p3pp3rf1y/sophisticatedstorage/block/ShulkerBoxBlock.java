@@ -198,6 +198,7 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 	private void addShulkerContentsToStack(ItemStack stack, StorageBlockEntity be) {
 		StorageWrapper storageWrapper = be.getStorageWrapper();
 		UUID shulkerBoxUuid = storageWrapper.getContentsUuid().orElse(UUID.randomUUID());
+		be.removeControllerPos();
 		CompoundTag shulkerContents = be.saveWithoutMetadata();
 		if (!shulkerContents.isEmpty()) {
 			ItemContentsStorage.get().setStorageContents(shulkerBoxUuid, shulkerContents);
