@@ -42,6 +42,7 @@ import net.minecraft.world.phys.shapes.EntityCollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.network.NetworkHooks;
+import net.p3pp3rf1y.sophisticatedcore.controller.IControllableStorage;
 import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryHandler;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeHandler;
 import net.p3pp3rf1y.sophisticatedcore.util.ColorHelper;
@@ -198,8 +199,8 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 	private void addShulkerContentsToStack(ItemStack stack, StorageBlockEntity be) {
 		StorageWrapper storageWrapper = be.getStorageWrapper();
 		UUID shulkerBoxUuid = storageWrapper.getContentsUuid().orElse(UUID.randomUUID());
-		be.removeControllerPos();
 		CompoundTag shulkerContents = be.saveWithoutMetadata();
+		shulkerContents.remove(IControllableStorage.CONTROLLER_POS_TAG);
 		if (!shulkerContents.isEmpty()) {
 			ItemContentsStorage.get().setStorageContents(shulkerBoxUuid, shulkerContents);
 			NBTHelper.setUniqueId(stack, "uuid", shulkerBoxUuid);
