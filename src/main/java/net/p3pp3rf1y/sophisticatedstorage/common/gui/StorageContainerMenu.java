@@ -7,7 +7,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.network.NetworkHooks;
@@ -72,7 +71,7 @@ public class StorageContainerMenu extends StorageContainerMenuBase<IStorageWrapp
 	}
 
 	@Override
-	protected boolean isNotCorrectStorageItem(ItemStack supposedToBeStorageItemStack) {
+	protected boolean storageItemHasChanged() {
 		return false; //storage blocks never have the issue of needing to close gui when item has moved in inventory
 	}
 
