@@ -50,6 +50,8 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 
 	private boolean isDroppingContents = false;
 
+	private boolean chunkBeingUnloaded = false;
+
 	protected StorageBlockEntity(BlockPos pos, BlockState state, BlockEntityType<? extends StorageBlockEntity> blockEntityType) {
 		super(blockEntityType, pos, state);
 		storageWrapper = new StorageWrapper(() -> this::setChanged, () -> WorldHelper.notifyBlockUpdate(this), () -> {
@@ -184,6 +186,11 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		loadStorageWrapper(tag);
 		loadData(tag);
 		loadControllerPos(tag);
+
+		if (level != null && !level.isClientSide()) {
+			removeControllerPos();
+			tryToAddToController();
+		}
 	}
 
 	private void loadStorageWrapper(CompoundTag tag) {
@@ -205,6 +212,21 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		} else {
 			updateBlockRender = true;
 		}
+	}
+
+	@Override
+	public void onChunkUnloaded() {
+		super.onChunkUnloaded();
+		chunkBeingUnloaded = true;
+	}
+
+	@Override
+	public void setRemoved() {
+		if (!chunkBeingUnloaded && level != null) {
+			removeFromController();
+		}
+
+		super.setRemoved();
 	}
 
 	@Nullable
