@@ -18,6 +18,7 @@ import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.client.event.TextureStitchEvent;
+import net.minecraftforge.client.gui.OverlayRegistry;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.client.settings.IKeyConflictContext;
 import net.minecraftforge.common.MinecraftForge;
@@ -29,6 +30,7 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageScreen;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageTranslationHelper;
+import net.p3pp3rf1y.sophisticatedstorage.client.gui.ToolInfoOverlay;
 import net.p3pp3rf1y.sophisticatedstorage.client.init.ModBlockColors;
 import net.p3pp3rf1y.sophisticatedstorage.client.init.ModItemColors;
 import net.p3pp3rf1y.sophisticatedstorage.client.init.ModParticles;
@@ -37,12 +39,14 @@ import net.p3pp3rf1y.sophisticatedstorage.client.render.BarrelRenderer;
 import net.p3pp3rf1y.sophisticatedstorage.client.render.ChestDynamicModel;
 import net.p3pp3rf1y.sophisticatedstorage.client.render.ChestRenderer;
 import net.p3pp3rf1y.sophisticatedstorage.client.render.ClientStorageContentsTooltip;
+import net.p3pp3rf1y.sophisticatedstorage.client.render.ControllerRenderer;
 import net.p3pp3rf1y.sophisticatedstorage.client.render.ShulkerBoxDynamicModel;
 import net.p3pp3rf1y.sophisticatedstorage.client.render.ShulkerBoxRenderer;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageContentsTooltip;
 
+import static net.minecraftforge.client.gui.ForgeIngameGui.HOTBAR_ELEMENT;
 import static net.minecraftforge.client.settings.KeyConflictContext.GUI;
 
 public class ClientEventHandler {
@@ -84,7 +88,6 @@ public class ClientEventHandler {
 		eventBus.addListener(EventPriority.HIGH, ClientEventHandler::handleGuiMouseKeyPress);
 		eventBus.addListener(EventPriority.HIGH, ClientEventHandler::handleGuiKeyPress);
 	}
-
 
 	public static void handleGuiKeyPress(ScreenEvent.KeyboardKeyPressedEvent.Pre event) {
 		if (SORT_KEYBIND.isActiveAndMatches(InputConstants.getKey(event.getKeyCode(), event.getScanCode())) && tryCallSort(event.getScreen())) {
@@ -134,6 +137,7 @@ public class ClientEventHandler {
 		MinecraftForgeClient.registerTooltipComponentFactory(StorageContentsTooltip.class, ClientStorageContentsTooltip::new);
 
 		event.enqueueWork(() -> ClientRegistry.registerKeyBinding(SORT_KEYBIND));
+		OverlayRegistry.registerOverlayAbove(HOTBAR_ELEMENT, "storage_tool_info", ToolInfoOverlay.HUD_TOOL_INFO);
 	}
 
 	private static void stitchTextures(TextureStitchEvent.Pre event) {
@@ -189,6 +193,7 @@ public class ClientEventHandler {
 		event.registerBlockEntityRenderer(ModBlocks.BARREL_BLOCK_ENTITY_TYPE.get(), context -> new BarrelRenderer());
 		event.registerBlockEntityRenderer(ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get(), ChestRenderer::new);
 		event.registerBlockEntityRenderer(ModBlocks.SHULKER_BOX_BLOCK_ENTITY_TYPE.get(), ShulkerBoxRenderer::new);
+		event.registerBlockEntityRenderer(ModBlocks.CONTROLLER_BLOCK_ENTITY_TYPE.get(), context -> new ControllerRenderer());
 	}
 
 	private static void loadComplete(FMLLoadCompleteEvent event) {

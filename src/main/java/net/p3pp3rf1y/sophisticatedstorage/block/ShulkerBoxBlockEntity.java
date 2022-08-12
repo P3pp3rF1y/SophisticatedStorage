@@ -139,11 +139,6 @@ public class ShulkerBoxBlockEntity extends StorageBlockEntity {
 		return false;
 	}
 
-	@Override
-	public boolean canBeConnected() {
-		return true;
-	}
-
 	public enum AnimationStatus {
 		CLOSED,
 		OPENING,

@@ -22,6 +22,7 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.p3pp3rf1y.sophisticatedcore.controller.IControllableStorage;
+import net.p3pp3rf1y.sophisticatedcore.controller.ILinkable;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.ITickableUpgrade;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
@@ -29,11 +30,13 @@ import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Collections;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
-public abstract class StorageBlockEntity extends BlockEntity implements IControllableStorage {
+public abstract class StorageBlockEntity extends BlockEntity implements IControllableStorage, ILinkable {
 	public static final String STORAGE_WRAPPER_TAG = "storageWrapper";
 	private final StorageWrapper storageWrapper;
 	@Nullable
@@ -45,6 +48,8 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 
 	@Nullable
 	private BlockPos controllerPos = null;
+	private boolean isLinkedToController = false;
+	private boolean isBeingUpgraded = false;
 
 	protected abstract ContainerOpenersCounter getOpenersCounter();
 
@@ -131,6 +136,9 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		saveStorageWrapper(tag);
 		saveData(tag);
 		saveControllerPos(tag);
+		if (isLinkedToController) {
+			tag.putBoolean("isLinkedToController", isLinkedToController);
+		}
 	}
 
 	private void saveStorageWrapper(CompoundTag tag) {
@@ -191,6 +199,7 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 			removeControllerPos();
 			tryToAddToController();
 		}
+		isLinkedToController = NBTHelper.getBoolean(tag, "isLinkedToController").orElse(false);
 	}
 
 	private void loadStorageWrapper(CompoundTag tag) {
@@ -222,7 +231,7 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 
 	@Override
 	public void setRemoved() {
-		if (!chunkBeingUnloaded && level != null) {
+		if (!isBeingUpgraded && !chunkBeingUnloaded && level != null) {
 			removeFromController();
 		}
 
@@ -330,6 +339,7 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 	@Override
 	public void removeControllerPos() {
 		controllerPos = null;
+		setChanged();
 	}
 
 	@Override
@@ -340,5 +350,48 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 	@Override
 	public Level getStorageBlockLevel() {
 		return Objects.requireNonNull(getLevel());
+	}
+
+	@Override
+	public void linkToController(BlockPos controllerPos) {
+		isLinkedToController = true;
+		ILinkable.super.linkToController(controllerPos);
+		setChanged();
+	}
+
+	@Override
+	public boolean isLinked() {
+		return isLinkedToController && getControllerPos().isPresent();
+	}
+
+	@Override
+	public void setNotLinked() {
+		ILinkable.super.setNotLinked();
+		isLinkedToController = false;
+		setChanged();
+	}
+
+	@Override
+	public boolean canConnectStorages() {
+		return !isLinkedToController;
+	}
+
+	@Override
+	public Set<BlockPos> getConnectablePositions() {
+		return Collections.emptySet();
+	}
+
+	@Override
+	public boolean connectLinkedSelf() {
+		return true;
+	}
+
+	@Override
+	public boolean canBeConnected() {
+		return isLinked() || IControllableStorage.super.canBeConnected();
+	}
+
+	public void setBeingUpgraded() {
+		isBeingUpgraded = true;
 	}
 }

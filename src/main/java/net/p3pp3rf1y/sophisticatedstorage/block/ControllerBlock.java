@@ -8,13 +8,14 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.Material;
 import net.p3pp3rf1y.sophisticatedcore.controller.ControllerBlockEntityBase;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import org.jetbrains.annotations.Nullable;
 
 public class ControllerBlock extends Block implements EntityBlock {
-	public ControllerBlock(Properties properties) {
-		super(properties);
+	public ControllerBlock() {
+		super(Properties.of(Material.STONE).requiresCorrectToolForDrops().strength(3F, 6.0F));
 	}
 
 	@Nullable
@@ -23,9 +24,10 @@ public class ControllerBlock extends Block implements EntityBlock {
 		return new ControllerBlockEntity(pos, state);
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean isMoving) {
-		WorldHelper.getBlockEntity(level, pos, ControllerBlockEntityBase.class).ifPresent(ControllerBlockEntityBase::detachFromStorages);
+		WorldHelper.getBlockEntity(level, pos, ControllerBlockEntityBase.class).ifPresent(ControllerBlockEntityBase::detachFromStoragesAndUnlinkBlocks);
 		super.onRemove(state, level, pos, newState, isMoving);
 	}
 

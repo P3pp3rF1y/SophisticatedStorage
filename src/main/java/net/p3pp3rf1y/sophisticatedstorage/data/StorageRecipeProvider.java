@@ -48,6 +48,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 		addBarrelRecipes(consumer);
 		addChestRecipes(consumer);
 		addShulkerBoxRecipes(consumer);
+		addControllerRelatedRecipes(consumer);
 		addUpgradeRecipes(consumer);
 		addTierUpgradeRecipes(consumer);
 
@@ -55,6 +56,46 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.requires(Tags.Items.SLIMEBALLS)
 				.requires(Items.PAPER)
 				.unlockedBy("has_slime", has(Tags.Items.SLIMEBALLS))
+				.save(consumer);
+	}
+
+	private void addControllerRelatedRecipes(Consumer<FinishedRecipe> consumer) {
+		ShapeBasedRecipeBuilder.shaped(ModBlocks.CONTROLLER_ITEM.get())
+				.pattern("SCS")
+				.pattern("PBP")
+				.pattern("SCS")
+				.define('S', Tags.Items.STONE)
+				.define('C', Items.COMPARATOR)
+				.define('P', ItemTags.PLANKS)
+				.define('B', ModBlocks.BASE_TIER_WOODEN_STORAGE_TAG)
+				.unlockedBy("has_base_tier_wooden_storage", has(ModBlocks.BASE_TIER_WOODEN_STORAGE_TAG))
+				.save(consumer);
+
+		ShapelessBasedRecipeBuilder.shapeless(ModBlocks.STORAGE_LINK_ITEM.get(), 3)
+				.requires(ModBlocks.CONTROLLER_ITEM.get())
+				.requires(Tags.Items.ENDER_PEARLS)
+				.unlockedBy("has_controller", has(ModBlocks.CONTROLLER_ITEM.get()))
+				.save(consumer,SophisticatedStorage.getRL("storage_link_from_controller"));
+
+		ShapeBasedRecipeBuilder.shaped(ModBlocks.STORAGE_LINK_ITEM.get())
+				.pattern("EP")
+				.pattern("RS")
+				.define('E', Tags.Items.ENDER_PEARLS)
+				.define('P', ItemTags.PLANKS)
+				.define('R', Items.REPEATER)
+				.define('S', Tags.Items.STONE)
+				.unlockedBy("has_repeater", has(Items.REPEATER))
+				.save(consumer);
+
+		ShapeBasedRecipeBuilder.shaped(ModItems.STORAGE_TOOL.get())
+				.pattern(" EI")
+				.pattern(" SR")
+				.pattern("S  ")
+				.define('E', Tags.Items.ENDER_PEARLS)
+				.define('I', Tags.Items.INGOTS_IRON)
+				.define('S', Tags.Items.RODS_WOODEN)
+				.define('R', Items.REDSTONE_TORCH)
+				.unlockedBy("has_redstone_torch", has(Items.REDSTONE_TORCH))
 				.save(consumer);
 	}
 
@@ -67,17 +108,6 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('S', Items.SHULKER_SHELL)
 				.define('C', Tags.Items.CHESTS)
 				.unlockedBy("has_shulker_shell", has(Items.SHULKER_SHELL))
-				.save(consumer);
-
-		ShapeBasedRecipeBuilder.shaped(ModBlocks.CONTROLLER_ITEM.get())
-				.pattern("SCS")
-				.pattern("PBP")
-				.pattern("SCS")
-				.define('S', Tags.Items.STONE)
-				.define('C', Items.COMPARATOR)
-				.define('P', ItemTags.PLANKS)
-				.define('B', ModBlocks.BASE_TIER_WOODEN_STORAGE_TAG)
-				.unlockedBy("has_base_tier_wooden_storage", has(ModBlocks.BASE_TIER_WOODEN_STORAGE_TAG))
 				.save(consumer);
 
 		ShapelessBasedRecipeBuilder.shapeless(ModBlocks.SHULKER_BOX_ITEM.get())

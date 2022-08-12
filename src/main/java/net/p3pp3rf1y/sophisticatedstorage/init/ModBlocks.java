@@ -32,6 +32,8 @@ import net.p3pp3rf1y.sophisticatedstorage.block.ControllerBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.ControllerBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.block.ShulkerBoxBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.ShulkerBoxBlockEntity;
+import net.p3pp3rf1y.sophisticatedstorage.block.StorageLinkBlock;
+import net.p3pp3rf1y.sophisticatedstorage.block.StorageLinkBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageScreen;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageSettingsScreen;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
@@ -94,8 +96,10 @@ public class ModBlocks {
 	public static final RegistryObject<BlockItem> DIAMOND_SHULKER_BOX_ITEM = ITEMS.register("diamond_shulker_box", () -> new ShulkerBoxItem(DIAMOND_SHULKER_BOX.get()));
 	public static final RegistryObject<BlockItem> NETHERITE_SHULKER_BOX_ITEM = ITEMS.register("netherite_shulker_box", () -> new ShulkerBoxItem(NETHERITE_SHULKER_BOX.get()));
 
-	public static final RegistryObject<ControllerBlock> CONTROLLER = BLOCKS.register("controller", () -> new ControllerBlock(BlockBehaviour.Properties.of(Material.STONE).requiresCorrectToolForDrops().strength(3F, 6.0F)));
+	public static final RegistryObject<ControllerBlock> CONTROLLER = BLOCKS.register("controller", ControllerBlock::new);
+	public static final RegistryObject<StorageLinkBlock> STORAGE_LINK = BLOCKS.register("storage_link", StorageLinkBlock::new);
 	public static final RegistryObject<BlockItem> CONTROLLER_ITEM = ITEMS.register("controller", () -> new BlockItemBase(CONTROLLER.get(), new Item.Properties(), SophisticatedStorage.CREATIVE_TAB));
+	public static final RegistryObject<BlockItem> STORAGE_LINK_ITEM = ITEMS.register("storage_link", () -> new BlockItemBase(STORAGE_LINK.get(), new Item.Properties(), SophisticatedStorage.CREATIVE_TAB));
 
 	@SuppressWarnings("ConstantConditions") //no datafixer type needed
 	public static final RegistryObject<BlockEntityType<BarrelBlockEntity>> BARREL_BLOCK_ENTITY_TYPE = BLOCK_ENTITIES.register(BARREL_REG_NAME, () ->
@@ -115,6 +119,11 @@ public class ModBlocks {
 	@SuppressWarnings("ConstantConditions") //no datafixer type needed
 	public static final RegistryObject<BlockEntityType<ControllerBlockEntity>> CONTROLLER_BLOCK_ENTITY_TYPE = BLOCK_ENTITIES.register("controller", () ->
 			BlockEntityType.Builder.of(ControllerBlockEntity::new, CONTROLLER.get())
+					.build(null));
+
+	@SuppressWarnings("ConstantConditions") //no datafixer type needed
+	public static final RegistryObject<BlockEntityType<StorageLinkBlockEntity>> STORAGE_LINK_BLOCK_ENTITY_TYPE = BLOCK_ENTITIES.register("storage_link", () ->
+			BlockEntityType.Builder.of(StorageLinkBlockEntity::new, STORAGE_LINK.get())
 					.build(null));
 
 	public static final RegistryObject<MenuType<StorageContainerMenu>> STORAGE_CONTAINER_TYPE = CONTAINERS.register("storage",
