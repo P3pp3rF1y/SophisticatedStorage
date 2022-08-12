@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "conditions": [
+    {
+      "itemRegistryName": "sophisticatedstorage:storage_link",
+      "type": "sophisticatedcore:item_enabled"
+    }
+  ],
+  "ingredients": [
+    {
+      "item": "sophisticatedstorage:controller"
+    },
+    {
+      "tag": "forge:ender_pearls"
+    }
+  ],
+  "result": {
+    "item": "sophisticatedstorage:storage_link",
+    "count": 3
+  }
+}
