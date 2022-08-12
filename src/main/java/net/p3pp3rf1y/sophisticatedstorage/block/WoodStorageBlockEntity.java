@@ -91,11 +91,16 @@ public abstract class WoodStorageBlockEntity extends StorageBlockEntity{
 
 	@Override
 	public boolean canConnectStorages() {
-		return !packed;
+		return !packed && super.canConnectStorages();
 	}
 
 	@Override
 	public boolean canBeConnected() {
+		return !packed && super.canBeConnected();
+	}
+
+	@Override
+	public boolean canBeLinked() {
 		return !packed;
 	}
 }
