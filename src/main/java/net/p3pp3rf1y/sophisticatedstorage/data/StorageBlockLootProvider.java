@@ -51,6 +51,7 @@ public class StorageBlockLootProvider implements DataProvider {
 		tables.put(ModBlocks.DIAMOND_SHULKER_BOX.getId(), getStorage(ModBlocks.DIAMOND_SHULKER_BOX_ITEM.get()));
 		tables.put(ModBlocks.NETHERITE_SHULKER_BOX.getId(), getStorage(ModBlocks.NETHERITE_SHULKER_BOX_ITEM.get()));
 		tables.put(ModBlocks.CONTROLLER.getId(), createSingleItemTable(ModBlocks.CONTROLLER_ITEM.get()));
+		tables.put(ModBlocks.STORAGE_LINK.getId(), createSingleItemTable(ModBlocks.STORAGE_LINK_ITEM.get()));
 
 		for (Map.Entry<ResourceLocation, LootTable.Builder> e : tables.entrySet()) {
 			Path path = getPath(generator.getOutputFolder(), e.getKey());
