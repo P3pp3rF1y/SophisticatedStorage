@@ -1,6 +1,12 @@
 {
     "itemGroup.sophisticatedstorage": "Sophisticated Storage",
     "item.sophisticatedstorage.packing_tape": "Packing Tape",
+    "item.sophisticatedstorage.storage_tool": "Storage Tool",
+    "item.sophisticatedstorage.storage_tool.overlay.linking": "Linking to controller at x:%s y:%s z:%s",
+    "item.sophisticatedstorage.storage_tool.overlay.unlinking": "Unlinking from controller",
+    "item.sophisticatedstorage.debug_tool": "Debug Tool",
+    "item.sophisticatedstorage.storage_link": "Storage Link",
+    "block.sophisticatedstorage.storage_link": "Storage Link",
     "item.sophisticatedstorage.controller": "Storage Controller",
     "block.sophisticatedstorage.controller": "Storage Controller",
     "item.sophisticatedstorage.barrel": "Barrel",

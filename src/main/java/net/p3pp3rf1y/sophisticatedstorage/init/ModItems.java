@@ -88,6 +88,7 @@ import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageButtonDefinitions;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageTierUpgradeItem;
+import net.p3pp3rf1y.sophisticatedstorage.item.StorageToolItem;
 
 public class ModItems {
 	private ModItems() {}
@@ -160,6 +161,8 @@ public class ModItems {
 	public static final RegistryObject<ItemBase> UPGRADE_BASE = ITEMS.register("upgrade_base", () -> new ItemBase(new Item.Properties().stacksTo(16), SophisticatedStorage.CREATIVE_TAB));
 
 	public static final RegistryObject<ItemBase> PACKING_TAPE = ITEMS.register("packing_tape", ()-> new ItemBase(new Item.Properties().stacksTo(1).durability(4), SophisticatedStorage.CREATIVE_TAB));
+	public static final RegistryObject<ItemBase> STORAGE_TOOL = ITEMS.register("storage_tool", StorageToolItem::new);
+	public static final RegistryObject<ItemBase> DEBUG_TOOL = ITEMS.register("debug_tool", () -> new ItemBase(new Item.Properties().stacksTo(1), SophisticatedStorage.CREATIVE_TAB));
 
 	public static void registerHandlers(IEventBus modBus) {
 		ITEMS.register(modBus);

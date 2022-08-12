@@ -198,6 +198,7 @@ public class StorageTierUpgradeItem extends ItemBase {
 			int newUpgradeSize = newBlockEntity.getStorageWrapper().getUpgradeHandler().getSlots();
 			newBlockEntity.load(beTag);
 
+			blockEntity.setBeingUpgraded();
 			level.removeBlockEntity(pos);
 			level.removeBlock(pos, false);
 

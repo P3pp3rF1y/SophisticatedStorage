@@ -1,0 +1,34 @@
+{
+  "parent": "minecraft:recipes/root",
+  "rewards": {
+    "recipes": [
+      "sophisticatedstorage:storage_link"
+    ]
+  },
+  "criteria": {
+    "has_repeater": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "minecraft:repeater"
+            ]
+          }
+        ]
+      }
+    },
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "sophisticatedstorage:storage_link"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_repeater",
+      "has_the_recipe"
+    ]
+  ]
+}
