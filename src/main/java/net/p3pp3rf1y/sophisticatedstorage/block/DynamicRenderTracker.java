@@ -27,9 +27,16 @@ public class DynamicRenderTracker implements IDynamicRenderTracker {
 	public void onRenderInfoUpdated(RenderInfo ri) {
 		if (getLevel().isClientSide) {
 			ItemStack item = ri.getItemDisplayRenderInfo().getItem();
+			if (item.isEmpty()) {
+				lastRenderItem = ItemStack.EMPTY;
+				dynamicRenderer = false;
+				return;
+			}
+
 			if (ItemHandlerHelper.canItemStacksStack(lastRenderItem, item)) {
 				return;
 			}
+
 			lastRenderItem = item;
 
 			boolean wasDynamic = dynamicRenderer;

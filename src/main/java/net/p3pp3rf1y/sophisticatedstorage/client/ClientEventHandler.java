@@ -164,7 +164,7 @@ public class ClientEventHandler {
 			return;
 		}
 
-		ChestRenderer.WOOD_MATERIALS.values().forEach(mat -> event.addSprite(mat.texture()));
+		ChestRenderer.getWoodMaterials().forEach(mat -> event.addSprite(mat.texture()));
 		event.addSprite(ChestRenderer.WOOD_TIER_MATERIAL.texture());
 		event.addSprite(ChestRenderer.IRON_TIER_MATERIAL.texture());
 		event.addSprite(ChestRenderer.GOLD_TIER_MATERIAL.texture());
@@ -180,8 +180,8 @@ public class ClientEventHandler {
 			return;
 		}
 
-		BarrelDynamicModel.WOOD_TEXTURES.forEach((name, textures) -> textures.values().forEach(event::addSprite));
-		ChestDynamicModel.WOOD_BREAK_TEXTURES.forEach((name, texture) -> event.addSprite(texture));
+		BarrelDynamicModel.getWoodTextures().forEach(textures -> textures.values().forEach(event::addSprite));
+		ChestDynamicModel.getWoodBreakTextures().forEach(event::addSprite);
 		event.addSprite(ChestDynamicModel.TINTABLE_BREAK_TEXTURE);
 		event.addSprite(ShulkerBoxDynamicModel.TINTABLE_BREAK_TEXTURE);
 		event.addSprite(ShulkerBoxDynamicModel.MAIN_BREAK_TEXTURE);
