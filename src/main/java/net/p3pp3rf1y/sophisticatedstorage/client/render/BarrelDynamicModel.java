@@ -1,5 +1,9 @@
 package net.p3pp3rf1y.sophisticatedstorage.client.render;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.gson.JsonDeserializationContext;
@@ -14,6 +18,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.BlockModel;
+import net.minecraft.client.renderer.block.model.FaceBakery;
 import net.minecraft.client.renderer.block.model.ItemOverrides;
 import net.minecraft.client.renderer.block.model.ItemTransform;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
@@ -45,6 +50,7 @@ import net.minecraftforge.client.model.data.ModelDataMap;
 import net.minecraftforge.client.model.data.ModelProperty;
 import net.minecraftforge.client.model.geometry.IModelGeometry;
 import net.minecraftforge.common.model.TransformationHelper;
+import net.p3pp3rf1y.sophisticatedcore.inventory.ItemStackKey;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
@@ -65,10 +71,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
-	public static final Map<String, Map<String, ResourceLocation>> WOOD_TEXTURES = new HashMap<>();
+	private static final Map<String, Map<String, ResourceLocation>> WOOD_TEXTURES = new HashMap<>();
 
 	private static final String BLOCK_FOLDER = "block/";
 
@@ -89,6 +96,10 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 
 	private final Map<String, UnbakedModel> woodModels;
 	private final Map<ModelPart, UnbakedModel> additionalModelParts;
+
+	public static Collection<Map<String, ResourceLocation>> getWoodTextures() {
+		return WOOD_TEXTURES.values();
+	}
 
 	public BarrelDynamicModel(Map<String, UnbakedModel> woodModels, Map<ModelPart, UnbakedModel> additionalModelParts) {
 		this.woodModels = woodModels;
@@ -124,8 +135,9 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 
 	private static class BarrelBakedModel implements IDynamicBakedModel {
 		private static final QuadTransformer MOVE_TO_CORNER = new QuadTransformer(new Transformation(new Vector3f(-.5f, -.5f, -.5f), null, null, null));
-		private static final QuadTransformer FLIP_AND_SCALE = new QuadTransformer(new Transformation(null, Vector3f.YN.rotationDegrees(180), new Vector3f(0.75f, 0.75f, 0.75f), null));
+		private static final QuadTransformer FLIP_AND_SCALE = new QuadTransformer(new Transformation(null, Vector3f.YN.rotationDegrees(180), new Vector3f(0.65f, 0.65f, 0.65f), null));
 		private static final QuadTransformer ROTATE_90_DEGREES = new QuadTransformer(new Transformation(null, Vector3f.XN.rotationDegrees(90), null, null));
+		private static final QuadTransformer ROTATE_270_DEGREES = new QuadTransformer(new Transformation(null, Vector3f.XN.rotationDegrees(270), null, null));
 		private static final Map<Direction, QuadTransformer> DIRECTION_ROTATES = Map.of(
 				Direction.UP, getDirectionRotationTransform(Direction.UP),
 				Direction.DOWN, getDirectionRotationTransform(Direction.DOWN),
@@ -142,14 +154,13 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 				Direction.WEST, getDirectionMoveBackToSide(Direction.WEST, 0.5f),
 				Direction.EAST, getDirectionMoveBackToSide(Direction.EAST, 0.5f)
 		);
-		private static final Map<Direction, QuadTransformer> DIRECTION_MOVES_3D_ITEMS = Map.of(
-				Direction.UP, getDirectionMoveBackToSide(Direction.UP, 0.55f),
-				Direction.DOWN, getDirectionMoveBackToSide(Direction.DOWN, 0.55f),
-				Direction.NORTH, getDirectionMoveBackToSide(Direction.NORTH, 0.55f),
-				Direction.SOUTH, getDirectionMoveBackToSide(Direction.SOUTH, 0.55f),
-				Direction.WEST, getDirectionMoveBackToSide(Direction.WEST, 0.55f),
-				Direction.EAST, getDirectionMoveBackToSide(Direction.EAST, 0.55f)
-		);
+		private static final LoadingCache<Direction, Cache<Integer, QuadTransformer>> DIRECTION_MOVES_3D_ITEMS = CacheBuilder.newBuilder().expireAfterAccess(30L, TimeUnit.MINUTES).build(new CacheLoader<>() {
+			@Override
+			public Cache<Integer, QuadTransformer> load(Direction key) {
+				return CacheBuilder.newBuilder().expireAfterAccess(10L, TimeUnit.MINUTES).build();
+			}
+		});
+
 		private static QuadTransformer getDirectionRotationTransform(Direction dir) {
 			Quaternion rotation = dir.getRotation();
 			if (dir.getAxis().isVertical()) {
@@ -165,7 +176,6 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 			offset.add(.5f, .5f, .5f);
 			return new QuadTransformer(new Transformation(offset, null, null, null));
 		}
-
 
 		private static final ModelProperty<String> WOOD_NAME = new ModelProperty<>();
 		private static final ModelProperty<Boolean> IS_PACKED = new ModelProperty<>();
@@ -183,7 +193,7 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 		private String barrelWoodName = null;
 		private boolean barrelHasMainColor = false;
 		private boolean barrelHasAccentColor = false;
-		public boolean barrelIsPacked;
+		private boolean barrelIsPacked = false;
 
 		public BarrelBakedModel(Map<String, BakedModel> woodModels, Map<ModelPart, BakedModel> additionalModelParts) {
 			this.woodModels = woodModels;
@@ -234,8 +244,12 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 			));
 			TRANSFORMS = builder.build();
 
-			//noinspection ConstantConditions,deprecation
-			ITEM_TRANSFORMS = new ItemTransforms(fromTransformation(TRANSFORMS.get(ItemTransforms.TransformType.THIRD_PERSON_LEFT_HAND)), fromTransformation(TRANSFORMS.get(ItemTransforms.TransformType.THIRD_PERSON_RIGHT_HAND)),
+			ITEM_TRANSFORMS = createItemTransforms();
+		}
+
+		@SuppressWarnings("deprecation")
+		private static ItemTransforms createItemTransforms() {
+			return new ItemTransforms(fromTransformation(TRANSFORMS.get(ItemTransforms.TransformType.THIRD_PERSON_LEFT_HAND)), fromTransformation(TRANSFORMS.get(ItemTransforms.TransformType.THIRD_PERSON_RIGHT_HAND)),
 					fromTransformation(TRANSFORMS.get(ItemTransforms.TransformType.FIRST_PERSON_LEFT_HAND)), fromTransformation(TRANSFORMS.get(ItemTransforms.TransformType.FIRST_PERSON_RIGHT_HAND)),
 					fromTransformation(TRANSFORMS.get(ItemTransforms.TransformType.HEAD)), fromTransformation(TRANSFORMS.get(ItemTransforms.TransformType.GUI)),
 					fromTransformation(TRANSFORMS.get(ItemTransforms.TransformType.GROUND)), fromTransformation(TRANSFORMS.get(ItemTransforms.TransformType.FIXED)));
@@ -307,19 +321,25 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 				Integer rotationData = extraData.getData(DISPLAY_ITEM_ROTATION);
 				int rotation = rotationData == null ? 0 : rotationData;
 				for (Direction face : Direction.values()) {
-					addRenderedItemSide(state, rand, ret, model, rotation, face);
+					addRenderedItemSide(state, rand, ret, displayItem, model, rotation, face);
 				}
-				addRenderedItemSide(state, rand, ret, model, rotation, null);
+				addRenderedItemSide(state, rand, ret, displayItem, model, rotation, null);
 			}
 		}
 
 		@SuppressWarnings("deprecation")
-		private void addRenderedItemSide(BlockState state, Random rand, List<BakedQuad> ret, BakedModel model, int rotation, @Nullable Direction s) {
+		private void addRenderedItemSide(BlockState state, Random rand, List<BakedQuad> ret, ItemStack displayItem, BakedModel model, int rotation, @Nullable Direction s) {
 			List<BakedQuad> quads = model.getQuads(null, s, rand);
 			quads = MOVE_TO_CORNER.processMany(quads);
-			quads = FLIP_AND_SCALE.processMany(quads);
+			if (!model.isGui3d()) {
+				quads = FLIP_AND_SCALE.processMany(quads);
+			}
 			quads = new QuadTransformer(TransformationHelper.toTransformation(model.getTransforms().getTransform(ItemTransforms.TransformType.FIXED))).processMany(quads);
-			quads = ROTATE_90_DEGREES.processMany(quads);
+			if (model.isGui3d()) {
+				quads = ROTATE_270_DEGREES.processMany(quads);
+			} else {
+				quads = ROTATE_90_DEGREES.processMany(quads);
+			}
 			if (rotation != 0) {
 				quads = getDisplayRotation(rotation).processMany(quads);
 			}
@@ -327,12 +347,32 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 			quads = DIRECTION_ROTATES.get(facing).processMany(quads);
 
 			if (model.isGui3d()) {
-				quads = DIRECTION_MOVES_3D_ITEMS.get(facing).processMany(quads);
+				QuadTransformer transformer = getDirectionMove(displayItem, model, facing);
+				quads = transformer.processMany(quads);
+				recalculateDirections(quads);
 			} else {
 				quads = DIRECTION_MOVES.get(facing).processMany(quads);
 			}
 
 			ret.addAll(quads);
+		}
+
+		private void recalculateDirections(List<BakedQuad> quads) {
+			quads.forEach(quad -> quad.direction = FaceBakery.calculateFacing(quad.getVertices()));
+		}
+
+		private QuadTransformer getDirectionMove(ItemStack displayItem, BakedModel model, Direction direction) {
+			int hash = ItemStackKey.getHashCode(displayItem);
+			Cache<Integer, QuadTransformer> directionCache = DIRECTION_MOVES_3D_ITEMS.getUnchecked(direction);
+			QuadTransformer transformer = directionCache.getIfPresent(hash);
+			if (transformer != null) {
+				return transformer;
+			}
+			double offset = DisplayItemRenderer.getDisplayItemOffset(displayItem, model);
+			transformer = getDirectionMoveBackToSide(direction, (float) (0.5f + offset));
+			directionCache.put(hash, transformer);
+
+			return transformer;
 		}
 
 		private static final Map<Integer, QuadTransformer> DISPLAY_ROTATIONS = new HashMap<>();
@@ -369,7 +409,7 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 
 		@Override
 		public boolean useAmbientOcclusion() {
-			return false;
+			return false; //because occlusion calculation makes display item dark on faces that are exposed to light
 		}
 
 		@Override

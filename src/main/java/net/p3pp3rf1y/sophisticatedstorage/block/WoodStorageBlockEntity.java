@@ -13,17 +13,18 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
-import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.Optional;
 
-public abstract class WoodStorageBlockEntity extends StorageBlockEntity{
+public abstract class WoodStorageBlockEntity extends StorageBlockEntity {
 	@Nullable
 	private WoodType woodType = null;
 
 	private boolean packed = false;
+
 	protected WoodStorageBlockEntity(BlockPos pos, BlockState state, BlockEntityType<? extends StorageBlockEntity> blockEntityType) {
 		super(pos, state, blockEntityType);
 	}
@@ -61,6 +62,7 @@ public abstract class WoodStorageBlockEntity extends StorageBlockEntity{
 		}
 		return getWoodType().map(this::makeWoodStorageDescriptionId).orElse(getBlockState().getBlock().getName());
 	}
+
 	private Component makeWoodStorageDescriptionId(WoodType wt) {
 		ResourceLocation id = Objects.requireNonNull(getBlockState().getBlock().getRegistryName());
 		return new TranslatableComponent("item." + id.getNamespace() + "." + wt.name() + "_" + id.getPath().replace('/', '.'));
@@ -79,7 +81,7 @@ public abstract class WoodStorageBlockEntity extends StorageBlockEntity{
 		return !isPacked();
 	}
 
-	@NotNull
+	@Nonnull
 	@Override
 	public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) {
 		if (isPacked() && cap == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {

@@ -25,6 +25,7 @@ import net.p3pp3rf1y.sophisticatedstorage.block.WoodStorageBlockBase;
 import net.p3pp3rf1y.sophisticatedstorage.client.ClientEventHandler;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -39,7 +40,7 @@ public class ChestRenderer implements BlockEntityRenderer<ChestBlockEntity> {
 
 	private static final String ENTITY_CHEST_FOLDER = "entity/chest/";
 
-	public static final Map<WoodType, Material> WOOD_MATERIALS = new HashMap<>();
+	private static final Map<WoodType, Material> WOOD_MATERIALS = new HashMap<>();
 	public static final Material WOOD_TIER_MATERIAL = new Material(Sheets.CHEST_SHEET, SophisticatedStorage.getRL(ENTITY_CHEST_FOLDER + "wood_tier"));
 	public static final Material IRON_TIER_MATERIAL = new Material(Sheets.CHEST_SHEET, SophisticatedStorage.getRL(ENTITY_CHEST_FOLDER + "iron_tier"));
 	public static final Material GOLD_TIER_MATERIAL = new Material(Sheets.CHEST_SHEET, SophisticatedStorage.getRL(ENTITY_CHEST_FOLDER + "gold_tier"));
@@ -51,6 +52,10 @@ public class ChestRenderer implements BlockEntityRenderer<ChestBlockEntity> {
 
 	static {
 		WoodStorageBlockBase.CUSTOM_TEXTURE_WOOD_TYPES.forEach(woodType -> WOOD_MATERIALS.put(woodType, new Material(Sheets.CHEST_SHEET, SophisticatedStorage.getRL(ENTITY_CHEST_FOLDER + woodType.name()))));
+	}
+
+	public static Collection<Material> getWoodMaterials() {
+		return WOOD_MATERIALS.values();
 	}
 
 	public ChestRenderer(BlockEntityRendererProvider.Context context) {
@@ -112,7 +117,7 @@ public class ChestRenderer implements BlockEntityRenderer<ChestBlockEntity> {
 			renderBottomAndLid(poseStack, consumer, finalLidAngle, packedlight, packedOverlay);
 			poseStack.popPose();
 		} else {
-			BarrelRenderer.renderDisplayItem(chestEntity, poseStack, bufferSource, packedlight, packedOverlay, 0.5 * (14.0 / 16), 0.5 * (15.0 / 16) + 0.05);
+			DisplayItemRenderer.renderDisplayItem(chestEntity, poseStack, bufferSource, packedlight, packedOverlay, 0.5 * (14.01 / 16), 0.5 * (15.0 / 16) + 0.01);
 		}
 	}
 

@@ -32,9 +32,9 @@ import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.WoodStorageBlockBase;
 import net.p3pp3rf1y.sophisticatedstorage.block.WoodStorageBlockEntity;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.Nonnull;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -46,11 +46,15 @@ import java.util.function.Function;
 
 public class ChestDynamicModel implements IModelGeometry<ChestDynamicModel> {
 	private static final String BLOCK_BREAK_FOLDER = "block/break/";
-	public static final Map<String, ResourceLocation> WOOD_BREAK_TEXTURES = new HashMap<>();
+	private static final Map<String, ResourceLocation> WOOD_BREAK_TEXTURES = new HashMap<>();
 	public static final ResourceLocation TINTABLE_BREAK_TEXTURE = SophisticatedStorage.getRL(BLOCK_BREAK_FOLDER + "tintable_chest");
 
 	static {
 		WoodStorageBlockBase.CUSTOM_TEXTURE_WOOD_TYPES.forEach(woodType -> WOOD_BREAK_TEXTURES.put(woodType.name(), SophisticatedStorage.getRL(BLOCK_BREAK_FOLDER + woodType.name() + "_chest")));
+	}
+
+	public static Collection<ResourceLocation> getWoodBreakTextures() {
+		return WOOD_BREAK_TEXTURES.values();
 	}
 
 	@Override
@@ -100,9 +104,9 @@ public class ChestDynamicModel implements IModelGeometry<ChestDynamicModel> {
 			return model.getParticleIcon();
 		}
 
-		@NotNull
+		@Nonnull
 		@Override
-		public IModelData getModelData(@NotNull BlockAndTintGetter level, @NotNull BlockPos pos, @NotNull BlockState state, @NotNull IModelData modelData) {
+		public IModelData getModelData(BlockAndTintGetter level, BlockPos pos, BlockState state, IModelData modelData) {
 			return WorldHelper.getBlockEntity(level, pos, WoodStorageBlockEntity.class)
 					.map(be -> {
 						ModelDataMap.Builder builder = new ModelDataMap.Builder();
@@ -113,7 +117,7 @@ public class ChestDynamicModel implements IModelGeometry<ChestDynamicModel> {
 		}
 
 		@Override
-		public TextureAtlasSprite getParticleIcon(@NotNull IModelData data) {
+		public TextureAtlasSprite getParticleIcon(IModelData data) {
 			ResourceLocation texture = TINTABLE_BREAK_TEXTURE;
 			if (Boolean.FALSE.equals(data.getData(HAS_MAIN_COLOR)) && data.hasProperty(WOOD_NAME) && WOOD_BREAK_TEXTURES.containsKey(data.getData(WOOD_NAME))) {
 				texture = WOOD_BREAK_TEXTURES.get(data.getData(WOOD_NAME));
