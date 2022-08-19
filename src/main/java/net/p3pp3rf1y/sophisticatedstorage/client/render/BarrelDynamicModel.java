@@ -138,6 +138,7 @@ public class BarrelDynamicModel implements IUnbakedGeometry<BarrelDynamicModel> 
 		private static final IQuadTransformer FLIP_AND_SCALE = QuadTransformers.applying(new Transformation(null, Vector3f.YN.rotationDegrees(180), new Vector3f(0.65f, 0.65f, 0.65f), null));
 		private static final IQuadTransformer ROTATE_90_DEGREES = QuadTransformers.applying(new Transformation(null, Vector3f.XN.rotationDegrees(90), null, null));
 		private static final IQuadTransformer ROTATE_270_DEGREES = QuadTransformers.applying(new Transformation(null, Vector3f.XN.rotationDegrees(270), null, null));
+		private static final IQuadTransformer FLIP = QuadTransformers.applying(new Transformation(null, Vector3f.ZN.rotationDegrees(180), null, null));
 		private static final Map<Direction, IQuadTransformer> DIRECTION_ROTATES = Map.of(
 				Direction.UP, getDirectionRotationTransform(Direction.UP),
 				Direction.DOWN, getDirectionRotationTransform(Direction.DOWN),
@@ -347,6 +348,7 @@ public class BarrelDynamicModel implements IUnbakedGeometry<BarrelDynamicModel> 
 			quads = DIRECTION_ROTATES.get(facing).process(quads);
 
 			if (model.isGui3d()) {
+				quads = FLIP.process(quads);
 				IQuadTransformer transformer = getDirectionMove(displayItem, model, facing);
 				quads = transformer.process(quads);
 				recalculateDirections(quads);
