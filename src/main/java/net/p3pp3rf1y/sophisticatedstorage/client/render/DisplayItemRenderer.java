@@ -85,7 +85,7 @@ public class DisplayItemRenderer {
 
 	private static double calculateDisplayItemOffset(ItemStack item, BakedModel itemModel) {
 		double itemOffset = 0;
-		if (itemModel.isGui3d() && !itemModel.isCustomRenderer() && item.getItem() instanceof BlockItem blockItem) {
+		if (itemModel.isGui3d() && item.getItem() instanceof BlockItem blockItem) {
 			Block block = blockItem.getBlock();
 			ClientLevel level = Minecraft.getInstance().level;
 			if (level != null) {

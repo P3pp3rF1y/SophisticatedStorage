@@ -138,6 +138,7 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 		private static final QuadTransformer FLIP_AND_SCALE = new QuadTransformer(new Transformation(null, Vector3f.YN.rotationDegrees(180), new Vector3f(0.65f, 0.65f, 0.65f), null));
 		private static final QuadTransformer ROTATE_90_DEGREES = new QuadTransformer(new Transformation(null, Vector3f.XN.rotationDegrees(90), null, null));
 		private static final QuadTransformer ROTATE_270_DEGREES = new QuadTransformer(new Transformation(null, Vector3f.XN.rotationDegrees(270), null, null));
+		private static final QuadTransformer FLIP = new QuadTransformer(new Transformation(null, Vector3f.ZN.rotationDegrees(180), null, null));
 		private static final Map<Direction, QuadTransformer> DIRECTION_ROTATES = Map.of(
 				Direction.UP, getDirectionRotationTransform(Direction.UP),
 				Direction.DOWN, getDirectionRotationTransform(Direction.DOWN),
@@ -347,6 +348,7 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 			quads = DIRECTION_ROTATES.get(facing).processMany(quads);
 
 			if (model.isGui3d()) {
+				quads = FLIP.processMany(quads);
 				QuadTransformer transformer = getDirectionMove(displayItem, model, facing);
 				quads = transformer.processMany(quads);
 				recalculateDirections(quads);
