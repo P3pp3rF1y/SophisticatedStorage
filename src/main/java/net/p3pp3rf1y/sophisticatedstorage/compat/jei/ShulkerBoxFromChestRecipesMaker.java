@@ -42,9 +42,10 @@ public class ShulkerBoxFromChestRecipesMaker {
 					}
 				}, 3, 3);
 
-				NonNullList<Ingredient> ingredientsCopy = NonNullList.create();
+				NonNullList<Ingredient> ingredients = r.getIngredients();
+				NonNullList<Ingredient> ingredientsCopy = NonNullList.createWithCapacity(ingredients.size());
 				int i = 0;
-				for (Ingredient ingredient : r.getIngredients()) {
+				for (Ingredient ingredient : ingredients) {
 					ItemStack[] ingredientItems = ingredient.getItems();
 
 					boolean isChestIngredient = false;
