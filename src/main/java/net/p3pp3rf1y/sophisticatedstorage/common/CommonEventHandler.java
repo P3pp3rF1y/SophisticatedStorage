@@ -34,17 +34,25 @@ public class CommonEventHandler {
 		IEventBus eventBus = MinecraftForge.EVENT_BUS;
 		eventBus.addListener(this::onPlayerLoggedIn);
 		eventBus.addListener(this::onPlayerChangedDimension);
+		eventBus.addListener(this::onPlayerRespawn);
 		eventBus.addListener(this::onBlockBreak);
 	}
 
 	private void onPlayerChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
-		String playerTagName = StorageSettingsHandler.SOPHISTICATED_STORAGE_SETTINGS_PLAYER_TAG;
-		SophisticatedCore.PACKET_HANDLER.sendToClient((ServerPlayer) event.getPlayer(), new SyncPlayerSettingsMessage(playerTagName, SettingsManager.getPlayerSettingsTag(event.getPlayer(), playerTagName)));
+		sendPlayerSettingsToClient(event.getPlayer());
 	}
 
 	private void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
+		sendPlayerSettingsToClient(event.getPlayer());
+	}
+
+	private void sendPlayerSettingsToClient(Player player) {
 		String playerTagName = StorageSettingsHandler.SOPHISTICATED_STORAGE_SETTINGS_PLAYER_TAG;
-		SophisticatedCore.PACKET_HANDLER.sendToClient((ServerPlayer) event.getPlayer(), new SyncPlayerSettingsMessage(playerTagName, SettingsManager.getPlayerSettingsTag(event.getPlayer(), playerTagName)));
+		SophisticatedCore.PACKET_HANDLER.sendToClient((ServerPlayer) player, new SyncPlayerSettingsMessage(playerTagName, SettingsManager.getPlayerSettingsTag(player, playerTagName)));
+	}
+
+	private void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
+		sendPlayerSettingsToClient(event.getPlayer());
 	}
 
 	private void onBlockBreak(BlockEvent.BreakEvent event) {
