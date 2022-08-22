@@ -1,6 +1,8 @@
 package net.p3pp3rf1y.sophisticatedstorage.settings;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryHandler;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
 import net.p3pp3rf1y.sophisticatedcore.settings.SettingsHandler;
@@ -10,6 +12,20 @@ import java.util.function.Supplier;
 
 public class StorageSettingsHandler extends SettingsHandler {
 	public static final String SOPHISTICATED_STORAGE_SETTINGS_PLAYER_TAG = "sophisticatedStorageSettings";
+
+	static {
+		MinecraftForge.EVENT_BUS.addListener(StorageSettingsHandler::onPlayerClone);
+	}
+
+	private static void onPlayerClone(PlayerEvent.Clone event) {
+		CompoundTag oldData = event.getOriginal().getPersistentData();
+		CompoundTag newData = event.getEntity().getPersistentData();
+
+		if (oldData.contains(SOPHISTICATED_STORAGE_SETTINGS_PLAYER_TAG)) {
+			//noinspection ConstantConditions
+			newData.put(SOPHISTICATED_STORAGE_SETTINGS_PLAYER_TAG, oldData.get(SOPHISTICATED_STORAGE_SETTINGS_PLAYER_TAG));
+		}
+	}
 
 	public StorageSettingsHandler(CompoundTag contentsNbt, Runnable markContentsDirty, Supplier<InventoryHandler> inventoryHandlerSupplier, Supplier<RenderInfo> renderInfoSupplier) {
 		super(contentsNbt, markContentsDirty, inventoryHandlerSupplier, renderInfoSupplier);
