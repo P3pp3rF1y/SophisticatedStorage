@@ -65,7 +65,8 @@ public class ShulkerBoxFromChestRecipesMaker {
 				}
 				ItemStack result = originalRecipe.assemble(craftinginventory);
 				//noinspection ConstantConditions
-				ResourceLocation newId = new ResourceLocation(SophisticatedStorage.MOD_ID, "shulker_from_" + ForgeRegistries.ITEMS.getKey(chestItem.getItem()).toString() + result.getOrCreateTag().toString().toLowerCase(Locale.ROOT).replaceAll("[{\",}:\s]", "_"));
+				ResourceLocation newId = new ResourceLocation(SophisticatedStorage.MOD_ID, "shulker_from_" + ForgeRegistries.ITEMS.getKey(chestItem.getItem()).getPath()
+						+ result.getOrCreateTag().toString().toLowerCase(Locale.ROOT).replaceAll("[^a-z\\d/._-]", "_"));
 
 				recipes.add(new ShapedRecipe(newId, "", originalRecipe.getRecipeWidth(), originalRecipe.getRecipeHeight(), ingredientsCopy, result));
 			});
