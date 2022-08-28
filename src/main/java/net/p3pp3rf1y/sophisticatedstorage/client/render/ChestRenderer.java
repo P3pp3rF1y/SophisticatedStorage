@@ -21,6 +21,7 @@ import net.minecraft.world.level.block.state.properties.WoodType;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.ChestBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.ChestBlockEntity;
+import net.p3pp3rf1y.sophisticatedstorage.block.StorageWrapper;
 import net.p3pp3rf1y.sophisticatedstorage.block.WoodStorageBlockBase;
 import net.p3pp3rf1y.sophisticatedstorage.client.ClientEventHandler;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
@@ -88,8 +89,9 @@ public class ChestRenderer implements BlockEntityRenderer<ChestBlockEntity> {
 		lidAngle = 1.0F - lidAngle * lidAngle * lidAngle;
 
 		float finalLidAngle = lidAngle;
-		boolean hasMainColor = chestEntity.getStorageWrapper().hasMainColor();
-		boolean hasAccentColor = chestEntity.getStorageWrapper().hasAccentColor();
+		StorageWrapper storageWrapper = chestEntity.getStorageWrapper();
+		boolean hasMainColor = storageWrapper.hasMainColor();
+		boolean hasAccentColor = storageWrapper.hasAccentColor();
 		Optional<WoodType> woodType = chestEntity.getWoodType();
 		if (woodType.isPresent() || !(hasMainColor && hasAccentColor)) {
 			VertexConsumer vertexconsumer = WOOD_MATERIALS.get(woodType.orElse(WoodType.ACACIA)).buffer(bufferSource, RenderType::entityCutout);
@@ -97,16 +99,18 @@ public class ChestRenderer implements BlockEntityRenderer<ChestBlockEntity> {
 		}
 		if (hasMainColor) {
 			VertexConsumer vertexconsumer = TINTABLE_MAIN_MATERIAL.buffer(bufferSource, RenderType::entityCutout);
-			renderBottomAndLidWithTint(poseStack, vertexconsumer, lidAngle, packedlight, packedOverlay, chestEntity.getStorageWrapper().getMainColor());
+			renderBottomAndLidWithTint(poseStack, vertexconsumer, lidAngle, packedlight, packedOverlay, storageWrapper.getMainColor());
 		}
 		if (hasAccentColor) {
 			VertexConsumer vertexconsumer = TINTABLE_ACCENT_MATERIAL.buffer(bufferSource, RenderType::entityCutout);
-			renderBottomAndLidWithTint(poseStack, vertexconsumer, lidAngle, packedlight, packedOverlay, chestEntity.getStorageWrapper().getAccentColor());
+			renderBottomAndLidWithTint(poseStack, vertexconsumer, lidAngle, packedlight, packedOverlay, storageWrapper.getAccentColor());
 		}
 		Material tierMaterial = getTierMaterial(blockstate.getBlock());
 		VertexConsumer vertexconsumer = tierMaterial.buffer(bufferSource, RenderType::entityCutout);
 		renderBottomAndLid(poseStack, vertexconsumer, lidAngle, packedlight, packedOverlay);
-		renderLock(poseStack, vertexconsumer, lidAngle, packedlight, packedOverlay);
+		if (storageWrapper.getRenderInfo().getItemDisplayRenderInfo().getDisplayItem().isEmpty()) {
+			renderLock(poseStack, vertexconsumer, lidAngle, packedlight, packedOverlay);
+		}
 		poseStack.popPose();
 
 		if (chestEntity.isPacked()) {
@@ -117,7 +121,7 @@ public class ChestRenderer implements BlockEntityRenderer<ChestBlockEntity> {
 			renderBottomAndLid(poseStack, consumer, finalLidAngle, packedlight, packedOverlay);
 			poseStack.popPose();
 		} else {
-			DisplayItemRenderer.renderDisplayItem(chestEntity, poseStack, bufferSource, packedlight, packedOverlay, 0.5 * (14.01 / 16), 0.5 * (15.0 / 16) + 0.01);
+			DisplayItemRenderer.renderDisplayItem(chestEntity, poseStack, bufferSource, packedlight, packedOverlay, 0.5 * (14.01 / 16), 0.5 * (13.5 / 16) + 0.01);
 		}
 	}
 

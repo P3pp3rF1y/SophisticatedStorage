@@ -36,16 +36,30 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.UnaryOperator;
 
 public class DisplayItemRenderer {
+	public static final float SMALL_3D_ITEM_SCALE = 0.65f;
+	static final float BIG_2D_ITEM_SCALE = 0.65f;
+	static final float SMALL_2D_ITEM_SCALE = 0.35f;
+
 	private DisplayItemRenderer() {}
 
 	private static final Cache<Integer, Double> ITEM_HASHCODE_OFFSETS = CacheBuilder.newBuilder().expireAfterAccess(30L, TimeUnit.MINUTES).build();
 
 	public static void renderDisplayItem(StorageBlockEntity blockEntity, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, double yCenterTranslation, double blockSideOffset) {
-		Minecraft minecraft = Minecraft.getInstance();
-		RenderInfo.ItemDisplayRenderInfo itemDisplayRenderInfo = blockEntity.getStorageWrapper().getRenderInfo().getItemDisplayRenderInfo();
-		ItemStack item = itemDisplayRenderInfo.getItem();
+		blockEntity.getStorageWrapper().getRenderInfo().getItemDisplayRenderInfo().getDisplayItem().ifPresent(displayItem -> {
+			BlockState blockState = blockEntity.getBlockState();
+			if (!(blockState.getBlock() instanceof StorageBlockBase storageBlock)) {
+				return;
+			}
+			Direction facing = storageBlock.getFacing(blockState);
 
-		if (item.isEmpty()) {
+			Minecraft minecraft = Minecraft.getInstance();
+			renderSingleItem(poseStack, bufferSource, packedLight, packedOverlay, yCenterTranslation, blockSideOffset, facing, minecraft, displayItem, false, 0, 1);
+		});
+	}
+
+	public static void renderDisplayItems(StorageBlockEntity blockEntity, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, double yCenterTranslation, double blockSideOffset, boolean renderOnlyCustom) {
+		List<RenderInfo.DisplayItem> displayItems = blockEntity.getStorageWrapper().getRenderInfo().getItemDisplayRenderInfo().getDisplayItems();
+		if (displayItems.isEmpty()) {
 			return;
 		}
 
@@ -54,64 +68,87 @@ public class DisplayItemRenderer {
 			return;
 		}
 		Direction facing = storageBlock.getFacing(blockState);
-		BakedModel itemModel = minecraft.getItemRenderer().getModel(item, null, minecraft.player, 0);
-		double itemOffset = getDisplayItemOffset(item, itemModel);
 
-		poseStack.pushPose();
-		poseStack.translate(0.5, yCenterTranslation, 0.5);
-		Vec3i normal = facing.getNormal();
-		poseStack.translate(normal.getX() * (blockSideOffset + itemOffset), normal.getY() * (blockSideOffset + itemOffset), normal.getZ() * (blockSideOffset + itemOffset));
-		poseStack.mulPose(facing.getRotation());
-		if (facing.getAxis().isHorizontal()) {
-			poseStack.mulPose(Vector3f.YN.rotationDegrees(180f + itemDisplayRenderInfo.getRotation()));
+		Minecraft minecraft = Minecraft.getInstance();
+		int displayItemIndex = 0;
+		int displayItemCount = displayItems.size();
+		for (RenderInfo.DisplayItem displayItem : displayItems) {
+			renderSingleItem(poseStack, bufferSource, packedLight, packedOverlay, yCenterTranslation, blockSideOffset, facing, minecraft, displayItem, renderOnlyCustom, displayItemIndex, displayItemCount);
+			displayItemIndex++;
 		}
-		poseStack.mulPose(Vector3f.XP.rotationDegrees(90));
-		float itemScale = itemModel.isGui3d() ? 1.0f : 0.65f;
+	}
+
+	private static void renderSingleItem(PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, double yCenterTranslation, double blockSideOffset, Direction facing, Minecraft minecraft, RenderInfo.DisplayItem displayItem, boolean renderOnlyCustom, int displayItemIndex, int displayItemCount) {
+		ItemStack item = displayItem.getItem();
+		BakedModel itemModel = minecraft.getItemRenderer().getModel(item, null, minecraft.player, 0);
+		if (!itemModel.isCustomRenderer() && renderOnlyCustom) {
+			return;
+		}
+
+		float itemOffset = (float) getDisplayItemOffset(item, itemModel, displayItemCount == 1 ? 1 : SMALL_3D_ITEM_SCALE);
+		poseStack.pushPose();
+
+		Vec3i normal = facing.getNormal();
+		Vector3f offset = new Vector3f((float) (blockSideOffset + itemOffset), (float) blockSideOffset + itemOffset, (float) (blockSideOffset + itemOffset));
+		offset.mul(normal.getX(), normal.getY(), normal.getZ());
+		Vector3f frontOffset = getDisplayItemIndexFrontOffset(displayItemIndex, displayItemCount, (float) yCenterTranslation, facing);
+		offset.add(frontOffset);
+		poseStack.translate(offset.x(), offset.y(), offset.z());
+
+		poseStack.mulPose(getNorthBasedRotation(facing));
+		poseStack.mulPose(Vector3f.ZP.rotationDegrees(displayItem.getRotation()));
+		float itemScale;
+		if (displayItemCount == 1) {
+			itemScale = itemModel.isGui3d() ? 1.0f : BIG_2D_ITEM_SCALE;
+		} else {
+			itemScale = itemModel.isGui3d() ? SMALL_3D_ITEM_SCALE : SMALL_2D_ITEM_SCALE;
+		}
 		poseStack.scale(itemScale, itemScale, itemScale);
+
 		minecraft.getItemRenderer().render(item, ItemTransforms.TransformType.FIXED, false, poseStack, bufferSource, packedLight, packedOverlay, itemModel);
 		poseStack.popPose();
 	}
 
-	public static double getDisplayItemOffset(ItemStack item, BakedModel itemModel) {
-		int hash = ItemStackKey.getHashCode(item);
+	public static double getDisplayItemOffset(ItemStack item, BakedModel itemModel, float additionalScale) {
+		int hash = ItemStackKey.getHashCode(item) * 31 + Float.hashCode(additionalScale);
 		Double offset = ITEM_HASHCODE_OFFSETS.getIfPresent(hash);
 		if (offset != null) {
 			return offset;
 		}
-		offset = calculateDisplayItemOffset(item, itemModel);
+		offset = calculateDisplayItemOffset(item, itemModel, additionalScale);
 		ITEM_HASHCODE_OFFSETS.put(hash, offset);
 		return offset;
 	}
 
-	private static double calculateDisplayItemOffset(ItemStack item, BakedModel itemModel) {
+	private static double calculateDisplayItemOffset(ItemStack item, BakedModel itemModel, float additionalScale) {
 		double itemOffset = 0;
 		if (itemModel.isGui3d() && item.getItem() instanceof BlockItem blockItem) {
 			Block block = blockItem.getBlock();
 			ClientLevel level = Minecraft.getInstance().level;
 			if (level != null) {
-				itemOffset = calculateOffsetFromModelOrShape(itemModel, block, level);
+				itemOffset = calculateOffsetFromModelOrShape(itemModel, block, level, additionalScale);
 			}
 		}
 		return itemOffset;
 	}
 
-	private static double calculateOffsetFromModelOrShape(BakedModel itemModel, Block block, ClientLevel level) {
+	private static double calculateOffsetFromModelOrShape(BakedModel itemModel, Block block, ClientLevel level, float additionalScale) {
 		if (itemModel.isCustomRenderer()) {
-			return transformBoundsCornersAndCalculateOffset(itemModel, getBoundsCornersFromShape(block, level));
+			return transformBoundsCornersAndCalculateOffset(itemModel, getBoundsCornersFromShape(block, level), additionalScale);
 		} else {
-			return transformBoundsCornersAndCalculateOffset(itemModel, getBoundsCornersFromModel(itemModel, level));
+			return transformBoundsCornersAndCalculateOffset(itemModel, getBoundsCornersFromModel(itemModel, level), additionalScale);
 		}
 	}
 
 	@SuppressWarnings("deprecation")
-	private static double transformBoundsCornersAndCalculateOffset(BakedModel itemModel, Set<Vector3f> points) {
+	private static double transformBoundsCornersAndCalculateOffset(BakedModel itemModel, Set<Vector3f> points, float additionalScale) {
 		ItemTransform transform = itemModel.getTransforms().getTransform(ItemTransforms.TransformType.FIXED);
 		points = scalePoints(points, transform.scale);
 		points = rotatePoints(points, transform.rotation);
 		points = translatePoints(points, transform.translation);
 
 		float zScale = transform.scale.z();
-		return (zScale * 1 / 8D) - getMaxZ(points);
+		return ((zScale * 1 / 8D) - getMaxZ(points)) * additionalScale;
 	}
 
 	@SuppressWarnings("deprecation")
@@ -222,5 +259,49 @@ public class DisplayItemRenderer {
 		ret.add(new Vector3f(0.5F - maxX, 0.5F - maxY, 0.5F - minZ));
 		ret.add(new Vector3f(0.5F - maxX, 0.5F - maxY, 0.5F - maxZ));
 		return ret;
+	}
+
+	public static Vector3f getDisplayItemIndexFrontOffset(int displayItemIndex, int displayItemCount, Direction dir) {
+		return getDisplayItemIndexFrontOffset(displayItemIndex, displayItemCount, 0.5f, dir);
+	}
+
+	public static Vector3f getDisplayItemIndexFrontOffset(int displayItemIndex, int displayItemCount, float centerYOffset, Direction dir) {
+		Vector3f frontOffset;
+		if (displayItemCount <= 0 || displayItemCount > 4) {
+			frontOffset = new Vector3f(0f, 0f, 0.5f);
+		} else if (displayItemCount == 1) {
+			frontOffset = new Vector3f(0.5f, centerYOffset, 0.5f);
+		} else if (displayItemCount == 2) {
+			float halfCenterYOffset = centerYOffset / 2;
+			frontOffset = new Vector3f(0.5f, displayItemIndex == 0 ? centerYOffset + halfCenterYOffset : halfCenterYOffset, 0.5f);
+		} else if (displayItemCount == 3) {
+			float xOffset = 0.5f;
+
+			if (displayItemIndex > 0) {
+				xOffset = 0.75f - (displayItemIndex - 1) * 0.5f;
+			}
+
+			float halfCenterYOffset = centerYOffset / 2;
+			frontOffset = new Vector3f(xOffset, displayItemIndex == 0 ? centerYOffset + halfCenterYOffset : halfCenterYOffset, 0.5f);
+		} else {
+			float halfCenterYOffset = centerYOffset / 2;
+			frontOffset = new Vector3f(displayItemIndex == 0 || displayItemIndex == 2 ? centerYOffset + halfCenterYOffset : halfCenterYOffset, displayItemIndex == 0 || displayItemIndex == 1 ? centerYOffset + halfCenterYOffset : halfCenterYOffset, 0.5f);
+		}
+
+		frontOffset.add(-0.5f, -0.5f, -0.5f);
+		frontOffset.transform(DisplayItemRenderer.getNorthBasedRotation(dir));
+		frontOffset.add(0.5f, 0.5f, 0.5f);
+		return frontOffset;
+	}
+
+	public static Quaternion getNorthBasedRotation(Direction dir) {
+		return switch (dir) {
+			case DOWN -> Vector3f.XP.rotationDegrees(-90.0F);
+			case UP -> Vector3f.XP.rotationDegrees(90.0F);
+			case NORTH -> Quaternion.ONE.copy();
+			case SOUTH -> Vector3f.YP.rotationDegrees(180.0F);
+			case WEST -> Vector3f.YP.rotationDegrees(90.0F);
+			case EAST -> Vector3f.YP.rotationDegrees(-90.0F);
+		};
 	}
 }
