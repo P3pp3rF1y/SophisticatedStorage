@@ -15,6 +15,9 @@ import org.apache.commons.lang3.tuple.Pair;
 public class Config {
 	private Config() {}
 
+	public static final Config.Client CLIENT;
+	public static final ForgeConfigSpec CLIENT_SPEC;
+
 	public static final Config.Common COMMON;
 	public static final ForgeConfigSpec COMMON_SPEC;
 
@@ -22,6 +25,22 @@ public class Config {
 		final Pair<Config.Common, ForgeConfigSpec> commonSpec = new ForgeConfigSpec.Builder().configure(Config.Common::new);
 		COMMON_SPEC = commonSpec.getRight();
 		COMMON = commonSpec.getLeft();
+		final Pair<Config.Client, ForgeConfigSpec> clientSpec = new ForgeConfigSpec.Builder().configure(Config.Client::new);
+		CLIENT_SPEC = clientSpec.getRight();
+		CLIENT = clientSpec.getLeft();
+	}
+
+	public static class Client {
+		public final ForgeConfigSpec.BooleanValue showHigherTierTintedVariants;
+
+		public Client(ForgeConfigSpec.Builder builder) {
+			builder.comment("Client-side Settings").push("client");
+
+			showHigherTierTintedVariants = builder.comment("Determines whether JEI and creative tab will show tinted storage items for iron and higher tiers. Can help with easily removing many of these items from there.")
+					.worldRestart().define("showHigherTierTintedVariants", true);
+
+			builder.pop();
+		}
 	}
 
 	public static class Common {
