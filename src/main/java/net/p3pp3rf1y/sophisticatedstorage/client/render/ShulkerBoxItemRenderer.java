@@ -1,5 +1,8 @@
 package net.p3pp3rf1y.sophisticatedstorage.client.render;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
@@ -16,6 +19,12 @@ import net.p3pp3rf1y.sophisticatedstorage.block.ShulkerBoxBlockEntity;
 
 public class ShulkerBoxItemRenderer extends BlockEntityWithoutLevelRenderer {
 	private final BlockEntityRenderDispatcher blockEntityRenderDispatcher;
+	private final LoadingCache<BlockItem, ShulkerBoxBlockEntity> shulkerBoxBlockEntities = CacheBuilder.newBuilder().maximumSize(512L).weakKeys().build(new CacheLoader<>() {
+		@Override
+		public ShulkerBoxBlockEntity load(BlockItem blockItem) {
+			return new ShulkerBoxBlockEntity(BlockPos.ZERO, blockItem.getBlock().defaultBlockState().setValue(ShulkerBoxBlock.FACING, Direction.SOUTH));
+		}
+	});
 
 	public ShulkerBoxItemRenderer(BlockEntityRenderDispatcher blockEntityRenderDispatcher, EntityModelSet entityModelSet) {
 		super(blockEntityRenderDispatcher, entityModelSet);
@@ -28,7 +37,7 @@ public class ShulkerBoxItemRenderer extends BlockEntityWithoutLevelRenderer {
 			return;
 		}
 
-		ShulkerBoxBlockEntity shulkerBoxBlockEntity = new ShulkerBoxBlockEntity(BlockPos.ZERO, blockItem.getBlock().defaultBlockState().setValue(ShulkerBoxBlock.FACING, Direction.SOUTH));
+		ShulkerBoxBlockEntity shulkerBoxBlockEntity = shulkerBoxBlockEntities.getUnchecked(blockItem);
 		if (stack.getItem() instanceof ITintableBlockItem tintableBlockItem) {
 			tintableBlockItem.getMainColor(stack).ifPresent(shulkerBoxBlockEntity.getStorageWrapper()::setMainColor);
 			tintableBlockItem.getAccentColor(stack).ifPresent(shulkerBoxBlockEntity.getStorageWrapper()::setAccentColor);

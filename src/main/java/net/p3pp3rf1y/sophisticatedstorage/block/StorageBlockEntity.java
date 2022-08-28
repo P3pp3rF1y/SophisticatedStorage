@@ -43,9 +43,6 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 	protected Component displayName = null;
 
 	private boolean updateBlockRender = false;
-
-	private IDynamicRenderTracker dynamicRenderTracker = IDynamicRenderTracker.NOOP;
-
 	@Nullable
 	private BlockPos controllerPos = null;
 	private boolean isLinkedToController = false;
@@ -62,7 +59,7 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		storageWrapper = new StorageWrapper(() -> this::setChanged, () -> WorldHelper.notifyBlockUpdate(this), () -> {
 			setChanged();
 			WorldHelper.notifyBlockUpdate(this);
-		}) {
+		}, this instanceof BarrelBlockEntity ? 4 : 1) {
 
 			@Override
 			public Optional<UUID> getContentsUuid() {
@@ -107,19 +104,6 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 				return 0;
 			}
 		};
-		storageWrapper.getRenderInfo().setChangeListener(ri -> dynamicRenderTracker.onRenderInfoUpdated(ri));
-	}
-
-	@Override
-	public void setLevel(Level level) {
-		super.setLevel(level);
-		if (level.isClientSide) {
-			dynamicRenderTracker = new DynamicRenderTracker(this);
-		}
-	}
-
-	public boolean hasDynamicRenderer() {
-		return dynamicRenderTracker.isDynamicRenderer();
 	}
 
 	public boolean isOpen() {

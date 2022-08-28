@@ -9,6 +9,9 @@ import net.minecraftforge.items.ItemHandlerHelper;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class DynamicRenderTracker implements IDynamicRenderTracker {
 	private static final int DYNAMIC_CHECK_WINDOW_TICKS = 100;
 	private static final int MAX_ITEM_CHANGES_IN_WINDOW = 4;
@@ -16,7 +19,8 @@ public class DynamicRenderTracker implements IDynamicRenderTracker {
 	private long lastItemChangeTime = 0;
 	private final int[] itemChangeExpirationTimes = new int[MAX_ITEM_CHANGES_IN_WINDOW];
 	private boolean dynamicRenderer = false;
-	private ItemStack lastRenderItem = ItemStack.EMPTY;
+	private boolean fullyDynamic = false;
+	private final List<ItemStack> lastRenderedItems = new ArrayList<>();
 	private final StorageBlockEntity storageBlockEntity;
 
 	public DynamicRenderTracker(StorageBlockEntity storageBlockEntity) {
@@ -26,39 +30,68 @@ public class DynamicRenderTracker implements IDynamicRenderTracker {
 	@Override
 	public void onRenderInfoUpdated(RenderInfo ri) {
 		if (getLevel().isClientSide) {
-			ItemStack item = ri.getItemDisplayRenderInfo().getItem();
-			if (item.isEmpty()) {
-				lastRenderItem = ItemStack.EMPTY;
+			RenderInfo.ItemDisplayRenderInfo itemDisplayRenderInfo = ri.getItemDisplayRenderInfo();
+			List<RenderInfo.DisplayItem> displayItems = itemDisplayRenderInfo.getDisplayItems();
+			if (displayItems.isEmpty()) {
+				lastRenderedItems.clear();
 				dynamicRenderer = false;
 				return;
 			}
 
-			if (ItemHandlerHelper.canItemStacksStack(lastRenderItem, item)) {
+			if (renderedItemsHaventChanged(displayItems)) {
 				return;
 			}
 
-			lastRenderItem = item;
-
-			boolean wasDynamic = dynamicRenderer;
-			checkForItemModelCustomRenderer(item);
-
-			if (!updateItemChangeExpirations()) {
-				dynamicRenderer = true;
-			}
-
-			if (!dynamicRenderer || !wasDynamic) {
-				WorldHelper.notifyBlockUpdate(storageBlockEntity);
-			}
+			updateDynamicFlags(displayItems);
 		} else {
 			WorldHelper.notifyBlockUpdate(storageBlockEntity);
 		}
 	}
 
-	private void checkForItemModelCustomRenderer(ItemStack item) {
+	private void updateDynamicFlags(List<RenderInfo.DisplayItem> displayItems) {
+		lastRenderedItems.clear();
+		displayItems.forEach(displayItem -> lastRenderedItems.add(displayItem.getItem()));
+
+		boolean wasDynamic = dynamicRenderer;
+		boolean wasFullyDynamic = fullyDynamic;
+
+		fullyDynamic = !displayItems.isEmpty();
+		dynamicRenderer = false;
+		for (var displayItem : displayItems) {
+			if (hasItemModelCustomRenderer(displayItem.getItem())) {
+				dynamicRenderer = true;
+			} else {
+				fullyDynamic = false;
+			}
+		}
+
+		if (!updateItemChangeExpirations()) {
+			dynamicRenderer = true;
+			fullyDynamic = true;
+		}
+
+		if (dynamicRenderer != wasDynamic || fullyDynamic != wasFullyDynamic) {
+			WorldHelper.notifyBlockUpdate(storageBlockEntity);
+		}
+	}
+
+	private boolean renderedItemsHaventChanged(List<RenderInfo.DisplayItem> displayItems) {
+		if (lastRenderedItems.size() != displayItems.size()) {
+			return false;
+		}
+		for (int i = 0; i < lastRenderedItems.size(); i++) {
+			if (!ItemHandlerHelper.canItemStacksStack(lastRenderedItems.get(i), displayItems.get(i).getItem())) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	private boolean hasItemModelCustomRenderer(ItemStack item) {
 		Minecraft minecraft = Minecraft.getInstance();
 		ItemRenderer itemRenderer = minecraft.getItemRenderer();
 		BakedModel model = itemRenderer.getModel(item, null, minecraft.player, 0);
-		dynamicRenderer = model.isCustomRenderer();
+		return model.isCustomRenderer();
 	}
 
 	private boolean updateItemChangeExpirations() {
@@ -84,5 +117,10 @@ public class DynamicRenderTracker implements IDynamicRenderTracker {
 	@Override
 	public boolean isDynamicRenderer() {
 		return dynamicRenderer;
+	}
+
+	@Override
+	public boolean isFullyDynamicRenderer() {
+		return fullyDynamic;
 	}
 }
