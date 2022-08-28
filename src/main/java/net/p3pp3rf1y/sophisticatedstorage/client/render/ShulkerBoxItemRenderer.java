@@ -39,8 +39,8 @@ public class ShulkerBoxItemRenderer extends BlockEntityWithoutLevelRenderer {
 
 		ShulkerBoxBlockEntity shulkerBoxBlockEntity = shulkerBoxBlockEntities.getUnchecked(blockItem);
 		if (stack.getItem() instanceof ITintableBlockItem tintableBlockItem) {
-			tintableBlockItem.getMainColor(stack).ifPresent(shulkerBoxBlockEntity.getStorageWrapper()::setMainColor);
-			tintableBlockItem.getAccentColor(stack).ifPresent(shulkerBoxBlockEntity.getStorageWrapper()::setAccentColor);
+			shulkerBoxBlockEntity.getStorageWrapper().setMainColor(tintableBlockItem.getMainColor(stack).orElse(-1));
+			shulkerBoxBlockEntity.getStorageWrapper().setAccentColor(tintableBlockItem.getAccentColor(stack).orElse(-1));
 		}
 		var blockentityrenderer = blockEntityRenderDispatcher.getRenderer(shulkerBoxBlockEntity);
 		if (blockentityrenderer != null) {
