@@ -61,7 +61,7 @@ import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.block.WoodStorageBlockBase;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
-import org.jetbrains.annotations.NotNull;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -599,7 +599,7 @@ public class BarrelDynamicModel implements IUnbakedGeometry<BarrelDynamicModel> 
 		}
 
 		@Override
-		public ChunkRenderTypeSet getRenderTypes(@NotNull BlockState state, @NotNull RandomSource rand, @NotNull ModelData data) {
+		public ChunkRenderTypeSet getRenderTypes(@NonNull BlockState state, @NonNull RandomSource rand, @Nonnull ModelData data) {
 			return ChunkRenderTypeSet.of(RenderType.cutout());
 		}
 	}

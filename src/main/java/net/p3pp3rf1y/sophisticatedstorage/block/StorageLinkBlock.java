@@ -17,16 +17,16 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import net.p3pp3rf1y.sophisticatedcore.controller.ILinkable;
 import net.p3pp3rf1y.sophisticatedcore.util.RotatedShapes;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
+import javax.annotation.Nullable;
+import java.util.EnumMap;
 import java.util.Map;
 
 import static net.minecraft.world.level.block.state.properties.BlockStateProperties.FACING;
 
 public class StorageLinkBlock extends Block implements EntityBlock {
-	private static final Map<Direction, VoxelShape> ROTATED_SHAPES = new HashMap<>();
-	private static final RotatedShapes SHAPE = new RotatedShapes(false, Block.box(1,14,1,15,16,15));
+	private static final Map<Direction, VoxelShape> ROTATED_SHAPES = new EnumMap<>(Direction.class);
+	private static final RotatedShapes SHAPE = new RotatedShapes(false, Block.box(1, 14, 1, 15, 16, 15));
 
 	public StorageLinkBlock() {
 		super(BlockBehaviour.Properties.of(Material.STONE).requiresCorrectToolForDrops().strength(2.5F, 5.0F));
