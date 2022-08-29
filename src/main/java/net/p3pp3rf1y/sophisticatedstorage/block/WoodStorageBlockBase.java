@@ -17,6 +17,8 @@ import net.minecraft.world.phys.HitResult;
 import net.p3pp3rf1y.sophisticatedcore.util.ColorHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
+import net.p3pp3rf1y.sophisticatedstorage.Config;
+import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
@@ -73,20 +75,26 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 	public void fillItemCategory(CreativeModeTab tab, NonNullList<ItemStack> items) {
 		CUSTOM_TEXTURE_WOOD_TYPES.forEach(woodType -> items.add(WoodStorageBlockItem.setWoodType(new ItemStack(this), woodType)));
 
-		for (DyeColor color : DyeColor.values()) {
+		if (isBasicTier() || Boolean.TRUE.equals(Config.CLIENT.showHigherTierTintedVariants.get())) {
+			for (DyeColor color : DyeColor.values()) {
+				ItemStack storageStack = new ItemStack(this);
+				if (storageStack.getItem() instanceof ITintableBlockItem tintableBlockItem) {
+					tintableBlockItem.setMainColor(storageStack, ColorHelper.getColor(color.getTextureDiffuseColors()));
+					tintableBlockItem.setAccentColor(storageStack, ColorHelper.getColor(color.getTextureDiffuseColors()));
+				}
+				items.add(storageStack);
+			}
 			ItemStack storageStack = new ItemStack(this);
 			if (storageStack.getItem() instanceof ITintableBlockItem tintableBlockItem) {
-				tintableBlockItem.setMainColor(storageStack, ColorHelper.getColor(color.getTextureDiffuseColors()));
-				tintableBlockItem.setAccentColor(storageStack, ColorHelper.getColor(color.getTextureDiffuseColors()));
+				tintableBlockItem.setMainColor(storageStack, ColorHelper.getColor(DyeColor.YELLOW.getTextureDiffuseColors()));
+				tintableBlockItem.setAccentColor(storageStack, ColorHelper.getColor(DyeColor.LIME.getTextureDiffuseColors()));
 			}
 			items.add(storageStack);
 		}
-		ItemStack storageStack = new ItemStack(this);
-		if (storageStack.getItem() instanceof ITintableBlockItem tintableBlockItem) {
-			tintableBlockItem.setMainColor(storageStack, ColorHelper.getColor(DyeColor.YELLOW.getTextureDiffuseColors()));
-			tintableBlockItem.setAccentColor(storageStack, ColorHelper.getColor(DyeColor.LIME.getTextureDiffuseColors()));
-		}
-		items.add(storageStack);
+	}
+
+	private boolean isBasicTier() {
+		return this == ModBlocks.BARREL.get() || this == ModBlocks.CHEST.get();
 	}
 
 	@Override

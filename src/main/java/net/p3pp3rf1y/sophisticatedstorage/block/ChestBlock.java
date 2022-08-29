@@ -123,7 +123,7 @@ public class ChestBlock extends WoodStorageBlockBase {
 		}).orElse(InteractionResult.PASS);
 	}
 
-	@org.jetbrains.annotations.Nullable
+	@Nullable
 	@Override
 	public ChestBlockEntity newBlockEntity(BlockPos pos, BlockState state) {
 		return new ChestBlockEntity(pos, state);

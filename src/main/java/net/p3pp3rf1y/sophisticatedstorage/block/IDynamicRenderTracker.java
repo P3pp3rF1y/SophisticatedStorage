@@ -9,5 +9,9 @@ public interface IDynamicRenderTracker {
 		return false;
 	}
 
+	default boolean isFullyDynamicRenderer() {
+		return false;
+	}
+
 	IDynamicRenderTracker NOOP = new IDynamicRenderTracker() {};
 }

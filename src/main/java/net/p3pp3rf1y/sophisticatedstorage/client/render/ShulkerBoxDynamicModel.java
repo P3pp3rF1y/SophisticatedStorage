@@ -29,9 +29,9 @@ import net.minecraftforge.client.model.geometry.IUnbakedGeometry;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -88,9 +88,9 @@ public class ShulkerBoxDynamicModel implements IUnbakedGeometry<ShulkerBoxDynami
 			return model.getParticleIcon();
 		}
 
-		@NotNull
+		@Nonnull
 		@Override
-		public ModelData getModelData(@NotNull BlockAndTintGetter level, @NotNull BlockPos pos, @NotNull BlockState state, @NotNull ModelData modelData) {
+		public ModelData getModelData(BlockAndTintGetter level, BlockPos pos, BlockState state, ModelData modelData) {
 			return WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class)
 					.map(be -> {
 						ModelData.Builder builder = ModelData.builder();
@@ -100,7 +100,7 @@ public class ShulkerBoxDynamicModel implements IUnbakedGeometry<ShulkerBoxDynami
 		}
 
 		@Override
-		public TextureAtlasSprite getParticleIcon(@NotNull ModelData data) {
+		public TextureAtlasSprite getParticleIcon(ModelData data) {
 			ResourceLocation texture = TINTABLE_BREAK_TEXTURE;
 			if (Boolean.FALSE.equals(data.get(HAS_MAIN_COLOR))) {
 				texture = MAIN_BREAK_TEXTURE;

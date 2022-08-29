@@ -21,10 +21,12 @@ import net.minecraft.world.level.block.state.properties.WoodType;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.ChestBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.ChestBlockEntity;
+import net.p3pp3rf1y.sophisticatedstorage.block.StorageWrapper;
 import net.p3pp3rf1y.sophisticatedstorage.block.WoodStorageBlockBase;
 import net.p3pp3rf1y.sophisticatedstorage.client.ClientEventHandler;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -39,7 +41,7 @@ public class ChestRenderer implements BlockEntityRenderer<ChestBlockEntity> {
 
 	private static final String ENTITY_CHEST_FOLDER = "entity/chest/";
 
-	public static final Map<WoodType, Material> WOOD_MATERIALS = new HashMap<>();
+	private static final Map<WoodType, Material> WOOD_MATERIALS = new HashMap<>();
 	public static final Material WOOD_TIER_MATERIAL = new Material(Sheets.CHEST_SHEET, SophisticatedStorage.getRL(ENTITY_CHEST_FOLDER + "wood_tier"));
 	public static final Material IRON_TIER_MATERIAL = new Material(Sheets.CHEST_SHEET, SophisticatedStorage.getRL(ENTITY_CHEST_FOLDER + "iron_tier"));
 	public static final Material GOLD_TIER_MATERIAL = new Material(Sheets.CHEST_SHEET, SophisticatedStorage.getRL(ENTITY_CHEST_FOLDER + "gold_tier"));
@@ -51,6 +53,10 @@ public class ChestRenderer implements BlockEntityRenderer<ChestBlockEntity> {
 
 	static {
 		WoodStorageBlockBase.CUSTOM_TEXTURE_WOOD_TYPES.forEach(woodType -> WOOD_MATERIALS.put(woodType, new Material(Sheets.CHEST_SHEET, SophisticatedStorage.getRL(ENTITY_CHEST_FOLDER + woodType.name()))));
+	}
+
+	public static Collection<Material> getWoodMaterials() {
+		return WOOD_MATERIALS.values();
 	}
 
 	public ChestRenderer(BlockEntityRendererProvider.Context context) {
@@ -83,8 +89,9 @@ public class ChestRenderer implements BlockEntityRenderer<ChestBlockEntity> {
 		lidAngle = 1.0F - lidAngle * lidAngle * lidAngle;
 
 		float finalLidAngle = lidAngle;
-		boolean hasMainColor = chestEntity.getStorageWrapper().hasMainColor();
-		boolean hasAccentColor = chestEntity.getStorageWrapper().hasAccentColor();
+		StorageWrapper storageWrapper = chestEntity.getStorageWrapper();
+		boolean hasMainColor = storageWrapper.hasMainColor();
+		boolean hasAccentColor = storageWrapper.hasAccentColor();
 		Optional<WoodType> woodType = chestEntity.getWoodType();
 		if (woodType.isPresent() || !(hasMainColor && hasAccentColor)) {
 			VertexConsumer vertexconsumer = WOOD_MATERIALS.get(woodType.orElse(WoodType.ACACIA)).buffer(bufferSource, RenderType::entityCutout);
@@ -92,16 +99,18 @@ public class ChestRenderer implements BlockEntityRenderer<ChestBlockEntity> {
 		}
 		if (hasMainColor) {
 			VertexConsumer vertexconsumer = TINTABLE_MAIN_MATERIAL.buffer(bufferSource, RenderType::entityCutout);
-			renderBottomAndLidWithTint(poseStack, vertexconsumer, lidAngle, packedlight, packedOverlay, chestEntity.getStorageWrapper().getMainColor());
+			renderBottomAndLidWithTint(poseStack, vertexconsumer, lidAngle, packedlight, packedOverlay, storageWrapper.getMainColor());
 		}
 		if (hasAccentColor) {
 			VertexConsumer vertexconsumer = TINTABLE_ACCENT_MATERIAL.buffer(bufferSource, RenderType::entityCutout);
-			renderBottomAndLidWithTint(poseStack, vertexconsumer, lidAngle, packedlight, packedOverlay, chestEntity.getStorageWrapper().getAccentColor());
+			renderBottomAndLidWithTint(poseStack, vertexconsumer, lidAngle, packedlight, packedOverlay, storageWrapper.getAccentColor());
 		}
 		Material tierMaterial = getTierMaterial(blockstate.getBlock());
 		VertexConsumer vertexconsumer = tierMaterial.buffer(bufferSource, RenderType::entityCutout);
 		renderBottomAndLid(poseStack, vertexconsumer, lidAngle, packedlight, packedOverlay);
-		renderLock(poseStack, vertexconsumer, lidAngle, packedlight, packedOverlay);
+		if (storageWrapper.getRenderInfo().getItemDisplayRenderInfo().getDisplayItem().isEmpty()) {
+			renderLock(poseStack, vertexconsumer, lidAngle, packedlight, packedOverlay);
+		}
 		poseStack.popPose();
 
 		if (chestEntity.isPacked()) {
@@ -112,7 +121,7 @@ public class ChestRenderer implements BlockEntityRenderer<ChestBlockEntity> {
 			renderBottomAndLid(poseStack, consumer, finalLidAngle, packedlight, packedOverlay);
 			poseStack.popPose();
 		} else {
-			BarrelRenderer.renderDisplayItem(chestEntity, poseStack, bufferSource, packedlight, packedOverlay, 0.5 * (14.0 / 16), 0.5 * (15.0 / 16) + 0.05);
+			DisplayItemRenderer.renderDisplayItem(chestEntity, poseStack, bufferSource, packedlight, packedOverlay, 0.5 * (14.01 / 16), 0.5 * (13.5 / 16) + 0.01);
 		}
 	}
 

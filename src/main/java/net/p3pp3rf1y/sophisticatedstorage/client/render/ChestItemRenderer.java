@@ -1,5 +1,8 @@
 package net.p3pp3rf1y.sophisticatedstorage.client.render;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
@@ -20,6 +23,12 @@ import java.util.Optional;
 
 public class ChestItemRenderer extends BlockEntityWithoutLevelRenderer {
 	private final BlockEntityRenderDispatcher blockEntityRenderDispatcher;
+	private final LoadingCache<BlockItem, ChestBlockEntity> chestBlockEntities = CacheBuilder.newBuilder().maximumSize(512L).weakKeys().build(new CacheLoader<>() {
+		@Override
+		public ChestBlockEntity load(BlockItem blockItem) {
+			return new ChestBlockEntity(BlockPos.ZERO, blockItem.getBlock().defaultBlockState().setValue(ChestBlock.FACING, Direction.SOUTH));
+		}
+	});
 
 	public ChestItemRenderer(BlockEntityRenderDispatcher blockEntityRenderDispatcher, EntityModelSet entityModelSet) {
 		super(blockEntityRenderDispatcher, entityModelSet);
@@ -31,11 +40,12 @@ public class ChestItemRenderer extends BlockEntityWithoutLevelRenderer {
 		if (!(stack.getItem() instanceof BlockItem blockItem)) {
 			return;
 		}
-		//
-		ChestBlockEntity chestBlockEntity = new ChestBlockEntity(BlockPos.ZERO, blockItem.getBlock().defaultBlockState().setValue(ChestBlock.FACING, Direction.SOUTH));
+
+		ChestBlockEntity chestBlockEntity = chestBlockEntities.getUnchecked(blockItem);
+
 		if (stack.getItem() instanceof ITintableBlockItem tintableBlockItem) {
-			tintableBlockItem.getMainColor(stack).ifPresent(chestBlockEntity.getStorageWrapper()::setMainColor);
-			tintableBlockItem.getAccentColor(stack).ifPresent(chestBlockEntity.getStorageWrapper()::setAccentColor);
+			chestBlockEntity.getStorageWrapper().setMainColor(tintableBlockItem.getMainColor(stack).orElse(-1));
+			chestBlockEntity.getStorageWrapper().setAccentColor(tintableBlockItem.getAccentColor(stack).orElse(-1));
 		}
 		Optional<WoodType> woodType = WoodStorageBlockItem.getWoodType(stack);
 		if (woodType.isPresent() || !(chestBlockEntity.getStorageWrapper().hasAccentColor() && chestBlockEntity.getStorageWrapper().hasMainColor())) {

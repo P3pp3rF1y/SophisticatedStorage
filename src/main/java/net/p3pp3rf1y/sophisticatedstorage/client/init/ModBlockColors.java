@@ -2,15 +2,16 @@ package net.p3pp3rf1y.sophisticatedstorage.client.init;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.client.event.RegisterColorHandlersEvent;
+import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 public class ModBlockColors {
 	private ModBlockColors() {}
@@ -27,12 +28,20 @@ public class ModBlockColors {
 		}
 		return WorldHelper.getBlockEntity(blockDisplayReader, pos, StorageBlockEntity.class)
 				.map(be -> {
-					if (tintIndex > 999) {
-						return tintIndex == 1000 ? be.getStorageWrapper().getMainColor() : be.getStorageWrapper().getAccentColor();
-					} else {
-						ItemStack renderItem = be.getStorageWrapper().getRenderInfo().getItemDisplayRenderInfo().getItem();
-						return renderItem.isEmpty() ? -1 : Minecraft.getInstance().getItemColors().getColor(renderItem, tintIndex);
+					if (tintIndex == 1000) {
+						return be.getStorageWrapper().getMainColor();
+					} else if (tintIndex == 1001) {
+						return be.getStorageWrapper().getAccentColor();
+					} else if (tintIndex >= 0){
+						RenderInfo.ItemDisplayRenderInfo itemDisplayRenderInfo = be.getStorageWrapper().getRenderInfo().getItemDisplayRenderInfo();
+						int displayItemIndex = (tintIndex > 1000 ? tintIndex - 1000 : tintIndex) / 10 - 1;
+						List<RenderInfo.DisplayItem> displayItems = itemDisplayRenderInfo.getDisplayItems();
+						if (displayItemIndex >= 0 && displayItems.size() > displayItemIndex) {
+							int tintOffset = (displayItemIndex + 1) * 10;
+							return Minecraft.getInstance().getItemColors().getColor(displayItems.get(displayItemIndex).getItem(), tintIndex - tintOffset);
+						}
 					}
+					return -1;
 				})
 				.orElse(-1);
 	}

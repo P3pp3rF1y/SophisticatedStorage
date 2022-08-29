@@ -67,6 +67,10 @@ public abstract class StorageWrapper implements IStorageWrapper {
 	private int accentColor = -1;
 
 	protected StorageWrapper(Supplier<Runnable> getSaveHandler, Runnable onSerializeRenderInfo, Runnable markContentsDirty) {
+		this(getSaveHandler, onSerializeRenderInfo, markContentsDirty, 1);
+	}
+
+	protected StorageWrapper(Supplier<Runnable> getSaveHandler, Runnable onSerializeRenderInfo, Runnable markContentsDirty, int numberOfDisplayItems) {
 		this.getSaveHandler = getSaveHandler;
 		renderInfo = new RenderInfo(getSaveHandler) {
 			@Override
@@ -80,7 +84,13 @@ public abstract class StorageWrapper implements IStorageWrapper {
 				return Optional.of(renderInfoNbt);
 			}
 		};
-		settingsHandler = new StorageSettingsHandler(settingsNbt, markContentsDirty, () -> inventoryHandler, () -> renderInfo);
+		settingsHandler = new StorageSettingsHandler(settingsNbt, markContentsDirty, () -> inventoryHandler, () -> renderInfo) {
+
+			@Override
+			protected int getNumberOfDisplayItems() {
+				return numberOfDisplayItems;
+			}
+		};
 	}
 
 	public void setContentsUuid(@Nullable UUID contentsUuid) {

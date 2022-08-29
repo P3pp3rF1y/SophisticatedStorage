@@ -41,7 +41,7 @@ public class TierUpgradeRecipesMaker {
 						return false;
 					}
 				}, 3, 3);
-				NonNullList<Ingredient> ingredientsCopy = NonNullList.create();
+				NonNullList<Ingredient> ingredientsCopy = NonNullList.createWithCapacity(ingredients.size());
 				int i = 0;
 				for (Ingredient ingredient : ingredients) {
 					ItemStack[] ingredientItems = ingredient.getItems();
