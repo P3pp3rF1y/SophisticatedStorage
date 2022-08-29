@@ -21,6 +21,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraftforge.items.IItemHandler;
 import net.p3pp3rf1y.sophisticatedcore.controller.IControllableStorage;
 import net.p3pp3rf1y.sophisticatedcore.controller.ILinkable;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.ITickableUpgrade;
@@ -43,9 +44,6 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 	protected Component displayName = null;
 
 	private boolean updateBlockRender = false;
-
-	private IDynamicRenderTracker dynamicRenderTracker = IDynamicRenderTracker.NOOP;
-
 	@Nullable
 	private BlockPos controllerPos = null;
 	private boolean isLinkedToController = false;
@@ -57,12 +55,15 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 
 	private boolean chunkBeingUnloaded = false;
 
+	@Nullable
+	private LazyOptional<IItemHandler> itemHandlerCap;
+
 	protected StorageBlockEntity(BlockPos pos, BlockState state, BlockEntityType<? extends StorageBlockEntity> blockEntityType) {
 		super(blockEntityType, pos, state);
 		storageWrapper = new StorageWrapper(() -> this::setChanged, () -> WorldHelper.notifyBlockUpdate(this), () -> {
 			setChanged();
 			WorldHelper.notifyBlockUpdate(this);
-		}) {
+		}, this instanceof BarrelBlockEntity ? 4 : 1) {
 
 			@Override
 			public Optional<UUID> getContentsUuid() {
@@ -107,19 +108,6 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 				return 0;
 			}
 		};
-		storageWrapper.getRenderInfo().setChangeListener(ri -> dynamicRenderTracker.onRenderInfoUpdated(ri));
-	}
-
-	@Override
-	public void setLevel(Level level) {
-		super.setLevel(level);
-		if (level.isClientSide) {
-			dynamicRenderTracker = new DynamicRenderTracker(this);
-		}
-	}
-
-	public boolean hasDynamicRenderer() {
-		return dynamicRenderTracker.isDynamicRenderer();
 	}
 
 	public boolean isOpen() {
@@ -316,9 +304,21 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 	@Override
 	public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) {
 		if (cap == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
-			return LazyOptional.of(getStorageWrapper()::getInventoryForInputOutput).cast();
+			if (itemHandlerCap == null) {
+				itemHandlerCap = LazyOptional.of(getStorageWrapper()::getInventoryForInputOutput);
+			}
+			return itemHandlerCap.cast();
 		}
 		return super.getCapability(cap, side);
+	}
+
+	@Override
+	public void invalidateCaps() {
+		super.invalidateCaps();
+		if (itemHandlerCap != null) {
+			itemHandlerCap.invalidate();
+			itemHandlerCap = null;
+		}
 	}
 
 	public boolean shouldDropContents() {

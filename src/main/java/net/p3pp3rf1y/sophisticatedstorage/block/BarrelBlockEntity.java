@@ -35,6 +35,9 @@ public class BarrelBlockEntity extends WoodStorageBlockEntity {
 		}
 	};
 
+
+	private IDynamicRenderTracker dynamicRenderTracker = IDynamicRenderTracker.NOOP;
+
 	@Override
 	protected ContainerOpenersCounter getOpenersCounter() {
 		return openersCounter;
@@ -42,6 +45,7 @@ public class BarrelBlockEntity extends WoodStorageBlockEntity {
 
 	public BarrelBlockEntity(BlockPos pos, BlockState state) {
 		super(pos, state, ModBlocks.BARREL_BLOCK_ENTITY_TYPE.get());
+		getStorageWrapper().getRenderInfo().setChangeListener(ri -> dynamicRenderTracker.onRenderInfoUpdated(ri));
 	}
 
 	void updateBlockState(BlockState state, boolean open) {
@@ -49,5 +53,21 @@ public class BarrelBlockEntity extends WoodStorageBlockEntity {
 			return;
 		}
 		level.setBlock(getBlockPos(), state.setValue(BarrelBlock.OPEN, open), 3);
+	}
+
+	@Override
+	public void setLevel(Level level) {
+		super.setLevel(level);
+		if (level.isClientSide) {
+			dynamicRenderTracker = new DynamicRenderTracker(this);
+		}
+	}
+
+	public boolean hasDynamicRenderer() {
+		return dynamicRenderTracker.isDynamicRenderer();
+	}
+
+	public boolean hasFullyDynamicRenderer() {
+		return dynamicRenderTracker.isFullyDynamicRenderer();
 	}
 }

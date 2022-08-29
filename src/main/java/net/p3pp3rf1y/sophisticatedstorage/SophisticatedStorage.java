@@ -36,6 +36,7 @@ public class SophisticatedStorage {
 	@SuppressWarnings("java:S1118") //needs to be public for mod to work
 	public SophisticatedStorage() {
 		ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.COMMON_SPEC);
+		ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, Config.CLIENT_SPEC);
 		IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
 		modBus.addListener(Config.COMMON::onConfigReload);
 		commonEventHandler.registerHandlers();
