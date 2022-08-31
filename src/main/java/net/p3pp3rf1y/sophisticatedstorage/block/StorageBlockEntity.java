@@ -108,6 +108,7 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 				return 0;
 			}
 		};
+		storageWrapper.setUpgradeCachesInvalidatedHandler(this::invalidateStorageCap);
 	}
 
 	public boolean isOpen() {
@@ -315,6 +316,10 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 	@Override
 	public void invalidateCaps() {
 		super.invalidateCaps();
+		invalidateStorageCap();
+	}
+
+	private void invalidateStorageCap() {
 		if (itemHandlerCap != null) {
 			itemHandlerCap.invalidate();
 			itemHandlerCap = null;

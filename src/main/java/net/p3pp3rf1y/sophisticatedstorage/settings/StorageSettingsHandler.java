@@ -8,6 +8,7 @@ import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
 import net.p3pp3rf1y.sophisticatedcore.settings.SettingsHandler;
 import net.p3pp3rf1y.sophisticatedcore.settings.itemdisplay.ItemDisplaySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.settings.main.MainSettingsCategory;
+import net.p3pp3rf1y.sophisticatedcore.settings.memory.MemorySettingsCategory;
 
 import java.util.function.Supplier;
 
@@ -41,7 +42,8 @@ public abstract class StorageSettingsHandler extends SettingsHandler {
 
 	@Override
 	protected void addItemDisplayCategory(Supplier<InventoryHandler> inventoryHandlerSupplier, Supplier<RenderInfo> renderInfoSupplier, CompoundTag settingsNbt) {
-		addSettingsCategory(settingsNbt, ItemDisplaySettingsCategory.NAME, markContentsDirty, (categoryNbt, saveNbt) -> new ItemDisplaySettingsCategory(inventoryHandlerSupplier, renderInfoSupplier, categoryNbt, saveNbt, getNumberOfDisplayItems()));
+		addSettingsCategory(settingsNbt, ItemDisplaySettingsCategory.NAME, markContentsDirty, (categoryNbt, saveNbt) ->
+				new ItemDisplaySettingsCategory(inventoryHandlerSupplier, renderInfoSupplier, categoryNbt, saveNbt, getNumberOfDisplayItems(), () -> getTypeCategory(MemorySettingsCategory.class)));
 	}
 
 	@Override
