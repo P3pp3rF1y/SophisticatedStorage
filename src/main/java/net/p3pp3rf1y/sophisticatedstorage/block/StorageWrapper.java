@@ -65,6 +65,8 @@ public abstract class StorageWrapper implements IStorageWrapper {
 	private int mainColor = -1;
 	private int accentColor = -1;
 
+	private Runnable upgradeCachesInvalidatedHandler = () -> {};
+
 	protected StorageWrapper(Supplier<Runnable> getSaveHandler, Runnable onSerializeRenderInfo, Runnable markContentsDirty) {
 		this(getSaveHandler, onSerializeRenderInfo, markContentsDirty, 1);
 	}
@@ -111,6 +113,7 @@ public abstract class StorageWrapper implements IStorageWrapper {
 				}
 				getInventoryHandler().addListener(getSettingsHandler().getTypeCategory(ItemDisplaySettingsCategory.class)::itemChanged);
 				inventoryIOHandler = null;
+				upgradeCachesInvalidatedHandler.run();
 			}) {
 				@Override
 				public boolean isItemValid(int slot, ItemStack stack) {
@@ -127,6 +130,11 @@ public abstract class StorageWrapper implements IStorageWrapper {
 			};
 		}
 		return upgradeHandler;
+	}
+
+	@Override
+	public void setUpgradeCachesInvalidatedHandler(Runnable handler) {
+		upgradeCachesInvalidatedHandler = handler;
 	}
 
 	protected abstract void onUpgradeRefresh();
