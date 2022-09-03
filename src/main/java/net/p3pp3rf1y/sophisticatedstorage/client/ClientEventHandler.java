@@ -8,6 +8,8 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.ReloadableResourceManager;
+import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraftforge.client.event.EntityRenderersEvent;
@@ -20,6 +22,7 @@ import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.client.settings.IKeyConflictContext;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.AddPackFindersEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
@@ -81,7 +84,7 @@ public class ClientEventHandler {
 		modBus.addListener(ClientEventHandler::registerKeyMappings);
 		modBus.addListener(ModItemColors::registerItemColorHandlers);
 		modBus.addListener(ModBlockColors::registerBlockColorHandlers);
-
+		modBus.addListener(ClientEventHandler::registerStorageLayerLoader);
 		IEventBus eventBus = MinecraftForge.EVENT_BUS;
 		eventBus.addListener(ClientStorageContentsTooltip::onWorldLoad);
 		eventBus.addListener(EventPriority.HIGH, ClientEventHandler::handleGuiMouseKeyPress);
@@ -91,6 +94,13 @@ public class ClientEventHandler {
 	public static void handleGuiKeyPress(ScreenEvent.KeyPressed.Pre event) {
 		if (SORT_KEYBIND.isActiveAndMatches(InputConstants.getKey(event.getKeyCode(), event.getScanCode())) && tryCallSort(event.getScreen())) {
 			event.setCanceled(true);
+		}
+	}
+
+	private static void registerStorageLayerLoader(AddPackFindersEvent event) {
+		ResourceManager resourceManager = Minecraft.getInstance().getResourceManager();
+		if (resourceManager instanceof ReloadableResourceManager reloadableResourceManager) {
+			reloadableResourceManager.registerReloadListener(StorageTextureManager.INSTANCE);
 		}
 	}
 
@@ -164,15 +174,7 @@ public class ClientEventHandler {
 			return;
 		}
 
-		ChestRenderer.getWoodMaterials().forEach(mat -> event.addSprite(mat.texture()));
-		event.addSprite(ChestRenderer.WOOD_TIER_MATERIAL.texture());
-		event.addSprite(ChestRenderer.IRON_TIER_MATERIAL.texture());
-		event.addSprite(ChestRenderer.GOLD_TIER_MATERIAL.texture());
-		event.addSprite(ChestRenderer.DIAMOND_TIER_MATERIAL.texture());
-		event.addSprite(ChestRenderer.NETHERITE_TIER_MATERIAL.texture());
-		event.addSprite(ChestRenderer.TINTABLE_MAIN_MATERIAL.texture());
-		event.addSprite(ChestRenderer.TINTABLE_ACCENT_MATERIAL.texture());
-		event.addSprite(ChestRenderer.PACKED_MATERIAL.texture());
+		StorageTextureManager.INSTANCE.getUniqueChestMaterials().forEach(mat -> event.addSprite(mat.texture()));
 	}
 
 	private static void stitchBlockAtlasTextures(TextureStitchEvent.Pre event) {

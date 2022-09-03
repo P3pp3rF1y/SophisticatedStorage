@@ -45,7 +45,7 @@ public class ShulkerBoxDynamicModel implements IUnbakedGeometry<ShulkerBoxDynami
 
 	@Override
 	public BakedModel bake(IGeometryBakingContext context, ModelBakery bakery, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelTransform, ItemOverrides overrides, ResourceLocation modelLocation) {
-		return new ChestBakedModel();
+		return new ShulkerBoxBakedModel();
 	}
 
 	@Override
@@ -53,7 +53,7 @@ public class ShulkerBoxDynamicModel implements IUnbakedGeometry<ShulkerBoxDynami
 		return Collections.emptySet();
 	}
 
-	private static class ChestBakedModel implements BakedModel {
+	private static class ShulkerBoxBakedModel implements BakedModel {
 		private static final ModelProperty<Boolean> HAS_MAIN_COLOR = new ModelProperty<>();
 
 		@Override
