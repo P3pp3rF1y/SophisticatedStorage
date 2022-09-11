@@ -11,8 +11,5 @@
                 "east":  { "texture": "#side", "cullface": "east", "tintindex": 0 }
             }
         }
-    ],
-    "textures": {
-        "side": "sophisticatedstorage:block/barrel_metal_bands"
-    }
+    ]
 }

@@ -182,7 +182,7 @@ public class ClientEventHandler {
 			return;
 		}
 
-		BarrelDynamicModel.getWoodTextures().forEach(textures -> textures.values().forEach(event::addSprite));
+		BarrelDynamicModel.getWoodTextures().forEach(modelPartTextures -> modelPartTextures.forEach((modelPart, textures) -> textures.values().forEach(mat -> event.addSprite(mat.texture()))));
 		ChestDynamicModel.getWoodBreakTextures().forEach(event::addSprite);
 		event.addSprite(ChestDynamicModel.TINTABLE_BREAK_TEXTURE);
 		event.addSprite(ShulkerBoxDynamicModel.TINTABLE_BREAK_TEXTURE);

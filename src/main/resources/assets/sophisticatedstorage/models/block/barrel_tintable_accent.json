@@ -13,10 +13,5 @@
                 "east":  { "texture": "#side", "cullface": "east", "tintindex": 1001 }
             }
         }
-    ],
-    "textures": {
-        "top": "sophisticatedstorage:block/barrel_top_tintable_accent",
-        "bottom": "sophisticatedstorage:block/barrel_bottom_tintable_accent",
-        "side": "sophisticatedstorage:block/barrel_side_tintable_accent"
-    }
+    ]
 }

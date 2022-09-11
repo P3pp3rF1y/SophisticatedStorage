@@ -10,6 +10,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.level.block.state.properties.WoodType;
 
 import javax.annotation.Nullable;
@@ -21,6 +22,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 
 public class StorageTextureManager extends SimpleJsonResourceReloadListener {
 	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
@@ -32,8 +34,16 @@ public class StorageTextureManager extends SimpleJsonResourceReloadListener {
 
 	private static final WoodType defaultChestWoodType = WoodType.ACACIA;
 	private static final String CHEST_SUFFIX = "_chest";
+	private static final String BARREL_SUFFIX = "_barrel";
+	private static final Map<String, Supplier<ITextureParser>> TEXTURE_PARSERS = new HashMap<>();
+
+	static {
+		TEXTURE_PARSERS.put("chest", ChestTextureParser::new);
+		TEXTURE_PARSERS.put("barrel", BarrelTextureParser::new);
+	}
 
 	private final Map<WoodType, Map<ChestMaterial, Material>> woodChestMaterials = new HashMap<>();
+	private final Map<WoodType, Map<BarrelFace, Map<BarrelMaterial, Material>>> barrelMaterials = new HashMap<>();
 
 	private StorageTextureManager() {
 		super(GSON, "storage_texture_definitions");
@@ -41,23 +51,43 @@ public class StorageTextureManager extends SimpleJsonResourceReloadListener {
 
 	@Override
 	protected Map<ResourceLocation, JsonElement> prepare(ResourceManager pResourceManager, ProfilerFiller pProfiler) {
+		clear();
+
 		Map<ResourceLocation, JsonElement> fileContents = super.prepare(pResourceManager, pProfiler);
 		Map<ResourceLocation, StorageTextureDefinition> storageTextureDefinitions = new HashMap<>();
 		fileContents.forEach((resourceLocation, json) -> loadDefinition(storageTextureDefinitions, resourceLocation, json, fileContents));
 
 		storageTextureDefinitions.forEach((fileName, definition) -> {
+			String type = definition.getType();
 			String filePath = fileName.getPath();
-			if (filePath.endsWith(CHEST_SUFFIX)) {
-				WoodType.values().filter(wt -> wt.name().equals(filePath.substring(0, filePath.lastIndexOf(CHEST_SUFFIX)))).findFirst().ifPresent(wt -> {
-					Map<ChestMaterial, Material> chestMaterials = new EnumMap<>(ChestMaterial.class);
-					definition.getTextures().forEach((textureName, rl) ->
-							ChestMaterial.fromString(textureName).ifPresent(cm -> chestMaterials.put(cm, new Material(Sheets.CHEST_SHEET, rl))));
+			if (type.equals("chest")) {
+				if (filePath.endsWith(CHEST_SUFFIX)) {
+					WoodType.values().filter(wt -> wt.name().equals(filePath.substring(0, filePath.lastIndexOf(CHEST_SUFFIX)))).findFirst().ifPresent(wt -> {
+						Map<ChestMaterial, Material> chestMaterials = new EnumMap<>(ChestMaterial.class);
+						definition.getTextures().forEach((textureName, rl) ->
+								ChestMaterial.fromString(textureName).ifPresent(cm -> chestMaterials.put(cm, new Material(Sheets.CHEST_SHEET, rl))));
 
-					woodChestMaterials.put(wt, chestMaterials);
-				});
+						woodChestMaterials.put(wt, chestMaterials);
+					});
+				}
+			} else if (type.equals("barrel") && filePath.endsWith(BARREL_SUFFIX)) {
+				WoodType.values().filter(wt -> wt.name().equals(filePath.substring(0, filePath.lastIndexOf(BARREL_SUFFIX)))).findFirst()
+						.ifPresent(wt -> definition.getTextureParts().forEach(part -> BarrelFace.fromString(part).ifPresent(barrelFace -> {
+							Map<BarrelMaterial, Material> barrelFaceMaterials = new EnumMap<>(BarrelMaterial.class);
+
+							definition.getTextures(part).forEach((textureName, rl) ->
+									BarrelMaterial.fromString(textureName).ifPresent(cm -> barrelFaceMaterials.put(cm, new Material(InventoryMenu.BLOCK_ATLAS, rl))));
+
+							barrelMaterials.computeIfAbsent(wt, k -> new EnumMap<>(BarrelFace.class)).put(barrelFace, barrelFaceMaterials);
+						})));
 			}
 		});
 		return fileContents;
+	}
+
+	private void clear() {
+		woodChestMaterials.clear();
+		barrelMaterials.clear();
 	}
 
 	@Override
@@ -69,48 +99,63 @@ public class StorageTextureManager extends SimpleJsonResourceReloadListener {
 		return woodChestMaterials.getOrDefault(woodType, woodChestMaterials.get(defaultChestWoodType));
 	}
 
-	@Nullable
-	private StorageTextureDefinition loadDefinition(Map<ResourceLocation, StorageTextureDefinition> storageTextureDefinitions, ResourceLocation resourceLocation, JsonElement json, Map<ResourceLocation, JsonElement> fileContents) {
+	public Optional<Material> getBarrelMaterial(WoodType woodType, BarrelFace barrelFace, BarrelMaterial barrelMaterial) {
+		Map<BarrelFace, Map<BarrelMaterial, Material>> woodMaterials = barrelMaterials.get(woodType);
+		if (woodMaterials == null) {
+			return Optional.empty();
+		}
+		Map<BarrelMaterial, Material> faceMaterials = woodMaterials.get(barrelFace);
+		if (faceMaterials == null) {
+			return Optional.empty();
+		}
+
+		return Optional.ofNullable(faceMaterials.get(barrelMaterial));
+	}
+
+	private Optional<StorageTextureDefinition> loadDefinition(Map<ResourceLocation, StorageTextureDefinition> storageTextureDefinitions, ResourceLocation resourceLocation, JsonElement json, Map<ResourceLocation, JsonElement> fileContents) {
 		//already loaded probably because it is a parent to another definition
 		if (storageTextureDefinitions.containsKey(resourceLocation)) {
-			return storageTextureDefinitions.get(resourceLocation);
+			return Optional.of(storageTextureDefinitions.get(resourceLocation));
 		}
 
 		if (!json.isJsonObject()) {
-			return null;
+			return Optional.empty();
 		}
 
 		JsonObject jsonContents = json.getAsJsonObject();
 
 		String type = "";
-		Map<String, ResourceLocation> textures = new HashMap<>();
+
+		@Nullable
+		StorageTextureDefinition parentDefinition = null;
 
 		if (jsonContents.has(PARENT_TAG) && jsonContents.get(PARENT_TAG).isJsonPrimitive()) {
 			ResourceLocation parent = new ResourceLocation(jsonContents.get(PARENT_TAG).getAsString());
 			JsonElement parentJson = fileContents.get(parent);
-			StorageTextureDefinition parentDefinition = loadDefinition(storageTextureDefinitions, parent, parentJson, fileContents);
+			parentDefinition = loadDefinition(storageTextureDefinitions, parent, parentJson, fileContents).orElse(null);
 			if (parentDefinition != null) {
 				type = parentDefinition.getType();
-				textures.putAll(parentDefinition.getTextures());
 			}
 		}
 
 		if (jsonContents.has(TYPE_TAG) && jsonContents.get(TYPE_TAG).isJsonPrimitive()) {
 			type = jsonContents.get(TYPE_TAG).getAsString();
 		}
-		if (jsonContents.has(TEXTURES_TAG) && jsonContents.get(TEXTURES_TAG).isJsonObject()) {
-			JsonObject jsonTextures = jsonContents.get(TEXTURES_TAG).getAsJsonObject();
 
-			jsonTextures.keySet().forEach(name -> {
-				if (jsonTextures.get(name).isJsonPrimitive()) {
-					textures.put(name, new ResourceLocation(jsonTextures.get(name).getAsString()));
-				}
-			});
+		if (!TEXTURE_PARSERS.containsKey(type)) {
+			return Optional.empty();
 		}
 
-		StorageTextureDefinition definition = new StorageTextureDefinition(type, textures);
-		storageTextureDefinitions.put(resourceLocation, definition);
-		return definition;
+		ITextureParser textureParser = TEXTURE_PARSERS.get(type).get();
+
+		if (parentDefinition != null) {
+			textureParser.copyFromParentDefinition(parentDefinition);
+		}
+
+		Optional<StorageTextureDefinition> result = textureParser.parseDefinition(type, jsonContents);
+		result.ifPresent(def -> storageTextureDefinitions.put(resourceLocation, def));
+
+		return result;
 	}
 
 	public Collection<Material> getUniqueChestMaterials() {
@@ -120,12 +165,20 @@ public class StorageTextureManager extends SimpleJsonResourceReloadListener {
 	}
 
 	public static class StorageTextureDefinition {
+		private static final String ALL_SIDES_TEXTURES = "allSides";
 		private final String type;
-		private final Map<String, ResourceLocation> textures;
+		private final Map<String, Map<String, ResourceLocation>> textures;
+
+		@SuppressWarnings({"unused", "java:S1172"}) //ignoring unused parameter because it's needed due to two constructors with the same erasure
+		public StorageTextureDefinition(String type, Map<String, Map<String, ResourceLocation>> multiplePartTextures, boolean multipleTextureIgnoredParameter) {
+			this.type = type;
+			textures = multiplePartTextures;
+		}
 
 		public StorageTextureDefinition(String type, Map<String, ResourceLocation> textures) {
 			this.type = type;
-			this.textures = textures;
+			this.textures = new HashMap<>();
+			this.textures.put(ALL_SIDES_TEXTURES, textures);
 		}
 
 		public String getType() {
@@ -133,7 +186,73 @@ public class StorageTextureManager extends SimpleJsonResourceReloadListener {
 		}
 
 		public Map<String, ResourceLocation> getTextures() {
-			return textures;
+			return textures.getOrDefault(ALL_SIDES_TEXTURES, new HashMap<>());
+		}
+
+		public Map<String, ResourceLocation> getTextures(String part) {
+			return textures.getOrDefault(part, new HashMap<>());
+		}
+
+		public Set<String> getTextureParts() {
+			return textures.keySet();
+		}
+	}
+
+	private interface ITextureParser {
+		void copyFromParentDefinition(StorageTextureDefinition parentDefinition);
+
+		Optional<StorageTextureDefinition> parseDefinition(String type, JsonObject jsonContents);
+	}
+
+	private static class ChestTextureParser implements ITextureParser {
+		private final Map<String, ResourceLocation> textures = new HashMap<>();
+
+		@Override
+		public void copyFromParentDefinition(StorageTextureDefinition parentDefinition) {
+			textures.putAll(parentDefinition.getTextures());
+		}
+
+		@Override
+		public Optional<StorageTextureDefinition> parseDefinition(String type, JsonObject jsonContents) {
+			if (jsonContents.has(TEXTURES_TAG) && jsonContents.get(TEXTURES_TAG).isJsonObject()) {
+				JsonObject jsonTextures = jsonContents.get(TEXTURES_TAG).getAsJsonObject();
+
+				jsonTextures.keySet().forEach(name -> {
+					if (jsonTextures.get(name).isJsonPrimitive()) {
+						textures.put(name, new ResourceLocation(jsonTextures.get(name).getAsString()));
+					}
+				});
+			}
+
+			return Optional.of(new StorageTextureDefinition(type, textures));
+		}
+	}
+
+	private static class BarrelTextureParser implements ITextureParser {
+		private final Map<String, Map<String, ResourceLocation>> textures = new HashMap<>();
+
+		@Override
+		public void copyFromParentDefinition(StorageTextureDefinition parentDefinition) {
+			textures.put("top", new HashMap<>(parentDefinition.getTextures("top")));
+			textures.put("bottom", new HashMap<>(parentDefinition.getTextures("bottom")));
+			textures.put("side", new HashMap<>(parentDefinition.getTextures("side")));
+		}
+
+		@Override
+		public Optional<StorageTextureDefinition> parseDefinition(String type, JsonObject jsonContents) {
+			if (jsonContents.has(TEXTURES_TAG) && jsonContents.get(TEXTURES_TAG).isJsonObject()) {
+				JsonObject jsonTextures = jsonContents.get(TEXTURES_TAG).getAsJsonObject();
+
+				jsonTextures.keySet().forEach(partName -> {
+					if (jsonTextures.get(partName).isJsonObject()) {
+						JsonObject part = jsonTextures.get(partName).getAsJsonObject();
+						Map<String, ResourceLocation> partTextures = textures.computeIfAbsent(partName, pn -> new HashMap<>());
+						part.keySet().forEach(textureName -> partTextures.put(textureName, new ResourceLocation(part.get(textureName).getAsString())));
+					}
+				});
+			}
+
+			return Optional.of(new StorageTextureDefinition(type, textures, true));
 		}
 	}
 
@@ -151,6 +270,46 @@ public class StorageTextureManager extends SimpleJsonResourceReloadListener {
 		public static Optional<ChestMaterial> fromString(String materialName) {
 			for (ChestMaterial value : values()) {
 				if (value.name().toLowerCase(Locale.ROOT).equals(materialName)) {
+					return Optional.of(value);
+				}
+			}
+			return Optional.empty();
+		}
+	}
+
+	public enum BarrelMaterial {
+		BASE,
+		BASE_OPEN,
+		HANDLE,
+		METAL_BANDS,
+		WOOD_TIER,
+		IRON_TIER,
+		GOLD_TIER,
+		DIAMOND_TIER,
+		NETHERITE_TIER,
+		TINTABLE_MAIN,
+		TINTABLE_MAIN_OPEN,
+		TINTABLE_ACCENT,
+		PACKED;
+
+		public static Optional<BarrelMaterial> fromString(String textureName) {
+			for (BarrelMaterial value : values()) {
+				if (value.name().toLowerCase(Locale.ROOT).equals(textureName)) {
+					return Optional.of(value);
+				}
+			}
+			return Optional.empty();
+		}
+	}
+
+	public enum BarrelFace {
+		TOP,
+		BOTTOM,
+		SIDE;
+
+		public static Optional<BarrelFace> fromString(String faceName) {
+			for (BarrelFace value : values()) {
+				if (value.name().toLowerCase(Locale.ROOT).equals(faceName)) {
 					return Optional.of(value);
 				}
 			}
