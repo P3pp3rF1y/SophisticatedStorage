@@ -55,10 +55,12 @@ public class BarrelBlock extends WoodStorageBlockBase {
 
 	public static final BooleanProperty OPEN = BlockStateProperties.OPEN;
 	private static final VoxelShape ITEM_ENTITY_COLLISION_SHAPE = box(0.01, 0.01, 0.01, 15.99, 15.99, 15.99);
+	private final StorageTier storageTier;
 
-	public BarrelBlock(Supplier<Integer> numberOfInventorySlotsSupplier, Supplier<Integer> numberOfUpgradeSlotsSupplier, Properties properties) {
+	public BarrelBlock(StorageTier storageTier, Supplier<Integer> numberOfInventorySlotsSupplier, Supplier<Integer> numberOfUpgradeSlotsSupplier, Properties properties) {
 		super(properties.noOcclusion(), numberOfInventorySlotsSupplier, numberOfUpgradeSlotsSupplier);
 		registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(OPEN, false).setValue(TICKING, false));
+		this.storageTier = storageTier;
 	}
 
 	@SuppressWarnings("deprecation")
@@ -187,5 +189,9 @@ public class BarrelBlock extends WoodStorageBlockBase {
 	@Override
 	public Direction getFacing(BlockState state) {
 		return state.getValue(FACING);
+	}
+
+	public StorageTier getStorageTier() {
+		return storageTier;
 	}
 }
