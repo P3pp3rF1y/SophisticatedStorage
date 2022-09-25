@@ -453,7 +453,7 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 			}
 		}
 
-		@SuppressWarnings("deprecation")
+		@SuppressWarnings({"deprecation", "java:S107"})
 		private void addRenderedItemSide(BlockState state, Random rand, List<BakedQuad> ret, ItemStack displayItem, BakedModel model, int rotation,
 				@Nullable Direction dir, int displayItemIndex, int displayItemCount) {
 			List<BakedQuad> quads = model.getQuads(null, dir, rand);
@@ -695,7 +695,7 @@ public class BarrelDynamicModel implements IModelGeometry<BarrelDynamicModel> {
 		METAL_BANDS(SophisticatedStorage.getRL("block/barrel_metal_bands"), StorageTextureManager.BarrelMaterial.METAL_BANDS),
 		ACCENT(SophisticatedStorage.getRL("block/barrel_tintable_accent"), StorageTextureManager.BarrelMaterial.TINTABLE_ACCENT),
 		MAIN(SophisticatedStorage.getRL("block/barrel_tintable_main"), StorageTextureManager.BarrelMaterial.TINTABLE_MAIN),
-		MAIN_OPEN(SophisticatedStorage.getRL("block/barrel_tintable_main_open"), StorageTextureManager.BarrelMaterial.TINTABLE_MAIN_OPEN),
+		MAIN_OPEN(SophisticatedStorage.getRL("block/barrel_tintable_main_open"), StorageTextureManager.BarrelMaterial.TINTABLE_MAIN, StorageTextureManager.BarrelMaterial.TINTABLE_MAIN_OPEN),
 		WOOD_TIER(Constants.CUBE_BOTTOM_TOP, StorageTextureManager.BarrelMaterial.WOOD_TIER),
 		IRON_TIER(Constants.CUBE_BOTTOM_TOP, StorageTextureManager.BarrelMaterial.IRON_TIER),
 		GOLD_TIER(Constants.CUBE_BOTTOM_TOP, StorageTextureManager.BarrelMaterial.GOLD_TIER),
