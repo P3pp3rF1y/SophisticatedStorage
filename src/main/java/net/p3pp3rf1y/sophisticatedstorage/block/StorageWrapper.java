@@ -380,6 +380,7 @@ public abstract class StorageWrapper implements IStorageWrapper {
 	@Override
 	public void refreshInventoryForInputOutput() {
 		inventoryIOHandler = null;
+		upgradeCachesInvalidatedHandler.run();
 	}
 
 	@Override

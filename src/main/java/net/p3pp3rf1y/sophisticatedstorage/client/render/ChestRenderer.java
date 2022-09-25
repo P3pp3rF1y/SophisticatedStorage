@@ -11,23 +11,19 @@ import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.WoodType;
-import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.ChestBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.ChestBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageWrapper;
-import net.p3pp3rf1y.sophisticatedstorage.block.WoodStorageBlockBase;
 import net.p3pp3rf1y.sophisticatedstorage.client.ClientEventHandler;
+import net.p3pp3rf1y.sophisticatedstorage.client.StorageTextureManager;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -38,26 +34,6 @@ public class ChestRenderer implements BlockEntityRenderer<ChestBlockEntity> {
 	private final ModelPart lidPart;
 	private final ModelPart bottomPart;
 	private final ModelPart lockPart;
-
-	private static final String ENTITY_CHEST_FOLDER = "entity/chest/";
-
-	private static final Map<WoodType, Material> WOOD_MATERIALS = new HashMap<>();
-	public static final Material WOOD_TIER_MATERIAL = new Material(Sheets.CHEST_SHEET, SophisticatedStorage.getRL(ENTITY_CHEST_FOLDER + "wood_tier"));
-	public static final Material IRON_TIER_MATERIAL = new Material(Sheets.CHEST_SHEET, SophisticatedStorage.getRL(ENTITY_CHEST_FOLDER + "iron_tier"));
-	public static final Material GOLD_TIER_MATERIAL = new Material(Sheets.CHEST_SHEET, SophisticatedStorage.getRL(ENTITY_CHEST_FOLDER + "gold_tier"));
-	public static final Material DIAMOND_TIER_MATERIAL = new Material(Sheets.CHEST_SHEET, SophisticatedStorage.getRL(ENTITY_CHEST_FOLDER + "diamond_tier"));
-	public static final Material NETHERITE_TIER_MATERIAL = new Material(Sheets.CHEST_SHEET, SophisticatedStorage.getRL(ENTITY_CHEST_FOLDER + "netherite_tier"));
-	public static final Material TINTABLE_MAIN_MATERIAL = new Material(Sheets.CHEST_SHEET, SophisticatedStorage.getRL(ENTITY_CHEST_FOLDER + "tintable_main"));
-	public static final Material TINTABLE_ACCENT_MATERIAL = new Material(Sheets.CHEST_SHEET, SophisticatedStorage.getRL(ENTITY_CHEST_FOLDER + "tintable_accent"));
-	public static final Material PACKED_MATERIAL = new Material(Sheets.CHEST_SHEET, SophisticatedStorage.getRL(ENTITY_CHEST_FOLDER + "packed"));
-
-	static {
-		WoodStorageBlockBase.CUSTOM_TEXTURE_WOOD_TYPES.forEach(woodType -> WOOD_MATERIALS.put(woodType, new Material(Sheets.CHEST_SHEET, SophisticatedStorage.getRL(ENTITY_CHEST_FOLDER + woodType.name()))));
-	}
-
-	public static Collection<Material> getWoodMaterials() {
-		return WOOD_MATERIALS.values();
-	}
 
 	public ChestRenderer(BlockEntityRendererProvider.Context context) {
 		ModelPart modelpart = context.bakeLayer(ClientEventHandler.CHEST_LAYER);
@@ -93,19 +69,23 @@ public class ChestRenderer implements BlockEntityRenderer<ChestBlockEntity> {
 		boolean hasMainColor = storageWrapper.hasMainColor();
 		boolean hasAccentColor = storageWrapper.hasAccentColor();
 		Optional<WoodType> woodType = chestEntity.getWoodType();
+
+		StorageTextureManager matManager = StorageTextureManager.INSTANCE;
+		Map<StorageTextureManager.ChestMaterial, Material> chestMaterials = matManager.getWoodChestMaterials(woodType.orElse(WoodType.ACACIA));
+
 		if (woodType.isPresent() || !(hasMainColor && hasAccentColor)) {
-			VertexConsumer vertexconsumer = WOOD_MATERIALS.get(woodType.orElse(WoodType.ACACIA)).buffer(bufferSource, RenderType::entityCutout);
+			VertexConsumer vertexconsumer = chestMaterials.get(StorageTextureManager.ChestMaterial.BASE).buffer(bufferSource, RenderType::entityCutout);
 			renderBottomAndLid(poseStack, vertexconsumer, finalLidAngle, packedlight, packedOverlay);
 		}
 		if (hasMainColor) {
-			VertexConsumer vertexconsumer = TINTABLE_MAIN_MATERIAL.buffer(bufferSource, RenderType::entityCutout);
+			VertexConsumer vertexconsumer = chestMaterials.get(StorageTextureManager.ChestMaterial.TINTABLE_MAIN).buffer(bufferSource, RenderType::entityCutout);
 			renderBottomAndLidWithTint(poseStack, vertexconsumer, lidAngle, packedlight, packedOverlay, storageWrapper.getMainColor());
 		}
 		if (hasAccentColor) {
-			VertexConsumer vertexconsumer = TINTABLE_ACCENT_MATERIAL.buffer(bufferSource, RenderType::entityCutout);
+			VertexConsumer vertexconsumer = chestMaterials.get(StorageTextureManager.ChestMaterial.TINTABLE_ACCENT).buffer(bufferSource, RenderType::entityCutout);
 			renderBottomAndLidWithTint(poseStack, vertexconsumer, lidAngle, packedlight, packedOverlay, storageWrapper.getAccentColor());
 		}
-		Material tierMaterial = getTierMaterial(blockstate.getBlock());
+		Material tierMaterial = getTierMaterial(chestMaterials, blockstate.getBlock());
 		VertexConsumer vertexconsumer = tierMaterial.buffer(bufferSource, RenderType::entityCutout);
 		renderBottomAndLid(poseStack, vertexconsumer, lidAngle, packedlight, packedOverlay);
 		if (storageWrapper.getRenderInfo().getItemDisplayRenderInfo().getDisplayItem().isEmpty()) {
@@ -114,7 +94,7 @@ public class ChestRenderer implements BlockEntityRenderer<ChestBlockEntity> {
 		poseStack.popPose();
 
 		if (chestEntity.isPacked()) {
-			VertexConsumer consumer = PACKED_MATERIAL.buffer(bufferSource, RenderType::entityCutout);
+			VertexConsumer consumer = chestMaterials.get(StorageTextureManager.ChestMaterial.PACKED).buffer(bufferSource, RenderType::entityCutout);
 			poseStack.pushPose();
 			poseStack.translate(-0.005D, -0.005D, -0.005D);
 			poseStack.scale(1.01f, 1.01f, 1.01f);
@@ -146,16 +126,16 @@ public class ChestRenderer implements BlockEntityRenderer<ChestBlockEntity> {
 		lockPart.render(poseStack, consumer, packedLight, packedOverlay);
 	}
 
-	private Material getTierMaterial(Block block) {
+	private Material getTierMaterial(Map<StorageTextureManager.ChestMaterial, Material> chestMaterials, Block block) {
 		if (block == ModBlocks.IRON_CHEST.get()) {
-			return IRON_TIER_MATERIAL;
+			return chestMaterials.get(StorageTextureManager.ChestMaterial.IRON_TIER);
 		} else if (block == ModBlocks.GOLD_CHEST.get()) {
-			return GOLD_TIER_MATERIAL;
+			return chestMaterials.get(StorageTextureManager.ChestMaterial.GOLD_TIER);
 		} else if (block == ModBlocks.DIAMOND_CHEST.get()) {
-			return DIAMOND_TIER_MATERIAL;
+			return chestMaterials.get(StorageTextureManager.ChestMaterial.DIAMOND_TIER);
 		} else if (block == ModBlocks.NETHERITE_CHEST.get()) {
-			return NETHERITE_TIER_MATERIAL;
+			return chestMaterials.get(StorageTextureManager.ChestMaterial.NETHERITE_TIER);
 		}
-		return WOOD_TIER_MATERIAL;
+		return chestMaterials.get(StorageTextureManager.ChestMaterial.WOOD_TIER);
 	}
 }

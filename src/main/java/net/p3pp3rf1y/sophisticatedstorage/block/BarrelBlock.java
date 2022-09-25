@@ -1,14 +1,11 @@
 package net.p3pp3rf1y.sophisticatedstorage.block;
 
-import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stats;
-import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.SimpleMenuProvider;
@@ -40,7 +37,6 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.IBlockRenderProperties;
 import net.minecraftforge.network.NetworkHooks;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
-import net.p3pp3rf1y.sophisticatedstorage.client.particle.CustomTintTerrainParticle;
 import net.p3pp3rf1y.sophisticatedstorage.client.particle.CustomTintTerrainParticleData;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
@@ -55,10 +51,12 @@ public class BarrelBlock extends WoodStorageBlockBase {
 
 	public static final BooleanProperty OPEN = BlockStateProperties.OPEN;
 	private static final VoxelShape ITEM_ENTITY_COLLISION_SHAPE = box(0.01, 0.01, 0.01, 15.99, 15.99, 15.99);
+	private final StorageTier storageTier;
 
-	public BarrelBlock(Supplier<Integer> numberOfInventorySlotsSupplier, Supplier<Integer> numberOfUpgradeSlotsSupplier, Properties properties) {
+	public BarrelBlock(StorageTier storageTier, Supplier<Integer> numberOfInventorySlotsSupplier, Supplier<Integer> numberOfUpgradeSlotsSupplier, Properties properties) {
 		super(properties.noOcclusion(), numberOfInventorySlotsSupplier, numberOfUpgradeSlotsSupplier);
 		registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(OPEN, false).setValue(TICKING, false));
+		this.storageTier = storageTier;
 	}
 
 	@SuppressWarnings("deprecation")
@@ -76,39 +74,7 @@ public class BarrelBlock extends WoodStorageBlockBase {
 	@OnlyIn(Dist.CLIENT)
 	@Override
 	public void initializeClient(Consumer<IBlockRenderProperties> consumer) {
-		consumer.accept(new IBlockRenderProperties() {
-			@Override
-			public boolean addDestroyEffects(BlockState state, Level level, BlockPos pos, ParticleEngine manager) {
-				if (state.getBlock() != BarrelBlock.this || !(level instanceof ClientLevel clientLevel)) {
-					return false;
-				}
-
-				VoxelShape voxelshape = state.getShape(level, pos);
-				voxelshape.forAllBoxes((minX, minY, minZ, maxX, maxY, maxZ) -> {
-					double d1 = Math.min(1.0D, maxX - minX);
-					double d2 = Math.min(1.0D, maxY - minY);
-					double d3 = Math.min(1.0D, maxZ - minZ);
-					int i = Math.max(2, Mth.ceil(d1 / 0.25D));
-					int j = Math.max(2, Mth.ceil(d2 / 0.25D));
-					int k = Math.max(2, Mth.ceil(d3 / 0.25D));
-
-					for (int l = 0; l < i; ++l) {
-						for (int i1 = 0; i1 < j; ++i1) {
-							for (int j1 = 0; j1 < k; ++j1) {
-								double d4 = (l + 0.5D) / i;
-								double d5 = (i1 + 0.5D) / j;
-								double d6 = (j1 + 0.5D) / k;
-								double d7 = d4 * d1 + minX;
-								double d8 = d5 * d2 + minY;
-								double d9 = d6 * d3 + minZ;
-								manager.add(new CustomTintTerrainParticle(clientLevel, pos.getX() + d7, pos.getY() + d8, pos.getZ() + d9, d4 - 0.5D, d5 - 0.5D, d6 - 0.5D, state, pos).updateSprite(state, pos));
-							}
-						}
-					}
-				});
-				return true;
-			}
-		});
+		consumer.accept(new BarrelBlockRenderProperties(this));
 	}
 
 	@SuppressWarnings("deprecation")
@@ -187,5 +153,9 @@ public class BarrelBlock extends WoodStorageBlockBase {
 	@Override
 	public Direction getFacing(BlockState state) {
 		return state.getValue(FACING);
+	}
+
+	public StorageTier getStorageTier() {
+		return storageTier;
 	}
 }
