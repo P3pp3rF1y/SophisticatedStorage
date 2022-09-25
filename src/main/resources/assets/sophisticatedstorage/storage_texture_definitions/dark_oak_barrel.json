@@ -1,0 +1,15 @@
+{
+    "parent": "sophisticatedstorage:barrel",
+    "textures": {
+        "top": {
+            "base": "sophisticatedstorage:block/dark_oak_barrel_top",
+            "base_open": "sophisticatedstorage:block/dark_oak_barrel_top_open"
+        },
+        "side": {
+            "base": "sophisticatedstorage:block/dark_oak_barrel_side"
+        },
+        "bottom": {
+            "base": "sophisticatedstorage:block/dark_oak_barrel_bottom"
+        }
+    }
+}

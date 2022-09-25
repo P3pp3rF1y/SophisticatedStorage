@@ -1,0 +1,14 @@
+{
+    "type": "chest",
+    "textures": {
+        "base": "sophisticatedstorage:entity/chest/acacia",
+        "wood_tier": "sophisticatedstorage:entity/chest/wood_tier",
+        "iron_tier": "sophisticatedstorage:entity/chest/iron_tier",
+        "gold_tier": "sophisticatedstorage:entity/chest/gold_tier",
+        "diamond_tier": "sophisticatedstorage:entity/chest/diamond_tier",
+        "netherite_tier": "sophisticatedstorage:entity/chest/netherite_tier",
+        "tintable_main": "sophisticatedstorage:entity/chest/tintable_main",
+        "tintable_accent": "sophisticatedstorage:entity/chest/tintable_accent",
+        "packed": "sophisticatedstorage:entity/chest/packed"
+    }
+}

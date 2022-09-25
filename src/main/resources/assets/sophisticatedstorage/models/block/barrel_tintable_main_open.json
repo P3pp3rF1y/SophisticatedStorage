@@ -1,5 +1,8 @@
 {
     "parent": "minecraft:block/block",
+    "textures": {
+        "particle": "#side"
+    },
     "elements": [
         {
             "from": [ 0, 0, 0 ],
@@ -12,20 +15,6 @@
                 "west":  { "texture": "#side", "cullface": "west", "tintindex": 1000 },
                 "east":  { "texture": "#side", "cullface": "east", "tintindex": 1000 }
             }
-        },
-        {
-            "from": [ 0, 0, 0 ],
-            "to": [ 16, 16, 16 ],
-            "faces": {
-                "up":    { "texture": "#handle", "cullface": "up"}
-            }
         }
-    ],
-    "textures": {
-        "top": "sophisticatedstorage:block/barrel_top_open_tintable",
-        "bottom": "sophisticatedstorage:block/barrel_bottom_tintable_main",
-        "side": "sophisticatedstorage:block/barrel_side_tintable_main",
-        "handle": "sophisticatedstorage:block/barrel_handle",
-        "particle": "sophisticatedstorage:block/barrel_side_tintable_main"
-    }
+    ]
 }

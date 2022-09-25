@@ -38,6 +38,12 @@ public abstract class WoodStorageBlockEntity extends StorageBlockEntity {
 		tag.putBoolean("packed", packed);
 	}
 
+	public CompoundTag getStorageContentsTag() {
+		CompoundTag contents = saveWithoutMetadata();
+		contents.putBoolean("packed", false);
+		return contents;
+	}
+
 	@Override
 	public void loadData(CompoundTag tag) {
 		super.loadData(tag);

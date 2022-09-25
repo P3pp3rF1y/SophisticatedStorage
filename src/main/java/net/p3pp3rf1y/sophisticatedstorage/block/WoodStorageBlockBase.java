@@ -43,10 +43,9 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 		if (be instanceof WoodStorageBlockEntity wbe) {
 			addNameWoodAndTintData(stack, wbe);
 			if (wbe.isPacked()) {
-				wbe.setPacked(false);
 				StorageWrapper storageWrapper = be.getStorageWrapper();
 				UUID storageUuid = storageWrapper.getContentsUuid().orElse(UUID.randomUUID());
-				CompoundTag storageContents = be.saveWithoutMetadata();
+				CompoundTag storageContents = wbe.getStorageContentsTag();
 				if (!storageContents.isEmpty()) {
 					ItemContentsStorage.get().setStorageContents(storageUuid, storageContents);
 					NBTHelper.setUniqueId(stack, "uuid", storageUuid);
