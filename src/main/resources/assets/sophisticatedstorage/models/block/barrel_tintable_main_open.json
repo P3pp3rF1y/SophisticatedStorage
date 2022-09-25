@@ -15,13 +15,6 @@
                 "west":  { "texture": "#side", "cullface": "west", "tintindex": 1000 },
                 "east":  { "texture": "#side", "cullface": "east", "tintindex": 1000 }
             }
-        },
-        {
-            "from": [ 0, 0, 0 ],
-            "to": [ 16, 16, 16 ],
-            "faces": {
-                "up":    { "texture": "#handle", "cullface": "up"}
-            }
         }
     ]
 }
