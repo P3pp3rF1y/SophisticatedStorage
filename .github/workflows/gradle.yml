@@ -13,6 +13,7 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 1.17
+          cache: gradle
       - name: Build with Gradle
         uses: nick-invision/retry@v2
         with:
