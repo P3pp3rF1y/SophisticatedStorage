@@ -3,6 +3,14 @@ name: Mod Build
 on: [ push ]
 
 jobs:
+  log-github-event-goodies:
+    name: "LOG Everything on GitHub Event"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Logging
+        run: |
+          echo "${{toJSON(github.event)}}"
+
   build:
 
     runs-on: ubuntu-latest
