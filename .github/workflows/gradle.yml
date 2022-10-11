@@ -13,7 +13,7 @@ jobs:
           echo "::set-output name=VERSION_NAME::$(${{github.workspace}}/gradlew -q printVersionName)"
         id: version
       - name : Print version info
-      - uses: actions/github-script@v6
+        uses: actions/github-script@v6
         with:
           script: |
             const commits = ${{ toJSON(github.event.commits) }}
