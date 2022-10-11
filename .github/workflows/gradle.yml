@@ -11,7 +11,7 @@ jobs:
       - uses: actions/checkout@v1
       - name : Retrieve Version
         run: |
-          echo "::set-output name=VERSION_NAME::$(${{github.workspace}}/gradlew -q properties --no-daemon --console=plain -q | grep \"^version:\" | awk '{printf $2}')"
+          echo "::set-output name=VERSION_NAME::$(${{github.workspace}}/gradlew -q printVersionName | grep \"^version:\" | awk '{printf $2}')"
         id: version
       - name : Print version info
         uses: actions/github-script@v6
