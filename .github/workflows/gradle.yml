@@ -10,17 +10,19 @@ jobs:
     steps:
       - name : Retrieve Version
         run: |
-          echo "::set-output name=VERSION_NAME::$(./gradlew -q printVersionName)"
+          echo "::set-output name=VERSION_NAME::$(${{github.workspace}}/gradlew -q printVersionName)"
         id: version
       - name : Print version info
         uses: actions/github-script@v6
         with:
           script: |
+            const github = ${{ toJSON(github) }}
             const commits = ${{ toJSON(github.event.commits) }}
-            var message = "New build [${{steps.version.outputs.VERSION_NAME}}](https://github.com/P3pp3rF1y/SophisticatedStorage/packages/1388832?version=${{steps.version.outputs.VERSION_NAME}})"
+            var message = "New build [${{steps.version.outputs.VERSION_NAME}}](https://github.com/P3pp3rF1y/SophisticatedStorage/packages/1388832?version=${{steps.version.outputs.VERSION_NAME}})";
             for (const commit of commits) {
               message += "\n" + commit.message;
             }
+            console.log(message);
       - uses: actions/checkout@v1
       - name: Set up JDK 1.17
         uses: actions/setup-java@v1
