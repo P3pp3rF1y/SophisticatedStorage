@@ -190,3 +190,7 @@ sonarqube {
     }
 }
 
+task printVersionName {
+  println project.version
+}
+
