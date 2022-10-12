@@ -28,7 +28,15 @@ jobs:
             for (const commit of commits) {
               message += "\n" + commit.message + " (" commit.author.name + ")";
             }
-            console.log(message);
+            core.setOutput('MESSAGE', message);
+        id: text
+      - name: Invoke deployment hook
+        uses: distributhor/workflow-webhook@v2
+        env:
+          webhook_url: ${{ secrets.DISCORD_WEBHOOK }}
+        data: '{"content": "${{steps.text.outputs.MESSAGE}}"}'
+
+
 #       - name: Build with Gradle
 #         uses: nick-invision/retry@v2
 #         with:
