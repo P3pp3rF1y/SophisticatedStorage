@@ -12,8 +12,8 @@ jobs:
       - name : Retrieve Version
         run: |
           echo "$(${{github.workspace}}/gradlew -q printVersionName | grep "\""^version:"\"" | awk '{printf $2}')"
-          echo "${{github.workspace}}/gradlew -q printVersionName | grep "\""^version:"\"""
-          echo "${{github.workspace}}/gradlew -q printVersionName"
+          echo "$(${{github.workspace}}/gradlew -q printVersionName | grep "\""^version:"\"")"
+          echo "$(${{github.workspace}}/gradlew -q printVersionName)"
           echo "::set-output name=VERSION_NAME::$(${{github.workspace}}/gradlew -q printVersionName | grep "\""^version:"\"" | awk '{printf $2}')"
         id: version
       - name : Print version info
