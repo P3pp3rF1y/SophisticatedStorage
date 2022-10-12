@@ -15,10 +15,8 @@ jobs:
           java-version: 1.17
       - name : Retrieve Version
         run: |
-          echo "$(${{github.workspace}}/gradlew -q printVersionName | awk 'version:{printf $1}')"
-          echo "$(${{github.workspace}}/gradlew -q printVersionName | grep ^version:)"
-          echo "$(${{github.workspace}}/gradlew -q printVersionName)"
-          echo "::set-output name=VERSION_NAME::$(${{github.workspace}}/gradlew -q printVersionName | grep ^version: | awk '{printf $2}')"
+          echo "$(${{github.workspace}}/gradlew -q printVersionName | awk -F "version:" '{printf $2}')"
+          echo "::set-output name=VERSION_NAME::$(${{github.workspace}}/gradlew -q printVersionName | awk -F "version:" '{printf $2}')"
         id: version
       - name : Print version info
         uses: actions/github-script@v6
