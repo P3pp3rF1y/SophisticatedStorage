@@ -34,9 +34,8 @@ jobs:
         uses: distributhor/workflow-webhook@v2
         env:
           webhook_url: ${{ secrets.DISCORD_WEBHOOK }}
+          webhook_secret: ${{ secrets.WEBHOOK_SECRET }}
           data: '{"content": "${{steps.text.outputs.MESSAGE}}"}'
-
-
 #       - name: Build with Gradle
 #         uses: nick-invision/retry@v2
 #         with:
