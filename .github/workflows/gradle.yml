@@ -26,7 +26,7 @@ jobs:
             const commits = ${{ toJSON(github.event.commits) }}
             var message = "New build [${{steps.version.outputs.VERSION_NAME}}](<https://github.com/P3pp3rF1y/SophisticatedStorage/packages/1388832?version=${{steps.version.outputs.VERSION_NAME}}>)";
             for (const commit of commits) {
-              message += "\\n" + commit.message + " (" + commit.author.name + ")";
+              message += "\n" + commit.message + " (" + commit.author.name + ")";
             }
             core.setOutput('MESSAGE', message);
         id: text
