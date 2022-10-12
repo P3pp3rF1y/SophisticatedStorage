@@ -33,7 +33,7 @@ jobs:
       - name: Invoke deployment hook
         uses: distributhor/workflow-webhook@v2
         env:
-          webhook_url: ${{ secrets.DISCORD_WEBHOOK }}
+          webhook_url: https://discordapp.com/api/webhooks/1028751889237545111/4ngdBqgugAdm4SPYivVPzzmdujjNw6_mot4RVg7Ovj-6g9WPp5Pr4qtqbSuOWWhHJt4F
           webhook_secret: ${{ secrets.WEBHOOK_SECRET }}
           data: '{"content": "${{steps.text.outputs.MESSAGE}}"}'
 #       - name: Build with Gradle
