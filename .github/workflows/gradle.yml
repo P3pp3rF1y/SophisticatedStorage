@@ -30,12 +30,11 @@ jobs:
             }
             core.setOutput('MESSAGE', message);
         id: text
-      - name: Invoke deployment hook
-        uses: distributhor/workflow-webhook@v2
-        env:
-          webhook_url: https://discordapp.com/api/webhooks/1028751889237545111/4ngdBqgugAdm4SPYivVPzzmdujjNw6_mot4RVg7Ovj-6g9WPp5Pr4qtqbSuOWWhHJt4F
-          webhook_secret: ${{ secrets.WEBHOOK_SECRET }}
-          data: '{"content": "${{steps.text.outputs.MESSAGE}}"}'
+      - name: Notify Discord
+        uses: tsickert/discord-webhook@v5.3.0
+        with:
+          webhook-url: ${{ secrets.DISCORD_WEBHOOK }}
+          content: "${{steps.text.outputs.MESSAGE}}"
 #       - name: Build with Gradle
 #         uses: nick-invision/retry@v2
 #         with:
