@@ -12,8 +12,9 @@ jobs:
         uses: tsickert/discord-webhook@v5.3.0
         with:
           webhook-url: ${{ secrets.DISCORD_WEBHOOK }}
-          content: "test"
-          embeds: "[{\"title\": \"test\", \"description\":\"test\"}]"
+          embed-title: "test"
+          embed-url: "https://sonarcloud.io"
+          embed-description: "[1.18.2-0.5.17.185](<https://github.com/P3pp3rF1y/SophisticatedStorage/packages/1388832?version=1.18.2-0.5.17.185>) - P3pp3rF1y"
       # - uses: actions/checkout@v1
       # - name: Set up JDK 17
       #   uses: actions/setup-java@v2
