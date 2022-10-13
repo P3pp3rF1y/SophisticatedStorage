@@ -8,64 +8,70 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v1
-      - name: Set up JDK 17
-        uses: actions/setup-java@v2
-        with:
-          java-version: 17
-          distribution: zulu
-          cache: gradle
-      - name: Build with Gradle
-        uses: nick-invision/retry@v2
-        with:
-          timeout_minutes: 10
-          max_attempts: 3
-          command: ./gradlew build
-      - name: Publish to Github Packages
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./gradlew build publish
-      - name: Cleanup old artifacts
-        uses: actions/delete-package-versions@v3
-        with:
-          package-name: 'sophisticatedstorage.sophisticatedstorage'
-          min-versions-to-keep: 10
-      - name: Code Quality
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./gradlew -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=${{ secrets.SONAR_TOKEN }} -Dsonar.organization=p3pp3rf1y-github sonarqube
-      - name : Retrieve Version
-        run: |
-          echo "$(${{github.workspace}}/gradlew -q printVersionName | awk -F "version:" '{printf $2}')"
-          echo "VERSION_NAME=$(${{github.workspace}}/gradlew -q printVersionName | awk -F "version:" '{printf $2}')" >> $GITHUB_OUTPUT
-        id: version
-      - name : Compile version message
-        uses: actions/github-script@v6
-        with:
-          script: |
-            const gh = ${{ toJSON(github) }};
-            const commits = ${{ toJSON(github.event.commits) }};
-            let embeds = [];
-            let embed = {};
-            embed.title = "[${gh.event.repository.name}:${gh.ref_name}] new build ${{steps.version.outputs.VERSION_NAME}}";
-            embed.description = "";
-            for (const commit of commits) {
-              if (embed.description.length !== 0) {
-                embed.description += "\n";
-              }
-              embed.description += "[${commit.id.slice(0,7}](<${commit.id.url}>) ${commit.message} - ${commit.author.name}";
-            }
-            embed.url = "https://github.com/P3pp3rF1y/SophisticatedStorage/packages/1388832?version=${{steps.version.outputs.VERSION_NAME}}";
-            embed.color = 58633;
-            let author = {};
-            author.name = "${gh.event.sender.login}";
-            author.icon_url = "${gh.event.sender.avatar_url}";
-            embed.author = author;
-            embeds.push(embed);
-            core.setOutput('EMBEDS', embeds);
-        id: embed
       - name: Send Discord Notification
         uses: tsickert/discord-webhook@v5.3.0
         with:
           webhook-url: ${{ secrets.DISCORD_WEBHOOK }}
-          embeds: ${{steps.embed.outputs.EMBEDS}}
+          contents: null
+          embeds: [{"title": "test", "description":"test"}]
+      # - uses: actions/checkout@v1
+      # - name: Set up JDK 17
+      #   uses: actions/setup-java@v2
+      #   with:
+      #     java-version: 17
+      #     distribution: zulu
+      #     cache: gradle
+      # - name: Build with Gradle
+      #   uses: nick-invision/retry@v2
+      #   with:
+      #     timeout_minutes: 10
+      #     max_attempts: 3
+      #     command: ./gradlew build
+      # - name: Publish to Github Packages
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   run: ./gradlew build publish
+      # - name: Cleanup old artifacts
+      #   uses: actions/delete-package-versions@v3
+      #   with:
+      #     package-name: 'sophisticatedstorage.sophisticatedstorage'
+      #     min-versions-to-keep: 10
+      # - name: Code Quality
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   run: ./gradlew -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=${{ secrets.SONAR_TOKEN }} -Dsonar.organization=p3pp3rf1y-github sonarqube
+      # - name : Retrieve Version
+      #   run: |
+      #     echo "$(${{github.workspace}}/gradlew -q printVersionName | awk -F "version:" '{printf $2}')"
+      #     echo "VERSION_NAME=$(${{github.workspace}}/gradlew -q printVersionName | awk -F "version:" '{printf $2}')" >> $GITHUB_OUTPUT
+      #   id: version
+      # - name : Compile version message
+      #   uses: actions/github-script@v6
+      #   with:
+      #     script: |
+      #       const gh = ${{ toJSON(github) }};
+      #       const commits = ${{ toJSON(github.event.commits) }};
+      #       let embeds = [];
+      #       let embed = {};
+      #       embed.title = "[${gh.event.repository.name}:${gh.ref_name}] new build ${{steps.version.outputs.VERSION_NAME}}";
+      #       embed.description = "";
+      #       for (const commit of commits) {
+      #         if (embed.description.length !== 0) {
+      #           embed.description += "\n";
+      #         }
+      #         embed.description += "[${commit.id.slice(0,7}](<${commit.id.url}>) ${commit.message} - ${commit.author.name}";
+      #       }
+      #       embed.url = "https://github.com/P3pp3rF1y/SophisticatedStorage/packages/1388832?version=${{steps.version.outputs.VERSION_NAME}}";
+      #       embed.color = 58633;
+      #       let author = {};
+      #       author.name = "${gh.event.sender.login}";
+      #       author.icon_url = "${gh.event.sender.avatar_url}";
+      #       embed.author = author;
+      #       embeds.push(embed);
+      #       core.setOutput('EMBEDS', embeds);
+      #   id: embed
+      # - name: Send Discord Notification
+      #   uses: tsickert/discord-webhook@v5.3.0
+      #   with:
+      #     webhook-url: ${{ secrets.DISCORD_WEBHOOK }}
+      #     embeds: ${{steps.embed.outputs.EMBEDS}}
