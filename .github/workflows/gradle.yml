@@ -47,7 +47,7 @@ jobs:
             const commits = ${{ toJSON(github.event.commits) }}
             let embeds = [];
             let embed = {};
-            embed.title = "[${{gh.event.repository.name}}:${{gh.ref_name}}] new build ${{steps.version.outputs.VERSION_NAME}}";
+            embed.title = "[${gh.event.repository.name}:${{gh.ref_name}}] new build ${{steps.version.outputs.VERSION_NAME}}";
             embed.description = "";
             for (const commit of commits) {
               if (embed.description.length !== 0) {
