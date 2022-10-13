@@ -12,7 +12,7 @@ jobs:
         uses: tsickert/discord-webhook@v5.3.0
         with:
           webhook-url: ${{ secrets.DISCORD_WEBHOOK }}
-          contents: null
+          contents: ""
           embeds: "[{\"title\": \"test\", \"description\":\"test\"}]"
       # - uses: actions/checkout@v1
       # - name: Set up JDK 17
