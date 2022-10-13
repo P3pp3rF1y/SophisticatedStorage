@@ -43,23 +43,24 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
+            console.log(context)
             const gh = ${{ toJSON(github) }}
             const commits = ${{ toJSON(github.event.commits) }}
             let embeds = [];
             let embed = {};
-            embed.title = "[${gh.event.repository.name}:${{gh.ref_name}}] new build ${{steps.version.outputs.VERSION_NAME}}";
+            embed.title = "[${gh.event.repository.name}:${gh.ref_name}] new build ${{steps.version.outputs.VERSION_NAME}}";
             embed.description = "";
             for (const commit of commits) {
               if (embed.description.length !== 0) {
                 embed.description += "\n";
               }
-              embed.description += "[${{commit.id.slice(0,7}}](<${{commit.id.url}}>) ${{commit.message}} - ${{commit.author.name}}";
+              embed.description += "[${commit.id.slice(0,7}](<${commit.id.url}>) ${commit.message} - ${commit.author.name}";
             }
             embed.url = "https://github.com/P3pp3rF1y/SophisticatedStorage/packages/1388832?version=${{steps.version.outputs.VERSION_NAME}}";
             embed.color = 58633;
             let author = {};
-            author.name = "${{gh.event.sender.login}}";
-            author.icon_url = "${{gh.event.sender.avatar_url}}";
+            author.name = "${gh.event.sender.login}";
+            author.icon_url = "${gh.event.sender.avatar_url}";
             embed.author = author;
             embeds.push(embed);
             core.setOutput('EMBEDS', embeds);
