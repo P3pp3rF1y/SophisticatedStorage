@@ -9,16 +9,32 @@ jobs:
 
     steps:
       - uses: actions/checkout@v1
-      - name: Set up JDK 1.17
-        uses: actions/setup-java@v1
+      - name: Set up JDK 17
+        uses: actions/setup-java@v2
         with:
-          java-version: 1.17
+          java-version: 17
+          distribution: zulu
+          cache: gradle
+      - name: Build with Gradle
+        uses: nick-invision/retry@v2
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          command: ./gradlew build
+      - name: Publish to Github Packages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./gradlew build publish
+      - name: Code Quality
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./gradlew -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=${{ secrets.SONAR_TOKEN }} -Dsonar.organization=p3pp3rf1y-github sonarqube
       - name : Retrieve Version
         run: |
           echo "$(${{github.workspace}}/gradlew -q printVersionName | awk -F "version:" '{printf $2}')"
-          echo "::set-output name=VERSION_NAME::$(${{github.workspace}}/gradlew -q printVersionName | awk -F "version:" '{printf $2}')"
+          echo "VERSION_NAME=$(${{github.workspace}}/gradlew -q printVersionName | awk -F "version:" '{printf $2}')" >> $GITHUB_OUTPUT
         id: version
-      - name : Print version info
+      - name : Compile version message
         uses: actions/github-script@v6
         with:
           script: |
@@ -30,22 +46,8 @@ jobs:
             }
             core.setOutput('MESSAGE', message);
         id: text
-      - name: Notify Discord
+      - name: Send Discord Notification
         uses: tsickert/discord-webhook@v5.3.0
         with:
           webhook-url: ${{ secrets.DISCORD_WEBHOOK }}
           content: "${{steps.text.outputs.MESSAGE}}"
-#       - name: Build with Gradle
-#         uses: nick-invision/retry@v2
-#         with:
-#           timeout_minutes: 10
-#           max_attempts: 3
-#           command: ./gradlew build
-#       - name: Publish to Github Packages
-#         env:
-#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#         run: ./gradlew build publish
-#       - name: Code Quality
-#         env:
-#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#         run: ./gradlew -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=${{ secrets.SONAR_TOKEN }} -Dsonar.organization=p3pp3rf1y-github sonarqube
