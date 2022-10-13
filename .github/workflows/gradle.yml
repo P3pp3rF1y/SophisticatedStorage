@@ -25,6 +25,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./gradlew build publish
+      - name: Cleanup old artifacts
+        uses: actions/delete-package-versions@v3
+        with:
+          package-name: 'sophisticatedstorage.sophisticatedstorage'
+          min-versions-to-keep: 10
       - name: Code Quality
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
