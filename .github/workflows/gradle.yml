@@ -45,14 +45,27 @@ jobs:
           script: |
             const gh = ${{ toJSON(github) }}
             const commits = ${{ toJSON(github.event.commits) }}
-            var message = "New " + gh.event.repository.name + " build [${{steps.version.outputs.VERSION_NAME}}](<https://github.com/P3pp3rF1y/SophisticatedStorage/packages/1388832?version=${{steps.version.outputs.VERSION_NAME}}>)";
+            let embeds = [];
+            let embed = {};
+            embed.title = "[${{gh.event.repository.name}}:${{gh.ref_name}}] new build ${{steps.version.outputs.VERSION_NAME}}";
+            embed.description = "";
             for (const commit of commits) {
-              message += "\n" + commit.message + " (" + commit.author.name + ")";
+              if (embed.description.length !== 0) {
+                embed.description += "\n";
+              }
+              embed.description += "[${{commit.id.slice(0,7}}](<${{commit.id.url}}>) ${{commit.message}} - ${{commit.author.name}}";
             }
-            core.setOutput('MESSAGE', message);
-        id: text
+            embed.url = "https://github.com/P3pp3rF1y/SophisticatedStorage/packages/1388832?version=${{steps.version.outputs.VERSION_NAME}}";
+            embed.color = 58633;
+            let author = {};
+            author.name = "${{gh.event.sender.login}}";
+            author.icon_url = "${{gh.event.sender.avatar_url}}";
+            embed.author = author;
+            embeds.push(embed);
+            core.setOutput('EMBEDS', embeds);
+        id: embed
       - name: Send Discord Notification
         uses: tsickert/discord-webhook@v5.3.0
         with:
           webhook-url: ${{ secrets.DISCORD_WEBHOOK }}
-          content: "${{steps.text.outputs.MESSAGE}}"
+          embeds: ${{steps.embed.outputs.MESSAGE}}
