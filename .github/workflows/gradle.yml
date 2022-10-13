@@ -13,7 +13,7 @@ jobs:
         with:
           webhook-url: ${{ secrets.DISCORD_WEBHOOK }}
           contents: null
-          embeds: [{"title": "test", "description":"test"}]
+          embeds: "[{\"title\": \"test\", \"description\":\"test\"}]"
       # - uses: actions/checkout@v1
       # - name: Set up JDK 17
       #   uses: actions/setup-java@v2
