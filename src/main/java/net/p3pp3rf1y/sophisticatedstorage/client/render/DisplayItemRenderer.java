@@ -36,9 +36,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.UnaryOperator;
 
 public class DisplayItemRenderer {
-	public static final float SMALL_3D_ITEM_SCALE = 0.65f;
-	static final float BIG_2D_ITEM_SCALE = 0.65f;
-	static final float SMALL_2D_ITEM_SCALE = 0.35f;
+	public static final float SMALL_3D_ITEM_SCALE = 0.5f;
+	static final float BIG_2D_ITEM_SCALE = 0.5f;
+	static final float SMALL_2D_ITEM_SCALE = 0.25f;
 
 	private DisplayItemRenderer() {}
 
@@ -71,15 +71,18 @@ public class DisplayItemRenderer {
 
 		Minecraft minecraft = Minecraft.getInstance();
 		int displayItemIndex = 0;
-		int displayItemCount = displayItems.size();
+		int displayItemCount = storageBlock.getDisplayItemsCount(displayItems);
 		for (RenderInfo.DisplayItem displayItem : displayItems) {
-			renderSingleItem(poseStack, bufferSource, packedLight, packedOverlay, yCenterTranslation, blockSideOffset, facing, minecraft, displayItem, renderOnlyCustom, displayItemIndex, displayItemCount);
+			renderSingleItem(poseStack, bufferSource, packedLight, packedOverlay, yCenterTranslation, blockSideOffset, facing, minecraft, displayItem, renderOnlyCustom, storageBlock.hasFixedIndexDisplayItems() ? displayItem.getSlotIndex() : displayItemIndex, displayItemCount);
 			displayItemIndex++;
 		}
 	}
 
 	private static void renderSingleItem(PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, double yCenterTranslation, double blockSideOffset, Direction facing, Minecraft minecraft, RenderInfo.DisplayItem displayItem, boolean renderOnlyCustom, int displayItemIndex, int displayItemCount) {
 		ItemStack item = displayItem.getItem();
+		if (item.isEmpty()) {
+			return;
+		}
 		BakedModel itemModel = minecraft.getItemRenderer().getModel(item, null, minecraft.player, 0);
 		if (!itemModel.isCustomRenderer() && renderOnlyCustom) {
 			return;

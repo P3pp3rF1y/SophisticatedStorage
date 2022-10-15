@@ -107,6 +107,11 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 				}
 				return 0;
 			}
+
+			@Override
+			public int getBaseStackSizeMultiplier() {
+				return getBlockState().getBlock() instanceof IStorageBlock storageBlock ? storageBlock.getBaseStackSizeMultiplier() : super.getBaseStackSizeMultiplier();
+			}
 		};
 		storageWrapper.setUpgradeCachesInvalidatedHandler(this::invalidateStorageCap);
 	}

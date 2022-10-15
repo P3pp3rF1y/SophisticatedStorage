@@ -14,4 +14,9 @@ public class BarrelRenderer implements BlockEntityRenderer<BarrelBlockEntity> {
 
 		DisplayItemRenderer.renderDisplayItems(blockEntity, poseStack, bufferSource, packedLight, packedOverlay, 0.5, 0.51, !blockEntity.hasFullyDynamicRenderer());
 	}
+
+	@Override
+	public int getViewDistance() {
+		return 32;
+	}
 }
