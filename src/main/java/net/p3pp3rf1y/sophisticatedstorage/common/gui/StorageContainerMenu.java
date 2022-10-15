@@ -7,6 +7,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.network.NetworkHooks;
@@ -27,7 +28,10 @@ public class StorageContainerMenu extends StorageContainerMenuBase<IStorageWrapp
 	private final StorageBlockEntity storageBlockEntity;
 
 	public StorageContainerMenu(int containerId, Player player, BlockPos pos) {
-		super(ModBlocks.STORAGE_CONTAINER_TYPE.get(), containerId, player, getWrapper(player.level, pos), NoopStorageWrapper.INSTANCE, -1, false);
+		this(ModBlocks.STORAGE_CONTAINER_TYPE.get(), containerId, player, pos);
+	}
+	public StorageContainerMenu(MenuType<?> menuType, int containerId, Player player, BlockPos pos) {
+		super(menuType, containerId, player, getWrapper(player.level, pos), NoopStorageWrapper.INSTANCE, -1, false);
 		storageBlockEntity = WorldHelper.getBlockEntity(player.level, pos, StorageBlockEntity.class).orElseThrow(() -> new IllegalArgumentException("Incorrect block entity at " + pos + " exptected to find StorageBlockEntity"));
 		storageBlockEntity.startOpen(player);
 	}
@@ -66,8 +70,12 @@ public class StorageContainerMenu extends StorageContainerMenuBase<IStorageWrapp
 			sendToServer(data -> data.putString(ACTION_TAG, "openSettings"));
 			return;
 		}
-		getBlockPosition().ifPresent(pos -> NetworkHooks.openGui((ServerPlayer) player, new SimpleMenuProvider((w, p, pl) -> new StorageSettingsContainer(w, pl, pos),
+		getBlockPosition().ifPresent(pos -> NetworkHooks.openGui((ServerPlayer) player, new SimpleMenuProvider((w, p, pl) -> instantiateSettingsContainerMenu(w, pl, pos),
 				new TranslatableComponent(StorageTranslationHelper.INSTANCE.translGui("settings.title"))), storageBlockEntity.getBlockPos()));
+	}
+
+	protected StorageSettingsContainer instantiateSettingsContainerMenu(int windowId, Player player, BlockPos pos) {
+		return new StorageSettingsContainer(windowId, player, pos);
 	}
 
 	@Override

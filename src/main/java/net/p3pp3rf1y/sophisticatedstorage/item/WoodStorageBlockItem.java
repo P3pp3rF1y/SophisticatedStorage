@@ -8,7 +8,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.chat.TranslatableComponent;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -29,10 +28,8 @@ import net.p3pp3rf1y.sophisticatedstorage.block.StorageWrapper;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
@@ -40,8 +37,6 @@ import java.util.concurrent.atomic.AtomicReference;
 public class WoodStorageBlockItem extends StorageBlockItem {
 	public static final String WOOD_TYPE_TAG = "woodType";
 	public static final String PACKED_TAG = "packed";
-
-	private final Map<WoodType, String> woodDescriptionIds = new HashMap<>();
 
 	public WoodStorageBlockItem(Block block) {
 		super(block);
@@ -153,13 +148,15 @@ public class WoodStorageBlockItem extends StorageBlockItem {
 		return storageStack;
 	}
 
-	private String makeWoodStorageDescriptionId(WoodType wt) {
-		ResourceLocation id = Objects.requireNonNull(getRegistryName());
-		return "item." + id.getNamespace() + "." + wt.name() + "_" + id.getPath().replace('/', '.');
+	@Override
+	public Component getName(ItemStack stack) {
+		return getDisplayName(getDescriptionId(), getWoodType(stack).orElse(null));
 	}
 
-	@Override
-	public String getDescriptionId(ItemStack stack) {
-		return getWoodType(stack).map(wt -> woodDescriptionIds.computeIfAbsent(wt, this::makeWoodStorageDescriptionId)).orElse(super.getDescriptionId(stack));
+	public static Component getDisplayName(String descriptionId, @Nullable WoodType woodType) {
+		if (woodType == null) {
+			return new TranslatableComponent(descriptionId, "", "");
+		}
+		return new TranslatableComponent(descriptionId, new TranslatableComponent("wood_name.sophisticatedstorage." + woodType.name().toLowerCase(Locale.ROOT)), " ");
 	}
 }

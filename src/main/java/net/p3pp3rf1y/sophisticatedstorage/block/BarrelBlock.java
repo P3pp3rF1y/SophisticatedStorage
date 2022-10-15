@@ -51,12 +51,10 @@ public class BarrelBlock extends WoodStorageBlockBase {
 
 	public static final BooleanProperty OPEN = BlockStateProperties.OPEN;
 	private static final VoxelShape ITEM_ENTITY_COLLISION_SHAPE = box(0.01, 0.01, 0.01, 15.99, 15.99, 15.99);
-	private final StorageTier storageTier;
 
-	public BarrelBlock(StorageTier storageTier, Supplier<Integer> numberOfInventorySlotsSupplier, Supplier<Integer> numberOfUpgradeSlotsSupplier, Properties properties) {
+	public BarrelBlock(Supplier<Integer> numberOfInventorySlotsSupplier, Supplier<Integer> numberOfUpgradeSlotsSupplier, Properties properties) {
 		super(properties.noOcclusion(), numberOfInventorySlotsSupplier, numberOfUpgradeSlotsSupplier);
 		registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(OPEN, false).setValue(TICKING, false));
-		this.storageTier = storageTier;
 	}
 
 	@SuppressWarnings("deprecation")
@@ -89,16 +87,20 @@ public class BarrelBlock extends WoodStorageBlockBase {
 				return InteractionResult.SUCCESS;
 			}
 
-			if (tryPackBlock(player, hand, b, stackInHand)) {
+			if (tryItemInteraction(player, hand, b, stackInHand, state.getValue(FACING), hitResult)) {
 				return InteractionResult.SUCCESS;
 			}
 
 			player.awardStat(Stats.OPEN_BARREL);
-			NetworkHooks.openGui((ServerPlayer) player, new SimpleMenuProvider((w, p, pl) -> new StorageContainerMenu(w, pl, pos),
+			NetworkHooks.openGui((ServerPlayer) player, new SimpleMenuProvider((w, p, pl) -> instantiateContainerMenu(w, pl, pos),
 					WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).map(StorageBlockEntity::getDisplayName).orElse(TextComponent.EMPTY)), pos);
 			PiglinAi.angerNearbyPiglins(player, true);
 			return InteractionResult.CONSUME;
 		}).orElse(InteractionResult.PASS);
+	}
+
+	protected StorageContainerMenu instantiateContainerMenu(int w, Player pl, BlockPos pos) {
+		return new StorageContainerMenu(w, pl, pos);
 	}
 
 	@SuppressWarnings("deprecation")
@@ -153,9 +155,5 @@ public class BarrelBlock extends WoodStorageBlockBase {
 	@Override
 	public Direction getFacing(BlockState state) {
 		return state.getValue(FACING);
-	}
-
-	public StorageTier getStorageTier() {
-		return storageTier;
 	}
 }

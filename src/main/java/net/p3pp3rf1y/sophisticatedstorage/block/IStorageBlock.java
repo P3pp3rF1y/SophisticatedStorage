@@ -10,4 +10,8 @@ public interface IStorageBlock {
 	int getNumberOfUpgradeSlots();
 
 	void setTicking(Level level, BlockPos pos, BlockState currentState, boolean ticking);
+
+	default int getBaseStackSizeMultiplier() {
+		return 1;
+	}
 }

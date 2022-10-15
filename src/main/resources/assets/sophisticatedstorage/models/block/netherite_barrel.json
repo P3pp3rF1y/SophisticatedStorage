@@ -1,3 +1,4 @@
 {
-    "loader": "sophisticatedstorage:barrel"
+    "loader": "sophisticatedstorage:barrel",
+    "tier": "netherite"
 }
