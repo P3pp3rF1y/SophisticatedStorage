@@ -28,6 +28,7 @@ import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.function.Supplier;
 
 public abstract class StorageBlockBase extends Block implements IStorageBlock, EntityBlock {
@@ -155,4 +156,12 @@ public abstract class StorageBlockBase extends Block implements IStorageBlock, E
 	}
 
 	public abstract Direction getFacing(BlockState state);
+
+	public int getDisplayItemsCount(List<RenderInfo.DisplayItem> displayItems) {
+		return displayItems.size();
+	}
+
+	public boolean hasFixedIndexDisplayItems() {
+		return false;
+	}
 }

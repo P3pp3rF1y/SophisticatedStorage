@@ -110,7 +110,7 @@ public class ChestBlock extends WoodStorageBlockBase {
 				return InteractionResult.SUCCESS;
 			}
 
-			if (tryPackBlock(player, hand, b, stackInHand)) {
+			if (tryItemInteraction(player, hand, b, stackInHand, state.getValue(FACING), hitResult)) {
 				return InteractionResult.SUCCESS;
 			}
 

@@ -1,0 +1,49 @@
+{
+    "type": "limited_barrel",
+    "textures": {
+        "top": {
+            "base_1": "sophisticatedstorage:block/limited_acacia_barrel_1_top",
+            "base_2": "sophisticatedstorage:block/limited_acacia_barrel_2_top",
+            "base_3": "sophisticatedstorage:block/limited_acacia_barrel_3_top",
+            "base_4": "sophisticatedstorage:block/limited_acacia_barrel_4_top",
+            "wood_tier": "sophisticatedstorage:block/wood_barrel_top",
+            "iron_tier": "sophisticatedstorage:block/iron_barrel_top",
+            "gold_tier": "sophisticatedstorage:block/gold_barrel_top",
+            "diamond_tier": "sophisticatedstorage:block/diamond_barrel_top",
+            "netherite_tier": "sophisticatedstorage:block/netherite_barrel_top",
+            "tintable_main_1": "sophisticatedstorage:block/limited_barrel_1_top_tintable_main",
+            "tintable_main_2": "sophisticatedstorage:block/limited_barrel_2_top_tintable_main",
+            "tintable_main_3": "sophisticatedstorage:block/limited_barrel_3_top_tintable_main",
+            "tintable_main_4": "sophisticatedstorage:block/limited_barrel_4_top_tintable_main",
+            "tintable_accent_1": "sophisticatedstorage:block/limited_barrel_1_top_tintable_accent",
+            "tintable_accent_2": "sophisticatedstorage:block/limited_barrel_2_top_tintable_accent",
+            "tintable_accent_3": "sophisticatedstorage:block/limited_barrel_3_top_tintable_accent",
+            "tintable_accent_4": "sophisticatedstorage:block/limited_barrel_4_top_tintable_accent",
+            "packed": "sophisticatedstorage:block/barrel_top_packed"
+        },
+        "side": {
+            "base": "sophisticatedstorage:block/acacia_barrel_side",
+            "metal_bands": "sophisticatedstorage:block/barrel_metal_bands",
+            "wood_tier": "sophisticatedstorage:block/wood_barrel_side",
+            "iron_tier": "sophisticatedstorage:block/iron_barrel_side",
+            "gold_tier": "sophisticatedstorage:block/gold_barrel_side",
+            "diamond_tier": "sophisticatedstorage:block/diamond_barrel_side",
+            "netherite_tier": "sophisticatedstorage:block/netherite_barrel_side",
+            "tintable_main": "sophisticatedstorage:block/barrel_side_tintable_main",
+            "tintable_accent": "sophisticatedstorage:block/barrel_side_tintable_accent",
+            "packed": "sophisticatedstorage:block/barrel_side_packed"
+
+        },
+        "bottom": {
+            "base": "sophisticatedstorage:block/acacia_barrel_bottom",
+            "wood_tier": "sophisticatedstorage:block/wood_barrel_bottom",
+            "iron_tier": "sophisticatedstorage:block/iron_barrel_bottom",
+            "gold_tier": "sophisticatedstorage:block/gold_barrel_bottom",
+            "diamond_tier": "sophisticatedstorage:block/diamond_barrel_bottom",
+            "netherite_tier": "sophisticatedstorage:block/netherite_barrel_bottom",
+            "tintable_main": "sophisticatedstorage:block/barrel_bottom_tintable_main",
+            "tintable_accent": "sophisticatedstorage:block/barrel_bottom_tintable_accent",
+            "packed": "sophisticatedstorage:block/barrel_bottom_packed"
+        }
+    }
+}

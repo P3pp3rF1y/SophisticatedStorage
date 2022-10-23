@@ -5,6 +5,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BarrelBlock;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.ContainerOpenersCounter;
 import net.minecraft.world.level.block.state.BlockState;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
@@ -35,7 +36,6 @@ public class BarrelBlockEntity extends WoodStorageBlockEntity {
 		}
 	};
 
-
 	private IDynamicRenderTracker dynamicRenderTracker = IDynamicRenderTracker.NOOP;
 
 	@Override
@@ -43,9 +43,13 @@ public class BarrelBlockEntity extends WoodStorageBlockEntity {
 		return openersCounter;
 	}
 
-	public BarrelBlockEntity(BlockPos pos, BlockState state) {
-		super(pos, state, ModBlocks.BARREL_BLOCK_ENTITY_TYPE.get());
+	protected BarrelBlockEntity(BlockPos pos, BlockState state, BlockEntityType<? extends BarrelBlockEntity> blockEntityType) {
+		super(pos, state, blockEntityType);
 		getStorageWrapper().getRenderInfo().setChangeListener(ri -> dynamicRenderTracker.onRenderInfoUpdated(ri));
+	}
+
+	public BarrelBlockEntity(BlockPos pos, BlockState state) {
+		this(pos, state, ModBlocks.BARREL_BLOCK_ENTITY_TYPE.get());
 	}
 
 	void updateBlockState(BlockState state, boolean open) {

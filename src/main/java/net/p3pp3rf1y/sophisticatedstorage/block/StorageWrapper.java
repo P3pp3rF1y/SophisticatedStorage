@@ -86,7 +86,7 @@ public abstract class StorageWrapper implements IStorageWrapper {
 				return Optional.of(renderInfoNbt);
 			}
 		};
-		settingsHandler = new StorageSettingsHandler(settingsNbt, markContentsDirty, () -> inventoryHandler, () -> renderInfo) {
+		settingsHandler = new StorageSettingsHandler(settingsNbt, markContentsDirty, this::getInventoryHandler, () -> renderInfo) {
 
 			@Override
 			protected int getNumberOfDisplayItems() {
@@ -245,7 +245,7 @@ public abstract class StorageWrapper implements IStorageWrapper {
 		return contentsNbt;
 	}
 
-	private int getNumberOfInventorySlots() {
+	public int getNumberOfInventorySlots() {
 		if (numberOfInventorySlots > 0) {
 			return numberOfInventorySlots;
 		}
