@@ -121,7 +121,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 	private static final Map<ItemTransforms.TransformType, Transformation> TRANSFORMS;
 	private static final ItemTransforms ITEM_TRANSFORMS;
 	private static final QuadTransformer MOVE_TO_CORNER = new QuadTransformer(new Transformation(new Vector3f(-.5f, -.5f, -.5f), null, null, null));
-	private static final Map<Direction, QuadTransformer> DIRECTION_ROTATES = Map.of(
+	public static final Map<Direction, QuadTransformer> DIRECTION_ROTATES = Map.of(
 			Direction.UP, BarrelBakedModelBase.getDirectionRotationTransform(Direction.UP),
 			Direction.DOWN, BarrelBakedModelBase.getDirectionRotationTransform(Direction.DOWN),
 			Direction.NORTH, BarrelBakedModelBase.getDirectionRotationTransform(Direction.NORTH),
@@ -144,7 +144,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 	private static final ModelProperty<Boolean> HAS_MAIN_COLOR = new ModelProperty<>();
 	private static final ModelProperty<Boolean> HAS_ACCENT_COLOR = new ModelProperty<>();
 	private static final ModelProperty<List<RenderInfo.DisplayItem>> DISPLAY_ITEMS = new ModelProperty<>();
-	private static final Cache<Integer, List<BakedQuad>> BAKED_QUADS_CACHE = CacheBuilder.newBuilder().expireAfterAccess(15L, TimeUnit.MINUTES).build();
+	public static final Cache<Integer, List<BakedQuad>> BAKED_QUADS_CACHE = CacheBuilder.newBuilder().expireAfterAccess(15L, TimeUnit.MINUTES).build();
 	private static final Map<Integer, QuadTransformer> DISPLAY_ROTATIONS = new HashMap<>();
 	protected final Map<String, Map<BarrelModelPart, BakedModel>> woodModelParts;
 	private final ItemOverrides barrelItemOverrides = new BarrelItemOverrides(this);
@@ -161,14 +161,17 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 		return new QuadTransformer(new Transformation(null, DisplayItemRenderer.getNorthBasedRotation(dir), null, null));
 	}
 
-	private static QuadTransformer getDirectionMoveBackToSide(Direction dir, float distFromCenter, int displayItemIndex, int displayItemCount) {
-		int hash = BarrelBakedModelBase.calculateMoveBackToSideHash(dir, distFromCenter, displayItemIndex, displayItemCount);
+	private QuadTransformer getDirectionMoveBackToSide(BlockState state, Direction dir, float distFromCenter, int displayItemIndex, int displayItemCount) {
+		int hash = calculateMoveBackToSideHash(state, dir, distFromCenter, displayItemIndex, displayItemCount);
 		QuadTransformer transform = DIRECTION_MOVE_BACK_TO_SIDE.getIfPresent(hash);
 		if (transform == null) {
 			Vec3i normal = dir.getNormal();
 			Vector3f offset = new Vector3f(distFromCenter, distFromCenter, distFromCenter);
 			offset.mul(normal.getX(), normal.getY(), normal.getZ());
-			Vector3f frontOffset = DisplayItemRenderer.getDisplayItemIndexFrontOffset(displayItemIndex, displayItemCount, dir);
+			Vector3f frontOffset = DisplayItemRenderer.getDisplayItemIndexFrontOffset(displayItemIndex, displayItemCount);
+			frontOffset.add(-0.5f, -0.5f, -0.5f);
+			rotateDisplayItemFrontOffset(state, dir, frontOffset);
+			frontOffset.add(0.5f, 0.5f, 0.5f);
 			offset.add(frontOffset);
 			transform = new QuadTransformer(new Transformation(offset, null, null, null));
 
@@ -177,9 +180,14 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 		return transform;
 	}
 
-	private static int calculateMoveBackToSideHash(Direction dir, float distFromCenter, int displayItemIndex, int displayItemCount) {
-		int hash = dir.hashCode();
-		hash = 31 * hash + Float.hashCode(distFromCenter);
+	@SuppressWarnings("java:S1172") //state used in override
+	protected void rotateDisplayItemFrontOffset(BlockState state, Direction dir, Vector3f frontOffset) {
+		frontOffset.transform(getNorthBasedRotation(dir));
+	}
+
+	@SuppressWarnings("java:S1172") //state used in override
+	protected int calculateMoveBackToSideHash(BlockState state, Direction dir, float distFromCenter, int displayItemIndex, int displayItemCount) {
+		int hash = Float.hashCode(distFromCenter);
 		hash = 31 * hash + displayItemIndex;
 		hash = 31 * hash + displayItemCount;
 		return hash;
@@ -270,7 +278,6 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 
 	protected int getInWorldBlockHash(BlockState state, IModelData data) {
 		int hash = state.getBlock().hashCode();
-		hash = hash * 31 + state.getValue(BarrelBlock.FACING).get3DDataValue();
 
 		//noinspection ConstantConditions
 		hash = hash * 31 + (data.hasProperty(WOOD_NAME) ? data.getData(WOOD_NAME).hashCode() + 1 : 0);
@@ -351,21 +358,23 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 			quads = getDisplayRotation(rotation).processMany(quads);
 		}
 
-		Direction facing = state.getValue(BarrelBlock.FACING);
-		quads = DIRECTION_ROTATES.get(facing).processMany(quads);
+		Direction facing = state.getBlock() instanceof BarrelBlock barrelBlock ? barrelBlock.getFacing(state) : Direction.NORTH;
+		quads = rotateDisplayItemQuads(quads, state);
 
 		if (model.isGui3d()) {
-			QuadTransformer transformer = getDirectionMove(displayItem, model, facing, displayItemIndex, displayItemCount, displayItemCount == 1 ? 1 : SMALL_3D_ITEM_SCALE);
+			QuadTransformer transformer = getDirectionMove(displayItem, model, state, facing, displayItemIndex, displayItemCount, displayItemCount == 1 ? 1 : SMALL_3D_ITEM_SCALE);
 			quads = transformer.processMany(quads);
 			recalculateDirections(quads);
 		} else {
-			quads = getDirectionMove(displayItem, model, facing, displayItemIndex, displayItemCount, 1).processMany(quads);
+			quads = getDirectionMove(displayItem, model, state, facing, displayItemIndex, displayItemCount, 1).processMany(quads);
 		}
 
 		updateTintIndexes(quads, displayItemIndex);
 
 		ret.addAll(quads);
 	}
+
+	protected abstract List<BakedQuad> rotateDisplayItemQuads(List<BakedQuad> quads, BlockState state);
 
 	private void updateTintIndexes(List<BakedQuad> quads, int displayItemIndex) {
 		int offset = (displayItemIndex + 1) * 10;
@@ -380,8 +389,8 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 		quads.forEach(quad -> quad.direction = FaceBakery.calculateFacing(quad.getVertices()));
 	}
 
-	private QuadTransformer getDirectionMove(ItemStack displayItem, BakedModel model, Direction direction, int displayItemIndex, int displayItemCount, float itemScale) {
-		int hash = calculateDirectionMoveHash(displayItem, displayItemIndex, displayItemCount);
+	private QuadTransformer getDirectionMove(ItemStack displayItem, BakedModel model, BlockState state, Direction direction, int displayItemIndex, int displayItemCount, float itemScale) {
+		int hash = calculateDirectionMoveHash(state, displayItem, displayItemIndex, displayItemCount);
 		Cache<Integer, QuadTransformer> directionCache = DIRECTION_MOVES_3D_ITEMS.getUnchecked(direction);
 		QuadTransformer transformer = directionCache.getIfPresent(hash);
 
@@ -390,14 +399,15 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 			if (model.isGui3d()) {
 				offset = DisplayItemRenderer.getDisplayItemOffset(displayItem, model, itemScale);
 			}
-			transformer = BarrelBakedModelBase.getDirectionMoveBackToSide(direction, (float) (0.5f + offset), displayItemIndex, displayItemCount);
+			transformer = getDirectionMoveBackToSide(state, direction, (float) (0.5f + offset), displayItemIndex, displayItemCount);
 			directionCache.put(hash, transformer);
 		}
 
 		return transformer;
 	}
 
-	private int calculateDirectionMoveHash(ItemStack displayItem, int displayItemIndex, int displayItemCount) {
+	@SuppressWarnings("java:S1172") //state used in override
+	protected int calculateDirectionMoveHash(BlockState state, ItemStack displayItem, int displayItemIndex, int displayItemCount) {
 		int hashCode = ItemStackKey.getHashCode(displayItem);
 		hashCode = hashCode * 31 + displayItemIndex;
 		hashCode = hashCode * 31 + displayItemCount;
@@ -424,6 +434,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 	}
 
 	protected abstract BarrelModelPart getMainPart(@Nullable BlockState state);
+
 	protected abstract BarrelModelPart getMainPart();
 
 	private void addPartQuads(

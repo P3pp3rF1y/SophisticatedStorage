@@ -6,15 +6,25 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.TranslationHelper;
@@ -33,11 +43,48 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 public class LimitedBarrelBlock extends BarrelBlock {
+	public static final DirectionProperty HORIZONTAL_FACING = BlockStateProperties.HORIZONTAL_FACING;
+	public static final EnumProperty<VerticalFacing> VERTICAL_FACING = EnumProperty.create("vertical_facing", VerticalFacing.class);
 	private final Supplier<Integer> getBaseStackSizeMultiplier;
 
 	public LimitedBarrelBlock(int numberOfInventorySlots, Supplier<Integer> getBaseStackSizeMultiplier, Supplier<Integer> numberOfUpgradeSlotsSupplier, Properties properties) {
-		super(() -> numberOfInventorySlots, numberOfUpgradeSlotsSupplier, properties);
+		super(() -> numberOfInventorySlots, numberOfUpgradeSlotsSupplier, properties,
+				stateDef -> stateDef.any().setValue(HORIZONTAL_FACING, Direction.NORTH).setValue(VERTICAL_FACING, VerticalFacing.NO).setValue(TICKING, false)
+		);
 		this.getBaseStackSizeMultiplier = getBaseStackSizeMultiplier;
+	}
+
+	@Override
+	public BlockState rotate(BlockState state, LevelAccessor world, BlockPos pos, Rotation direction) {
+		if (state.getValue(VERTICAL_FACING) != VerticalFacing.NO) {
+			return state;
+		}
+		return state.setValue(HORIZONTAL_FACING, direction.rotate(state.getValue(HORIZONTAL_FACING)));
+	}
+
+	@SuppressWarnings("deprecation")
+	@Override
+	public BlockState mirror(BlockState state, Mirror mirror) {
+		return state.rotate(mirror.getRotation(state.getValue(HORIZONTAL_FACING)));
+	}
+
+	@Override
+	protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+		builder.add(HORIZONTAL_FACING, VERTICAL_FACING, TICKING);
+	}
+
+	@Nullable
+	@Override
+	public BlockState getStateForPlacement(BlockPlaceContext blockPlaceContext) {
+		Direction direction = blockPlaceContext.getNearestLookingDirection().getOpposite();
+		Direction horizontalDirection = blockPlaceContext.getHorizontalDirection().getOpposite();
+		return defaultBlockState().setValue(HORIZONTAL_FACING, horizontalDirection).setValue(VERTICAL_FACING, VerticalFacing.fromDirection(direction));
+	}
+
+	@Override
+	public Direction getFacing(BlockState state) {
+		VerticalFacing verticalFacing = state.getValue(VERTICAL_FACING);
+		return verticalFacing == VerticalFacing.NO ? state.getValue(HORIZONTAL_FACING) : verticalFacing.getDirection();
 	}
 
 	@Override
@@ -69,14 +116,14 @@ public class LimitedBarrelBlock extends BarrelBlock {
 		if (hitResult.getDirection() != facing || player.isShiftKeyDown()) {
 			return false;
 		}
-		int slot = getInteractionSlot(b.getBlockPos(), facing, hitResult);
+		int slot = getInteractionSlot(b.getBlockPos(), b.getBlockState(), hitResult);
 		if (b instanceof LimitedBarrelBlockEntity limitedBarrelBlockEntity) {
 			limitedBarrelBlockEntity.depositItem(player, hand, stackInHand, slot);
 		}
 		return true;
 	}
 
-	private int getInteractionSlot(BlockPos pos, Direction facing, BlockHitResult hitResult) {
+	private int getInteractionSlot(BlockPos pos, BlockState state, BlockHitResult hitResult) {
 		int invSlots = getNumberOfInventorySlots();
 		if (invSlots == 1) {
 			return 0;
@@ -84,7 +131,13 @@ public class LimitedBarrelBlock extends BarrelBlock {
 
 		Vector3f blockCoords = new Vector3f(hitResult.getLocation().subtract(pos.getX(), pos.getY(), pos.getZ()));
 		blockCoords.add(-0.5f, -0.5f, -0.5f); // move to corner
-		blockCoords.transform(getNorthBasedRotation(facing.getOpposite()));
+		VerticalFacing verticalFacing = state.getValue(VERTICAL_FACING);
+		if (verticalFacing != VerticalFacing.NO) {
+			blockCoords.transform(getNorthBasedRotation(state.getValue(HORIZONTAL_FACING)));
+			blockCoords.transform(getNorthBasedRotation(verticalFacing.getDirection().getOpposite()));
+		} else {
+			blockCoords.transform(getNorthBasedRotation(state.getValue(HORIZONTAL_FACING).getOpposite()));
+		}
 		blockCoords.add(0.5f, 0.5f, 0.5f);
 		boolean top = blockCoords.y() > 0.5f;
 		boolean right = blockCoords.x() > 0.5f;
@@ -140,15 +193,25 @@ public class LimitedBarrelBlock extends BarrelBlock {
 			return;
 		}
 
-		WorldHelper.getBlockEntity(level, pos, LimitedBarrelBlockEntity.class).ifPresent(be -> getHitResult(player).ifPresent(blockHitResult -> tryToTakeItem(state, level, pos, player, be, blockHitResult)));
+		tryToTakeItem(state, level, pos, player);
 	}
 
-	private void tryToTakeItem(BlockState state, Level level, BlockPos pos, Player player, LimitedBarrelBlockEntity be, BlockHitResult blockHitResult) {
-		if (!blockHitResult.getBlockPos().equals(pos) || level.getBlockState(pos) != state || blockHitResult.getDirection() != state.getValue(FACING)) {
-			return;
-		}
+	public boolean tryToTakeItem(BlockState state, Level level, BlockPos pos, Player player) {
+		return WorldHelper.getBlockEntity(level, pos, LimitedBarrelBlockEntity.class).map(be -> tryToTakeItem(state, level, pos, player, be)).orElse(false);
+	}
 
-		be.tryToTakeItem(player, getInteractionSlot(pos, blockHitResult.getDirection(), blockHitResult));
+	private boolean tryToTakeItem(BlockState state, Level level, BlockPos pos, Player player, LimitedBarrelBlockEntity be) {
+		return getHitResult(player).map(blockHitResult -> {
+			if (!blockHitResult.getBlockPos().equals(pos) || level.getBlockState(pos) != state || blockHitResult.getDirection() != getFacing(state)) {
+				return false;
+			}
+
+			return be.tryToTakeItem(player, getInteractionSlot(pos, state, blockHitResult));
+		}).orElse(false);
+	}
+
+	public boolean isLookingAtFront(Player player, BlockPos pos, BlockState state) {
+		return getHitResult(player).map(blockHitResult -> blockHitResult.getBlockPos().equals(pos) && blockHitResult.getDirection() == getFacing(state)).orElse(false);
 	}
 
 	@Override
@@ -171,5 +234,47 @@ public class LimitedBarrelBlock extends BarrelBlock {
 	@Override
 	public boolean hasFixedIndexDisplayItems() {
 		return true;
+	}
+
+	public enum VerticalFacing implements StringRepresentable {
+		NO("no", Direction.NORTH, 0),
+		UP("up", Direction.UP, 1),
+		DOWN("down", Direction.DOWN, 2);
+
+		private final String serializedName;
+
+		private final Direction direction;
+
+		private final int index;
+
+		VerticalFacing(String serializedName, Direction direction, int index) {
+			this.serializedName = serializedName;
+			this.direction = direction;
+			this.index = index;
+		}
+
+		public int getIndex() {
+			return index;
+		}
+
+		public Direction getDirection() {
+			return direction;
+		}
+
+		@Override
+		public String getSerializedName() {
+			return serializedName;
+		}
+
+		public static VerticalFacing fromDirection(Direction direction) {
+			if (direction.getAxis().isHorizontal()) {
+				return NO;
+			}
+			if (direction == Direction.UP) {
+				return UP;
+			} else {
+				return DOWN;
+			}
+		}
 	}
 }

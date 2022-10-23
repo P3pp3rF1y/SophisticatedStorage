@@ -9,11 +9,15 @@ import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
+import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ReloadableResourceManager;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.client.ClientRegistry;
 import net.minecraftforge.client.MinecraftForgeClient;
 import net.minecraftforge.client.event.EntityRenderersEvent;
@@ -25,12 +29,14 @@ import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.client.settings.IKeyConflictContext;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AddPackFindersEvent;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
+import net.p3pp3rf1y.sophisticatedstorage.block.LimitedBarrelBlock;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageScreen;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageTranslationHelper;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.ToolInfoOverlay;
@@ -45,6 +51,7 @@ import net.p3pp3rf1y.sophisticatedstorage.client.render.ChestRenderer;
 import net.p3pp3rf1y.sophisticatedstorage.client.render.ClientStorageContentsTooltip;
 import net.p3pp3rf1y.sophisticatedstorage.client.render.ControllerRenderer;
 import net.p3pp3rf1y.sophisticatedstorage.client.render.LimitedBarrelDynamicModel;
+import net.p3pp3rf1y.sophisticatedstorage.client.render.LimitedBarrelRenderer;
 import net.p3pp3rf1y.sophisticatedstorage.client.render.ShulkerBoxDynamicModel;
 import net.p3pp3rf1y.sophisticatedstorage.client.render.ShulkerBoxRenderer;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
@@ -93,6 +100,24 @@ public class ClientEventHandler {
 		eventBus.addListener(ClientStorageContentsTooltip::onWorldLoad);
 		eventBus.addListener(EventPriority.HIGH, ClientEventHandler::handleGuiMouseKeyPress);
 		eventBus.addListener(EventPriority.HIGH, ClientEventHandler::handleGuiKeyPress);
+		eventBus.addListener(ClientEventHandler::onLimitedBarrelClicked);
+	}
+
+	private static void onLimitedBarrelClicked(PlayerInteractEvent.LeftClickBlock event) {
+		Player player = event.getPlayer();
+		if (!player.isCreative()) {
+			return;
+		}
+
+		BlockPos pos = event.getPos();
+		Level level = event.getWorld();
+		BlockState state = level.getBlockState(pos);
+		if (!(state.getBlock() instanceof LimitedBarrelBlock limitedBarrel)) {
+			return;
+		}
+		if (limitedBarrel.isLookingAtFront(player, pos, state)) {
+			event.setCanceled(true);
+		}
 	}
 
 	public static void handleGuiKeyPress(ScreenEvent.KeyboardKeyPressedEvent.Pre event) {
@@ -218,7 +243,7 @@ public class ClientEventHandler {
 
 	private static void registerEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {
 		event.registerBlockEntityRenderer(ModBlocks.BARREL_BLOCK_ENTITY_TYPE.get(), context -> new BarrelRenderer());
-		event.registerBlockEntityRenderer(ModBlocks.LIMITED_BARREL_BLOCK_ENTITY_TYPE.get(), context -> new BarrelRenderer());
+		event.registerBlockEntityRenderer(ModBlocks.LIMITED_BARREL_BLOCK_ENTITY_TYPE.get(), context -> new LimitedBarrelRenderer());
 		event.registerBlockEntityRenderer(ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get(), ChestRenderer::new);
 		event.registerBlockEntityRenderer(ModBlocks.SHULKER_BOX_BLOCK_ENTITY_TYPE.get(), ShulkerBoxRenderer::new);
 		event.registerBlockEntityRenderer(ModBlocks.CONTROLLER_BLOCK_ENTITY_TYPE.get(), context -> new ControllerRenderer());
