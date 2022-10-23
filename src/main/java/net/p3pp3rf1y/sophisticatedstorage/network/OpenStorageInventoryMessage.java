@@ -5,10 +5,13 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.SimpleMenuProvider;
+import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.network.NetworkEvent;
 import net.minecraftforge.network.NetworkHooks;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
+import net.p3pp3rf1y.sophisticatedstorage.block.LimitedBarrelBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
+import net.p3pp3rf1y.sophisticatedstorage.common.gui.LimitedBarrelContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
 
 import javax.annotation.Nullable;
@@ -38,7 +41,15 @@ public class OpenStorageInventoryMessage {
 			return;
 		}
 
-		NetworkHooks.openScreen(player, new SimpleMenuProvider((w, p, pl) -> new StorageContainerMenu(w, pl, msg.pos),
+		NetworkHooks.openScreen(player, new SimpleMenuProvider((w, p, pl) -> instantiateContainerMenu(msg, w, pl),
 				WorldHelper.getBlockEntity(player.level, msg.pos, StorageBlockEntity.class).map(StorageBlockEntity::getDisplayName).orElse(Component.empty())), msg.pos);
+	}
+
+	private static StorageContainerMenu instantiateContainerMenu(OpenStorageInventoryMessage msg, int windowId, Player player) {
+		if (player.level.getBlockState(msg.pos).getBlock() instanceof LimitedBarrelBlock) {
+			return new LimitedBarrelContainerMenu(windowId, player, msg.pos);
+		} else {
+			return new StorageContainerMenu(windowId, player, msg.pos);
+		}
 	}
 }

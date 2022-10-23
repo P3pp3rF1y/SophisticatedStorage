@@ -31,13 +31,18 @@ import net.p3pp3rf1y.sophisticatedstorage.block.ChestBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.ChestBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.block.ControllerBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.ControllerBlockEntity;
+import net.p3pp3rf1y.sophisticatedstorage.block.LimitedBarrelBlock;
+import net.p3pp3rf1y.sophisticatedstorage.block.LimitedBarrelBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.block.ShulkerBoxBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.ShulkerBoxBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageLinkBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageLinkBlockEntity;
-import net.p3pp3rf1y.sophisticatedstorage.block.StorageTier;
+import net.p3pp3rf1y.sophisticatedstorage.client.gui.LimitedBarrelScreen;
+import net.p3pp3rf1y.sophisticatedstorage.client.gui.LimitedBarrelSettingsScreen;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageScreen;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageSettingsScreen;
+import net.p3pp3rf1y.sophisticatedstorage.common.gui.LimitedBarrelContainerMenu;
+import net.p3pp3rf1y.sophisticatedstorage.common.gui.LimitedBarrelSettingsContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageSettingsContainer;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.ShulkerBoxFromChestRecipe;
@@ -49,6 +54,8 @@ import net.p3pp3rf1y.sophisticatedstorage.item.ShulkerBoxItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
 
 public class ModBlocks {
+	private static final String LIMITED_BARREL_NAME = "limited_barrel";
+
 	private ModBlocks() {}
 
 	public static final TagKey<Item> BASE_TIER_WOODEN_STORAGE_TAG = TagKey.create(ForgeRegistries.ITEMS.getRegistryKey(), SophisticatedStorage.getRL("base_tier_wooden_storage"));
@@ -58,21 +65,86 @@ public class ModBlocks {
 	private static final DeferredRegister<MenuType<?>> MENU_TYPES = DeferredRegister.create(ForgeRegistries.MENU_TYPES, SophisticatedStorage.MOD_ID);
 
 	private static final String BARREL_REG_NAME = "barrel";
-	public static final RegistryObject<BarrelBlock> BARREL = BLOCKS.register(BARREL_REG_NAME, () -> new BarrelBlock(StorageTier.WOOD, Config.COMMON.woodBarrel.inventorySlotCount, Config.COMMON.woodBarrel.upgradeSlotCount,
+	public static final RegistryObject<BarrelBlock> BARREL = BLOCKS.register(BARREL_REG_NAME, () -> new BarrelBlock(Config.COMMON.woodBarrel.inventorySlotCount, Config.COMMON.woodBarrel.upgradeSlotCount,
 			BlockBehaviour.Properties.of(Material.WOOD).strength(2.5F).sound(SoundType.WOOD)));
-	public static final RegistryObject<BarrelBlock> IRON_BARREL = BLOCKS.register("iron_barrel", () -> new BarrelBlock(StorageTier.IRON, Config.COMMON.ironBarrel.inventorySlotCount, Config.COMMON.ironBarrel.upgradeSlotCount,
+	public static final RegistryObject<BarrelBlock> IRON_BARREL = BLOCKS.register("iron_barrel", () -> new BarrelBlock(Config.COMMON.ironBarrel.inventorySlotCount, Config.COMMON.ironBarrel.upgradeSlotCount,
 			BlockBehaviour.Properties.of(Material.WOOD).strength(2.5F).sound(SoundType.WOOD)));
-	public static final RegistryObject<BarrelBlock> GOLD_BARREL = BLOCKS.register("gold_barrel", () -> new BarrelBlock(StorageTier.GOLD, Config.COMMON.goldBarrel.inventorySlotCount, Config.COMMON.goldBarrel.upgradeSlotCount,
+	public static final RegistryObject<BarrelBlock> GOLD_BARREL = BLOCKS.register("gold_barrel", () -> new BarrelBlock(Config.COMMON.goldBarrel.inventorySlotCount, Config.COMMON.goldBarrel.upgradeSlotCount,
 			BlockBehaviour.Properties.of(Material.WOOD).strength(2.5F).sound(SoundType.WOOD)));
-	public static final RegistryObject<BarrelBlock> DIAMOND_BARREL = BLOCKS.register("diamond_barrel", () -> new BarrelBlock(StorageTier.DIAMOND, Config.COMMON.diamondBarrel.inventorySlotCount, Config.COMMON.diamondBarrel.upgradeSlotCount,
+	public static final RegistryObject<BarrelBlock> DIAMOND_BARREL = BLOCKS.register("diamond_barrel", () -> new BarrelBlock(Config.COMMON.diamondBarrel.inventorySlotCount, Config.COMMON.diamondBarrel.upgradeSlotCount,
 			BlockBehaviour.Properties.of(Material.WOOD).strength(2.5F).sound(SoundType.WOOD)));
-	public static final RegistryObject<BarrelBlock> NETHERITE_BARREL = BLOCKS.register("netherite_barrel", () -> new BarrelBlock(StorageTier.NETHERITE, Config.COMMON.netheriteBarrel.inventorySlotCount, Config.COMMON.netheriteBarrel.upgradeSlotCount,
+	public static final RegistryObject<BarrelBlock> NETHERITE_BARREL = BLOCKS.register("netherite_barrel", () -> new BarrelBlock(Config.COMMON.netheriteBarrel.inventorySlotCount, Config.COMMON.netheriteBarrel.upgradeSlotCount,
 			BlockBehaviour.Properties.of(Material.WOOD).strength(2.5F).sound(SoundType.WOOD)));
 	public static final RegistryObject<BlockItem> BARREL_ITEM = ITEMS.register(BARREL_REG_NAME, () -> new WoodStorageBlockItem(BARREL.get()));
 	public static final RegistryObject<BlockItem> IRON_BARREL_ITEM = ITEMS.register("iron_barrel", () -> new WoodStorageBlockItem(IRON_BARREL.get()));
 	public static final RegistryObject<BlockItem> GOLD_BARREL_ITEM = ITEMS.register("gold_barrel", () -> new WoodStorageBlockItem(GOLD_BARREL.get()));
 	public static final RegistryObject<BlockItem> DIAMOND_BARREL_ITEM = ITEMS.register("diamond_barrel", () -> new WoodStorageBlockItem(DIAMOND_BARREL.get()));
 	public static final RegistryObject<BlockItem> NETHERITE_BARREL_ITEM = ITEMS.register("netherite_barrel", () -> new WoodStorageBlockItem(NETHERITE_BARREL.get()));
+
+	private static final String LIMITED_BARREL_REG_NAME = LIMITED_BARREL_NAME;
+	public static final RegistryObject<BarrelBlock> LIMITED_BARREL_1 = BLOCKS.register("limited_barrel_1", () -> new LimitedBarrelBlock(1, Config.COMMON.limitedBarrel1.baseSlotLimitMultiplier::get, Config.COMMON.limitedBarrel1.upgradeSlotCount::get,
+			BlockBehaviour.Properties.of(Material.WOOD).strength(2.5F).sound(SoundType.WOOD)));
+	public static final RegistryObject<BarrelBlock> LIMITED_IRON_BARREL_1 = BLOCKS.register("limited_iron_barrel_1", () -> new LimitedBarrelBlock(1, Config.COMMON.ironLimitedBarrel1.baseSlotLimitMultiplier::get, Config.COMMON.ironLimitedBarrel1.upgradeSlotCount::get,
+			BlockBehaviour.Properties.of(Material.WOOD).strength(2.5F).sound(SoundType.WOOD)));
+	public static final RegistryObject<BarrelBlock> LIMITED_GOLD_BARREL_1 = BLOCKS.register("limited_gold_barrel_1", () -> new LimitedBarrelBlock(1, Config.COMMON.goldLimitedBarrel1.baseSlotLimitMultiplier::get, Config.COMMON.goldLimitedBarrel1.upgradeSlotCount::get,
+			BlockBehaviour.Properties.of(Material.WOOD).strength(2.5F).sound(SoundType.WOOD)));
+	public static final RegistryObject<BarrelBlock> LIMITED_DIAMOND_BARREL_1 = BLOCKS.register("limited_diamond_barrel_1", () -> new LimitedBarrelBlock(1, Config.COMMON.diamondLimitedBarrel1.baseSlotLimitMultiplier::get, Config.COMMON.diamondLimitedBarrel1.upgradeSlotCount::get,
+			BlockBehaviour.Properties.of(Material.WOOD).strength(2.5F).sound(SoundType.WOOD)));
+	public static final RegistryObject<BarrelBlock> LIMITED_NETHERITE_BARREL_1 = BLOCKS.register("limited_netherite_barrel_1", () -> new LimitedBarrelBlock(1, Config.COMMON.netheriteLimitedBarrel1.baseSlotLimitMultiplier::get, Config.COMMON.netheriteLimitedBarrel1.upgradeSlotCount::get,
+			BlockBehaviour.Properties.of(Material.WOOD).strength(2.5F).sound(SoundType.WOOD)));
+	public static final RegistryObject<BlockItem> LIMITED_BARREL_1_ITEM = ITEMS.register("limited_barrel_1", () -> new WoodStorageBlockItem(LIMITED_BARREL_1.get()));
+	public static final RegistryObject<BlockItem> LIMITED_IRON_BARREL_1_ITEM = ITEMS.register("limited_iron_barrel_1", () -> new WoodStorageBlockItem(LIMITED_IRON_BARREL_1.get()));
+	public static final RegistryObject<BlockItem> LIMITED_GOLD_BARREL_1_ITEM = ITEMS.register("limited_gold_barrel_1", () -> new WoodStorageBlockItem(LIMITED_GOLD_BARREL_1.get()));
+	public static final RegistryObject<BlockItem> LIMITED_DIAMOND_BARREL_1_ITEM = ITEMS.register("limited_diamond_barrel_1", () -> new WoodStorageBlockItem(LIMITED_DIAMOND_BARREL_1.get()));
+	public static final RegistryObject<BlockItem> LIMITED_NETHERITE_BARREL_1_ITEM = ITEMS.register("limited_netherite_barrel_1", () -> new WoodStorageBlockItem(LIMITED_NETHERITE_BARREL_1.get()));
+
+	public static final RegistryObject<BarrelBlock> LIMITED_BARREL_2 = BLOCKS.register("limited_barrel_2", () -> new LimitedBarrelBlock(2, Config.COMMON.limitedBarrel2.baseSlotLimitMultiplier::get, Config.COMMON.limitedBarrel2.upgradeSlotCount::get,
+			BlockBehaviour.Properties.of(Material.WOOD).strength(2.5F).sound(SoundType.WOOD)));
+	public static final RegistryObject<BarrelBlock> LIMITED_IRON_BARREL_2 = BLOCKS.register("limited_iron_barrel_2", () -> new LimitedBarrelBlock(2, Config.COMMON.ironLimitedBarrel2.baseSlotLimitMultiplier::get, Config.COMMON.ironLimitedBarrel2.upgradeSlotCount::get,
+			BlockBehaviour.Properties.of(Material.WOOD).strength(2.5F).sound(SoundType.WOOD)));
+	public static final RegistryObject<BarrelBlock> LIMITED_GOLD_BARREL_2 = BLOCKS.register("limited_gold_barrel_2", () -> new LimitedBarrelBlock(2, Config.COMMON.goldLimitedBarrel2.baseSlotLimitMultiplier::get, Config.COMMON.goldLimitedBarrel2.upgradeSlotCount::get,
+			BlockBehaviour.Properties.of(Material.WOOD).strength(2.5F).sound(SoundType.WOOD)));
+	public static final RegistryObject<BarrelBlock> LIMITED_DIAMOND_BARREL_2 = BLOCKS.register("limited_diamond_barrel_2", () -> new LimitedBarrelBlock(2, Config.COMMON.diamondLimitedBarrel2.baseSlotLimitMultiplier::get, Config.COMMON.diamondLimitedBarrel2.upgradeSlotCount::get,
+			BlockBehaviour.Properties.of(Material.WOOD).strength(2.5F).sound(SoundType.WOOD)));
+	public static final RegistryObject<BarrelBlock> LIMITED_NETHERITE_BARREL_2 = BLOCKS.register("limited_netherite_barrel_2", () -> new LimitedBarrelBlock(2, Config.COMMON.netheriteLimitedBarrel2.baseSlotLimitMultiplier::get, Config.COMMON.netheriteLimitedBarrel2.upgradeSlotCount::get,
+			BlockBehaviour.Properties.of(Material.WOOD).strength(2.5F).sound(SoundType.WOOD)));
+	public static final RegistryObject<BlockItem> LIMITED_BARREL_2_ITEM = ITEMS.register("limited_barrel_2", () -> new WoodStorageBlockItem(LIMITED_BARREL_2.get()));
+	public static final RegistryObject<BlockItem> LIMITED_IRON_BARREL_2_ITEM = ITEMS.register("limited_iron_barrel_2", () -> new WoodStorageBlockItem(LIMITED_IRON_BARREL_2.get()));
+	public static final RegistryObject<BlockItem> LIMITED_GOLD_BARREL_2_ITEM = ITEMS.register("limited_gold_barrel_2", () -> new WoodStorageBlockItem(LIMITED_GOLD_BARREL_2.get()));
+	public static final RegistryObject<BlockItem> LIMITED_DIAMOND_BARREL_2_ITEM = ITEMS.register("limited_diamond_barrel_2", () -> new WoodStorageBlockItem(LIMITED_DIAMOND_BARREL_2.get()));
+	public static final RegistryObject<BlockItem> LIMITED_NETHERITE_BARREL_2_ITEM = ITEMS.register("limited_netherite_barrel_2", () -> new WoodStorageBlockItem(LIMITED_NETHERITE_BARREL_2.get()));
+
+	public static final RegistryObject<BarrelBlock> LIMITED_BARREL_3 = BLOCKS.register("limited_barrel_3", () -> new LimitedBarrelBlock(3, Config.COMMON.limitedBarrel3.baseSlotLimitMultiplier::get, Config.COMMON.limitedBarrel3.upgradeSlotCount::get,
+			BlockBehaviour.Properties.of(Material.WOOD).strength(2.5F).sound(SoundType.WOOD)));
+	public static final RegistryObject<BarrelBlock> LIMITED_IRON_BARREL_3 = BLOCKS.register("limited_iron_barrel_3", () -> new LimitedBarrelBlock(3, Config.COMMON.ironLimitedBarrel3.baseSlotLimitMultiplier::get, Config.COMMON.ironLimitedBarrel3.upgradeSlotCount::get,
+			BlockBehaviour.Properties.of(Material.WOOD).strength(2.5F).sound(SoundType.WOOD)));
+	public static final RegistryObject<BarrelBlock> LIMITED_GOLD_BARREL_3 = BLOCKS.register("limited_gold_barrel_3", () -> new LimitedBarrelBlock(3, Config.COMMON.goldLimitedBarrel3.baseSlotLimitMultiplier::get, Config.COMMON.goldLimitedBarrel3.upgradeSlotCount::get,
+			BlockBehaviour.Properties.of(Material.WOOD).strength(2.5F).sound(SoundType.WOOD)));
+	public static final RegistryObject<BarrelBlock> LIMITED_DIAMOND_BARREL_3 = BLOCKS.register("limited_diamond_barrel_3", () -> new LimitedBarrelBlock(3, Config.COMMON.diamondLimitedBarrel3.baseSlotLimitMultiplier::get, Config.COMMON.diamondLimitedBarrel3.upgradeSlotCount::get,
+			BlockBehaviour.Properties.of(Material.WOOD).strength(2.5F).sound(SoundType.WOOD)));
+	public static final RegistryObject<BarrelBlock> LIMITED_NETHERITE_BARREL_3 = BLOCKS.register("limited_netherite_barrel_3", () -> new LimitedBarrelBlock(3, Config.COMMON.netheriteLimitedBarrel3.baseSlotLimitMultiplier::get, Config.COMMON.netheriteLimitedBarrel3.upgradeSlotCount::get,
+			BlockBehaviour.Properties.of(Material.WOOD).strength(2.5F).sound(SoundType.WOOD)));
+	public static final RegistryObject<BlockItem> LIMITED_BARREL_3_ITEM = ITEMS.register("limited_barrel_3", () -> new WoodStorageBlockItem(LIMITED_BARREL_3.get()));
+	public static final RegistryObject<BlockItem> LIMITED_IRON_BARREL_3_ITEM = ITEMS.register("limited_iron_barrel_3", () -> new WoodStorageBlockItem(LIMITED_IRON_BARREL_3.get()));
+	public static final RegistryObject<BlockItem> LIMITED_GOLD_BARREL_3_ITEM = ITEMS.register("limited_gold_barrel_3", () -> new WoodStorageBlockItem(LIMITED_GOLD_BARREL_3.get()));
+	public static final RegistryObject<BlockItem> LIMITED_DIAMOND_BARREL_3_ITEM = ITEMS.register("limited_diamond_barrel_3", () -> new WoodStorageBlockItem(LIMITED_DIAMOND_BARREL_3.get()));
+	public static final RegistryObject<BlockItem> LIMITED_NETHERITE_BARREL_3_ITEM = ITEMS.register("limited_netherite_barrel_3", () -> new WoodStorageBlockItem(LIMITED_NETHERITE_BARREL_3.get()));
+
+	public static final RegistryObject<BarrelBlock> LIMITED_BARREL_4 = BLOCKS.register("limited_barrel_4", () -> new LimitedBarrelBlock(4, Config.COMMON.limitedBarrel4.baseSlotLimitMultiplier::get, Config.COMMON.limitedBarrel4.upgradeSlotCount::get,
+			BlockBehaviour.Properties.of(Material.WOOD).strength(2.5F).sound(SoundType.WOOD)));
+	public static final RegistryObject<BarrelBlock> LIMITED_IRON_BARREL_4 = BLOCKS.register("limited_iron_barrel_4", () -> new LimitedBarrelBlock(4, Config.COMMON.ironLimitedBarrel4.baseSlotLimitMultiplier::get, Config.COMMON.ironLimitedBarrel4.upgradeSlotCount::get,
+			BlockBehaviour.Properties.of(Material.WOOD).strength(2.5F).sound(SoundType.WOOD)));
+	public static final RegistryObject<BarrelBlock> LIMITED_GOLD_BARREL_4 = BLOCKS.register("limited_gold_barrel_4", () -> new LimitedBarrelBlock(4, Config.COMMON.goldLimitedBarrel4.baseSlotLimitMultiplier::get, Config.COMMON.goldLimitedBarrel4.upgradeSlotCount::get,
+			BlockBehaviour.Properties.of(Material.WOOD).strength(2.5F).sound(SoundType.WOOD)));
+	public static final RegistryObject<BarrelBlock> LIMITED_DIAMOND_BARREL_4 = BLOCKS.register("limited_diamond_barrel_4", () -> new LimitedBarrelBlock(4, Config.COMMON.diamondLimitedBarrel4.baseSlotLimitMultiplier::get, Config.COMMON.diamondLimitedBarrel4.upgradeSlotCount::get,
+			BlockBehaviour.Properties.of(Material.WOOD).strength(2.5F).sound(SoundType.WOOD)));
+	public static final RegistryObject<BarrelBlock> LIMITED_NETHERITE_BARREL_4 = BLOCKS.register("limited_netherite_barrel_4", () -> new LimitedBarrelBlock(4, Config.COMMON.netheriteLimitedBarrel4.baseSlotLimitMultiplier::get, Config.COMMON.netheriteLimitedBarrel4.upgradeSlotCount::get,
+			BlockBehaviour.Properties.of(Material.WOOD).strength(2.5F).sound(SoundType.WOOD)));
+	public static final RegistryObject<BlockItem> LIMITED_BARREL_4_ITEM = ITEMS.register("limited_barrel_4", () -> new WoodStorageBlockItem(LIMITED_BARREL_4.get()));
+	public static final RegistryObject<BlockItem> LIMITED_IRON_BARREL_4_ITEM = ITEMS.register("limited_iron_barrel_4", () -> new WoodStorageBlockItem(LIMITED_IRON_BARREL_4.get()));
+	public static final RegistryObject<BlockItem> LIMITED_GOLD_BARREL_4_ITEM = ITEMS.register("limited_gold_barrel_4", () -> new WoodStorageBlockItem(LIMITED_GOLD_BARREL_4.get()));
+	public static final RegistryObject<BlockItem> LIMITED_DIAMOND_BARREL_4_ITEM = ITEMS.register("limited_diamond_barrel_4", () -> new WoodStorageBlockItem(LIMITED_DIAMOND_BARREL_4.get()));
+	public static final RegistryObject<BlockItem> LIMITED_NETHERITE_BARREL_4_ITEM = ITEMS.register("limited_netherite_barrel_4", () -> new WoodStorageBlockItem(LIMITED_NETHERITE_BARREL_4.get()));
 
 	private static final String CHEST_REG_NAME = "chest";
 	public static final RegistryObject<ChestBlock> CHEST = BLOCKS.register(CHEST_REG_NAME, () -> new ChestBlock(Config.COMMON.woodChest.inventorySlotCount, Config.COMMON.woodChest.upgradeSlotCount));
@@ -111,6 +183,16 @@ public class ModBlocks {
 					.build(null));
 
 	@SuppressWarnings("ConstantConditions") //no datafixer type needed
+	public static final RegistryObject<BlockEntityType<LimitedBarrelBlockEntity>> LIMITED_BARREL_BLOCK_ENTITY_TYPE = BLOCK_ENTITY_TYPES.register(LIMITED_BARREL_REG_NAME, () ->
+			BlockEntityType.Builder.of(LimitedBarrelBlockEntity::new,
+							LIMITED_BARREL_1.get(), LIMITED_IRON_BARREL_1.get(), LIMITED_GOLD_BARREL_1.get(), LIMITED_DIAMOND_BARREL_1.get(), LIMITED_NETHERITE_BARREL_1.get(),
+							LIMITED_BARREL_2.get(), LIMITED_IRON_BARREL_2.get(), LIMITED_GOLD_BARREL_2.get(), LIMITED_DIAMOND_BARREL_2.get(), LIMITED_NETHERITE_BARREL_2.get(),
+							LIMITED_BARREL_3.get(), LIMITED_IRON_BARREL_3.get(), LIMITED_GOLD_BARREL_3.get(), LIMITED_DIAMOND_BARREL_3.get(), LIMITED_NETHERITE_BARREL_3.get(),
+							LIMITED_BARREL_4.get(), LIMITED_IRON_BARREL_4.get(), LIMITED_GOLD_BARREL_4.get(), LIMITED_DIAMOND_BARREL_4.get(), LIMITED_NETHERITE_BARREL_4.get()
+					)
+					.build(null));
+
+	@SuppressWarnings("ConstantConditions") //no datafixer type needed
 	public static final RegistryObject<BlockEntityType<ChestBlockEntity>> CHEST_BLOCK_ENTITY_TYPE = BLOCK_ENTITY_TYPES.register(CHEST_REG_NAME, () ->
 			BlockEntityType.Builder.of(ChestBlockEntity::new, CHEST.get(), IRON_CHEST.get(), GOLD_CHEST.get(), DIAMOND_CHEST.get(), NETHERITE_CHEST.get())
 					.build(null));
@@ -135,6 +217,11 @@ public class ModBlocks {
 
 	public static final RegistryObject<MenuType<StorageSettingsContainer>> SETTINGS_CONTAINER_TYPE = MENU_TYPES.register("settings",
 			() -> IForgeMenuType.create(StorageSettingsContainer::fromBuffer));
+	public static final RegistryObject<MenuType<LimitedBarrelContainerMenu>> LIMITED_BARREL_CONTAINER_TYPE = MENU_TYPES.register(LIMITED_BARREL_NAME,
+			() -> IForgeMenuType.create(LimitedBarrelContainerMenu::fromBuffer));
+
+	public static final RegistryObject<MenuType<LimitedBarrelSettingsContainerMenu>> LIMITED_BARREL_SETTINGS_CONTAINER_TYPE = MENU_TYPES.register("limited_barrel_settings",
+			() -> IForgeMenuType.create(LimitedBarrelSettingsContainerMenu::fromBuffer));
 
 	private static final DeferredRegister<RecipeSerializer<?>> RECIPE_SERIALIZERS = DeferredRegister.create(ForgeRegistries.RECIPE_SERIALIZERS, SophisticatedStorage.MOD_ID);
 	public static final RegistryObject<SimpleRecipeSerializer<?>> STORAGE_DYE_RECIPE_SERIALIZER = RECIPE_SERIALIZERS.register("storage_dye", () -> new SimpleRecipeSerializer<>(StorageDyeRecipe::new));
@@ -160,6 +247,8 @@ public class ModBlocks {
 		DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
 			MenuScreens.register(STORAGE_CONTAINER_TYPE.get(), StorageScreen::constructScreen);
 			MenuScreens.register(SETTINGS_CONTAINER_TYPE.get(), StorageSettingsScreen::constructScreen);
+			MenuScreens.register(LIMITED_BARREL_CONTAINER_TYPE.get(), LimitedBarrelScreen::new);
+			MenuScreens.register(LIMITED_BARREL_SETTINGS_CONTAINER_TYPE.get(), LimitedBarrelSettingsScreen::new);
 		});
 	}
 }

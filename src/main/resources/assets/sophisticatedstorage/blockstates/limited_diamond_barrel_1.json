@@ -1,0 +1,30 @@
+{
+    "variants": {
+        "facing=down": {
+            "x": 180,
+            "model": "sophisticatedstorage:block/limited_diamond_barrel_1"
+        },
+        "facing=east": {
+            "x": 90,
+            "y": 90,
+            "model": "sophisticatedstorage:block/limited_diamond_barrel_1"
+        },
+        "facing=north": {
+            "x": 90,
+            "model": "sophisticatedstorage:block/limited_diamond_barrel_1"
+        },
+        "facing=south": {
+            "x": 90,
+            "y": 180,
+            "model": "sophisticatedstorage:block/limited_diamond_barrel_1"
+        },
+        "facing=up": {
+            "model": "sophisticatedstorage:block/limited_diamond_barrel_1"
+        },
+        "facing=west": {
+            "x": 90,
+            "y": 270,
+            "model": "sophisticatedstorage:block/limited_diamond_barrel_1"
+        }
+    }
+}

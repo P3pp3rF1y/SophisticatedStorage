@@ -4,6 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.level.Level;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.SettingsContainer;
@@ -16,7 +17,10 @@ public class StorageSettingsContainer extends SettingsContainer<IStorageWrapper>
 	private final BlockPos pos;
 
 	protected StorageSettingsContainer(int windowId, Player player, BlockPos pos) {
-		super(ModBlocks.SETTINGS_CONTAINER_TYPE.get(), windowId, player, getWrapper(player.level, pos));
+		this(ModBlocks.SETTINGS_CONTAINER_TYPE.get(), windowId, player, pos);
+	}
+	protected StorageSettingsContainer(MenuType<?> menuType, int windowId, Player player, BlockPos pos) {
+		super(menuType, windowId, player, getWrapper(player.level, pos));
 		this.pos = pos;
 	}
 

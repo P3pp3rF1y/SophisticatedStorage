@@ -13,6 +13,7 @@ import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
+import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -20,6 +21,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 public abstract class WoodStorageBlockEntity extends StorageBlockEntity {
+	private static final String PACKED_TAG = "packed";
 	@Nullable
 	private WoodType woodType = null;
 
@@ -35,12 +37,12 @@ public abstract class WoodStorageBlockEntity extends StorageBlockEntity {
 		if (woodType != null) {
 			tag.putString("woodType", woodType.name());
 		}
-		tag.putBoolean("packed", packed);
+		tag.putBoolean(PACKED_TAG, packed);
 	}
 
 	public CompoundTag getStorageContentsTag() {
 		CompoundTag contents = saveWithoutMetadata();
-		contents.putBoolean("packed", false);
+		contents.putBoolean(PACKED_TAG, false);
 		return contents;
 	}
 
@@ -49,7 +51,7 @@ public abstract class WoodStorageBlockEntity extends StorageBlockEntity {
 		super.loadData(tag);
 		woodType = NBTHelper.getString(tag, "woodType").flatMap(woodTypeName -> WoodType.values().filter(wt -> wt.name().equals(woodTypeName)).findFirst())
 				.orElse(getStorageWrapper().hasMainColor() && getStorageWrapper().hasAccentColor() ? null : WoodType.ACACIA);
-		packed = tag.getBoolean("packed");
+		packed = tag.getBoolean(PACKED_TAG);
 	}
 
 	public Optional<WoodType> getWoodType() {
@@ -71,7 +73,7 @@ public abstract class WoodStorageBlockEntity extends StorageBlockEntity {
 
 	private Component makeWoodStorageDescriptionId(WoodType wt) {
 		ResourceLocation id = Objects.requireNonNull(ForgeRegistries.BLOCKS.getKey(getBlockState().getBlock()));
-		return Component.translatable("item." + id.getNamespace() + "." + wt.name() + "_" + id.getPath().replace('/', '.'));
+		return WoodStorageBlockItem.getDisplayName(id, wt);
 	}
 
 	public boolean isPacked() {
