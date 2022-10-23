@@ -58,69 +58,8 @@ import java.util.concurrent.TimeUnit;
 import static net.p3pp3rf1y.sophisticatedstorage.client.render.DisplayItemRenderer.*;
 
 public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
-	static {
-		ImmutableMap.Builder<ItemTransforms.TransformType, Transformation> builder = ImmutableMap.builder();
-		builder.put(ItemTransforms.TransformType.THIRD_PERSON_LEFT_HAND, new Transformation(
-				new Vector3f(0, 2.5f / 16f, 0),
-				new Quaternion(75, 45, 0, true),
-				new Vector3f(0.375f, 0.375f, 0.375f), null
-		));
-		builder.put(ItemTransforms.TransformType.THIRD_PERSON_RIGHT_HAND, new Transformation(
-				new Vector3f(0, 2.5f / 16f, 0),
-				new Quaternion(75, 45, 0, true),
-				new Vector3f(0.375f, 0.375f, 0.375f), null
-		));
-		builder.put(ItemTransforms.TransformType.FIRST_PERSON_LEFT_HAND, new Transformation(
-				new Vector3f(0, 0, 0),
-				new Quaternion(0, 225, 0, true),
-				new Vector3f(0.4f, 0.4f, 0.4f), null
-		));
-		builder.put(ItemTransforms.TransformType.FIRST_PERSON_RIGHT_HAND, new Transformation(
-				new Vector3f(0, 0, 0),
-				new Quaternion(0, 45, 0, true),
-				new Vector3f(0.4f, 0.4f, 0.4f), null
-		));
-		builder.put(ItemTransforms.TransformType.HEAD, new Transformation(
-				new Vector3f(0, 14.25f / 16f, 0),
-				new Quaternion(0, 0, 0, true),
-				new Vector3f(1, 1, 1), null
-		));
-		builder.put(ItemTransforms.TransformType.GUI, new Transformation(
-				new Vector3f(0, 0, 0),
-				new Quaternion(30, 225, 0, true),
-				new Vector3f(0.625f, 0.625f, 0.625f), null
-		));
-		builder.put(ItemTransforms.TransformType.GROUND, new Transformation(
-				new Vector3f(0, 3 / 16f, 0),
-				new Quaternion(0, 0, 0, true),
-				new Vector3f(0.25f, 0.25f, 0.25f), null
-		));
-		builder.put(ItemTransforms.TransformType.FIXED, new Transformation(
-				new Vector3f(0, 0, 0),
-				new Quaternion(0, 0, 0, true),
-				new Vector3f(0.5f, 0.5f, 0.5f), null
-		));
-		TRANSFORMS = builder.build();
-
-		ITEM_TRANSFORMS = createItemTransforms();
-	}
-
-	@SuppressWarnings("deprecation")
-	private static ItemTransforms createItemTransforms() {
-		return new ItemTransforms(fromTransformation(TRANSFORMS.get(ItemTransforms.TransformType.THIRD_PERSON_LEFT_HAND)), fromTransformation(TRANSFORMS.get(ItemTransforms.TransformType.THIRD_PERSON_RIGHT_HAND)),
-				fromTransformation(TRANSFORMS.get(ItemTransforms.TransformType.FIRST_PERSON_LEFT_HAND)), fromTransformation(TRANSFORMS.get(ItemTransforms.TransformType.FIRST_PERSON_RIGHT_HAND)),
-				fromTransformation(TRANSFORMS.get(ItemTransforms.TransformType.HEAD)), fromTransformation(TRANSFORMS.get(ItemTransforms.TransformType.GUI)),
-				fromTransformation(TRANSFORMS.get(ItemTransforms.TransformType.GROUND)), fromTransformation(TRANSFORMS.get(ItemTransforms.TransformType.FIXED)));
-	}
-
-	private static ItemTransform fromTransformation(Transformation transformation) {
-		return new ItemTransform(transformation.getLeftRotation().toXYZ(), transformation.getTranslation(), transformation.getScale());
-	}
-
-	private static final Map<ItemTransforms.TransformType, Transformation> TRANSFORMS;
-	private static final ItemTransforms ITEM_TRANSFORMS;
 	private static final IQuadTransformer MOVE_TO_CORNER = QuadTransformers.applying(new Transformation(new Vector3f(-.5f, -.5f, -.5f), null, null, null));
-	private static final Map<Direction, IQuadTransformer> DIRECTION_ROTATES = Map.of(
+	public static final Map<Direction, IQuadTransformer> DIRECTION_ROTATES = Map.of(
 			Direction.UP, getDirectionRotationTransform(Direction.UP),
 			Direction.DOWN, getDirectionRotationTransform(Direction.DOWN),
 			Direction.NORTH, getDirectionRotationTransform(Direction.NORTH),
@@ -143,8 +82,15 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 	private static final ModelProperty<Boolean> HAS_MAIN_COLOR = new ModelProperty<>();
 	private static final ModelProperty<Boolean> HAS_ACCENT_COLOR = new ModelProperty<>();
 	private static final ModelProperty<List<RenderInfo.DisplayItem>> DISPLAY_ITEMS = new ModelProperty<>();
-	private static final Cache<Integer, List<BakedQuad>> BAKED_QUADS_CACHE = CacheBuilder.newBuilder().expireAfterAccess(15L, TimeUnit.MINUTES).build();
+	public static final Cache<Integer, List<BakedQuad>> BAKED_QUADS_CACHE = CacheBuilder.newBuilder().expireAfterAccess(15L, TimeUnit.MINUTES).build();
 	private static final Map<Integer, IQuadTransformer> DISPLAY_ROTATIONS = new HashMap<>();
+	private static final Vector3f DEFAULT_ROTATION = new Vector3f(0.0F, 0.0F, 0.0F);
+	private static final ItemTransforms ITEM_TRANSFORMS = createItemTransforms();
+
+	@SuppressWarnings("java:S4738") //ItemTransforms require Guava ImmutableMap to be passed in so no way to change that to java Map
+	private static ItemTransforms createItemTransforms() {
+		return new ItemTransforms(new ItemTransform(new Vector3f(75, 45, 0), new Vector3f(0, 2.5f / 16f, 0), new Vector3f(0.375f, 0.375f, 0.375f), DEFAULT_ROTATION), new ItemTransform(new Vector3f(75, 45, 0), new Vector3f(0, 2.5f / 16f, 0), new Vector3f(0.375f, 0.375f, 0.375f), DEFAULT_ROTATION), new ItemTransform(new Vector3f(0, 225, 0), new Vector3f(0, 0, 0), new Vector3f(0.4f, 0.4f, 0.4f), DEFAULT_ROTATION), new ItemTransform(new Vector3f(0, 45, 0), new Vector3f(0, 0, 0), new Vector3f(0.4f, 0.4f, 0.4f), DEFAULT_ROTATION), new ItemTransform(new Vector3f(0, 0, 0), new Vector3f(0, 14.25f / 16f, 0), new Vector3f(1, 1, 1), DEFAULT_ROTATION), new ItemTransform(new Vector3f(30, 225, 0), new Vector3f(0, 0, 0), new Vector3f(0.625f, 0.625f, 0.625f), DEFAULT_ROTATION), new ItemTransform(new Vector3f(0, 0, 0), new Vector3f(0, 3 / 16f, 0), new Vector3f(0.25f, 0.25f, 0.25f), DEFAULT_ROTATION), new ItemTransform(new Vector3f(0, 0, 0), new Vector3f(0, 0, 0), new Vector3f(0.5f, 0.5f, 0.5f), DEFAULT_ROTATION), ImmutableMap.of());
+	}
 	protected final Map<String, Map<BarrelModelPart, BakedModel>> woodModelParts;
 	private final ItemOverrides barrelItemOverrides = new BarrelItemOverrides(this);
 	private Item barrelItem = Items.AIR;
@@ -160,14 +106,17 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 		return QuadTransformers.applying(new Transformation(null, DisplayItemRenderer.getNorthBasedRotation(dir), null, null));
 	}
 
-	private static IQuadTransformer getDirectionMoveBackToSide(Direction dir, float distFromCenter, int displayItemIndex, int displayItemCount) {
-		int hash = BarrelBakedModelBase.calculateMoveBackToSideHash(dir, distFromCenter, displayItemIndex, displayItemCount);
+	private IQuadTransformer getDirectionMoveBackToSide(BlockState state, Direction dir, float distFromCenter, int displayItemIndex, int displayItemCount) {
+		int hash = calculateMoveBackToSideHash(state, dir, distFromCenter, displayItemIndex, displayItemCount);
 		IQuadTransformer transform = DIRECTION_MOVE_BACK_TO_SIDE.getIfPresent(hash);
 		if (transform == null) {
 			Vec3i normal = dir.getNormal();
 			Vector3f offset = new Vector3f(distFromCenter, distFromCenter, distFromCenter);
 			offset.mul(normal.getX(), normal.getY(), normal.getZ());
-			Vector3f frontOffset = DisplayItemRenderer.getDisplayItemIndexFrontOffset(displayItemIndex, displayItemCount, dir);
+			Vector3f frontOffset = DisplayItemRenderer.getDisplayItemIndexFrontOffset(displayItemIndex, displayItemCount);
+			frontOffset.add(-0.5f, -0.5f, -0.5f);
+			rotateDisplayItemFrontOffset(state, dir, frontOffset);
+			frontOffset.add(0.5f, 0.5f, 0.5f);
 			offset.add(frontOffset);
 			transform = QuadTransformers.applying(new Transformation(offset, null, null, null));
 
@@ -176,9 +125,14 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 		return transform;
 	}
 
-	private static int calculateMoveBackToSideHash(Direction dir, float distFromCenter, int displayItemIndex, int displayItemCount) {
-		int hash = dir.hashCode();
-		hash = 31 * hash + Float.hashCode(distFromCenter);
+	@SuppressWarnings("java:S1172") //state used in override
+	protected void rotateDisplayItemFrontOffset(BlockState state, Direction dir, Vector3f frontOffset) {
+		frontOffset.transform(getNorthBasedRotation(dir));
+	}
+
+	@SuppressWarnings("java:S1172") //state used in override
+	protected int calculateMoveBackToSideHash(BlockState state, Direction dir, float distFromCenter, int displayItemIndex, int displayItemCount) {
+		int hash = Float.hashCode(distFromCenter);
 		hash = 31 * hash + displayItemIndex;
 		hash = 31 * hash + displayItemCount;
 		return hash;
@@ -273,7 +227,6 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 
 	protected int getInWorldBlockHash(BlockState state, ModelData data) {
 		int hash = state.getBlock().hashCode();
-		hash = hash * 31 + state.getValue(BarrelBlock.FACING).get3DDataValue();
 
 		//noinspection ConstantConditions
 		hash = hash * 31 + (data.has(WOOD_NAME) ? data.get(WOOD_NAME).hashCode() + 1 : 0);
@@ -354,15 +307,15 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 			quads = getDisplayRotation(rotation).process(quads);
 		}
 
-		Direction facing = state.getValue(BarrelBlock.FACING);
-		quads = DIRECTION_ROTATES.get(facing).process(quads);
+		Direction facing = state.getBlock() instanceof BarrelBlock barrelBlock ? barrelBlock.getFacing(state) : Direction.NORTH;
+		quads = rotateDisplayItemQuads(quads, state);
 
 		if (model.isGui3d()) {
-			IQuadTransformer transformer = getDirectionMove(displayItem, model, facing, displayItemIndex, displayItemCount, displayItemCount == 1 ? 1 : SMALL_3D_ITEM_SCALE);
+			IQuadTransformer transformer = getDirectionMove(displayItem, model, state, facing, displayItemIndex, displayItemCount, displayItemCount == 1 ? 1 : SMALL_3D_ITEM_SCALE);
 			quads = transformer.process(quads);
 			recalculateDirections(quads);
 		} else {
-			quads = getDirectionMove(displayItem, model, facing, displayItemIndex, displayItemCount, 1).process(quads);
+			quads = getDirectionMove(displayItem, model, state, facing, displayItemIndex, displayItemCount, 1).process(quads);
 		}
 
 		updateTintIndexes(quads, displayItemIndex);
@@ -382,6 +335,8 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 		return new Quaternion(xyz.x(), xyz.y(), xyz.z(), degrees);
 	}
 
+	protected abstract List<BakedQuad> rotateDisplayItemQuads(List<BakedQuad> quads, BlockState state);
+
 	private void updateTintIndexes(List<BakedQuad> quads, int displayItemIndex) {
 		int offset = (displayItemIndex + 1) * 10;
 		quads.forEach(quad -> {
@@ -395,8 +350,8 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 		quads.forEach(quad -> quad.direction = FaceBakery.calculateFacing(quad.getVertices()));
 	}
 
-	private IQuadTransformer getDirectionMove(ItemStack displayItem, BakedModel model, Direction direction, int displayItemIndex, int displayItemCount, float itemScale) {
-		int hash = calculateDirectionMoveHash(displayItem, displayItemIndex, displayItemCount);
+	private IQuadTransformer getDirectionMove(ItemStack displayItem, BakedModel model, BlockState state, Direction direction, int displayItemIndex, int displayItemCount, float itemScale) {
+		int hash = calculateDirectionMoveHash(state, displayItem, displayItemIndex, displayItemCount);
 		Cache<Integer, IQuadTransformer> directionCache = DIRECTION_MOVES_3D_ITEMS.getUnchecked(direction);
 		IQuadTransformer transformer = directionCache.getIfPresent(hash);
 
@@ -405,14 +360,15 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 			if (model.isGui3d()) {
 				offset = DisplayItemRenderer.getDisplayItemOffset(displayItem, model, itemScale);
 			}
-			transformer = BarrelBakedModelBase.getDirectionMoveBackToSide(direction, (float) (0.5f + offset), displayItemIndex, displayItemCount);
+			transformer = getDirectionMoveBackToSide(state, direction, (float) (0.5f + offset), displayItemIndex, displayItemCount);
 			directionCache.put(hash, transformer);
 		}
 
 		return transformer;
 	}
 
-	private int calculateDirectionMoveHash(ItemStack displayItem, int displayItemIndex, int displayItemCount) {
+	@SuppressWarnings("java:S1172") //state used in override
+	protected int calculateDirectionMoveHash(BlockState state, ItemStack displayItem, int displayItemIndex, int displayItemCount) {
 		int hashCode = ItemStackKey.getHashCode(displayItem);
 		hashCode = hashCode * 31 + displayItemIndex;
 		hashCode = hashCode * 31 + displayItemCount;

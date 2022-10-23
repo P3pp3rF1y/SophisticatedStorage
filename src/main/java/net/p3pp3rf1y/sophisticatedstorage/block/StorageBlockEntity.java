@@ -19,8 +19,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.p3pp3rf1y.sophisticatedcore.controller.IControllableStorage;
 import net.p3pp3rf1y.sophisticatedcore.controller.ILinkable;
@@ -113,7 +113,11 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 				return getBlockState().getBlock() instanceof IStorageBlock storageBlock ? storageBlock.getBaseStackSizeMultiplier() : super.getBaseStackSizeMultiplier();
 			}
 		};
-		storageWrapper.setUpgradeCachesInvalidatedHandler(this::invalidateStorageCap);
+		storageWrapper.setUpgradeCachesInvalidatedHandler(this::onUpgradeCachesInvalidated);
+	}
+
+	protected void onUpgradeCachesInvalidated() {
+		invalidateStorageCap();
 	}
 
 	public boolean isOpen() {
@@ -309,7 +313,7 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 	@Nonnull
 	@Override
 	public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) {
-		if (cap == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
+		if (cap == ForgeCapabilities.ITEM_HANDLER) {
 			if (itemHandlerCap == null) {
 				itemHandlerCap = LazyOptional.of(getStorageWrapper()::getInventoryForInputOutput);
 			}

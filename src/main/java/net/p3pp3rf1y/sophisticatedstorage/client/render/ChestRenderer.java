@@ -38,6 +38,7 @@ public class ChestRenderer implements BlockEntityRenderer<ChestBlockEntity> {
 	private final ModelPart lidPart;
 	private final ModelPart bottomPart;
 	private final ModelPart lockPart;
+	private final DisplayItemRenderer displayItemRenderer = new DisplayItemRenderer(0.5 * (14.01 / 16), 0.5 * (13.5 / 16) + 0.01);
 
 	public ChestRenderer(BlockEntityRendererProvider.Context context) {
 		ModelPart modelpart = context.bakeLayer(ClientEventHandler.CHEST_LAYER);
@@ -108,7 +109,7 @@ public class ChestRenderer implements BlockEntityRenderer<ChestBlockEntity> {
 			renderBottomAndLid(poseStack, consumer, finalLidAngle, packedlight, packedOverlay);
 			poseStack.popPose();
 		} else if (shouldRenderDisplayItem(chestEntity.getBlockPos())) {
-			DisplayItemRenderer.renderDisplayItem(chestEntity, poseStack, bufferSource, packedlight, packedOverlay, 0.5 * (14.01 / 16), 0.5 * (13.5 / 16) + 0.01);
+			displayItemRenderer.renderDisplayItem(chestEntity, poseStack, bufferSource, packedlight, packedOverlay);
 		}
 	}
 
