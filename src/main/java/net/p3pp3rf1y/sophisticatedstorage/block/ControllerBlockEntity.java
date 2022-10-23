@@ -6,7 +6,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
-import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.p3pp3rf1y.sophisticatedcore.controller.ControllerBlockEntityBase;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
@@ -31,8 +31,8 @@ public class ControllerBlockEntity extends ControllerBlockEntityBase {
 		boolean doubleClick = gameTime - lastDepositTime < 10;
 		lastDepositTime = gameTime;
 		if (doubleClick) {
-			player.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null).ifPresent(
-					playerInventory -> getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null)
+			player.getCapability(ForgeCapabilities.ITEM_HANDLER, null).ifPresent(
+					playerInventory -> getCapability(ForgeCapabilities.ITEM_HANDLER, null)
 							.ifPresent(controllerInventory -> InventoryHelper.transfer(playerInventory, controllerInventory, s -> {}, this::hasStack))
 			);
 			return;

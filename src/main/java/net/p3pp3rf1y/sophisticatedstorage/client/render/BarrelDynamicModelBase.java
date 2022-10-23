@@ -29,13 +29,13 @@ import java.util.Set;
 import java.util.function.Function;
 
 public abstract class BarrelDynamicModelBase<T extends BarrelDynamicModelBase<T>> implements IUnbakedGeometry<T> {
-	private static final Map<MaterialKey, Material> TEXTURES = new HashMap<>();
+	public static final Map<MaterialKey, Material> TEXTURES = new HashMap<>();
 
 	public static Collection<Material> getTextures() {
 		return TEXTURES.values();
 	}
 
-	private static final Map<Integer, BakedModel> BAKED_PART_MODELS = new HashMap<>();
+	public static final Map<Integer, BakedModel> BAKED_PART_MODELS = new HashMap<>();
 
 	protected final Map<String, Map<BarrelModelPart, UnbakedModel>> woodModels;
 
@@ -81,9 +81,9 @@ public abstract class BarrelDynamicModelBase<T extends BarrelDynamicModelBase<T>
 		Transformation rotation = modelTransform.getRotation();
 		hash = 31 * hash + rotation.getMatrix().hashCode();
 		hash = 31 * hash + rotation.getTranslation().hashCode();
-		hash = 31 * hash + rotation.getLeftRotation().toXYZ().hashCode(); //need to convert to XYZ because otherwise west and east rotations have the same hashCode
+		hash = 31 * hash + rotation.getLeftRotation().hashCode(); //need to both use the base leftRotation hashCode as well as toXYZ one as there are different cases where one of these is the same between east and west
+		hash = 31 * hash + rotation.getLeftRotation().toXYZ().hashCode();
 		hash = 31 * hash + rotation.getScale().hashCode();
-		hash = 31 * hash + rotation.getRightRotation().hashCode();
 
 		return hash;
 	}

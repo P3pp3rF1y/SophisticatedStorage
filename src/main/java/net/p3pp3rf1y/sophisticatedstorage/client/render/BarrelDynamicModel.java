@@ -5,11 +5,13 @@ import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.mojang.datafixers.util.Either;
+import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.BlockModel;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.UnbakedModel;
+import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.client.model.data.ModelData;
 import net.minecraftforge.client.model.geometry.IGeometryLoader;
@@ -22,6 +24,7 @@ import net.p3pp3rf1y.sophisticatedstorage.client.StorageTextureManager;
 import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -45,6 +48,8 @@ public class BarrelDynamicModel extends BarrelDynamicModelBase<BarrelDynamicMode
 		protected int getInWorldBlockHash(BlockState state, ModelData data) {
 			int hash = super.getInWorldBlockHash(state, data);
 			hash = hash * 31 + (Boolean.TRUE.equals(state.getValue(BarrelBlock.OPEN)) ? 1 : 0);
+			hash = hash * 31 + state.getValue(BarrelBlock.FACING).get3DDataValue();
+
 			return hash;
 		}
 
@@ -61,6 +66,18 @@ public class BarrelDynamicModel extends BarrelDynamicModelBase<BarrelDynamicMode
 		@Override
 		protected BarrelModelPart getMainPart() {
 			return BarrelModelPart.MAIN;
+		}
+
+		@Override
+		protected List<BakedQuad> rotateDisplayItemQuads(List<BakedQuad> quads, BlockState state) {
+			return DIRECTION_ROTATES.get(state.getValue(BarrelBlock.FACING)).process(quads);
+		}
+
+		@Override
+		protected int calculateMoveBackToSideHash(BlockState state, Direction dir, float distFromCenter, int displayItemIndex, int displayItemCount) {
+			int hash = super.calculateMoveBackToSideHash(state, dir, distFromCenter, displayItemIndex, displayItemCount);
+			hash = 31 * hash + dir.hashCode();
+			return hash;
 		}
 	}
 

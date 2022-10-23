@@ -12,6 +12,8 @@ import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.level.block.state.properties.WoodType;
+import net.p3pp3rf1y.sophisticatedstorage.client.render.BarrelBakedModelBase;
+import net.p3pp3rf1y.sophisticatedstorage.client.render.BarrelDynamicModelBase;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -56,6 +58,9 @@ public class StorageTextureManager extends SimpleJsonResourceReloadListener {
 	@Override
 	protected Map<ResourceLocation, JsonElement> prepare(ResourceManager pResourceManager, ProfilerFiller pProfiler) {
 		clear();
+		BarrelBakedModelBase.BAKED_QUADS_CACHE.invalidateAll();
+		BarrelDynamicModelBase.TEXTURES.clear();
+		BarrelDynamicModelBase.BAKED_PART_MODELS.clear();
 
 		Map<ResourceLocation, JsonElement> fileContents = super.prepare(pResourceManager, pProfiler);
 		Map<ResourceLocation, StorageTextureDefinition> storageTextureDefinitions = new HashMap<>();
