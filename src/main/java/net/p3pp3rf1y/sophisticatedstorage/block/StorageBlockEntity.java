@@ -113,7 +113,11 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 				return getBlockState().getBlock() instanceof IStorageBlock storageBlock ? storageBlock.getBaseStackSizeMultiplier() : super.getBaseStackSizeMultiplier();
 			}
 		};
-		storageWrapper.setUpgradeCachesInvalidatedHandler(this::invalidateStorageCap);
+		storageWrapper.setUpgradeCachesInvalidatedHandler(this::onUpgradeCachesInvalidated);
+	}
+
+	protected void onUpgradeCachesInvalidated() {
+		invalidateStorageCap();
 	}
 
 	public boolean isOpen() {

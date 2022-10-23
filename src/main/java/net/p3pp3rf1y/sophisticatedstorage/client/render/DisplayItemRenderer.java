@@ -39,12 +39,17 @@ public class DisplayItemRenderer {
 	public static final float SMALL_3D_ITEM_SCALE = 0.5f;
 	static final float BIG_2D_ITEM_SCALE = 0.5f;
 	static final float SMALL_2D_ITEM_SCALE = 0.25f;
+	private final double yCenterTranslation;
+	private final double blockSideOffset;
 
-	private DisplayItemRenderer() {}
+	public DisplayItemRenderer(double yCenterTranslation, double blockSideOffset) {
+		this.yCenterTranslation = yCenterTranslation;
+		this.blockSideOffset = blockSideOffset;
+	}
 
 	private static final Cache<Integer, Double> ITEM_HASHCODE_OFFSETS = CacheBuilder.newBuilder().expireAfterAccess(30L, TimeUnit.MINUTES).build();
 
-	public static void renderDisplayItem(StorageBlockEntity blockEntity, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, double yCenterTranslation, double blockSideOffset) {
+	public void renderDisplayItem(StorageBlockEntity blockEntity, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
 		blockEntity.getStorageWrapper().getRenderInfo().getItemDisplayRenderInfo().getDisplayItem().ifPresent(displayItem -> {
 			BlockState blockState = blockEntity.getBlockState();
 			if (!(blockState.getBlock() instanceof StorageBlockBase storageBlock)) {
@@ -53,11 +58,11 @@ public class DisplayItemRenderer {
 			Direction facing = storageBlock.getFacing(blockState);
 
 			Minecraft minecraft = Minecraft.getInstance();
-			renderSingleItem(poseStack, bufferSource, packedLight, packedOverlay, yCenterTranslation, blockSideOffset, facing, minecraft, displayItem, false, 0, 1);
+			renderSingleItem(poseStack, bufferSource, packedLight, packedOverlay, blockState, facing, minecraft, displayItem, false, 0, 1);
 		});
 	}
 
-	public static void renderDisplayItems(StorageBlockEntity blockEntity, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, double yCenterTranslation, double blockSideOffset, boolean renderOnlyCustom) {
+	public void renderDisplayItems(StorageBlockEntity blockEntity, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, boolean renderOnlyCustom) {
 		List<RenderInfo.DisplayItem> displayItems = blockEntity.getStorageWrapper().getRenderInfo().getItemDisplayRenderInfo().getDisplayItems();
 		if (displayItems.isEmpty()) {
 			return;
@@ -73,12 +78,12 @@ public class DisplayItemRenderer {
 		int displayItemIndex = 0;
 		int displayItemCount = storageBlock.getDisplayItemsCount(displayItems);
 		for (RenderInfo.DisplayItem displayItem : displayItems) {
-			renderSingleItem(poseStack, bufferSource, packedLight, packedOverlay, yCenterTranslation, blockSideOffset, facing, minecraft, displayItem, renderOnlyCustom, storageBlock.hasFixedIndexDisplayItems() ? displayItem.getSlotIndex() : displayItemIndex, displayItemCount);
+			renderSingleItem(poseStack, bufferSource, packedLight, packedOverlay, blockState, facing, minecraft, displayItem, renderOnlyCustom, storageBlock.hasFixedIndexDisplayItems() ? displayItem.getSlotIndex() : displayItemIndex, displayItemCount);
 			displayItemIndex++;
 		}
 	}
 
-	private static void renderSingleItem(PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, double yCenterTranslation, double blockSideOffset, Direction facing, Minecraft minecraft, RenderInfo.DisplayItem displayItem, boolean renderOnlyCustom, int displayItemIndex, int displayItemCount) {
+	private void renderSingleItem(PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, BlockState blockState, Direction facing, Minecraft minecraft, RenderInfo.DisplayItem displayItem, boolean renderOnlyCustom, int displayItemIndex, int displayItemCount) {
 		ItemStack item = displayItem.getItem();
 		if (item.isEmpty()) {
 			return;
@@ -94,11 +99,15 @@ public class DisplayItemRenderer {
 		Vec3i normal = facing.getNormal();
 		Vector3f offset = new Vector3f((float) (blockSideOffset + itemOffset), (float) blockSideOffset + itemOffset, (float) (blockSideOffset + itemOffset));
 		offset.mul(normal.getX(), normal.getY(), normal.getZ());
-		Vector3f frontOffset = getDisplayItemIndexFrontOffset(displayItemIndex, displayItemCount, (float) yCenterTranslation, facing);
+		Vector3f frontOffset = getDisplayItemIndexFrontOffset(displayItemIndex, displayItemCount, (float) yCenterTranslation);
+		frontOffset.add(-0.5f, -0.5f, -0.5f);
+		rotateFrontOffset(blockState, facing, frontOffset);
+		frontOffset.add(0.5f, 0.5f, 0.5f);
 		offset.add(frontOffset);
 		poseStack.translate(offset.x(), offset.y(), offset.z());
 
-		poseStack.mulPose(getNorthBasedRotation(facing));
+		rotateToFront(poseStack, blockState, facing);
+
 		poseStack.mulPose(Vector3f.ZP.rotationDegrees(displayItem.getRotation()));
 		float itemScale;
 		if (displayItemCount == 1) {
@@ -110,6 +119,16 @@ public class DisplayItemRenderer {
 
 		minecraft.getItemRenderer().render(item, ItemTransforms.TransformType.FIXED, false, poseStack, bufferSource, packedLight, packedOverlay, itemModel);
 		poseStack.popPose();
+	}
+
+	@SuppressWarnings("java:S1172") //state used in override
+	protected void rotateFrontOffset(BlockState state, Direction facing, Vector3f frontOffset) {
+		frontOffset.transform(getNorthBasedRotation(facing));
+	}
+
+	@SuppressWarnings("java:S1172") //state used in override
+	protected void rotateToFront(PoseStack poseStack, BlockState state, Direction facing) {
+		poseStack.mulPose(getNorthBasedRotation(facing));
 	}
 
 	public static double getDisplayItemOffset(ItemStack item, BakedModel itemModel, float additionalScale) {
@@ -151,7 +170,7 @@ public class DisplayItemRenderer {
 		points = translatePoints(points, transform.translation);
 
 		float zScale = transform.scale.z();
-		return ((zScale * 1 / 8D) - getMaxZ(points)) * additionalScale;
+		return ((zScale * 1 / 15.95D) - getMaxZ(points)) * additionalScale; //15.95 because of z-fighting if displayed model had surface offset exactly 1 pixel from the top most surface
 	}
 
 	@SuppressWarnings("deprecation")
@@ -264,11 +283,11 @@ public class DisplayItemRenderer {
 		return ret;
 	}
 
-	public static Vector3f getDisplayItemIndexFrontOffset(int displayItemIndex, int displayItemCount, Direction dir) {
-		return getDisplayItemIndexFrontOffset(displayItemIndex, displayItemCount, 0.5f, dir);
+	public static Vector3f getDisplayItemIndexFrontOffset(int displayItemIndex, int displayItemCount) {
+		return getDisplayItemIndexFrontOffset(displayItemIndex, displayItemCount, 0.5f);
 	}
 
-	public static Vector3f getDisplayItemIndexFrontOffset(int displayItemIndex, int displayItemCount, float centerYOffset, Direction dir) {
+	public static Vector3f getDisplayItemIndexFrontOffset(int displayItemIndex, int displayItemCount, float centerYOffset) {
 		Vector3f frontOffset;
 		if (displayItemCount <= 0 || displayItemCount > 4) {
 			frontOffset = new Vector3f(0f, 0f, 0.5f);
@@ -291,9 +310,6 @@ public class DisplayItemRenderer {
 			frontOffset = new Vector3f(displayItemIndex == 0 || displayItemIndex == 2 ? centerYOffset + halfCenterYOffset : halfCenterYOffset, displayItemIndex == 0 || displayItemIndex == 1 ? centerYOffset + halfCenterYOffset : halfCenterYOffset, 0.5f);
 		}
 
-		frontOffset.add(-0.5f, -0.5f, -0.5f);
-		frontOffset.transform(DisplayItemRenderer.getNorthBasedRotation(dir));
-		frontOffset.add(0.5f, 0.5f, 0.5f);
 		return frontOffset;
 	}
 

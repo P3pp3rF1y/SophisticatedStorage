@@ -44,6 +44,7 @@ import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import javax.annotation.Nullable;
 import java.util.Random;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class BarrelBlock extends WoodStorageBlockBase {
@@ -53,8 +54,11 @@ public class BarrelBlock extends WoodStorageBlockBase {
 	private static final VoxelShape ITEM_ENTITY_COLLISION_SHAPE = box(0.01, 0.01, 0.01, 15.99, 15.99, 15.99);
 
 	public BarrelBlock(Supplier<Integer> numberOfInventorySlotsSupplier, Supplier<Integer> numberOfUpgradeSlotsSupplier, Properties properties) {
+		this(numberOfInventorySlotsSupplier, numberOfUpgradeSlotsSupplier, properties, stateDef -> stateDef.any().setValue(FACING, Direction.NORTH).setValue(OPEN, false).setValue(TICKING, false));
+	}
+	public BarrelBlock(Supplier<Integer> numberOfInventorySlotsSupplier, Supplier<Integer> numberOfUpgradeSlotsSupplier, Properties properties, Function<StateDefinition<Block, BlockState>, BlockState> getDefaultState) {
 		super(properties.noOcclusion(), numberOfInventorySlotsSupplier, numberOfUpgradeSlotsSupplier);
-		registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(OPEN, false).setValue(TICKING, false));
+		registerDefaultState(getDefaultState.apply(stateDefinition));
 	}
 
 	@SuppressWarnings("deprecation")
@@ -87,7 +91,7 @@ public class BarrelBlock extends WoodStorageBlockBase {
 				return InteractionResult.SUCCESS;
 			}
 
-			if (tryItemInteraction(player, hand, b, stackInHand, state.getValue(FACING), hitResult)) {
+			if (tryItemInteraction(player, hand, b, stackInHand, getFacing(state), hitResult)) {
 				return InteractionResult.SUCCESS;
 			}
 
