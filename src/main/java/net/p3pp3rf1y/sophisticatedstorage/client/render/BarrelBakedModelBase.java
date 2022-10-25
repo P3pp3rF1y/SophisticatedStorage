@@ -367,6 +367,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 			recalculateDirections(quads);
 		} else {
 			quads = getDirectionMove(displayItem, model, state, facing, displayItemIndex, displayItemCount, 1).processMany(quads);
+			recalculateDirections(quads);
 		}
 
 		updateTintIndexes(quads, displayItemIndex);
