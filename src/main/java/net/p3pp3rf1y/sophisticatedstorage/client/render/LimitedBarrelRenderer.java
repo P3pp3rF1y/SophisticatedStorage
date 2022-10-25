@@ -60,7 +60,7 @@ public class LimitedBarrelRenderer implements BlockEntityRenderer<LimitedBarrelB
 		}
 		Font font = Minecraft.getInstance().font;
 		List<Integer> slotCounts = blockEntity.getSlotCounts();
-		float countDisplayYOffset = -(slotCounts.size() == 1 ? 0.26f : 0.125f);
+		float countDisplayYOffset = -(slotCounts.size() == 1 ? 0.27f : 0.132f);
 
 		Direction horizontalFacing = blockState.getValue(LimitedBarrelBlock.HORIZONTAL_FACING);
 
@@ -85,7 +85,7 @@ public class LimitedBarrelRenderer implements BlockEntityRenderer<LimitedBarrelB
 
 			double xTranslation = - frontOffset.x();
 			float yTranslation = frontOffset.y() + countDisplayYOffset;
-			double zTranslation = 0.01;
+			double zTranslation = 0.001;
 			poseStack.translate(xTranslation, yTranslation, zTranslation);
 
 			float scale = slotCounts.size() == 1 ? SINGLE_ITEM_FONT_SCALE : MULTIPLE_ITEMS_FONT_SCALE;
