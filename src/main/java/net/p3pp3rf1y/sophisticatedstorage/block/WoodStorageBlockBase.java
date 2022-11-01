@@ -105,7 +105,9 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 	}
 
 	private boolean isBasicTier() {
-		return this == ModBlocks.BARREL.get() || this == ModBlocks.CHEST.get();
+		return this == ModBlocks.BARREL.get() || this == ModBlocks.CHEST.get()
+				|| this == ModBlocks.LIMITED_BARREL_1.get() || this == ModBlocks.LIMITED_BARREL_2.get()
+				|| this == ModBlocks.LIMITED_BARREL_3.get() || this == ModBlocks.LIMITED_BARREL_4.get();
 	}
 
 	@Override
