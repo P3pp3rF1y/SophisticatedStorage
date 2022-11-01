@@ -8,14 +8,14 @@
   ],
   "pattern": [
     "DDD",
-    "DCD",
+    "DSD",
     "DDD"
   ],
   "key": {
     "D": {
       "tag": "forge:gems/diamond"
     },
-    "C": {
+    "S": {
       "item": "sophisticatedstorage:gold_chest"
     }
   },
