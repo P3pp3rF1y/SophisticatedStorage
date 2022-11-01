@@ -115,7 +115,7 @@ public class LimitedBarrelDynamicModel extends BarrelDynamicModelBase<LimitedBar
 			StorageTier tier = StorageTier.valueOf(modelContents.getAsJsonPrimitive("tier").getAsString().toUpperCase(Locale.ROOT));
 			BarrelType barrelType = BarrelType.valueOf(modelContents.getAsJsonPrimitive("barrelType").getAsString().toUpperCase(Locale.ROOT));
 
-			WoodStorageBlockBase.CUSTOM_TEXTURE_WOOD_TYPES.forEach(woodType -> {
+			WoodStorageBlockBase.CUSTOM_TEXTURE_WOOD_TYPES.keySet().forEach(woodType -> {
 				ImmutableMap.Builder<BarrelModelPart, UnbakedModel> modelsBuilder = ImmutableMap.builder();
 				for (BarrelModelPart barrelPart : BarrelModelPart.getLimitedBarrelParts()) {
 					Map<String, Either<Material, String>> materials = new HashMap<>();

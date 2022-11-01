@@ -1,0 +1,12 @@
+{
+  "type": "sophisticatedstorage:smithing_storage_upgrade",
+  "addition": {
+    "item": "minecraft:netherite_ingot"
+  },
+  "base": {
+    "item": "sophisticatedstorage:limited_diamond_barrel_2"
+  },
+  "result": {
+    "item": "sophisticatedstorage:limited_netherite_barrel_2"
+  }
+}

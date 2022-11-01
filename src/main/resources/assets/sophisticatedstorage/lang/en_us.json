@@ -26,6 +26,8 @@
     "block.sophisticatedstorage.limited_barrel_2": "Limited %s%sBarrel II",
     "block.sophisticatedstorage.limited_barrel_3": "Limited %s%sBarrel III",
     "block.sophisticatedstorage.limited_barrel_4": "Limited %s%sBarrel IV",
+    "block.sophisticatedstorage.limited_barrel_singular.tooltip": "%s slot, %sx base stack size multiplier",
+    "block.sophisticatedstorage.limited_barrel_plural.tooltip": "%s slots, %sx base stack size multiplier",
     "block.sophisticatedstorage.limited_iron_barrel_1": "Limited %s%sIron Barrel I",
     "block.sophisticatedstorage.limited_iron_barrel_2": "Limited %s%sIron Barrel II",
     "block.sophisticatedstorage.limited_iron_barrel_3": "Limited %s%sIron Barrel III",

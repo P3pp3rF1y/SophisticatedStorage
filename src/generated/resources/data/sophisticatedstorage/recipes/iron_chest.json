@@ -2,23 +2,23 @@
   "type": "sophisticatedstorage:storage_tier_upgrade",
   "conditions": [
     {
-      "itemRegistryName": "sophisticatedstorage:iron_chest",
-      "type": "sophisticatedcore:item_enabled"
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:iron_chest"
     }
-  ],
-  "pattern": [
-    "III",
-    "ICI",
-    "III"
   ],
   "key": {
     "I": {
       "tag": "forge:ingots/iron"
     },
-    "C": {
+    "S": {
       "item": "sophisticatedstorage:chest"
     }
   },
+  "pattern": [
+    "III",
+    "ISI",
+    "III"
+  ],
   "result": {
     "item": "sophisticatedstorage:iron_chest"
   }

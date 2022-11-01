@@ -2,32 +2,32 @@
   "type": "minecraft:crafting_shaped",
   "conditions": [
     {
-      "itemRegistryName": "sophisticatedstorage:feeding_upgrade",
-      "type": "sophisticatedcore:item_enabled"
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:feeding_upgrade"
     }
   ],
-  "pattern": [
-    " C ",
-    "ABM",
-    " E "
-  ],
   "key": {
+    "A": {
+      "item": "minecraft:golden_apple"
+    },
     "B": {
       "item": "sophisticatedstorage:upgrade_base"
     },
     "C": {
       "item": "minecraft:golden_carrot"
     },
-    "A": {
-      "item": "minecraft:golden_apple"
+    "E": {
+      "tag": "forge:ender_pearls"
     },
     "M": {
       "item": "minecraft:glistering_melon_slice"
-    },
-    "E": {
-      "tag": "forge:ender_pearls"
     }
   },
+  "pattern": [
+    " C ",
+    "ABM",
+    " E "
+  ],
   "result": {
     "item": "sophisticatedstorage:feeding_upgrade"
   }

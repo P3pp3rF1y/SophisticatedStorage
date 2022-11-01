@@ -2,23 +2,23 @@
   "type": "sophisticatedstorage:storage_tier_upgrade",
   "conditions": [
     {
-      "itemRegistryName": "sophisticatedstorage:diamond_shulker_box",
-      "type": "sophisticatedcore:item_enabled"
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:diamond_shulker_box"
     }
   ],
+  "key": {
+    "D": {
+      "tag": "forge:gems/diamond"
+    },
+    "S": {
+      "item": "sophisticatedstorage:gold_shulker_box"
+    }
+  },
   "pattern": [
     "DDD",
     "DSD",
     "DDD"
   ],
-  "key": {
-    "S": {
-      "item": "sophisticatedstorage:gold_shulker_box"
-    },
-    "D": {
-      "tag": "forge:gems/diamond"
-    }
-  },
   "result": {
     "item": "sophisticatedstorage:diamond_shulker_box"
   }

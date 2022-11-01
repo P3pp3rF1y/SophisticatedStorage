@@ -2,23 +2,23 @@
   "type": "sophisticatedstorage:storage_tier_upgrade",
   "conditions": [
     {
-      "itemRegistryName": "sophisticatedstorage:iron_shulker_box",
-      "type": "sophisticatedcore:item_enabled"
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:iron_shulker_box"
     }
   ],
+  "key": {
+    "I": {
+      "tag": "forge:ingots/iron"
+    },
+    "S": {
+      "item": "sophisticatedstorage:shulker_box"
+    }
+  },
   "pattern": [
     "III",
     "ISI",
     "III"
   ],
-  "key": {
-    "S": {
-      "item": "sophisticatedstorage:shulker_box"
-    },
-    "I": {
-      "tag": "forge:ingots/iron"
-    }
-  },
   "result": {
     "item": "sophisticatedstorage:iron_shulker_box"
   }

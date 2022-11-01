@@ -2,23 +2,23 @@
   "type": "minecraft:crafting_shaped",
   "conditions": [
     {
-      "itemRegistryName": "sophisticatedstorage:smoking_upgrade",
-      "type": "sophisticatedcore:item_enabled"
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:smoking_upgrade"
     }
   ],
+  "key": {
+    "L": {
+      "tag": "minecraft:logs"
+    },
+    "S": {
+      "item": "sophisticatedstorage:smelting_upgrade"
+    }
+  },
   "pattern": [
     " L ",
     "LSL",
     " L "
   ],
-  "key": {
-    "S": {
-      "item": "sophisticatedstorage:smelting_upgrade"
-    },
-    "L": {
-      "tag": "minecraft:logs"
-    }
-  },
   "result": {
     "item": "sophisticatedstorage:smoking_upgrade"
   }

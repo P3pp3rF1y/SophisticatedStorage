@@ -1,13 +1,13 @@
 {
   "parent": "minecraft:recipes/root",
-  "rewards": {
-    "recipes": [
-      "sophisticatedstorage:yellow_shulker_box_to_sophisticated"
-    ]
-  },
   "criteria": {
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "sophisticatedstorage:yellow_shulker_box_to_sophisticated"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    },
     "has_yellow_shulker_box": {
-      "trigger": "minecraft:inventory_changed",
       "conditions": {
         "items": [
           {
@@ -16,13 +16,8 @@
             ]
           }
         ]
-      }
-    },
-    "has_the_recipe": {
-      "trigger": "minecraft:recipe_unlocked",
-      "conditions": {
-        "recipe": "sophisticatedstorage:yellow_shulker_box_to_sophisticated"
-      }
+      },
+      "trigger": "minecraft:inventory_changed"
     }
   },
   "requirements": [
@@ -30,5 +25,10 @@
       "has_yellow_shulker_box",
       "has_the_recipe"
     ]
-  ]
+  ],
+  "rewards": {
+    "recipes": [
+      "sophisticatedstorage:yellow_shulker_box_to_sophisticated"
+    ]
+  }
 }

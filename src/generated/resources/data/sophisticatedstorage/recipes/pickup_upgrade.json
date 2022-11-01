@@ -2,29 +2,29 @@
   "type": "minecraft:crafting_shaped",
   "conditions": [
     {
-      "itemRegistryName": "sophisticatedstorage:pickup_upgrade",
-      "type": "sophisticatedcore:item_enabled"
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:pickup_upgrade"
     }
-  ],
-  "pattern": [
-    " P ",
-    "LBL",
-    "RRR"
   ],
   "key": {
     "B": {
       "item": "sophisticatedstorage:upgrade_base"
-    },
-    "R": {
-      "tag": "forge:dusts/redstone"
     },
     "L": {
       "tag": "minecraft:planks"
     },
     "P": {
       "item": "minecraft:sticky_piston"
+    },
+    "R": {
+      "tag": "forge:dusts/redstone"
     }
   },
+  "pattern": [
+    " P ",
+    "LBL",
+    "RRR"
+  ],
   "result": {
     "item": "sophisticatedstorage:pickup_upgrade"
   }

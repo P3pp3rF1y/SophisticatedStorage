@@ -2,14 +2,9 @@
   "type": "minecraft:crafting_shaped",
   "conditions": [
     {
-      "itemRegistryName": "sophisticatedstorage:chest",
-      "type": "sophisticatedcore:item_enabled"
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:chest"
     }
-  ],
-  "pattern": [
-    "PPP",
-    "PRP",
-    "PPP"
   ],
   "key": {
     "P": {
@@ -19,6 +14,11 @@
       "item": "minecraft:redstone_torch"
     }
   },
+  "pattern": [
+    "PPP",
+    "PRP",
+    "PPP"
+  ],
   "result": {
     "item": "sophisticatedstorage:chest",
     "nbt": "{woodType:\"crimson\"}"
