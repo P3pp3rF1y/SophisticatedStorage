@@ -2,14 +2,9 @@
   "type": "sophisticatedcore:upgrade_next_tier",
   "conditions": [
     {
-      "itemRegistryName": "sophisticatedstorage:advanced_feeding_upgrade",
-      "type": "sophisticatedcore:item_enabled"
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:advanced_feeding_upgrade"
     }
-  ],
-  "pattern": [
-    " D ",
-    "GVG",
-    "RRR"
   ],
   "key": {
     "D": {
@@ -25,6 +20,11 @@
       "item": "sophisticatedstorage:feeding_upgrade"
     }
   },
+  "pattern": [
+    " D ",
+    "GVG",
+    "RRR"
+  ],
   "result": {
     "item": "sophisticatedstorage:advanced_feeding_upgrade"
   }

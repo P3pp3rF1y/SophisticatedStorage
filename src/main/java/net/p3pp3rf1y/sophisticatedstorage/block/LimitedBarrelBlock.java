@@ -27,12 +27,12 @@ import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
-import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.TranslationHelper;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
 import net.p3pp3rf1y.sophisticatedcore.settings.SettingsHandler;
 import net.p3pp3rf1y.sophisticatedcore.settings.itemdisplay.ItemDisplaySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.settings.nosort.NoSortSettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
+import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageTranslationHelper;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.LimitedBarrelContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
@@ -94,7 +94,9 @@ public class LimitedBarrelBlock extends BarrelBlock {
 
 	@Override
 	public void appendHoverText(ItemStack stack, @Nullable BlockGetter level, List<Component> tooltip, TooltipFlag flat) {
-		tooltip.addAll(TranslationHelper.INSTANCE.getTranslatedLines(stack.getItem().getDescriptionId() + TranslationHelper.TOOLTIP_SUFFIX, null, ChatFormatting.DARK_GRAY));
+		int numberOfInventorySlots = getNumberOfInventorySlots();
+		String translationKey = numberOfInventorySlots == 1 ? "limited_barrel_singular" : "limited_barrel_plural";
+		tooltip.add(Component.translatable(StorageTranslationHelper.INSTANCE.translBlockTooltipKey(translationKey), String.valueOf(numberOfInventorySlots), String.valueOf(getBaseStackSizeMultiplier())).withStyle(ChatFormatting.DARK_GRAY));
 	}
 
 	@Nullable
@@ -118,6 +120,9 @@ public class LimitedBarrelBlock extends BarrelBlock {
 		}
 		int slot = getInteractionSlot(b.getBlockPos(), b.getBlockState(), hitResult);
 		if (b instanceof LimitedBarrelBlockEntity limitedBarrelBlockEntity) {
+			if (b.isPacked()) {
+				return false;
+			}
 			limitedBarrelBlockEntity.depositItem(player, hand, stackInHand, slot);
 		}
 		return true;
@@ -206,7 +211,7 @@ public class LimitedBarrelBlock extends BarrelBlock {
 				return false;
 			}
 
-			return be.tryToTakeItem(player, getInteractionSlot(pos, state, blockHitResult));
+			return !be.isPacked() && be.tryToTakeItem(player, getInteractionSlot(pos, state, blockHitResult));
 		}).orElse(false);
 	}
 

@@ -2,23 +2,23 @@
   "type": "sophisticatedstorage:storage_tier_upgrade",
   "conditions": [
     {
-      "itemRegistryName": "sophisticatedstorage:gold_shulker_box",
-      "type": "sophisticatedcore:item_enabled"
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:gold_shulker_box"
     }
   ],
+  "key": {
+    "G": {
+      "tag": "forge:ingots/gold"
+    },
+    "S": {
+      "item": "sophisticatedstorage:iron_shulker_box"
+    }
+  },
   "pattern": [
     "GGG",
     "GSG",
     "GGG"
   ],
-  "key": {
-    "S": {
-      "item": "sophisticatedstorage:iron_shulker_box"
-    },
-    "G": {
-      "tag": "forge:ingots/gold"
-    }
-  },
   "result": {
     "item": "sophisticatedstorage:gold_shulker_box"
   }

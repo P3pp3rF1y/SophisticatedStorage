@@ -2,23 +2,23 @@
   "type": "sophisticatedstorage:storage_tier_upgrade",
   "conditions": [
     {
-      "itemRegistryName": "sophisticatedstorage:diamond_chest",
-      "type": "sophisticatedcore:item_enabled"
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:diamond_chest"
     }
-  ],
-  "pattern": [
-    "DDD",
-    "DCD",
-    "DDD"
   ],
   "key": {
     "D": {
       "tag": "forge:gems/diamond"
     },
-    "C": {
+    "S": {
       "item": "sophisticatedstorage:gold_chest"
     }
   },
+  "pattern": [
+    "DDD",
+    "DSD",
+    "DDD"
+  ],
   "result": {
     "item": "sophisticatedstorage:diamond_chest"
   }

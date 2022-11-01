@@ -1,13 +1,7 @@
 {
   "parent": "minecraft:recipes/root",
-  "rewards": {
-    "recipes": [
-      "sophisticatedstorage:diamond_chest"
-    ]
-  },
   "criteria": {
-    "has_gold_chest": {
-      "trigger": "minecraft:inventory_changed",
+    "has_gold_gold_chest": {
       "conditions": {
         "items": [
           {
@@ -16,19 +10,25 @@
             ]
           }
         ]
-      }
+      },
+      "trigger": "minecraft:inventory_changed"
     },
     "has_the_recipe": {
-      "trigger": "minecraft:recipe_unlocked",
       "conditions": {
         "recipe": "sophisticatedstorage:diamond_chest"
-      }
+      },
+      "trigger": "minecraft:recipe_unlocked"
     }
   },
   "requirements": [
     [
-      "has_gold_chest",
+      "has_gold_gold_chest",
       "has_the_recipe"
     ]
-  ]
+  ],
+  "rewards": {
+    "recipes": [
+      "sophisticatedstorage:diamond_chest"
+    ]
+  }
 }

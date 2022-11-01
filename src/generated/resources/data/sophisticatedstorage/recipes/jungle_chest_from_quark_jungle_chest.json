@@ -2,18 +2,16 @@
   "type": "minecraft:crafting_shapeless",
   "conditions": [
     {
-      "modid": "quark",
-      "type": "forge:mod_loaded"
+      "type": "forge:mod_loaded",
+      "modid": "quark"
     },
     {
-      "itemRegistryName": "sophisticatedstorage:chest",
-      "type": "sophisticatedcore:item_enabled"
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:chest"
     }
   ],
   "ingredients": [
-    {
-      "item": "quark:jungle_chest"
-    },
+    [],
     {
       "item": "minecraft:redstone_torch"
     }

@@ -2,26 +2,26 @@
   "type": "minecraft:crafting_shaped",
   "conditions": [
     {
-      "itemRegistryName": "sophisticatedstorage:stack_upgrade_tier_3",
-      "type": "sophisticatedcore:item_enabled"
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:stack_upgrade_tier_3"
     }
   ],
+  "key": {
+    "B": {
+      "tag": "forge:storage_blocks/gold"
+    },
+    "G": {
+      "tag": "forge:ingots/gold"
+    },
+    "S": {
+      "item": "sophisticatedstorage:stack_upgrade_tier_2"
+    }
+  },
   "pattern": [
     "GGG",
     "GSG",
     "BGB"
   ],
-  "key": {
-    "S": {
-      "item": "sophisticatedstorage:stack_upgrade_tier_2"
-    },
-    "G": {
-      "tag": "forge:ingots/gold"
-    },
-    "B": {
-      "tag": "forge:storage_blocks/gold"
-    }
-  },
   "result": {
     "item": "sophisticatedstorage:stack_upgrade_tier_3"
   }

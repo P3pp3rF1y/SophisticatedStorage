@@ -2,14 +2,9 @@
   "type": "minecraft:crafting_shaped",
   "conditions": [
     {
-      "itemRegistryName": "sophisticatedstorage:basic_tier_upgrade",
-      "type": "sophisticatedcore:item_enabled"
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:basic_tier_upgrade"
     }
-  ],
-  "pattern": [
-    " S ",
-    "SRS",
-    " S "
   ],
   "key": {
     "R": {
@@ -19,6 +14,11 @@
       "item": "minecraft:stick"
     }
   },
+  "pattern": [
+    " S ",
+    "SRS",
+    " S "
+  ],
   "result": {
     "item": "sophisticatedstorage:basic_tier_upgrade"
   }
