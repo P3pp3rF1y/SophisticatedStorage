@@ -6,7 +6,7 @@
     ]
   },
   "criteria": {
-    "has_gold_barrel": {
+    "has_gold_gold_barrel": {
       "trigger": "minecraft:inventory_changed",
       "conditions": {
         "items": [
@@ -27,7 +27,7 @@
   },
   "requirements": [
     [
-      "has_gold_barrel",
+      "has_gold_gold_barrel",
       "has_the_recipe"
     ]
   ]

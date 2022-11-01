@@ -3,6 +3,8 @@ package net.p3pp3rf1y.sophisticatedstorage.block;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
+import net.minecraft.data.BlockFamilies;
+import net.minecraft.data.BlockFamily;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
@@ -26,12 +28,20 @@ import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
 
 import javax.annotation.Nullable;
-import java.util.Set;
+import java.util.Map;
 import java.util.UUID;
 import java.util.function.Supplier;
 
 public abstract class WoodStorageBlockBase extends StorageBlockBase implements IAdditionalDropDataBlock {
-	public static final Set<WoodType> CUSTOM_TEXTURE_WOOD_TYPES = Set.of(WoodType.ACACIA, WoodType.BIRCH, WoodType.CRIMSON, WoodType.DARK_OAK, WoodType.JUNGLE, WoodType.OAK, WoodType.SPRUCE, WoodType.WARPED);
+	public static final Map<WoodType, BlockFamily> CUSTOM_TEXTURE_WOOD_TYPES = Map.of(
+			WoodType.ACACIA, BlockFamilies.ACACIA_PLANKS,
+			WoodType.BIRCH, BlockFamilies.BIRCH_PLANKS,
+			WoodType.CRIMSON, BlockFamilies.CRIMSON_PLANKS,
+			WoodType.DARK_OAK, BlockFamilies.DARK_OAK_PLANKS,
+			WoodType.JUNGLE, BlockFamilies.JUNGLE_PLANKS,
+			WoodType.OAK, BlockFamilies.OAK_PLANKS,
+			WoodType.SPRUCE, BlockFamilies.SPRUCE_PLANKS,
+			WoodType.WARPED, BlockFamilies.WARPED_PLANKS);
 
 	protected WoodStorageBlockBase(Properties properties, Supplier<Integer> numberOfInventorySlotsSupplier, Supplier<Integer> numberOfUpgradeSlotsSupplier) {
 		super(properties, numberOfInventorySlotsSupplier, numberOfUpgradeSlotsSupplier);
@@ -74,7 +84,7 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 
 	@Override
 	public void fillItemCategory(CreativeModeTab tab, NonNullList<ItemStack> items) {
-		CUSTOM_TEXTURE_WOOD_TYPES.forEach(woodType -> items.add(WoodStorageBlockItem.setWoodType(new ItemStack(this), woodType)));
+		CUSTOM_TEXTURE_WOOD_TYPES.keySet().forEach(woodType -> items.add(WoodStorageBlockItem.setWoodType(new ItemStack(this), woodType)));
 
 		if (isBasicTier() || Boolean.TRUE.equals(Config.CLIENT.showHigherTierTintedVariants.get())) {
 			for (DyeColor color : DyeColor.values()) {

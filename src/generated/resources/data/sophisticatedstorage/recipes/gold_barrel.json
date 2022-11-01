@@ -8,14 +8,14 @@
   ],
   "pattern": [
     "GGG",
-    "GBG",
+    "GSG",
     "GGG"
   ],
   "key": {
     "G": {
       "tag": "forge:ingots/gold"
     },
-    "B": {
+    "S": {
       "item": "sophisticatedstorage:iron_barrel"
     }
   },

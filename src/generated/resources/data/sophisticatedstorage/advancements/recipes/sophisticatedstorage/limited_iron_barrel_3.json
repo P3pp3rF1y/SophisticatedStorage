@@ -1,0 +1,34 @@
+{
+  "parent": "minecraft:recipes/root",
+  "rewards": {
+    "recipes": [
+      "sophisticatedstorage:limited_iron_barrel_3"
+    ]
+  },
+  "criteria": {
+    "has_limited_barrel_3": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "sophisticatedstorage:limited_barrel_3"
+            ]
+          }
+        ]
+      }
+    },
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "sophisticatedstorage:limited_iron_barrel_3"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_limited_barrel_3",
+      "has_the_recipe"
+    ]
+  ]
+}
