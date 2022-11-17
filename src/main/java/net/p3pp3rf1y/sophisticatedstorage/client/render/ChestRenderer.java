@@ -17,6 +17,7 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.WoodType;
@@ -58,7 +59,7 @@ public class ChestRenderer implements BlockEntityRenderer<ChestBlockEntity> {
 		return LayerDefinition.create(meshdefinition, 64, 64);
 	}
 
-	public void render(ChestBlockEntity chestEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedlight, int packedOverlay) {
+	public void render(ChestBlockEntity chestEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
 		BlockState blockstate = chestEntity.getBlockState();
 		StorageTextureManager matManager = StorageTextureManager.INSTANCE;
 		Optional<WoodType> woodType = chestEntity.getWoodType();
@@ -68,7 +69,8 @@ public class ChestRenderer implements BlockEntityRenderer<ChestBlockEntity> {
 		}
 
 		poseStack.pushPose();
-		float f = blockstate.getValue(ChestBlock.FACING).toYRot();
+		Direction facing = blockstate.getValue(ChestBlock.FACING);
+		float f = facing.toYRot();
 		poseStack.translate(0.5D, 0.5D, 0.5D);
 		poseStack.mulPose(Vector3f.YP.rotationDegrees(-f));
 		poseStack.translate(-0.5D, -0.5D, -0.5D);
@@ -83,21 +85,21 @@ public class ChestRenderer implements BlockEntityRenderer<ChestBlockEntity> {
 
 		if (woodType.isPresent() || !(hasMainColor && hasAccentColor)) {
 			VertexConsumer vertexconsumer = chestMaterials.get(StorageTextureManager.ChestMaterial.BASE).buffer(bufferSource, RenderType::entityCutout);
-			renderBottomAndLid(poseStack, vertexconsumer, finalLidAngle, packedlight, packedOverlay);
+			renderBottomAndLid(poseStack, vertexconsumer, finalLidAngle, packedLight, packedOverlay);
 		}
 		if (hasMainColor) {
 			VertexConsumer vertexconsumer = chestMaterials.get(StorageTextureManager.ChestMaterial.TINTABLE_MAIN).buffer(bufferSource, RenderType::entityCutout);
-			renderBottomAndLidWithTint(poseStack, vertexconsumer, lidAngle, packedlight, packedOverlay, storageWrapper.getMainColor());
+			renderBottomAndLidWithTint(poseStack, vertexconsumer, lidAngle, packedLight, packedOverlay, storageWrapper.getMainColor());
 		}
 		if (hasAccentColor) {
 			VertexConsumer vertexconsumer = chestMaterials.get(StorageTextureManager.ChestMaterial.TINTABLE_ACCENT).buffer(bufferSource, RenderType::entityCutout);
-			renderBottomAndLidWithTint(poseStack, vertexconsumer, lidAngle, packedlight, packedOverlay, storageWrapper.getAccentColor());
+			renderBottomAndLidWithTint(poseStack, vertexconsumer, lidAngle, packedLight, packedOverlay, storageWrapper.getAccentColor());
 		}
 		Material tierMaterial = getTierMaterial(chestMaterials, blockstate.getBlock());
 		VertexConsumer vertexconsumer = tierMaterial.buffer(bufferSource, RenderType::entityCutout);
-		renderBottomAndLid(poseStack, vertexconsumer, lidAngle, packedlight, packedOverlay);
+		renderBottomAndLid(poseStack, vertexconsumer, lidAngle, packedLight, packedOverlay);
 		if (storageWrapper.getRenderInfo().getItemDisplayRenderInfo().getDisplayItem().isEmpty()) {
-			renderLock(poseStack, vertexconsumer, lidAngle, packedlight, packedOverlay);
+			renderLock(poseStack, vertexconsumer, lidAngle, packedLight, packedOverlay);
 		}
 		poseStack.popPose();
 
@@ -106,10 +108,11 @@ public class ChestRenderer implements BlockEntityRenderer<ChestBlockEntity> {
 			poseStack.pushPose();
 			poseStack.translate(-0.005D, -0.005D, -0.005D);
 			poseStack.scale(1.01f, 1.01f, 1.01f);
-			renderBottomAndLid(poseStack, consumer, finalLidAngle, packedlight, packedOverlay);
+			renderBottomAndLid(poseStack, consumer, finalLidAngle, packedLight, packedOverlay);
 			poseStack.popPose();
 		} else if (shouldRenderDisplayItem(chestEntity.getBlockPos())) {
-			displayItemRenderer.renderDisplayItem(chestEntity, poseStack, bufferSource, packedlight, packedOverlay);
+			LockRenderer.renderLock(chestEntity, facing, poseStack, bufferSource, packedLight, packedOverlay, 5F / 16F, 7F / 16F);
+			displayItemRenderer.renderDisplayItem(chestEntity, poseStack, bufferSource, packedLight, packedOverlay);
 		}
 	}
 

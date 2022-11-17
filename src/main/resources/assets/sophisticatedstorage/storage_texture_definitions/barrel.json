@@ -13,7 +13,8 @@
             "tintable_main": "sophisticatedstorage:block/barrel_top_tintable_main",
             "tintable_main_open": "sophisticatedstorage:block/barrel_top_tintable_main_open",
             "tintable_accent": "sophisticatedstorage:block/barrel_top_tintable_accent",
-            "packed": "sophisticatedstorage:block/barrel_top_packed"
+            "packed": "sophisticatedstorage:block/barrel_top_packed",
+            "locked": "sophisticatedstorage:block/lock"
         },
         "side": {
             "base": "sophisticatedstorage:block/acacia_barrel_side",
@@ -25,8 +26,8 @@
             "netherite_tier": "sophisticatedstorage:block/netherite_barrel_side",
             "tintable_main": "sophisticatedstorage:block/barrel_side_tintable_main",
             "tintable_accent": "sophisticatedstorage:block/barrel_side_tintable_accent",
-            "packed": "sophisticatedstorage:block/barrel_side_packed"
-
+            "packed": "sophisticatedstorage:block/barrel_side_packed",
+            "locked": "sophisticatedstorage:block/lock"
         },
         "bottom": {
             "base": "sophisticatedstorage:block/acacia_barrel_bottom",
@@ -37,7 +38,8 @@
             "netherite_tier": "sophisticatedstorage:block/netherite_barrel_bottom",
             "tintable_main": "sophisticatedstorage:block/barrel_bottom_tintable_main",
             "tintable_accent": "sophisticatedstorage:block/barrel_bottom_tintable_accent",
-            "packed": "sophisticatedstorage:block/barrel_bottom_packed"
+            "packed": "sophisticatedstorage:block/barrel_bottom_packed",
+            "locked": "sophisticatedstorage:block/lock"
         }
     }
 }

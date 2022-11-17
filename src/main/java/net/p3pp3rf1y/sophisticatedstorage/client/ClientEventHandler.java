@@ -6,6 +6,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.MouseHandler;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.model.geom.ModelLayerLocation;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
@@ -14,9 +15,11 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.client.event.EntityRenderersEvent;
+import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.client.event.ModelEvent;
 import net.minecraftforge.client.event.RegisterClientTooltipComponentFactoriesEvent;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
@@ -48,11 +51,14 @@ import net.p3pp3rf1y.sophisticatedstorage.client.render.ClientStorageContentsToo
 import net.p3pp3rf1y.sophisticatedstorage.client.render.ControllerRenderer;
 import net.p3pp3rf1y.sophisticatedstorage.client.render.LimitedBarrelDynamicModel;
 import net.p3pp3rf1y.sophisticatedstorage.client.render.LimitedBarrelRenderer;
+import net.p3pp3rf1y.sophisticatedstorage.client.render.LockRenderer;
 import net.p3pp3rf1y.sophisticatedstorage.client.render.ShulkerBoxDynamicModel;
 import net.p3pp3rf1y.sophisticatedstorage.client.render.ShulkerBoxRenderer;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
+import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageContentsTooltip;
+import net.p3pp3rf1y.sophisticatedstorage.network.ScrolledToolMessage;
 
 import static net.minecraftforge.client.settings.KeyConflictContext.GUI;
 
@@ -99,6 +105,25 @@ public class ClientEventHandler {
 		eventBus.addListener(EventPriority.HIGH, ClientEventHandler::handleGuiMouseKeyPress);
 		eventBus.addListener(EventPriority.HIGH, ClientEventHandler::handleGuiKeyPress);
 		eventBus.addListener(ClientEventHandler::onLimitedBarrelClicked);
+		eventBus.addListener(ClientEventHandler::onMouseScrolled);
+	}
+
+
+	private static void onMouseScrolled(InputEvent.MouseScrollingEvent evt) {
+		Minecraft mc = Minecraft.getInstance();
+		if (mc.screen != null || !Screen.hasShiftDown()) {
+			return;
+		}
+		LocalPlayer player = mc.player;
+		if (player == null) {
+			return;
+		}
+		ItemStack stack = player.getMainHandItem();
+		if (stack.getItem() != ModItems.STORAGE_TOOL.get()) {
+			return;
+		}
+		SophisticatedStorage.PACKET_HANDLER.sendToServer(new ScrolledToolMessage(evt.getScrollDelta() > 0));
+		evt.setCanceled(true);
 	}
 
 	private static void onLimitedBarrelClicked(PlayerInteractEvent.LeftClickBlock event) {
@@ -180,6 +205,7 @@ public class ClientEventHandler {
 		stitchBlockAtlasTextures(event);
 		stitchChestTextures(event);
 		stitchShulkerBoxTextures(event);
+		event.addSprite(LockRenderer.LOCK_TEXTURE.texture());
 	}
 
 	private static void stitchShulkerBoxTextures(TextureStitchEvent.Pre event) {

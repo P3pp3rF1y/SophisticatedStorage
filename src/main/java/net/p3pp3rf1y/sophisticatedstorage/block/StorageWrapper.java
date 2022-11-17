@@ -239,6 +239,11 @@ public abstract class StorageWrapper implements IStorageWrapper {
 			}
 		};
 		inventoryHandler.addListener(getSettingsHandler().getTypeCategory(ItemDisplaySettingsCategory.class)::itemChanged);
+		inventoryHandler.getSlotTracker().setShouldInsertIntoEmpty(this::emptyInventorySlotsAcceptItems);
+	}
+
+	protected boolean emptyInventorySlotsAcceptItems() {
+		return true;
 	}
 
 	protected CompoundTag getContentsNbt() {
