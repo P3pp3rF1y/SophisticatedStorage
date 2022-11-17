@@ -25,6 +25,7 @@ import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
+import net.p3pp3rf1y.sophisticatedstorage.item.StorageToolItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
 
 import javax.annotation.Nullable;
@@ -134,6 +135,10 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 			StorageBlockItem.getAccentColorFromStack(stack).ifPresent(be.getStorageWrapper()::setAccentColor);
 
 			be.tryToAddToController();
+
+			if (placer != null && placer.getOffhandItem().getItem() == ModItems.STORAGE_TOOL.get()) {
+				StorageToolItem.useOffHandOnPlaced(placer.getOffhandItem(), be);
+			}
 		});
 	}
 
