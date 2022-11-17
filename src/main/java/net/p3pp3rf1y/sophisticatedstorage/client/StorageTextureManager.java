@@ -330,7 +330,8 @@ public class StorageTextureManager extends SimpleJsonResourceReloadListener {
 		TINTABLE_ACCENT_2,
 		TINTABLE_ACCENT_3,
 		TINTABLE_ACCENT_4,
-		PACKED;
+		PACKED,
+		LOCK;
 
 		public static Optional<BarrelMaterial> fromString(String textureName) {
 			for (BarrelMaterial value : values()) {

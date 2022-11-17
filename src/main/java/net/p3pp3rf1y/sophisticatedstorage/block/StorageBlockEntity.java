@@ -24,6 +24,8 @@ import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.p3pp3rf1y.sophisticatedcore.controller.IControllableStorage;
 import net.p3pp3rf1y.sophisticatedcore.controller.ILinkable;
+import net.p3pp3rf1y.sophisticatedcore.settings.itemdisplay.ItemDisplaySettingsCategory;
+import net.p3pp3rf1y.sophisticatedcore.settings.memory.MemorySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.ITickableUpgrade;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
@@ -37,7 +39,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
-public abstract class StorageBlockEntity extends BlockEntity implements IControllableStorage, ILinkable {
+public abstract class StorageBlockEntity extends BlockEntity implements IControllableStorage, ILinkable, ILockable {
 	public static final String STORAGE_WRAPPER_TAG = "storageWrapper";
 	private final StorageWrapper storageWrapper;
 	@Nullable
@@ -57,6 +59,7 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 
 	@Nullable
 	private LazyOptional<IItemHandler> itemHandlerCap;
+	private boolean locked = false;
 
 	protected StorageBlockEntity(BlockPos pos, BlockState state, BlockEntityType<? extends StorageBlockEntity> blockEntityType) {
 		super(blockEntityType, pos, state);
@@ -112,6 +115,11 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 			public int getBaseStackSizeMultiplier() {
 				return getBlockState().getBlock() instanceof IStorageBlock storageBlock ? storageBlock.getBaseStackSizeMultiplier() : super.getBaseStackSizeMultiplier();
 			}
+
+			@Override
+			protected boolean emptyInventorySlotsAcceptItems() {
+				return !locked;
+			}
 		};
 		storageWrapper.setUpgradeCachesInvalidatedHandler(this::onUpgradeCachesInvalidated);
 	}
@@ -132,11 +140,14 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 	public void saveAdditional(CompoundTag tag) {
 		super.saveAdditional(tag);
 		saveStorageWrapper(tag);
-		saveData(tag);
+		saveSynchronizedData(tag);
 		saveControllerPos(tag);
 		if (isLinkedToController) {
 			tag.putBoolean("isLinkedToController", isLinkedToController);
 		}
+		//TODO save and load for showing counts
+		//TODO save and load for showing lock
+
 	}
 
 	private void saveStorageWrapper(CompoundTag tag) {
@@ -147,12 +158,15 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		tag.put(STORAGE_WRAPPER_TAG, storageWrapper.saveData(new CompoundTag()));
 	}
 
-	protected void saveData(CompoundTag tag) {
+	protected void saveSynchronizedData(CompoundTag tag) {
 		if (displayName != null) {
 			tag.putString("displayName", Component.Serializer.toJson(displayName));
 		}
 		if (updateBlockRender) {
 			tag.putBoolean("updateBlockRender", true);
+		}
+		if (locked) {
+			tag.putBoolean("locked", locked);
 		}
 	}
 
@@ -190,7 +204,7 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 	public void load(CompoundTag tag) {
 		super.load(tag);
 		loadStorageWrapper(tag);
-		loadData(tag);
+		loadSynchronizedData(tag);
 		loadControllerPos(tag);
 
 		if (level != null && !level.isClientSide()) {
@@ -210,7 +224,7 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		registerWithControllerOnLoad();
 	}
 
-	public void loadData(CompoundTag tag) {
+	public void loadSynchronizedData(CompoundTag tag) {
 		displayName = NBTHelper.getComponent(tag, "displayName").orElse(null);
 		if (level != null && level.isClientSide) {
 			if (tag.getBoolean("updateBlockRender")) {
@@ -219,6 +233,7 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		} else {
 			updateBlockRender = true;
 		}
+		locked = NBTHelper.getBoolean(tag, "locked").orElse(false);
 	}
 
 	@Override
@@ -250,7 +265,7 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		}
 
 		loadStorageWrapper(tag);
-		loadData(tag);
+		loadSynchronizedData(tag);
 	}
 
 	public void setUpdateBlockRender() {
@@ -261,7 +276,7 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 	public CompoundTag getUpdateTag() {
 		CompoundTag tag = super.getUpdateTag();
 		saveStorageWrapperClientData(tag);
-		saveData(tag);
+		saveSynchronizedData(tag);
 		return tag;
 	}
 
@@ -407,5 +422,42 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 
 	public void setBeingUpgraded() {
 		isBeingUpgraded = true;
+	}
+
+	@Override
+	public boolean isLocked() {
+		return locked;
+	}
+
+	@Override
+	public void toggleLock() {
+		if (locked) {
+			unlock();
+		} else {
+			lock();
+		}
+	}
+
+	private void lock() {
+		locked = true;
+		getStorageWrapper().getSettingsHandler().getTypeCategory(MemorySettingsCategory.class).selectSlots(0, getStorageWrapper().getInventoryHandler().getSlots());
+		updateEmptySlots();
+		setChanged();
+		WorldHelper.notifyBlockUpdate(this);
+	}
+
+	private void unlock() {
+		locked = false;
+		getStorageWrapper().getSettingsHandler().getTypeCategory(MemorySettingsCategory.class).unselectAllSlots();
+		ItemDisplaySettingsCategory itemDisplaySettings = getStorageWrapper().getSettingsHandler().getTypeCategory(ItemDisplaySettingsCategory.class);
+		InventoryHelper.iterate(getStorageWrapper().getInventoryHandler(), (slot, stack) -> {
+			if (stack.isEmpty()) {
+				itemDisplaySettings.itemChanged(slot);
+			}
+		});
+		updateEmptySlots();
+		setChanged();
+		setUpdateBlockRender();
+		WorldHelper.notifyBlockUpdate(this);
 	}
 }

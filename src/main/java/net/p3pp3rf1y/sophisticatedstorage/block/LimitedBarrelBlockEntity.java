@@ -11,6 +11,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
 import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryHandler;
+import net.p3pp3rf1y.sophisticatedcore.settings.memory.MemorySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.RandHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
@@ -18,6 +19,7 @@ import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 
 public class LimitedBarrelBlockEntity extends BarrelBlockEntity {
 	private static final String SLOT_COUNTS_TAG = "slotCounts";
@@ -55,15 +57,21 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity {
 		ItemStack stackInSlot = invHandler.getStackInSlot(slot);
 		ItemStack result = stackInHand;
 
+		MemorySettingsCategory memorySettings = getStorageWrapper().getSettingsHandler().getTypeCategory(MemorySettingsCategory.class);
+
 		if (doubleClick) {
+			Predicate<ItemStack> memoryItemMatches = memorySettings.getSlotFilterItem(slot).map(item -> (Predicate<ItemStack>) itemStack -> itemStack.getItem() == item).orElse(s -> false);
 			player.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null).ifPresent(
-					playerInventory -> InventoryHelper.transferIntoSlot(playerInventory, getStorageWrapper().getInventoryHandler(), slot, s -> ItemHandlerHelper.canItemStacksStack(stackInSlot, s)));
+					playerInventory -> InventoryHelper.transferIntoSlot(playerInventory, getStorageWrapper().getInventoryHandler(), slot, s -> memoryItemMatches.test(s) || ItemHandlerHelper.canItemStacksStack(stackInSlot, s)));
 			return;
 		}
 
-		if (stackInSlot.isEmpty()) {
+		if (stackInSlot.isEmpty() && (!memorySettings.isSlotSelected(slot) || memorySettings.matchesFilter(slot, result)))  {
 			result = result.copy();
 			invHandler.setStackInSlot(slot, result.split(Math.min(result.getCount(), invHandler.getStackLimit(slot, result))));
+			if (isLocked()) {
+				memorySettings.selectSlot(slot);
+			}
 		} else if (ItemHandlerHelper.canItemStacksStack(stackInSlot, result)) {
 			result = invHandler.insertItem(slot, result, false);
 		}
@@ -106,8 +114,8 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity {
 	}
 
 	@Override
-	public void loadData(CompoundTag tag) {
-		super.loadData(tag);
+	public void loadSynchronizedData(CompoundTag tag) {
+		super.loadSynchronizedData(tag);
 		if (!tag.contains(SLOT_COUNTS_TAG)) {
 			return;
 		}

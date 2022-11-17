@@ -78,4 +78,10 @@ public class BarrelBlockEntity extends WoodStorageBlockEntity {
 	public boolean hasFullyDynamicRenderer() {
 		return dynamicRenderTracker.isFullyDynamicRenderer();
 	}
+
+	@Override
+	public void toggleLock() {
+		setUpdateBlockRender();
+		super.toggleLock();
+	}
 }

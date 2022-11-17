@@ -141,6 +141,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 	private static final Cache<Integer, QuadTransformer> DIRECTION_MOVE_BACK_TO_SIDE = CacheBuilder.newBuilder().expireAfterAccess(10L, TimeUnit.MINUTES).build();
 	private static final ModelProperty<String> WOOD_NAME = new ModelProperty<>();
 	private static final ModelProperty<Boolean> IS_PACKED = new ModelProperty<>();
+	private static final ModelProperty<Boolean> IS_LOCKED = new ModelProperty<>();
 	private static final ModelProperty<Boolean> HAS_MAIN_COLOR = new ModelProperty<>();
 	private static final ModelProperty<Boolean> HAS_ACCENT_COLOR = new ModelProperty<>();
 	private static final ModelProperty<List<RenderInfo.DisplayItem>> DISPLAY_ITEMS = new ModelProperty<>();
@@ -237,6 +238,9 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 		if (isPacked) {
 			addPartQuads(state, side, rand, ret, modelParts, BarrelModelPart.PACKED);
 		} else {
+			if (isLocked(extraData)) {
+				addPartQuads(state, side, rand, ret, modelParts, BarrelModelPart.LOCK);
+			}
 			addDisplayItemQuads(state, side, rand, ret, extraData);
 		}
 
@@ -249,6 +253,10 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 
 	private boolean isPacked(IModelData extraData) {
 		return extraData.hasProperty(IS_PACKED) && Boolean.TRUE.equals(extraData.getData(IS_PACKED));
+	}
+
+	private boolean isLocked(IModelData extraData) {
+		return extraData.hasProperty(IS_LOCKED) && Boolean.TRUE.equals(extraData.getData(IS_LOCKED));
 	}
 
 	private void addTierQuads(@Nullable BlockState state, @Nullable Direction side, Random rand, List<BakedQuad> ret, Map<BarrelModelPart, BakedModel> modelParts) {
@@ -284,6 +292,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 		hash = hash * 31 + (data.hasProperty(HAS_MAIN_COLOR) && Boolean.TRUE.equals(data.getData(HAS_MAIN_COLOR)) ? 1 : 0);
 		hash = hash * 31 + (data.hasProperty(HAS_ACCENT_COLOR) && Boolean.TRUE.equals(data.getData(HAS_ACCENT_COLOR)) ? 1 : 0);
 		hash = hash * 31 + (isPacked(data) ? 1 : 0);
+		hash = hash * 31 + (isLocked(data) ? 1 : 0);
 		return hash;
 	}
 
@@ -513,6 +522,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 						builder.withInitial(DISPLAY_ITEMS, be.getStorageWrapper().getRenderInfo().getItemDisplayRenderInfo().getDisplayItems());
 					}
 					builder.withInitial(IS_PACKED, be.isPacked());
+					builder.withInitial(IS_LOCKED, be.isLocked());
 					Optional<WoodType> woodType = be.getWoodType();
 					if (woodType.isPresent() || !(hasMainColor && hasAccentColor)) {
 						builder.withInitial(WOOD_NAME, woodType.orElse(WoodType.ACACIA).name());

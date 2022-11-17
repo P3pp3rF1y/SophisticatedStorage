@@ -80,6 +80,7 @@ public class ShulkerBoxRenderer implements BlockEntityRenderer<ShulkerBoxBlockEn
 		poseStack.popPose();
 
 		displayItemRenderer.renderDisplayItem(blockEntity, poseStack, bufferSource, packedLight, packedOverlay);
+		LockRenderer.renderLock(blockEntity, direction, poseStack, bufferSource, packedLight, packedOverlay, 7F/16F, 0.5F);
 	}
 
 	private Material getTierMaterial(Block block) {

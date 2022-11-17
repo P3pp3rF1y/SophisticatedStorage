@@ -9,9 +9,13 @@ import net.minecraft.world.phys.AABB;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.p3pp3rf1y.sophisticatedcore.controller.ControllerBlockEntityBase;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
+import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 
-public class ControllerBlockEntity extends ControllerBlockEntityBase {
+import java.util.HashSet;
+import java.util.Set;
+
+public class ControllerBlockEntity extends ControllerBlockEntityBase implements ILockable {
 	private long lastDepositTime = -100;
 
 	public ControllerBlockEntity(BlockPos pos, BlockState state) {
@@ -42,5 +46,29 @@ public class ControllerBlockEntity extends ControllerBlockEntityBase {
 		if (!itemInHand.isEmpty() && hasStack(itemInHand)) {
 			player.setItemInHand(hand, insertItem(0, itemInHand, false));
 		}
+	}
+
+	@Override
+	public void toggleLock() {
+		Set<ILockable> unlockedStorages = new HashSet<>();
+		Set<ILockable> lockedStorages = new HashSet<>();
+		getStoragePositions().forEach(storagePosition -> WorldHelper.getLoadedBlockEntity(level, storagePosition, ILockable.class).ifPresent(lockable -> {
+			if (lockable.isLocked()) {
+				lockedStorages.add(lockable);
+			} else {
+				unlockedStorages.add(lockable);
+			}
+		}));
+
+		if (unlockedStorages.isEmpty()) {
+			lockedStorages.forEach(ILockable::toggleLock);
+		} else {
+			unlockedStorages.forEach(ILockable::toggleLock);
+		}
+	}
+
+	@Override
+	public boolean isLocked() {
+		return false;
 	}
 }
