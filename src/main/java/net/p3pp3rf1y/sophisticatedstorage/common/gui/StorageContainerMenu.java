@@ -14,6 +14,7 @@ import net.minecraftforge.network.NetworkHooks;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.ISyncedContainer;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.StorageContainerMenuBase;
+import net.p3pp3rf1y.sophisticatedcore.settings.memory.MemorySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeHandler;
 import net.p3pp3rf1y.sophisticatedcore.util.NoopStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
@@ -96,5 +97,17 @@ public class StorageContainerMenu extends StorageContainerMenuBase<IStorageWrapp
 		return be instanceof StorageBlockEntity
 				&& (player.distanceToSqr(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D) <= 64.0D)
 				&& (!(be instanceof WoodStorageBlockEntity woodStorageBlockEntity) || !woodStorageBlockEntity.isPacked());
+	}
+
+	@Override
+	protected void onStorageInventorySlotSet(int slotIndex) {
+		super.onStorageInventorySlotSet(slotIndex);
+
+		if (getStorageBlockEntity().isLocked() && !getSlot(slotIndex).getItem().isEmpty()) {
+			MemorySettingsCategory memorySettings = getStorageWrapper().getSettingsHandler().getTypeCategory(MemorySettingsCategory.class);
+			if (!memorySettings.isSlotSelected(slotIndex)) {
+				memorySettings.selectSlot(slotIndex);
+			}
+		}
 	}
 }

@@ -2,6 +2,7 @@ package net.p3pp3rf1y.sophisticatedstorage.item;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
@@ -16,6 +17,7 @@ import net.p3pp3rf1y.sophisticatedcore.util.ItemBase;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
+import net.p3pp3rf1y.sophisticatedstorage.block.ILockable;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageTranslationHelper;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 
@@ -24,28 +26,54 @@ import java.util.Optional;
 public class StorageToolItem extends ItemBase {
 
 	private static final String CONTROLLER_POS_TAG = "controllerPos";
+	private static final String MODE_TAG = "mode";
 
 	public StorageToolItem() {
 		super(new Item.Properties().stacksTo(1), SophisticatedStorage.CREATIVE_TAB);
 	}
 
 	@Override
-	public InteractionResult useOn(UseOnContext context) {
+	public InteractionResult onItemUseFirst(ItemStack tool, UseOnContext context) {
 		BlockPos pos = context.getClickedPos();
 		Level level = context.getLevel();
 		Block blockClicked = level.getBlockState(pos).getBlock();
-		ItemStack tool = context.getItemInHand();
+		Mode mode = getMode(tool);
+		switch (mode) {
+			case LINK -> {
+				if (tryLinking(pos, level, blockClicked, tool)) {
+					return InteractionResult.SUCCESS;
+				}
+			}
+			case LOCK -> {
+				if (tryLocking(pos, level)) {
+					return InteractionResult.SUCCESS;
+				}
+			}
+		}
+		//TODO add code to show/hide stuff
+		return super.onItemUseFirst(tool, context);
+	}
+
+	private boolean tryLocking(BlockPos pos, Level level) {
+		return WorldHelper.getLoadedBlockEntity(level, pos, ILockable.class).map(lockable -> {
+			if (level.isClientSide()) {
+				return true;
+			}
+
+			lockable.toggleLock();
+			return true;
+		}).orElse(false);
+	}
+
+	private boolean tryLinking(BlockPos pos, Level level, Block blockClicked, ItemStack tool) {
 		if (blockClicked == ModBlocks.CONTROLLER.get()) {
 			setControllerLink(tool, pos);
-			return InteractionResult.SUCCESS;
+			return true;
 		}
-		if (WorldHelper.getBlockEntity(level, pos, ILinkable.class).map(linkable -> {
+		return WorldHelper.getBlockEntity(level, pos, ILinkable.class).map(linkable -> {
 			getControllerLink(tool).ifPresentOrElse(linkable::linkToController, linkable::unlinkFromController);
 			return true;
-		}).orElse(false)) {
-			return InteractionResult.SUCCESS;
-		}
-		return super.useOn(context);
+		}).orElse(false);
 	}
 
 	@Override
@@ -74,7 +102,43 @@ public class StorageToolItem extends ItemBase {
 	}
 
 	public static Component getOverlayMessage(ItemStack tool) {
-		return getControllerLink(tool).map(controllerPos -> StorageTranslationHelper.INSTANCE.translItemOverlayMessage(tool.getItem(), "linking", controllerPos.getX(), controllerPos.getY(), controllerPos.getZ()))
-				.orElseGet(() -> StorageTranslationHelper.INSTANCE.translItemOverlayMessage(tool.getItem(), "unlinking"));
+		Mode mode = getMode(tool);
+		Item item = tool.getItem();
+		return switch (mode) {
+			case LINK -> getControllerLink(tool).map(controllerPos -> StorageTranslationHelper.INSTANCE.translItemOverlayMessage(item, "linking", controllerPos.getX(), controllerPos.getY(), controllerPos.getZ()))
+					.orElseGet(() -> StorageTranslationHelper.INSTANCE.translItemOverlayMessage(item, "unlinking"));
+			case LOCK -> StorageTranslationHelper.INSTANCE.translItemOverlayMessage(item, "toggling_lock");
+			case LOCK_DISPLAY -> StorageTranslationHelper.INSTANCE.translItemOverlayMessage(item, "toggling_lock_display");
+			case COUNT_DISPLAY -> StorageTranslationHelper.INSTANCE.translItemOverlayMessage(item, "toggling_count_display");
+		};
 	}
+
+	public static Mode getMode(ItemStack tool) {
+		return NBTHelper.getEnumConstant(tool, MODE_TAG, Mode::valueOf).orElse(Mode.LINK);
+	}
+
+	public static void cycleMode(ItemStack tool, boolean next) {
+		NBTHelper.setEnumConstant(tool, MODE_TAG, (next ? getMode(tool).next() : getMode(tool).previous()));
+	}
+
+	public enum Mode implements StringRepresentable {
+		LINK,
+		LOCK,
+		COUNT_DISPLAY,
+		LOCK_DISPLAY;
+
+		public Mode next() {
+			return values()[(ordinal() + 1) % values().length];
+		}
+
+		public Mode previous() {
+			return values()[Math.floorMod(ordinal() - 1, values().length)];
+		}
+
+		@Override
+		public String getSerializedName() {
+			return name();
+		}
+	}
+
 }

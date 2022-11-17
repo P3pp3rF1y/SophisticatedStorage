@@ -30,8 +30,8 @@ public abstract class WoodStorageBlockEntity extends StorageBlockEntity {
 	}
 
 	@Override
-	protected void saveData(CompoundTag tag) {
-		super.saveData(tag);
+	protected void saveSynchronizedData(CompoundTag tag) {
+		super.saveSynchronizedData(tag);
 		if (woodType != null) {
 			tag.putString("woodType", woodType.name());
 		}
@@ -45,8 +45,8 @@ public abstract class WoodStorageBlockEntity extends StorageBlockEntity {
 	}
 
 	@Override
-	public void loadData(CompoundTag tag) {
-		super.loadData(tag);
+	public void loadSynchronizedData(CompoundTag tag) {
+		super.loadSynchronizedData(tag);
 		woodType = NBTHelper.getString(tag, "woodType").flatMap(woodTypeName -> WoodType.values().filter(wt -> wt.name().equals(woodTypeName)).findFirst())
 				.orElse(getStorageWrapper().hasMainColor() && getStorageWrapper().hasAccentColor() ? null : WoodType.ACACIA);
 		packed = tag.getBoolean(PACKED_TAG);

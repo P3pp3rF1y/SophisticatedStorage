@@ -60,7 +60,8 @@ public enum BarrelModelPart {
 				case NETHERITE -> new StorageTextureManager.BarrelMaterial[] {StorageTextureManager.BarrelMaterial.NETHERITE_TIER};
 			}
 	),
-	PACKED(Constants.CUBE_BOTTOM_TOP, StorageTextureManager.BarrelMaterial.PACKED);
+	PACKED(Constants.CUBE_BOTTOM_TOP, StorageTextureManager.BarrelMaterial.PACKED),
+	LOCK(SophisticatedStorage.getRL(Constants.BLOCK_BARREL_LOCK), StorageTextureManager.BarrelMaterial.LOCK);
 
 	public final ResourceLocation modelName;
 	private final boolean regularBarrelPart;
@@ -121,5 +122,6 @@ public enum BarrelModelPart {
 		private static final String BLOCK_BARREL_TINTABLE_ACCENT = "block/barrel_tintable_accent";
 		private static final String BLOCK_BARREL_TINTABLE_MAIN = "block/barrel_tintable_main";
 		private static final String BLOCK_LIMITED_BARREL_TINTABLE_MAIN = "block/limited_barrel_tintable_main";
+		private static final String BLOCK_BARREL_LOCK = "block/barrel_lock";
 	}
 }
