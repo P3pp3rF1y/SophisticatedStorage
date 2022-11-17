@@ -51,7 +51,9 @@ import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
+import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.item.ShulkerBoxItem;
+import net.p3pp3rf1y.sophisticatedstorage.item.StorageToolItem;
 
 import javax.annotation.Nullable;
 import java.util.UUID;
@@ -132,6 +134,10 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 			}
 
 			be.tryToAddToController();
+
+			if (placer != null && placer.getOffhandItem().getItem() == ModItems.STORAGE_TOOL.get()) {
+				StorageToolItem.useOffHandOnPlaced(placer.getOffhandItem(), be);
+			}
 
 			be.setChanged();
 		});

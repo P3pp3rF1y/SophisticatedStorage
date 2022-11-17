@@ -383,6 +383,10 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 
 	@Override
 	public void linkToController(BlockPos controllerPos) {
+		if (getControllerPos().isPresent()) {
+			return;
+		}
+
 		isLinkedToController = true;
 		ILinkable.super.linkToController(controllerPos);
 		setChanged();

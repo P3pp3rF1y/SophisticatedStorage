@@ -18,6 +18,7 @@ import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.ILockable;
+import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageTranslationHelper;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 
@@ -30,6 +31,19 @@ public class StorageToolItem extends ItemBase {
 
 	public StorageToolItem() {
 		super(new Item.Properties().stacksTo(1), SophisticatedStorage.CREATIVE_TAB);
+	}
+
+	public static void useOffHandOnPlaced(ItemStack tool, StorageBlockEntity be) {
+		if (be.getLevel().isClientSide()) {
+			return;
+		}
+		Mode mode = getMode(tool);
+
+		if (mode == Mode.LINK) {
+			getControllerLink(tool).ifPresentOrElse(be::linkToController, be::unlinkFromController);
+		} else if (mode == Mode.LOCK) {
+			be.toggleLock();
+		}
 	}
 
 	@Override
@@ -105,8 +119,9 @@ public class StorageToolItem extends ItemBase {
 		Mode mode = getMode(tool);
 		Item item = tool.getItem();
 		return switch (mode) {
-			case LINK -> getControllerLink(tool).map(controllerPos -> StorageTranslationHelper.INSTANCE.translItemOverlayMessage(item, "linking", controllerPos.getX(), controllerPos.getY(), controllerPos.getZ()))
-					.orElseGet(() -> StorageTranslationHelper.INSTANCE.translItemOverlayMessage(item, "unlinking"));
+			case LINK ->
+					getControllerLink(tool).map(controllerPos -> StorageTranslationHelper.INSTANCE.translItemOverlayMessage(item, "linking", controllerPos.getX(), controllerPos.getY(), controllerPos.getZ()))
+							.orElseGet(() -> StorageTranslationHelper.INSTANCE.translItemOverlayMessage(item, "unlinking"));
 			case LOCK -> StorageTranslationHelper.INSTANCE.translItemOverlayMessage(item, "toggling_lock");
 			case LOCK_DISPLAY -> StorageTranslationHelper.INSTANCE.translItemOverlayMessage(item, "toggling_lock_display");
 			case COUNT_DISPLAY -> StorageTranslationHelper.INSTANCE.translItemOverlayMessage(item, "toggling_count_display");
