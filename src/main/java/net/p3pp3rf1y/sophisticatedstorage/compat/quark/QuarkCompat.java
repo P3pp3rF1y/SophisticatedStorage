@@ -31,9 +31,9 @@ public class QuarkCompat implements ICompat {
 			Block chest = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(CompatModIds.QUARK, name));
 			if (chest != null) {
 				StorageTierUpgradeItem.addTierUpgradeDefinition(StorageTierUpgradeItem.TierUpgrade.BASIC, chest,
-						new StorageTierUpgradeItem.VanillaTierUpgradeDefinition<>(ChestBlock.FACING, ChestBlockEntity.class, chestBlockEntity -> chestBlockEntity.openersCounter.getOpenerCount() > 0, ModBlocks.CHEST.get(), woodType));
+						new StorageTierUpgradeItem.VanillaTierUpgradeDefinition<>(ChestBlockEntity.class, chestBlockEntity -> chestBlockEntity.openersCounter.getOpenerCount() > 0, ModBlocks.CHEST.get(), woodType, ChestBlock.FACING));
 				StorageTierUpgradeItem.addTierUpgradeDefinition(StorageTierUpgradeItem.TierUpgrade.BASIC_TO_IRON, chest,
-						new StorageTierUpgradeItem.VanillaTierUpgradeDefinition<>(ChestBlock.FACING, ChestBlockEntity.class, blockEntity -> blockEntity.openersCounter.getOpenerCount() > 0, ModBlocks.IRON_CHEST.get(), woodType));
+						new StorageTierUpgradeItem.VanillaTierUpgradeDefinition<>(ChestBlockEntity.class, blockEntity -> blockEntity.openersCounter.getOpenerCount() > 0, ModBlocks.IRON_CHEST.get(), woodType, ChestBlock.FACING));
 			}
 		});
 	}
