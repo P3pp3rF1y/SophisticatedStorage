@@ -37,15 +37,19 @@ public class ControllerBlockEntity extends ControllerBlockEntityBase implements 
 		if (doubleClick) {
 			player.getCapability(ForgeCapabilities.ITEM_HANDLER, null).ifPresent(
 					playerInventory -> getCapability(ForgeCapabilities.ITEM_HANDLER, null)
-							.ifPresent(controllerInventory -> InventoryHelper.transfer(playerInventory, controllerInventory, s -> {}, this::hasStack))
+							.ifPresent(controllerInventory -> InventoryHelper.transfer(playerInventory, controllerInventory, s -> {}, this::canDepositStack))
 			);
 			return;
 		}
 
 		ItemStack itemInHand = player.getItemInHand(hand);
-		if (!itemInHand.isEmpty() && hasStack(itemInHand)) {
+		if (!itemInHand.isEmpty() && canDepositStack(itemInHand)) {
 			player.setItemInHand(hand, insertItem(0, itemInHand, false));
 		}
+	}
+
+	private boolean canDepositStack(ItemStack stack) {
+		return hasStack(stack) || isMemorizedItem(stack);
 	}
 
 	@Override
