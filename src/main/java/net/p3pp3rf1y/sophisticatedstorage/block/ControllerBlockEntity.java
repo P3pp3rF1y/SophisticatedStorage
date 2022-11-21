@@ -36,15 +36,22 @@ public class ControllerBlockEntity extends ControllerBlockEntityBase implements 
 		lastDepositTime = gameTime;
 		if (doubleClick) {
 			player.getCapability(ForgeCapabilities.ITEM_HANDLER, null).ifPresent(
-					playerInventory -> getCapability(ForgeCapabilities.ITEM_HANDLER, null)
-							.ifPresent(controllerInventory -> InventoryHelper.transfer(playerInventory, controllerInventory, s -> {}, this::canDepositStack))
-			);
+					playerInventory -> InventoryHelper.iterate(playerInventory, (slot, stack) -> {
+						if (canDepositStack(stack)) {
+							ItemStack resultStack = insertItem(stack, true, false);
+							int countToExtract = stack.getCount() - resultStack.getCount();
+							if (countToExtract > 0 && playerInventory.extractItem(slot, countToExtract, true).getCount() == countToExtract) {
+								insertItem(playerInventory.extractItem(slot, countToExtract, false), false, false);
+							}
+						}
+					}
+			));
 			return;
 		}
 
 		ItemStack itemInHand = player.getItemInHand(hand);
 		if (!itemInHand.isEmpty() && canDepositStack(itemInHand)) {
-			player.setItemInHand(hand, insertItem(0, itemInHand, false));
+			player.setItemInHand(hand, insertItem(itemInHand, false, false));
 		}
 	}
 

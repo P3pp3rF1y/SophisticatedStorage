@@ -60,7 +60,7 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity {
 		MemorySettingsCategory memorySettings = getStorageWrapper().getSettingsHandler().getTypeCategory(MemorySettingsCategory.class);
 
 		if (doubleClick) {
-			Predicate<ItemStack> memoryItemMatches = memorySettings.getSlotFilterItem(slot).map(item -> (Predicate<ItemStack>) itemStack -> itemStack.getItem() == item).orElse(s -> false);
+			Predicate<ItemStack> memoryItemMatches = itemStack -> memorySettings.matchesFilter(slot, itemStack);
 			player.getCapability(ForgeCapabilities.ITEM_HANDLER, null).ifPresent(
 					playerInventory -> InventoryHelper.transferIntoSlot(playerInventory, getStorageWrapper().getInventoryHandler(), slot, s -> memoryItemMatches.test(s) || ItemHandlerHelper.canItemStacksStack(stackInSlot, s)));
 			return;
