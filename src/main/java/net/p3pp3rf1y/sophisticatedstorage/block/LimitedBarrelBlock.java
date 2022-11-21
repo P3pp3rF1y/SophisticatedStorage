@@ -31,6 +31,7 @@ import net.minecraft.world.phys.HitResult;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
 import net.p3pp3rf1y.sophisticatedcore.settings.SettingsHandler;
 import net.p3pp3rf1y.sophisticatedcore.settings.itemdisplay.ItemDisplaySettingsCategory;
+import net.p3pp3rf1y.sophisticatedcore.settings.memory.MemorySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.settings.nosort.NoSortSettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageTranslationHelper;
@@ -229,6 +230,7 @@ public class LimitedBarrelBlock extends BarrelBlock {
 			SettingsHandler settingsHandler = storageWrapper.getSettingsHandler();
 			settingsHandler.getTypeCategory(ItemDisplaySettingsCategory.class).selectSlots(0, storageWrapper.getNumberOfInventorySlots());
 			settingsHandler.getTypeCategory(NoSortSettingsCategory.class).selectSlots(0, storageWrapper.getNumberOfInventorySlots());
+			settingsHandler.getTypeCategory(MemorySettingsCategory.class).setIgnoreNbt(false);
 		});
 	}
 
