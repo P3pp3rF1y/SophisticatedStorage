@@ -17,6 +17,7 @@ import net.p3pp3rf1y.sophisticatedcore.util.ItemBase;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
+import net.p3pp3rf1y.sophisticatedstorage.block.ICountDisplay;
 import net.p3pp3rf1y.sophisticatedstorage.block.ILockable;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageTranslationHelper;
@@ -63,9 +64,40 @@ public class StorageToolItem extends ItemBase {
 					return InteractionResult.SUCCESS;
 				}
 			}
+			case COUNT_DISPLAY -> {
+				if (tryTogglingCountDisplay(pos, level)) {
+					return InteractionResult.SUCCESS;
+				}
+			}
+			case LOCK_DISPLAY -> {
+				if (tryTogglingLockDisplay(pos, level)) {
+					return InteractionResult.SUCCESS;
+				}
+			}
 		}
-		//TODO add code to show/hide stuff
 		return super.onItemUseFirst(tool, context);
+	}
+
+	private boolean tryTogglingLockDisplay(BlockPos pos, Level level) {
+		return WorldHelper.getLoadedBlockEntity(level, pos, ILockable.class).map(lockable -> {
+			if (level.isClientSide()) {
+				return true;
+			}
+
+			lockable.toggleLockVisibility();
+			return true;
+		}).orElse(false);
+	}
+
+	private boolean tryTogglingCountDisplay(BlockPos pos, Level level) {
+		return WorldHelper.getLoadedBlockEntity(level, pos, ICountDisplay.class).map(countDisplay -> {
+			if (level.isClientSide()) {
+				return true;
+			}
+
+			countDisplay.toggleCountVisibility();
+			return true;
+		}).orElse(false);
 	}
 
 	private boolean tryLocking(BlockPos pos, Level level) {

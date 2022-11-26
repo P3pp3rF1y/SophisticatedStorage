@@ -60,6 +60,7 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 	@Nullable
 	private LazyOptional<IItemHandler> itemHandlerCap;
 	private boolean locked = false;
+	private boolean showLock = true;
 
 	protected StorageBlockEntity(BlockPos pos, BlockState state, BlockEntityType<? extends StorageBlockEntity> blockEntityType) {
 		super(blockEntityType, pos, state);
@@ -145,9 +146,6 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		if (isLinkedToController) {
 			tag.putBoolean("isLinkedToController", isLinkedToController);
 		}
-		//TODO save and load for showing counts
-		//TODO save and load for showing lock
-
 	}
 
 	private void saveStorageWrapper(CompoundTag tag) {
@@ -167,6 +165,9 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		}
 		if (locked) {
 			tag.putBoolean("locked", locked);
+		}
+		if (!showLock) {
+			tag.putBoolean("showLock", showLock);
 		}
 	}
 
@@ -226,6 +227,8 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 
 	public void loadSynchronizedData(CompoundTag tag) {
 		displayName = NBTHelper.getComponent(tag, "displayName").orElse(null);
+		locked = NBTHelper.getBoolean(tag, "locked").orElse(false);
+		showLock = NBTHelper.getBoolean(tag, "showLock").orElse(true);
 		if (level != null && level.isClientSide) {
 			if (tag.getBoolean("updateBlockRender")) {
 				WorldHelper.notifyBlockUpdate(this);
@@ -233,7 +236,6 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		} else {
 			updateBlockRender = true;
 		}
-		locked = NBTHelper.getBoolean(tag, "locked").orElse(false);
 	}
 
 	@Override
@@ -460,6 +462,19 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 			}
 		});
 		updateEmptySlots();
+		setChanged();
+		setUpdateBlockRender();
+		WorldHelper.notifyBlockUpdate(this);
+	}
+
+	@Override
+	public boolean shouldShowLock() {
+		return showLock;
+	}
+
+	@Override
+	public void toggleLockVisibility() {
+		showLock = !showLock;
 		setChanged();
 		setUpdateBlockRender();
 		WorldHelper.notifyBlockUpdate(this);
