@@ -13,6 +13,7 @@ import net.minecraftforge.items.ItemHandlerHelper;
 import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryHandler;
 import net.p3pp3rf1y.sophisticatedcore.settings.memory.MemorySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
+import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.RandHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
@@ -21,11 +22,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 
-public class LimitedBarrelBlockEntity extends BarrelBlockEntity {
+public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICountDisplay {
 	private static final String SLOT_COUNTS_TAG = "slotCounts";
 	private long lastDepositTime = -100;
 
 	private final List<Integer> slotCounts = new ArrayList<>();
+	private boolean showCounts = true;
 
 	public LimitedBarrelBlockEntity(BlockPos pos, BlockState state) {
 		super(pos, state, ModBlocks.LIMITED_BARREL_BLOCK_ENTITY_TYPE.get());
@@ -40,6 +42,18 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity {
 	protected void onUpgradeCachesInvalidated() {
 		super.onUpgradeCachesInvalidated();
 		registerClientNotificationOnCountChange();
+	}
+
+	@Override
+	public boolean shouldShowCounts() {
+		return showCounts;
+	}
+
+	@Override
+	public void toggleCountVisibility() {
+		showCounts = !showCounts;
+		setChanged();
+		WorldHelper.notifyBlockUpdate(this);
 	}
 
 	public List<Integer> getSlotCounts() {
@@ -129,6 +143,15 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity {
 			for (int i = 0; i < countsArray.length; i++) {
 				slotCounts.set(i, countsArray[i]);
 			}
+		}
+		showCounts = NBTHelper.getBoolean(tag, "showCounts").orElse(true);
+	}
+
+	@Override
+	protected void saveSynchronizedData(CompoundTag tag) {
+		super.saveSynchronizedData(tag);
+		if (!showCounts) {
+			tag.putBoolean("showCounts", showCounts);
 		}
 	}
 }

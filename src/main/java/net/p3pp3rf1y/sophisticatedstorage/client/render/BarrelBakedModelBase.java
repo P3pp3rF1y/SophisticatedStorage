@@ -79,7 +79,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 	private static final Cache<Integer, IQuadTransformer> DIRECTION_MOVE_BACK_TO_SIDE = CacheBuilder.newBuilder().expireAfterAccess(10L, TimeUnit.MINUTES).build();
 	private static final ModelProperty<String> WOOD_NAME = new ModelProperty<>();
 	private static final ModelProperty<Boolean> IS_PACKED = new ModelProperty<>();
-	private static final ModelProperty<Boolean> IS_LOCKED = new ModelProperty<>();
+	private static final ModelProperty<Boolean> SHOWS_LOCK = new ModelProperty<>();
 	private static final ModelProperty<Boolean> HAS_MAIN_COLOR = new ModelProperty<>();
 	private static final ModelProperty<Boolean> HAS_ACCENT_COLOR = new ModelProperty<>();
 	private static final ModelProperty<List<RenderInfo.DisplayItem>> DISPLAY_ITEMS = new ModelProperty<>();
@@ -187,7 +187,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 		if (isPacked) {
 			addPartQuads(state, side, rand, ret, modelParts, BarrelModelPart.PACKED, renderType);
 		} else {
-			if (isLocked(extraData)) {
+			if (showsLocked(extraData)) {
 				addPartQuads(state, side, rand, ret, modelParts, BarrelModelPart.LOCK, renderType);
 			}
 			addDisplayItemQuads(state, side, rand, ret, extraData);
@@ -204,8 +204,8 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 		return extraData.has(IS_PACKED) && Boolean.TRUE.equals(extraData.get(IS_PACKED));
 	}
 
-	private boolean isLocked(ModelData extraData) {
-		return extraData.has(IS_LOCKED) && Boolean.TRUE.equals(extraData.get(IS_LOCKED));
+	private boolean showsLocked(ModelData extraData) {
+		return extraData.has(SHOWS_LOCK) && Boolean.TRUE.equals(extraData.get(SHOWS_LOCK));
 	}
 
 	private void addTierQuads(@Nullable BlockState state, @Nullable Direction side, RandomSource rand, List<BakedQuad> ret, Map<BarrelModelPart, BakedModel> modelParts, @Nullable RenderType renderType) {
@@ -241,7 +241,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 		hash = hash * 31 + (data.has(HAS_MAIN_COLOR) && Boolean.TRUE.equals(data.get(HAS_MAIN_COLOR)) ? 1 : 0);
 		hash = hash * 31 + (data.has(HAS_ACCENT_COLOR) && Boolean.TRUE.equals(data.get(HAS_ACCENT_COLOR)) ? 1 : 0);
 		hash = hash * 31 + (isPacked(data) ? 1 : 0);
-		hash = hash * 31 + (isLocked(data) ? 1 : 0);
+		hash = hash * 31 + (showsLocked(data) ? 1 : 0);
 		return hash;
 	}
 
@@ -483,7 +483,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 						builder.with(DISPLAY_ITEMS, be.getStorageWrapper().getRenderInfo().getItemDisplayRenderInfo().getDisplayItems());
 					}
 					builder.with(IS_PACKED, be.isPacked());
-					builder.with(IS_LOCKED, be.isLocked());
+					builder.with(SHOWS_LOCK, be.isLocked() && be.shouldShowLock());
 					Optional<WoodType> woodType = be.getWoodType();
 					if (woodType.isPresent() || !(hasMainColor && hasAccentColor)) {
 						builder.with(WOOD_NAME, woodType.orElse(WoodType.ACACIA).name());

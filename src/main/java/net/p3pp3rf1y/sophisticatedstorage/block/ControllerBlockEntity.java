@@ -13,9 +13,10 @@ import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
-public class ControllerBlockEntity extends ControllerBlockEntityBase implements ILockable {
+public class ControllerBlockEntity extends ControllerBlockEntityBase implements ILockable, ICountDisplay {
 	private long lastDepositTime = -100;
 
 	public ControllerBlockEntity(BlockPos pos, BlockState state) {
@@ -81,5 +82,60 @@ public class ControllerBlockEntity extends ControllerBlockEntityBase implements 
 	@Override
 	public boolean isLocked() {
 		return false;
+	}
+
+	@Override
+	public boolean shouldShowLock() {
+		return false;
+	}
+
+	@Override
+	public void toggleLockVisibility() {
+		Set<ILockable> invisibleLockStorages = new HashSet<>();
+		Set<ILockable> visibleLockStorages = new HashSet<>();
+		getStoragePositions().forEach(storagePosition -> WorldHelper.getLoadedBlockEntity(level, storagePosition, ILockable.class).ifPresent(lockable -> {
+			if (lockable.isLocked()) {
+				if (lockable.shouldShowLock()) {
+					visibleLockStorages.add(lockable);
+				} else {
+					invisibleLockStorages.add(lockable);
+				}
+			}
+		}));
+
+		if (invisibleLockStorages.isEmpty()) {
+			visibleLockStorages.forEach(ILockable::toggleLockVisibility);
+		} else {
+			invisibleLockStorages.forEach(ILockable::toggleLockVisibility);
+		}
+	}
+
+	@Override
+	public boolean shouldShowCounts() {
+		return false;
+	}
+
+	@Override
+	public void toggleCountVisibility() {
+		Set<ICountDisplay> invisibleCountStorages = new HashSet<>();
+		Set<ICountDisplay> visibleCountStorages = new HashSet<>();
+		getStoragePositions().forEach(storagePosition -> WorldHelper.getLoadedBlockEntity(level, storagePosition, ICountDisplay.class).ifPresent(countDisplay -> {
+			if (countDisplay.shouldShowCounts()) {
+				visibleCountStorages.add(countDisplay);
+			} else {
+				invisibleCountStorages.add(countDisplay);
+			}
+		}));
+
+		if (invisibleCountStorages.isEmpty()) {
+			visibleCountStorages.forEach(ICountDisplay::toggleCountVisibility);
+		} else {
+			invisibleCountStorages.forEach(ICountDisplay::toggleCountVisibility);
+		}
+	}
+
+	@Override
+	public List<Integer> getSlotCounts() {
+		return List.of();
 	}
 }
