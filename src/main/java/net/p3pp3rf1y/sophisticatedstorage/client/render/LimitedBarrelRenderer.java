@@ -55,7 +55,7 @@ public class LimitedBarrelRenderer implements BlockEntityRenderer<LimitedBarrelB
 
 	private void renderItemCounts(LimitedBarrelBlockEntity blockEntity, PoseStack poseStack) {
 		BlockState blockState = blockEntity.getBlockState();
-		if (!(blockState.getBlock() instanceof StorageBlockBase)) {
+		if (!(blockState.getBlock() instanceof StorageBlockBase) || !blockEntity.shouldShowCounts()) {
 			return;
 		}
 		Font font = Minecraft.getInstance().font;

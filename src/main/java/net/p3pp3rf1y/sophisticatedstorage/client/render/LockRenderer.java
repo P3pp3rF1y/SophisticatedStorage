@@ -20,7 +20,7 @@ public class LockRenderer {
 	public static final Material LOCK_TEXTURE = new Material(InventoryMenu.BLOCK_ATLAS, SophisticatedStorage.getRL("block/lock"));
 
 	public static void renderLock(StorageBlockEntity blockEntity, Direction direction, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, float yOffset, float frontZOffset) {
-		if (!blockEntity.isLocked()) {
+		if (!blockEntity.isLocked() || !blockEntity.shouldShowLock()) {
 			return;
 		}
 		poseStack.translate(0.5, 0.5, 0.5);
