@@ -79,7 +79,9 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 				tintableBlockItem.setAccentColor(stack, accentColor);
 			}
 		}
-		wbe.getCustomName().ifPresent(stack::setHoverName);
+		if (wbe.hasCustomName()) {
+			stack.setHoverName(wbe.getCustomName());
+		}
 		wbe.getWoodType().ifPresent(n -> WoodStorageBlockItem.setWoodType(stack, n));
 	}
 

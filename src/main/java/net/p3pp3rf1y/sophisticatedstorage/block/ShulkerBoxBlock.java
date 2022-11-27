@@ -218,7 +218,9 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 	}
 
 	private void addBasicPropertiesToStack(ItemStack stack, StorageBlockEntity be, StorageWrapper storageWrapper) {
-		be.getCustomName().ifPresent(stack::setHoverName);
+		if (be.hasCustomName()) {
+			stack.setHoverName(be.getCustomName());
+		}
 		if (stack.getItem() instanceof ShulkerBoxItem shulkerBoxItem) {
 			int mainColor = storageWrapper.getMainColor();
 			if (mainColor > -1) {
