@@ -9,6 +9,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.Nameable;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -39,7 +40,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
-public abstract class StorageBlockEntity extends BlockEntity implements IControllableStorage, ILinkable, ILockable {
+public abstract class StorageBlockEntity extends BlockEntity implements IControllableStorage, ILinkable, ILockable, Nameable {
 	public static final String STORAGE_WRAPPER_TAG = "storageWrapper";
 	private final StorageWrapper storageWrapper;
 	@Nullable
@@ -133,8 +134,9 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		return getOpenersCounter().getOpenerCount() > 0;
 	}
 
-	public Optional<Component> getCustomName() {
-		return Optional.ofNullable(displayName);
+	@Override
+	public Component getCustomName() {
+		return displayName;
 	}
 
 	@Override
@@ -291,6 +293,12 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		return storageWrapper;
 	}
 
+	@Override
+	public Component getName() {
+		return getDisplayName();
+	}
+
+	@Override
 	public Component getDisplayName() {
 		if (displayName != null) {
 			return displayName;
