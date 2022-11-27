@@ -61,7 +61,7 @@ import java.util.function.Supplier;
 
 public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDropDataBlock {
 	public static final EnumProperty<Direction> FACING = DirectionalBlock.FACING;
-	private static final VoxelShape ITEM_ENTITY_COLLISION_SHAPE = box(0.1, 0.1, 0.1, 15.9, 15.9, 15.9);
+	private static final VoxelShape ITEM_ENTITY_COLLISION_SHAPE = box(0.05, 0.05, 0.05, 15.95, 15.95, 15.95);
 
 	public ShulkerBoxBlock(Supplier<Integer> numberOfInventorySlotsSupplier, Supplier<Integer> numberOfUpgradeSlotsSupplier) {
 		super(getProperties(), numberOfInventorySlotsSupplier, numberOfUpgradeSlotsSupplier);
