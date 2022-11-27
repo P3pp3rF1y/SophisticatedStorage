@@ -90,7 +90,7 @@ public class LimitedBarrelRenderer implements BlockEntityRenderer<LimitedBarrelB
 
 			float scale = slotCounts.size() == 1 ? SINGLE_ITEM_FONT_SCALE : MULTIPLE_ITEMS_FONT_SCALE;
 			poseStack.scale(scale, -scale, scale);
-			String countString = CountAbbreviator.abbreviate(count);
+			String countString = CountAbbreviator.abbreviate(count, slotCounts.size() == 1 ? 6 : 5);
 			float countDisplayXOffset = -font.width(countString) / 2f;
 			poseStack.translate(countDisplayXOffset, 0, 0);
 			font.draw(poseStack, countString, 0, 0, DyeColor.LIGHT_GRAY.getTextColor());
