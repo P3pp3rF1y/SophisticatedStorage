@@ -74,9 +74,7 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 		MemorySettingsCategory memorySettings = getStorageWrapper().getSettingsHandler().getTypeCategory(MemorySettingsCategory.class);
 
 		if (doubleClick) {
-			Predicate<ItemStack> memoryItemMatches = itemStack -> memorySettings.matchesFilter(slot, itemStack);
-			player.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null).ifPresent(
-					playerInventory -> InventoryHelper.transferIntoSlot(playerInventory, getStorageWrapper().getInventoryHandler(), slot, s -> memoryItemMatches.test(s) || ItemHandlerHelper.canItemStacksStack(stackInSlot, s)));
+			depositFromAllOfPlayersInventory(player, slot, invHandler, stackInSlot, memorySettings);
 			return;
 		}
 
@@ -92,6 +90,25 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 		if (result.getCount() != stackInHand.getCount()) {
 			player.setItemInHand(hand, result);
 		}
+	}
+
+	private void depositFromAllOfPlayersInventory(Player player, int slot, InventoryHandler invHandler, ItemStack stackInSlot, MemorySettingsCategory memorySettings) {
+		Predicate<ItemStack> memoryItemMatches = itemStack -> memorySettings.isSlotSelected(slot) && memorySettings.matchesFilter(slot, itemStack);
+		player.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null).ifPresent(
+				playerInventory -> InventoryHelper.iterate(playerInventory, (playerSlot, playerStack) -> {
+					if ((stackInSlot.isEmpty() && memoryItemMatches.test(playerStack)) || (!playerStack.isEmpty() && ItemHandlerHelper.canItemStacksStack(stackInSlot, playerStack))) {
+						int remainingCapacity = invHandler.getStackLimit(slot, playerStack) - invHandler.getStackInSlot(slot).getCount();
+
+						if (remainingCapacity <= 0) {
+							return;
+						}
+						int toExtract = Math.min(remainingCapacity, playerStack.getCount());
+						ItemStack extracted = playerInventory.extractItem(playerSlot, toExtract, true);
+						if (extracted.getCount() > 0) {
+							invHandler.insertItem(slot, playerInventory.extractItem(playerSlot, extracted.getCount(), false), false);
+						}
+					}
+				}));
 	}
 
 	boolean tryToTakeItem(Player player, int slot) {
