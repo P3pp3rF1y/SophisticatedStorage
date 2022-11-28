@@ -293,6 +293,12 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		return storageWrapper;
 	}
 
+	@Override
+	public Component getName() {
+		return getDisplayName();
+	}
+
+	@Override
 	public Component getDisplayName() {
 		if (displayName != null) {
 			return displayName;
