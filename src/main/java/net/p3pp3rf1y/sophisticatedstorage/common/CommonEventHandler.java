@@ -2,6 +2,7 @@ package net.p3pp3rf1y.sophisticatedstorage.common;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.chat.TranslatableComponent;
@@ -9,8 +10,10 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.p3pp3rf1y.sophisticatedcore.SophisticatedCore;
@@ -20,6 +23,7 @@ import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.ItemBase;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
+import net.p3pp3rf1y.sophisticatedstorage.block.LimitedBarrelBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.WoodStorageBlockBase;
 import net.p3pp3rf1y.sophisticatedstorage.block.WoodStorageBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageTranslationHelper;
@@ -36,6 +40,24 @@ public class CommonEventHandler {
 		eventBus.addListener(this::onPlayerChangedDimension);
 		eventBus.addListener(this::onPlayerRespawn);
 		eventBus.addListener(this::onBlockBreak);
+		eventBus.addListener(this::onLimitedBarrelClicked);
+	}
+
+	private void onLimitedBarrelClicked(PlayerInteractEvent.LeftClickBlock event) {
+		Player player = event.getPlayer();
+		if (!player.isCreative()) {
+			return;
+		}
+
+		BlockPos pos = event.getPos();
+		Level level = event.getWorld();
+		BlockState state = level.getBlockState(pos);
+		if (!(state.getBlock() instanceof LimitedBarrelBlock limitedBarrel)) {
+			return;
+		}
+		if (limitedBarrel.tryToTakeItem(state, level, pos, player)) {
+			event.setCanceled(true);
+		}
 	}
 
 	private void onPlayerChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {

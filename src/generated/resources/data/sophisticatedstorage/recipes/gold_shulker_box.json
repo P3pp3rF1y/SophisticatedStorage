@@ -12,11 +12,11 @@
     "GGG"
   ],
   "key": {
-    "S": {
-      "item": "sophisticatedstorage:iron_shulker_box"
-    },
     "G": {
       "tag": "forge:ingots/gold"
+    },
+    "S": {
+      "item": "sophisticatedstorage:iron_shulker_box"
     }
   },
   "result": {

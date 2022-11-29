@@ -1,7 +1,10 @@
 package net.p3pp3rf1y.sophisticatedstorage.block;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
+import net.minecraft.data.BlockFamilies;
+import net.minecraft.data.BlockFamily;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
@@ -13,6 +16,7 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.WoodType;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.p3pp3rf1y.sophisticatedcore.util.ColorHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
@@ -21,15 +25,24 @@ import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
+import net.p3pp3rf1y.sophisticatedstorage.item.StorageToolItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
 
 import javax.annotation.Nullable;
-import java.util.Set;
+import java.util.Map;
 import java.util.UUID;
 import java.util.function.Supplier;
 
 public abstract class WoodStorageBlockBase extends StorageBlockBase implements IAdditionalDropDataBlock {
-	public static final Set<WoodType> CUSTOM_TEXTURE_WOOD_TYPES = Set.of(WoodType.ACACIA, WoodType.BIRCH, WoodType.CRIMSON, WoodType.DARK_OAK, WoodType.JUNGLE, WoodType.OAK, WoodType.SPRUCE, WoodType.WARPED);
+	public static final Map<WoodType, BlockFamily> CUSTOM_TEXTURE_WOOD_TYPES = Map.of(
+			WoodType.ACACIA, BlockFamilies.ACACIA_PLANKS,
+			WoodType.BIRCH, BlockFamilies.BIRCH_PLANKS,
+			WoodType.CRIMSON, BlockFamilies.CRIMSON_PLANKS,
+			WoodType.DARK_OAK, BlockFamilies.DARK_OAK_PLANKS,
+			WoodType.JUNGLE, BlockFamilies.JUNGLE_PLANKS,
+			WoodType.OAK, BlockFamilies.OAK_PLANKS,
+			WoodType.SPRUCE, BlockFamilies.SPRUCE_PLANKS,
+			WoodType.WARPED, BlockFamilies.WARPED_PLANKS);
 
 	protected WoodStorageBlockBase(Properties properties, Supplier<Integer> numberOfInventorySlotsSupplier, Supplier<Integer> numberOfUpgradeSlotsSupplier) {
 		super(properties, numberOfInventorySlotsSupplier, numberOfUpgradeSlotsSupplier);
@@ -66,13 +79,15 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 				tintableBlockItem.setAccentColor(stack, accentColor);
 			}
 		}
-		wbe.getCustomName().ifPresent(stack::setHoverName);
+		if (wbe.hasCustomName()) {
+			stack.setHoverName(wbe.getCustomName());
+		}
 		wbe.getWoodType().ifPresent(n -> WoodStorageBlockItem.setWoodType(stack, n));
 	}
 
 	@Override
 	public void fillItemCategory(CreativeModeTab tab, NonNullList<ItemStack> items) {
-		CUSTOM_TEXTURE_WOOD_TYPES.forEach(woodType -> items.add(WoodStorageBlockItem.setWoodType(new ItemStack(this), woodType)));
+		CUSTOM_TEXTURE_WOOD_TYPES.keySet().forEach(woodType -> items.add(WoodStorageBlockItem.setWoodType(new ItemStack(this), woodType)));
 
 		if (isBasicTier() || Boolean.TRUE.equals(Config.CLIENT.showHigherTierTintedVariants.get())) {
 			for (DyeColor color : DyeColor.values()) {
@@ -93,7 +108,9 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 	}
 
 	private boolean isBasicTier() {
-		return this == ModBlocks.BARREL.get() || this == ModBlocks.CHEST.get();
+		return this == ModBlocks.BARREL.get() || this == ModBlocks.CHEST.get()
+				|| this == ModBlocks.LIMITED_BARREL_1.get() || this == ModBlocks.LIMITED_BARREL_2.get()
+				|| this == ModBlocks.LIMITED_BARREL_3.get() || this == ModBlocks.LIMITED_BARREL_4.get();
 	}
 
 	@Override
@@ -120,10 +137,15 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 			StorageBlockItem.getAccentColorFromStack(stack).ifPresent(be.getStorageWrapper()::setAccentColor);
 
 			be.tryToAddToController();
+
+			if (placer != null && placer.getOffhandItem().getItem() == ModItems.STORAGE_TOOL.get()) {
+				StorageToolItem.useOffHandOnPlaced(placer.getOffhandItem(), be);
+			}
 		});
 	}
 
-	protected boolean tryPackBlock(Player player, InteractionHand hand, WoodStorageBlockEntity b, ItemStack stackInHand) {
+	@SuppressWarnings("java:S1172") //parameter is used in override
+	protected boolean tryItemInteraction(Player player, InteractionHand hand, WoodStorageBlockEntity b, ItemStack stackInHand, Direction facing, BlockHitResult hitResult) {
 		if (stackInHand.getItem() == ModItems.PACKING_TAPE.get()) {
 			if (!player.isCreative()) {
 				stackInHand.setDamageValue(stackInHand.getDamageValue() + 1);

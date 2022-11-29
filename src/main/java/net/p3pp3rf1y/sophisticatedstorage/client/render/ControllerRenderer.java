@@ -46,6 +46,10 @@ public class ControllerRenderer implements BlockEntityRenderer<ControllerBlockEn
 
 		InventoryHelper.getItemFromEitherHand(player, ModItems.DEBUG_TOOL.get()).ifPresent(storageTool -> renderConnectedStorageBlocksInfo(controller, Direction.orderedByNearest(player)[0].getOpposite(), poseStack, bufferSource));
 		InventoryHelper.getItemFromEitherHand(player, ModItems.STORAGE_TOOL.get()).ifPresent(storageTool -> {
+			if (StorageToolItem.getMode(storageTool) != StorageToolItem.Mode.LINK) {
+				return;
+			}
+
 			if (StorageToolItem.getControllerLink(storageTool).map(controllerPos -> controllerPos.equals(controller.getBlockPos())).orElse(false)) {
 				renderBlockOutline(controller.getBlockPos(), controller.getBlockPos(), level, poseStack, bufferSource, DyeColor.LIGHT_BLUE.getTextureDiffuseColors());
 			}
@@ -82,6 +86,7 @@ public class ControllerRenderer implements BlockEntityRenderer<ControllerBlockEn
 		}
 	}
 
+	@SuppressWarnings("java:S1874")
 	private void renderLinkedBlocksOutline(ControllerBlockEntity controller, ClientLevel level, PoseStack poseStack, MultiBufferSource bufferSource) {
 		controller.getLinkedBlocks().forEach(pos -> {
 			BlockState state = level.getBlockState(pos);
@@ -116,6 +121,7 @@ public class ControllerRenderer implements BlockEntityRenderer<ControllerBlockEn
 				.normal(matrix3f, normalX, normalY, normalZ).endVertex();
 	}
 
+	@SuppressWarnings("java:S1874")
 	private void renderBlockOutline(BlockPos controllerPos, BlockPos pos, ClientLevel level, PoseStack poseStack, MultiBufferSource bufferSource, float[] color) {
 		BlockState state = level.getBlockState(pos);
 		//noinspection deprecation
@@ -129,7 +135,7 @@ public class ControllerRenderer implements BlockEntityRenderer<ControllerBlockEn
 		float green = color[1];
 		float blue = color[2];
 
-		LevelRenderer.renderShape(poseStack, vertexConsumer, shape, -controllerPos.getX() + pos.getX(), -controllerPos.getY() + pos.getY(), -controllerPos.getZ() + pos.getZ(), red, green, blue, 1);
+		LevelRenderer.renderShape(poseStack, vertexConsumer, shape, (double) -controllerPos.getX() + pos.getX(), (double) -controllerPos.getY() + pos.getY(), (double) -controllerPos.getZ() + pos.getZ(), red, green, blue, 1);
 	}
 
 	@Override

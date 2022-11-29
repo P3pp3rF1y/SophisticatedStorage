@@ -12,11 +12,11 @@
     "DDD"
   ],
   "key": {
-    "S": {
-      "item": "sophisticatedstorage:gold_shulker_box"
-    },
     "D": {
       "tag": "forge:gems/diamond"
+    },
+    "S": {
+      "item": "sophisticatedstorage:gold_shulker_box"
     }
   },
   "result": {

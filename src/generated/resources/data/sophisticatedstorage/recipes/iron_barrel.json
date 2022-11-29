@@ -8,14 +8,14 @@
   ],
   "pattern": [
     "III",
-    "IBI",
+    "ISI",
     "III"
   ],
   "key": {
     "I": {
       "tag": "forge:ingots/iron"
     },
-    "B": {
+    "S": {
       "item": "sophisticatedstorage:barrel"
     }
   },
