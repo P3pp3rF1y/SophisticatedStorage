@@ -1,0 +1,34 @@
+{
+  "parent": "minecraft:recipes/root",
+  "rewards": {
+    "recipes": [
+      "sophisticatedstorage:limited_diamond_barrel_2"
+    ]
+  },
+  "criteria": {
+    "has_gold_limited_gold_barrel_2": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "sophisticatedstorage:limited_gold_barrel_2"
+            ]
+          }
+        ]
+      }
+    },
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "sophisticatedstorage:limited_diamond_barrel_2"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_gold_limited_gold_barrel_2",
+      "has_the_recipe"
+    ]
+  ]
+}

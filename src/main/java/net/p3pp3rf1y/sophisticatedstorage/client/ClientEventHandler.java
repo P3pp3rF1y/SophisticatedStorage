@@ -6,17 +6,24 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.MouseHandler;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.model.geom.ModelLayerLocation;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
+import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ReloadableResourceManager;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.client.ClientRegistry;
 import net.minecraftforge.client.MinecraftForgeClient;
 import net.minecraftforge.client.event.EntityRenderersEvent;
+import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.client.event.TextureStitchEvent;
@@ -25,12 +32,14 @@ import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.client.settings.IKeyConflictContext;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AddPackFindersEvent;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
+import net.p3pp3rf1y.sophisticatedstorage.block.LimitedBarrelBlock;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageScreen;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageTranslationHelper;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.ToolInfoOverlay;
@@ -38,16 +47,22 @@ import net.p3pp3rf1y.sophisticatedstorage.client.init.ModBlockColors;
 import net.p3pp3rf1y.sophisticatedstorage.client.init.ModItemColors;
 import net.p3pp3rf1y.sophisticatedstorage.client.init.ModParticles;
 import net.p3pp3rf1y.sophisticatedstorage.client.render.BarrelDynamicModel;
+import net.p3pp3rf1y.sophisticatedstorage.client.render.BarrelDynamicModelBase;
 import net.p3pp3rf1y.sophisticatedstorage.client.render.BarrelRenderer;
 import net.p3pp3rf1y.sophisticatedstorage.client.render.ChestDynamicModel;
 import net.p3pp3rf1y.sophisticatedstorage.client.render.ChestRenderer;
 import net.p3pp3rf1y.sophisticatedstorage.client.render.ClientStorageContentsTooltip;
 import net.p3pp3rf1y.sophisticatedstorage.client.render.ControllerRenderer;
+import net.p3pp3rf1y.sophisticatedstorage.client.render.LimitedBarrelDynamicModel;
+import net.p3pp3rf1y.sophisticatedstorage.client.render.LimitedBarrelRenderer;
+import net.p3pp3rf1y.sophisticatedstorage.client.render.LockRenderer;
 import net.p3pp3rf1y.sophisticatedstorage.client.render.ShulkerBoxDynamicModel;
 import net.p3pp3rf1y.sophisticatedstorage.client.render.ShulkerBoxRenderer;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
+import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageContentsTooltip;
+import net.p3pp3rf1y.sophisticatedstorage.network.ScrolledToolMessage;
 
 import static net.minecraftforge.client.gui.ForgeIngameGui.HOTBAR_ELEMENT;
 import static net.minecraftforge.client.settings.KeyConflictContext.GUI;
@@ -91,6 +106,43 @@ public class ClientEventHandler {
 		eventBus.addListener(ClientStorageContentsTooltip::onWorldLoad);
 		eventBus.addListener(EventPriority.HIGH, ClientEventHandler::handleGuiMouseKeyPress);
 		eventBus.addListener(EventPriority.HIGH, ClientEventHandler::handleGuiKeyPress);
+		eventBus.addListener(ClientEventHandler::onLimitedBarrelClicked);
+		eventBus.addListener(ClientEventHandler::onMouseScrolled);
+	}
+
+
+	private static void onMouseScrolled(InputEvent.MouseScrollEvent evt) {
+		Minecraft mc = Minecraft.getInstance();
+		if (mc.screen != null || !Screen.hasShiftDown()) {
+			return;
+		}
+		LocalPlayer player = mc.player;
+		if (player == null) {
+			return;
+		}
+		ItemStack stack = player.getMainHandItem();
+		if (stack.getItem() != ModItems.STORAGE_TOOL.get()) {
+			return;
+		}
+		SophisticatedStorage.PACKET_HANDLER.sendToServer(new ScrolledToolMessage(evt.getScrollDelta() > 0));
+		evt.setCanceled(true);
+	}
+
+	private static void onLimitedBarrelClicked(PlayerInteractEvent.LeftClickBlock event) {
+		Player player = event.getPlayer();
+		if (!player.isCreative()) {
+			return;
+		}
+
+		BlockPos pos = event.getPos();
+		Level level = event.getWorld();
+		BlockState state = level.getBlockState(pos);
+		if (!(state.getBlock() instanceof LimitedBarrelBlock limitedBarrel)) {
+			return;
+		}
+		if (limitedBarrel.isLookingAtFront(player, pos, state)) {
+			event.setCanceled(true);
+		}
 	}
 
 	public static void handleGuiKeyPress(ScreenEvent.KeyboardKeyPressedEvent.Pre event) {
@@ -130,6 +182,7 @@ public class ClientEventHandler {
 
 	private static void onModelRegistry(ModelRegistryEvent event) {
 		ModelLoaderRegistry.registerLoader(SophisticatedStorage.getRL("barrel"), BarrelDynamicModel.Loader.INSTANCE);
+		ModelLoaderRegistry.registerLoader(SophisticatedStorage.getRL("limited_barrel"), LimitedBarrelDynamicModel.Loader.INSTANCE);
 		ModelLoaderRegistry.registerLoader(SophisticatedStorage.getRL("chest"), ChestDynamicModel.Loader.INSTANCE);
 		ModelLoaderRegistry.registerLoader(SophisticatedStorage.getRL("shulker_box"), ShulkerBoxDynamicModel.Loader.INSTANCE);
 	}
@@ -145,6 +198,27 @@ public class ClientEventHandler {
 		ItemBlockRenderTypes.setRenderLayer(ModBlocks.DIAMOND_BARREL.get(), RenderType.cutout());
 		ItemBlockRenderTypes.setRenderLayer(ModBlocks.NETHERITE_BARREL.get(), RenderType.cutout());
 
+		ItemBlockRenderTypes.setRenderLayer(ModBlocks.LIMITED_BARREL_1.get(), RenderType.cutout());
+		ItemBlockRenderTypes.setRenderLayer(ModBlocks.LIMITED_BARREL_2.get(), RenderType.cutout());
+		ItemBlockRenderTypes.setRenderLayer(ModBlocks.LIMITED_BARREL_3.get(), RenderType.cutout());
+		ItemBlockRenderTypes.setRenderLayer(ModBlocks.LIMITED_BARREL_4.get(), RenderType.cutout());
+		ItemBlockRenderTypes.setRenderLayer(ModBlocks.LIMITED_IRON_BARREL_1.get(), RenderType.cutout());
+		ItemBlockRenderTypes.setRenderLayer(ModBlocks.LIMITED_IRON_BARREL_2.get(), RenderType.cutout());
+		ItemBlockRenderTypes.setRenderLayer(ModBlocks.LIMITED_IRON_BARREL_3.get(), RenderType.cutout());
+		ItemBlockRenderTypes.setRenderLayer(ModBlocks.LIMITED_IRON_BARREL_4.get(), RenderType.cutout());
+		ItemBlockRenderTypes.setRenderLayer(ModBlocks.LIMITED_GOLD_BARREL_1.get(), RenderType.cutout());
+		ItemBlockRenderTypes.setRenderLayer(ModBlocks.LIMITED_GOLD_BARREL_2.get(), RenderType.cutout());
+		ItemBlockRenderTypes.setRenderLayer(ModBlocks.LIMITED_GOLD_BARREL_3.get(), RenderType.cutout());
+		ItemBlockRenderTypes.setRenderLayer(ModBlocks.LIMITED_GOLD_BARREL_4.get(), RenderType.cutout());
+		ItemBlockRenderTypes.setRenderLayer(ModBlocks.LIMITED_DIAMOND_BARREL_1.get(), RenderType.cutout());
+		ItemBlockRenderTypes.setRenderLayer(ModBlocks.LIMITED_DIAMOND_BARREL_2.get(), RenderType.cutout());
+		ItemBlockRenderTypes.setRenderLayer(ModBlocks.LIMITED_DIAMOND_BARREL_3.get(), RenderType.cutout());
+		ItemBlockRenderTypes.setRenderLayer(ModBlocks.LIMITED_DIAMOND_BARREL_4.get(), RenderType.cutout());
+		ItemBlockRenderTypes.setRenderLayer(ModBlocks.LIMITED_NETHERITE_BARREL_1.get(), RenderType.cutout());
+		ItemBlockRenderTypes.setRenderLayer(ModBlocks.LIMITED_NETHERITE_BARREL_2.get(), RenderType.cutout());
+		ItemBlockRenderTypes.setRenderLayer(ModBlocks.LIMITED_NETHERITE_BARREL_3.get(), RenderType.cutout());
+		ItemBlockRenderTypes.setRenderLayer(ModBlocks.LIMITED_NETHERITE_BARREL_4.get(), RenderType.cutout());
+
 		MinecraftForgeClient.registerTooltipComponentFactory(StorageContentsTooltip.class, ClientStorageContentsTooltip::new);
 
 		event.enqueueWork(() -> ClientRegistry.registerKeyBinding(SORT_KEYBIND));
@@ -155,6 +229,7 @@ public class ClientEventHandler {
 		stitchBlockAtlasTextures(event);
 		stitchChestTextures(event);
 		stitchShulkerBoxTextures(event);
+		event.addSprite(LockRenderer.LOCK_TEXTURE.texture());
 	}
 
 	private static void stitchShulkerBoxTextures(TextureStitchEvent.Pre event) {
@@ -185,7 +260,7 @@ public class ClientEventHandler {
 			return;
 		}
 
-		BarrelDynamicModel.getWoodTextures().forEach(modelPartTextures -> modelPartTextures.forEach((modelPart, textures) -> textures.values().forEach(mat -> event.addSprite(mat.texture()))));
+		BarrelDynamicModelBase.getTextures().forEach(mat -> event.addSprite(mat.texture()));
 		ChestDynamicModel.getWoodBreakTextures().forEach(event::addSprite);
 		event.addSprite(ChestDynamicModel.TINTABLE_BREAK_TEXTURE);
 		event.addSprite(ShulkerBoxDynamicModel.TINTABLE_BREAK_TEXTURE);
@@ -194,6 +269,7 @@ public class ClientEventHandler {
 
 	private static void registerEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {
 		event.registerBlockEntityRenderer(ModBlocks.BARREL_BLOCK_ENTITY_TYPE.get(), context -> new BarrelRenderer());
+		event.registerBlockEntityRenderer(ModBlocks.LIMITED_BARREL_BLOCK_ENTITY_TYPE.get(), context -> new LimitedBarrelRenderer());
 		event.registerBlockEntityRenderer(ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get(), ChestRenderer::new);
 		event.registerBlockEntityRenderer(ModBlocks.SHULKER_BOX_BLOCK_ENTITY_TYPE.get(), ShulkerBoxRenderer::new);
 		event.registerBlockEntityRenderer(ModBlocks.CONTROLLER_BLOCK_ENTITY_TYPE.get(), context -> new ControllerRenderer());

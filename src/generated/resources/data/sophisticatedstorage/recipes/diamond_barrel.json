@@ -8,14 +8,14 @@
   ],
   "pattern": [
     "DDD",
-    "DBD",
+    "DSD",
     "DDD"
   ],
   "key": {
     "D": {
       "tag": "forge:gems/diamond"
     },
-    "B": {
+    "S": {
       "item": "sophisticatedstorage:gold_barrel"
     }
   },

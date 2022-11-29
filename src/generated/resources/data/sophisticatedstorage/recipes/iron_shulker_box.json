@@ -12,11 +12,11 @@
     "III"
   ],
   "key": {
-    "S": {
-      "item": "sophisticatedstorage:shulker_box"
-    },
     "I": {
       "tag": "forge:ingots/iron"
+    },
+    "S": {
+      "item": "sophisticatedstorage:shulker_box"
     }
   },
   "result": {

@@ -51,7 +51,9 @@ import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
+import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.item.ShulkerBoxItem;
+import net.p3pp3rf1y.sophisticatedstorage.item.StorageToolItem;
 
 import javax.annotation.Nullable;
 import java.util.UUID;
@@ -59,7 +61,7 @@ import java.util.function.Supplier;
 
 public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDropDataBlock {
 	public static final EnumProperty<Direction> FACING = DirectionalBlock.FACING;
-	private static final VoxelShape ITEM_ENTITY_COLLISION_SHAPE = box(0.1, 0.1, 0.1, 15.9, 15.9, 15.9);
+	private static final VoxelShape ITEM_ENTITY_COLLISION_SHAPE = box(0.05, 0.05, 0.05, 15.95, 15.95, 15.95);
 
 	public ShulkerBoxBlock(Supplier<Integer> numberOfInventorySlotsSupplier, Supplier<Integer> numberOfUpgradeSlotsSupplier) {
 		super(getProperties(), numberOfInventorySlotsSupplier, numberOfUpgradeSlotsSupplier);
@@ -132,6 +134,10 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 			}
 
 			be.tryToAddToController();
+
+			if (placer != null && placer.getOffhandItem().getItem() == ModItems.STORAGE_TOOL.get()) {
+				StorageToolItem.useOffHandOnPlaced(placer.getOffhandItem(), be);
+			}
 
 			be.setChanged();
 		});
@@ -212,7 +218,9 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 	}
 
 	private void addBasicPropertiesToStack(ItemStack stack, StorageBlockEntity be, StorageWrapper storageWrapper) {
-		be.getCustomName().ifPresent(stack::setHoverName);
+		if (be.hasCustomName()) {
+			stack.setHoverName(be.getCustomName());
+		}
 		if (stack.getItem() instanceof ShulkerBoxItem shulkerBoxItem) {
 			int mainColor = storageWrapper.getMainColor();
 			if (mainColor > -1) {

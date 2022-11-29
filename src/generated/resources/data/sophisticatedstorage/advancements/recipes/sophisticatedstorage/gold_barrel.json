@@ -6,7 +6,7 @@
     ]
   },
   "criteria": {
-    "has_iron_barrel": {
+    "has_iron_iron_barrel": {
       "trigger": "minecraft:inventory_changed",
       "conditions": {
         "items": [
@@ -27,7 +27,7 @@
   },
   "requirements": [
     [
-      "has_iron_barrel",
+      "has_iron_iron_barrel",
       "has_the_recipe"
     ]
   ]
