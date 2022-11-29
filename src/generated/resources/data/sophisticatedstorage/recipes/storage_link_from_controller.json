@@ -2,8 +2,8 @@
   "type": "minecraft:crafting_shapeless",
   "conditions": [
     {
-      "itemRegistryName": "sophisticatedstorage:storage_link",
-      "type": "sophisticatedcore:item_enabled"
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:storage_link"
     }
   ],
   "ingredients": [
@@ -15,7 +15,7 @@
     }
   ],
   "result": {
-    "item": "sophisticatedstorage:storage_link",
-    "count": 3
+    "count": 3,
+    "item": "sophisticatedstorage:storage_link"
   }
 }

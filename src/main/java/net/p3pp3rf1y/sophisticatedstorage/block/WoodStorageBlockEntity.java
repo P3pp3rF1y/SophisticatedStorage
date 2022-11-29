@@ -1,18 +1,19 @@
 package net.p3pp3rf1y.sophisticatedstorage.block;
 
+import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
+import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -20,6 +21,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 public abstract class WoodStorageBlockEntity extends StorageBlockEntity {
+	private static final String PACKED_TAG = "packed";
 	@Nullable
 	private WoodType woodType = null;
 
@@ -30,26 +32,26 @@ public abstract class WoodStorageBlockEntity extends StorageBlockEntity {
 	}
 
 	@Override
-	protected void saveData(CompoundTag tag) {
-		super.saveData(tag);
+	protected void saveSynchronizedData(CompoundTag tag) {
+		super.saveSynchronizedData(tag);
 		if (woodType != null) {
 			tag.putString("woodType", woodType.name());
 		}
-		tag.putBoolean("packed", packed);
+		tag.putBoolean(PACKED_TAG, packed);
 	}
 
 	public CompoundTag getStorageContentsTag() {
 		CompoundTag contents = saveWithoutMetadata();
-		contents.putBoolean("packed", false);
+		contents.putBoolean(PACKED_TAG, false);
 		return contents;
 	}
 
 	@Override
-	public void loadData(CompoundTag tag) {
-		super.loadData(tag);
+	public void loadSynchronizedData(CompoundTag tag) {
+		super.loadSynchronizedData(tag);
 		woodType = NBTHelper.getString(tag, "woodType").flatMap(woodTypeName -> WoodType.values().filter(wt -> wt.name().equals(woodTypeName)).findFirst())
 				.orElse(getStorageWrapper().hasMainColor() && getStorageWrapper().hasAccentColor() ? null : WoodType.ACACIA);
-		packed = tag.getBoolean("packed");
+		packed = tag.getBoolean(PACKED_TAG);
 	}
 
 	public Optional<WoodType> getWoodType() {
@@ -70,8 +72,8 @@ public abstract class WoodStorageBlockEntity extends StorageBlockEntity {
 	}
 
 	private Component makeWoodStorageDescriptionId(WoodType wt) {
-		ResourceLocation id = Objects.requireNonNull(ForgeRegistries.BLOCKS.getKey(getBlockState().getBlock()));
-		return Component.translatable("item." + id.getNamespace() + "." + wt.name() + "_" + id.getPath().replace('/', '.'));
+		String id = Util.makeDescriptionId("block", Objects.requireNonNull(ForgeRegistries.BLOCKS.getKey(getBlockState().getBlock())));
+		return WoodStorageBlockItem.getDisplayName(id, wt);
 	}
 
 	public boolean isPacked() {
@@ -90,7 +92,7 @@ public abstract class WoodStorageBlockEntity extends StorageBlockEntity {
 	@Nonnull
 	@Override
 	public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) {
-		if (isPacked() && cap == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
+		if (isPacked() && cap == ForgeCapabilities.ITEM_HANDLER) {
 			return LazyOptional.empty();
 		}
 

@@ -2,23 +2,23 @@
   "type": "sophisticatedstorage:storage_tier_upgrade",
   "conditions": [
     {
-      "itemRegistryName": "sophisticatedstorage:gold_barrel",
-      "type": "sophisticatedcore:item_enabled"
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:gold_barrel"
     }
-  ],
-  "pattern": [
-    "GGG",
-    "GBG",
-    "GGG"
   ],
   "key": {
     "G": {
       "tag": "forge:ingots/gold"
     },
-    "B": {
+    "S": {
       "item": "sophisticatedstorage:iron_barrel"
     }
   },
+  "pattern": [
+    "GGG",
+    "GSG",
+    "GGG"
+  ],
   "result": {
     "item": "sophisticatedstorage:gold_barrel"
   }

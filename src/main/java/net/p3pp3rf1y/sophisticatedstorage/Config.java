@@ -50,6 +50,30 @@ public class Config {
 		public final StorageConfig diamondBarrel;
 		public final StorageConfig netheriteBarrel;
 
+		public final LimitedBarrelConfig limitedBarrel1;
+		public final LimitedBarrelConfig ironLimitedBarrel1;
+		public final LimitedBarrelConfig goldLimitedBarrel1;
+		public final LimitedBarrelConfig diamondLimitedBarrel1;
+		public final LimitedBarrelConfig netheriteLimitedBarrel1;
+
+		public final LimitedBarrelConfig limitedBarrel2;
+		public final LimitedBarrelConfig ironLimitedBarrel2;
+		public final LimitedBarrelConfig goldLimitedBarrel2;
+		public final LimitedBarrelConfig diamondLimitedBarrel2;
+		public final LimitedBarrelConfig netheriteLimitedBarrel2;
+
+		public final LimitedBarrelConfig limitedBarrel3;
+		public final LimitedBarrelConfig ironLimitedBarrel3;
+		public final LimitedBarrelConfig goldLimitedBarrel3;
+		public final LimitedBarrelConfig diamondLimitedBarrel3;
+		public final LimitedBarrelConfig netheriteLimitedBarrel3;
+
+		public final LimitedBarrelConfig limitedBarrel4;
+		public final LimitedBarrelConfig ironLimitedBarrel4;
+		public final LimitedBarrelConfig goldLimitedBarrel4;
+		public final LimitedBarrelConfig diamondLimitedBarrel4;
+		public final LimitedBarrelConfig netheriteLimitedBarrel4;
+
 		public final StorageConfig woodChest;
 		public final StorageConfig ironChest;
 		public final StorageConfig goldChest;
@@ -102,6 +126,30 @@ public class Config {
 			diamondBarrel = new StorageConfig(builder, "Diamond Barrel", 108, 3);
 			netheriteBarrel = new StorageConfig(builder, "Netherite Barrel", 132, 4);
 
+			limitedBarrel1 = new LimitedBarrelConfig(builder, "Limited Barrel I", 32, 1);
+			ironLimitedBarrel1 = new LimitedBarrelConfig(builder, "Limited Iron Barrel I", 64, 1);
+			goldLimitedBarrel1 = new LimitedBarrelConfig(builder, "Limited Gold Barrel I", 96, 2);
+			diamondLimitedBarrel1 = new LimitedBarrelConfig(builder, "Limited Diamond Barrel I", 128, 3);
+			netheriteLimitedBarrel1 = new LimitedBarrelConfig(builder, "Limited Netherite Barrel I", 160, 4);
+
+			limitedBarrel2 = new LimitedBarrelConfig(builder, "Limited Barrel II", 16, 1);
+			ironLimitedBarrel2 = new LimitedBarrelConfig(builder, "Limited Iron Barrel II", 32, 1);
+			goldLimitedBarrel2 = new LimitedBarrelConfig(builder, "Limited Gold Barrel II", 48, 2);
+			diamondLimitedBarrel2 = new LimitedBarrelConfig(builder, "Limited Diamond Barrel II", 64, 3);
+			netheriteLimitedBarrel2 = new LimitedBarrelConfig(builder, "Limited Netherite Barrel II", 80, 4);
+
+			limitedBarrel3 = new LimitedBarrelConfig(builder, "Limited Barrel III", 10, 1);
+			ironLimitedBarrel3 = new LimitedBarrelConfig(builder, "Limited Iron Barrel III", 20, 1);
+			goldLimitedBarrel3 = new LimitedBarrelConfig(builder, "Limited Gold Barrel III", 30, 2);
+			diamondLimitedBarrel3 = new LimitedBarrelConfig(builder, "Limited Diamond Barrel III", 40, 3);
+			netheriteLimitedBarrel3 = new LimitedBarrelConfig(builder, "Limited Netherite Barrel III", 50, 4);
+
+			limitedBarrel4 = new LimitedBarrelConfig(builder, "Limited Barrel IV", 8, 1);
+			ironLimitedBarrel4 = new LimitedBarrelConfig(builder, "Limited Iron Barrel IV", 16, 1);
+			goldLimitedBarrel4 = new LimitedBarrelConfig(builder, "Limited Gold Barrel IV", 24, 2);
+			diamondLimitedBarrel4 = new LimitedBarrelConfig(builder, "Limited Diamond Barrel IV", 32, 3);
+			netheriteLimitedBarrel4 = new LimitedBarrelConfig(builder, "Limited Netherite Barrel IV", 40, 4);
+
 			woodChest = new StorageConfig(builder, "Wood Chest", 27, 1);
 			ironChest = new StorageConfig(builder, "Iron Chest", 54, 1);
 			goldChest = new StorageConfig(builder, "Gold Chest", 81, 2);
@@ -148,6 +196,18 @@ public class Config {
 			public StorageConfig(ForgeConfigSpec.Builder builder, String storagePrefix, int inventorySlotCountDefault, int upgradeSlotCountDefault) {
 				builder.comment(storagePrefix + " Settings").push(storagePrefix.replace(" ", ""));
 				inventorySlotCount = builder.comment("Number of inventory slots in the storage").defineInRange("inventorySlotCount", inventorySlotCountDefault, 1, 180);
+				upgradeSlotCount = builder.comment("Number of upgrade slots in the storage").defineInRange("upgradeSlotCount", upgradeSlotCountDefault, 0, 10);
+				builder.pop();
+			}
+		}
+
+		public static class LimitedBarrelConfig {
+			public final ForgeConfigSpec.IntValue baseSlotLimitMultiplier;
+			public final ForgeConfigSpec.IntValue upgradeSlotCount;
+
+			public LimitedBarrelConfig(ForgeConfigSpec.Builder builder, String storagePrefix, int baseSlotLimitMultiplierDefault, int upgradeSlotCountDefault) {
+				builder.comment(storagePrefix + " Settings").push(storagePrefix.replace(" ", ""));
+				baseSlotLimitMultiplier = builder.comment("Multiplier that's used to calculate base slot limit").defineInRange("baseSlotLimitMultiplier", baseSlotLimitMultiplierDefault, 1, 256);
 				upgradeSlotCount = builder.comment("Number of upgrade slots in the storage").defineInRange("upgradeSlotCount", upgradeSlotCountDefault, 0, 10);
 				builder.pop();
 			}

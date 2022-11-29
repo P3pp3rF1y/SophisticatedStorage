@@ -2,13 +2,9 @@
   "type": "minecraft:crafting_shaped",
   "conditions": [
     {
-      "itemRegistryName": "sophisticatedstorage:storage_link",
-      "type": "sophisticatedcore:item_enabled"
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:storage_link"
     }
-  ],
-  "pattern": [
-    "EP",
-    "RS"
   ],
   "key": {
     "E": {
@@ -24,6 +20,10 @@
       "tag": "forge:stone"
     }
   },
+  "pattern": [
+    "EP",
+    "RS"
+  ],
   "result": {
     "item": "sophisticatedstorage:storage_link"
   }

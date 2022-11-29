@@ -2,23 +2,23 @@
   "type": "minecraft:crafting_shaped",
   "conditions": [
     {
-      "itemRegistryName": "sophisticatedstorage:gold_to_diamond_tier_upgrade",
-      "type": "sophisticatedcore:item_enabled"
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:gold_to_diamond_tier_upgrade"
     }
   ],
+  "key": {
+    "D": {
+      "tag": "forge:gems/diamond"
+    },
+    "R": {
+      "item": "minecraft:redstone_torch"
+    }
+  },
   "pattern": [
     "DDD",
     "DRD",
     "DDD"
   ],
-  "key": {
-    "R": {
-      "item": "minecraft:redstone_torch"
-    },
-    "D": {
-      "tag": "forge:gems/diamond"
-    }
-  },
   "result": {
     "item": "sophisticatedstorage:gold_to_diamond_tier_upgrade"
   }

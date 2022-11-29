@@ -2,14 +2,9 @@
   "type": "sophisticatedstorage:shulker_box_from_chest",
   "conditions": [
     {
-      "itemRegistryName": "sophisticatedstorage:netherite_shulker_box",
-      "type": "sophisticatedcore:item_enabled"
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:netherite_shulker_box"
     }
-  ],
-  "pattern": [
-    "S",
-    "C",
-    "S"
   ],
   "key": {
     "C": {
@@ -19,6 +14,11 @@
       "item": "minecraft:shulker_shell"
     }
   },
+  "pattern": [
+    "S",
+    "C",
+    "S"
+  ],
   "result": {
     "item": "sophisticatedstorage:netherite_shulker_box"
   }

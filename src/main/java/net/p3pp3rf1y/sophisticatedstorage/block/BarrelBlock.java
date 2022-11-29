@@ -32,6 +32,7 @@ import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.EntityCollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -44,19 +45,21 @@ import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 
 import javax.annotation.Nullable;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class BarrelBlock extends WoodStorageBlockBase {
 	public static final DirectionProperty FACING = BlockStateProperties.FACING;
 
 	public static final BooleanProperty OPEN = BlockStateProperties.OPEN;
-	private static final VoxelShape ITEM_ENTITY_COLLISION_SHAPE = box(0.01, 0.01, 0.01, 15.99, 15.99, 15.99);
-	private final StorageTier storageTier;
+	private static final VoxelShape ITEM_ENTITY_COLLISION_SHAPE = box(0.05, 0.05, 0.05, 15.95, 15.95, 15.95);
 
-	public BarrelBlock(StorageTier storageTier, Supplier<Integer> numberOfInventorySlotsSupplier, Supplier<Integer> numberOfUpgradeSlotsSupplier, Properties properties) {
+	public BarrelBlock(Supplier<Integer> numberOfInventorySlotsSupplier, Supplier<Integer> numberOfUpgradeSlotsSupplier, Properties properties) {
+		this(numberOfInventorySlotsSupplier, numberOfUpgradeSlotsSupplier, properties, stateDef -> stateDef.any().setValue(FACING, Direction.NORTH).setValue(OPEN, false).setValue(TICKING, false));
+	}
+	public BarrelBlock(Supplier<Integer> numberOfInventorySlotsSupplier, Supplier<Integer> numberOfUpgradeSlotsSupplier, Properties properties, Function<StateDefinition<Block, BlockState>, BlockState> getDefaultState) {
 		super(properties.noOcclusion(), numberOfInventorySlotsSupplier, numberOfUpgradeSlotsSupplier);
-		registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(OPEN, false).setValue(TICKING, false));
-		this.storageTier = storageTier;
+		registerDefaultState(getDefaultState.apply(stateDefinition));
 	}
 
 	@SuppressWarnings("deprecation")
@@ -89,16 +92,20 @@ public class BarrelBlock extends WoodStorageBlockBase {
 				return InteractionResult.SUCCESS;
 			}
 
-			if (tryPackBlock(player, hand, b, stackInHand)) {
+			if (tryItemInteraction(player, hand, b, stackInHand, getFacing(state), hitResult)) {
 				return InteractionResult.SUCCESS;
 			}
 
 			player.awardStat(Stats.OPEN_BARREL);
-			NetworkHooks.openScreen((ServerPlayer) player, new SimpleMenuProvider((w, p, pl) -> new StorageContainerMenu(w, pl, pos),
+			NetworkHooks.openScreen((ServerPlayer) player, new SimpleMenuProvider((w, p, pl) -> instantiateContainerMenu(w, pl, pos),
 					WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).map(StorageBlockEntity::getDisplayName).orElse(Component.empty())), pos);
 			PiglinAi.angerNearbyPiglins(player, true);
 			return InteractionResult.CONSUME;
 		}).orElse(InteractionResult.PASS);
+	}
+
+	protected StorageContainerMenu instantiateContainerMenu(int w, Player pl, BlockPos pos) {
+		return new StorageContainerMenu(w, pl, pos);
 	}
 
 	@SuppressWarnings("deprecation")
@@ -135,6 +142,12 @@ public class BarrelBlock extends WoodStorageBlockBase {
 		return context instanceof EntityCollisionContext entityCollisionContext && entityCollisionContext.getEntity() instanceof ItemEntity || isCalledByCollisionCacheLogic(level, pos) ? ITEM_ENTITY_COLLISION_SHAPE : super.getCollisionShape(state, level, pos, context);
 	}
 
+	@SuppressWarnings("deprecation")
+	@Override
+	public VoxelShape getBlockSupportShape(BlockState pState, BlockGetter pReader, BlockPos pPos) {
+		return Shapes.block();
+	}
+
 	private boolean isCalledByCollisionCacheLogic(BlockGetter level, BlockPos pos) {
 		return level instanceof EmptyBlockGetter && pos == BlockPos.ZERO;
 	}
@@ -153,9 +166,5 @@ public class BarrelBlock extends WoodStorageBlockBase {
 	@Override
 	public Direction getFacing(BlockState state) {
 		return state.getValue(FACING);
-	}
-
-	public StorageTier getStorageTier() {
-		return storageTier;
 	}
 }

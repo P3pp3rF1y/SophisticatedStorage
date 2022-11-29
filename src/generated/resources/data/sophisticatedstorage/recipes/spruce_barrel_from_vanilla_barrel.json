@@ -2,8 +2,8 @@
   "type": "minecraft:crafting_shapeless",
   "conditions": [
     {
-      "itemRegistryName": "sophisticatedstorage:barrel",
-      "type": "sophisticatedcore:item_enabled"
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:barrel"
     }
   ],
   "ingredients": [

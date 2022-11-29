@@ -2,23 +2,23 @@
   "type": "sophisticatedstorage:storage_tier_upgrade",
   "conditions": [
     {
-      "itemRegistryName": "sophisticatedstorage:gold_chest",
-      "type": "sophisticatedcore:item_enabled"
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:gold_chest"
     }
-  ],
-  "pattern": [
-    "GGG",
-    "GCG",
-    "GGG"
   ],
   "key": {
     "G": {
       "tag": "forge:ingots/gold"
     },
-    "C": {
+    "S": {
       "item": "sophisticatedstorage:iron_chest"
     }
   },
+  "pattern": [
+    "GGG",
+    "GSG",
+    "GGG"
+  ],
   "result": {
     "item": "sophisticatedstorage:gold_chest"
   }

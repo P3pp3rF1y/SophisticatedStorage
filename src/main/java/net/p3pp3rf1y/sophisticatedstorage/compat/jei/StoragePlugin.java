@@ -64,6 +64,27 @@ public class StoragePlugin implements IModPlugin {
 		registration.registerSubtypeInterpreter(VanillaTypes.ITEM_STACK, ModBlocks.DIAMOND_CHEST_ITEM.get(), woodStorageNbtInterpreter);
 		registration.registerSubtypeInterpreter(VanillaTypes.ITEM_STACK, ModBlocks.NETHERITE_CHEST_ITEM.get(), woodStorageNbtInterpreter);
 
+		registration.registerSubtypeInterpreter(VanillaTypes.ITEM_STACK, ModBlocks.LIMITED_BARREL_1_ITEM.get(), woodStorageNbtInterpreter);
+		registration.registerSubtypeInterpreter(VanillaTypes.ITEM_STACK, ModBlocks.LIMITED_BARREL_2_ITEM.get(), woodStorageNbtInterpreter);
+		registration.registerSubtypeInterpreter(VanillaTypes.ITEM_STACK, ModBlocks.LIMITED_BARREL_3_ITEM.get(), woodStorageNbtInterpreter);
+		registration.registerSubtypeInterpreter(VanillaTypes.ITEM_STACK, ModBlocks.LIMITED_BARREL_4_ITEM.get(), woodStorageNbtInterpreter);
+		registration.registerSubtypeInterpreter(VanillaTypes.ITEM_STACK, ModBlocks.LIMITED_IRON_BARREL_1_ITEM.get(), woodStorageNbtInterpreter);
+		registration.registerSubtypeInterpreter(VanillaTypes.ITEM_STACK, ModBlocks.LIMITED_IRON_BARREL_2_ITEM.get(), woodStorageNbtInterpreter);
+		registration.registerSubtypeInterpreter(VanillaTypes.ITEM_STACK, ModBlocks.LIMITED_IRON_BARREL_3_ITEM.get(), woodStorageNbtInterpreter);
+		registration.registerSubtypeInterpreter(VanillaTypes.ITEM_STACK, ModBlocks.LIMITED_IRON_BARREL_4_ITEM.get(), woodStorageNbtInterpreter);
+		registration.registerSubtypeInterpreter(VanillaTypes.ITEM_STACK, ModBlocks.LIMITED_GOLD_BARREL_1_ITEM.get(), woodStorageNbtInterpreter);
+		registration.registerSubtypeInterpreter(VanillaTypes.ITEM_STACK, ModBlocks.LIMITED_GOLD_BARREL_2_ITEM.get(), woodStorageNbtInterpreter);
+		registration.registerSubtypeInterpreter(VanillaTypes.ITEM_STACK, ModBlocks.LIMITED_GOLD_BARREL_3_ITEM.get(), woodStorageNbtInterpreter);
+		registration.registerSubtypeInterpreter(VanillaTypes.ITEM_STACK, ModBlocks.LIMITED_GOLD_BARREL_4_ITEM.get(), woodStorageNbtInterpreter);
+		registration.registerSubtypeInterpreter(VanillaTypes.ITEM_STACK, ModBlocks.LIMITED_DIAMOND_BARREL_1_ITEM.get(), woodStorageNbtInterpreter);
+		registration.registerSubtypeInterpreter(VanillaTypes.ITEM_STACK, ModBlocks.LIMITED_DIAMOND_BARREL_2_ITEM.get(), woodStorageNbtInterpreter);
+		registration.registerSubtypeInterpreter(VanillaTypes.ITEM_STACK, ModBlocks.LIMITED_DIAMOND_BARREL_3_ITEM.get(), woodStorageNbtInterpreter);
+		registration.registerSubtypeInterpreter(VanillaTypes.ITEM_STACK, ModBlocks.LIMITED_DIAMOND_BARREL_4_ITEM.get(), woodStorageNbtInterpreter);
+		registration.registerSubtypeInterpreter(VanillaTypes.ITEM_STACK, ModBlocks.LIMITED_NETHERITE_BARREL_1_ITEM.get(), woodStorageNbtInterpreter);
+		registration.registerSubtypeInterpreter(VanillaTypes.ITEM_STACK, ModBlocks.LIMITED_NETHERITE_BARREL_2_ITEM.get(), woodStorageNbtInterpreter);
+		registration.registerSubtypeInterpreter(VanillaTypes.ITEM_STACK, ModBlocks.LIMITED_NETHERITE_BARREL_3_ITEM.get(), woodStorageNbtInterpreter);
+		registration.registerSubtypeInterpreter(VanillaTypes.ITEM_STACK, ModBlocks.LIMITED_NETHERITE_BARREL_4_ITEM.get(), woodStorageNbtInterpreter);
+
 		IIngredientSubtypeInterpreter<ItemStack> shulkerBoxNbtInterpreter = (itemStack, context) -> {
 			StringJoiner result = new StringJoiner(",");
 			StorageBlockItem.getMainColorFromStack(itemStack).ifPresent(mainColor -> result.add("mainColor:" + mainColor));

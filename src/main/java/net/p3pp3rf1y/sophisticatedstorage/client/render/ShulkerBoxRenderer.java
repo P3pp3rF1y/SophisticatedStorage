@@ -33,8 +33,8 @@ public class ShulkerBoxRenderer implements BlockEntityRenderer<ShulkerBoxBlockEn
 	public static final Material TINTABLE_MAIN_MATERIAL = new Material(Sheets.SHULKER_SHEET, SophisticatedStorage.getRL(ENTITY_SHULKER_BOX_FOLDER + "tintable_main"));
 	public static final Material TINTABLE_ACCENT_MATERIAL = new Material(Sheets.SHULKER_SHEET, SophisticatedStorage.getRL(ENTITY_SHULKER_BOX_FOLDER + "tintable_accent"));
 	public static final Material NO_TINT_MATERIAL = new Material(Sheets.SHULKER_SHEET, SophisticatedStorage.getRL(ENTITY_SHULKER_BOX_FOLDER + "no_tint"));
-
 	private final ShulkerModel<?> model;
+	private final DisplayItemRenderer displayItemRenderer = new DisplayItemRenderer(0.5, 0.5);
 
 	public ShulkerBoxRenderer(BlockEntityRendererProvider.Context context) {
 		model = new ShulkerModel<>(context.bakeLayer(ModelLayers.SHULKER));
@@ -79,7 +79,8 @@ public class ShulkerBoxRenderer implements BlockEntityRenderer<ShulkerBoxBlockEn
 
 		poseStack.popPose();
 
-		DisplayItemRenderer.renderDisplayItem(blockEntity, poseStack, bufferSource, packedLight, packedOverlay, 0.5, 0.5);
+		displayItemRenderer.renderDisplayItem(blockEntity, poseStack, bufferSource, packedLight, packedOverlay);
+		LockRenderer.renderLock(blockEntity, direction, poseStack, bufferSource, packedLight, packedOverlay, 7F/16F, 0.5F);
 	}
 
 	private Material getTierMaterial(Block block) {
