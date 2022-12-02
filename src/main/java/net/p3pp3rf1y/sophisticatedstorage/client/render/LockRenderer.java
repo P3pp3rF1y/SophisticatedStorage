@@ -23,6 +23,7 @@ public class LockRenderer {
 		if (!blockEntity.isLocked() || !blockEntity.shouldShowLock()) {
 			return;
 		}
+		poseStack.pushPose();
 		poseStack.translate(0.5, 0.5, 0.5);
 		poseStack.mulPose(getNorthBasedRotation(direction));
 
@@ -36,6 +37,7 @@ public class LockRenderer {
 		normal.transform(pose.normal());
 		renderQuad(vertexConsumer, pose.pose(), normal, packedOverlay, packedLight);
 
+		poseStack.popPose();
 		poseStack.popPose();
 	}
 
