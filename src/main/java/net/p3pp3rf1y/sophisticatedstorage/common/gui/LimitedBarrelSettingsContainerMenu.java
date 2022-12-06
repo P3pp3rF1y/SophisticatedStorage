@@ -6,7 +6,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 
-public class LimitedBarrelSettingsContainerMenu extends StorageSettingsContainer{
+public class LimitedBarrelSettingsContainerMenu extends StorageSettingsContainerMenu {
 	protected LimitedBarrelSettingsContainerMenu(int windowId, Player player, BlockPos pos) {
 		super(ModBlocks.LIMITED_BARREL_SETTINGS_CONTAINER_TYPE.get(), windowId, player, pos);
 	}

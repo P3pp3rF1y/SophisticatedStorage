@@ -4,13 +4,13 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.SettingsScreen;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.Position;
-import net.p3pp3rf1y.sophisticatedcore.common.gui.SettingsContainer;
+import net.p3pp3rf1y.sophisticatedcore.common.gui.SettingsContainerMenu;
 import net.p3pp3rf1y.sophisticatedcore.settings.StorageSettingsTabControlBase;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.network.OpenStorageInventoryMessage;
 
 public class StorageSettingsScreen extends SettingsScreen {
-	public StorageSettingsScreen(SettingsContainer<?> screenContainer, Inventory inv, Component title) {
+	public StorageSettingsScreen(SettingsContainerMenu<?> screenContainer, Inventory inv, Component title) {
 		super(screenContainer, inv, title);
 	}
 
@@ -24,7 +24,7 @@ public class StorageSettingsScreen extends SettingsScreen {
 		SophisticatedStorage.PACKET_HANDLER.sendToServer(new OpenStorageInventoryMessage(menu.getBlockPosition()));
 	}
 
-	public static StorageSettingsScreen constructScreen(SettingsContainer<?> screenContainer, Inventory inventory, Component title) {
+	public static StorageSettingsScreen constructScreen(SettingsContainerMenu<?> screenContainer, Inventory inventory, Component title) {
 		return new StorageSettingsScreen(screenContainer, inventory, title);
 	}
 }
