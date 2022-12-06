@@ -5,11 +5,13 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryHandler;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
+import net.p3pp3rf1y.sophisticatedcore.settings.ISettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.settings.SettingsHandler;
 import net.p3pp3rf1y.sophisticatedcore.settings.itemdisplay.ItemDisplaySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.settings.main.MainSettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.settings.memory.MemorySettingsCategory;
 
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public abstract class StorageSettingsHandler extends SettingsHandler {
@@ -47,8 +49,13 @@ public abstract class StorageSettingsHandler extends SettingsHandler {
 	}
 
 	@Override
-	protected void addGlobalSettingsCategory(CompoundTag settingsNbt) {
-		addSettingsCategory(settingsNbt, MainSettingsCategory.NAME, markContentsDirty, (categoryNbt, saveNbt) -> new MainSettingsCategory(categoryNbt, saveNbt, SOPHISTICATED_STORAGE_SETTINGS_PLAYER_TAG));
+	public String getGlobalSettingsCategoryName() {
+		return MainSettingsCategory.NAME;
+	}
+
+	@Override
+	public ISettingsCategory instantiateGlobalSettingsCategory(CompoundTag categoryNbt, Consumer<CompoundTag> saveNbt) {
+		return new MainSettingsCategory(categoryNbt, saveNbt, SOPHISTICATED_STORAGE_SETTINGS_PLAYER_TAG);
 	}
 
 	@Override

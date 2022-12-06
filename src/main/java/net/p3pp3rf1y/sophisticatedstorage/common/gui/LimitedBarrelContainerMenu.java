@@ -19,7 +19,7 @@ public class LimitedBarrelContainerMenu extends StorageContainerMenu{
 	}
 
 	@Override
-	protected StorageSettingsContainer instantiateSettingsContainerMenu(int windowId, Player player, BlockPos pos) {
+	protected StorageSettingsContainerMenu instantiateSettingsContainerMenu(int windowId, Player player, BlockPos pos) {
 		return new LimitedBarrelSettingsContainerMenu(windowId, player, pos);
 	}
 

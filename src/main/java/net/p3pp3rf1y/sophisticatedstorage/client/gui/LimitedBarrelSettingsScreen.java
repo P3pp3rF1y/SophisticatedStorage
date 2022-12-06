@@ -4,13 +4,13 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.Position;
-import net.p3pp3rf1y.sophisticatedcore.common.gui.SettingsContainer;
+import net.p3pp3rf1y.sophisticatedcore.common.gui.SettingsContainerMenu;
 import net.p3pp3rf1y.sophisticatedcore.settings.StorageSettingsTabControlBase;
 import net.p3pp3rf1y.sophisticatedcore.settings.itemdisplay.ItemDisplaySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.settings.nosort.NoSortSettingsCategory;
 
 public class LimitedBarrelSettingsScreen extends StorageSettingsScreen {
-	public LimitedBarrelSettingsScreen(SettingsContainer<?> screenContainer, Inventory inv, Component title) {
+	public LimitedBarrelSettingsScreen(SettingsContainerMenu<?> screenContainer, Inventory inv, Component title) {
 		super(screenContainer, inv, title);
 	}
 

@@ -7,19 +7,19 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.level.Level;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
-import net.p3pp3rf1y.sophisticatedcore.common.gui.SettingsContainer;
+import net.p3pp3rf1y.sophisticatedcore.common.gui.SettingsContainerMenu;
 import net.p3pp3rf1y.sophisticatedcore.util.NoopStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 
-public class StorageSettingsContainer extends SettingsContainer<IStorageWrapper> {
+public class StorageSettingsContainerMenu extends SettingsContainerMenu<IStorageWrapper> {
 	private final BlockPos pos;
 
-	protected StorageSettingsContainer(int windowId, Player player, BlockPos pos) {
+	protected StorageSettingsContainerMenu(int windowId, Player player, BlockPos pos) {
 		this(ModBlocks.SETTINGS_CONTAINER_TYPE.get(), windowId, player, pos);
 	}
-	protected StorageSettingsContainer(MenuType<?> menuType, int windowId, Player player, BlockPos pos) {
+	protected StorageSettingsContainerMenu(MenuType<?> menuType, int windowId, Player player, BlockPos pos) {
 		super(menuType, windowId, player, getWrapper(player.level, pos));
 		this.pos = pos;
 	}
@@ -33,8 +33,8 @@ public class StorageSettingsContainer extends SettingsContainer<IStorageWrapper>
 		//noop
 	}
 
-	public static StorageSettingsContainer fromBuffer(int windowId, Inventory playerInventory, FriendlyByteBuf packetBuffer) {
-		return new StorageSettingsContainer(windowId, playerInventory.player, packetBuffer.readBlockPos());
+	public static StorageSettingsContainerMenu fromBuffer(int windowId, Inventory playerInventory, FriendlyByteBuf packetBuffer) {
+		return new StorageSettingsContainerMenu(windowId, playerInventory.player, packetBuffer.readBlockPos());
 	}
 
 	@Override
