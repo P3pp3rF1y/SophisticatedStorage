@@ -10,7 +10,7 @@
   "itemGroup.sophisticatedstorage": "精妙存储",
   "item.sophisticatedstorage.packing_tape": "包装带",
   "item.sophisticatedstorage.storage_tool": "存储工具",
-  "item.sophisticatedstorage.storage_tool.tooltip": "链接, 锁定, 隐藏数量和存储锁定",
+  "item.sophisticatedstorage.storage_tool.tooltip": "链接, 锁定, 隐藏容器上的数量和锁定",
   "item.sophisticatedstorage.storage_tool.overlay.linking": "链接至位于x:%s y:%s z:%s的控制器",
   "item.sophisticatedstorage.storage_tool.overlay.unlinking": "与控制器断开链接",
   "item.sophisticatedstorage.storage_tool.overlay.toggling_lock": "锁定/解锁",
