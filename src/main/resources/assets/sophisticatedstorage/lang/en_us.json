@@ -138,6 +138,8 @@
     "gui.sophisticatedstorage.upgrades.buttons.match_storage_contents": "Match Storage Contents",
     "gui.sophisticatedstorage.upgrades.buttons.shift_click_into_storage": "Shift Click Result Into\nStorage",
     "gui.sophisticatedstorage.upgrades.buttons.shift_click_into_inventory": "Shift Click Result Into\nPlayer's Inventory",
+    "gui.sophisticatedstorage.upgrades.buttons.replenish": "Replenish crafting items",
+    "gui.sophisticatedstorage.upgrades.buttons.do_not_replenish": "Do not replenish crafting items",
     "gui.sophisticatedstorage.buttons.upgrade_switch_enabled": "ON",
     "gui.sophisticatedstorage.buttons.upgrade_switch_disabled": "OFF",
     "gui.sophisticatedstorage.settings.buttons.context_storage": "Storage",
