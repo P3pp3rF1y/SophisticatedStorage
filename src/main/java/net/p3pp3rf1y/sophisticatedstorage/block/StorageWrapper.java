@@ -360,6 +360,7 @@ public abstract class StorageWrapper implements IStorageWrapper {
 		Set<Integer> slotIndexesExcludedFromSort = new HashSet<>();
 		slotIndexesExcludedFromSort.addAll(getSettingsHandler().getTypeCategory(NoSortSettingsCategory.class).getNoSortSlots());
 		slotIndexesExcludedFromSort.addAll(getSettingsHandler().getTypeCategory(MemorySettingsCategory.class).getSlotIndexes());
+		slotIndexesExcludedFromSort.addAll(getInventoryHandler().getNoSortSlots());
 		InventorySorter.sortHandler(getInventoryHandler(), getComparator(), slotIndexesExcludedFromSort);
 	}
 

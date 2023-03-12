@@ -42,6 +42,7 @@ import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlockEntity;
+import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
 
@@ -83,6 +84,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 	private static final ModelProperty<Boolean> HAS_MAIN_COLOR = new ModelProperty<>();
 	private static final ModelProperty<Boolean> HAS_ACCENT_COLOR = new ModelProperty<>();
 	private static final ModelProperty<List<RenderInfo.DisplayItem>> DISPLAY_ITEMS = new ModelProperty<>();
+	private static final ModelProperty<List<Integer>> INACCESSIBLE_SLOTS = new ModelProperty<>();
 	public static final Cache<Integer, List<BakedQuad>> BAKED_QUADS_CACHE = CacheBuilder.newBuilder().expireAfterAccess(15L, TimeUnit.MINUTES).build();
 	private static final Map<Integer, IQuadTransformer> DISPLAY_ROTATIONS = new HashMap<>();
 	private static final Vector3f DEFAULT_ROTATION = new Vector3f(0.0F, 0.0F, 0.0F);
@@ -92,6 +94,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 	private static ItemTransforms createItemTransforms() {
 		return new ItemTransforms(new ItemTransform(new Vector3f(75, 45, 0), new Vector3f(0, 2.5f / 16f, 0), new Vector3f(0.375f, 0.375f, 0.375f), DEFAULT_ROTATION), new ItemTransform(new Vector3f(75, 45, 0), new Vector3f(0, 2.5f / 16f, 0), new Vector3f(0.375f, 0.375f, 0.375f), DEFAULT_ROTATION), new ItemTransform(new Vector3f(0, 225, 0), new Vector3f(0, 0, 0), new Vector3f(0.4f, 0.4f, 0.4f), DEFAULT_ROTATION), new ItemTransform(new Vector3f(0, 45, 0), new Vector3f(0, 0, 0), new Vector3f(0.4f, 0.4f, 0.4f), DEFAULT_ROTATION), new ItemTransform(new Vector3f(0, 0, 0), new Vector3f(0, 14.25f / 16f, 0), new Vector3f(1, 1, 1), DEFAULT_ROTATION), new ItemTransform(new Vector3f(30, 225, 0), new Vector3f(0, 0, 0), new Vector3f(0.625f, 0.625f, 0.625f), DEFAULT_ROTATION), new ItemTransform(new Vector3f(0, 0, 0), new Vector3f(0, 3 / 16f, 0), new Vector3f(0.25f, 0.25f, 0.25f), DEFAULT_ROTATION), new ItemTransform(new Vector3f(0, 0, 0), new Vector3f(0, 0, 0), new Vector3f(0.5f, 0.5f, 0.5f), DEFAULT_ROTATION), ImmutableMap.of());
 	}
+
 	protected final Map<String, Map<BarrelModelPart, BakedModel>> woodModelParts;
 	private final ItemOverrides barrelItemOverrides = new BarrelItemOverrides(this);
 	private Item barrelItem = Items.AIR;
@@ -101,7 +104,9 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 	private boolean barrelHasAccentColor = false;
 	private boolean barrelIsPacked = false;
 
-	protected BarrelBakedModelBase(Map<String, Map<BarrelModelPart, BakedModel>> woodModelParts) {this.woodModelParts = woodModelParts;}
+	protected BarrelBakedModelBase(Map<String, Map<BarrelModelPart, BakedModel>> woodModelParts) {
+		this.woodModelParts = woodModelParts;
+	}
 
 	private static IQuadTransformer getDirectionRotationTransform(Direction dir) {
 		return QuadTransformers.applying(new Transformation(null, DisplayItemRenderer.getNorthBasedRotation(dir), null, null));
@@ -253,6 +258,13 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 				hash = hash * 31 + getDisplayItemHash(displayItem);
 			}
 		}
+		if (data.has(INACCESSIBLE_SLOTS)) {
+			List<Integer> inaccessibleSlots = data.get(INACCESSIBLE_SLOTS);
+			//noinspection ConstantConditions
+			for (Integer inaccessibleSlot : inaccessibleSlots) {
+				hash = hash * 31 + inaccessibleSlot;
+			}
+		}
 		return hash;
 	}
 
@@ -270,9 +282,9 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 
 		List<RenderInfo.DisplayItem> displayItems = data.get(DISPLAY_ITEMS);
 
+		Minecraft minecraft = Minecraft.getInstance();
+		ItemRenderer itemRenderer = minecraft.getItemRenderer();
 		if (displayItems != null && !displayItems.isEmpty()) {
-			Minecraft minecraft = Minecraft.getInstance();
-			ItemRenderer itemRenderer = minecraft.getItemRenderer();
 			int index = 0;
 			for (RenderInfo.DisplayItem displayItem : displayItems) {
 				ItemStack item = displayItem.getItem();
@@ -292,6 +304,20 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 					addRenderedItemSide(state, rand, ret, item, model, rotation, null, index, barrelBlock.getDisplayItemsCount(displayItems));
 				}
 				index++;
+			}
+		}
+
+		List<Integer> inaccessibleSlots = data.get(INACCESSIBLE_SLOTS);
+		if (displayItems != null && inaccessibleSlots != null) {
+			ItemStack inaccessibleSlotStack = new ItemStack(ModItems.INACCESSIBLE_SLOT.get());
+			BakedModel model = itemRenderer.getModel(inaccessibleSlotStack, null, minecraft.player, 0);
+			for (int inaccessibleSlot : inaccessibleSlots) {
+				if (!model.isCustomRenderer()) {
+					for (Direction face : Direction.values()) {
+						addRenderedItemSide(state, rand, ret, inaccessibleSlotStack, model, 0, face, inaccessibleSlot, barrelBlock.getDisplayItemsCount(displayItems));
+					}
+					addRenderedItemSide(state, rand, ret, inaccessibleSlotStack, model, 0, null, inaccessibleSlot, barrelBlock.getDisplayItemsCount(displayItems));
+				}
 			}
 		}
 	}
@@ -481,6 +507,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 					builder.with(HAS_ACCENT_COLOR, hasAccentColor);
 					if (!be.hasFullyDynamicRenderer()) {
 						builder.with(DISPLAY_ITEMS, be.getStorageWrapper().getRenderInfo().getItemDisplayRenderInfo().getDisplayItems());
+						builder.with(INACCESSIBLE_SLOTS, be.getStorageWrapper().getRenderInfo().getItemDisplayRenderInfo().getInaccessibleSlots());
 					}
 					builder.with(IS_PACKED, be.isPacked());
 					builder.with(SHOWS_LOCK, be.isLocked() && be.shouldShowLock());

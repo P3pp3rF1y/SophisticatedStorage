@@ -57,7 +57,7 @@ public class ControllerBlockEntity extends ControllerBlockEntityBase implements 
 	}
 
 	private boolean canDepositStack(ItemStack stack) {
-		return hasStack(stack) || isMemorizedItem(stack);
+		return hasStack(stack) || isMemorizedItem(stack) || isFilterItem(stack.getItem());
 	}
 
 	@Override

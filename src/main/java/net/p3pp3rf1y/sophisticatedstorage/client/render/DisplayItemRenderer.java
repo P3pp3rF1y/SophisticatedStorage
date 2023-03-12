@@ -28,6 +28,7 @@ import net.p3pp3rf1y.sophisticatedcore.inventory.ItemStackKey;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockBase;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
+import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 
 import java.util.HashSet;
 import java.util.List;
@@ -58,13 +59,15 @@ public class DisplayItemRenderer {
 			Direction facing = storageBlock.getFacing(blockState);
 
 			Minecraft minecraft = Minecraft.getInstance();
-			renderSingleItem(poseStack, bufferSource, packedLight, packedOverlay, blockState, facing, minecraft, displayItem, false, 0, 1);
+			renderSingleItem(poseStack, bufferSource, packedLight, packedOverlay, blockState, facing, minecraft, false, 0, 1, displayItem.getItem(), displayItem.getRotation());
 		});
 	}
 
 	public void renderDisplayItems(StorageBlockEntity blockEntity, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, boolean renderOnlyCustom) {
-		List<RenderInfo.DisplayItem> displayItems = blockEntity.getStorageWrapper().getRenderInfo().getItemDisplayRenderInfo().getDisplayItems();
-		if (displayItems.isEmpty()) {
+		RenderInfo.ItemDisplayRenderInfo itemDisplayRenderInfo = blockEntity.getStorageWrapper().getRenderInfo().getItemDisplayRenderInfo();
+		List<RenderInfo.DisplayItem> displayItems = itemDisplayRenderInfo.getDisplayItems();
+		List<Integer> inaccessibleSlots = itemDisplayRenderInfo.getInaccessibleSlots();
+		if (displayItems.isEmpty() && inaccessibleSlots.isEmpty()) {
 			return;
 		}
 
@@ -75,25 +78,29 @@ public class DisplayItemRenderer {
 		Direction facing = storageBlock.getFacing(blockState);
 
 		Minecraft minecraft = Minecraft.getInstance();
-		int displayItemIndex = 0;
 		int displayItemCount = storageBlock.getDisplayItemsCount(displayItems);
-		for (RenderInfo.DisplayItem displayItem : displayItems) {
-			renderSingleItem(poseStack, bufferSource, packedLight, packedOverlay, blockState, facing, minecraft, displayItem, renderOnlyCustom, storageBlock.hasFixedIndexDisplayItems() ? displayItem.getSlotIndex() : displayItemIndex, displayItemCount);
-			displayItemIndex++;
+		for (int displayItemIndex = 0; displayItemIndex < displayItemCount; displayItemIndex++) {
+			ItemStack inaccessibleSlotStack = new ItemStack(ModItems.INACCESSIBLE_SLOT.get());
+			if (inaccessibleSlots.contains(displayItemIndex)) {
+				renderSingleItem(poseStack, bufferSource, packedLight, packedOverlay, blockState, facing, minecraft, renderOnlyCustom, displayItemIndex, displayItemCount, inaccessibleSlotStack, 0);
+			} else {
+				for (RenderInfo.DisplayItem displayItem : displayItems) {
+					renderSingleItem(poseStack, bufferSource, packedLight, packedOverlay, blockState, facing, minecraft, renderOnlyCustom, storageBlock.hasFixedIndexDisplayItems() ? displayItem.getSlotIndex() : displayItemIndex, displayItemCount, displayItem.getItem(), displayItem.getRotation());
+				}
+			}
 		}
 	}
 
-	private void renderSingleItem(PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, BlockState blockState, Direction facing, Minecraft minecraft, RenderInfo.DisplayItem displayItem, boolean renderOnlyCustom, int displayItemIndex, int displayItemCount) {
-		ItemStack item = displayItem.getItem();
-		if (item.isEmpty()) {
+	private void renderSingleItem(PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, BlockState blockState, Direction facing, Minecraft minecraft, boolean renderOnlyCustom, int displayItemIndex, int displayItemCount, ItemStack stack, int rotation) {
+		if (stack.isEmpty()) {
 			return;
 		}
-		BakedModel itemModel = minecraft.getItemRenderer().getModel(item, null, minecraft.player, 0);
+		BakedModel itemModel = minecraft.getItemRenderer().getModel(stack, null, minecraft.player, 0);
 		if (!itemModel.isCustomRenderer() && renderOnlyCustom) {
 			return;
 		}
 
-		float itemOffset = (float) getDisplayItemOffset(item, itemModel, displayItemCount == 1 ? 1 : SMALL_3D_ITEM_SCALE);
+		float itemOffset = (float) getDisplayItemOffset(stack, itemModel, displayItemCount == 1 ? 1 : SMALL_3D_ITEM_SCALE);
 		poseStack.pushPose();
 
 		Vec3i normal = facing.getNormal();
@@ -108,7 +115,7 @@ public class DisplayItemRenderer {
 
 		rotateToFront(poseStack, blockState, facing);
 
-		poseStack.mulPose(Vector3f.ZP.rotationDegrees(displayItem.getRotation()));
+		poseStack.mulPose(Vector3f.ZP.rotationDegrees(rotation));
 		float itemScale;
 		if (displayItemCount == 1) {
 			itemScale = itemModel.isGui3d() ? 1.0f : BIG_2D_ITEM_SCALE;
@@ -117,7 +124,7 @@ public class DisplayItemRenderer {
 		}
 		poseStack.scale(itemScale, itemScale, itemScale);
 
-		minecraft.getItemRenderer().render(item, ItemTransforms.TransformType.FIXED, false, poseStack, bufferSource, packedLight, packedOverlay, itemModel);
+		minecraft.getItemRenderer().render(stack, ItemTransforms.TransformType.FIXED, false, poseStack, bufferSource, packedLight, packedOverlay, itemModel);
 		poseStack.popPose();
 	}
 
