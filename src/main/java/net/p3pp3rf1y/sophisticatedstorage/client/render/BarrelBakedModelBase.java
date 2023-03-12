@@ -41,6 +41,7 @@ import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlockEntity;
+import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
 
@@ -145,6 +146,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 	private static final ModelProperty<Boolean> HAS_MAIN_COLOR = new ModelProperty<>();
 	private static final ModelProperty<Boolean> HAS_ACCENT_COLOR = new ModelProperty<>();
 	private static final ModelProperty<List<RenderInfo.DisplayItem>> DISPLAY_ITEMS = new ModelProperty<>();
+	private static final ModelProperty<List<Integer>> INACCESSIBLE_SLOTS = new ModelProperty<>();
 	public static final Cache<Integer, List<BakedQuad>> BAKED_QUADS_CACHE = CacheBuilder.newBuilder().expireAfterAccess(15L, TimeUnit.MINUTES).build();
 	private static final Map<Integer, QuadTransformer> DISPLAY_ROTATIONS = new HashMap<>();
 	protected final Map<String, Map<BarrelModelPart, BakedModel>> woodModelParts;
@@ -156,7 +158,9 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 	private boolean barrelHasAccentColor = false;
 	private boolean barrelIsPacked = false;
 
-	protected BarrelBakedModelBase(Map<String, Map<BarrelModelPart, BakedModel>> woodModelParts) {this.woodModelParts = woodModelParts;}
+	protected BarrelBakedModelBase(Map<String, Map<BarrelModelPart, BakedModel>> woodModelParts) {
+		this.woodModelParts = woodModelParts;
+	}
 
 	private static QuadTransformer getDirectionRotationTransform(Direction dir) {
 		return new QuadTransformer(new Transformation(null, DisplayItemRenderer.getNorthBasedRotation(dir), null, null));
@@ -304,6 +308,13 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 				hash = hash * 31 + getDisplayItemHash(displayItem);
 			}
 		}
+		if (data.hasProperty(INACCESSIBLE_SLOTS)) {
+			List<Integer> inaccessibleSlots = data.getData(INACCESSIBLE_SLOTS);
+			//noinspection ConstantConditions
+			for (Integer inaccessibleSlot : inaccessibleSlots) {
+				hash = hash * 31 + inaccessibleSlot;
+			}
+		}
 		return hash;
 	}
 
@@ -321,9 +332,9 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 
 		List<RenderInfo.DisplayItem> displayItems = data.getData(DISPLAY_ITEMS);
 
+		Minecraft minecraft = Minecraft.getInstance();
+		ItemRenderer itemRenderer = minecraft.getItemRenderer();
 		if (displayItems != null && !displayItems.isEmpty()) {
-			Minecraft minecraft = Minecraft.getInstance();
-			ItemRenderer itemRenderer = minecraft.getItemRenderer();
 			int index = 0;
 			for (RenderInfo.DisplayItem displayItem : displayItems) {
 				ItemStack item = displayItem.getItem();
@@ -343,6 +354,20 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 					addRenderedItemSide(state, rand, ret, item, model, rotation, null, index, barrelBlock.getDisplayItemsCount(displayItems));
 				}
 				index++;
+			}
+		}
+
+		List<Integer> inaccessibleSlots = data.getData(INACCESSIBLE_SLOTS);
+		if (displayItems != null && inaccessibleSlots != null) {
+			ItemStack inaccessibleSlotStack = new ItemStack(ModItems.INACCESSIBLE_SLOT.get());
+			BakedModel model = itemRenderer.getModel(inaccessibleSlotStack, null, minecraft.player, 0);
+			for (int inaccessibleSlot : inaccessibleSlots) {
+				if (!model.isCustomRenderer()) {
+					for (Direction face : Direction.values()) {
+						addRenderedItemSide(state, rand, ret, inaccessibleSlotStack, model, 0, face, inaccessibleSlot, barrelBlock.getDisplayItemsCount(displayItems));
+					}
+					addRenderedItemSide(state, rand, ret, inaccessibleSlotStack, model, 0, null, inaccessibleSlot, barrelBlock.getDisplayItemsCount(displayItems));
+				}
 			}
 		}
 	}
@@ -520,6 +545,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 					builder.withInitial(HAS_ACCENT_COLOR, hasAccentColor);
 					if (!be.hasFullyDynamicRenderer()) {
 						builder.withInitial(DISPLAY_ITEMS, be.getStorageWrapper().getRenderInfo().getItemDisplayRenderInfo().getDisplayItems());
+						builder.withInitial(INACCESSIBLE_SLOTS, be.getStorageWrapper().getRenderInfo().getItemDisplayRenderInfo().getInaccessibleSlots());
 					}
 					builder.withInitial(IS_PACKED, be.isPacked());
 					builder.withInitial(SHOWS_LOCK, be.isLocked() && be.shouldShowLock());

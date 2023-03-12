@@ -69,7 +69,6 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 		StorageWrapper storageWrapper = getStorageWrapper();
 		InventoryHandler invHandler = storageWrapper.getInventoryHandler();
 		ItemStack stackInSlot = invHandler.getStackInSlot(slot);
-		ItemStack result = stackInHand;
 
 		MemorySettingsCategory memorySettings = getStorageWrapper().getSettingsHandler().getTypeCategory(MemorySettingsCategory.class);
 
@@ -78,16 +77,12 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 			return;
 		}
 
-		if (stackInSlot.isEmpty() && (!memorySettings.isSlotSelected(slot) || memorySettings.matchesFilter(slot, result)))  {
-			result = result.copy();
-			invHandler.setStackInSlot(slot, result.split(Math.min(result.getCount(), invHandler.getStackLimit(slot, result))));
+		ItemStack result = invHandler.insertItemOnlyToSlot(slot, stackInHand, true);
+		if (result.getCount() != stackInHand.getCount()) {
+			result = invHandler.insertItemOnlyToSlot(slot, stackInHand, false);
 			if (isLocked()) {
 				memorySettings.selectSlot(slot);
 			}
-		} else if (ItemHandlerHelper.canItemStacksStack(stackInSlot, result)) {
-			result = invHandler.insertItem(slot, result, false);
-		}
-		if (result.getCount() != stackInHand.getCount()) {
 			player.setItemInHand(hand, result);
 		}
 	}
@@ -96,16 +91,14 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 		Predicate<ItemStack> memoryItemMatches = itemStack -> memorySettings.isSlotSelected(slot) && memorySettings.matchesFilter(slot, itemStack);
 		player.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null).ifPresent(
 				playerInventory -> InventoryHelper.iterate(playerInventory, (playerSlot, playerStack) -> {
-					if ((stackInSlot.isEmpty() && memoryItemMatches.test(playerStack)) || (!playerStack.isEmpty() && ItemHandlerHelper.canItemStacksStack(stackInSlot, playerStack))) {
-						int remainingCapacity = invHandler.getStackLimit(slot, playerStack) - invHandler.getStackInSlot(slot).getCount();
+					if ((stackInSlot.isEmpty() && (memoryItemMatches.test(playerStack) || invHandler.isFilterItem(playerStack.getItem())) || (!playerStack.isEmpty() && ItemHandlerHelper.canItemStacksStack(stackInSlot, playerStack)))) {
 
-						if (remainingCapacity <= 0) {
-							return;
-						}
-						int toExtract = Math.min(remainingCapacity, playerStack.getCount());
-						ItemStack extracted = playerInventory.extractItem(playerSlot, toExtract, true);
-						if (extracted.getCount() > 0) {
-							invHandler.insertItem(slot, playerInventory.extractItem(playerSlot, extracted.getCount(), false), false);
+						ItemStack result = invHandler.insertItemOnlyToSlot(slot, playerStack, true);
+						if (result.getCount() < playerStack.getCount()) {
+							ItemStack extracted = playerInventory.extractItem(playerSlot, playerStack.getCount() - result.getCount(), true);
+							if (!extracted.isEmpty()) {
+								invHandler.insertItemOnlyToSlot(slot, playerInventory.extractItem(playerSlot, extracted.getCount(), false), false);
+							}
 						}
 					}
 				}));

@@ -89,6 +89,7 @@ import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageButtonDefinitions;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageTierUpgradeItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageToolItem;
+import net.p3pp3rf1y.sophisticatedstorage.upgrades.compression.CompressionUpgradeItem;
 
 public class ModItems {
 	private ModItems() {}
@@ -152,6 +153,7 @@ public class ModItems {
 	public static final RegistryObject<PumpUpgradeItem> PUMP_UPGRADE = ITEMS.register("pump_upgrade", () -> new PumpUpgradeItem(false, false, SophisticatedStorage.CREATIVE_TAB, Config.COMMON.pumpUpgrade));
 	public static final RegistryObject<PumpUpgradeItem> ADVANCED_PUMP_UPGRADE = ITEMS.register("advanced_pump_upgrade", () -> new PumpUpgradeItem(true, true, SophisticatedStorage.CREATIVE_TAB, Config.COMMON.pumpUpgrade));
 	public static final RegistryObject<XpPumpUpgradeItem> XP_PUMP_UPGRADE = ITEMS.register("xp_pump_upgrade", () -> new XpPumpUpgradeItem(SophisticatedStorage.CREATIVE_TAB, Config.COMMON.xpPumpUpgrade));
+	public static final RegistryObject<CompressionUpgradeItem> COMPRESSION_UPGRADE = ITEMS.register("compression_upgrade", () -> new CompressionUpgradeItem(SophisticatedStorage.CREATIVE_TAB));
 	public static final RegistryObject<StorageTierUpgradeItem> BASIC_TIER_UPGRADE = ITEMS.register("basic_tier_upgrade", () -> new StorageTierUpgradeItem(StorageTierUpgradeItem.TierUpgrade.BASIC, true));
 	public static final RegistryObject<StorageTierUpgradeItem> BASIC_TO_IRON_TIER_UPGRADE = ITEMS.register("basic_to_iron_tier_upgrade", () -> new StorageTierUpgradeItem(StorageTierUpgradeItem.TierUpgrade.BASIC_TO_IRON));
 	public static final RegistryObject<StorageTierUpgradeItem> IRON_TO_GOLD_TIER_UPGRADE = ITEMS.register("iron_to_gold_tier_upgrade", () -> new StorageTierUpgradeItem(StorageTierUpgradeItem.TierUpgrade.IRON_TO_GOLD));
@@ -163,6 +165,7 @@ public class ModItems {
 	public static final RegistryObject<ItemBase> PACKING_TAPE = ITEMS.register("packing_tape", ()-> new ItemBase(new Item.Properties().stacksTo(1).durability(4), SophisticatedStorage.CREATIVE_TAB));
 	public static final RegistryObject<ItemBase> STORAGE_TOOL = ITEMS.register("storage_tool", StorageToolItem::new);
 	public static final RegistryObject<ItemBase> DEBUG_TOOL = ITEMS.register("debug_tool", () -> new ItemBase(new Item.Properties().stacksTo(1), SophisticatedStorage.CREATIVE_TAB));
+	public static final RegistryObject<Item> INACCESSIBLE_SLOT = ITEMS.register("inaccessible_slot", () -> new Item(new Item.Properties().stacksTo(1).tab(null)));
 
 	public static void registerHandlers(IEventBus modBus) {
 		ITEMS.register(modBus);
