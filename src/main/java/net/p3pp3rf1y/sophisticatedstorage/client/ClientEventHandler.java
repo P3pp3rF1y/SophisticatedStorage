@@ -186,7 +186,6 @@ public class ClientEventHandler {
 		ModelLoaderRegistry.registerLoader(SophisticatedStorage.getRL("limited_barrel"), LimitedBarrelDynamicModel.Loader.INSTANCE);
 		ModelLoaderRegistry.registerLoader(SophisticatedStorage.getRL("chest"), ChestDynamicModel.Loader.INSTANCE);
 		ModelLoaderRegistry.registerLoader(SophisticatedStorage.getRL("shulker_box"), ShulkerBoxDynamicModel.Loader.INSTANCE);
-		ModelLoaderRegistry.registerLoader(SophisticatedStorage.getRL("shulker_box"), ShulkerBoxDynamicModel.Loader.INSTANCE);
 	}
 
 	public static void registerLayer(EntityRenderersEvent.RegisterLayerDefinitions event) {
