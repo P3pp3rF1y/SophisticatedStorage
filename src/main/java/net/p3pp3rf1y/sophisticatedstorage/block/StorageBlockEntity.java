@@ -356,8 +356,9 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 
 	private void invalidateStorageCap() {
 		if (itemHandlerCap != null) {
-			itemHandlerCap.invalidate();
+			LazyOptional<IItemHandler> tempItemHandlerCap = itemHandlerCap;
 			itemHandlerCap = null;
+			tempItemHandlerCap.invalidate();
 		}
 	}
 
