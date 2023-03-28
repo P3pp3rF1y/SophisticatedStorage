@@ -97,7 +97,7 @@ public class CommonEventHandler {
 				droppedItemEntityCount.addAndGet((int) Math.ceil(stack.getCount() / (double) Math.min(stack.getMaxStackSize(), AVERAGE_MAX_ITEM_ENTITY_DROP_COUNT)));
 			});
 
-			if (droppedItemEntityCount.get() > Config.COMMON.tooManyItemEntityDrops.get()) {
+			if (droppedItemEntityCount.get() > Config.SERVER.tooManyItemEntityDrops.get()) {
 				event.setCanceled(true);
 				ItemBase packingTapeItem = ModItems.PACKING_TAPE.get();
 				Component packingTapeItemName = packingTapeItem.getName(new ItemStack(packingTapeItem));
