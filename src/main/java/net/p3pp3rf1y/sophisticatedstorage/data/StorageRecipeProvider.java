@@ -17,7 +17,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import net.minecraftforge.common.Tags;
-import net.minecraftforge.common.crafting.conditions.ModLoadedCondition;
+import net.minecraftforge.common.crafting.conditions.ItemExistsCondition;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.p3pp3rf1y.sophisticatedcore.crafting.ShapeBasedRecipeBuilder;
 import net.p3pp3rf1y.sophisticatedcore.crafting.ShapelessBasedRecipeBuilder;
@@ -631,11 +631,12 @@ public class StorageRecipeProvider extends RecipeProvider {
 	}
 
 	private void addQuarkChestRecipe(Consumer<FinishedRecipe> consumer, String name, WoodType woodType) {
-		Block chestBlock = getBlock("quark:" + name);
+		String chestRegistryName = "quark:" + name;
+		Block chestBlock = getBlock(chestRegistryName);
 		ShapelessBasedRecipeBuilder.shapeless(WoodStorageBlockItem.setWoodType(new ItemStack(ModBlocks.CHEST_ITEM.get()), woodType))
 				.requires(chestBlock)
 				.requires(Blocks.REDSTONE_TORCH)
-				.condition(new ModLoadedCondition("quark"))
+				.condition(new ItemExistsCondition(chestRegistryName))
 				.save(consumer, SophisticatedStorage.getRL(woodType.name() + "_chest_from_quark_" + name));
 	}
 
