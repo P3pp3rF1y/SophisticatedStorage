@@ -50,6 +50,16 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 	}
 
 	@Override
+	public boolean memorizesItemsWhenLocked() {
+		return true;
+	}
+
+	@Override
+	public boolean allowsEmptySlotsMatchingItemInsertsWhenLocked() {
+		return false;
+	}
+
+	@Override
 	public void toggleCountVisibility() {
 		showCounts = !showCounts;
 		setChanged();
