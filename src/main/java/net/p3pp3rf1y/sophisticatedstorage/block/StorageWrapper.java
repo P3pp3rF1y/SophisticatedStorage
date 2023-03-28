@@ -232,7 +232,7 @@ public abstract class StorageWrapper implements IStorageWrapper {
 	}
 
 	private void initInventoryHandler() {
-		inventoryHandler = new InventoryHandler(getNumberOfInventorySlots(), this, getContentsNbt(), getSaveHandler.get(), StackUpgradeItem.getInventorySlotLimit(this), Config.COMMON.stackUpgrade) {
+		inventoryHandler = new InventoryHandler(getNumberOfInventorySlots(), this, getContentsNbt(), getSaveHandler.get(), StackUpgradeItem.getInventorySlotLimit(this), Config.SERVER.stackUpgrade) {
 			@Override
 			protected boolean isAllowed(ItemStack stack) {
 				return isAllowedInStorage(stack);

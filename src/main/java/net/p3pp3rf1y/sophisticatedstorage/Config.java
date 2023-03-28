@@ -16,17 +16,17 @@ import org.apache.commons.lang3.tuple.Pair;
 public class Config {
 	private Config() {}
 
-	public static final Config.Client CLIENT;
+	public static final Client CLIENT;
 	public static final ForgeConfigSpec CLIENT_SPEC;
 
-	public static final Config.Common COMMON;
-	public static final ForgeConfigSpec COMMON_SPEC;
+	public static final Server SERVER;
+	public static final ForgeConfigSpec SERVER_SPEC;
 
 	static {
-		final Pair<Config.Common, ForgeConfigSpec> commonSpec = new ForgeConfigSpec.Builder().configure(Config.Common::new);
-		COMMON_SPEC = commonSpec.getRight();
-		COMMON = commonSpec.getLeft();
-		final Pair<Config.Client, ForgeConfigSpec> clientSpec = new ForgeConfigSpec.Builder().configure(Config.Client::new);
+		final Pair<Server, ForgeConfigSpec> commonSpec = new ForgeConfigSpec.Builder().configure(Server::new);
+		SERVER_SPEC = commonSpec.getRight();
+		SERVER = commonSpec.getLeft();
+		final Pair<Client, ForgeConfigSpec> clientSpec = new ForgeConfigSpec.Builder().configure(Client::new);
 		CLIENT_SPEC = clientSpec.getRight();
 		CLIENT = clientSpec.getLeft();
 	}
@@ -44,7 +44,7 @@ public class Config {
 		}
 	}
 
-	public static class Common {
+	public static class Server {
 		public final StorageConfig woodBarrel;
 		public final StorageConfig ironBarrel;
 		public final StorageConfig goldBarrel;
@@ -119,8 +119,8 @@ public class Config {
 			stackUpgrade.clearNonStackableItems();
 		}
 
-		public Common(ForgeConfigSpec.Builder builder) {
-			builder.comment("Common Settings").push("common");
+		public Server(ForgeConfigSpec.Builder builder) {
+			builder.comment("Server Settings").push("server");
 
 			woodBarrel = new StorageConfig(builder, "Wood Barrel", 27, 1);
 			ironBarrel = new StorageConfig(builder, "Iron Barrel", 54, 1);

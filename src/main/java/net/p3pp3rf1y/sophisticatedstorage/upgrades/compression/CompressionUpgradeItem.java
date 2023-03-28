@@ -43,7 +43,7 @@ public class CompressionUpgradeItem extends UpgradeItemBase<CompressionUpgradeIt
 			return new UpgradeSlotChangeResult.Success();
 		}
 
-		Optional<InventoryPartitioner.SlotRange> slotRange = storageWrapper.getInventoryHandler().getInventoryPartitioner().getFirstSpace(Config.COMMON.compressionUpgrade.maxNumberOfSlots.get());
+		Optional<InventoryPartitioner.SlotRange> slotRange = storageWrapper.getInventoryHandler().getInventoryPartitioner().getFirstSpace(Config.SERVER.compressionUpgrade.maxNumberOfSlots.get());
 
 		return slotRange.map(range -> canUseForCompression(storageWrapper, range))
 				.orElseGet(() -> new UpgradeSlotChangeResult.Fail(StorageTranslationHelper.INSTANCE.translError("add.compression_no_space"), Collections.emptySet(), Collections.emptySet(), Collections.emptySet()));
@@ -92,7 +92,7 @@ public class CompressionUpgradeItem extends UpgradeItemBase<CompressionUpgradeIt
 		@Override
 		public void onAdded() {
 			InventoryPartitioner inventoryPartitioner = storageWrapper.getInventoryHandler().getInventoryPartitioner();
-			inventoryPartitioner.getFirstSpace(Config.COMMON.compressionUpgrade.maxNumberOfSlots.get()).ifPresent(slotRange -> {
+			inventoryPartitioner.getFirstSpace(Config.SERVER.compressionUpgrade.maxNumberOfSlots.get()).ifPresent(slotRange -> {
 				setFirstInventorySlot(slotRange.firstSlot());
 				inventoryPartitioner.addInventoryPart(slotRange.firstSlot(), slotRange.numberOfSlots(), new CompressionInventoryPart(storageWrapper.getInventoryHandler(), slotRange, () -> storageWrapper.getSettingsHandler().getTypeCategory(MemorySettingsCategory.class)));
 			});
