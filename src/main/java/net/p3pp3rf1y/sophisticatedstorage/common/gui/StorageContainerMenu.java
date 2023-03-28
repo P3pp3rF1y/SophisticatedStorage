@@ -111,7 +111,7 @@ public class StorageContainerMenu extends StorageContainerMenuBase<IStorageWrapp
 	protected void onStorageInventorySlotSet(int slotIndex) {
 		super.onStorageInventorySlotSet(slotIndex);
 
-		if (getStorageBlockEntity().isLocked() && !getSlot(slotIndex).getItem().isEmpty()) {
+		if (getStorageBlockEntity().isLocked() && getStorageBlockEntity().memorizesItemsWhenLocked() && !getSlot(slotIndex).getItem().isEmpty()) {
 			MemorySettingsCategory memorySettings = getStorageWrapper().getSettingsHandler().getTypeCategory(MemorySettingsCategory.class);
 			if (!memorySettings.isSlotSelected(slotIndex)) {
 				memorySettings.selectSlot(slotIndex);

@@ -25,6 +25,9 @@ import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.IItemHandler;
 import net.p3pp3rf1y.sophisticatedcore.controller.IControllableStorage;
 import net.p3pp3rf1y.sophisticatedcore.controller.ILinkable;
+import net.p3pp3rf1y.sophisticatedcore.inventory.ISlotTracker;
+import net.p3pp3rf1y.sophisticatedcore.inventory.ITrackedContentsItemHandler;
+import net.p3pp3rf1y.sophisticatedcore.inventory.ItemStackKey;
 import net.p3pp3rf1y.sophisticatedcore.settings.itemdisplay.ItemDisplaySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.settings.memory.MemorySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.ITickableUpgrade;
@@ -39,6 +42,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 public abstract class StorageBlockEntity extends BlockEntity implements IControllableStorage, ILinkable, ILockable, Nameable {
 	public static final String STORAGE_WRAPPER_TAG = "storageWrapper";
@@ -62,6 +66,8 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 	private LazyOptional<IItemHandler> itemHandlerCap;
 	private boolean locked = false;
 	private boolean showLock = true;
+	@Nullable
+	private ContentsFilteredItemHandler contentsFilteredItemHandler = null;
 
 	protected StorageBlockEntity(BlockPos pos, BlockState state, BlockEntityType<? extends StorageBlockEntity> blockEntityType) {
 		super(blockEntityType, pos, state);
@@ -120,7 +126,19 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 
 			@Override
 			protected boolean emptyInventorySlotsAcceptItems() {
-				return !locked;
+				return !locked || allowsEmptySlotsMatchingItemInsertsWhenLocked();
+			}
+
+			@Override
+			public ITrackedContentsItemHandler getInventoryForInputOutput() {
+				if (locked && allowsEmptySlotsMatchingItemInsertsWhenLocked()) {
+					if (contentsFilteredItemHandler == null) {
+						contentsFilteredItemHandler = new ContentsFilteredItemHandler(super.getInventoryForInputOutput(), storageWrapper.getInventoryHandler().getSlotTracker());
+					}
+					return contentsFilteredItemHandler;
+				}
+
+				return super.getInventoryForInputOutput();
 			}
 		};
 		storageWrapper.setUpgradeCachesInvalidatedHandler(this::onUpgradeCachesInvalidated);
@@ -454,24 +472,44 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		}
 	}
 
+	public boolean memorizesItemsWhenLocked() {
+		return false;
+	}
+
+	public boolean allowsEmptySlotsMatchingItemInsertsWhenLocked() {
+		return true;
+	}
+
 	private void lock() {
 		locked = true;
-		getStorageWrapper().getSettingsHandler().getTypeCategory(MemorySettingsCategory.class).selectSlots(0, getStorageWrapper().getInventoryHandler().getSlots());
+		if (memorizesItemsWhenLocked()) {
+			getStorageWrapper().getSettingsHandler().getTypeCategory(MemorySettingsCategory.class).selectSlots(0, getStorageWrapper().getInventoryHandler().getSlots());
+		}
 		updateEmptySlots();
+		if (allowsEmptySlotsMatchingItemInsertsWhenLocked()) {
+			contentsFilteredItemHandler = null;
+			invalidateStorageCap();
+		}
 		setChanged();
 		WorldHelper.notifyBlockUpdate(this);
 	}
 
 	private void unlock() {
 		locked = false;
-		getStorageWrapper().getSettingsHandler().getTypeCategory(MemorySettingsCategory.class).unselectAllSlots();
-		ItemDisplaySettingsCategory itemDisplaySettings = getStorageWrapper().getSettingsHandler().getTypeCategory(ItemDisplaySettingsCategory.class);
-		InventoryHelper.iterate(getStorageWrapper().getInventoryHandler(), (slot, stack) -> {
-			if (stack.isEmpty()) {
-				itemDisplaySettings.itemChanged(slot);
-			}
-		});
+		if (memorizesItemsWhenLocked()) {
+			getStorageWrapper().getSettingsHandler().getTypeCategory(MemorySettingsCategory.class).unselectAllSlots();
+			ItemDisplaySettingsCategory itemDisplaySettings = getStorageWrapper().getSettingsHandler().getTypeCategory(ItemDisplaySettingsCategory.class);
+			InventoryHelper.iterate(getStorageWrapper().getInventoryHandler(), (slot, stack) -> {
+				if (stack.isEmpty()) {
+					itemDisplaySettings.itemChanged(slot);
+				}
+			});
+		}
 		updateEmptySlots();
+		if (allowsEmptySlotsMatchingItemInsertsWhenLocked()) {
+			contentsFilteredItemHandler = null;
+			invalidateStorageCap();
+		}
 		setChanged();
 		setUpdateBlockRender();
 		WorldHelper.notifyBlockUpdate(this);
@@ -488,5 +526,93 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		setChanged();
 		setUpdateBlockRender();
 		WorldHelper.notifyBlockUpdate(this);
+	}
+
+	private static class ContentsFilteredItemHandler implements ITrackedContentsItemHandler {
+
+		private final ITrackedContentsItemHandler itemHandler;
+		private ISlotTracker slotTracker;
+
+		private ContentsFilteredItemHandler(ITrackedContentsItemHandler itemHandler, ISlotTracker slotTracker) {
+			this.itemHandler = itemHandler;
+			this.slotTracker = slotTracker;
+		}
+
+		@Override
+		public int getSlots() {
+			return itemHandler.getSlots();
+		}
+
+		@Nonnull
+		@Override
+		public ItemStack getStackInSlot(int slot) {
+			return itemHandler.getStackInSlot(slot);
+		}
+
+		@Nonnull
+		@Override
+		public ItemStack insertItem(int slot, @Nonnull ItemStack stack, boolean simulate) {
+			if (matchesContents(stack)) {
+				return itemHandler.insertItem(slot, stack, simulate);
+			}
+			return stack;
+		}
+
+		@Nonnull
+		@Override
+		public ItemStack extractItem(int slot, int amount, boolean simulate) {
+			return itemHandler.extractItem(slot, amount, simulate);
+		}
+
+		@Override
+		public int getSlotLimit(int slot) {
+			return itemHandler.getSlotLimit(slot);
+		}
+
+		@Override
+		public boolean isItemValid(int slot, @Nonnull ItemStack stack) {
+			return matchesContents(stack) && itemHandler.isItemValid(slot, stack);
+		}
+
+		private boolean matchesContents(ItemStack stack) {
+			ItemStackKey isk = new ItemStackKey(stack);
+			if (slotTracker.getFullStacks().contains(isk)) {
+				return true;
+			}
+			return slotTracker.getPartialStacks().contains(isk);
+		}
+
+		@Override
+		public ItemStack insertItem(ItemStack stack, boolean simulate) {
+			if (matchesContents(stack)) {
+				return itemHandler.insertItem(stack, simulate);
+			}
+			return stack;
+		}
+
+		@Override
+		public Set<ItemStackKey> getTrackedStacks() {
+			return itemHandler.getTrackedStacks();
+		}
+
+		@Override
+		public void registerTrackingListeners(Consumer<ItemStackKey> onAddStackKey, Consumer<ItemStackKey> onRemoveStackKey, Runnable onAddFirstEmptySlot, Runnable onRemoveLastEmptySlot) {
+			itemHandler.registerTrackingListeners(onAddStackKey, onRemoveStackKey, onAddFirstEmptySlot, onRemoveLastEmptySlot);
+		}
+
+		@Override
+		public void unregisterStackKeyListeners() {
+			itemHandler.unregisterStackKeyListeners();
+		}
+
+		@Override
+		public boolean hasEmptySlots() {
+			return itemHandler.hasEmptySlots();
+		}
+
+		@Override
+		public void setStackInSlot(int slot, @Nonnull ItemStack stack) {
+			itemHandler.setStackInSlot(slot, stack);
+		}
 	}
 }
