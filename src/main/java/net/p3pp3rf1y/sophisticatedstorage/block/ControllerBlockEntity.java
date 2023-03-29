@@ -1,6 +1,7 @@
 package net.p3pp3rf1y.sophisticatedstorage.block;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -36,7 +37,7 @@ public class ControllerBlockEntity extends ControllerBlockEntityBase implements 
 		boolean doubleClick = gameTime - lastDepositTime < 10;
 		lastDepositTime = gameTime;
 		if (doubleClick) {
-			player.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null).ifPresent(
+			player.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, Direction.UP).ifPresent(
 					playerInventory -> InventoryHelper.iterate(playerInventory, (slot, stack) -> {
 								if (canDepositStack(stack)) {
 									ItemStack resultStack = insertItem(stack, true, false);
