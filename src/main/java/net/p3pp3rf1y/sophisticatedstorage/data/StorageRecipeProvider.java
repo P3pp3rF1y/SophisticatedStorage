@@ -606,6 +606,17 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('T', Items.SMOOTH_STONE)
 				.unlockedBy("has_auto_smelting_upgrade", has(ModItems.AUTO_SMELTING_UPGRADE.get()))
 				.save(consumer, SophisticatedStorage.getRL("auto_blasting_upgrade_from_auto_smelting_upgrade"));
+
+		ShapeBasedRecipeBuilder.shaped(ModItems.COMPRESSION_UPGRADE.get())
+				.pattern(" I ")
+				.pattern("PBP")
+				.pattern("RIR")
+				.define('B', ModItems.UPGRADE_BASE.get())
+				.define('I', Tags.Items.INGOTS_IRON)
+				.define('P', Items.PISTON)
+				.define('R', Tags.Items.DUSTS_REDSTONE)
+				.unlockedBy(HAS_UPGRADE_BASE_CRITERION_NAME, has(ModItems.UPGRADE_BASE.get()))
+				.save(consumer);
 	}
 
 	private void addChestRecipes(Consumer<FinishedRecipe> consumer) {
