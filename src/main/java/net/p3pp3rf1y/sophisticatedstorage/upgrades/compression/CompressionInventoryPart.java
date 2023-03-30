@@ -200,10 +200,10 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 			return Optional.of(RecipeHelper.CompactingShape.TWO_BY_TWO_UNCRAFTABLE);
 		} else if (compactingShapes.contains(RecipeHelper.CompactingShape.THREE_BY_THREE)) {
 			Item compressedItem = RecipeHelper.getCompactingResult(item, RecipeHelper.CompactingShape.THREE_BY_THREE).getResult().getItem();
-			return Config.SERVER.compressionUpgrade.getDecompressionResult(compressedItem).isPresent() ? Optional.of(RecipeHelper.CompactingShape.THREE_BY_THREE_UNCRAFTABLE) : Optional.empty();
+			return getDecompressionResultFromConfig(compressedItem).isPresent() ? Optional.of(RecipeHelper.CompactingShape.THREE_BY_THREE_UNCRAFTABLE) : Optional.empty();
 		} else if (compactingShapes.contains(RecipeHelper.CompactingShape.TWO_BY_TWO)) {
 			Item compressedItem = RecipeHelper.getCompactingResult(item, RecipeHelper.CompactingShape.TWO_BY_TWO).getResult().getItem();
-			return Config.SERVER.compressionUpgrade.getDecompressionResult(compressedItem).isPresent() ? Optional.of(RecipeHelper.CompactingShape.TWO_BY_TWO_UNCRAFTABLE) : Optional.empty();
+			return getDecompressionResultFromConfig(compressedItem).isPresent() ? Optional.of(RecipeHelper.CompactingShape.TWO_BY_TWO_UNCRAFTABLE) : Optional.empty();
 		}
 		return Optional.empty();
 	}
@@ -214,7 +214,7 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 		for (int slot = firstFilledSlot + 1; slot < slotRange.firstSlot() + slotRange.numberOfSlots(); slot++) {
 			RecipeHelper.UncompactingResult uncompactingResult = RecipeHelper.getUncompactingResult(currentItem);
 			if (uncompactingResult.getCompactUsingShape() == RecipeHelper.CompactingShape.NONE) {
-				Optional<RecipeHelper.UncompactingResult> decompressionResult = Config.SERVER.compressionUpgrade.getDecompressionResult(currentItem);
+				Optional<RecipeHelper.UncompactingResult> decompressionResult = getDecompressionResultFromConfig(currentItem);
 				if (decompressionResult.isEmpty()) {
 					break;
 				}
@@ -223,6 +223,10 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 			slotDefinitions.put(slot, new SlotDefinition(uncompactingResult.getResult(), uncompactingResult.getCompactUsingShape() == RecipeHelper.CompactingShape.TWO_BY_TWO_UNCRAFTABLE ? 4 : 9, true));
 			currentItem = uncompactingResult.getResult();
 		}
+	}
+
+	Optional<RecipeHelper.UncompactingResult> getDecompressionResultFromConfig(Item currentItem) {
+		return Config.SERVER.compressionUpgrade.getDecompressionResult(currentItem);
 	}
 
 	private Map<Integer, ItemStack> getExistingStacks() {
