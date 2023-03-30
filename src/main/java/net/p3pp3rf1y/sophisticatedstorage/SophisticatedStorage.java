@@ -27,17 +27,16 @@ import org.apache.logging.log4j.Logger;
 public class SophisticatedStorage {
 	public static final String MOD_ID = "sophisticatedstorage";
 	public static final Logger LOGGER = LogManager.getLogger(MOD_ID);
-	public static final StoragePacketHandler PACKET_HANDLER = new StoragePacketHandler(MOD_ID);
 	public static final CreativeModeTab CREATIVE_TAB = new SophisticatedStorageTab();
 
 	private final CommonEventHandler commonEventHandler = new CommonEventHandler();
 
 	@SuppressWarnings("java:S1118") //needs to be public for mod to work
 	public SophisticatedStorage() {
-		ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.COMMON_SPEC);
+		ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, Config.SERVER_SPEC);
 		ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, Config.CLIENT_SPEC);
 		IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
-		modBus.addListener(Config.COMMON::onConfigReload);
+		modBus.addListener(Config.SERVER::onConfigReload);
 		commonEventHandler.registerHandlers();
 		if (FMLEnvironment.dist == Dist.CLIENT) {
 			ClientEventHandler.registerHandlers();
@@ -52,7 +51,7 @@ public class SophisticatedStorage {
 	}
 
 	private static void setup(FMLCommonSetupEvent event) {
-		PACKET_HANDLER.init();
+		StoragePacketHandler.INSTANCE.init();
 		ModCompat.initCompats();
 	}
 

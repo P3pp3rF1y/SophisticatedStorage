@@ -14,6 +14,7 @@ import net.minecraftforge.network.NetworkHooks;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.ISyncedContainer;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.StorageContainerMenuBase;
+import net.p3pp3rf1y.sophisticatedcore.settings.itemdisplay.ItemDisplaySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.settings.memory.MemorySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeHandler;
 import net.p3pp3rf1y.sophisticatedcore.util.NoopStorageWrapper;
@@ -62,7 +63,15 @@ public class StorageContainerMenu extends StorageContainerMenuBase<IStorageWrapp
 
 	@Override
 	protected StorageContainerMenuBase<IStorageWrapper>.StorageUpgradeSlot instantiateUpgradeSlot(UpgradeHandler upgradeHandler, int slotIndex) {
-		return new StorageUpgradeSlot(upgradeHandler, slotIndex);
+		return new StorageUpgradeSlot(upgradeHandler, slotIndex) {
+			@Override
+			protected void onUpgradeChanged() {
+				if (player.getLevel().isClientSide()) {
+					return;
+				}
+				storageWrapper.getSettingsHandler().getTypeCategory(ItemDisplaySettingsCategory.class).itemsChanged();
+			}
+		};
 	}
 
 	@Override
@@ -102,7 +111,7 @@ public class StorageContainerMenu extends StorageContainerMenuBase<IStorageWrapp
 	protected void onStorageInventorySlotSet(int slotIndex) {
 		super.onStorageInventorySlotSet(slotIndex);
 
-		if (getStorageBlockEntity().isLocked() && !getSlot(slotIndex).getItem().isEmpty()) {
+		if (getStorageBlockEntity().isLocked() && getStorageBlockEntity().memorizesItemsWhenLocked() && !getSlot(slotIndex).getItem().isEmpty()) {
 			MemorySettingsCategory memorySettings = getStorageWrapper().getSettingsHandler().getTypeCategory(MemorySettingsCategory.class);
 			if (!memorySettings.isSlotSelected(slotIndex)) {
 				memorySettings.selectSlot(slotIndex);

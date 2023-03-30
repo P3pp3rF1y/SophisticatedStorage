@@ -105,19 +105,28 @@ dependencies {
     runtimeOnly fg.deobf("mezz.jei:jei-${jei_mc_version}:${jei_version}")
     compileOnly fg.deobf("curse.maven:quark-243121:${quark_cf_file_id}")
     compileOnly fg.deobf("curse.maven:autoreglib-250363:${autoreglib_cf_file_id}")
-    //runtimeOnly fg.deobf("curse.maven:quark-243121:${quark_cf_file_id}")
-    //runtimeOnly fg.deobf("curse.maven:autoreglib-250363:${autoreglib_cf_file_id}")
+    runtimeOnly fg.deobf("curse.maven:quark-243121:${quark_cf_file_id}")
+    runtimeOnly fg.deobf("curse.maven:autoreglib-250363:${autoreglib_cf_file_id}")
 
     if (findProject(':SophisticatedCore') != null) {
         implementation project(':SophisticatedCore')
     } else {
         compileOnly fg.deobf("curse.maven:sophisticatedcore-618298:${sc_cf_file_id}")
         runtimeOnly fg.deobf("curse.maven:sophisticatedcore-618298:${sc_cf_file_id}")
+        testImplementation fg.deobf("curse.maven:sophisticatedcore-618298:${sc_cf_file_id}")
     }
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.+'
+    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.9.+'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.+'
+    testImplementation "org.mockito:mockito-core:5.1.+"
 }
 
 test {
-    useTestNG()
+    useJUnitPlatform()
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
 }
 
 task generateSources(type: Copy) {

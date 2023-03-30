@@ -2,8 +2,8 @@
   "type": "minecraft:crafting_shapeless",
   "conditions": [
     {
-      "type": "forge:mod_loaded",
-      "modid": "quark"
+      "type": "forge:item_exists",
+      "item": "quark:birch_chest"
     },
     {
       "type": "sophisticatedcore:item_enabled",
@@ -11,7 +11,9 @@
     }
   ],
   "ingredients": [
-    [],
+    {
+      "item": "quark:birch_chest"
+    },
     {
       "item": "minecraft:redstone_torch"
     }
