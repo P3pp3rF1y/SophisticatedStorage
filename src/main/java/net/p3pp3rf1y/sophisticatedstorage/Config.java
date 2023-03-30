@@ -10,22 +10,23 @@ import net.p3pp3rf1y.sophisticatedcore.upgrades.pump.PumpUpgradeConfig;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.stack.StackUpgradeConfig;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.voiding.VoidUpgradeConfig;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.xppump.XpPumpUpgradeConfig;
+import net.p3pp3rf1y.sophisticatedstorage.upgrades.compression.CompressionUpgradeConfig;
 import org.apache.commons.lang3.tuple.Pair;
 
 public class Config {
 	private Config() {}
 
-	public static final Config.Client CLIENT;
+	public static final Client CLIENT;
 	public static final ForgeConfigSpec CLIENT_SPEC;
 
-	public static final Config.Common COMMON;
-	public static final ForgeConfigSpec COMMON_SPEC;
+	public static final Server SERVER;
+	public static final ForgeConfigSpec SERVER_SPEC;
 
 	static {
-		final Pair<Config.Common, ForgeConfigSpec> commonSpec = new ForgeConfigSpec.Builder().configure(Config.Common::new);
-		COMMON_SPEC = commonSpec.getRight();
-		COMMON = commonSpec.getLeft();
-		final Pair<Config.Client, ForgeConfigSpec> clientSpec = new ForgeConfigSpec.Builder().configure(Config.Client::new);
+		final Pair<Server, ForgeConfigSpec> commonSpec = new ForgeConfigSpec.Builder().configure(Server::new);
+		SERVER_SPEC = commonSpec.getRight();
+		SERVER = commonSpec.getLeft();
+		final Pair<Client, ForgeConfigSpec> clientSpec = new ForgeConfigSpec.Builder().configure(Client::new);
 		CLIENT_SPEC = clientSpec.getRight();
 		CLIENT = clientSpec.getLeft();
 	}
@@ -43,7 +44,7 @@ public class Config {
 		}
 	}
 
-	public static class Common {
+	public static class Server {
 		public final StorageConfig woodBarrel;
 		public final StorageConfig ironBarrel;
 		public final StorageConfig goldBarrel;
@@ -109,6 +110,7 @@ public class Config {
 		public final AutoCookingUpgradeConfig autoBlastingUpgrade;
 		public final PumpUpgradeConfig pumpUpgrade;
 		public final XpPumpUpgradeConfig xpPumpUpgrade;
+		public final CompressionUpgradeConfig compressionUpgrade;
 
 		public final ForgeConfigSpec.IntValue tooManyItemEntityDrops;
 
@@ -117,8 +119,8 @@ public class Config {
 			stackUpgrade.clearNonStackableItems();
 		}
 
-		public Common(ForgeConfigSpec.Builder builder) {
-			builder.comment("Common Settings").push("common");
+		public Server(ForgeConfigSpec.Builder builder) {
+			builder.comment("Server Settings").push("server");
 
 			woodBarrel = new StorageConfig(builder, "Wood Barrel", 27, 1);
 			ironBarrel = new StorageConfig(builder, "Iron Barrel", 54, 1);
@@ -185,6 +187,8 @@ public class Config {
 			autoBlastingUpgrade = new AutoCookingUpgradeConfig(builder, "Auto-Blasting Upgrade", "autoBlastingUpgrade");
 			pumpUpgrade = new PumpUpgradeConfig(builder);
 			xpPumpUpgrade = new XpPumpUpgradeConfig(builder);
+			compressionUpgrade = new CompressionUpgradeConfig(builder);
+
 			tooManyItemEntityDrops = builder.comment("Threshold of number of item entities dropped from chest / barrel above which break is canceled (unless shift key is pressed) and message is displayed explaining to player many drops and packing tape use").defineInRange("tooManyItemEntityDrops", 200, 0, 1000);
 			builder.pop();
 		}
@@ -207,7 +211,7 @@ public class Config {
 
 			public LimitedBarrelConfig(ForgeConfigSpec.Builder builder, String storagePrefix, int baseSlotLimitMultiplierDefault, int upgradeSlotCountDefault) {
 				builder.comment(storagePrefix + " Settings").push(storagePrefix.replace(" ", ""));
-				baseSlotLimitMultiplier = builder.comment("Multiplier that's used to calculate base slot limit").defineInRange("baseSlotLimitMultiplier", baseSlotLimitMultiplierDefault, 1, 256);
+				baseSlotLimitMultiplier = builder.comment("Multiplier that's used to calculate base slot limit").defineInRange("baseSlotLimitMultiplier", baseSlotLimitMultiplierDefault, 1, 8192);
 				upgradeSlotCount = builder.comment("Number of upgrade slots in the storage").defineInRange("upgradeSlotCount", upgradeSlotCountDefault, 0, 10);
 				builder.pop();
 			}

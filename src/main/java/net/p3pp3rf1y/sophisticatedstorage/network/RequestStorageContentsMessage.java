@@ -3,7 +3,6 @@ package net.p3pp3rf1y.sophisticatedstorage.network;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkEvent;
-import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.ItemContentsStorage;
 
 import javax.annotation.Nullable;
@@ -36,6 +35,6 @@ public class RequestStorageContentsMessage {
 			return;
 		}
 
-		SophisticatedStorage.PACKET_HANDLER.sendToClient(player, new StorageContentsMessage(msg.storageUuid, ItemContentsStorage.get().getOrCreateStorageContents(msg.storageUuid)));
+		StoragePacketHandler.INSTANCE.sendToClient(player, new StorageContentsMessage(msg.storageUuid, ItemContentsStorage.get().getOrCreateStorageContents(msg.storageUuid)));
 	}
 }

@@ -63,6 +63,8 @@ import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageContentsTooltip;
 import net.p3pp3rf1y.sophisticatedstorage.network.ScrolledToolMessage;
+import net.p3pp3rf1y.sophisticatedstorage.network.StoragePacketHandler;
+import net.p3pp3rf1y.sophisticatedstorage.upgrades.compression.CompressionInventoryPart;
 
 import static net.minecraftforge.client.gui.ForgeIngameGui.HOTBAR_ELEMENT;
 import static net.minecraftforge.client.settings.KeyConflictContext.GUI;
@@ -110,7 +112,6 @@ public class ClientEventHandler {
 		eventBus.addListener(ClientEventHandler::onMouseScrolled);
 	}
 
-
 	private static void onMouseScrolled(InputEvent.MouseScrollEvent evt) {
 		Minecraft mc = Minecraft.getInstance();
 		if (mc.screen != null || !Screen.hasShiftDown()) {
@@ -124,7 +125,7 @@ public class ClientEventHandler {
 		if (stack.getItem() != ModItems.STORAGE_TOOL.get()) {
 			return;
 		}
-		SophisticatedStorage.PACKET_HANDLER.sendToServer(new ScrolledToolMessage(evt.getScrollDelta() > 0));
+		StoragePacketHandler.INSTANCE.sendToServer(new ScrolledToolMessage(evt.getScrollDelta() > 0));
 		evt.setCanceled(true);
 	}
 
@@ -230,6 +231,7 @@ public class ClientEventHandler {
 		stitchChestTextures(event);
 		stitchShulkerBoxTextures(event);
 		event.addSprite(LockRenderer.LOCK_TEXTURE.texture());
+		event.addSprite(CompressionInventoryPart.EMPTY_COMPRESSION_SLOT.getSecond());
 	}
 
 	private static void stitchShulkerBoxTextures(TextureStitchEvent.Pre event) {

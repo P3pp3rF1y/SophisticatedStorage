@@ -113,11 +113,20 @@ dependencies {
     } else {
         compileOnly fg.deobf("curse.maven:sophisticatedcore-618298:${sc_cf_file_id}")
         runtimeOnly fg.deobf("curse.maven:sophisticatedcore-618298:${sc_cf_file_id}")
+        testImplementation fg.deobf("curse.maven:sophisticatedcore-618298:${sc_cf_file_id}")
     }
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.+'
+    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.9.+'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.+'
+    testImplementation "org.mockito:mockito-core:5.1.+"
 }
 
 test {
-    useTestNG()
+    useJUnitPlatform()
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
 }
 
 task generateSources(type: Copy) {
