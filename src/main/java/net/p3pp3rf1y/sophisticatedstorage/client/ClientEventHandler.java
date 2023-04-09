@@ -61,6 +61,7 @@ import net.p3pp3rf1y.sophisticatedstorage.item.StorageContentsTooltip;
 import net.p3pp3rf1y.sophisticatedstorage.network.ScrolledToolMessage;
 import net.p3pp3rf1y.sophisticatedstorage.network.StoragePacketHandler;
 import net.p3pp3rf1y.sophisticatedstorage.upgrades.compression.CompressionInventoryPart;
+import net.p3pp3rf1y.sophisticatedstorage.upgrades.hopper.HopperUpgradeContainer;
 
 import static net.minecraftforge.client.settings.KeyConflictContext.GUI;
 
@@ -209,6 +210,8 @@ public class ClientEventHandler {
 		stitchShulkerBoxTextures(event);
 		event.addSprite(LockRenderer.LOCK_TEXTURE.texture());
 		event.addSprite(CompressionInventoryPart.EMPTY_COMPRESSION_SLOT.getSecond());
+		event.addSprite(HopperUpgradeContainer.EMPTY_INPUT_FILTER_SLOT_BACKGROUND.getSecond());
+		event.addSprite(HopperUpgradeContainer.EMPTY_OUTPUT_FILTER_SLOT_BACKGROUND.getSecond());
 	}
 
 	private static void stitchShulkerBoxTextures(TextureStitchEvent.Pre event) {
