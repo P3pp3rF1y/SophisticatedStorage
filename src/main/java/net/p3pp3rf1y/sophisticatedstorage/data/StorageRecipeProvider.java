@@ -617,6 +617,29 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('R', Tags.Items.DUSTS_REDSTONE)
 				.unlockedBy(HAS_UPGRADE_BASE_CRITERION_NAME, has(ModItems.UPGRADE_BASE.get()))
 				.save(consumer);
+
+		ShapeBasedRecipeBuilder.shaped(ModItems.HOPPER_UPGRADE.get())
+				.pattern(" H ")
+				.pattern("IBI")
+				.pattern("RRR")
+				.define('B', ModItems.UPGRADE_BASE.get())
+				.define('H', Items.HOPPER)
+				.define('I', Tags.Items.INGOTS_IRON)
+				.define('R', Tags.Items.DUSTS_REDSTONE)
+				.unlockedBy(HAS_UPGRADE_BASE_CRITERION_NAME, has(ModItems.UPGRADE_BASE.get()))
+				.save(consumer);
+
+		ShapeBasedRecipeBuilder.shaped(ModItems.ADVANCED_HOPPER_UPGRADE.get(), UpgradeNextTierRecipe.SERIALIZER)
+				.pattern(" D ")
+				.pattern("GHG")
+				.pattern("ROR")
+				.define('D', Tags.Items.GEMS_DIAMOND)
+				.define('G', Tags.Items.INGOTS_GOLD)
+				.define('R', Tags.Items.DUSTS_REDSTONE)
+				.define('O', Items.DROPPER)
+				.define('H', ModItems.HOPPER_UPGRADE.get())
+				.unlockedBy("has_feeding_upgrade", has(ModItems.HOPPER_UPGRADE.get()))
+				.save(consumer);
 	}
 
 	private void addChestRecipes(Consumer<FinishedRecipe> consumer) {
