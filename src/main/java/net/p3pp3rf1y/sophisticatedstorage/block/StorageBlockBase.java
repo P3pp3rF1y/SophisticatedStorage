@@ -9,6 +9,7 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -155,6 +156,30 @@ public abstract class StorageBlockBase extends Block implements IStorageBlock, E
 
 	}
 
+	@SuppressWarnings("java:S1172") // Used in overrides
+	public VerticalFacing getVerticalFacing(BlockState state) {
+		Direction facing = getFacing(state);
+		if (facing == Direction.UP) {
+			return VerticalFacing.UP;
+		} else if (facing == Direction.DOWN) {
+			return VerticalFacing.DOWN;
+		}
+
+		return VerticalFacing.NO;
+	}
+
+	public Direction getHorizontalDirection(BlockState state) {
+		Direction facing = getFacing(state);
+
+		if (facing == Direction.UP) {
+			return Direction.NORTH;
+		} else if (facing == Direction.DOWN) {
+			return Direction.SOUTH;
+		}
+
+		return facing;
+	}
+
 	public abstract Direction getFacing(BlockState state);
 
 	public int getDisplayItemsCount(List<RenderInfo.DisplayItem> displayItems) {
@@ -163,5 +188,10 @@ public abstract class StorageBlockBase extends Block implements IStorageBlock, E
 
 	public boolean hasFixedIndexDisplayItems() {
 		return false;
+	}
+
+	@Override
+	public void onNeighborChange(BlockState state, LevelReader level, BlockPos pos, BlockPos neighbor) {
+		WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).ifPresent(be -> be.onNeighborChange(neighbor));
 	}
 }

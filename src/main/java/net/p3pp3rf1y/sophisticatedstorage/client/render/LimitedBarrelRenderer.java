@@ -13,6 +13,7 @@ import net.p3pp3rf1y.sophisticatedcore.util.CountAbbreviator;
 import net.p3pp3rf1y.sophisticatedstorage.block.LimitedBarrelBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.LimitedBarrelBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockBase;
+import net.p3pp3rf1y.sophisticatedstorage.block.VerticalFacing;
 
 import java.util.List;
 
@@ -25,16 +26,16 @@ public class LimitedBarrelRenderer implements BlockEntityRenderer<LimitedBarrelB
 		@Override
 		protected void rotateToFront(PoseStack poseStack, BlockState state, Direction facing) {
 			poseStack.mulPose(getNorthBasedRotation(state.getValue(LimitedBarrelBlock.HORIZONTAL_FACING)));
-			LimitedBarrelBlock.VerticalFacing verticalFacing = state.getValue(LimitedBarrelBlock.VERTICAL_FACING);
-			if (verticalFacing != LimitedBarrelBlock.VerticalFacing.NO) {
+			VerticalFacing verticalFacing = state.getValue(LimitedBarrelBlock.VERTICAL_FACING);
+			if (verticalFacing != VerticalFacing.NO) {
 				poseStack.mulPose(getNorthBasedRotation(verticalFacing.getDirection()));
 			}
 		}
 
 		@Override
 		protected void rotateFrontOffset(BlockState state, Direction facing, Vector3f frontOffset) {
-			LimitedBarrelBlock.VerticalFacing verticalFacing = state.getValue(LimitedBarrelBlock.VERTICAL_FACING);
-			if (verticalFacing != LimitedBarrelBlock.VerticalFacing.NO) {
+			VerticalFacing verticalFacing = state.getValue(LimitedBarrelBlock.VERTICAL_FACING);
+			if (verticalFacing != VerticalFacing.NO) {
 				frontOffset.transform(getNorthBasedRotation(verticalFacing.getDirection()));
 			}
 			frontOffset.transform(getNorthBasedRotation(state.getValue(LimitedBarrelBlock.HORIZONTAL_FACING)));
@@ -68,8 +69,8 @@ public class LimitedBarrelRenderer implements BlockEntityRenderer<LimitedBarrelB
 
 		poseStack.translate(0.5, 0.5, 0.5);
 		poseStack.mulPose(DisplayItemRenderer.getNorthBasedRotation(horizontalFacing.getOpposite()));// because of the font flipping
-		LimitedBarrelBlock.VerticalFacing verticalFacing = blockState.getValue(LimitedBarrelBlock.VERTICAL_FACING);
-		if (verticalFacing != LimitedBarrelBlock.VerticalFacing.NO) {
+		VerticalFacing verticalFacing = blockState.getValue(LimitedBarrelBlock.VERTICAL_FACING);
+		if (verticalFacing != VerticalFacing.NO) {
 			poseStack.mulPose(DisplayItemRenderer.getNorthBasedRotation(verticalFacing.getDirection().getOpposite()));// because of the font flipping
 		}
 		poseStack.translate(0.5, -0.5, 0.5);

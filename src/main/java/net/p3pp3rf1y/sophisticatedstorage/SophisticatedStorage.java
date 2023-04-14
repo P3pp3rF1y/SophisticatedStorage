@@ -54,6 +54,7 @@ public class SophisticatedStorage {
 	private static void setup(FMLCommonSetupEvent event) {
 		StoragePacketHandler.INSTANCE.init();
 		ModCompat.initCompats();
+		event.enqueueWork(ModBlocks::registerDispenseBehavior);
 	}
 
 	public static ResourceLocation getRL(String regName) {
