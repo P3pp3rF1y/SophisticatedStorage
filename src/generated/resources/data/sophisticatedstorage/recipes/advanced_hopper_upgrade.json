@@ -1,0 +1,34 @@
+{
+  "type": "sophisticatedcore:upgrade_next_tier",
+  "conditions": [
+    {
+      "itemRegistryName": "sophisticatedstorage:advanced_hopper_upgrade",
+      "type": "sophisticatedcore:item_enabled"
+    }
+  ],
+  "pattern": [
+    " D ",
+    "GHG",
+    "ROR"
+  ],
+  "key": {
+    "D": {
+      "tag": "forge:gems/diamond"
+    },
+    "G": {
+      "tag": "forge:ingots/gold"
+    },
+    "R": {
+      "tag": "forge:dusts/redstone"
+    },
+    "O": {
+      "item": "minecraft:dropper"
+    },
+    "H": {
+      "item": "sophisticatedstorage:hopper_upgrade"
+    }
+  },
+  "result": {
+    "item": "sophisticatedstorage:advanced_hopper_upgrade"
+  }
+}

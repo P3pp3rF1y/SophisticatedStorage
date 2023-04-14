@@ -19,6 +19,7 @@ import net.minecraftforge.client.model.geometry.IGeometryLoader;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelType;
 import net.p3pp3rf1y.sophisticatedstorage.block.LimitedBarrelBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageTier;
+import net.p3pp3rf1y.sophisticatedstorage.block.VerticalFacing;
 import net.p3pp3rf1y.sophisticatedstorage.block.WoodStorageBlockBase;
 import net.p3pp3rf1y.sophisticatedstorage.client.StorageTextureManager;
 
@@ -71,8 +72,8 @@ public class LimitedBarrelDynamicModel extends BarrelDynamicModelBase<LimitedBar
 
 		@Override
 		protected List<BakedQuad> rotateDisplayItemQuads(List<BakedQuad> quads, BlockState state) {
-			LimitedBarrelBlock.VerticalFacing verticalFacing = state.getValue(LimitedBarrelBlock.VERTICAL_FACING);
-			if (verticalFacing != LimitedBarrelBlock.VerticalFacing.NO) {
+			VerticalFacing verticalFacing = state.getValue(LimitedBarrelBlock.VERTICAL_FACING);
+			if (verticalFacing != VerticalFacing.NO) {
 				quads = DIRECTION_ROTATES.get(verticalFacing.getDirection()).process(quads);
 			}
 			quads = DIRECTION_ROTATES.get(state.getValue(LimitedBarrelBlock.HORIZONTAL_FACING)).process(quads);
@@ -89,8 +90,8 @@ public class LimitedBarrelDynamicModel extends BarrelDynamicModelBase<LimitedBar
 
 		@Override
 		protected void rotateDisplayItemFrontOffset(BlockState state, Direction dir, Vector3f frontOffset) {
-			LimitedBarrelBlock.VerticalFacing verticalFacing = state.getValue(LimitedBarrelBlock.VERTICAL_FACING);
-			if (verticalFacing != LimitedBarrelBlock.VerticalFacing.NO) {
+			VerticalFacing verticalFacing = state.getValue(LimitedBarrelBlock.VERTICAL_FACING);
+			if (verticalFacing != VerticalFacing.NO) {
 				frontOffset.transform(getNorthBasedRotation(verticalFacing.getDirection()));
 			}
 			frontOffset.transform(getNorthBasedRotation(state.getValue(LimitedBarrelBlock.HORIZONTAL_FACING)));

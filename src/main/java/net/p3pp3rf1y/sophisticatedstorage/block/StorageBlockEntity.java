@@ -34,6 +34,7 @@ import net.p3pp3rf1y.sophisticatedcore.upgrades.ITickableUpgrade;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
+import net.p3pp3rf1y.sophisticatedstorage.upgrades.INeighborChangeListenerUpgrade;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -526,6 +527,14 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		setChanged();
 		setUpdateBlockRender();
 		WorldHelper.notifyBlockUpdate(this);
+	}
+
+	public void onNeighborChange(BlockPos neighborPos) {
+		Direction direction = Direction.fromNormal(Integer.signum(neighborPos.getX() - worldPosition.getX()), Integer.signum(neighborPos.getY() - worldPosition.getY()), Integer.signum(neighborPos.getZ() - worldPosition.getZ()));
+		if (direction == null) {
+			return;
+		}
+		storageWrapper.getUpgradeHandler().getWrappersThatImplement(INeighborChangeListenerUpgrade.class).forEach(upgrade -> upgrade.onNeighborChange(level, worldPosition, direction));
 	}
 
 	private static class ContentsFilteredItemHandler implements ITrackedContentsItemHandler {

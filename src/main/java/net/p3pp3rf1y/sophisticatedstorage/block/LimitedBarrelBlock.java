@@ -6,7 +6,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -57,10 +56,15 @@ public class LimitedBarrelBlock extends BarrelBlock {
 
 	@Override
 	public BlockState rotate(BlockState state, LevelAccessor world, BlockPos pos, Rotation direction) {
-		if (state.getValue(VERTICAL_FACING) != VerticalFacing.NO) {
+		if (getVerticalFacing(state) != VerticalFacing.NO) {
 			return state;
 		}
 		return state.setValue(HORIZONTAL_FACING, direction.rotate(state.getValue(HORIZONTAL_FACING)));
+	}
+
+	@Override
+	public VerticalFacing getVerticalFacing(BlockState state) {
+		return state.getValue(VERTICAL_FACING);
 	}
 
 	@SuppressWarnings("deprecation")
@@ -84,8 +88,13 @@ public class LimitedBarrelBlock extends BarrelBlock {
 
 	@Override
 	public Direction getFacing(BlockState state) {
-		VerticalFacing verticalFacing = state.getValue(VERTICAL_FACING);
+		VerticalFacing verticalFacing = getVerticalFacing(state);
 		return verticalFacing == VerticalFacing.NO ? state.getValue(HORIZONTAL_FACING) : verticalFacing.getDirection();
+	}
+
+	@Override
+	public Direction getHorizontalDirection(BlockState state) {
+		return state.getValue(HORIZONTAL_FACING);
 	}
 
 	@Override
@@ -137,7 +146,7 @@ public class LimitedBarrelBlock extends BarrelBlock {
 
 		Vector3f blockCoords = new Vector3f(hitResult.getLocation().subtract(pos.getX(), pos.getY(), pos.getZ()));
 		blockCoords.add(-0.5f, -0.5f, -0.5f); // move to corner
-		VerticalFacing verticalFacing = state.getValue(VERTICAL_FACING);
+		VerticalFacing verticalFacing = getVerticalFacing(state);
 		if (verticalFacing != VerticalFacing.NO) {
 			blockCoords.transform(getNorthBasedRotation(state.getValue(HORIZONTAL_FACING)));
 			blockCoords.transform(getNorthBasedRotation(verticalFacing.getDirection().getOpposite()));
@@ -241,47 +250,5 @@ public class LimitedBarrelBlock extends BarrelBlock {
 	@Override
 	public boolean hasFixedIndexDisplayItems() {
 		return true;
-	}
-
-	public enum VerticalFacing implements StringRepresentable {
-		NO("no", Direction.NORTH, 0),
-		UP("up", Direction.UP, 1),
-		DOWN("down", Direction.DOWN, 2);
-
-		private final String serializedName;
-
-		private final Direction direction;
-
-		private final int index;
-
-		VerticalFacing(String serializedName, Direction direction, int index) {
-			this.serializedName = serializedName;
-			this.direction = direction;
-			this.index = index;
-		}
-
-		public int getIndex() {
-			return index;
-		}
-
-		public Direction getDirection() {
-			return direction;
-		}
-
-		@Override
-		public String getSerializedName() {
-			return serializedName;
-		}
-
-		public static VerticalFacing fromDirection(Direction direction) {
-			if (direction.getAxis().isHorizontal()) {
-				return NO;
-			}
-			if (direction == Direction.UP) {
-				return UP;
-			} else {
-				return DOWN;
-			}
-		}
 	}
 }
