@@ -153,7 +153,7 @@
   "gui.sophisticatedstorage.upgrades.buttons.io_mode_push": "输出",
   "gui.sophisticatedstorage.upgrades.buttons.io_mode_pull": "输入",
   "gui.sophisticatedstorage.upgrades.buttons.io_mode_push_pull": "输入 & 输出",
-  "gui.sophisticatedstorage.upgrades.buttons.io_mode_off": "关",
+  "gui.sophisticatedstorage.upgrades.buttons.io_mode_off": "关闭",
   "gui.sophisticatedstorage.upgrades.buttons.io_mode_disabled": "禁用",
   "gui.sophisticatedstorage.upgrades.buttons.io_mode_side_info": "%s (%s)",
   "gui.sophisticatedstorage.direction.up": "上",
