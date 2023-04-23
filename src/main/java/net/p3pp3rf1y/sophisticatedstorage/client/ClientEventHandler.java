@@ -114,11 +114,11 @@ public class ClientEventHandler {
 
 	private static void onMouseScrolled(InputEvent.MouseScrollingEvent evt) {
 		Minecraft mc = Minecraft.getInstance();
-		if (mc.screen != null || !Screen.hasShiftDown()) {
+		if (mc.screen != null) {
 			return;
 		}
 		LocalPlayer player = mc.player;
-		if (player == null) {
+		if (player == null || !player.isShiftKeyDown()) {
 			return;
 		}
 		ItemStack stack = player.getMainHandItem();
