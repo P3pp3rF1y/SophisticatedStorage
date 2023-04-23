@@ -47,7 +47,11 @@ public class ModBlockColors {
 						List<RenderInfo.DisplayItem> displayItems = itemDisplayRenderInfo.getDisplayItems();
 						if (displayItemIndex >= 0) {
 							int tintOffset = (displayItemIndex + 1) * 10;
-							return Minecraft.getInstance().getItemColors().getColor(getDisplayItemWithIndex(displayItemIndex, displayItems, state.getBlock() instanceof LimitedBarrelBlock), tintIndex - tintOffset);
+							ItemStack stack = getDisplayItemWithIndex(displayItemIndex, displayItems, state.getBlock() instanceof LimitedBarrelBlock);
+							if (stack.isEmpty()) {
+								return -1;
+							}
+							return Minecraft.getInstance().getItemColors().getColor(stack, tintIndex - tintOffset);
 						}
 					}
 					return -1;
