@@ -13,7 +13,7 @@ import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import net.p3pp3rf1y.sophisticatedstorage.client.render.BarrelBakedModelBase;
-import net.p3pp3rf1y.sophisticatedstorage.client.render.BarrelDynamicModelBase;
+import net.p3pp3rf1y.sophisticatedstorage.client.render.BarrelFace;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -29,8 +29,10 @@ import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@SuppressWarnings("java:S6548") //singleton is intended here
 public class StorageTextureManager extends SimpleJsonResourceReloadListener {
 	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
+
 	public static final StorageTextureManager INSTANCE = new StorageTextureManager();
 	private static final String PARENT_TAG = "parent";
 	private static final String TYPE_TAG = "type";
@@ -59,8 +61,6 @@ public class StorageTextureManager extends SimpleJsonResourceReloadListener {
 	protected Map<ResourceLocation, JsonElement> prepare(ResourceManager pResourceManager, ProfilerFiller pProfiler) {
 		clear();
 		BarrelBakedModelBase.BAKED_QUADS_CACHE.invalidateAll();
-		BarrelDynamicModelBase.TEXTURES.clear();
-		BarrelDynamicModelBase.BAKED_PART_MODELS.clear();
 
 		Map<ResourceLocation, JsonElement> fileContents = super.prepare(pResourceManager, pProfiler);
 		Map<ResourceLocation, StorageTextureDefinition> storageTextureDefinitions = new HashMap<>();
@@ -343,18 +343,4 @@ public class StorageTextureManager extends SimpleJsonResourceReloadListener {
 		}
 	}
 
-	public enum BarrelFace {
-		TOP,
-		BOTTOM,
-		SIDE;
-
-		public static Optional<BarrelFace> fromString(String faceName) {
-			for (BarrelFace value : values()) {
-				if (value.name().toLowerCase(Locale.ROOT).equals(faceName)) {
-					return Optional.of(value);
-				}
-			}
-			return Optional.empty();
-		}
-	}
 }

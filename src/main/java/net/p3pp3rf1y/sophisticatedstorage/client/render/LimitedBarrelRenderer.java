@@ -86,7 +86,7 @@ public class LimitedBarrelRenderer implements BlockEntityRenderer<LimitedBarrelB
 
 			double xTranslation = - frontOffset.x();
 			float yTranslation = frontOffset.y() + countDisplayYOffset;
-			double zTranslation = 0.001;
+			double zTranslation = - 0.75/16D + 0.001;
 			poseStack.translate(xTranslation, yTranslation, zTranslation);
 
 			float scale = slotCounts.size() == 1 ? SINGLE_ITEM_FONT_SCALE : MULTIPLE_ITEMS_FONT_SCALE;

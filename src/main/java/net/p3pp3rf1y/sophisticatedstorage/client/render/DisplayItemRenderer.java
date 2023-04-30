@@ -177,7 +177,7 @@ public class DisplayItemRenderer {
 		points = translatePoints(points, transform.translation);
 
 		float zScale = transform.scale.z();
-		return ((zScale * 1 / 15.95D) - getMaxZ(points)) * additionalScale; //15.95 because of z-fighting if displayed model had surface offset exactly 1 pixel from the top most surface
+		return ((zScale * (2 / 15.95D)) - getMaxZ(points)) * additionalScale; //15.95 because of z-fighting if displayed model had surface offset exactly 1 pixel from the top most surface
 	}
 
 	@SuppressWarnings("deprecation")

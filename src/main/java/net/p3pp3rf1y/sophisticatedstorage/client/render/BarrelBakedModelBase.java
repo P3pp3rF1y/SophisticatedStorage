@@ -243,7 +243,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 			addPartQuads(state, side, rand, ret, modelParts, BarrelModelPart.PACKED);
 		} else {
 			if (showsLocked(extraData)) {
-				addPartQuads(state, side, rand, ret, modelParts, BarrelModelPart.LOCK);
+				addPartQuads(state, side, rand, ret, modelParts, BarrelModelPart.LOCKED);
 			}
 			addDisplayItemQuads(state, side, rand, ret, extraData);
 		}
@@ -357,10 +357,15 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 			}
 		}
 
+		addInaccessibleSlotsQuads(state, rand, ret, data, barrelBlock, displayItems, minecraft);
+	}
+
+	private void addInaccessibleSlotsQuads(BlockState state, Random rand, List<BakedQuad> ret, IModelData data, BarrelBlock barrelBlock,
+			@Nullable List<RenderInfo.DisplayItem> displayItems, Minecraft minecraft) {
 		List<Integer> inaccessibleSlots = data.getData(INACCESSIBLE_SLOTS);
 		if (displayItems != null && inaccessibleSlots != null) {
 			ItemStack inaccessibleSlotStack = new ItemStack(ModItems.INACCESSIBLE_SLOT.get());
-			BakedModel model = itemRenderer.getModel(inaccessibleSlotStack, null, minecraft.player, 0);
+			BakedModel model = minecraft.getItemRenderer().getModel(inaccessibleSlotStack, null, minecraft.player, 0);
 			for (int inaccessibleSlot : inaccessibleSlots) {
 				if (!model.isCustomRenderer()) {
 					for (Direction face : Direction.values()) {
@@ -430,10 +435,12 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 		QuadTransformer transformer = directionCache.getIfPresent(hash);
 
 		if (transformer == null) {
-			double offset = 0;
-			if (model.isGui3d()) {
-				offset = DisplayItemRenderer.getDisplayItemOffset(displayItem, model, itemScale);
+			double offset = DisplayItemRenderer.getDisplayItemOffset(displayItem, model, itemScale);
+			boolean is3dBarrel = true;
+			if (is3dBarrel) {
+				offset -= 1/16D;//TODO add 3d parameter for offset here
 			}
+
 			transformer = getDirectionMoveBackToSide(state, direction, (float) (0.5f + offset), displayItemIndex, displayItemCount);
 			directionCache.put(hash, transformer);
 		}
@@ -456,11 +463,12 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 	private void addTintableModelQuads(
 			@Nullable BlockState state, @Nullable
 	Direction side, Random rand, List<BakedQuad> ret, boolean hasMainColor, boolean hasAccentColor, Map<BarrelModelPart, BakedModel> modelParts) {
+		if (hasAccentColor) {
+			addPartQuads(state, side, rand, ret, modelParts, BarrelModelPart.TINTABLE_ACCENT);
+		}
+
 		if (hasMainColor) {
 			addPartQuads(state, side, rand, ret, modelParts, getMainPart(state));
-		}
-		if (hasAccentColor) {
-			addPartQuads(state, side, rand, ret, modelParts, BarrelModelPart.ACCENT);
 		}
 
 		if (hasMainColor || hasAccentColor) {
@@ -468,19 +476,23 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 		}
 	}
 
-	protected abstract BarrelModelPart getMainPart(@Nullable BlockState state);
+	private BarrelModelPart getMainPart(@Nullable BlockState state) {
+		return rendersOpen() && state != null && Boolean.TRUE.equals(state.getValue(BarrelBlock.OPEN)) ? BarrelModelPart.TINTABLE_MAIN_OPEN : BarrelModelPart.TINTABLE_MAIN;
+	}
 
-	protected abstract BarrelModelPart getMainPart();
+	protected abstract boolean rendersOpen();
 
 	private void addPartQuads(
 			@Nullable BlockState state, @Nullable Direction side, Random rand, List<BakedQuad> ret, Map<BarrelModelPart, BakedModel> modelParts, BarrelModelPart part) {
 		if (modelParts.containsKey(part)) {
-			ret.addAll(modelParts.get(part).getQuads(state, side, rand, EmptyModelData.INSTANCE));
+			ret.addAll(modelParts.getOrDefault(part, Minecraft.getInstance().getModelManager().getMissingModel()).getQuads(state, side, rand, EmptyModelData.INSTANCE));
 		}
 	}
 
 	private Map<BarrelModelPart, BakedModel> getWoodModelParts(@Nullable String barrelWoodName) {
-		if (barrelWoodName == null || !woodModelParts.containsKey(barrelWoodName)) {
+		if (woodModelParts.isEmpty()) {
+			return Collections.emptyMap();
+		} else if (barrelWoodName == null || !woodModelParts.containsKey(barrelWoodName)) {
 			return woodModelParts.values().iterator().next();
 		} else {
 			return woodModelParts.get(barrelWoodName);
@@ -510,7 +522,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 	@SuppressWarnings("deprecation")
 	@Override
 	public TextureAtlasSprite getParticleIcon() {
-		return getWoodModelParts(null).get(BarrelModelPart.BASE).getParticleIcon();
+		return getWoodModelParts(null).getOrDefault(BarrelModelPart.BASE, Minecraft.getInstance().getModelManager().getMissingModel()).getParticleIcon();
 	}
 
 	@SuppressWarnings("deprecation")
@@ -522,7 +534,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 	@Override
 	public TextureAtlasSprite getParticleIcon(IModelData data) {
 		if (data.hasProperty(HAS_MAIN_COLOR) && Boolean.TRUE.equals(data.getData(HAS_MAIN_COLOR))) {
-			return getWoodModelParts(null).get(getMainPart()).getParticleIcon(data);
+			return getWoodModelParts(null).get(BarrelModelPart.TINTABLE_MAIN).getParticleIcon(data);
 		} else if (data.hasProperty(WOOD_NAME)) {
 			String name = data.getData(WOOD_NAME);
 			if (!woodModelParts.containsKey(name)) {

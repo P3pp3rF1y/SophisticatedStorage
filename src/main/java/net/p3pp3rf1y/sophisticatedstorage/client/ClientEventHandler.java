@@ -47,7 +47,6 @@ import net.p3pp3rf1y.sophisticatedstorage.client.init.ModBlockColors;
 import net.p3pp3rf1y.sophisticatedstorage.client.init.ModItemColors;
 import net.p3pp3rf1y.sophisticatedstorage.client.init.ModParticles;
 import net.p3pp3rf1y.sophisticatedstorage.client.render.BarrelDynamicModel;
-import net.p3pp3rf1y.sophisticatedstorage.client.render.BarrelDynamicModelBase;
 import net.p3pp3rf1y.sophisticatedstorage.client.render.BarrelRenderer;
 import net.p3pp3rf1y.sophisticatedstorage.client.render.ChestDynamicModel;
 import net.p3pp3rf1y.sophisticatedstorage.client.render.ChestRenderer;
@@ -58,6 +57,7 @@ import net.p3pp3rf1y.sophisticatedstorage.client.render.LimitedBarrelRenderer;
 import net.p3pp3rf1y.sophisticatedstorage.client.render.LockRenderer;
 import net.p3pp3rf1y.sophisticatedstorage.client.render.ShulkerBoxDynamicModel;
 import net.p3pp3rf1y.sophisticatedstorage.client.render.ShulkerBoxRenderer;
+import net.p3pp3rf1y.sophisticatedstorage.client.render.SimpleCompositeModel;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
@@ -78,6 +78,7 @@ public class ClientEventHandler {
 	public static final KeyMapping SORT_KEYBIND = new KeyMapping(StorageTranslationHelper.INSTANCE.translKeybind("sort"),
 			StorageGuiKeyConflictContext.INSTANCE, InputConstants.Type.MOUSE.getOrCreate(MIDDLE_BUTTON), KEYBIND_SOPHISTICATEDSTORAGE_CATEGORY);
 
+	@SuppressWarnings("java:S6548") //singleton is intended here
 	private static class StorageGuiKeyConflictContext implements IKeyConflictContext {
 		public static final StorageGuiKeyConflictContext INSTANCE = new StorageGuiKeyConflictContext();
 
@@ -187,6 +188,7 @@ public class ClientEventHandler {
 		ModelLoaderRegistry.registerLoader(SophisticatedStorage.getRL("limited_barrel"), LimitedBarrelDynamicModel.Loader.INSTANCE);
 		ModelLoaderRegistry.registerLoader(SophisticatedStorage.getRL("chest"), ChestDynamicModel.Loader.INSTANCE);
 		ModelLoaderRegistry.registerLoader(SophisticatedStorage.getRL("shulker_box"), ShulkerBoxDynamicModel.Loader.INSTANCE);
+		ModelLoaderRegistry.registerLoader(SophisticatedStorage.getRL("simple_composite"), SimpleCompositeModel.Loader.INSTANCE);
 	}
 
 	public static void registerLayer(EntityRenderersEvent.RegisterLayerDefinitions event) {
@@ -265,7 +267,6 @@ public class ClientEventHandler {
 			return;
 		}
 
-		BarrelDynamicModelBase.getTextures().forEach(mat -> event.addSprite(mat.texture()));
 		ChestDynamicModel.getWoodBreakTextures().forEach(event::addSprite);
 		event.addSprite(ChestDynamicModel.TINTABLE_BREAK_TEXTURE);
 		event.addSprite(ShulkerBoxDynamicModel.TINTABLE_BREAK_TEXTURE);
