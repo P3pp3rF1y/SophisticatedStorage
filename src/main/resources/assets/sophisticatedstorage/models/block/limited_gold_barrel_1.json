@@ -1,5 +1,14 @@
 {
     "loader": "sophisticatedstorage:limited_barrel",
-    "tier": "gold",
-    "barrelType": "limited_1"
+    "parent": "sophisticatedstorage:block/limited_barrel_1",
+    "model_parts": {
+        "tier": {
+            "textures": {
+                "top": "sophisticatedstorage:block/gold_barrel_top",
+                "side": "sophisticatedstorage:block/gold_barrel_side",
+                "bottom": "sophisticatedstorage:block/gold_barrel_bottom",
+                "top_trim": "sophisticatedstorage:block/gold_barrel_top"
+            }
+        }
+    }
 }

@@ -1,5 +1,14 @@
 {
     "loader": "sophisticatedstorage:limited_barrel",
-    "tier": "netherite",
-    "barrelType": "limited_4"
+    "parent": "sophisticatedstorage:block/limited_barrel_4",
+    "model_parts": {
+        "tier": {
+            "textures": {
+                "top": "sophisticatedstorage:block/netherite_barrel_top",
+                "side": "sophisticatedstorage:block/netherite_barrel_side",
+                "bottom": "sophisticatedstorage:block/netherite_barrel_bottom",
+                "top_trim": "sophisticatedstorage:block/netherite_barrel_top"
+            }
+        }
+    }
 }
