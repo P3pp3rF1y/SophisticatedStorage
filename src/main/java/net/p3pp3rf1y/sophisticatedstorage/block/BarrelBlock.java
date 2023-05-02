@@ -42,11 +42,11 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.extensions.common.IClientBlockExtensions;
 import net.minecraftforge.network.NetworkHooks;
-import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.client.particle.CustomTintTerrainParticleData;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
+import net.p3pp3rf1y.sophisticatedstorage.item.BarrelBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
 
 import javax.annotation.Nullable;
@@ -77,7 +77,7 @@ public class BarrelBlock extends WoodStorageBlockBase {
 		}
 
 		ItemStack flatBarrel = WoodStorageBlockItem.setWoodType(new ItemStack(this), WoodType.ACACIA);
-		toggleFlatTop(flatBarrel);
+		BarrelBlockItem.toggleFlatTop(flatBarrel);
 		items.add(flatBarrel);
 	}
 
@@ -152,38 +152,21 @@ public class BarrelBlock extends WoodStorageBlockBase {
 	@Override
 	public ItemStack getCloneItemStack(BlockState state, HitResult target, BlockGetter world, BlockPos pos, Player player) {
 		ItemStack cloneItemStack = super.getCloneItemStack(state, target, world, pos, player);
-		addFlatTopTag(cloneItemStack, state);
+		BarrelBlockItem.setFlatTop(cloneItemStack, state.getValue(FLAT_TOP));
 		return cloneItemStack;
 	}
 
 	@Override
 	public void addDropData(ItemStack stack, StorageBlockEntity be) {
 		super.addDropData(stack, be);
-		addFlatTopTag(stack, be.getBlockState());
-	}
-
-	private static void addFlatTopTag(ItemStack stack, BlockState state) {
-		if (Boolean.TRUE.equals(state.getValue(FLAT_TOP))) {
-			NBTHelper.setBoolean(stack, "flatTop", true);
-		}
-	}
-
-	public static void toggleFlatTop(ItemStack stack) {
-		if (isFlatTop(stack)) {
-			NBTHelper.removeTag(stack, "flatTop");
-		} else {
-			NBTHelper.setBoolean(stack, "flatTop", true);
-		}
+		BlockState state = be.getBlockState();
+		BarrelBlockItem.setFlatTop(stack, state.getValue(FLAT_TOP));
 	}
 
 	@Nullable
 	@Override
 	public BlockState getStateForPlacement(BlockPlaceContext blockPlaceContext) {
-		return defaultBlockState().setValue(FACING, blockPlaceContext.getNearestLookingDirection().getOpposite()).setValue(FLAT_TOP, isFlatTop(blockPlaceContext.getItemInHand()));
-	}
-
-	public static boolean isFlatTop(ItemStack stack) {
-		return NBTHelper.getBoolean(stack, "flatTop").orElse(false);
+		return defaultBlockState().setValue(FACING, blockPlaceContext.getNearestLookingDirection().getOpposite()).setValue(FLAT_TOP, BarrelBlockItem.isFlatTop(blockPlaceContext.getItemInHand()));
 	}
 
 	@SuppressWarnings("deprecation")
