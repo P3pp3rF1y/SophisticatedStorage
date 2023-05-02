@@ -15,14 +15,14 @@ public class BarrelBlockItem extends WoodStorageBlockItem {
 
 	public static void toggleFlatTop(ItemStack stack) {
 		boolean flatTop = isFlatTop(stack);
-		setFlatTop(stack, flatTop);
+		setFlatTop(stack, !flatTop);
 	}
 
 	public static void setFlatTop(ItemStack stack, boolean flatTop) {
 		if (flatTop) {
-			NBTHelper.removeTag(stack, FLAT_TOP_TAG);
-		} else {
 			NBTHelper.setBoolean(stack, FLAT_TOP_TAG, true);
+		} else {
+			NBTHelper.removeTag(stack, FLAT_TOP_TAG);
 		}
 	}
 
