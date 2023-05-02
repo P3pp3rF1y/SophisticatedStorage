@@ -22,8 +22,8 @@ public class LimitedBarrelRenderer implements BlockEntityRenderer<LimitedBarrelB
 
 	private static final float MULTIPLE_ITEMS_FONT_SCALE = 1 / 128f;
 	private static final float SINGLE_ITEM_FONT_SCALE = 1 / 64f;
-	private final DisplayItemRenderer displayItemRenderer = new LimitedBarreDisplayItemRenderer(0.5);
-	private final DisplayItemRenderer flatDisplayItemRenderer = new LimitedBarreDisplayItemRenderer(0.5 - 1 / 16D);
+	private final DisplayItemRenderer displayItemRenderer = new LimitedBarreDisplayItemRenderer(0.5 - 1 / 16D);
+	private final DisplayItemRenderer flatDisplayItemRenderer = new LimitedBarreDisplayItemRenderer(0.5);
 
 	@Override
 	public void render(LimitedBarrelBlockEntity blockEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
