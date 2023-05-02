@@ -51,9 +51,13 @@ public abstract class BarrelDynamicModelBase<T extends BarrelDynamicModelBase<T>
 	@Nullable
 	private BarrelDynamicModelBase<?> parent;
 
-	protected BarrelDynamicModelBase(@Nullable ResourceLocation parentLocation, Map<String, Map<BarrelModelPart, BarrelModelPartDefinition>> woodModelPartdefinitions) {
+	@Nullable
+	private final ResourceLocation flatTopModelName;
+
+	protected BarrelDynamicModelBase(@Nullable ResourceLocation parentLocation, Map<String, Map<BarrelModelPart, BarrelModelPartDefinition>> woodModelPartdefinitions, @Nullable ResourceLocation flatTopModelName) {
 		this.parentLocation = parentLocation;
 		this.woodModelPartdefinitions = woodModelPartdefinitions;
+		this.flatTopModelName = flatTopModelName;
 	}
 
 	@Override
@@ -93,7 +97,19 @@ public abstract class BarrelDynamicModelBase<T extends BarrelDynamicModelBase<T>
 		});
 
 		ImmutableMap<String, Map<BarrelModelPart, BakedModel>> woodModelParts = builder.build();
-		return instantiateBakedModel(woodModelParts);
+
+		BakedModel flatTopModel = getFlatTopModelName().map(modelName -> bakery.getModel(modelName).bake(bakery, spriteGetter, modelTransform, modelLocation)).orElse(null);
+		return instantiateBakedModel(woodModelParts, flatTopModel);
+	}
+
+	private Optional<ResourceLocation> getFlatTopModelName() {
+		for (BarrelDynamicModelBase<?> model = this; model != null; model = model.parent) {
+			if (model.flatTopModelName != null) {
+				return Optional.of(model.flatTopModelName);
+			}
+		}
+
+		return Optional.empty();
 	}
 
 	@SuppressWarnings("java:S5803") //need to use textureMap here to update the customData geometry textures with that
@@ -129,7 +145,7 @@ public abstract class BarrelDynamicModelBase<T extends BarrelDynamicModelBase<T>
 		return hash;
 	}
 
-	protected abstract BarrelBakedModelBase instantiateBakedModel(Map<String, Map<BarrelModelPart, BakedModel>> woodModelParts);
+	protected abstract BarrelBakedModelBase instantiateBakedModel(Map<String, Map<BarrelModelPart, BakedModel>> woodModelParts, @Nullable BakedModel flatTopModel);
 
 	public Collection<Material> getTextures(IModelConfiguration owner, Function<ResourceLocation, UnbakedModel> modelGetter, Set<Pair<String, String>> missingTextureErrors) {
 		visitAndUpdateParents(modelGetter);
@@ -201,21 +217,6 @@ public abstract class BarrelDynamicModelBase<T extends BarrelDynamicModelBase<T>
 		return true;
 	}
 
-	private record MaterialKey(String woodName, String faceName, String textureName) {
-		@Override
-		public boolean equals(Object o) {
-			if (this == o) {return true;}
-			if (o == null || getClass() != o.getClass()) {return false;}
-			MaterialKey that = (MaterialKey) o;
-			return woodName.equals(that.woodName) && faceName.equals(that.faceName) && textureName.equals(that.textureName);
-		}
-
-		@Override
-		public int hashCode() {
-			return Objects.hash(woodName, faceName, textureName);
-		}
-	}
-
 	public abstract static class Loader<T extends BarrelDynamicModelBase<T>> implements IModelLoader<T> {
 		@Override
 		public T read(JsonDeserializationContext deserializationContext, JsonObject modelContents) {
@@ -255,7 +256,12 @@ public abstract class BarrelDynamicModelBase<T extends BarrelDynamicModelBase<T>
 
 			mergeModelPartDefinitionsIntoWoodOnes(modelParts, woodOverrides);
 
-			return instantiateModel(parentLocation, woodOverrides);
+			ResourceLocation flatTopModelName = null;
+			if (modelContents.has("flat_top_model")) {
+				flatTopModelName = new ResourceLocation(modelContents.get("flat_top_model").getAsString());
+			}
+
+			return instantiateModel(parentLocation, woodOverrides, flatTopModelName);
 		}
 
 		private void mergeModelPartDefinitionsIntoWoodOnes(Map<BarrelModelPart, BarrelModelPartDefinition> modelPartDefinitions, Map<String, Map<BarrelModelPart, BarrelModelPartDefinition>> woodModelPartdefinitions) {
@@ -278,7 +284,7 @@ public abstract class BarrelDynamicModelBase<T extends BarrelDynamicModelBase<T>
 			}
 		}
 
-		protected abstract T instantiateModel(@Nullable ResourceLocation parentLocation, Map<String, Map<BarrelModelPart, BarrelModelPartDefinition>> woodOverrides);
+		protected abstract T instantiateModel(@Nullable ResourceLocation parentLocation, Map<String, Map<BarrelModelPart, BarrelModelPartDefinition>> woodOverrides, @Nullable ResourceLocation flatTopModelName);
 
 		@Override
 		public void onResourceManagerReload(ResourceManager resourceManager) {

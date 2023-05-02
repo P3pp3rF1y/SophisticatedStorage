@@ -14,18 +14,18 @@ import java.util.Map;
 
 public class BarrelDynamicModel extends BarrelDynamicModelBase<BarrelDynamicModel> {
 
-	public BarrelDynamicModel(@Nullable ResourceLocation parentLocation, Map<String, Map<BarrelModelPart, BarrelModelPartDefinition>> woodOverrides) {
-		super(parentLocation, woodOverrides);
+	public BarrelDynamicModel(@Nullable ResourceLocation parentLocation, Map<String, Map<BarrelModelPart, BarrelModelPartDefinition>> woodOverrides, @Nullable ResourceLocation flatTopModelName) {
+		super(parentLocation, woodOverrides, flatTopModelName);
 	}
 
 	@Override
-	protected BarrelBakedModelBase instantiateBakedModel(Map<String, Map<BarrelModelPart, BakedModel>> woodModelParts) {
-		return new BarrelBakedModel(woodModelParts);
+	protected BarrelBakedModelBase instantiateBakedModel(Map<String, Map<BarrelModelPart, BakedModel>> woodModelParts, @Nullable BakedModel flatTopModel) {
+		return new BarrelBakedModel(woodModelParts, flatTopModel);
 	}
 
 	private static class BarrelBakedModel extends BarrelBakedModelBase {
-		public BarrelBakedModel(Map<String, Map<BarrelModelPart, BakedModel>> woodModelParts) {
-			super(woodModelParts);
+		public BarrelBakedModel(Map<String, Map<BarrelModelPart, BakedModel>> woodModelParts, @Nullable BakedModel flatTopModel) {
+			super(woodModelParts, flatTopModel);
 		}
 
 		@Override
@@ -65,8 +65,8 @@ public class BarrelDynamicModel extends BarrelDynamicModelBase<BarrelDynamicMode
 		public static final BarrelDynamicModel.Loader INSTANCE = new BarrelDynamicModel.Loader();
 
 		@Override
-		protected BarrelDynamicModel instantiateModel(@Nullable ResourceLocation parentLocation, Map<String, Map<BarrelModelPart, BarrelModelPartDefinition>> woodOverrides) {
-			return new BarrelDynamicModel(parentLocation, woodOverrides);
+		protected BarrelDynamicModel instantiateModel(@Nullable ResourceLocation parentLocation, Map<String, Map<BarrelModelPart, BarrelModelPartDefinition>> woodOverrides, @Nullable ResourceLocation flatTopModelName) {
+			return new BarrelDynamicModel(parentLocation, woodOverrides, flatTopModelName);
 		}
 	}
 }

@@ -9,7 +9,6 @@ import java.util.Optional;
 public enum BarrelModelPart {
 	BASE,
 	BASE_OPEN,
-	METAL_BANDS,
 	TINTABLE_ACCENT,
 	TINTABLE_MAIN,
 	TINTABLE_MAIN_OPEN,
