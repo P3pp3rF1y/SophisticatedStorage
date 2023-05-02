@@ -1,6 +1,7 @@
 {
     "loader": "sophisticatedstorage:limited_barrel",
     "parent": "sophisticatedstorage:block/limited_barrel_1",
+    "flat_top_model": "sophisticatedstorage:block/flat/limited_gold_barrel_1",
     "model_parts": {
         "tier": {
             "textures": {

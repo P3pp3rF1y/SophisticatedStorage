@@ -1,57 +1,110 @@
 {
     "variants": {
-        "facing=east,vertical_facing=no": {
+        "facing=east,flat_top=false,vertical_facing=no": {
             "x": 90,
             "y": 90,
             "model": "sophisticatedstorage:block/limited_diamond_barrel_4"
         },
-        "facing=north,vertical_facing=no": {
+        "facing=north,flat_top=false,vertical_facing=no": {
             "x": 90,
             "model": "sophisticatedstorage:block/limited_diamond_barrel_4"
         },
-        "facing=south,vertical_facing=no": {
+        "facing=south,flat_top=false,vertical_facing=no": {
             "x": 90,
             "y": 180,
             "model": "sophisticatedstorage:block/limited_diamond_barrel_4"
         },
-        "facing=west,vertical_facing=no": {
+        "facing=west,flat_top=false,vertical_facing=no": {
             "x": 90,
             "y": 270,
             "model": "sophisticatedstorage:block/limited_diamond_barrel_4"
         },
-        "facing=east,vertical_facing=down": {
+        "facing=east,flat_top=false,vertical_facing=down": {
             "x": 180,
             "y": 90,
             "model": "sophisticatedstorage:block/limited_diamond_barrel_4"
         },
-        "facing=north,vertical_facing=down": {
+        "facing=north,flat_top=false,vertical_facing=down": {
             "x": 180,
             "model": "sophisticatedstorage:block/limited_diamond_barrel_4"
         },
-        "facing=south,vertical_facing=down": {
+        "facing=south,flat_top=false,vertical_facing=down": {
             "x": 180,
             "y": 180,
             "model": "sophisticatedstorage:block/limited_diamond_barrel_4"
         },
-        "facing=west,vertical_facing=down": {
+        "facing=west,flat_top=false,vertical_facing=down": {
             "x": 180,
             "y": 270,
             "model": "sophisticatedstorage:block/limited_diamond_barrel_4"
         },
-        "facing=east,vertical_facing=up": {
+        "facing=east,flat_top=false,vertical_facing=up": {
             "y": 90,
             "model": "sophisticatedstorage:block/limited_diamond_barrel_4"
         },
-        "facing=north,vertical_facing=up": {
+        "facing=north,flat_top=false,vertical_facing=up": {
             "model": "sophisticatedstorage:block/limited_diamond_barrel_4"
         },
-        "facing=south,vertical_facing=up": {
+        "facing=south,flat_top=false,vertical_facing=up": {
             "y": 180,
             "model": "sophisticatedstorage:block/limited_diamond_barrel_4"
         },
-        "facing=west,vertical_facing=up": {
+        "facing=west,flat_top=false,vertical_facing=up": {
             "y": 270,
             "model": "sophisticatedstorage:block/limited_diamond_barrel_4"
+        },
+        "facing=east,flat_top=true,vertical_facing=no": {
+            "x": 90,
+            "y": 90,
+            "model": "sophisticatedstorage:block/flat/limited_diamond_barrel_4"
+        },
+        "facing=north,flat_top=true,vertical_facing=no": {
+            "x": 90,
+            "model": "sophisticatedstorage:block/flat/limited_diamond_barrel_4"
+        },
+        "facing=south,flat_top=true,vertical_facing=no": {
+            "x": 90,
+            "y": 180,
+            "model": "sophisticatedstorage:block/flat/limited_diamond_barrel_4"
+        },
+        "facing=west,flat_top=true,vertical_facing=no": {
+            "x": 90,
+            "y": 270,
+            "model": "sophisticatedstorage:block/flat/limited_diamond_barrel_4"
+        },
+        "facing=east,flat_top=true,vertical_facing=down": {
+            "x": 180,
+            "y": 90,
+            "model": "sophisticatedstorage:block/flat/limited_diamond_barrel_4"
+        },
+        "facing=north,flat_top=true,vertical_facing=down": {
+            "x": 180,
+            "model": "sophisticatedstorage:block/flat/limited_diamond_barrel_4"
+        },
+        "facing=south,flat_top=true,vertical_facing=down": {
+            "x": 180,
+            "y": 180,
+            "model": "sophisticatedstorage:block/flat/limited_diamond_barrel_4"
+        },
+        "facing=west,flat_top=true,vertical_facing=down": {
+            "x": 180,
+            "y": 270,
+            "model": "sophisticatedstorage:block/flat/limited_diamond_barrel_4"
+        },
+        "facing=east,flat_top=true,vertical_facing=up": {
+            "y": 90,
+            "model": "sophisticatedstorage:block/flat/limited_diamond_barrel_4"
+        },
+        "facing=north,flat_top=true,vertical_facing=up": {
+            "model": "sophisticatedstorage:block/flat/limited_diamond_barrel_4"
+        },
+        "facing=south,flat_top=true,vertical_facing=up": {
+            "y": 180,
+            "model": "sophisticatedstorage:block/flat/limited_diamond_barrel_4"
+        },
+        "facing=west,flat_top=true,vertical_facing=up": {
+            "y": 270,
+            "model": "sophisticatedstorage:block/flat/limited_diamond_barrel_4"
         }
     }
 }

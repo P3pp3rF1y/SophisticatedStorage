@@ -1,0 +1,14 @@
+{
+    "loader": "sophisticatedstorage:barrel",
+    "parent": "sophisticatedstorage:block/flat/barrel",
+    "model_parts": {
+        "tier": {
+            "textures": {
+                "top": "sophisticatedstorage:block/iron_barrel_top",
+                "side": "sophisticatedstorage:block/iron_barrel_side",
+                "bottom": "sophisticatedstorage:block/iron_barrel_bottom",
+                "top_trim": "sophisticatedstorage:block/iron_barrel_top"
+            }
+        }
+    }
+}

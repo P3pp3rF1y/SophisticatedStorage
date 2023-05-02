@@ -96,16 +96,18 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 	}
 
 	protected final Map<String, Map<BarrelModelPart, BakedModel>> woodModelParts;
-	private final ItemOverrides barrelItemOverrides = new BarrelItemOverrides(this);
+	private final ItemOverrides barrelItemOverrides;
 	private Item barrelItem = Items.AIR;
 	@Nullable
 	private String barrelWoodName = null;
 	private boolean barrelHasMainColor = false;
 	private boolean barrelHasAccentColor = false;
 	private boolean barrelIsPacked = false;
+	private boolean flatTop = false;
 
-	protected BarrelBakedModelBase(Map<String, Map<BarrelModelPart, BakedModel>> woodModelParts) {
+	protected BarrelBakedModelBase(Map<String, Map<BarrelModelPart, BakedModel>> woodModelParts, @Nullable BakedModel flatTopModel) {
 		this.woodModelParts = woodModelParts;
+		barrelItemOverrides = new BarrelItemOverrides(this, flatTopModel);
 	}
 
 	private static IQuadTransformer getDirectionRotationTransform(Direction dir) {
@@ -235,6 +237,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 		hash = hash * 31 + (barrelHasMainColor ? 1 : 0);
 		hash = hash * 31 + (barrelHasAccentColor ? 1 : 0);
 		hash = hash * 31 + (barrelIsPacked ? 1 : 0);
+		hash = hash * 31 + (flatTop ? 1 : 0);
 		return hash;
 	}
 
@@ -247,6 +250,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 		hash = hash * 31 + (data.has(HAS_ACCENT_COLOR) && Boolean.TRUE.equals(data.get(HAS_ACCENT_COLOR)) ? 1 : 0);
 		hash = hash * 31 + (isPacked(data) ? 1 : 0);
 		hash = hash * 31 + (showsLocked(data) ? 1 : 0);
+		hash = hash * 31 + (state.getValue(BarrelBlock.FLAT_TOP) ? 1 : 0);
 		return hash;
 	}
 
@@ -392,15 +396,15 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 	}
 
 	private IQuadTransformer getDirectionMove(ItemStack displayItem, BakedModel model, BlockState state, Direction direction, int displayItemIndex, int displayItemCount, float itemScale) {
-		int hash = calculateDirectionMoveHash(state, displayItem, displayItemIndex, displayItemCount);
+		boolean isFlatTop = state.getValue(BarrelBlock.FLAT_TOP);
+		int hash = calculateDirectionMoveHash(state, displayItem, displayItemIndex, displayItemCount, isFlatTop);
 		Cache<Integer, IQuadTransformer> directionCache = DIRECTION_MOVES_3D_ITEMS.getUnchecked(direction);
 		IQuadTransformer transformer = directionCache.getIfPresent(hash);
 
 		if (transformer == null) {
 			double offset = DisplayItemRenderer.getDisplayItemOffset(displayItem, model, itemScale);
-			boolean is3dBarrel = true;
-			if (is3dBarrel) {
-				offset -= 1 / 16D;//TODO add 3d parameter for offset here
+			if (!isFlatTop) {
+				offset -= 1/16D;
 			}
 
 			transformer = getDirectionMoveBackToSide(state, direction, (float) (0.5f + offset), displayItemIndex, displayItemCount);
@@ -411,10 +415,11 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 	}
 
 	@SuppressWarnings("java:S1172") //state used in override
-	protected int calculateDirectionMoveHash(BlockState state, ItemStack displayItem, int displayItemIndex, int displayItemCount) {
+	protected int calculateDirectionMoveHash(BlockState state, ItemStack displayItem, int displayItemIndex, int displayItemCount, boolean isFlatTop) {
 		int hashCode = ItemStackKey.getHashCode(displayItem);
 		hashCode = hashCode * 31 + displayItemIndex;
 		hashCode = hashCode * 31 + displayItemCount;
+		hashCode = hashCode * 31 + (isFlatTop ? 1 : 0);
 		return hashCode;
 	}
 
@@ -430,10 +435,6 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 
 		if (hasMainColor) {
 			addPartQuads(state, side, rand, ret, modelParts, getMainPart(state), renderType);
-		}
-
-		if (hasMainColor || hasAccentColor) {
-			addPartQuads(state, side, rand, ret, modelParts, BarrelModelPart.METAL_BANDS, renderType);
 		}
 	}
 
@@ -549,20 +550,29 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 
 	private static class BarrelItemOverrides extends ItemOverrides {
 		private final BarrelBakedModelBase barrelBakedModel;
+		@Nullable
+		private final BakedModel flatTopModel;
 
-		public BarrelItemOverrides(BarrelBakedModelBase barrelBakedModel) {
+		public BarrelItemOverrides(BarrelBakedModelBase barrelBakedModel, @Nullable BakedModel flatTopModel) {
 			this.barrelBakedModel = barrelBakedModel;
+			this.flatTopModel = flatTopModel;
 		}
 
 		@Nullable
 		@Override
 		public BakedModel resolve(BakedModel model, ItemStack stack, @Nullable ClientLevel level, @Nullable LivingEntity entity, int seed) {
+			boolean flatTop = BarrelBlock.isFlatTop(stack);
+			if (flatTopModel != null && flatTop) {
+				return flatTopModel.getOverrides().resolve(flatTopModel, stack, level, entity, seed);
+			}
+
 			barrelBakedModel.barrelHasMainColor = StorageBlockItem.getMainColorFromStack(stack).isPresent();
 			barrelBakedModel.barrelHasAccentColor = StorageBlockItem.getAccentColorFromStack(stack).isPresent();
 			barrelBakedModel.barrelWoodName = WoodStorageBlockItem.getWoodType(stack).map(WoodType::name)
 					.orElse(barrelBakedModel.barrelHasAccentColor && barrelBakedModel.barrelHasMainColor ? null : WoodType.ACACIA.name());
 			barrelBakedModel.barrelIsPacked = WoodStorageBlockItem.isPacked(stack);
 			barrelBakedModel.barrelItem = stack.getItem();
+			barrelBakedModel.flatTop = flatTop;
 			return barrelBakedModel;
 		}
 	}

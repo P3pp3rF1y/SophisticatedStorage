@@ -1,5 +1,6 @@
 {
     "loader": "sophisticatedstorage:barrel",
+    "flat_top_model": "sophisticatedstorage:block/flat/barrel",
     "model_parts": {
         "base": {
             "model": "sophisticatedstorage:block/barrel_part/base",

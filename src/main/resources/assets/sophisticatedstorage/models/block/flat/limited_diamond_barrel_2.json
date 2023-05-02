@@ -1,0 +1,14 @@
+{
+    "loader": "sophisticatedstorage:limited_barrel",
+    "parent": "sophisticatedstorage:block/flat/limited_barrel_2",
+    "model_parts": {
+        "tier": {
+            "textures": {
+                "top": "sophisticatedstorage:block/diamond_barrel_top",
+                "side": "sophisticatedstorage:block/diamond_barrel_side",
+                "bottom": "sophisticatedstorage:block/diamond_barrel_bottom",
+                "top_trim": "sophisticatedstorage:block/diamond_barrel_top"
+            }
+        }
+    }
+}
