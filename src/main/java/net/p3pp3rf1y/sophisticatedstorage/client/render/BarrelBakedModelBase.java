@@ -95,6 +95,12 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 		return new ItemTransforms(new ItemTransform(new Vector3f(75, 45, 0), new Vector3f(0, 2.5f / 16f, 0), new Vector3f(0.375f, 0.375f, 0.375f), DEFAULT_ROTATION), new ItemTransform(new Vector3f(75, 45, 0), new Vector3f(0, 2.5f / 16f, 0), new Vector3f(0.375f, 0.375f, 0.375f), DEFAULT_ROTATION), new ItemTransform(new Vector3f(0, 225, 0), new Vector3f(0, 0, 0), new Vector3f(0.4f, 0.4f, 0.4f), DEFAULT_ROTATION), new ItemTransform(new Vector3f(0, 45, 0), new Vector3f(0, 0, 0), new Vector3f(0.4f, 0.4f, 0.4f), DEFAULT_ROTATION), new ItemTransform(new Vector3f(0, 0, 0), new Vector3f(0, 14.25f / 16f, 0), new Vector3f(1, 1, 1), DEFAULT_ROTATION), new ItemTransform(new Vector3f(30, 225, 0), new Vector3f(0, 0, 0), new Vector3f(0.625f, 0.625f, 0.625f), DEFAULT_ROTATION), new ItemTransform(new Vector3f(0, 0, 0), new Vector3f(0, 3 / 16f, 0), new Vector3f(0.25f, 0.25f, 0.25f), DEFAULT_ROTATION), new ItemTransform(new Vector3f(0, 0, 0), new Vector3f(0, 0, 0), new Vector3f(0.5f, 0.5f, 0.5f), DEFAULT_ROTATION), ImmutableMap.of());
 	}
 
+	public static void invalidateCache() {
+		DIRECTION_MOVES_3D_ITEMS.invalidateAll();
+		DIRECTION_MOVE_BACK_TO_SIDE.invalidateAll();
+		BAKED_QUADS_CACHE.invalidateAll();
+	}
+
 	protected final Map<String, Map<BarrelModelPart, BakedModel>> woodModelParts;
 	private final ItemOverrides barrelItemOverrides;
 	private Item barrelItem = Items.AIR;
@@ -103,6 +109,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 	private boolean barrelHasMainColor = false;
 	private boolean barrelHasAccentColor = false;
 	private boolean barrelIsPacked = false;
+
 	private boolean flatTop = false;
 
 	protected BarrelBakedModelBase(Map<String, Map<BarrelModelPart, BakedModel>> woodModelParts, @Nullable BakedModel flatTopModel) {
@@ -250,7 +257,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 		hash = hash * 31 + (data.has(HAS_ACCENT_COLOR) && Boolean.TRUE.equals(data.get(HAS_ACCENT_COLOR)) ? 1 : 0);
 		hash = hash * 31 + (isPacked(data) ? 1 : 0);
 		hash = hash * 31 + (showsLocked(data) ? 1 : 0);
-		hash = hash * 31 + (state.getValue(BarrelBlock.FLAT_TOP) ? 1 : 0);
+		hash = hash * 31 + (Boolean.TRUE.equals(state.getValue(BarrelBlock.FLAT_TOP)) ? 1 : 0);
 		return hash;
 	}
 

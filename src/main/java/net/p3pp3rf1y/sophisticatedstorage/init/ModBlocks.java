@@ -43,6 +43,8 @@ import net.p3pp3rf1y.sophisticatedstorage.client.gui.LimitedBarrelScreen;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.LimitedBarrelSettingsScreen;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageScreen;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageSettingsScreen;
+import net.p3pp3rf1y.sophisticatedstorage.client.render.BarrelBakedModelBase;
+import net.p3pp3rf1y.sophisticatedstorage.client.render.BarrelDynamicModelBase;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.LimitedBarrelContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.LimitedBarrelSettingsContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
@@ -246,6 +248,8 @@ public class ModBlocks {
 
 	private static void onResourceReload(AddReloadListenerEvent event) {
 		ShulkerBoxFromChestRecipe.REGISTERED_RECIPES.clear();
+		BarrelDynamicModelBase.invalidateCache();
+		BarrelBakedModelBase.invalidateCache();
 	}
 
 	private static void registerContainers(FMLClientSetupEvent evt) {
