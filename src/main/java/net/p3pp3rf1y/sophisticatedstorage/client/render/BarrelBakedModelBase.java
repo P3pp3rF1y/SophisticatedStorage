@@ -42,6 +42,7 @@ import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
+import net.p3pp3rf1y.sophisticatedstorage.item.BarrelBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
 
@@ -609,7 +610,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 		@Nullable
 		@Override
 		public BakedModel resolve(BakedModel model, ItemStack stack, @Nullable ClientLevel level, @Nullable LivingEntity entity, int seed) {
-			boolean flatTop = BarrelBlock.isFlatTop(stack);
+			boolean flatTop = BarrelBlockItem.isFlatTop(stack);
 			if (flatTopModel != null && flatTop) {
 				return flatTopModel.getOverrides().resolve(flatTopModel, stack, level, entity, seed);
 			}

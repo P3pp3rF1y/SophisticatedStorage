@@ -9,6 +9,7 @@ import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlock;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
+import net.p3pp3rf1y.sophisticatedstorage.item.BarrelBlockItem;
 
 public class FlatTopBarrelToggleRecipe extends CustomRecipe {
 	public FlatTopBarrelToggleRecipe(ResourceLocation registryName) {
@@ -44,7 +45,7 @@ public class FlatTopBarrelToggleRecipe extends CustomRecipe {
 
 			if (item.getItem() instanceof BlockItem blockItem && blockItem.getBlock() instanceof BarrelBlock) {
 				ItemStack result = item.copy();
-				BarrelBlock.toggleFlatTop(result);
+				BarrelBlockItem.toggleFlatTop(result);
 				return result;
 			}
 		}

@@ -7,8 +7,8 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.ShapelessRecipe;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
-import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlock;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
+import net.p3pp3rf1y.sophisticatedstorage.item.BarrelBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
 
 import java.util.ArrayList;
@@ -22,7 +22,7 @@ public class FlatBarrelRecipesMaker {
 
 		ItemStack barrel = WoodStorageBlockItem.setWoodType(new ItemStack(ModBlocks.BARREL.get()), WoodType.ACACIA);
 		ItemStack flatBarrel = barrel.copy();
-		BarrelBlock.toggleFlatTop(flatBarrel);
+		BarrelBlockItem.toggleFlatTop(flatBarrel);
 
 		recipes.add(new ShapelessRecipe(SophisticatedStorage.getRL("flatten_barrel"), "", flatBarrel, NonNullList.of(Ingredient.EMPTY, Ingredient.of(barrel))));
 		recipes.add(new ShapelessRecipe(SophisticatedStorage.getRL("unflatten_barrel"), "", barrel, NonNullList.of(Ingredient.EMPTY, Ingredient.of(flatBarrel))));

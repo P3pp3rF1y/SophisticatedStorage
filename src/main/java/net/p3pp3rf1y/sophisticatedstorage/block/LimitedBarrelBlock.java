@@ -37,6 +37,7 @@ import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageTranslationHelper;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.LimitedBarrelContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
+import net.p3pp3rf1y.sophisticatedstorage.item.BarrelBlockItem;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -84,7 +85,7 @@ public class LimitedBarrelBlock extends BarrelBlock {
 	public BlockState getStateForPlacement(BlockPlaceContext blockPlaceContext) {
 		Direction direction = blockPlaceContext.getNearestLookingDirection().getOpposite();
 		Direction horizontalDirection = blockPlaceContext.getHorizontalDirection().getOpposite();
-		return defaultBlockState().setValue(HORIZONTAL_FACING, horizontalDirection).setValue(VERTICAL_FACING, VerticalFacing.fromDirection(direction)).setValue(FLAT_TOP, isFlatTop(blockPlaceContext.getItemInHand()));
+		return defaultBlockState().setValue(HORIZONTAL_FACING, horizontalDirection).setValue(VERTICAL_FACING, VerticalFacing.fromDirection(direction)).setValue(FLAT_TOP, BarrelBlockItem.isFlatTop(blockPlaceContext.getItemInHand()));
 	}
 
 	@Override
