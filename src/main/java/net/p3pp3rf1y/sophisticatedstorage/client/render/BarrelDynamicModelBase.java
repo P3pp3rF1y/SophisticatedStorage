@@ -43,6 +43,10 @@ import java.util.stream.Collectors;
 public abstract class BarrelDynamicModelBase<T extends BarrelDynamicModelBase<T>> implements IModelGeometry<T> {
 	private static final Map<Integer, BakedModel> BAKED_PART_MODELS = new HashMap<>();
 
+	public static void invalidateCache() {
+		BAKED_PART_MODELS.clear();
+	}
+
 	private final Map<String, Map<BarrelModelPart, BarrelModelPartDefinition>> woodModelPartdefinitions;
 
 	@Nullable
@@ -342,10 +346,10 @@ public abstract class BarrelDynamicModelBase<T extends BarrelDynamicModelBase<T>
 		@Override
 		public boolean equals(Object obj) {
 			if (obj == this) {return true;}
-			if (obj == null || obj.getClass() != this.getClass()) {return false;}
+			if (obj == null || obj.getClass() != getClass()) {return false;}
 			var that = (BarrelModelPartDefinition) obj;
-			return Objects.equals(this.modelLocation, that.modelLocation) &&
-					Objects.equals(this.textures, that.textures);
+			return Objects.equals(modelLocation, that.modelLocation) &&
+					Objects.equals(textures, that.textures);
 		}
 
 		@Override

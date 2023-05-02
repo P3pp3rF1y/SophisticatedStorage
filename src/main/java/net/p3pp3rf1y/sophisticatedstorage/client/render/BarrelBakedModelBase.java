@@ -147,8 +147,14 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 	private static final ModelProperty<Boolean> HAS_ACCENT_COLOR = new ModelProperty<>();
 	private static final ModelProperty<List<RenderInfo.DisplayItem>> DISPLAY_ITEMS = new ModelProperty<>();
 	private static final ModelProperty<List<Integer>> INACCESSIBLE_SLOTS = new ModelProperty<>();
-	public static final Cache<Integer, List<BakedQuad>> BAKED_QUADS_CACHE = CacheBuilder.newBuilder().expireAfterAccess(15L, TimeUnit.MINUTES).build();
+	private static final Cache<Integer, List<BakedQuad>> BAKED_QUADS_CACHE = CacheBuilder.newBuilder().expireAfterAccess(15L, TimeUnit.MINUTES).build();
 	private static final Map<Integer, QuadTransformer> DISPLAY_ROTATIONS = new HashMap<>();
+	public static void invalidateCache() {
+		DIRECTION_MOVES_3D_ITEMS.invalidateAll();
+		DIRECTION_MOVE_BACK_TO_SIDE.invalidateAll();
+		BAKED_QUADS_CACHE.invalidateAll();
+	}
+
 	protected final Map<String, Map<BarrelModelPart, BakedModel>> woodModelParts;
 	private final ItemOverrides barrelItemOverrides;
 	private Item barrelItem = Items.AIR;
@@ -157,6 +163,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 	private boolean barrelHasMainColor = false;
 	private boolean barrelHasAccentColor = false;
 	private boolean barrelIsPacked = false;
+
 	private boolean flatTop = false;
 
 	protected BarrelBakedModelBase(Map<String, Map<BarrelModelPart, BakedModel>> woodModelParts, @Nullable BakedModel flatTopModel) {
@@ -300,7 +307,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 		hash = hash * 31 + (data.hasProperty(HAS_ACCENT_COLOR) && Boolean.TRUE.equals(data.getData(HAS_ACCENT_COLOR)) ? 1 : 0);
 		hash = hash * 31 + (isPacked(data) ? 1 : 0);
 		hash = hash * 31 + (showsLocked(data) ? 1 : 0);
-		hash = hash * 31 + (state.getValue(BarrelBlock.FLAT_TOP) ? 1 : 0);
+		hash = hash * 31 + (Boolean.TRUE.equals(state.getValue(BarrelBlock.FLAT_TOP)) ? 1 : 0);
 		return hash;
 	}
 
