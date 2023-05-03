@@ -1,5 +1,127 @@
 {
     "loader": "sophisticatedstorage:limited_barrel",
-    "tier": "wood",
-    "barrelType": "limited_1"
+    "flat_top_model": "sophisticatedstorage:block/flat/limited_barrel_1",
+    "model_parts": {
+        "base": {
+            "model": "sophisticatedstorage:block/barrel_part/base",
+            "textures": {
+                "top": "sophisticatedstorage:block/limited_acacia_barrel_1_top",
+                "top_trim": "sophisticatedstorage:block/limited_acacia_barrel_1_top",
+                "side": "sophisticatedstorage:block/acacia_barrel_side",
+                "bottom": "sophisticatedstorage:block/acacia_barrel_bottom"
+            }
+        },
+        "tier": {
+            "model": "sophisticatedstorage:block/barrel_part/wood_tier"
+        },
+        "tintable_main": {
+            "model": "sophisticatedstorage:block/barrel_part/limited_tintable_main",
+            "textures": {
+                "top": "sophisticatedstorage:block/limited_barrel_1_top_tintable_main"
+            }
+        },
+        "tintable_accent": {
+            "model": "sophisticatedstorage:block/barrel_part/tintable_accent",
+            "textures": {
+                "top": "sophisticatedstorage:block/limited_barrel_1_top_tintable_accent",
+                "top_trim": "sophisticatedstorage:block/limited_barrel_1_top_tintable_accent"
+            }
+        },
+        "packed": {
+            "model": "sophisticatedstorage:block/barrel_part/packed"
+        },
+        "locked": {
+            "model": "sophisticatedstorage:block/barrel_part/locked"
+        }
+    },
+    "wood_overrides": {
+        "acacia": {
+            "base": {
+                "textures": {
+                    "top": "sophisticatedstorage:block/limited_acacia_barrel_1_top",
+                    "top_trim": "sophisticatedstorage:block/limited_acacia_barrel_1_top",
+                    "side": "sophisticatedstorage:block/acacia_barrel_side",
+                    "bottom": "sophisticatedstorage:block/acacia_barrel_bottom",
+                    "particle": "sophisticatedstorage:block/limited_acacia_barrel_1_top"
+                }
+            }
+        },
+        "birch": {
+            "base": {
+                "textures": {
+                    "top": "sophisticatedstorage:block/limited_birch_barrel_1_top",
+                    "top_trim": "sophisticatedstorage:block/limited_birch_barrel_1_top",
+                    "side": "sophisticatedstorage:block/birch_barrel_side",
+                    "bottom": "sophisticatedstorage:block/birch_barrel_bottom",
+                    "particle": "sophisticatedstorage:block/limited_birch_barrel_1_top"
+                }
+            }
+        },
+        "crimson": {
+            "base": {
+                "textures": {
+                    "top": "sophisticatedstorage:block/limited_crimson_barrel_1_top",
+                    "top_trim": "sophisticatedstorage:block/limited_crimson_barrel_1_top",
+                    "side": "sophisticatedstorage:block/crimson_barrel_side",
+                    "bottom": "sophisticatedstorage:block/crimson_barrel_bottom",
+                    "particle": "sophisticatedstorage:block/limited_crimson_barrel_1_top"
+                }
+            }
+        },
+        "dark_oak": {
+            "base": {
+                "textures": {
+                    "top": "sophisticatedstorage:block/limited_dark_oak_barrel_1_top",
+                    "top_trim": "sophisticatedstorage:block/limited_dark_oak_barrel_1_top",
+                    "side": "sophisticatedstorage:block/dark_oak_barrel_side",
+                    "bottom": "sophisticatedstorage:block/dark_oak_barrel_bottom",
+                    "particle": "sophisticatedstorage:block/limited_dark_oak_barrel_1_top"
+                }
+            }
+        },
+        "jungle": {
+            "base": {
+                "textures": {
+                    "top": "sophisticatedstorage:block/limited_jungle_barrel_1_top",
+                    "top_trim": "sophisticatedstorage:block/limited_jungle_barrel_1_top",
+                    "side": "sophisticatedstorage:block/jungle_barrel_side",
+                    "bottom": "sophisticatedstorage:block/jungle_barrel_bottom",
+                    "particle": "sophisticatedstorage:block/limited_jungle_barrel_1_top"
+                }
+            }
+        },
+        "oak": {
+            "base": {
+                "textures": {
+                    "top": "sophisticatedstorage:block/limited_oak_barrel_1_top",
+                    "top_trim": "sophisticatedstorage:block/limited_oak_barrel_1_top",
+                    "side": "sophisticatedstorage:block/oak_barrel_side",
+                    "bottom": "sophisticatedstorage:block/oak_barrel_bottom",
+                    "particle": "sophisticatedstorage:block/limited_oak_barrel_1_top"
+                }
+            }
+        },
+        "spruce": {
+            "base": {
+                "textures": {
+                    "top": "sophisticatedstorage:block/limited_spruce_barrel_1_top",
+                    "top_trim": "sophisticatedstorage:block/limited_spruce_barrel_1_top",
+                    "side": "sophisticatedstorage:block/spruce_barrel_side",
+                    "bottom": "sophisticatedstorage:block/spruce_barrel_bottom",
+                    "particle": "sophisticatedstorage:block/limited_spruce_barrel_1_top"
+                }
+            }
+        },
+        "warped": {
+            "base": {
+                "textures": {
+                    "top": "sophisticatedstorage:block/limited_warped_barrel_1_top",
+                    "top_trim": "sophisticatedstorage:block/limited_warped_barrel_1_top",
+                    "side": "sophisticatedstorage:block/warped_barrel_side",
+                    "bottom": "sophisticatedstorage:block/warped_barrel_bottom",
+                    "particle": "sophisticatedstorage:block/limited_warped_barrel_1_top"
+                }
+            }
+        }
+    }
 }

@@ -30,6 +30,9 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static net.p3pp3rf1y.sophisticatedcore.util.MathHelper.intMaxCappedAddition;
+import static net.p3pp3rf1y.sophisticatedcore.util.MathHelper.intMaxCappedMultiply;
+
 public class CompressionInventoryPart implements IInventoryPartHandler {
 	public static final String NAME = "compression";
 	public static final Pair<ResourceLocation, ResourceLocation> EMPTY_COMPRESSION_SLOT = new Pair<>(InventoryMenu.BLOCK_ATLAS, SophisticatedStorage.getRL("item/empty_compression_slot"));
@@ -115,8 +118,11 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 		int totalLimit = 0;
 		for (int slot = slotRange.firstSlot(); slot < slotRange.firstSlot() + slotRange.numberOfSlots(); slot++) {
 			if (definitions.containsKey(slot) && definitions.get(slot).isAccessible()) {
-				lastMultiplier *= definitions.get(slot).prevSlotMultiplier;
-				totalLimit += lastMultiplier * parent.getBaseSlotLimit();
+				if (slot != slotRange.firstSlot()) {
+					lastMultiplier = intMaxCappedMultiply(lastMultiplier, definitions.get(slot).prevSlotMultiplier);
+				}
+				totalLimit = intMaxCappedAddition(totalLimit, intMaxCappedMultiply(lastMultiplier, parent.getBaseStackLimit(new ItemStack(definitions.get(slot).item))));
+
 				definitions.get(slot).setSlotLimit(totalLimit);
 			}
 		}

@@ -109,6 +109,11 @@ public class CompressionUpgradeItem extends UpgradeItemBase<CompressionUpgradeIt
 		}
 
 		@Override
+		public boolean hideSettingsTab() {
+			return true;
+		}
+
+		@Override
 		public void onBeforeRemoved() {
 			super.onBeforeRemoved();
 			storageWrapper.getInventoryHandler().getInventoryPartitioner().removeInventoryPart(getFirstInventorySlot());

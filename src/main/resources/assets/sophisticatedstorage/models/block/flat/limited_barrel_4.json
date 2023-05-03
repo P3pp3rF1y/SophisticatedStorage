@@ -1,0 +1,92 @@
+{
+    "loader": "sophisticatedstorage:limited_barrel",
+    "parent": "sophisticatedstorage:block/flat/limited_barrel_1",
+    "model_parts": {
+        "base": {
+            "model": "minecraft:block/cube_bottom_top",
+            "textures": {
+                "top": "sophisticatedstorage:block/limited_acacia_barrel_4_top",
+                "particle": "sophisticatedstorage:block/limited_acacia_barrel_4_top"
+            }
+        },
+        "tintable_main": {
+            "model": "sophisticatedstorage:block/barrel_part/flat_limited_tintable_main",
+            "textures": {
+                "particle": "sophisticatedstorage:block/limited_barrel_4_top_tintable_main",
+                "top": "sophisticatedstorage:block/limited_barrel_4_top_tintable_main"
+            }
+        },
+        "tintable_accent": {
+            "textures": {
+                "particle": "sophisticatedstorage:block/limited_barrel_4_top_tintable_accent",
+                "top": "sophisticatedstorage:block/limited_barrel_4_top_tintable_accent"
+            }
+        }
+    },
+    "wood_overrides": {
+        "acacia": {
+            "base": {
+                "textures": {
+                    "top": "sophisticatedstorage:block/limited_acacia_barrel_4_top",
+                    "particle": "sophisticatedstorage:block/limited_acacia_barrel_4_top"
+                }
+            }
+        },
+        "birch": {
+            "base": {
+                "textures": {
+                    "top": "sophisticatedstorage:block/limited_birch_barrel_4_top",
+                    "particle": "sophisticatedstorage:block/limited_birch_barrel_4_top"
+                }
+            }
+        },
+        "crimson": {
+            "base": {
+                "textures": {
+                    "top": "sophisticatedstorage:block/limited_crimson_barrel_4_top",
+                    "particle": "sophisticatedstorage:block/limited_crimson_barrel_4_top"
+                }
+            }
+        },
+        "dark_oak": {
+            "base": {
+                "textures": {
+                    "top": "sophisticatedstorage:block/limited_dark_oak_barrel_4_top",
+                    "particle": "sophisticatedstorage:block/limited_dark_oak_barrel_4_top"
+                }
+            }
+        },
+        "jungle": {
+            "base": {
+                "textures": {
+                    "top": "sophisticatedstorage:block/limited_jungle_barrel_4_top",
+                    "particle": "sophisticatedstorage:block/limited_jungle_barrel_4_top"
+                }
+            }
+        },
+        "oak": {
+            "base": {
+                "textures": {
+                    "top": "sophisticatedstorage:block/limited_oak_barrel_4_top",
+                    "particle": "sophisticatedstorage:block/limited_oak_barrel_4_top"
+                }
+            }
+        },
+        "spruce": {
+            "base": {
+                "textures": {
+                    "top": "sophisticatedstorage:block/limited_spruce_barrel_4_top",
+                    "particle": "sophisticatedstorage:block/limited_spruce_barrel_4_top"
+                }
+            }
+        },
+        "warped": {
+            "base": {
+                "textures": {
+                    "top": "sophisticatedstorage:block/limited_warped_barrel_4_top",
+                    "particle": "sophisticatedstorage:block/limited_warped_barrel_4_top"
+                }
+            }
+        }
+    }
+}
