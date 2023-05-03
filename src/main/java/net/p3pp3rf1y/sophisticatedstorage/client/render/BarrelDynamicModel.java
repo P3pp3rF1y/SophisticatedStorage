@@ -1,47 +1,31 @@
 package net.p3pp3rf1y.sophisticatedstorage.client.render;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
-import com.mojang.datafixers.util.Either;
 import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.block.model.BlockModel;
-import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.client.resources.model.Material;
-import net.minecraft.client.resources.model.UnbakedModel;
 import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.client.model.data.ModelData;
-import net.minecraftforge.client.model.geometry.IGeometryLoader;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlock;
-import net.p3pp3rf1y.sophisticatedstorage.block.BarrelType;
-import net.p3pp3rf1y.sophisticatedstorage.block.StorageTier;
-import net.p3pp3rf1y.sophisticatedstorage.block.WoodStorageBlockBase;
-import net.p3pp3rf1y.sophisticatedstorage.client.StorageTextureManager;
 
 import javax.annotation.Nullable;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 public class BarrelDynamicModel extends BarrelDynamicModelBase<BarrelDynamicModel> {
 
-	public BarrelDynamicModel(Map<String, Map<BarrelModelPart, UnbakedModel>> woodModels) {
-		super(woodModels);
+	public BarrelDynamicModel(@Nullable ResourceLocation parentLocation, Map<String, Map<BarrelModelPart, BarrelModelPartDefinition>> woodOverrides, @Nullable ResourceLocation flatTopModelName) {
+		super(parentLocation, woodOverrides, flatTopModelName);
 	}
 
 	@Override
-	protected BarrelBakedModelBase instantiateBakedModel(ImmutableMap<String, Map<BarrelModelPart, BakedModel>> woodModelParts) {
-		return new BarrelBakedModel(woodModelParts);
+	protected BarrelBakedModelBase instantiateBakedModel(Map<String, Map<BarrelModelPart, BakedModel>> woodModelParts, @Nullable BakedModel flatTopModel) {
+		return new BarrelBakedModel(woodModelParts, flatTopModel);
 	}
 
 	private static class BarrelBakedModel extends BarrelBakedModelBase {
-		public BarrelBakedModel(Map<String, Map<BarrelModelPart, BakedModel>> woodModelParts) {
-			super(woodModelParts);
+		public BarrelBakedModel(Map<String, Map<BarrelModelPart, BakedModel>> woodModelParts, @Nullable BakedModel flatTopModel) {
+			super(woodModelParts, flatTopModel);
 		}
 
 		@Override
@@ -59,18 +43,13 @@ public class BarrelDynamicModel extends BarrelDynamicModelBase<BarrelDynamicMode
 		}
 
 		@Override
-		protected BarrelModelPart getMainPart(@Nullable BlockState state) {
-			return state != null && state.getValue(BarrelBlock.OPEN) ? BarrelModelPart.MAIN_OPEN : BarrelModelPart.MAIN;
-		}
-
-		@Override
-		protected BarrelModelPart getMainPart() {
-			return BarrelModelPart.MAIN;
-		}
-
-		@Override
 		protected List<BakedQuad> rotateDisplayItemQuads(List<BakedQuad> quads, BlockState state) {
 			return DIRECTION_ROTATES.get(state.getValue(BarrelBlock.FACING)).process(quads);
+		}
+
+		@Override
+		protected boolean rendersOpen() {
+			return true;
 		}
 
 		@Override
@@ -81,34 +60,13 @@ public class BarrelDynamicModel extends BarrelDynamicModelBase<BarrelDynamicMode
 		}
 	}
 
-	public static final class Loader implements IGeometryLoader<BarrelDynamicModel> {
-		public static final Loader INSTANCE = new Loader();
+	@SuppressWarnings("java:S6548") //singleton is intended here
+	public static final class Loader extends BarrelDynamicModelBase.Loader<BarrelDynamicModel> {
+		public static final BarrelDynamicModel.Loader INSTANCE = new BarrelDynamicModel.Loader();
 
 		@Override
-		public BarrelDynamicModel read(JsonObject modelContents, JsonDeserializationContext deserializationContext) throws JsonParseException {
-			ImmutableMap.Builder<String, Map<BarrelModelPart, UnbakedModel>> woodModelsBuilder = ImmutableMap.builder();
-
-			StorageTier tier = StorageTier.valueOf(modelContents.getAsJsonPrimitive("tier").getAsString().toUpperCase(Locale.ROOT));
-			WoodStorageBlockBase.CUSTOM_TEXTURE_WOOD_TYPES.keySet().forEach(woodType -> {
-				ImmutableMap.Builder<BarrelModelPart, UnbakedModel> modelsBuilder = ImmutableMap.builder();
-				for (BarrelModelPart barrelPart : BarrelModelPart.getRegularBarrelParts()) {
-					Map<String, Either<Material, String>> materials = new HashMap<>();
-
-					for (StorageTextureManager.BarrelMaterial barrelMaterial : barrelPart.getBarrelMaterials(BarrelType.REGULAR, tier)) {
-						putMaterial(materials, StorageTextureManager.INSTANCE::getBarrelMaterial, woodType, StorageTextureManager.BarrelFace.TOP, barrelMaterial);
-						putMaterial(materials, StorageTextureManager.INSTANCE::getBarrelMaterial, woodType, StorageTextureManager.BarrelFace.BOTTOM, barrelMaterial);
-						putMaterial(materials, StorageTextureManager.INSTANCE::getBarrelMaterial, woodType, StorageTextureManager.BarrelFace.SIDE, barrelMaterial);
-
-						if (barrelPart == BarrelModelPart.MAIN || barrelPart == BarrelModelPart.MAIN_OPEN) {
-							putMaterial(materials, StorageTextureManager.INSTANCE::getBarrelMaterial, woodType, StorageTextureManager.BarrelFace.TOP, StorageTextureManager.BarrelMaterial.HANDLE, "handle");
-						}
-					}
-					modelsBuilder.put(barrelPart, new BlockModel(barrelPart.modelName, Collections.emptyList(), materials, true, null, ItemTransforms.NO_TRANSFORMS, Collections.emptyList()));
-				}
-				woodModelsBuilder.put(woodType.name(), modelsBuilder.build());
-			});
-
-			return new BarrelDynamicModel(woodModelsBuilder.build());
+		protected BarrelDynamicModel instantiateModel(@Nullable ResourceLocation parentLocation, Map<String, Map<BarrelModelPart, BarrelModelPartDefinition>> woodOverrides, @Nullable ResourceLocation flatTopModelName) {
+			return new BarrelDynamicModel(parentLocation, woodOverrides, flatTopModelName);
 		}
 	}
 }

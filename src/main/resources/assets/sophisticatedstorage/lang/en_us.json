@@ -50,6 +50,7 @@
     "block.sophisticatedstorage.limited_netherite_barrel_2": "Limited %s%sNetherite Barrel II",
     "block.sophisticatedstorage.limited_netherite_barrel_3": "Limited %s%sNetherite Barrel III",
     "block.sophisticatedstorage.limited_netherite_barrel_4": "Limited %s%sNetherite Barrel IV",
+    "block.sophisticatedstorage.barrel.tooltip.flat_top": " (Flat Top)",
     "block.sophisticatedstorage.chest": "%s%sChest",
     "block.sophisticatedstorage.iron_chest": "%s%sIron Chest",
     "block.sophisticatedstorage.gold_chest": "%s%sGold Chest",

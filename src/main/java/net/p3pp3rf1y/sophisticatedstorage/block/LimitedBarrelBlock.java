@@ -36,6 +36,7 @@ import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageTranslationHelper;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.LimitedBarrelContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
+import net.p3pp3rf1y.sophisticatedstorage.item.BarrelBlockItem;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -49,7 +50,7 @@ public class LimitedBarrelBlock extends BarrelBlock {
 
 	public LimitedBarrelBlock(int numberOfInventorySlots, Supplier<Integer> getBaseStackSizeMultiplier, Supplier<Integer> numberOfUpgradeSlotsSupplier, Properties properties) {
 		super(() -> numberOfInventorySlots, numberOfUpgradeSlotsSupplier, properties,
-				stateDef -> stateDef.any().setValue(HORIZONTAL_FACING, Direction.NORTH).setValue(VERTICAL_FACING, VerticalFacing.NO).setValue(TICKING, false)
+				stateDef -> stateDef.any().setValue(HORIZONTAL_FACING, Direction.NORTH).setValue(VERTICAL_FACING, VerticalFacing.NO).setValue(TICKING, false).setValue(FLAT_TOP, false)
 		);
 		this.getBaseStackSizeMultiplier = getBaseStackSizeMultiplier;
 	}
@@ -75,7 +76,7 @@ public class LimitedBarrelBlock extends BarrelBlock {
 
 	@Override
 	protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-		builder.add(HORIZONTAL_FACING, VERTICAL_FACING, TICKING);
+		builder.add(HORIZONTAL_FACING, VERTICAL_FACING, TICKING, FLAT_TOP);
 	}
 
 	@Nullable
@@ -83,7 +84,7 @@ public class LimitedBarrelBlock extends BarrelBlock {
 	public BlockState getStateForPlacement(BlockPlaceContext blockPlaceContext) {
 		Direction direction = blockPlaceContext.getNearestLookingDirection().getOpposite();
 		Direction horizontalDirection = blockPlaceContext.getHorizontalDirection().getOpposite();
-		return defaultBlockState().setValue(HORIZONTAL_FACING, horizontalDirection).setValue(VERTICAL_FACING, VerticalFacing.fromDirection(direction));
+		return defaultBlockState().setValue(HORIZONTAL_FACING, horizontalDirection).setValue(VERTICAL_FACING, VerticalFacing.fromDirection(direction)).setValue(FLAT_TOP, BarrelBlockItem.isFlatTop(blockPlaceContext.getItemInHand()));
 	}
 
 	@Override
