@@ -110,6 +110,7 @@ dependencies {
 
     if (findProject(':SophisticatedCore') != null) {
         implementation project(':SophisticatedCore')
+        testImplementation project(':SophisticatedCore')
     } else {
         compileOnly fg.deobf("curse.maven:sophisticatedcore-618298:${sc_cf_file_id}")
         runtimeOnly fg.deobf("curse.maven:sophisticatedcore-618298:${sc_cf_file_id}")
