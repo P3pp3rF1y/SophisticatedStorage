@@ -10,8 +10,11 @@ import net.minecraft.world.item.Items;
 import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryHandler;
 import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryPartitioner;
 import net.p3pp3rf1y.sophisticatedcore.settings.memory.MemorySettingsCategory;
+import net.p3pp3rf1y.sophisticatedcore.util.MathHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.RecipeHelper;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -76,7 +79,15 @@ public class CompressionInventoryPartTest {
 
 	private InventoryHandler getFilledInventoryHandler(Map<Integer, ItemStack> slotStacks, int baseSlotLimit) {
 		InventoryHandler inventoryHandler = Mockito.mock(InventoryHandler.class);
-		when(inventoryHandler.getBaseStackLimit(any(ItemStack.class))).thenAnswer(i -> ((ItemStack) i.getArgument(0)).getMaxStackSize() * (baseSlotLimit / 64));
+		when(inventoryHandler.getBaseStackLimit(any(ItemStack.class))).thenAnswer(i -> {
+			ItemStack stack = i.getArgument(0);
+			int limit = MathHelper.intMaxCappedMultiply(stack.getMaxStackSize(), (baseSlotLimit / 64));
+			int remainder = baseSlotLimit % 64;
+			if (remainder > 0) {
+				limit = MathHelper.intMaxCappedAddition(limit, remainder * stack.getMaxStackSize() / 64);
+			}
+			return limit;
+		});
 		when(inventoryHandler.getBaseSlotLimit()).thenReturn(baseSlotLimit);
 
 		Map<Integer, ItemStack> internalStacks = new HashMap<>();
@@ -114,6 +125,7 @@ public class CompressionInventoryPartTest {
 	private CompressionInventoryPart initCompressionInventoryPart(Map<Integer, ItemStack> slotStacksInput, InventoryHandler invHandler, Supplier<MemorySettingsCategory> getMemorySettings) {
 		return initCompressionInventoryPart(invHandler, new InventoryPartitioner.SlotRange(Collections.min(slotStacksInput.keySet()), Collections.min(slotStacksInput.keySet()) + slotStacksInput.size()), getMemorySettings);
 	}
+
 	private CompressionInventoryPart initCompressionInventoryPart(Map<Integer, ItemStack> slotStacksInput, InventoryHandler invHandler, int minSlot) {
 		return initCompressionInventoryPart(invHandler, new InventoryPartitioner.SlotRange(minSlot, minSlot + slotStacksInput.size()), () -> getMemorySettings(invHandler, Map.of()));
 	}
@@ -640,5 +652,43 @@ public class CompressionInventoryPartTest {
 
 		assertStackEquals(new ItemStack(Items.COBBLESTONE, 1), part.extractItem(1, 1, false), "Extracted item doesn't match");
 		assertStackEquals(new ItemStack(Items.COBBLESTONE, 9), part.getStackInSlot(1, s -> ItemStack.EMPTY), "Item left in slot doesn't match");
+	}
+
+	@ParameterizedTest
+	@MethodSource("stackLimitsAreSetCorrectlyOnInit")
+	void stackLimitsAreSetCorrectlyOnInit(StackLimitsAreSetCorrectlyOnInitParams params) {
+		InventoryHandler invHandler = getFilledInventoryHandler(params.stacks(), params.baseLimit());
+		int minSlot = 0;
+
+		CompressionInventoryPart part = initCompressionInventoryPart(invHandler, new InventoryPartitioner.SlotRange(minSlot, minSlot + params.stacks().size()), () -> getMemorySettings(invHandler, Map.of()));
+
+		params.expectedLimits().forEach((slot, stackLimit) -> assertEquals(stackLimit.getRight(), part.getStackLimit(slot, stackLimit.getLeft()), "Stack limit doesn't match"));
+	}
+
+	private record StackLimitsAreSetCorrectlyOnInitParams(Map<Integer, ItemStack> stacks, int baseLimit, Map<Integer, Pair<ItemStack, Integer>> expectedLimits){}
+
+	private static List<StackLimitsAreSetCorrectlyOnInitParams> stackLimitsAreSetCorrectlyOnInit() {
+		return List.of(
+				new StackLimitsAreSetCorrectlyOnInitParams(
+						Map.of(0, new ItemStack(Items.IRON_BLOCK), 1, ItemStack.EMPTY, 2, ItemStack.EMPTY),
+						64,
+						Map.of(0, ImmutablePair.of(new ItemStack(Items.IRON_BLOCK), 64), 1, ImmutablePair.of(new ItemStack(Items.IRON_INGOT), 9 * 64 + 64), 2, ImmutablePair.of(new ItemStack(Items.IRON_NUGGET), 9 * 9 * 64 + 9 * 64 + 64))
+				),
+				new StackLimitsAreSetCorrectlyOnInitParams(
+						Map.of(0, new ItemStack(Items.IRON_INGOT), 1, ItemStack.EMPTY),
+						64,
+						Map.of(0, ImmutablePair.of(new ItemStack(Items.IRON_INGOT), 64), 1, ImmutablePair.of(new ItemStack(Items.IRON_NUGGET), 9 * 64 + 64))
+				),
+				new StackLimitsAreSetCorrectlyOnInitParams(
+						Map.of(0, new ItemStack(Items.IRON_INGOT), 1, ItemStack.EMPTY),
+						Integer.MAX_VALUE,
+						Map.of(0, ImmutablePair.of(new ItemStack(Items.IRON_INGOT), Integer.MAX_VALUE), 1, ImmutablePair.of(new ItemStack(Items.IRON_NUGGET), Integer.MAX_VALUE))
+				),
+				new StackLimitsAreSetCorrectlyOnInitParams(
+						Map.of(0, new ItemStack(Items.IRON_SWORD), 1, ItemStack.EMPTY),
+						64,
+						Map.of(0, ImmutablePair.of(new ItemStack(Items.IRON_SWORD), 1), 1, ImmutablePair.of(new ItemStack(Items.IRON_SWORD), 0))
+				)
+		);
 	}
 }
