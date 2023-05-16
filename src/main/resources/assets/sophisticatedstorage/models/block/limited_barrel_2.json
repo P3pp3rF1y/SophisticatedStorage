@@ -2,6 +2,20 @@
     "loader": "sophisticatedstorage:limited_barrel",
     "parent": "sophisticatedstorage:block/limited_barrel_1",
     "flat_top_model": "sophisticatedstorage:block/flat/limited_barrel_2",
+    "partitioned_model_parts": {
+        "tintable_accent": {
+            "model": "sophisticatedstorage:block/barrel_part/limited_2_tintable_trim",
+            "textures": {
+                "top_inner_trim": "#top"
+            }
+        },
+        "packed": {
+            "model": "sophisticatedstorage:block/barrel_part/limited_2_partitioned",
+            "textures": {
+                "top_inner_trim": "#top"
+            }
+        }
+    },
     "model_parts": {
         "base": {
             "model": "sophisticatedstorage:block/barrel_part/limited_2_base",
@@ -36,6 +50,10 @@
                 "top_inner_trim": "sophisticatedstorage:block/barrel_top_packed"
             }
         }
+    },
+    "dynamic_part_models": {
+        "whole": "sophisticatedstorage:block/barrel_part/limited_2_base",
+        "trim": "sophisticatedstorage:block/barrel_part/limited_2_trim"
     },
     "wood_overrides": {
         "acacia": {

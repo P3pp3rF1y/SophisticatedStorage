@@ -47,6 +47,7 @@ import net.p3pp3rf1y.sophisticatedstorage.common.gui.LimitedBarrelContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.LimitedBarrelSettingsContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageSettingsContainerMenu;
+import net.p3pp3rf1y.sophisticatedstorage.crafting.BarrelMaterialRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.FlatTopBarrelToggleRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.ShulkerBoxFromChestRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.SmithingStorageUpgradeRecipe;
@@ -229,6 +230,7 @@ public class ModBlocks {
 
 	private static final DeferredRegister<RecipeSerializer<?>> RECIPE_SERIALIZERS = DeferredRegister.create(ForgeRegistries.RECIPE_SERIALIZERS, SophisticatedStorage.MOD_ID);
 	public static final RegistryObject<SimpleRecipeSerializer<?>> FLAT_TOP_BARREL_TOGGLE_RECIPE_SERIALIZER = RECIPE_SERIALIZERS.register("flat_top_barrel_toggle", () -> new SimpleRecipeSerializer<>(FlatTopBarrelToggleRecipe::new));
+	public static final RegistryObject<SimpleRecipeSerializer<?>> BARREL_MATERIAL_RECIPE_SERIALIZER = RECIPE_SERIALIZERS.register("barrel_material", () -> new SimpleRecipeSerializer<>(BarrelMaterialRecipe::new));
 
 	public static void registerHandlers(IEventBus modBus) {
 		BLOCKS.register(modBus);

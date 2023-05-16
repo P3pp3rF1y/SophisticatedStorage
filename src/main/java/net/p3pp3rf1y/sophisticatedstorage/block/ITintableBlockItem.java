@@ -9,6 +9,10 @@ public interface ITintableBlockItem {
 
 	void setAccentColor(ItemStack stack, int accentColor);
 
+	void removeMainColor(ItemStack stack);
+
+	void removeAccentColor(ItemStack stack);
+
 	Optional<Integer> getMainColor(ItemStack stack);
 
 	Optional<Integer> getAccentColor(ItemStack stack);

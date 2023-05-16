@@ -1,0 +1,45 @@
+{
+    "credit": "Made with Blockbench",
+    "textures": {
+        "particle": "sophisticatedstorage:block/limited_oak_barrel_4_top",
+        "side": "sophisticatedstorage:block/oak_barrel_side",
+        "bottom": "sophisticatedstorage:block/oak_barrel_bottom"
+    },
+    "elements": [
+        {
+            "from": [1, 1, 0],
+            "to": [15, 15, 1],
+            "faces": {
+                "north": {"uv": [1, 1, 15, 15], "texture": "#side", "cullface": "north"}
+            }
+        },
+        {
+            "from": [1, 1, 15],
+            "to": [15, 15, 16],
+            "faces": {
+                "south": {"uv": [1, 1, 15, 15], "texture": "#side", "cullface": "south"}
+            }
+        },
+        {
+            "from": [0, 1, 1],
+            "to": [1, 15, 15],
+            "faces": {
+                "west": {"uv": [1, 1, 15, 15], "texture": "#side", "cullface": "west"}
+            }
+        },
+        {
+            "from": [15, 1, 1],
+            "to": [16, 15, 15],
+            "faces": {
+                "east": {"uv": [1, 1, 15, 15], "texture": "#side", "cullface": "east"}
+            }
+        },
+        {
+            "from": [1, 0, 1],
+            "to": [15, 1, 15],
+            "faces": {
+                "down": {"uv": [1, 1, 15, 15], "texture": "#bottom", "cullface": "down"}
+            }
+        }
+    ]
+}

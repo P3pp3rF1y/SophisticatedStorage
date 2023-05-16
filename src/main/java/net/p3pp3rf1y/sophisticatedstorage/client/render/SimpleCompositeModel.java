@@ -7,6 +7,7 @@ import com.google.gson.JsonObject;
 import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.block.model.BlockElement;
 import net.minecraft.client.renderer.block.model.BlockModel;
 import net.minecraft.client.renderer.block.model.ItemOverrides;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -33,6 +34,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -133,32 +135,23 @@ public class SimpleCompositeModel implements IDynamicBakedModel {
 		public Collection<Material> getTextures(IModelConfiguration owner, Function<ResourceLocation, UnbakedModel> modelGetter, Set<Pair<String, String>> missingTextureErrors) {
 			return model.getMaterials(modelGetter, missingTextureErrors);
 		}
-
-		@SuppressWarnings("java:S5803") //textureMap is needed here to update customData geometry textures with that
-		public void overrideTextures(Map<String, Either<Material, String>> textureMap) {
-			if (model.customData.hasCustomGeometry() && model.customData.getCustomGeometry() instanceof SimpleCompositeModel.Geometry geometry) {
-				geometry.getParts().forEach(compositePart -> compositePart.overrideTextures(textureMap));
-			} else {
-				model.textureMap.putAll(textureMap);
-			}
-		}
 	}
 
 	public static class Geometry implements IMultipartModelGeometry<Geometry> {
-		private final ImmutableMap<String, Submodel> parts;
+		private final ImmutableMap<String, Submodel> children;
 
-		Geometry(ImmutableMap<String, Submodel> parts) {
-			this.parts = parts;
+		Geometry(ImmutableMap<String, Submodel> children) {
+			this.children = children;
 		}
 
 		@Override
 		public Collection<Submodel> getParts() {
-			return parts.values();
+			return children.values();
 		}
 
 		@Override
 		public Optional<? extends IModelGeometryPart> getPart(String name) {
-			return Optional.ofNullable(parts.get(name));
+			return Optional.ofNullable(children.get(name));
 		}
 
 		@Override
@@ -167,7 +160,7 @@ public class SimpleCompositeModel implements IDynamicBakedModel {
 			TextureAtlasSprite particle = spriteGetter.apply(particleLocation);
 
 			ImmutableMap.Builder<String, BakedModel> bakedParts = ImmutableMap.builder();
-			for (Map.Entry<String, Submodel> part : parts.entrySet()) {
+			for (Map.Entry<String, Submodel> part : children.entrySet()) {
 				Submodel submodel = part.getValue();
 				if (!owner.getPartVisibility(submodel)) {continue;}
 				bakedParts.put(part.getKey(), submodel.bakeModel(bakery, spriteGetter, modelTransform, modelLocation));
@@ -175,10 +168,40 @@ public class SimpleCompositeModel implements IDynamicBakedModel {
 			return new SimpleCompositeModel(owner.isShadedInGui(), owner.isSideLit(), owner.useSmoothLighting(), particle, bakedParts.build(), overrides);
 		}
 
+		@SuppressWarnings("java:S5803") //need to access textureMap here to get textures
+		public Map<String, Either<Material, String>> getTextures() {
+			HashMap<String, Either<Material, String>> textures = new HashMap<>();
+			children.values().forEach(childModel -> {
+				childModel.model.textureMap.forEach(textures::putIfAbsent);
+				if (childModel.model.customData.hasCustomGeometry() && childModel.model.customData.getCustomGeometry() instanceof SimpleCompositeModel.Geometry compositeModel) {
+					compositeModel.getTextures().forEach(textures::putIfAbsent);
+				} else if (childModel.model.parent != null) {
+					childModel.model.parent.textureMap.forEach(textures::putIfAbsent);
+				}
+			});
+
+			return textures;
+		}
+
+		@SuppressWarnings("java:S1874") //need to get elements from the model so actually need to call getElements here
+		public List<BlockElement> getElements() {
+			List<BlockElement> elements = new ArrayList<>();
+
+			children.forEach((name, subModel) -> {
+				//noinspection deprecation
+				elements.addAll(subModel.model.getElements());
+				if (subModel.model.customData.hasCustomGeometry() && subModel.model.customData.getCustomGeometry() instanceof SimpleCompositeModel.Geometry compositeModel) {
+					elements.addAll(compositeModel.getElements());
+				}
+			});
+
+			return elements;
+		}
+
 		@Override
 		public Collection<Material> getTextures(IModelConfiguration owner, Function<ResourceLocation, UnbakedModel> modelGetter, Set<Pair<String, String>> missingTextureErrors) {
 			Set<Material> textures = new HashSet<>();
-			for (Submodel part : parts.values()) {
+			for (Submodel part : children.values()) {
 				textures.addAll(part.getTextures(owner, modelGetter, missingTextureErrors));
 			}
 			return textures;
