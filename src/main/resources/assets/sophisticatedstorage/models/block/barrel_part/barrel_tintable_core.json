@@ -1,0 +1,11 @@
+{
+    "loader": "sophisticatedstorage:simple_composite",
+    "parts": {
+        "tintable_core": {
+            "parent": "sophisticatedstorage:block/barrel_part/tintable_core"
+        },
+        "handle": {
+            "parent": "sophisticatedstorage:block/barrel_part/handle_core"
+        }
+    }
+}

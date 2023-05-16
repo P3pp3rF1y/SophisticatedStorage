@@ -1,0 +1,14 @@
+{
+    "loader": "sophisticatedstorage:simple_composite",
+    "parts": {
+        "trim": {
+            "parent": "sophisticatedstorage:block/barrel_part/flat_tintable_trim"
+        },
+        "middle_inner_trim": {
+            "parent": "sophisticatedstorage:block/barrel_part/flat_tintable_middle_inner_trim"
+        },
+        "down_inner_trim": {
+            "parent": "sophisticatedstorage:block/barrel_part/flat_tintable_down_inner_trim"
+        }
+    }
+}

@@ -1,0 +1,11 @@
+{
+    "loader": "sophisticatedstorage:simple_composite",
+    "parts": {
+        "base": {
+            "parent": "sophisticatedstorage:block/barrel_part/tintable_trim"
+        },
+        "middle_inner_trim": {
+            "parent": "sophisticatedstorage:block/barrel_part/middle_inner_trim_tintable_accent"
+        }
+    }
+}

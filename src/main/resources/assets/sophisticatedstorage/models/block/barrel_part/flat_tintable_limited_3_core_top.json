@@ -1,0 +1,28 @@
+{
+    "textures": {
+        "top": "sophisticatedstorage:block/barrel_top_tintable_main"
+    },
+    "elements": [
+        {
+            "from": [1, 15, 9],
+            "to": [15, 16, 15],
+            "faces": {
+                "up": {"uv": [1, 9, 15, 15], "texture": "#top", "tintindex": 1000, "cullface": "up"}
+            }
+        },
+        {
+            "from": [1, 15, 1],
+            "to": [7, 16, 7],
+            "faces": {
+                "up": {"uv": [1, 1, 7, 7], "texture": "#top", "tintindex": 1000, "cullface": "up"}
+            }
+        },
+        {
+            "from": [9, 15, 1],
+            "to": [15, 16, 7],
+            "faces": {
+                "up": {"uv": [9, 1, 15, 7], "texture": "#top", "tintindex": 1000, "cullface": "up"}
+            }
+        }
+    ]
+}

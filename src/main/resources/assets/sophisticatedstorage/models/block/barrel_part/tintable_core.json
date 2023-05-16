@@ -1,0 +1,81 @@
+{
+    "textures": {
+        "particle": "sophisticatedstorage:block/barrel_top_tintable_main",
+        "top": "sophisticatedstorage:block/barrel_top_tintable_main",
+        "side": "sophisticatedstorage:block/barrel_side_tintable_main",
+        "bottom": "sophisticatedstorage:block/barrel_bottom_tintable_main",
+        "metal_bands": "sophisticatedstorage:block/barrel_metal_bands"
+    },
+    "elements": [
+        {
+            "from": [1, 1, 0],
+            "to": [15, 15, 1],
+            "faces": {
+                "north": {"uv": [1, 1, 15, 15], "texture": "#side", "cullface": "north", "tintindex": 1000}
+            }
+        },
+        {
+            "from": [1, 1, 0],
+            "to": [15, 15, 1],
+            "faces": {
+                "north": {"uv": [1, 1, 15, 15], "texture": "#metal_bands", "cullface": "north"}
+            }
+        },
+        {
+            "from": [1, 1, 15],
+            "to": [15, 15, 16],
+            "faces": {
+                "south": {"uv": [1, 1, 15, 15], "texture": "#side", "cullface": "south", "tintindex": 1000}
+            }
+        },
+        {
+            "from": [1, 1, 15],
+            "to": [15, 15, 16],
+            "faces": {
+                "south": {"uv": [1, 1, 15, 15], "texture": "#metal_bands", "cullface": "south"}
+            }
+        },
+        {
+            "from": [0, 1, 1],
+            "to": [1, 15, 15],
+            "faces": {
+                "west": {"uv": [1, 1, 15, 15], "texture": "#side", "cullface": "west", "tintindex": 1000}
+            }
+        },
+        {
+            "from": [0, 1, 1],
+            "to": [1, 15, 15],
+            "faces": {
+                "west": {"uv": [1, 1, 15, 15], "texture": "#metal_bands", "cullface": "west"}
+            }
+        },
+        {
+            "from": [15, 1, 1],
+            "to": [16, 15, 15],
+            "faces": {
+                "east": {"uv": [1, 1, 15, 15], "texture": "#side", "cullface": "east", "tintindex": 1000}
+            }
+        },
+        {
+            "from": [15, 1, 1],
+            "to": [16, 15, 15],
+            "faces": {
+                "east": {"uv": [1, 1, 15, 15], "texture": "#metal_bands", "cullface": "east"}
+            }
+        },
+        {
+            "from": [1, 14, 1],
+            "to": [15, 15, 15],
+            "faces": {
+                "up": {"uv": [1, 1, 15, 15], "texture": "#top", "tintindex": 1000}
+            }
+        },
+        {
+            "from": [1, 0, 1],
+            "to": [15, 1, 15],
+            "faces": {
+                "down": {"uv": [1, 1, 15, 15], "texture": "#bottom", "cullface": "down", "tintindex": 1000}
+            }
+        }
+    ]
+}
