@@ -117,6 +117,8 @@ public class BarrelMaterialRecipe extends CustomRecipe {
 		}
 
 		Map<BarrelMaterial, ResourceLocation> materials = new EnumMap<>(BarrelMaterial.class);
+		materials.putAll(BarrelBlockItem.getMaterials(barrelStackCopy));
+		uncompactMaterials(materials);
 
 		fillGridMaterials(container, barrelColumn, barrelRow, materials);
 		fillEmptyMaterialsWithDefaults(materials);
@@ -127,6 +129,22 @@ public class BarrelMaterialRecipe extends CustomRecipe {
 		removeCoveredTints(barrelStackCopy, materials);
 
 		return barrelStackCopy;
+	}
+
+	private void uncompactMaterials(Map<BarrelMaterial, ResourceLocation> materials) {
+		if (materials.isEmpty()) {
+			return;
+		}
+
+		Map<BarrelMaterial, ResourceLocation> uncompactedMaterials = new EnumMap<>(BarrelMaterial.class);
+		materials.forEach((mat, texture) -> {
+			for (BarrelMaterial child : mat.getChildren()) {
+				uncompactedMaterials.put(child, texture);
+			}
+		});
+
+		materials.clear();
+		materials.putAll(uncompactedMaterials);
 	}
 
 	private static void removeCoveredTints(ItemStack barrelStackCopy, Map<BarrelMaterial, ResourceLocation> materials) {
@@ -195,11 +213,13 @@ public class BarrelMaterialRecipe extends CustomRecipe {
 
 				if (item.getItem() instanceof BlockItem blockItem) {
 					List<BarrelMaterial> barrelMaterials = getBarrelMaterials(row, col, barrelRow, barrelColumn);
-					barrelMaterials.forEach(barrelMaterial -> {
-						if (!materials.containsKey(barrelMaterial) || barrelMaterials.size() == 1) {
+					boolean firstMaterial = true;
+					for (BarrelMaterial barrelMaterial : barrelMaterials) {
+						if (!materials.containsKey(barrelMaterial) || firstMaterial) {
 							materials.put(barrelMaterial, ForgeRegistries.BLOCKS.getKey(blockItem.getBlock()));
 						}
-					});
+						firstMaterial = false;
+					}
 				}
 			}
 		}
@@ -210,7 +230,7 @@ public class BarrelMaterialRecipe extends CustomRecipe {
 			if (col < barrelColumn) {
 				return List.of(BarrelMaterial.TOP);
 			} else if (col == barrelColumn) {
-				return List.of(BarrelMaterial.TOP, BarrelMaterial.TOP_INNER_TRIM, BarrelMaterial.TOP_TRIM);
+				return List.of(BarrelMaterial.TOP_INNER_TRIM, BarrelMaterial.TOP, BarrelMaterial.TOP_TRIM);
 			} else {
 				return List.of(BarrelMaterial.TOP_TRIM);
 			}

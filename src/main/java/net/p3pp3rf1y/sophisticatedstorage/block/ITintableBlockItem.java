@@ -16,4 +16,8 @@ public interface ITintableBlockItem {
 	Optional<Integer> getMainColor(ItemStack stack);
 
 	Optional<Integer> getAccentColor(ItemStack stack);
+
+	default boolean isTintable(ItemStack stack) {
+		return true;
+	}
 }
