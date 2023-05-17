@@ -54,4 +54,9 @@ public class BarrelBlockItem extends WoodStorageBlockItem {
 		}
 		return name;
 	}
+
+	@Override
+	public boolean isTintable(ItemStack stack) {
+		return getMaterials(stack).isEmpty();
+	}
 }
