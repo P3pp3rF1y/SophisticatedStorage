@@ -202,12 +202,11 @@ public class ClientEventHandler {
 		ModelLoaderRegistry.registerLoader(SophisticatedStorage.getRL("shulker_box"), ShulkerBoxDynamicModel.Loader.INSTANCE);
 		ModelLoaderRegistry.registerLoader(SophisticatedStorage.getRL("simple_composite"), SimpleCompositeModel.Loader.INSTANCE);
 
-		addModelsToBakeInFolder("models/block/barrel_part");
-		addModelsToBakeInFolder("models/block/flat");
+		addBarrelPartModelsToBake();
 	}
 
-	private static void addModelsToBakeInFolder(String folderName) {
-		Collection<ResourceLocation> models = Minecraft.getInstance().getResourceManager().listResources(folderName, fileName -> fileName.endsWith(".json"));
+	private static void addBarrelPartModelsToBake() {
+		Collection<ResourceLocation> models = Minecraft.getInstance().getResourceManager().listResources("models/block/barrel_part", fileName -> fileName.endsWith(".json"));
 		models.forEach(modelName -> {
 					if (modelName.getNamespace().equals(SophisticatedStorage.MOD_ID)) {
 						ForgeModelBakery.addSpecialModel(new ResourceLocation(modelName.getNamespace(), modelName.getPath().substring("models/".length()).replace(".json", "")));
