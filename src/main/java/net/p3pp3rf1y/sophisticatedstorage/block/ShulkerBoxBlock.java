@@ -53,6 +53,7 @@ import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.item.ShulkerBoxItem;
+import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageToolItem;
 
 import javax.annotation.Nullable;
@@ -215,6 +216,7 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 			NBTHelper.setUniqueId(stack, "uuid", shulkerBoxUuid);
 		}
 		addBasicPropertiesToStack(stack, be, storageWrapper);
+		StorageBlockItem.setShowsTier(stack, be.shouldShowTier());
 	}
 
 	private void addBasicPropertiesToStack(ItemStack stack, StorageBlockEntity be, StorageWrapper storageWrapper) {

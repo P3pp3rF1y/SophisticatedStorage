@@ -97,7 +97,9 @@ public class ChestRenderer implements BlockEntityRenderer<ChestBlockEntity> {
 		}
 		Material tierMaterial = getTierMaterial(chestMaterials, blockstate.getBlock());
 		VertexConsumer vertexconsumer = tierMaterial.buffer(bufferSource, RenderType::entityCutout);
-		renderBottomAndLid(poseStack, vertexconsumer, lidAngle, packedLight, packedOverlay);
+		if (chestEntity.shouldShowTier()) {
+			renderBottomAndLid(poseStack, vertexconsumer, lidAngle, packedLight, packedOverlay);
+		}
 		if (storageWrapper.getRenderInfo().getItemDisplayRenderInfo().getDisplayItem().isEmpty()) {
 			renderLock(poseStack, vertexconsumer, lidAngle, packedLight, packedOverlay);
 		}

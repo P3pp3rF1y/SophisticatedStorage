@@ -16,6 +16,7 @@ import net.minecraft.world.item.ItemStack;
 import net.p3pp3rf1y.sophisticatedstorage.block.ITintableBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.block.ShulkerBoxBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.ShulkerBoxBlockEntity;
+import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
 
 public class ShulkerBoxItemRenderer extends BlockEntityWithoutLevelRenderer {
 	private final BlockEntityRenderDispatcher blockEntityRenderDispatcher;
@@ -41,6 +42,9 @@ public class ShulkerBoxItemRenderer extends BlockEntityWithoutLevelRenderer {
 		if (stack.getItem() instanceof ITintableBlockItem tintableBlockItem) {
 			shulkerBoxBlockEntity.getStorageWrapper().setMainColor(tintableBlockItem.getMainColor(stack).orElse(-1));
 			shulkerBoxBlockEntity.getStorageWrapper().setAccentColor(tintableBlockItem.getAccentColor(stack).orElse(-1));
+		}
+		if (StorageBlockItem.showsTier(stack) != shulkerBoxBlockEntity.shouldShowTier()) {
+			shulkerBoxBlockEntity.toggleTierVisiblity();
 		}
 		var blockentityrenderer = blockEntityRenderDispatcher.getRenderer(shulkerBoxBlockEntity);
 		if (blockentityrenderer != null) {
