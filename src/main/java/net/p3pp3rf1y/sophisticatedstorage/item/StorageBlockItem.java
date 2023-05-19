@@ -13,6 +13,7 @@ public class StorageBlockItem extends BlockItemBase implements ITintableBlockIte
 
 	private static final String ACCENT_COLOR_TAG = "accentColor";
 	private static final String MAIN_COLOR_TAG = "mainColor";
+	private static final String SHOWS_TIER_TAG = "showsTier";
 
 	public StorageBlockItem(Block block) {
 		this(block, new Properties());
@@ -57,5 +58,17 @@ public class StorageBlockItem extends BlockItemBase implements ITintableBlockIte
 	@Override
 	public Optional<Integer> getAccentColor(ItemStack stack) {
 		return StorageBlockItem.getAccentColorFromStack(stack);
+	}
+
+	public static boolean showsTier(ItemStack stack) {
+		return NBTHelper.getBoolean(stack, SHOWS_TIER_TAG).orElse(true);
+	}
+
+	public static void setShowsTier(ItemStack stack, boolean showsTier) {
+		if (showsTier) {
+			NBTHelper.removeTag(stack, SHOWS_TIER_TAG);
+		} else {
+			stack.getOrCreateTag().putBoolean(SHOWS_TIER_TAG, false);
+		}
 	}
 }

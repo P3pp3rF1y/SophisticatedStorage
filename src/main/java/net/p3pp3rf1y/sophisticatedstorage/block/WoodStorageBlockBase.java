@@ -64,6 +64,7 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 					NBTHelper.setUniqueId(stack, "uuid", storageUuid);
 				}
 				WoodStorageBlockItem.setPacked(stack, true);
+				StorageBlockItem.setShowsTier(stack, be.shouldShowTier());
 			}
 		}
 	}

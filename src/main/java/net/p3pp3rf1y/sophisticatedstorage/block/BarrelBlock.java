@@ -180,6 +180,12 @@ public class BarrelBlock extends WoodStorageBlockBase {
 		super.addDropData(stack, be);
 		BlockState state = be.getBlockState();
 		BarrelBlockItem.setFlatTop(stack, state.getValue(FLAT_TOP));
+		if (be instanceof BarrelBlockEntity barrelBlockEntity) {
+			Map<BarrelMaterial, ResourceLocation> materials = barrelBlockEntity.getMaterials();
+			if (!materials.isEmpty()) {
+				BarrelBlockItem.setMaterials(stack, materials);
+			}
+		}
 	}
 
 	@Nullable

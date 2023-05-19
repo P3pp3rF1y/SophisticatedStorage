@@ -97,6 +97,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 	private static final ModelProperty<String> WOOD_NAME = new ModelProperty<>();
 	private static final ModelProperty<Boolean> IS_PACKED = new ModelProperty<>();
 	private static final ModelProperty<Boolean> SHOWS_LOCK = new ModelProperty<>();
+	private static final ModelProperty<Boolean> SHOWS_TIER = new ModelProperty<>();
 	private static final ModelProperty<Boolean> HAS_MAIN_COLOR = new ModelProperty<>();
 	private static final ModelProperty<Boolean> HAS_ACCENT_COLOR = new ModelProperty<>();
 	private static final ModelProperty<List<RenderInfo.DisplayItem>> DISPLAY_ITEMS = new ModelProperty<>();
@@ -128,6 +129,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 	private boolean barrelHasMainColor = false;
 	private boolean barrelHasAccentColor = false;
 	private boolean barrelIsPacked = false;
+	private boolean barrelShowsTier = true;
 	private Map<BarrelMaterial, ResourceLocation> barrelMaterials = new EnumMap<>(BarrelMaterial.class);
 
 	private boolean flatTop = false;
@@ -195,6 +197,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 		boolean hasMainColor;
 		boolean hasAccentColor;
 		boolean isPacked;
+		boolean showsTier;
 		Map<BarrelMaterial, ResourceLocation> materials;
 		if (state != null) {
 			hasMainColor = Boolean.TRUE.equals(extraData.get(HAS_MAIN_COLOR));
@@ -204,12 +207,14 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 			}
 			isPacked = isPacked(extraData);
 			materials = getMaterials(extraData);
+			showsTier = showsTier(extraData);
 		} else {
 			woodName = barrelWoodName;
 			hasMainColor = barrelHasMainColor;
 			hasAccentColor = barrelHasAccentColor;
 			isPacked = barrelIsPacked;
 			materials = barrelMaterials;
+			showsTier = barrelShowsTier;
 		}
 
 		List<BakedQuad> ret = new ArrayList<>();
@@ -235,7 +240,9 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 					.forEach(bakedModel -> ret.addAll(bakedModel.getQuads(state, side, rand, ModelData.EMPTY, renderType)));
 		}
 
-		addTierQuads(state, side, rand, ret, modelParts, renderType);
+		if (showsTier) {
+			addTierQuads(state, side, rand, ret, modelParts, renderType);
+		}
 
 		if (isPacked) {
 			addPartQuads(state, side, rand, ret, modelParts, BarrelModelPart.PACKED, renderType);
@@ -329,6 +336,9 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 		return extraData.has(SHOWS_LOCK) && Boolean.TRUE.equals(extraData.get(SHOWS_LOCK));
 	}
 
+	private boolean showsTier(ModelData extraData) {
+		return extraData.has(SHOWS_TIER) && Boolean.TRUE.equals(extraData.get(SHOWS_TIER));
+	}
 	private void addTierQuads(@Nullable BlockState state, @Nullable Direction side, RandomSource rand, List<BakedQuad> ret, Map<BarrelModelPart, BakedModel> modelParts, @Nullable RenderType renderType) {
 		addPartQuads(state, side, rand, ret, modelParts, BarrelModelPart.TIER, renderType);
 	}
@@ -351,6 +361,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 		hash = hash * 31 + (barrelHasMainColor ? 1 : 0);
 		hash = hash * 31 + (barrelHasAccentColor ? 1 : 0);
 		hash = hash * 31 + (barrelIsPacked ? 1 : 0);
+		hash = hash * 31 + (barrelShowsTier ? 1 : 0);
 		hash = hash * 31 + (flatTop ? 1 : 0);
 		hash = hash * 31 + barrelMaterials.hashCode();
 		return hash;
@@ -365,6 +376,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 		hash = hash * 31 + (data.has(HAS_ACCENT_COLOR) && Boolean.TRUE.equals(data.get(HAS_ACCENT_COLOR)) ? 1 : 0);
 		hash = hash * 31 + (isPacked(data) ? 1 : 0);
 		hash = hash * 31 + (showsLocked(data) ? 1 : 0);
+		hash = hash * 31 + (showsTier(data) ? 1 : 0);
 		hash = hash * 31 + (Boolean.TRUE.equals(state.getValue(BarrelBlock.FLAT_TOP)) ? 1 : 0);
 		//noinspection ConstantConditions
 		hash = hash * 31 + (data.has(MATERIALS) ? data.get(MATERIALS).hashCode() : 0);
@@ -659,6 +671,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 					}
 					builder.with(IS_PACKED, be.isPacked());
 					builder.with(SHOWS_LOCK, be.isLocked() && be.shouldShowLock());
+					builder.with(SHOWS_TIER, be.shouldShowTier());
 					Optional<WoodType> woodType = be.getWoodType();
 					if (woodType.isPresent() || !(hasMainColor && hasAccentColor)) {
 						builder.with(WOOD_NAME, woodType.orElse(WoodType.ACACIA).name());
@@ -711,6 +724,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 			barrelBakedModel.barrelWoodName = WoodStorageBlockItem.getWoodType(stack).map(WoodType::name)
 					.orElse(barrelBakedModel.barrelHasAccentColor && barrelBakedModel.barrelHasMainColor ? null : WoodType.ACACIA.name());
 			barrelBakedModel.barrelIsPacked = WoodStorageBlockItem.isPacked(stack);
+			barrelBakedModel.barrelShowsTier = StorageBlockItem.showsTier(stack);
 			barrelBakedModel.barrelItem = stack.getItem();
 			barrelBakedModel.flatTop = flatTop;
 			barrelBakedModel.barrelMaterials = BarrelBlockItem.getMaterials(stack);
