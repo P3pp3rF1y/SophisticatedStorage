@@ -112,6 +112,7 @@ public class BarrelMaterialRecipe extends CustomRecipe {
 					barrelColumn = col;
 					barrelRow = row;
 					barrelStackCopy = item.copy();
+					barrelStackCopy.setCount(1);
 				}
 			}
 		}
