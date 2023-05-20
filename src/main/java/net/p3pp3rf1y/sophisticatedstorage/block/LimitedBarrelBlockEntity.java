@@ -2,10 +2,12 @@ package net.p3pp3rf1y.sophisticatedstorage.block;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.IntTag;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
@@ -19,7 +21,11 @@ import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 
 public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICountDisplay {
@@ -27,6 +33,7 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 	private long lastDepositTime = -100;
 
 	private final List<Integer> slotCounts = new ArrayList<>();
+	private Map<Integer, DyeColor> slotColors = new HashMap<>();
 	private boolean showCounts = true;
 
 	public LimitedBarrelBlockEntity(BlockPos pos, BlockState state) {
@@ -70,7 +77,50 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 		return slotCounts;
 	}
 
-	public void depositItem(Player player, InteractionHand hand, ItemStack stackInHand, int slot) {
+	public boolean applyDye(int slot, ItemStack dyeStack, DyeColor dyeColor, boolean applyToAll) {
+		if (slot < 0 || slot >= getStorageWrapper().getInventoryHandler().getSlots()) {
+			return false;
+		}
+
+		StorageWrapper storageWrapper = getStorageWrapper();
+		InventoryHandler invHandler = storageWrapper.getInventoryHandler();
+		if (applyToAll) {
+			boolean success = false;
+			for (int i = 0; i < invHandler.getSlots(); i++) {
+				success |= applyDye(i, dyeColor, invHandler);
+			}
+			if (!success) {
+				return false;
+			}
+		} else {
+			if (!applyDye(slot, dyeColor, invHandler)) {
+				return false;
+			}
+		}
+		setChanged();
+
+		dyeStack.shrink(1);
+
+		WorldHelper.notifyBlockUpdate(this);
+
+		return true;
+	}
+
+	private boolean applyDye(int slot, DyeColor dyeColor, InventoryHandler invHandler) {
+		ItemStack stackInSlot = invHandler.getStackInSlot(slot);
+		if (stackInSlot.isEmpty() || dyeColor.equals(slotColors.get(slot))) {
+			return false;
+		}
+
+		slotColors.put(slot, dyeColor);
+		return true;
+	}
+
+	public int getSlotColor(int slot) {
+		return slotColors.getOrDefault(slot, DyeColor.WHITE).getTextColor();
+	}
+
+	public boolean depositItem(Player player, InteractionHand hand, ItemStack stackInHand, int slot) {
 		//noinspection ConstantConditions
 		long gameTime = getLevel().getGameTime();
 		boolean doubleClick = gameTime - lastDepositTime < 10;
@@ -83,8 +133,7 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 		MemorySettingsCategory memorySettings = getStorageWrapper().getSettingsHandler().getTypeCategory(MemorySettingsCategory.class);
 
 		if (doubleClick) {
-			depositFromAllOfPlayersInventory(player, slot, invHandler, stackInSlot, memorySettings);
-			return;
+			return depositFromAllOfPlayersInventory(player, slot, invHandler, stackInSlot, memorySettings);
 		}
 
 		ItemStack result = invHandler.insertItemOnlyToSlot(slot, stackInHand, true);
@@ -94,10 +143,13 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 				memorySettings.selectSlot(slot);
 			}
 			player.setItemInHand(hand, result);
+			return true;
 		}
+		return false;
 	}
 
-	private void depositFromAllOfPlayersInventory(Player player, int slot, InventoryHandler invHandler, ItemStack stackInSlot, MemorySettingsCategory memorySettings) {
+	private boolean depositFromAllOfPlayersInventory(Player player, int slot, InventoryHandler invHandler, ItemStack stackInSlot, MemorySettingsCategory memorySettings) {
+		AtomicBoolean success = new AtomicBoolean(false);
 		Predicate<ItemStack> memoryItemMatches = itemStack -> memorySettings.isSlotSelected(slot) && memorySettings.matchesFilter(slot, itemStack);
 		player.getCapability(ForgeCapabilities.ITEM_HANDLER, null).ifPresent(
 				playerInventory -> InventoryHelper.iterate(playerInventory, (playerSlot, playerStack) -> {
@@ -108,10 +160,12 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 							ItemStack extracted = playerInventory.extractItem(playerSlot, playerStack.getCount() - result.getCount(), true);
 							if (!extracted.isEmpty()) {
 								invHandler.insertItemOnlyToSlot(slot, playerInventory.extractItem(playerSlot, extracted.getCount(), false), false);
+								success.set(true);
 							}
 						}
 					}
 				}));
+		return success.get();
 	}
 
 	boolean tryToTakeItem(Player player, int slot) {
@@ -150,21 +204,22 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 	@Override
 	public void loadSynchronizedData(CompoundTag tag) {
 		super.loadSynchronizedData(tag);
-		if (!tag.contains(SLOT_COUNTS_TAG)) {
-			return;
-		}
-		int[] countsArray = tag.getIntArray(SLOT_COUNTS_TAG);
-		if (slotCounts.size() != countsArray.length) {
-			slotCounts.clear();
-			for (int i = 0; i < countsArray.length; i++) {
-				slotCounts.add(i, countsArray[i]);
+		if (tag.contains(SLOT_COUNTS_TAG)) {
+			int[] countsArray = tag.getIntArray(SLOT_COUNTS_TAG);
+			if (slotCounts.size() != countsArray.length) {
+				slotCounts.clear();
+				for (int i = 0; i < countsArray.length; i++) {
+					slotCounts.add(i, countsArray[i]);
+				}
+			} else {
+				for (int i = 0; i < countsArray.length; i++) {
+					slotCounts.set(i, countsArray[i]);
+				}
 			}
-		} else {
-			for (int i = 0; i < countsArray.length; i++) {
-				slotCounts.set(i, countsArray[i]);
-			}
 		}
+
 		showCounts = NBTHelper.getBoolean(tag, "showCounts").orElse(true);
+		slotColors = NBTHelper.getMap(tag, "slotColors", Integer::valueOf, (tagName, t) -> Optional.of(DyeColor.byId(((IntTag) t).getAsInt()))).orElseGet(HashMap::new);
 	}
 
 	@Override
@@ -172,6 +227,9 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 		super.saveSynchronizedData(tag);
 		if (!showCounts) {
 			tag.putBoolean("showCounts", showCounts);
+		}
+		if (slotColors.size() > 0) {
+			NBTHelper.putMap(tag, "slotColors", slotColors, String::valueOf, color -> IntTag.valueOf(color.getId()));
 		}
 	}
 }
