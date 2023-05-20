@@ -204,18 +204,17 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 	@Override
 	public void loadSynchronizedData(CompoundTag tag) {
 		super.loadSynchronizedData(tag);
-		if (!tag.contains(SLOT_COUNTS_TAG)) {
-			return;
-		}
-		int[] countsArray = tag.getIntArray(SLOT_COUNTS_TAG);
-		if (slotCounts.size() != countsArray.length) {
-			slotCounts.clear();
-			for (int i = 0; i < countsArray.length; i++) {
-				slotCounts.add(i, countsArray[i]);
-			}
-		} else {
-			for (int i = 0; i < countsArray.length; i++) {
-				slotCounts.set(i, countsArray[i]);
+		if (tag.contains(SLOT_COUNTS_TAG)) {
+			int[] countsArray = tag.getIntArray(SLOT_COUNTS_TAG);
+			if (slotCounts.size() != countsArray.length) {
+				slotCounts.clear();
+				for (int i = 0; i < countsArray.length; i++) {
+					slotCounts.add(i, countsArray[i]);
+				}
+			} else {
+				for (int i = 0; i < countsArray.length; i++) {
+					slotCounts.set(i, countsArray[i]);
+				}
 			}
 		}
 		showCounts = NBTHelper.getBoolean(tag, "showCounts").orElse(true);

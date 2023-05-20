@@ -46,6 +46,10 @@ public class BarrelBlockItem extends WoodStorageBlockItem {
 		return NBTHelper.getMap(barrel, MATERIALS_TAG, BarrelMaterial::fromName, (bm, tag) -> Optional.of(new ResourceLocation(tag.getAsString()))).orElse(Map.of());
 	}
 
+	public static void removeMaterials(ItemStack stack) {
+		NBTHelper.removeTag(stack, MATERIALS_TAG);
+	}
+
 	@Override
 	public Component getName(ItemStack stack) {
 		Component name = super.getName(stack);
