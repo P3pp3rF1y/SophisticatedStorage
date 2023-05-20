@@ -52,7 +52,12 @@ public class BarrelBlockItem extends WoodStorageBlockItem {
 
 	@Override
 	public Component getName(ItemStack stack) {
-		Component name = super.getName(stack);
+		Component name;
+		if (getMaterials(stack).isEmpty()) {
+			name = super.getName(stack);
+		} else {
+			name = getDisplayName(getDescriptionId(), null);
+		}
 		if (isFlatTop(stack)) {
 			return name.copy().append(new TranslatableComponent(StorageTranslationHelper.INSTANCE.translBlockTooltipKey("barrel") + ".flat_top"));
 		}
