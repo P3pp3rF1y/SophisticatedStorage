@@ -28,6 +28,7 @@ import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.client.gui.OverlayRegistry;
+import net.minecraftforge.client.model.ForgeModelBakery;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.client.settings.IKeyConflictContext;
 import net.minecraftforge.common.MinecraftForge;
@@ -69,6 +70,8 @@ import net.p3pp3rf1y.sophisticatedstorage.network.ScrolledToolMessage;
 import net.p3pp3rf1y.sophisticatedstorage.network.StoragePacketHandler;
 import net.p3pp3rf1y.sophisticatedstorage.upgrades.compression.CompressionInventoryPart;
 import net.p3pp3rf1y.sophisticatedstorage.upgrades.hopper.HopperUpgradeContainer;
+
+import java.util.Collection;
 
 import static net.minecraftforge.client.gui.ForgeIngameGui.HOTBAR_ELEMENT;
 import static net.minecraftforge.client.settings.KeyConflictContext.GUI;
@@ -198,6 +201,17 @@ public class ClientEventHandler {
 		ModelLoaderRegistry.registerLoader(SophisticatedStorage.getRL("chest"), ChestDynamicModel.Loader.INSTANCE);
 		ModelLoaderRegistry.registerLoader(SophisticatedStorage.getRL("shulker_box"), ShulkerBoxDynamicModel.Loader.INSTANCE);
 		ModelLoaderRegistry.registerLoader(SophisticatedStorage.getRL("simple_composite"), SimpleCompositeModel.Loader.INSTANCE);
+
+		addBarrelPartModelsToBake();
+	}
+
+	private static void addBarrelPartModelsToBake() {
+		Collection<ResourceLocation> models = Minecraft.getInstance().getResourceManager().listResources("models/block/barrel_part", fileName -> fileName.endsWith(".json"));
+		models.forEach(modelName -> {
+					if (modelName.getNamespace().equals(SophisticatedStorage.MOD_ID)) {
+						ForgeModelBakery.addSpecialModel(new ResourceLocation(modelName.getNamespace(), modelName.getPath().substring("models/".length()).replace(".json", "")));
+					}
+				});
 	}
 
 	public static void registerLayer(EntityRenderersEvent.RegisterLayerDefinitions event) {

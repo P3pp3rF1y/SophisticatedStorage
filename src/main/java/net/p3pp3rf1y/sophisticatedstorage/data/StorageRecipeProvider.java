@@ -48,6 +48,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 	protected void buildCraftingRecipes(Consumer<FinishedRecipe> consumer) {
 		SpecialRecipeBuilder.special(StorageDyeRecipe.SERIALIZER).save(consumer, SophisticatedStorage.getRegistryName("storage_dye"));
 		SpecialRecipeBuilder.special(ModBlocks.FLAT_TOP_BARREL_TOGGLE_RECIPE_SERIALIZER.get()).save(consumer, SophisticatedStorage.getRegistryName("flat_top_barrel_toggle"));
+		SpecialRecipeBuilder.special(ModBlocks.BARREL_MATERIAL_RECIPE_SERIALIZER.get()).save(consumer, SophisticatedStorage.getRegistryName("barrel_material"));
 
 		addBarrelRecipes(consumer);
 		addLimitedBarrelRecipes(consumer);
@@ -148,7 +149,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('I', Tags.Items.INGOTS_IRON)
 				.define('S', Tags.Items.RODS_WOODEN)
 				.define('R', Items.REDSTONE_TORCH)
-				.unlockedBy("has_redstone_torch", has(Items.REDSTONE_TORCH))
+				.unlockedBy(HAS_REDSTONE_TORCH_CRITERION_NAME, has(Items.REDSTONE_TORCH))
 				.save(consumer);
 	}
 
@@ -644,9 +645,8 @@ public class StorageRecipeProvider extends RecipeProvider {
 	}
 
 	private void addChestRecipes(Consumer<FinishedRecipe> consumer) {
-		WoodStorageBlockBase.CUSTOM_TEXTURE_WOOD_TYPES.forEach((woodType, blockFamily) -> {
-			woodChestRecipe(consumer, woodType, blockFamily.getBaseBlock());
-		});
+		WoodStorageBlockBase.CUSTOM_TEXTURE_WOOD_TYPES.forEach((woodType, blockFamily) ->
+				woodChestRecipe(consumer, woodType, blockFamily.getBaseBlock()));
 
 		ShapelessBasedRecipeBuilder.shapeless(WoodStorageBlockItem.setWoodType(new ItemStack(ModBlocks.CHEST_ITEM.get()), WoodType.OAK))
 				.requires(Blocks.CHEST)
@@ -686,9 +686,8 @@ public class StorageRecipeProvider extends RecipeProvider {
 	}
 
 	private void addBarrelRecipes(Consumer<FinishedRecipe> consumer) {
-		WoodStorageBlockBase.CUSTOM_TEXTURE_WOOD_TYPES.forEach((woodType, blockFamily) -> {
-			woodBarrelRecipe(consumer, woodType, blockFamily.getBaseBlock(), blockFamily.get(BlockFamily.Variant.SLAB));
-		});
+		WoodStorageBlockBase.CUSTOM_TEXTURE_WOOD_TYPES.forEach((woodType, blockFamily) ->
+				woodBarrelRecipe(consumer, woodType, blockFamily.getBaseBlock(), blockFamily.get(BlockFamily.Variant.SLAB)));
 
 		ShapelessBasedRecipeBuilder.shapeless(WoodStorageBlockItem.setWoodType(new ItemStack(ModBlocks.BARREL_ITEM.get()), WoodType.SPRUCE))
 				.requires(Blocks.BARREL)

@@ -10,6 +10,7 @@ import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -134,10 +135,22 @@ public class LimitedBarrelBlock extends BarrelBlock {
 		if (b instanceof LimitedBarrelBlockEntity limitedBarrelBlockEntity) {
 			if (b.isPacked()) {
 				return false;
+			} else if (limitedBarrelBlockEntity.depositItem(player, hand, stackInHand, slot)) {
+				return true;
+			} else if (stackInHand.getItem() instanceof DyeItem dyeItem && limitedBarrelBlockEntity.applyDye(slot, stackInHand, dyeItem.getDyeColor(), player.isShiftKeyDown())) {
+				return true;
 			}
-			limitedBarrelBlockEntity.depositItem(player, hand, stackInHand, slot);
 		}
 		return true;
+	}
+
+	public boolean tryToDyeAll(BlockState state, Level level, BlockPos pos, BlockHitResult hitVec, ItemStack itemStack) {
+		if (hitVec.getDirection() != getFacing(state) || !(itemStack.getItem() instanceof DyeItem)) {
+			return false;
+		}
+		return WorldHelper.getBlockEntity(level, pos, LimitedBarrelBlockEntity.class).map(barrel ->
+				barrel.applyDye(0, itemStack, ((DyeItem) itemStack.getItem()).getDyeColor(), true)
+		).orElse(false);
 	}
 
 	private int getInteractionSlot(BlockPos pos, BlockState state, BlockHitResult hitResult) {

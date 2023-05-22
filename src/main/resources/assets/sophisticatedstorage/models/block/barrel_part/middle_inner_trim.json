@@ -9,7 +9,7 @@
             "faces": {
                 "north": {"uv": [1, 6, 15, 7], "rotation": 180, "texture": "#top_inner_trim"},
                 "south": {"uv": [1, 9, 15, 10], "texture": "#top_inner_trim"},
-                "up": {"uv": [1, 7, 15, 9], "texture": "#top_inner_trim"}
+                "up": {"uv": [1, 7, 15, 9], "texture": "#top_inner_trim", "cullface": "up"}
             }
         }
     ]

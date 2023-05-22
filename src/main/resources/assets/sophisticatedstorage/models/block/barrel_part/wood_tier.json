@@ -1,9 +1,0 @@
-{
-    "parent": "sophisticatedstorage:block/barrel_part/base",
-    "textures": {
-        "top": "sophisticatedstorage:block/wood_barrel_top",
-        "side": "sophisticatedstorage:block/wood_barrel_side",
-        "bottom": "sophisticatedstorage:block/wood_barrel_bottom",
-        "top_trim": "sophisticatedstorage:block/wood_barrel_top"
-    }
-}

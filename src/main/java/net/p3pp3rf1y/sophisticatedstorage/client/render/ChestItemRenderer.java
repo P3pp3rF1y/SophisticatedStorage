@@ -17,6 +17,7 @@ import net.minecraft.world.level.block.state.properties.WoodType;
 import net.p3pp3rf1y.sophisticatedstorage.block.ChestBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.ChestBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.block.ITintableBlockItem;
+import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
 
 import java.util.Optional;
@@ -52,6 +53,9 @@ public class ChestItemRenderer extends BlockEntityWithoutLevelRenderer {
 			chestBlockEntity.setWoodType(woodType.orElse(WoodType.ACACIA));
 		}
 		chestBlockEntity.setPacked(WoodStorageBlockItem.isPacked(stack));
+		if (StorageBlockItem.showsTier(stack) != chestBlockEntity.shouldShowTier()) {
+			chestBlockEntity.toggleTierVisiblity();
+		}
 		var blockentityrenderer = blockEntityRenderDispatcher.getRenderer(chestBlockEntity);
 		if (blockentityrenderer != null) {
 			blockentityrenderer.render(chestBlockEntity, 0.0F, poseStack, buffer, packedLight, packedOverlay);

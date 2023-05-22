@@ -40,12 +40,12 @@ public class ShulkerBoxRenderer implements BlockEntityRenderer<ShulkerBoxBlockEn
 		model = new ShulkerModel<>(context.bakeLayer(ModelLayers.SHULKER));
 	}
 
-	public void render(ShulkerBoxBlockEntity blockEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
-		BlockState blockState = blockEntity.getBlockState();
+	public void render(ShulkerBoxBlockEntity shulkerBoxEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
+		BlockState blockState = shulkerBoxEntity.getBlockState();
 		Direction direction = Direction.UP;
-		if (blockEntity.hasLevel()) {
+		if (shulkerBoxEntity.hasLevel()) {
 			//noinspection ConstantConditions
-			BlockState blockstate = blockEntity.getLevel().getBlockState(blockEntity.getBlockPos());
+			BlockState blockstate = shulkerBoxEntity.getLevel().getBlockState(shulkerBoxEntity.getBlockPos());
 			if (blockstate.getBlock() instanceof ShulkerBoxBlock) {
 				direction = blockstate.getValue(ShulkerBoxBlock.FACING);
 			}
@@ -58,11 +58,11 @@ public class ShulkerBoxRenderer implements BlockEntityRenderer<ShulkerBoxBlockEn
 		poseStack.scale(1.0F, -1.0F, -1.0F);
 		poseStack.translate(0.0D, -1.0D, 0.0D);
 		ModelPart lidPart = model.getLid();
-		lidPart.setPos(0.0F, 24.0F - blockEntity.getProgress(partialTick) * 0.5F * 16.0F, 0.0F);
-		lidPart.yRot = 270.0F * blockEntity.getProgress(partialTick) * ((float) Math.PI / 180F);
+		lidPart.setPos(0.0F, 24.0F - shulkerBoxEntity.getProgress(partialTick) * 0.5F * 16.0F, 0.0F);
+		lidPart.yRot = 270.0F * shulkerBoxEntity.getProgress(partialTick) * ((float) Math.PI / 180F);
 
-		int mainColor = blockEntity.getStorageWrapper().getMainColor();
-		int accentColor = blockEntity.getStorageWrapper().getAccentColor();
+		int mainColor = shulkerBoxEntity.getStorageWrapper().getMainColor();
+		int accentColor = shulkerBoxEntity.getStorageWrapper().getAccentColor();
 
 		if (mainColor == -1 || accentColor == -1) {
 			VertexConsumer vertexconsumer = NO_TINT_MATERIAL.buffer(bufferSource, RenderType::entityCutoutNoCull);
@@ -74,13 +74,15 @@ public class ShulkerBoxRenderer implements BlockEntityRenderer<ShulkerBoxBlockEn
 		if (accentColor > -1) {
 			renderTintedModel(poseStack, bufferSource, packedLight, packedOverlay, accentColor, TINTABLE_ACCENT_MATERIAL);
 		}
-		VertexConsumer vertexconsumer = getTierMaterial(blockState.getBlock()).buffer(bufferSource, RenderType::entityCutoutNoCull);
-		model.renderToBuffer(poseStack, vertexconsumer, packedLight, packedOverlay, 1.0F, 1.0F, 1.0F, 1.0F);
+		if (shulkerBoxEntity.shouldShowTier()) {
+			VertexConsumer vertexconsumer = getTierMaterial(blockState.getBlock()).buffer(bufferSource, RenderType::entityCutoutNoCull);
+			model.renderToBuffer(poseStack, vertexconsumer, packedLight, packedOverlay, 1.0F, 1.0F, 1.0F, 1.0F);
+		}
 
 		poseStack.popPose();
 
-		displayItemRenderer.renderDisplayItem(blockEntity, poseStack, bufferSource, packedLight, packedOverlay);
-		LockRenderer.renderLock(blockEntity, direction, poseStack, bufferSource, packedLight, packedOverlay, 7F/16F, 0.5F);
+		displayItemRenderer.renderDisplayItem(shulkerBoxEntity, poseStack, bufferSource, packedLight, packedOverlay);
+		LockRenderer.renderLock(shulkerBoxEntity, direction, poseStack, bufferSource, packedLight, packedOverlay, 7F/16F, 0.5F);
 	}
 
 	private Material getTierMaterial(Block block) {

@@ -13,29 +13,29 @@
             "from": [0, 0, 0],
             "to": [16, 15, 16],
             "faces": {
-                "north": {"uv": [0, 1, 16, 16], "texture": "#side", "tintindex": 1000},
-                "east": {"uv": [0, 1, 16, 16], "texture": "#side", "tintindex": 1000},
-                "south": {"uv": [0, 1, 16, 16], "texture": "#side", "tintindex": 1000},
-                "west": {"uv": [0, 1, 16, 16], "texture": "#side", "tintindex": 1000},
-                "up": {"uv": [0, 0, 16, 16], "texture": "#top", "tintindex": 1000},
-                "down": {"uv": [0, 0, 16, 16], "texture": "#bottom", "tintindex": 1000}
+                "north": {"uv": [0, 1, 16, 16], "texture": "#side", "tintindex": 1000, "cullface": "north"},
+                "east": {"uv": [0, 1, 16, 16], "texture": "#side", "tintindex": 1000, "cullface": "east"},
+                "south": {"uv": [0, 1, 16, 16], "texture": "#side", "tintindex": 1000, "cullface": "south"},
+                "west": {"uv": [0, 1, 16, 16], "texture": "#side", "tintindex": 1000, "cullface": "west"},
+                "up": {"uv": [0, 0, 16, 16], "texture": "#top", "tintindex": 1000, "cullface": "up"},
+                "down": {"uv": [0, 0, 16, 16], "texture": "#bottom", "tintindex": 1000, "cullface": "down"}
             }
         },
         {
             "from": [0, 0, 0],
             "to": [16, 15, 16],
             "faces": {
-                "up": {"uv": [0, 0, 16, 16], "texture": "#handle"}
+                "up": {"uv": [0, 0, 16, 16], "texture": "#handle", "cullface": "up"}
             }
         },
         {
             "from": [0, 0, 0],
             "to": [16, 15, 16],
             "faces": {
-                "north": {"uv": [0, 1, 16, 16], "texture": "#metal_bands"},
-                "east": {"uv": [0, 1, 16, 16], "texture": "#metal_bands"},
-                "south": {"uv": [0, 1, 16, 16], "texture": "#metal_bands"},
-                "west": {"uv": [0, 1, 16, 16], "texture": "#metal_bands"}
+                "north": {"uv": [0, 1, 16, 16], "texture": "#metal_bands", "cullface": "north"},
+                "east": {"uv": [0, 1, 16, 16], "texture": "#metal_bands", "cullface": "east"},
+                "south": {"uv": [0, 1, 16, 16], "texture": "#metal_bands", "cullface": "south"},
+                "west": {"uv": [0, 1, 16, 16], "texture": "#metal_bands", "cullface": "west"}
             }
         }
     ]

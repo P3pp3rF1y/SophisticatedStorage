@@ -55,6 +55,7 @@ public class SophisticatedStorage {
 		StoragePacketHandler.INSTANCE.init();
 		ModCompat.initCompats();
 		event.enqueueWork(ModBlocks::registerDispenseBehavior);
+		event.enqueueWork(ModBlocks::registerCauldronInteractions);
 	}
 
 	public static ResourceLocation getRL(String regName) {

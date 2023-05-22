@@ -40,10 +40,11 @@ public class CommonEventHandler {
 		eventBus.addListener(this::onPlayerChangedDimension);
 		eventBus.addListener(this::onPlayerRespawn);
 		eventBus.addListener(this::onBlockBreak);
-		eventBus.addListener(this::onLimitedBarrelClicked);
+		eventBus.addListener(this::onLimitedBarrelLeftClicked);
+		eventBus.addListener(this::onLimitedBarrelShiftRightClicked);
 	}
 
-	private void onLimitedBarrelClicked(PlayerInteractEvent.LeftClickBlock event) {
+	private void onLimitedBarrelLeftClicked(PlayerInteractEvent.LeftClickBlock event) {
 		Player player = event.getPlayer();
 		if (!player.isCreative()) {
 			return;
@@ -56,6 +57,22 @@ public class CommonEventHandler {
 			return;
 		}
 		if (limitedBarrel.tryToTakeItem(state, level, pos, player)) {
+			event.setCanceled(true);
+		}
+	}
+
+	private void onLimitedBarrelShiftRightClicked(PlayerInteractEvent.RightClickBlock event) {
+		if (!event.getPlayer().isShiftKeyDown()) {
+			return;
+		}
+
+		BlockPos pos = event.getPos();
+		Level level = event.getWorld();
+		BlockState state = level.getBlockState(pos);
+		if (!(state.getBlock() instanceof LimitedBarrelBlock limitedBarrel)) {
+			return;
+		}
+		if (limitedBarrel.tryToDyeAll(state, level, pos, event.getHitVec(), event.getItemStack())) {
 			event.setCanceled(true);
 		}
 	}

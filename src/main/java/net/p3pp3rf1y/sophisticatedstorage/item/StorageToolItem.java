@@ -3,6 +3,7 @@ package net.p3pp3rf1y.sophisticatedstorage.item;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -22,6 +23,7 @@ import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.ICountDisplay;
 import net.p3pp3rf1y.sophisticatedstorage.block.ILockable;
+import net.p3pp3rf1y.sophisticatedstorage.block.ITierDisplay;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageTranslationHelper;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
@@ -29,6 +31,7 @@ import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 public class StorageToolItem extends ItemBase {
 
@@ -42,6 +45,9 @@ public class StorageToolItem extends ItemBase {
 	@Override
 	public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltipComponents, TooltipFlag flag) {
 		tooltipComponents.addAll(StorageTranslationHelper.INSTANCE.getTranslatedLines(stack.getItem().getDescriptionId() + TranslationHelper.TOOLTIP_SUFFIX, null, ChatFormatting.DARK_GRAY));
+		//noinspection DataFlowIssue - at this point the item is registered so registry name is not null
+		tooltipComponents.add(new TranslatableComponent(StorageTranslationHelper.INSTANCE.translItemTooltip(stack.getItem().getRegistryName().getPath()) + ".controls",
+				new TranslatableComponent(StorageTranslationHelper.INSTANCE.translItemTooltip(stack.getItem().getRegistryName().getPath()) + ".controls.combination").withStyle(ChatFormatting.AQUA)).withStyle(ChatFormatting.GRAY));
 	}
 
 	public static void useOffHandOnPlaced(ItemStack tool, StorageBlockEntity be) {
@@ -70,17 +76,22 @@ public class StorageToolItem extends ItemBase {
 				}
 			}
 			case LOCK -> {
-				if (tryLocking(pos, level)) {
+				if (tryToggling(pos, level, ILockable.class, ILockable::toggleLock)) {
 					return InteractionResult.SUCCESS;
 				}
 			}
 			case COUNT_DISPLAY -> {
-				if (tryTogglingCountDisplay(pos, level)) {
+				if (tryToggling(pos, level, ICountDisplay.class, ICountDisplay::toggleCountVisibility)) {
 					return InteractionResult.SUCCESS;
 				}
 			}
 			case LOCK_DISPLAY -> {
-				if (tryTogglingLockDisplay(pos, level)) {
+				if (tryToggling(pos, level, ILockable.class, ILockable::toggleLockVisibility)) {
+					return InteractionResult.SUCCESS;
+				}
+			}
+			case TIER_DISPLAY -> {
+				if (tryToggling(pos, level, ITierDisplay.class, ITierDisplay::toggleTierVisiblity)) {
 					return InteractionResult.SUCCESS;
 				}
 			}
@@ -88,35 +99,13 @@ public class StorageToolItem extends ItemBase {
 		return super.onItemUseFirst(tool, context);
 	}
 
-	private boolean tryTogglingLockDisplay(BlockPos pos, Level level) {
-		return WorldHelper.getLoadedBlockEntity(level, pos, ILockable.class).map(lockable -> {
+	private static <T> boolean tryToggling(BlockPos pos, Level level, Class<T> clazz, Consumer<T> toggle) {
+		return WorldHelper.getLoadedBlockEntity(level, pos, clazz).map(be -> {
 			if (level.isClientSide()) {
 				return true;
 			}
 
-			lockable.toggleLockVisibility();
-			return true;
-		}).orElse(false);
-	}
-
-	private boolean tryTogglingCountDisplay(BlockPos pos, Level level) {
-		return WorldHelper.getLoadedBlockEntity(level, pos, ICountDisplay.class).map(countDisplay -> {
-			if (level.isClientSide()) {
-				return true;
-			}
-
-			countDisplay.toggleCountVisibility();
-			return true;
-		}).orElse(false);
-	}
-
-	private boolean tryLocking(BlockPos pos, Level level) {
-		return WorldHelper.getLoadedBlockEntity(level, pos, ILockable.class).map(lockable -> {
-			if (level.isClientSide()) {
-				return true;
-			}
-
-			lockable.toggleLock();
+			toggle.accept(be);
 			return true;
 		}).orElse(false);
 	}
@@ -167,6 +156,7 @@ public class StorageToolItem extends ItemBase {
 			case LOCK -> StorageTranslationHelper.INSTANCE.translItemOverlayMessage(item, "toggling_lock");
 			case LOCK_DISPLAY -> StorageTranslationHelper.INSTANCE.translItemOverlayMessage(item, "toggling_lock_display");
 			case COUNT_DISPLAY -> StorageTranslationHelper.INSTANCE.translItemOverlayMessage(item, "toggling_count_display");
+			case TIER_DISPLAY -> StorageTranslationHelper.INSTANCE.translItemOverlayMessage(item, "toggling_tier_display");
 		};
 	}
 
@@ -182,7 +172,8 @@ public class StorageToolItem extends ItemBase {
 		LINK,
 		LOCK,
 		COUNT_DISPLAY,
-		LOCK_DISPLAY;
+		LOCK_DISPLAY,
+		TIER_DISPLAY;
 
 		public Mode next() {
 			return values()[(ordinal() + 1) % values().length];
@@ -197,5 +188,4 @@ public class StorageToolItem extends ItemBase {
 			return name();
 		}
 	}
-
 }

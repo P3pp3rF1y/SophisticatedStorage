@@ -45,7 +45,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-public abstract class StorageBlockEntity extends BlockEntity implements IControllableStorage, ILinkable, ILockable, Nameable {
+public abstract class StorageBlockEntity extends BlockEntity implements IControllableStorage, ILinkable, ILockable, Nameable, ITierDisplay {
 	public static final String STORAGE_WRAPPER_TAG = "storageWrapper";
 	private final StorageWrapper storageWrapper;
 	@Nullable
@@ -67,6 +67,7 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 	private LazyOptional<IItemHandler> itemHandlerCap;
 	private boolean locked = false;
 	private boolean showLock = true;
+	private boolean showTier = true;
 	@Nullable
 	private ContentsFilteredItemHandler contentsFilteredItemHandler = null;
 
@@ -190,6 +191,9 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		if (!showLock) {
 			tag.putBoolean("showLock", showLock);
 		}
+		if (!showTier) {
+			tag.putBoolean("showTier", showTier);
+		}
 	}
 
 	public void startOpen(Player player) {
@@ -251,6 +255,7 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		displayName = NBTHelper.getComponent(tag, "displayName").orElse(null);
 		locked = NBTHelper.getBoolean(tag, "locked").orElse(false);
 		showLock = NBTHelper.getBoolean(tag, "showLock").orElse(true);
+		showTier = NBTHelper.getBoolean(tag, "showTier").orElse(true);
 		if (level != null && level.isClientSide) {
 			if (tag.getBoolean("updateBlockRender")) {
 				WorldHelper.notifyBlockUpdate(this);
@@ -524,6 +529,19 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 	@Override
 	public void toggleLockVisibility() {
 		showLock = !showLock;
+		setChanged();
+		setUpdateBlockRender();
+		WorldHelper.notifyBlockUpdate(this);
+	}
+
+	@Override
+	public boolean shouldShowTier() {
+		return showTier;
+	}
+
+	@Override
+	public void toggleTierVisiblity() {
+		showTier = !showTier;
 		setChanged();
 		setUpdateBlockRender();
 		WorldHelper.notifyBlockUpdate(this);

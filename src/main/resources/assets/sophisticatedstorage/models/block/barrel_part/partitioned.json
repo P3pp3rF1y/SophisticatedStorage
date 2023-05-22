@@ -1,0 +1,11 @@
+{
+    "loader": "sophisticatedstorage:simple_composite",
+    "parts": {
+        "core": {
+            "parent": "sophisticatedstorage:block/barrel_part/core"
+        },
+        "trim": {
+            "parent": "sophisticatedstorage:block/barrel_part/trim"
+        }
+    }
+}

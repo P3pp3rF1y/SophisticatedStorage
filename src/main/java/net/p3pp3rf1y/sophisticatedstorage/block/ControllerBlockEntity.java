@@ -17,7 +17,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class ControllerBlockEntity extends ControllerBlockEntityBase implements ILockable, ICountDisplay {
+public class ControllerBlockEntity extends ControllerBlockEntityBase implements ILockable, ICountDisplay, ITierDisplay {
 	private long lastDepositTime = -100;
 
 	public ControllerBlockEntity(BlockPos pos, BlockState state) {
@@ -138,5 +138,29 @@ public class ControllerBlockEntity extends ControllerBlockEntityBase implements 
 	@Override
 	public List<Integer> getSlotCounts() {
 		return List.of();
+	}
+
+	@Override
+	public boolean shouldShowTier() {
+		return false;
+	}
+
+	@Override
+	public void toggleTierVisiblity() {
+		Set<ITierDisplay> invisibleTierStorages = new HashSet<>();
+		Set<ITierDisplay> visibleTierStorages = new HashSet<>();
+		getStoragePositions().forEach(storagePosition -> WorldHelper.getLoadedBlockEntity(level, storagePosition, ITierDisplay.class).ifPresent(tierDisplay -> {
+			if (tierDisplay.shouldShowTier()) {
+				visibleTierStorages.add(tierDisplay);
+			} else {
+				invisibleTierStorages.add(tierDisplay);
+			}
+		}));
+
+		if (invisibleTierStorages.isEmpty()) {
+			visibleTierStorages.forEach(ITierDisplay::toggleTierVisiblity);
+		} else {
+			invisibleTierStorages.forEach(ITierDisplay::toggleTierVisiblity);
+		}
 	}
 }

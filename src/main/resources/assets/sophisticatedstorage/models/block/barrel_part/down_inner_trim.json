@@ -4,12 +4,12 @@
     },
     "elements": [
         {
-            "from": [7, 14.5, 1],
-            "to": [9, 15.5, 7],
+            "from": [7, 14.5, 9],
+            "to": [9, 15.5, 15],
             "faces": {
-                "east": {"uv": [9, 1, 10, 7], "rotation": 90, "texture": "#top_inner_trim"},
-                "west": {"uv": [6, 1, 7, 7], "rotation": 270, "texture": "#top_inner_trim"},
-                "up": {"uv": [7, 1, 9, 7], "texture": "#top_inner_trim"}
+                "east": {"uv": [9, 9, 10, 15], "rotation": 90, "texture": "#top_inner_trim"},
+                "west": {"uv": [6, 9, 7, 15], "rotation": 270, "texture": "#top_inner_trim"},
+                "up": {"uv": [7, 9, 9, 15], "texture": "#top_inner_trim", "cullface": "up"}
             }
         }
     ]
