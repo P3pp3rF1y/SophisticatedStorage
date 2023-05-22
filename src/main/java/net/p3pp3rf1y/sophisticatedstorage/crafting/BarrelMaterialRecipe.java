@@ -158,7 +158,8 @@ public class BarrelMaterialRecipe extends CustomRecipe {
 
 				if (hasMainTint && (materialModelParts.contains(BarrelMaterial.MaterialModelPart.BOTH) || materialModelParts.contains(BarrelMaterial.MaterialModelPart.CORE))) {
 					tintableBlockItem.removeMainColor(barrelStackCopy);
-				} else if (hasAccentTint && (materialModelParts.contains(BarrelMaterial.MaterialModelPart.BOTH) || materialModelParts.contains(BarrelMaterial.MaterialModelPart.TRIM))) {
+				}
+				if (hasAccentTint && (materialModelParts.contains(BarrelMaterial.MaterialModelPart.BOTH) || materialModelParts.contains(BarrelMaterial.MaterialModelPart.TRIM))) {
 					tintableBlockItem.removeAccentColor(barrelStackCopy);
 				}
 			}
