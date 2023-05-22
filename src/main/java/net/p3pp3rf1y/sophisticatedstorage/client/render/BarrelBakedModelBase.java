@@ -51,6 +51,8 @@ import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelMaterial;
+import net.p3pp3rf1y.sophisticatedstorage.block.VerticalFacing;
+import net.p3pp3rf1y.sophisticatedstorage.common.gui.BlockSide;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.item.BarrelBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
@@ -104,7 +106,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 		));
 		builder.put(ItemTransforms.TransformType.GUI, new Transformation(
 				new Vector3f(0, 0, 0),
-				new Quaternion(30, 225, 0, true),
+				new Quaternion(30, 45, 0, true),
 				new Vector3f(0.625f, 0.625f, 0.625f), null
 		));
 		builder.put(ItemTransforms.TransformType.GROUND, new Transformation(
@@ -288,7 +290,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 		addTintableModelQuads(state, side, rand, ret, hasMainColor, hasAccentColor, modelParts);
 
 		if (isBakedDynamically) {
-			bakeAndAddDynamicQuads(side, rand, woodName, materials, rendersUsingSplitModel,
+			bakeAndAddDynamicQuads(getSpriteSide(state, side), rand, woodName, materials, rendersUsingSplitModel,
 					!hasMainColor || materialModelParts.contains(BarrelMaterial.MaterialModelPart.CORE), !hasAccentColor || materialModelParts.contains(BarrelMaterial.MaterialModelPart.TRIM))
 					.forEach(bakedModel -> ret.addAll(bakedModel.getQuads(state, side, rand, EmptyModelData.INSTANCE)));
 		}
@@ -311,7 +313,21 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 		return ret;
 	}
 
-	private List<BakedModel> bakeAndAddDynamicQuads(@Nullable Direction side, Random rand, @Nullable String woodName,
+	private static Direction getSpriteSide(@Nullable BlockState state, @Nullable Direction side) {
+		if (side == null) {
+			return Direction.NORTH;
+		}
+		Direction sideBeforeRotation;
+		if (state != null && state.getBlock() instanceof BarrelBlock barrelBlock) {
+			sideBeforeRotation = BlockSide.fromDirection(side, barrelBlock.getHorizontalDirection(state), barrelBlock.getVerticalFacing(state))
+					.toDirection(Direction.NORTH, VerticalFacing.NO);
+		} else {
+			sideBeforeRotation = BlockSide.fromDirection(side, Direction.NORTH, VerticalFacing.UP).toDirection(Direction.NORTH, VerticalFacing.NO);
+		}
+		return sideBeforeRotation;
+	}
+
+	private List<BakedModel> bakeAndAddDynamicQuads(@Nullable Direction spriteSide, Random rand, @Nullable String woodName,
 			Map<BarrelMaterial, ResourceLocation> barrelMaterials, boolean rendersUsingSplitModel, boolean renderCore, boolean renderTrim) {
 
 		Map<DynamicBarrelBakingData.DynamicPart, DynamicBarrelBakingData> bakingData = woodDynamicBakingData.get(woodName);
@@ -320,7 +336,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 		for (Map.Entry<BarrelMaterial, ResourceLocation> entry : barrelMaterials.entrySet()) {
 			BarrelMaterial barrelMaterial = entry.getKey();
 			ResourceLocation blockName = entry.getValue();
-			TextureAtlasSprite sprite = RenderHelper.getSprite(blockName, side, rand);
+			TextureAtlasSprite sprite = RenderHelper.getSprite(blockName, spriteSide, rand);
 			Either<Material, String> material = Either.left(new Material(InventoryMenu.BLOCK_ATLAS, sprite.getName()));
 
 			for (BarrelMaterial childMaterial : barrelMaterial.getChildren()) {

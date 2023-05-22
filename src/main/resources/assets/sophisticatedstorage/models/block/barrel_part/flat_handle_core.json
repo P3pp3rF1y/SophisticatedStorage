@@ -7,7 +7,7 @@
             "from": [1, 15, 1],
             "to": [15, 16, 15],
             "faces": {
-                "up": {"uv": [1, 1, 15, 15], "texture": "#handle"}
+                "up": {"uv": [1, 1, 15, 15], "texture": "#handle", "cullface": "up"}
             }
         }
     ]

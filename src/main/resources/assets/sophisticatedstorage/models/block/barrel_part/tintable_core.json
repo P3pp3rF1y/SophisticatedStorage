@@ -67,7 +67,7 @@
             "from": [1, 14, 1],
             "to": [15, 15, 15],
             "faces": {
-                "up": {"uv": [1, 1, 15, 15], "texture": "#top", "tintindex": 1000}
+                "up": {"uv": [1, 1, 15, 15], "texture": "#top", "tintindex": 1000, "cullface": "up"}
             }
         },
         {

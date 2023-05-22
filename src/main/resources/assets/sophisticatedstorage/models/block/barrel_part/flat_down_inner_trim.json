@@ -4,10 +4,10 @@
     },
     "elements": [
         {
-            "from": [7, 15, 1],
-            "to": [9, 16, 7],
+            "from": [7, 15, 9],
+            "to": [9, 16, 15],
             "faces": {
-                "up": {"uv": [7, 1, 9, 7], "texture": "#top_inner_trim", "cullface": "up"}
+                "up": {"uv": [7, 9, 9, 15], "texture": "#top_inner_trim", "cullface": "up"}
             }
         }
     ]
