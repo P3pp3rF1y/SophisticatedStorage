@@ -10,6 +10,7 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.block.model.BlockElement;
 import net.minecraft.client.renderer.block.model.BlockModel;
 import net.minecraft.client.renderer.block.model.ItemOverrides;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
@@ -39,6 +40,7 @@ import org.jetbrains.annotations.NotNull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -47,17 +49,16 @@ import java.util.function.Function;
 
 public class SimpleCompositeModel implements IUnbakedGeometry<SimpleCompositeModel> {
 
+	private static final String PARTICLE_MATERIAL = "particle";
 	private final ImmutableMap<String, BlockModel> children;
-	private final ImmutableList<String> itemPasses;
 
-	private SimpleCompositeModel(ImmutableMap<String, BlockModel> children, ImmutableList<String> itemPasses) {
+	private SimpleCompositeModel(ImmutableMap<String, BlockModel> children) {
 		this.children = children;
-		this.itemPasses = itemPasses;
 	}
 
 	@Override
 	public BakedModel bake(IGeometryBakingContext context, ModelBakery bakery, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelState, ItemOverrides overrides, ResourceLocation modelLocation) {
-		Material particleLocation = context.getMaterial("particle");
+		Material particleLocation = context.getMaterial(PARTICLE_MATERIAL);
 		TextureAtlasSprite particle = spriteGetter.apply(particleLocation);
 
 		var rootTransform = context.getRootTransform();
@@ -77,37 +78,56 @@ public class SimpleCompositeModel implements IUnbakedGeometry<SimpleCompositeMod
 		var bakedParts = bakedPartsBuilder.build();
 
 		var itemPassesBuilder = ImmutableList.<BakedModel>builder();
-		for (String name : this.itemPasses) {
-			var model = bakedParts.get(name);
-			if (model == null) {throw new IllegalStateException("Specified \"" + name + "\" in \"item_render_order\", but that is not a child of this model.");}
-			itemPassesBuilder.add(model);
-		}
 
 		return new Baked(context.isGui3d(), context.useBlockLight(), context.useAmbientOcclusion(), particle, context.getTransforms(), overrides, bakedParts, itemPassesBuilder.build());
+	}
+
+	@SuppressWarnings("java:S5803") //need to access textureMap here to get textures
+	public Map<String, Either<Material, String>> getTextures() {
+		HashMap<String, Either<Material, String>> textures = new HashMap<>();
+		children.values().forEach(childModel -> {
+			childModel.textureMap.forEach(textures::putIfAbsent);
+			if (childModel.customData.hasCustomGeometry() && childModel.customData.getCustomGeometry() instanceof SimpleCompositeModel compositeModel) {
+				compositeModel.getTextures().forEach(textures::putIfAbsent);
+			} else if (childModel.parent != null) {
+				childModel.parent.textureMap.forEach(textures::putIfAbsent);
+			}
+		});
+
+		return textures;
+	}
+
+	@SuppressWarnings("java:S1874") //need to get elements from the model so actually need to call getElements here
+	public List<BlockElement> getElements() {
+		List<BlockElement> elements = new ArrayList<>();
+
+		children.forEach((name, model) -> {
+			//noinspection deprecation
+			elements.addAll(model.getElements());
+			if (model.customData.hasCustomGeometry() && model.customData.getCustomGeometry() instanceof SimpleCompositeModel compositeModel) {
+				elements.addAll(compositeModel.getElements());
+			}
+		});
+
+		return elements;
 	}
 
 	@Override
 	public Collection<Material> getMaterials(IGeometryBakingContext context, Function<ResourceLocation, UnbakedModel> modelGetter, Set<Pair<String, String>> missingTextureErrors) {
 		Set<Material> textures = new HashSet<>();
-		if (context.hasMaterial("particle")) {textures.add(context.getMaterial("particle"));}
-		for (BlockModel part : children.values()) {textures.addAll(part.getMaterials(modelGetter, missingTextureErrors));}
+		if (context.hasMaterial(PARTICLE_MATERIAL)) {
+			textures.add(context.getMaterial(PARTICLE_MATERIAL));
+		}
+		for (BlockModel part : children.values()) {
+			textures.addAll(part.getMaterials(modelGetter, missingTextureErrors));
+		}
+
 		return textures;
 	}
 
 	@Override
 	public Set<String> getConfigurableComponentNames() {
 		return children.keySet();
-	}
-
-	@SuppressWarnings("java:S5803") //textureMap is needed here to update customData geometry textures with that
-	public void overrideTextures(Map<String, Either<Material, String>> textureMap) {
-		children.values().forEach(model -> {
-			if (model.customData.hasCustomGeometry() && model.customData.getCustomGeometry() instanceof SimpleCompositeModel geometry) {
-				geometry.overrideTextures(textureMap);
-			} else {
-				model.textureMap.putAll(textureMap);
-			}
-		});
 	}
 
 	public static class Baked implements IDynamicBakedModel {
@@ -176,6 +196,7 @@ public class SimpleCompositeModel implements IUnbakedGeometry<SimpleCompositeMod
 			return overrides;
 		}
 
+		@SuppressWarnings({"java:S1874", "deprecation"}) // need to override getTransforms not just call the non deprecated version here
 		@Override
 		public ItemTransforms getTransforms() {
 			return transforms;
@@ -196,6 +217,7 @@ public class SimpleCompositeModel implements IUnbakedGeometry<SimpleCompositeMod
 		}
 	}
 
+	@SuppressWarnings("java:S6548") // singleton implementation is good here
 	public static final class Loader implements IGeometryLoader<SimpleCompositeModel> {
 		public static final Loader INSTANCE = new Loader();
 
@@ -205,37 +227,24 @@ public class SimpleCompositeModel implements IUnbakedGeometry<SimpleCompositeMod
 		@Override
 		public SimpleCompositeModel read(JsonObject jsonObject, JsonDeserializationContext deserializationContext) {
 
-			List<String> itemPasses = new ArrayList<>();
 			ImmutableMap.Builder<String, BlockModel> childrenBuilder = ImmutableMap.builder();
-			readChildren(jsonObject, deserializationContext, childrenBuilder, itemPasses);
+			readChildren(jsonObject, deserializationContext, childrenBuilder);
 
 			var children = childrenBuilder.build();
 			if (children.isEmpty()) {
 				throw new JsonParseException("Composite model requires a \"parts\" element with at least one element.");
 			}
 
-			if (jsonObject.has("item_render_order")) {
-				itemPasses.clear();
-				for (var element : jsonObject.getAsJsonArray("item_render_order")) {
-					var name = element.getAsString();
-					if (!children.containsKey(name)) {
-						throw new JsonParseException("Specified \"" + name + "\" in \"item_render_order\", but that is not a child of this model.");
-					}
-					itemPasses.add(name);
-				}
-			}
-
-			return new SimpleCompositeModel(children, ImmutableList.copyOf(itemPasses));
+			return new SimpleCompositeModel(children);
 		}
 
-		private void readChildren(JsonObject jsonObject, JsonDeserializationContext deserializationContext, ImmutableMap.Builder<String, BlockModel> children, List<String> itemPasses) {
+		private void readChildren(JsonObject jsonObject, JsonDeserializationContext deserializationContext, ImmutableMap.Builder<String, BlockModel> children) {
 			if (!jsonObject.has("parts")) {
 				return;
 			}
 			var childrenJsonObject = jsonObject.getAsJsonObject("parts");
 			for (Map.Entry<String, JsonElement> entry : childrenJsonObject.entrySet()) {
 				children.put(entry.getKey(), deserializationContext.deserialize(entry.getValue(), BlockModel.class));
-				itemPasses.add(entry.getKey());
 			}
 		}
 	}

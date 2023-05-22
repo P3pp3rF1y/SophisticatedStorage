@@ -1,12 +1,43 @@
 {
     "loader": "sophisticatedstorage:limited_barrel",
+    "partitioned_model_parts": {
+        "tier": {
+            "model": "sophisticatedstorage:block/barrel_part/flat_partitioned",
+            "textures": {
+                "side_trim": "#side",
+                "bottom_trim": "#bottom",
+                "top_inner_trim": "#top"
+            }
+        },
+        "tintable_main": {
+            "model": "sophisticatedstorage:block/barrel_part/flat_tintable_core"
+        },
+        "tintable_accent": {
+            "model": "sophisticatedstorage:block/barrel_part/flat_tintable_trim",
+            "textures": {
+                "top_inner_trim": "#top"
+            }
+        },
+        "packed": {
+            "model": "sophisticatedstorage:block/barrel_part/flat_partitioned",
+            "textures": {
+                "side_trim": "#side",
+                "bottom_trim": "#bottom",
+                "top_inner_trim": "#top"
+            }
+        }
+    },
     "model_parts": {
         "base": {
             "model": "minecraft:block/cube_bottom_top",
             "textures": {
                 "top": "sophisticatedstorage:block/limited_acacia_barrel_1_top",
+                "top_trim": "sophisticatedstorage:block/limited_acacia_barrel_1_top",
+                "top_inner_trim": "sophisticatedstorage:block/limited_acacia_barrel_1_top",
                 "side": "sophisticatedstorage:block/acacia_barrel_side",
+                "side_trim": "sophisticatedstorage:block/acacia_barrel_side",
                 "bottom": "sophisticatedstorage:block/acacia_barrel_bottom",
+                "bottom_trim": "sophisticatedstorage:block/acacia_barrel_bottom",
                 "particle": "sophisticatedstorage:block/limited_acacia_barrel_1_top"
             }
         },
@@ -48,13 +79,22 @@
             "model": "sophisticatedstorage:block/barrel_part/locked"
         }
     },
+    "dynamic_part_models": {
+        "whole": "minecraft:block/cube_bottom_top",
+        "core": "sophisticatedstorage:block/barrel_part/flat_core",
+        "trim": "sophisticatedstorage:block/barrel_part/flat_trim"
+    },
     "wood_overrides": {
         "acacia": {
             "base": {
                 "textures": {
                     "top": "sophisticatedstorage:block/limited_acacia_barrel_1_top",
+                    "top_trim": "sophisticatedstorage:block/limited_acacia_barrel_1_top",
+                    "top_inner_trim": "sophisticatedstorage:block/limited_acacia_barrel_1_top",
                     "side": "sophisticatedstorage:block/acacia_barrel_side",
+                    "side_trim": "sophisticatedstorage:block/acacia_barrel_side",
                     "bottom": "sophisticatedstorage:block/acacia_barrel_bottom",
+                    "bottom_trim": "sophisticatedstorage:block/acacia_barrel_bottom",
                     "particle": "sophisticatedstorage:block/limited_acacia_barrel_1_top"
                 }
             }
@@ -63,8 +103,12 @@
             "base": {
                 "textures": {
                     "top": "sophisticatedstorage:block/limited_birch_barrel_1_top",
+                    "top_trim": "sophisticatedstorage:block/limited_birch_barrel_1_top",
+                    "top_inner_trim": "sophisticatedstorage:block/limited_birch_barrel_1_top",
                     "side": "sophisticatedstorage:block/birch_barrel_side",
+                    "side_trim": "sophisticatedstorage:block/birch_barrel_side",
                     "bottom": "sophisticatedstorage:block/birch_barrel_bottom",
+                    "bottom_trim": "sophisticatedstorage:block/birch_barrel_bottom",
                     "particle": "sophisticatedstorage:block/limited_birch_barrel_1_top"
                 }
             }
@@ -73,8 +117,12 @@
             "base": {
                 "textures": {
                     "top": "sophisticatedstorage:block/limited_crimson_barrel_1_top",
+                    "top_trim": "sophisticatedstorage:block/limited_crimson_barrel_1_top",
+                    "top_inner_trim": "sophisticatedstorage:block/limited_crimson_barrel_1_top",
                     "side": "sophisticatedstorage:block/crimson_barrel_side",
+                    "side_trim": "sophisticatedstorage:block/crimson_barrel_side",
                     "bottom": "sophisticatedstorage:block/crimson_barrel_bottom",
+                    "bottom_trim": "sophisticatedstorage:block/crimson_barrel_bottom",
                     "particle": "sophisticatedstorage:block/limited_crimson_barrel_1_top"
                 }
             }
@@ -83,8 +131,12 @@
             "base": {
                 "textures": {
                     "top": "sophisticatedstorage:block/limited_dark_oak_barrel_1_top",
+                    "top_trim": "sophisticatedstorage:block/limited_dark_oak_barrel_1_top",
+                    "top_inner_trim": "sophisticatedstorage:block/limited_dark_oak_barrel_1_top",
                     "side": "sophisticatedstorage:block/dark_oak_barrel_side",
+                    "side_trim": "sophisticatedstorage:block/dark_oak_barrel_side",
                     "bottom": "sophisticatedstorage:block/dark_oak_barrel_bottom",
+                    "bottom_trim": "sophisticatedstorage:block/dark_oak_barrel_bottom",
                     "particle": "sophisticatedstorage:block/limited_dark_oak_barrel_1_top"
                 }
             }
@@ -93,8 +145,12 @@
             "base": {
                 "textures": {
                     "top": "sophisticatedstorage:block/limited_jungle_barrel_1_top",
+                    "top_trim": "sophisticatedstorage:block/limited_jungle_barrel_1_top",
+                    "top_inner_trim": "sophisticatedstorage:block/limited_jungle_barrel_1_top",
                     "side": "sophisticatedstorage:block/jungle_barrel_side",
+                    "side_trim": "sophisticatedstorage:block/jungle_barrel_side",
                     "bottom": "sophisticatedstorage:block/jungle_barrel_bottom",
+                    "bottom_trim": "sophisticatedstorage:block/jungle_barrel_bottom",
                     "particle": "sophisticatedstorage:block/limited_jungle_barrel_1_top"
                 }
             }
@@ -103,8 +159,12 @@
             "base": {
                 "textures": {
                     "top": "sophisticatedstorage:block/limited_oak_barrel_1_top",
+                    "top_trim": "sophisticatedstorage:block/limited_oak_barrel_1_top",
+                    "top_inner_trim": "sophisticatedstorage:block/limited_oak_barrel_1_top",
                     "side": "sophisticatedstorage:block/oak_barrel_side",
+                    "side_trim": "sophisticatedstorage:block/oak_barrel_side",
                     "bottom": "sophisticatedstorage:block/oak_barrel_bottom",
+                    "bottom_trim": "sophisticatedstorage:block/oak_barrel_bottom",
                     "particle": "sophisticatedstorage:block/limited_oak_barrel_1_top"
                 }
             }
@@ -113,8 +173,12 @@
             "base": {
                 "textures": {
                     "top": "sophisticatedstorage:block/limited_spruce_barrel_1_top",
+                    "top_trim": "sophisticatedstorage:block/limited_spruce_barrel_1_top",
+                    "top_inner_trim": "sophisticatedstorage:block/limited_spruce_barrel_1_top",
                     "side": "sophisticatedstorage:block/spruce_barrel_side",
+                    "side_trim": "sophisticatedstorage:block/spruce_barrel_side",
                     "bottom": "sophisticatedstorage:block/spruce_barrel_bottom",
+                    "bottom_trim": "sophisticatedstorage:block/spruce_barrel_bottom",
                     "particle": "sophisticatedstorage:block/limited_spruce_barrel_1_top"
                 }
             }
@@ -123,8 +187,12 @@
             "base": {
                 "textures": {
                     "top": "sophisticatedstorage:block/limited_warped_barrel_1_top",
+                    "top_trim": "sophisticatedstorage:block/limited_warped_barrel_1_top",
+                    "top_inner_trim": "sophisticatedstorage:block/limited_warped_barrel_1_top",
                     "side": "sophisticatedstorage:block/warped_barrel_side",
+                    "side_trim": "sophisticatedstorage:block/warped_barrel_side",
                     "bottom": "sophisticatedstorage:block/warped_barrel_bottom",
+                    "bottom_trim": "sophisticatedstorage:block/warped_barrel_bottom",
                     "particle": "sophisticatedstorage:block/limited_warped_barrel_1_top"
                 }
             }

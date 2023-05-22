@@ -3,7 +3,6 @@ package net.p3pp3rf1y.sophisticatedstorage.crafting;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.p3pp3rf1y.sophisticatedcore.crafting.StorageDyeRecipeBase;
@@ -24,8 +23,8 @@ public class StorageDyeRecipe extends StorageDyeRecipeBase {
 	}
 
 	@Override
-	protected boolean isStorageItem(Item item) {
-		return item instanceof BlockItem blockItem && blockItem instanceof ITintableBlockItem;
+	protected boolean isDyeableStorageItem(ItemStack stack) {
+		return stack.getItem() instanceof BlockItem blockItem && blockItem instanceof ITintableBlockItem tintableBlockItem && tintableBlockItem.isTintable(stack);
 	}
 
 	@Override

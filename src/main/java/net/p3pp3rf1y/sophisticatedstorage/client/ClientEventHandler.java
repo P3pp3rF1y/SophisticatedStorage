@@ -11,6 +11,7 @@ import net.minecraft.client.renderer.Sheets;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ReloadableResourceManager;
+import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.InventoryMenu;
@@ -66,6 +67,8 @@ import net.p3pp3rf1y.sophisticatedstorage.network.StoragePacketHandler;
 import net.p3pp3rf1y.sophisticatedstorage.upgrades.compression.CompressionInventoryPart;
 import net.p3pp3rf1y.sophisticatedstorage.upgrades.hopper.HopperUpgradeContainer;
 
+import java.util.Map;
+
 import static net.minecraftforge.client.settings.KeyConflictContext.GUI;
 
 public class ClientEventHandler {
@@ -107,6 +110,7 @@ public class ClientEventHandler {
 		modBus.addListener(ModItemColors::registerItemColorHandlers);
 		modBus.addListener(ModBlockColors::registerBlockColorHandlers);
 		modBus.addListener(ClientEventHandler::registerStorageLayerLoader);
+		modBus.addListener(ClientEventHandler::onRegisterAdditionalModels);
 		IEventBus eventBus = MinecraftForge.EVENT_BUS;
 		eventBus.addListener(ClientStorageContentsTooltip::onWorldLoad);
 		eventBus.addListener(EventPriority.HIGH, ClientEventHandler::handleGuiMouseKeyPress);
@@ -116,11 +120,23 @@ public class ClientEventHandler {
 		eventBus.addListener(ClientEventHandler::onResourceReload);
 	}
 
+	private static void onRegisterAdditionalModels(ModelEvent.RegisterAdditional event) {
+		addBarrelPartModelsToBake(event);
+	}
+
+	private static void addBarrelPartModelsToBake(ModelEvent.RegisterAdditional event) {
+		Map<ResourceLocation, Resource> models = Minecraft.getInstance().getResourceManager().listResources("models/block/barrel_part", fileName -> fileName.getPath().endsWith(".json"));
+		models.forEach((modelName, resource) -> {
+			if (modelName.getNamespace().equals(SophisticatedStorage.MOD_ID)) {
+				event.register(new ResourceLocation(modelName.getNamespace(), modelName.getPath().substring("models/".length()).replace(".json", "")));
+			}
+		});
+	}
+
 	private static void onResourceReload(AddReloadListenerEvent event) {
 		BarrelDynamicModelBase.invalidateCache();
 		BarrelBakedModelBase.invalidateCache();
 	}
-
 
 	private static void onMouseScrolled(InputEvent.MouseScrollingEvent evt) {
 		Minecraft mc = Minecraft.getInstance();

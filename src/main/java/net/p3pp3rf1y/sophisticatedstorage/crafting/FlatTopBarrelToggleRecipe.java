@@ -45,6 +45,7 @@ public class FlatTopBarrelToggleRecipe extends CustomRecipe {
 
 			if (item.getItem() instanceof BlockItem blockItem && blockItem.getBlock() instanceof BarrelBlock) {
 				ItemStack result = item.copy();
+				result.setCount(1);
 				BarrelBlockItem.toggleFlatTop(result);
 				return result;
 			}

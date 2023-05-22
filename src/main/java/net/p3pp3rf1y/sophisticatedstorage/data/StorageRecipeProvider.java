@@ -45,6 +45,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 	protected void buildCraftingRecipes(Consumer<FinishedRecipe> consumer) {
 		SpecialRecipeBuilder.special(ModBlocks.STORAGE_DYE_RECIPE_SERIALIZER.get()).save(consumer, SophisticatedStorage.getRegistryName("storage_dye"));
 		SpecialRecipeBuilder.special(ModBlocks.FLAT_TOP_BARREL_TOGGLE_RECIPE_SERIALIZER.get()).save(consumer, SophisticatedStorage.getRegistryName("flat_top_barrel_toggle"));
+		SpecialRecipeBuilder.special(ModBlocks.BARREL_MATERIAL_RECIPE_SERIALIZER.get()).save(consumer, SophisticatedStorage.getRegistryName("barrel_material"));
 
 		addBarrelRecipes(consumer);
 		addLimitedBarrelRecipes(consumer);

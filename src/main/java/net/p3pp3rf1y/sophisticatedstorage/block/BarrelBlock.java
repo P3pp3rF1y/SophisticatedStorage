@@ -4,6 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stats;
@@ -50,6 +51,7 @@ import net.p3pp3rf1y.sophisticatedstorage.item.BarrelBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
 
 import javax.annotation.Nullable;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -123,6 +125,17 @@ public class BarrelBlock extends WoodStorageBlockBase {
 		}).orElse(InteractionResult.PASS);
 	}
 
+	@Override
+	public void setPlacedBy(Level level, BlockPos pos, BlockState state, @org.jetbrains.annotations.Nullable LivingEntity placer, ItemStack stack) {
+		super.setPlacedBy(level, pos, state, placer, stack);
+		WorldHelper.getBlockEntity(level, pos, BarrelBlockEntity.class).ifPresent(barrel -> {
+			Map<BarrelMaterial, ResourceLocation> materials = BarrelBlockItem.getMaterials(stack);
+			if (!materials.isEmpty()) {
+				barrel.setMaterials(materials);
+			}
+		});
+	}
+
 	protected StorageContainerMenu instantiateContainerMenu(int w, Player pl, BlockPos pos) {
 		return new StorageContainerMenu(w, pl, pos);
 	}
@@ -153,6 +166,12 @@ public class BarrelBlock extends WoodStorageBlockBase {
 	public ItemStack getCloneItemStack(BlockState state, HitResult target, BlockGetter world, BlockPos pos, Player player) {
 		ItemStack cloneItemStack = super.getCloneItemStack(state, target, world, pos, player);
 		BarrelBlockItem.setFlatTop(cloneItemStack, state.getValue(FLAT_TOP));
+		WorldHelper.getBlockEntity(world, pos, BarrelBlockEntity.class).ifPresent(barrelBlockEntity -> {
+			Map<BarrelMaterial, ResourceLocation> materials = barrelBlockEntity.getMaterials();
+			if (!materials.isEmpty()) {
+				BarrelBlockItem.setMaterials(cloneItemStack, materials);
+			}
+		});
 		return cloneItemStack;
 	}
 
@@ -161,6 +180,12 @@ public class BarrelBlock extends WoodStorageBlockBase {
 		super.addDropData(stack, be);
 		BlockState state = be.getBlockState();
 		BarrelBlockItem.setFlatTop(stack, state.getValue(FLAT_TOP));
+		if (be instanceof BarrelBlockEntity barrelBlockEntity) {
+			Map<BarrelMaterial, ResourceLocation> materials = barrelBlockEntity.getMaterials();
+			if (!materials.isEmpty()) {
+				BarrelBlockItem.setMaterials(stack, materials);
+			}
+		}
 	}
 
 	@Nullable

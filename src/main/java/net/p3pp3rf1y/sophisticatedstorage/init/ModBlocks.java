@@ -1,18 +1,27 @@
 package net.p3pp3rf1y.sophisticatedstorage.init;
 
 import net.minecraft.client.gui.screens.MenuScreens;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.cauldron.CauldronInteraction;
 import net.minecraft.core.dispenser.ShulkerBoxDispenseBehavior;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.SimpleRecipeSerializer;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.WoodType;
 import net.minecraft.world.level.material.Material;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
@@ -33,6 +42,7 @@ import net.p3pp3rf1y.sophisticatedstorage.block.ChestBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.ChestBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.block.ControllerBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.ControllerBlockEntity;
+import net.p3pp3rf1y.sophisticatedstorage.block.ITintableBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.block.LimitedBarrelBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.LimitedBarrelBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.block.ShulkerBoxBlock;
@@ -47,6 +57,7 @@ import net.p3pp3rf1y.sophisticatedstorage.common.gui.LimitedBarrelContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.LimitedBarrelSettingsContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageSettingsContainerMenu;
+import net.p3pp3rf1y.sophisticatedstorage.crafting.BarrelMaterialRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.FlatTopBarrelToggleRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.ShulkerBoxFromChestRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.SmithingStorageUpgradeRecipe;
@@ -55,6 +66,7 @@ import net.p3pp3rf1y.sophisticatedstorage.crafting.StorageTierUpgradeRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.item.BarrelBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.ChestBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.ShulkerBoxItem;
+import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
 
 public class ModBlocks {
 	private static final String LIMITED_BARREL_NAME = "limited_barrel";
@@ -233,6 +245,7 @@ public class ModBlocks {
 	public static final RegistryObject<RecipeSerializer<?>> SMITHING_STORAGE_UPGRADE_RECIPE_SERIALIZER = RECIPE_SERIALIZERS.register("smithing_storage_upgrade", SmithingStorageUpgradeRecipe.Serializer::new);
 	public static final RegistryObject<RecipeSerializer<?>> SHULKER_BOX_FROM_CHEST_RECIPE_SERIALIZER = RECIPE_SERIALIZERS.register("shulker_box_from_chest", ShulkerBoxFromChestRecipe.Serializer::new);
 	public static final RegistryObject<SimpleRecipeSerializer<?>> FLAT_TOP_BARREL_TOGGLE_RECIPE_SERIALIZER = RECIPE_SERIALIZERS.register("flat_top_barrel_toggle", () -> new SimpleRecipeSerializer<>(FlatTopBarrelToggleRecipe::new));
+	public static final RegistryObject<SimpleRecipeSerializer<?>> BARREL_MATERIAL_RECIPE_SERIALIZER = RECIPE_SERIALIZERS.register("barrel_material", () -> new SimpleRecipeSerializer<>(BarrelMaterialRecipe::new));
 
 	public static void registerHandlers(IEventBus modBus) {
 		BLOCKS.register(modBus);
@@ -259,5 +272,102 @@ public class ModBlocks {
 
 	public static void registerDispenseBehavior() {
 		DispenserBlock.registerBehavior(SHULKER_BOX_ITEM.get(), new ShulkerBoxDispenseBehavior());
+	}
+
+	public static void registerCauldronInteractions() {
+		CauldronInteraction.WATER.put(BARREL_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
+		CauldronInteraction.WATER.put(IRON_BARREL_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
+		CauldronInteraction.WATER.put(GOLD_BARREL_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
+		CauldronInteraction.WATER.put(DIAMOND_BARREL_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
+		CauldronInteraction.WATER.put(NETHERITE_BARREL_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
+
+		CauldronInteraction.WATER.put(LIMITED_BARREL_1_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
+		CauldronInteraction.WATER.put(LIMITED_BARREL_2_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
+		CauldronInteraction.WATER.put(LIMITED_BARREL_3_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
+		CauldronInteraction.WATER.put(LIMITED_BARREL_4_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
+		CauldronInteraction.WATER.put(LIMITED_IRON_BARREL_1_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
+		CauldronInteraction.WATER.put(LIMITED_IRON_BARREL_2_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
+		CauldronInteraction.WATER.put(LIMITED_IRON_BARREL_3_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
+		CauldronInteraction.WATER.put(LIMITED_IRON_BARREL_4_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
+		CauldronInteraction.WATER.put(LIMITED_GOLD_BARREL_1_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
+		CauldronInteraction.WATER.put(LIMITED_GOLD_BARREL_2_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
+		CauldronInteraction.WATER.put(LIMITED_GOLD_BARREL_3_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
+		CauldronInteraction.WATER.put(LIMITED_GOLD_BARREL_4_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
+		CauldronInteraction.WATER.put(LIMITED_DIAMOND_BARREL_1_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
+		CauldronInteraction.WATER.put(LIMITED_DIAMOND_BARREL_2_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
+		CauldronInteraction.WATER.put(LIMITED_DIAMOND_BARREL_3_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
+		CauldronInteraction.WATER.put(LIMITED_DIAMOND_BARREL_4_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
+		CauldronInteraction.WATER.put(LIMITED_NETHERITE_BARREL_1_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
+		CauldronInteraction.WATER.put(LIMITED_NETHERITE_BARREL_2_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
+		CauldronInteraction.WATER.put(LIMITED_NETHERITE_BARREL_3_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
+		CauldronInteraction.WATER.put(LIMITED_NETHERITE_BARREL_4_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
+
+		CauldronInteraction.WATER.put(CHEST_ITEM.get(), WoodStorageCauldronInteraction.INSTANCE);
+		CauldronInteraction.WATER.put(IRON_CHEST_ITEM.get(), WoodStorageCauldronInteraction.INSTANCE);
+		CauldronInteraction.WATER.put(GOLD_CHEST_ITEM.get(), WoodStorageCauldronInteraction.INSTANCE);
+		CauldronInteraction.WATER.put(DIAMOND_CHEST_ITEM.get(), WoodStorageCauldronInteraction.INSTANCE);
+		CauldronInteraction.WATER.put(NETHERITE_CHEST_ITEM.get(), WoodStorageCauldronInteraction.INSTANCE);
+
+		CauldronInteraction.WATER.put(SHULKER_BOX_ITEM.get(), StorageCauldronInteraction.INSTANCE);
+		CauldronInteraction.WATER.put(IRON_SHULKER_BOX_ITEM.get(), StorageCauldronInteraction.INSTANCE);
+		CauldronInteraction.WATER.put(GOLD_SHULKER_BOX_ITEM.get(), StorageCauldronInteraction.INSTANCE);
+		CauldronInteraction.WATER.put(DIAMOND_SHULKER_BOX_ITEM.get(), StorageCauldronInteraction.INSTANCE);
+		CauldronInteraction.WATER.put(NETHERITE_SHULKER_BOX_ITEM.get(), StorageCauldronInteraction.INSTANCE);
+	}
+
+	@SuppressWarnings("java:S6548") //singleton is correct here
+	public static class BarrelCauldronInteraction extends WoodStorageCauldronInteraction {
+		private static final BarrelCauldronInteraction INSTANCE = new BarrelCauldronInteraction();
+
+		@Override
+		protected void removePaint(ItemStack stack) {
+			super.removePaint(stack);
+			BarrelBlockItem.removeMaterials(stack);
+		}
+	}
+
+	@SuppressWarnings("java:S6548") //singleton is correct here
+	public static class WoodStorageCauldronInteraction extends StorageCauldronInteraction {
+		private static final WoodStorageCauldronInteraction INSTANCE = new WoodStorageCauldronInteraction();
+		@Override
+		protected void removePaint(ItemStack stack) {
+			super.removePaint(stack);
+			if (WoodStorageBlockItem.getWoodType(stack).isEmpty()) {
+				WoodStorageBlockItem.setWoodType(stack, WoodType.ACACIA);
+			}
+		}
+
+		@Override
+		protected boolean canRemovePaint(ItemStack stack) {
+			return super.canRemovePaint(stack) && !WoodStorageBlockItem.isPacked(stack);
+		}
+	}
+
+	@SuppressWarnings("java:S6548") //singleton is correct here
+	public static class StorageCauldronInteraction implements CauldronInteraction {
+		private static final StorageCauldronInteraction INSTANCE = new StorageCauldronInteraction();
+
+		@Override
+		public InteractionResult interact(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, ItemStack stack) {
+			if (canRemovePaint(stack)) {
+
+				if (!level.isClientSide()) {
+					removePaint(stack);
+				}
+				return InteractionResult.sidedSuccess(level.isClientSide);
+			}
+			return InteractionResult.PASS;
+		}
+
+		protected boolean canRemovePaint(ItemStack stack) {
+			return stack.getItem() instanceof ITintableBlockItem;
+		}
+
+		protected void removePaint(ItemStack stack) {
+			if (stack.getItem() instanceof ITintableBlockItem tintableBlockItem) {
+				tintableBlockItem.removeMainColor(stack);
+				tintableBlockItem.removeAccentColor(stack);
+			}
+		}
 	}
 }
