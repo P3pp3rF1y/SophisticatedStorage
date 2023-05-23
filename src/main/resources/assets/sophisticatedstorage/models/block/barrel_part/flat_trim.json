@@ -1,8 +1,8 @@
 {
     "textures": {
-        "top_trim": "#top",
-        "side_trim": "#side",
-        "bottom_trim": "#bottom"
+        "top_trim": "sophisticatedstorage:block/acacia_barrel_top",
+        "side_trim": "sophisticatedstorage:block/acacia_barrel_side",
+        "bottom_trim": "sophisticatedstorage:block/acacia_barrel_bottom"
     },
     "elements": [
         {
