@@ -137,7 +137,7 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 				continue;
 			}
 			if (!slotDefinition.isCompressible()) {
-				calculatedStacks.put(slot, parent.getSlotStack(slot));
+				calculatedStacks.put(slot, parent.getSlotStack(slot).copy());
 				continue;
 			}
 			int internalCount = parent.getSlotStack(slot).getCount();
@@ -469,10 +469,24 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 		if (slotDefinitions.get(slot).isCompressible()) {
 			insertIntoInternalAndCalculated(slot, inserted);
 		} else if (inserted > 0) {
-			ItemStack copy = stack.copy();
-			copy.setCount(inserted);
-			calculatedStacks.put(slot, copy);
-			parent.setSlotStack(slot, copy);
+			calculatedStacks.compute(slot, (s, st) -> {
+				if (st ==null || st.isEmpty()) {
+					ItemStack copy = stack.copy();
+					copy.setCount(inserted);
+					return copy;
+				}
+				st.grow(inserted);
+				return st;
+			});
+			ItemStack slotStack = parent.getSlotStack(slot);
+			if (slotStack.isEmpty()) {
+				ItemStack copy = stack.copy();
+				copy.setCount(inserted);
+				parent.setSlotStack(slot, copy);
+			} else {
+				slotStack.grow(inserted);
+				parent.setSlotStack(slot, slotStack);
+			}
 		}
 
 		return result;
