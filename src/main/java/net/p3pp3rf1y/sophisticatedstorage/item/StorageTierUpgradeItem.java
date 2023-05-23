@@ -140,7 +140,7 @@ public class StorageTierUpgradeItem extends ItemBase {
 	}
 
 	public StorageTierUpgradeItem(TierUpgrade tier, boolean hasTooltip) {
-		super(new Properties().stacksTo(1), SophisticatedStorage.CREATIVE_TAB);
+		super(new Properties(), SophisticatedStorage.CREATIVE_TAB);
 		this.tier = tier;
 		this.hasTooltip = hasTooltip;
 	}
