@@ -37,7 +37,6 @@ import java.util.function.Supplier;
 
 import static org.junit.jupiter.api.AssertionFailureBuilder.assertionFailure;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
 public class CompressionInventoryPartTest {
@@ -138,13 +137,27 @@ public class CompressionInventoryPartTest {
 	}
 
 	private static void assertInternalStacks(Map<Integer, ItemStack> slotStacksModified, InventoryHandler invHandler) {
+		boolean matching = true;
+		Map<Integer, ItemStack> updatedInternalStacks = new LinkedHashMap<>();
+
 		ArgumentCaptor<Integer> intCaptor = ArgumentCaptor.forClass(Integer.class);
 		ArgumentCaptor<ItemStack> stackCaptor = ArgumentCaptor.forClass(ItemStack.class);
 		verify(invHandler, times(slotStacksModified.size())).setSlotStack(intCaptor.capture(), stackCaptor.capture());
 		List<ItemStack> updatedStacks = stackCaptor.getAllValues();
 		List<Integer> updatedSlots = intCaptor.getAllValues();
 		for (int i = 0; i < updatedSlots.size(); i++) {
-			assertTrue(ItemStack.matches(slotStacksModified.get(updatedSlots.get(i)), updatedStacks.get(i)));
+			ItemStack updatedStack = updatedStacks.get(i);
+			updatedInternalStacks.put(i, updatedStack);
+			if (!ItemStack.matches(slotStacksModified.get(updatedSlots.get(i)), updatedStack)) {
+				matching = false;
+			}
+		}
+
+		if (!matching) {
+			assertionFailure().message("Calculated stacks don't equal")
+					.expected(slotStacksModified)
+					.actual(updatedInternalStacks)
+					.buildAndThrow();
 		}
 	}
 
@@ -665,7 +678,8 @@ public class CompressionInventoryPartTest {
 		params.expectedLimits().forEach((slot, stackLimit) -> assertEquals(stackLimit.getRight(), part.getStackLimit(slot, stackLimit.getLeft()), "Stack limit doesn't match"));
 	}
 
-	private record StackLimitsAreSetCorrectlyOnInitParams(Map<Integer, ItemStack> stacks, int baseLimit, Map<Integer, Pair<ItemStack, Integer>> expectedLimits){}
+	private record StackLimitsAreSetCorrectlyOnInitParams(Map<Integer, ItemStack> stacks, int baseLimit,
+														  Map<Integer, Pair<ItemStack, Integer>> expectedLimits) {}
 
 	private static List<StackLimitsAreSetCorrectlyOnInitParams> stackLimitsAreSetCorrectlyOnInit() {
 		return List.of(
@@ -688,6 +702,47 @@ public class CompressionInventoryPartTest {
 						Map.of(0, new ItemStack(Items.IRON_SWORD), 1, ItemStack.EMPTY),
 						64,
 						Map.of(0, ImmutablePair.of(new ItemStack(Items.IRON_SWORD), 1), 1, ImmutablePair.of(new ItemStack(Items.IRON_SWORD), 0))
+				)
+		);
+	}
+
+	@ParameterizedTest
+	@MethodSource("insertingAdditionalUncompressibleItemsProperlyCalculatesCount")
+	void insertingAdditionalUncompressibleItemsProperlyCalculatesCount(InsertingAdditionalUncompressibleItemsProperlyCalculatesCountParams params) {
+		InventoryHandler invHandler = getFilledInventoryHandler(params.stacks(), params.baseLimit());
+		int minSlot = 0;
+
+		CompressionInventoryPart part = initCompressionInventoryPart(invHandler, new InventoryPartitioner.SlotRange(minSlot, minSlot + params.stacks().size()), () -> getMemorySettings(invHandler, Map.of()));
+
+		part.insertItem(params.insertedStack.getLeft(), params.insertedStack.getRight(), false, (slot, itemStack, simulate) -> ItemStack.EMPTY);
+
+		assertCalculatedStacks(params.expectedStacksSet(), 0, part);
+		assertInternalStacks(params.expectedStacksSet(), invHandler);
+	}
+
+	private record InsertingAdditionalUncompressibleItemsProperlyCalculatesCountParams(Map<Integer, ItemStack> stacks, int baseLimit,
+																					   Pair<Integer, ItemStack> insertedStack,
+																					   Map<Integer, ItemStack> expectedStacksSet) {}
+
+	private static List<InsertingAdditionalUncompressibleItemsProperlyCalculatesCountParams> insertingAdditionalUncompressibleItemsProperlyCalculatesCount() {
+		return List.of(
+				new InsertingAdditionalUncompressibleItemsProperlyCalculatesCountParams(
+						Map.of(0, new ItemStack(Items.SAND, 23), 1, ItemStack.EMPTY),
+						64,
+						ImmutablePair.of(0, new ItemStack(Items.SAND, 41)),
+						Map.of(0, new ItemStack(Items.SAND, 64))
+				),
+				new InsertingAdditionalUncompressibleItemsProperlyCalculatesCountParams(
+						Map.of(0, new ItemStack(Items.SAND, 23), 1, ItemStack.EMPTY),
+						256,
+						ImmutablePair.of(0, new ItemStack(Items.SAND, 128)),
+						Map.of(0, new ItemStack(Items.SAND, 151))
+				),
+				new InsertingAdditionalUncompressibleItemsProperlyCalculatesCountParams(
+						Map.of(0, ItemStack.EMPTY, 1, ItemStack.EMPTY),
+						256,
+						ImmutablePair.of(0, new ItemStack(Items.SAND, 256)),
+						Map.of(0, new ItemStack(Items.SAND, 256))
 				)
 		);
 	}
