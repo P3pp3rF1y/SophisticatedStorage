@@ -2,13 +2,14 @@ package net.p3pp3rf1y.sophisticatedstorage.client.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Vector3f;
-import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
 import net.minecraft.world.level.block.state.BlockState;
 import net.p3pp3rf1y.sophisticatedcore.util.CountAbbreviator;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlock;
@@ -19,20 +20,15 @@ import net.p3pp3rf1y.sophisticatedstorage.block.VerticalFacing;
 
 import java.util.List;
 
-import static net.minecraft.client.Minecraft.DEFAULT_FONT;
 import static net.minecraft.client.Minecraft.UNIFORM_FONT;
 
 public class LimitedBarrelRenderer implements BlockEntityRenderer<LimitedBarrelBlockEntity> {
 
 	private static final float MULTIPLE_ITEMS_FONT_SCALE = 1 / 96f;
 	private static final float SINGLE_ITEM_FONT_SCALE = 1 / 48f;
+	private static final Style COUNT_DISPLAY_STYLE = Style.EMPTY.withFont(UNIFORM_FONT).withBold(true);
 	private final DisplayItemRenderer displayItemRenderer = new LimitedBarreDisplayItemRenderer(0.5 - 1 / 16D);
 	private final DisplayItemRenderer flatDisplayItemRenderer = new LimitedBarreDisplayItemRenderer(0.5);
-
-	private static final Font font = new Font(rl -> {
-		Minecraft mc = Minecraft.getInstance();
-		return mc.fontManager.fontSets.getOrDefault(UNIFORM_FONT, mc.fontManager.fontSets.getOrDefault(DEFAULT_FONT, mc.fontManager.missingFontSet));
-	}, false);
 
 	@Override
 	public void render(LimitedBarrelBlockEntity blockEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
@@ -87,10 +83,11 @@ public class LimitedBarrelRenderer implements BlockEntityRenderer<LimitedBarrelB
 
 			float scale = slotCounts.size() == 1 ? SINGLE_ITEM_FONT_SCALE : MULTIPLE_ITEMS_FONT_SCALE;
 			poseStack.scale(scale, -scale, scale);
-			String countString = CountAbbreviator.abbreviate(count, slotCounts.size() == 1 ? 6 : 5);
-			float countDisplayXOffset = -font.width(countString) / 2f;
+			MutableComponent countString = Component.literal(CountAbbreviator.abbreviate(count, slotCounts.size() == 1 ? 6 : 5)).withStyle(COUNT_DISPLAY_STYLE);
+			Font font = Minecraft.getInstance().font;
+			float countDisplayXOffset = -font.getSplitter().stringWidth(countString) / 2f;
 			poseStack.translate(countDisplayXOffset, 0, 0);
-			font.drawInBatch(Component.literal(countString).withStyle(ChatFormatting.BOLD), 0, 0, blockEntity.getSlotColor(displayItemIndex), false, poseStack.last().pose(), bufferSource, false, 0, packedLight);
+			font.drawInBatch(countString, 0, 0, blockEntity.getSlotColor(displayItemIndex), false, poseStack.last().pose(), bufferSource, false, 0, packedLight);
 
 			poseStack.popPose();
 		}
