@@ -164,8 +164,14 @@ public class ModItems {
 			Config.SERVER.advancedHopperUpgrade.inputFilterSlots::get, Config.SERVER.advancedHopperUpgrade.outputFilterSlots::get, Config.SERVER.advancedHopperUpgrade.transferSpeedTicks::get, Config.SERVER.advancedHopperUpgrade.maxTransferStackSize::get));
 	public static final RegistryObject<StorageTierUpgradeItem> BASIC_TIER_UPGRADE = ITEMS.register("basic_tier_upgrade", () -> new StorageTierUpgradeItem(StorageTierUpgradeItem.TierUpgrade.BASIC, true));
 	public static final RegistryObject<StorageTierUpgradeItem> BASIC_TO_IRON_TIER_UPGRADE = ITEMS.register("basic_to_iron_tier_upgrade", () -> new StorageTierUpgradeItem(StorageTierUpgradeItem.TierUpgrade.BASIC_TO_IRON));
+	public static final RegistryObject<StorageTierUpgradeItem> BASIC_TO_GOLD_TIER_UPGRADE = ITEMS.register("basic_to_gold_tier_upgrade", () -> new StorageTierUpgradeItem(StorageTierUpgradeItem.TierUpgrade.BASIC_TO_GOLD));
+	public static final RegistryObject<StorageTierUpgradeItem> BASIC_TO_DIAMOND_TIER_UPGRADE = ITEMS.register("basic_to_diamond_tier_upgrade", () -> new StorageTierUpgradeItem(StorageTierUpgradeItem.TierUpgrade.BASIC_TO_DIAMOND));
+	public static final RegistryObject<StorageTierUpgradeItem> BASIC_TO_NETHERITE_TIER_UPGRADE = ITEMS.register("basic_to_netherite_tier_upgrade", () -> new StorageTierUpgradeItem(StorageTierUpgradeItem.TierUpgrade.BASIC_TO_NETHERITE));
 	public static final RegistryObject<StorageTierUpgradeItem> IRON_TO_GOLD_TIER_UPGRADE = ITEMS.register("iron_to_gold_tier_upgrade", () -> new StorageTierUpgradeItem(StorageTierUpgradeItem.TierUpgrade.IRON_TO_GOLD));
+	public static final RegistryObject<StorageTierUpgradeItem> IRON_TO_DIAMOND_TIER_UPGRADE = ITEMS.register("iron_to_diamond_tier_upgrade", () -> new StorageTierUpgradeItem(StorageTierUpgradeItem.TierUpgrade.IRON_TO_DIAMOND));
+	public static final RegistryObject<StorageTierUpgradeItem> IRON_TO_NETHERITE_TIER_UPGRADE = ITEMS.register("iron_to_netherite_tier_upgrade", () -> new StorageTierUpgradeItem(StorageTierUpgradeItem.TierUpgrade.IRON_TO_NETHERITE));
 	public static final RegistryObject<StorageTierUpgradeItem> GOLD_TO_DIAMOND_TIER_UPGRADE = ITEMS.register("gold_to_diamond_tier_upgrade", () -> new StorageTierUpgradeItem(StorageTierUpgradeItem.TierUpgrade.GOLD_TO_DIAMOND));
+	public static final RegistryObject<StorageTierUpgradeItem> GOLD_TO_NETHERITE_TIER_UPGRADE = ITEMS.register("gold_to_netherite_tier_upgrade", () -> new StorageTierUpgradeItem(StorageTierUpgradeItem.TierUpgrade.GOLD_TO_NETHERITE));
 	public static final RegistryObject<StorageTierUpgradeItem> DIAMOND_TO_NETHERITE_TIER_UPGRADE = ITEMS.register("diamond_to_netherite_tier_upgrade", () -> new StorageTierUpgradeItem(StorageTierUpgradeItem.TierUpgrade.DIAMOND_TO_NETHERITE));
 
 	public static final RegistryObject<ItemBase> UPGRADE_BASE = ITEMS.register("upgrade_base", () -> new ItemBase(new Item.Properties().stacksTo(16), SophisticatedStorage.CREATIVE_TAB));

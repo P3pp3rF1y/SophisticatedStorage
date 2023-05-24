@@ -1,0 +1,34 @@
+{
+  "parent": "minecraft:recipes/root",
+  "rewards": {
+    "recipes": [
+      "sophisticatedstorage:basic_to_netherite_tier_upgrade"
+    ]
+  },
+  "criteria": {
+    "has_basic_to_diamond_tier_upgrade": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "sophisticatedstorage:basic_to_diamond_tier_upgrade"
+            ]
+          }
+        ]
+      }
+    },
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "sophisticatedstorage:basic_to_netherite_tier_upgrade"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_basic_to_diamond_tier_upgrade",
+      "has_the_recipe"
+    ]
+  ]
+}
