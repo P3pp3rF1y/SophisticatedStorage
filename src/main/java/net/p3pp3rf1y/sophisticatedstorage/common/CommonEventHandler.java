@@ -24,6 +24,7 @@ import net.p3pp3rf1y.sophisticatedcore.util.ItemBase;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.block.LimitedBarrelBlock;
+import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockBase;
 import net.p3pp3rf1y.sophisticatedstorage.block.WoodStorageBlockBase;
 import net.p3pp3rf1y.sophisticatedstorage.block.WoodStorageBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageTranslationHelper;
@@ -41,7 +42,7 @@ public class CommonEventHandler {
 		eventBus.addListener(this::onPlayerRespawn);
 		eventBus.addListener(this::onBlockBreak);
 		eventBus.addListener(this::onLimitedBarrelLeftClicked);
-		eventBus.addListener(this::onLimitedBarrelShiftRightClicked);
+		eventBus.addListener(this::onStorageBlockShiftRightClicked);
 	}
 
 	private void onLimitedBarrelLeftClicked(PlayerInteractEvent.LeftClickBlock event) {
@@ -61,7 +62,7 @@ public class CommonEventHandler {
 		}
 	}
 
-	private void onLimitedBarrelShiftRightClicked(PlayerInteractEvent.RightClickBlock event) {
+	private void onStorageBlockShiftRightClicked(PlayerInteractEvent.RightClickBlock event) {
 		if (!event.getPlayer().isShiftKeyDown()) {
 			return;
 		}
@@ -69,10 +70,10 @@ public class CommonEventHandler {
 		BlockPos pos = event.getPos();
 		Level level = event.getWorld();
 		BlockState state = level.getBlockState(pos);
-		if (!(state.getBlock() instanceof LimitedBarrelBlock limitedBarrel)) {
+		if (!(state.getBlock() instanceof StorageBlockBase storageBlock)) {
 			return;
 		}
-		if (limitedBarrel.tryToDyeAll(state, level, pos, event.getHitVec(), event.getItemStack())) {
+		if (storageBlock.tryShiftRightClickItemInteraction(event.getPlayer(), event.getHand(), state, level, pos, event.getHitVec(), event.getItemStack())) {
 			event.setCanceled(true);
 		}
 	}

@@ -4,6 +4,7 @@ import com.mojang.math.Vector3f;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
@@ -17,6 +18,8 @@ import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraftforge.items.ItemHandlerHelper;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.api.IUpgradeRenderer;
 import net.p3pp3rf1y.sophisticatedcore.client.render.UpgradeRenderRegistry;
@@ -24,6 +27,7 @@ import net.p3pp3rf1y.sophisticatedcore.controller.IControllableStorage;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.IUpgradeRenderData;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.UpgradeRenderDataType;
+import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeHandler;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 
@@ -193,5 +197,46 @@ public abstract class StorageBlockBase extends Block implements IStorageBlock, E
 	@Override
 	public void onNeighborChange(BlockState state, LevelReader level, BlockPos pos, BlockPos neighbor) {
 		WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).ifPresent(be -> be.onNeighborChange(neighbor));
+	}
+
+	protected boolean tryAddUpgrade(Player player, InteractionHand hand, StorageBlockEntity b, ItemStack stackInHand, Direction facing, BlockHitResult hitResult) {
+		if (hitResult.getDirection() != facing) {
+			return false;
+		}
+
+		tryAddSingleUpgrade(player, hand, b, stackInHand);
+
+		return true;
+	}
+
+	private static boolean tryAddSingleUpgrade(Player player, InteractionHand hand, StorageBlockEntity b, ItemStack stackInHand) {
+		UpgradeHandler upgradeHandler = b.getStorageWrapper().getUpgradeHandler();
+		if (InventoryHelper.insertIntoInventory(stackInHand, upgradeHandler, true).getCount() != stackInHand.getCount()) {
+			InventoryHelper.insertIntoInventory(ItemHandlerHelper.copyStackWithSize(stackInHand, 1), upgradeHandler, false);
+			stackInHand.shrink(1);
+			if (stackInHand.isEmpty()) {
+				player.setItemInHand(hand, ItemStack.EMPTY);
+			}
+			return true;
+		}
+		return false;
+	}
+
+	public boolean tryShiftRightClickItemInteraction(Player player, InteractionHand hand, BlockState state, Level level, BlockPos pos, BlockHitResult hitVec, ItemStack itemInHand) {
+		if (hitVec.getDirection() != getFacing(state)) {
+			return false;
+		}
+
+		return WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).map(b -> {
+			boolean result = false;
+			while (!itemInHand.isEmpty()) {
+				if (tryAddSingleUpgrade(player, hand, b, itemInHand)) {
+					result = true;
+				} else {
+					break;
+				}
+			}
+			return result;
+		}).orElse(false);
 	}
 }

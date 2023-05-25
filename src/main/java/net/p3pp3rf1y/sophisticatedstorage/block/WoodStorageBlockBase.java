@@ -18,10 +18,13 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
+import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeItemBase;
 import net.p3pp3rf1y.sophisticatedcore.util.ColorHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
+import net.p3pp3rf1y.sophisticatedcore.util.RegistryHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
+import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
@@ -148,19 +151,25 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 	@SuppressWarnings("java:S1172") //parameter is used in override
 	protected boolean tryItemInteraction(Player player, InteractionHand hand, WoodStorageBlockEntity b, ItemStack stackInHand, Direction facing, BlockHitResult hitResult) {
 		if (stackInHand.getItem() == ModItems.PACKING_TAPE.get()) {
-			if (!player.isCreative()) {
-				stackInHand.setDamageValue(stackInHand.getDamageValue() + 1);
-				if (stackInHand.getDamageValue() >= stackInHand.getMaxDamage()) {
-					player.setItemInHand(hand, ItemStack.EMPTY);
-				}
-			}
-			b.setPacked(true);
-
-			b.removeFromController();
-
-			WorldHelper.notifyBlockUpdate(b);
+			packStorage(player, hand, b, stackInHand);
 			return true;
+		} else if (stackInHand.getItem() instanceof UpgradeItemBase<?> upgradeItem && RegistryHelper.getRegistryName(upgradeItem).map(r -> r.getNamespace().equals(SophisticatedStorage.MOD_ID)).orElse(false)) {
+			return tryAddUpgrade(player, hand, b, stackInHand, facing, hitResult);
 		}
 		return false;
+	}
+
+	private static void packStorage(Player player, InteractionHand hand, WoodStorageBlockEntity b, ItemStack stackInHand) {
+		if (!player.isCreative()) {
+			stackInHand.setDamageValue(stackInHand.getDamageValue() + 1);
+			if (stackInHand.getDamageValue() >= stackInHand.getMaxDamage()) {
+				player.setItemInHand(hand, ItemStack.EMPTY);
+			}
+		}
+		b.setPacked(true);
+
+		b.removeFromController();
+
+		WorldHelper.notifyBlockUpdate(b);
 	}
 }
