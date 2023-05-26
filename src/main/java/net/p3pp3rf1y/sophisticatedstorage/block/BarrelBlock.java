@@ -120,7 +120,7 @@ public class BarrelBlock extends WoodStorageBlockBase {
 			if (b.isPacked()) {
 				return InteractionResult.PASS;
 			}
-			if (level.isClientSide) {
+			if (level.isClientSide || hand == InteractionHand.OFF_HAND) {
 				return InteractionResult.SUCCESS;
 			}
 

@@ -107,7 +107,7 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 			if (b.isPacked()) {
 				return InteractionResult.PASS;
 			}
-			if (level.isClientSide) {
+			if (level.isClientSide || hand == InteractionHand.OFF_HAND) {
 				return InteractionResult.SUCCESS;
 			}
 

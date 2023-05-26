@@ -151,7 +151,6 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 			packStorage(player, hand, b, stackInHand);
 			return true;
 		}
-
 		return tryAddUpgrade(player, hand, b, stackInHand, facing, hitResult);
 	}
 
