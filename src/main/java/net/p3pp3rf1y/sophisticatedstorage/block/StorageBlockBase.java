@@ -235,9 +235,7 @@ public abstract class StorageBlockBase extends Block implements IStorageBlock, I
 
 	@Override
 	public boolean trySneakItemInteraction(Player player, InteractionHand hand, BlockState state, Level level, BlockPos pos, BlockHitResult hitVec, ItemStack itemInHand) {
-
-
-		if (hitVec.getDirection() != getFacing(state)) {
+		if (level.isClientSide() || hitVec.getDirection() != getFacing(state)) {
 			return false;
 		}
 

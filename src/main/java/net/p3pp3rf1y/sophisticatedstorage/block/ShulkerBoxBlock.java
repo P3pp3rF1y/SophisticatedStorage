@@ -98,7 +98,9 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 	@SuppressWarnings("deprecation")
 	@Override
 	public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
-		if (level.isClientSide) {
+		if (hand == InteractionHand.OFF_HAND) {
+			return InteractionResult.PASS;
+		} else if (level.isClientSide) {
 			return InteractionResult.SUCCESS;
 		} else if (player.isSpectator()) {
 			return InteractionResult.CONSUME;
