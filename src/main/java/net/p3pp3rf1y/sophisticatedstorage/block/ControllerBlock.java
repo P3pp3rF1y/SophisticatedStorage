@@ -21,6 +21,7 @@ import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.TranslationHelper;
 import net.p3pp3rf1y.sophisticatedcore.controller.ControllerBlockEntityBase;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageTranslationHelper;
+import net.p3pp3rf1y.sophisticatedstorage.item.StorageTierUpgradeItem;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -65,8 +66,14 @@ public class ControllerBlock extends Block implements ISneakItemInteractionBlock
 		WorldHelper.getBlockEntity(level, pos, ControllerBlockEntity.class).ifPresent(controller -> {
 			AtomicBoolean appliedUpgrade = new AtomicBoolean(false);
 			controller.getStoragePositions().forEach(storagePos -> WorldHelper.getBlockEntity(level, storagePos, StorageBlockEntity.class).ifPresent(be -> {
-				if (be.getBlockState().getBlock() instanceof StorageBlockBase storageblock && storageblock.tryAddSingleUpgrade(player, hand, be, player.getItemInHand(hand))) {
-					appliedUpgrade.set(true);
+				if (be.getBlockState().getBlock() instanceof StorageBlockBase storageblock) {
+					ItemStack itemInHand = player.getItemInHand(hand);
+					if (storageblock.tryAddSingleUpgrade(player, hand, be, itemInHand)) {
+						appliedUpgrade.set(true);
+					} else if (itemInHand.getItem() instanceof StorageTierUpgradeItem storageTierUpgradeItem
+							&& storageTierUpgradeItem.tryUpgradeStorage(itemInHand, level, storagePos, be.getBlockState(), player) == InteractionResult.SUCCESS) {
+						appliedUpgrade.set(true);
+					}
 				}
 			}));
 
