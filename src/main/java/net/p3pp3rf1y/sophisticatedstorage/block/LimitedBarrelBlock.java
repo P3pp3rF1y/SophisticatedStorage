@@ -145,8 +145,8 @@ public class LimitedBarrelBlock extends BarrelBlock {
 	}
 
 	@Override
-	public boolean tryShiftRightClickItemInteraction(Player player, InteractionHand hand, BlockState state, Level level, BlockPos pos, BlockHitResult hitVec, ItemStack itemInHand) {
-		if (super.tryShiftRightClickItemInteraction(player, hand, state, level, pos, hitVec, itemInHand)) {
+	public boolean trySneakItemInteraction(Player player, InteractionHand hand, BlockState state, Level level, BlockPos pos, BlockHitResult hitVec, ItemStack itemInHand) {
+		if (super.trySneakItemInteraction(player, hand, state, level, pos, hitVec, itemInHand)) {
 			return true;
 		}
 
