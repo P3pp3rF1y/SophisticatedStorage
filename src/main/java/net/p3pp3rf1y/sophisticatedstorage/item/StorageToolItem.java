@@ -24,6 +24,7 @@ import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.ICountDisplay;
 import net.p3pp3rf1y.sophisticatedstorage.block.ILockable;
 import net.p3pp3rf1y.sophisticatedstorage.block.ITierDisplay;
+import net.p3pp3rf1y.sophisticatedstorage.block.IUpgradeDisplay;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageTranslationHelper;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
@@ -95,6 +96,11 @@ public class StorageToolItem extends ItemBase {
 					return InteractionResult.SUCCESS;
 				}
 			}
+			case UPGRADES_DISPLAY -> {
+				if (tryToggling(pos, level, IUpgradeDisplay.class, IUpgradeDisplay::toggleUpgradesVisiblity)) {
+					return InteractionResult.SUCCESS;
+				}
+			}
 		}
 		return super.onItemUseFirst(tool, context);
 	}
@@ -157,6 +163,7 @@ public class StorageToolItem extends ItemBase {
 			case LOCK_DISPLAY -> StorageTranslationHelper.INSTANCE.translItemOverlayMessage(item, "toggling_lock_display");
 			case COUNT_DISPLAY -> StorageTranslationHelper.INSTANCE.translItemOverlayMessage(item, "toggling_count_display");
 			case TIER_DISPLAY -> StorageTranslationHelper.INSTANCE.translItemOverlayMessage(item, "toggling_tier_display");
+			case UPGRADES_DISPLAY -> StorageTranslationHelper.INSTANCE.translItemOverlayMessage(item, "toggling_upgrades_display");
 		};
 	}
 
@@ -173,7 +180,8 @@ public class StorageToolItem extends ItemBase {
 		LOCK,
 		COUNT_DISPLAY,
 		LOCK_DISPLAY,
-		TIER_DISPLAY;
+		TIER_DISPLAY,
+		UPGRADES_DISPLAY;
 
 		public Mode next() {
 			return values()[(ordinal() + 1) % values().length];

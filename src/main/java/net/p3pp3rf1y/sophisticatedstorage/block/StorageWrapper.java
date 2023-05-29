@@ -4,6 +4,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.fml.util.thread.SidedThreadGroups;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.SortBy;
 import net.p3pp3rf1y.sophisticatedcore.inventory.ITrackedContentsItemHandler;
@@ -184,6 +185,9 @@ public abstract class StorageWrapper implements IStorageWrapper {
 	public void load(CompoundTag tag) {
 		loadContents(tag);
 		loadData(tag);
+		if (Thread.currentThread().getThreadGroup() == SidedThreadGroups.SERVER && getRenderInfo().getUpgradeItems().size() != getUpgradeHandler().getSlots()) {
+			getUpgradeHandler().setRenderUpgradeItems();
+		}
 	}
 
 	private void loadData(CompoundTag tag) {

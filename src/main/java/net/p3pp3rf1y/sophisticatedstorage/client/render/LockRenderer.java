@@ -8,27 +8,22 @@ import com.mojang.math.Vector4f;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.resources.model.Material;
-import net.minecraft.core.Direction;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
 
-import static net.p3pp3rf1y.sophisticatedstorage.client.render.DisplayItemRenderer.getNorthBasedRotation;
-
 public class LockRenderer {
 	private LockRenderer() {}
+
 	public static final Material LOCK_TEXTURE = new Material(InventoryMenu.BLOCK_ATLAS, SophisticatedStorage.getRL("block/lock"));
 
-	public static void renderLock(StorageBlockEntity blockEntity, Direction direction, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, float yOffset, float frontZOffset) {
+	public static void renderLock(StorageBlockEntity blockEntity, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, float yOffset) {
 		if (!blockEntity.isLocked() || !blockEntity.shouldShowLock()) {
 			return;
 		}
 		poseStack.pushPose();
-		poseStack.translate(0.5, 0.5, 0.5);
-		poseStack.mulPose(getNorthBasedRotation(direction));
-
-		poseStack.translate(-0.5/16D, yOffset, -(frontZOffset + 0.001));
-		poseStack.scale(1/16F, 1/16F, 1/16F);
+		poseStack.translate(0.5 - 0.5/16D, yOffset, -0.001);
+		poseStack.scale(1 / 16F, 1 / 16F, 1 / 16F);
 		poseStack.pushPose();
 		VertexConsumer vertexConsumer = LockRenderer.LOCK_TEXTURE.buffer(bufferSource, RenderType::entityCutoutNoCull);
 

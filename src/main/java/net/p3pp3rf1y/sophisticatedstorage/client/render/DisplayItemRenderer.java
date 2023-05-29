@@ -2,25 +2,29 @@ package net.p3pp3rf1y.sophisticatedstorage.client.render;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.mojang.blaze3d.vertex.DefaultedVertexConsumer;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Quaternion;
 import com.mojang.math.Vector3f;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.ItemTransform;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.Vec3i;
+import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.client.model.data.EmptyModelData;
@@ -37,30 +41,26 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.UnaryOperator;
 
 public class DisplayItemRenderer {
+	private static final RenderType TRANSLUCENT = RenderType.entityTranslucent(InventoryMenu.BLOCK_ATLAS);
+	private static final ItemStack EMPTY_UPGRADE_STACK = new ItemStack(ModItems.UPGRADE_BASE.get());
 	public static final float SMALL_3D_ITEM_SCALE = 0.5f;
 	static final float BIG_2D_ITEM_SCALE = 0.5f;
 	static final float SMALL_2D_ITEM_SCALE = 0.25f;
+	static final float UPGRADE_ITEM_SCALE = 0.125f;
+	private static final ItemStack INACCESSIBLE_SLOT_STACK = new ItemStack(ModItems.INACCESSIBLE_SLOT.get());
 	private final double yCenterTranslation;
-	private final double blockSideOffset;
+	private final Vec3 upgradesOffset;
 
-	public DisplayItemRenderer(double yCenterTranslation, double blockSideOffset) {
+	public DisplayItemRenderer(double yCenterTranslation, Vec3 upgradesOffset) {
 		this.yCenterTranslation = yCenterTranslation;
-		this.blockSideOffset = blockSideOffset;
+		this.upgradesOffset = upgradesOffset;
 	}
 
 	private static final Cache<Integer, Double> ITEM_HASHCODE_OFFSETS = CacheBuilder.newBuilder().expireAfterAccess(30L, TimeUnit.MINUTES).build();
 
 	public void renderDisplayItem(StorageBlockEntity blockEntity, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
-		blockEntity.getStorageWrapper().getRenderInfo().getItemDisplayRenderInfo().getDisplayItem().ifPresent(displayItem -> {
-			BlockState blockState = blockEntity.getBlockState();
-			if (!(blockState.getBlock() instanceof StorageBlockBase storageBlock)) {
-				return;
-			}
-			Direction facing = storageBlock.getFacing(blockState);
-
-			Minecraft minecraft = Minecraft.getInstance();
-			renderSingleItem(poseStack, bufferSource, packedLight, packedOverlay, blockState, facing, minecraft, false, 0, 1, displayItem.getItem(), displayItem.getRotation());
-		});
+		blockEntity.getStorageWrapper().getRenderInfo().getItemDisplayRenderInfo().getDisplayItem().ifPresent(displayItem ->
+				renderSingleItem(poseStack, bufferSource, packedLight, packedOverlay, Minecraft.getInstance(), false, 0, 1, displayItem.getItem(), displayItem.getRotation()));
 	}
 
 	public void renderDisplayItems(StorageBlockEntity blockEntity, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, boolean renderOnlyCustom) {
@@ -75,23 +75,60 @@ public class DisplayItemRenderer {
 		if (!(blockState.getBlock() instanceof StorageBlockBase storageBlock)) {
 			return;
 		}
-		Direction facing = storageBlock.getFacing(blockState);
 
 		Minecraft minecraft = Minecraft.getInstance();
 		int displayItemCount = storageBlock.getDisplayItemsCount(displayItems);
 		for (int displayItemIndex = 0; displayItemIndex < displayItemCount; displayItemIndex++) {
-			ItemStack inaccessibleSlotStack = new ItemStack(ModItems.INACCESSIBLE_SLOT.get());
 			if (inaccessibleSlots.contains(displayItemIndex)) {
-				renderSingleItem(poseStack, bufferSource, packedLight, packedOverlay, blockState, facing, minecraft, renderOnlyCustom, displayItemIndex, displayItemCount, inaccessibleSlotStack, 0);
-			} else {
-				for (RenderInfo.DisplayItem displayItem : displayItems) {
-					renderSingleItem(poseStack, bufferSource, packedLight, packedOverlay, blockState, facing, minecraft, renderOnlyCustom, storageBlock.hasFixedIndexDisplayItems() ? displayItem.getSlotIndex() : displayItemIndex, displayItemCount, displayItem.getItem(), displayItem.getRotation());
-				}
+				renderSingleItem(poseStack, bufferSource, packedLight, packedOverlay, minecraft, renderOnlyCustom, displayItemIndex, displayItemCount, INACCESSIBLE_SLOT_STACK, 0);
 			}
+		}
+		int displayItemIndex = 0;
+		for (RenderInfo.DisplayItem displayItem : displayItems) {
+			renderSingleItem(poseStack, bufferSource, packedLight, packedOverlay, minecraft, renderOnlyCustom, storageBlock.hasFixedIndexDisplayItems() ? displayItem.getSlotIndex() : displayItemIndex, displayItemCount, displayItem.getItem(), displayItem.getRotation());
+			displayItemIndex++;
 		}
 	}
 
-	private void renderSingleItem(PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, BlockState blockState, Direction facing, Minecraft minecraft, boolean renderOnlyCustom, int displayItemIndex, int displayItemCount, ItemStack stack, int rotation) {
+	public void renderUpgradeItems(StorageBlockEntity blockEntity, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, boolean renderEmptySlots, boolean renderDisabledUpgradeDisplay) {
+		List<ItemStack> upgradeItems = blockEntity.getStorageWrapper().getRenderInfo().getUpgradeItems();
+
+		poseStack.pushPose();
+
+		Minecraft minecraft = Minecraft.getInstance();
+		int i = 0;
+		for (ItemStack upgradeItem : upgradeItems) {
+			if (upgradeItem.isEmpty() && !renderEmptySlots) {
+				continue;
+			}
+
+			poseStack.pushPose();
+			poseStack.translate(1f - i * 2 / 16f - 1 / 16f + upgradesOffset.x(), 1 / 16f + upgradesOffset.y(), upgradesOffset.z());
+			poseStack.scale(UPGRADE_ITEM_SCALE, UPGRADE_ITEM_SCALE, UPGRADE_ITEM_SCALE);
+			ItemStack itemToRender = upgradeItem.isEmpty() ? EMPTY_UPGRADE_STACK : upgradeItem;
+			BakedModel itemModel = minecraft.getItemRenderer().getModel(itemToRender, null, minecraft.player, 0);
+			MultiBufferSource buffer = upgradeItem.isEmpty() ? wrapBuffer(bufferSource, 128) : bufferSource;
+			minecraft.getItemRenderer().render(itemToRender, ItemTransforms.TransformType.FIXED, false, poseStack, buffer, packedLight, packedOverlay, itemModel);
+			if (renderDisabledUpgradeDisplay) {
+				poseStack.pushPose();
+				poseStack.translate(0, 0, -0.001f);
+				itemModel = minecraft.getItemRenderer().getModel(INACCESSIBLE_SLOT_STACK, null, minecraft.player, 0);
+				buffer = bufferSource;
+				minecraft.getItemRenderer().render(INACCESSIBLE_SLOT_STACK, ItemTransforms.TransformType.FIXED, false, poseStack, buffer, packedLight, packedOverlay, itemModel);
+				poseStack.popPose();
+			}
+			poseStack.popPose();
+			i++;
+		}
+
+		poseStack.popPose();
+	}
+
+	private static MultiBufferSource wrapBuffer(MultiBufferSource buffer, int alpha) {
+		return renderType -> new TransparentVertexConsumer(buffer.getBuffer(TRANSLUCENT), alpha);
+	}
+
+	private void renderSingleItem(PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, Minecraft minecraft, boolean renderOnlyCustom, int displayItemIndex, int displayItemCount, ItemStack stack, int rotation) {
 		if (stack.isEmpty()) {
 			return;
 		}
@@ -103,19 +140,10 @@ public class DisplayItemRenderer {
 		float itemOffset = (float) getDisplayItemOffset(stack, itemModel, displayItemCount == 1 ? 1 : SMALL_3D_ITEM_SCALE);
 		poseStack.pushPose();
 
-		Vec3i normal = facing.getNormal();
-		Vector3f offset = new Vector3f((float) (blockSideOffset + itemOffset), (float) blockSideOffset + itemOffset, (float) (blockSideOffset + itemOffset));
-		offset.mul(normal.getX(), normal.getY(), normal.getZ());
 		Vector3f frontOffset = getDisplayItemIndexFrontOffset(displayItemIndex, displayItemCount, (float) yCenterTranslation);
-		frontOffset.add(-0.5f, -0.5f, -0.5f);
-		rotateFrontOffset(blockState, facing, frontOffset);
-		frontOffset.add(0.5f, 0.5f, 0.5f);
-		offset.add(frontOffset);
-		poseStack.translate(offset.x(), offset.y(), offset.z());
-
-		rotateToFront(poseStack, blockState, facing);
-
+		poseStack.translate(frontOffset.x(), frontOffset.y(), -itemOffset);
 		poseStack.mulPose(Vector3f.ZP.rotationDegrees(rotation));
+
 		float itemScale;
 		if (displayItemCount == 1) {
 			itemScale = itemModel.isGui3d() ? 1.0f : BIG_2D_ITEM_SCALE;
@@ -126,16 +154,6 @@ public class DisplayItemRenderer {
 
 		minecraft.getItemRenderer().render(stack, ItemTransforms.TransformType.FIXED, false, poseStack, bufferSource, packedLight, packedOverlay, itemModel);
 		poseStack.popPose();
-	}
-
-	@SuppressWarnings("java:S1172") //state used in override
-	protected void rotateFrontOffset(BlockState state, Direction facing, Vector3f frontOffset) {
-		frontOffset.transform(getNorthBasedRotation(facing));
-	}
-
-	@SuppressWarnings("java:S1172") //state used in override
-	protected void rotateToFront(PoseStack poseStack, BlockState state, Direction facing) {
-		poseStack.mulPose(getNorthBasedRotation(facing));
 	}
 
 	public static double getDisplayItemOffset(ItemStack item, BakedModel itemModel, float additionalScale) {
@@ -329,5 +347,54 @@ public class DisplayItemRenderer {
 			case WEST -> Vector3f.YP.rotationDegrees(90.0F);
 			case EAST -> Vector3f.YP.rotationDegrees(-90.0F);
 		};
+	}
+
+	private static class TransparentVertexConsumer extends DefaultedVertexConsumer {
+		private final VertexConsumer delegate;
+
+		public TransparentVertexConsumer(VertexConsumer delegate, int alpha) {
+			this.delegate = delegate;
+			defaultA = alpha;
+		}
+
+		@Override
+		public void vertex(float pX, float pY, float pZ, float pRed, float pGreen, float pBlue, float pAlpha, float pTexU, float pTexV, int pOverlayUV, int pLightmapUV, float pNormalX, float pNormalY, float pNormalZ) {
+			super.vertex(pX, pY, pZ, pRed, pGreen, pBlue, defaultA / 256f, pTexU, pTexV, pOverlayUV, pLightmapUV, pNormalX, pNormalY, pNormalZ);
+		}
+
+		@Override
+		public VertexConsumer vertex(double pX, double pY, double pZ) {
+			return delegate.vertex(pX, pY, pZ);
+		}
+
+		@Override
+		public VertexConsumer color(int pRed, int pGreen, int pBlue, int pAlpha) {
+			return delegate.color(pRed, pGreen, pBlue, defaultA);
+		}
+
+		@Override
+		public VertexConsumer uv(float pU, float pV) {
+			return delegate.uv(pU, pV);
+		}
+
+		@Override
+		public VertexConsumer overlayCoords(int pU, int pV) {
+			return delegate.overlayCoords(pU, pV);
+		}
+
+		@Override
+		public VertexConsumer uv2(int pU, int pV) {
+			return delegate.uv2(pU, pV);
+		}
+
+		@Override
+		public VertexConsumer normal(float pX, float pY, float pZ) {
+			return delegate.normal(pX, pY, pZ);
+		}
+
+		@Override
+		public void endVertex() {
+			delegate.endVertex();
+		}
 	}
 }
