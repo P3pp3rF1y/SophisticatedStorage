@@ -45,7 +45,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-public abstract class StorageBlockEntity extends BlockEntity implements IControllableStorage, ILinkable, ILockable, Nameable, ITierDisplay {
+public abstract class StorageBlockEntity extends BlockEntity implements IControllableStorage, ILinkable, ILockable, Nameable, ITierDisplay, IUpgradeDisplay {
 	public static final String STORAGE_WRAPPER_TAG = "storageWrapper";
 	private final StorageWrapper storageWrapper;
 	@Nullable
@@ -68,6 +68,7 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 	private boolean locked = false;
 	private boolean showLock = true;
 	private boolean showTier = true;
+	private boolean showUpgrades = false;
 	@Nullable
 	private ContentsFilteredItemHandler contentsFilteredItemHandler = null;
 
@@ -194,6 +195,9 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		if (!showTier) {
 			tag.putBoolean("showTier", showTier);
 		}
+		if (showUpgrades) {
+			tag.putBoolean("showUpgrades", showUpgrades);
+		}
 	}
 
 	public void startOpen(Player player) {
@@ -256,6 +260,7 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		locked = NBTHelper.getBoolean(tag, "locked").orElse(false);
 		showLock = NBTHelper.getBoolean(tag, "showLock").orElse(true);
 		showTier = NBTHelper.getBoolean(tag, "showTier").orElse(true);
+		showUpgrades = NBTHelper.getBoolean(tag, "showUpgrades").orElse(false);
 		if (level != null && level.isClientSide) {
 			if (tag.getBoolean("updateBlockRender")) {
 				WorldHelper.notifyBlockUpdate(this);
@@ -538,12 +543,24 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 	public boolean shouldShowTier() {
 		return showTier;
 	}
-
+	
 	@Override
 	public void toggleTierVisiblity() {
 		showTier = !showTier;
 		setChanged();
 		setUpdateBlockRender();
+		WorldHelper.notifyBlockUpdate(this);
+	}
+
+	@Override
+	public boolean shouldShowUpgrades() {
+		return showUpgrades;
+	}
+
+	@Override
+	public void toggleUpgradesVisiblity() {
+		showUpgrades = !showUpgrades;
+		setChanged();
 		WorldHelper.notifyBlockUpdate(this);
 	}
 

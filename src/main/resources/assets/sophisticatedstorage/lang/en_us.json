@@ -19,6 +19,7 @@
     "item.sophisticatedstorage.storage_tool.overlay.toggling_lock_display": "Showing/Hiding Lock(s)",
     "item.sophisticatedstorage.storage_tool.overlay.toggling_count_display": "Showing/Hiding Count(s)",
     "item.sophisticatedstorage.storage_tool.overlay.toggling_tier_display": "Showing/Hiding Tier(s)",
+    "item.sophisticatedstorage.storage_tool.overlay.toggling_upgrades_display": "Showing/Hiding Upgrades",
     "item.sophisticatedstorage.debug_tool": "Debug Tool",
     "item.sophisticatedstorage.storage_link": "Storage Link",
     "block.sophisticatedstorage.storage_link.tooltip": "Connects separate multiblock of storages to controller\nUse Storage Tool to link to controller",
