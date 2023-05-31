@@ -137,6 +137,7 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 			StorageBlockItem.getMainColorFromStack(stack).ifPresent(be.getStorageWrapper()::setMainColor);
 			StorageBlockItem.getAccentColorFromStack(stack).ifPresent(be.getStorageWrapper()::setAccentColor);
 
+			be.getStorageWrapper().onInit();
 			be.tryToAddToController();
 
 			if (placer != null && placer.getOffhandItem().getItem() == ModItems.STORAGE_TOOL.get()) {
