@@ -10,6 +10,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.Block;
@@ -81,6 +82,15 @@ public class ShulkerBoxRenderer extends StorageRenderer<ShulkerBoxBlockEntity> {
 		if (shulkerBoxEntity.shouldShowTier()) {
 			VertexConsumer vertexconsumer = getTierMaterial(blockState.getBlock()).buffer(bufferSource, RenderType::entityCutoutNoCull);
 			model.renderToBuffer(poseStack, vertexconsumer, packedLight, packedOverlay, 1.0F, 1.0F, 1.0F, 1.0F);
+		} else if (holdsItemThatShowsHiddenTiers()) {
+			//noinspection resource
+			TextureAtlasSprite sprite = getTierMaterial(blockState.getBlock()).sprite();
+			VertexConsumer vertexconsumer = sprite.wrap(bufferSource.getBuffer(RenderType.entityTranslucent(sprite.atlas().location())));
+			poseStack.pushPose();
+			poseStack.translate(0, -0.01, 0);
+			poseStack.scale(1.01f, 1.01f, 1.01f);
+			model.renderToBuffer(poseStack, vertexconsumer, packedLight, packedOverlay, 1.0F, 1.0F, 1.0F, 0.5F);
+			poseStack.popPose();
 		}
 
 		poseStack.popPose();
