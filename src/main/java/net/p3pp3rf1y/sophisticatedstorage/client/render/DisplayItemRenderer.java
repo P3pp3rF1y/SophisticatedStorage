@@ -2,22 +2,18 @@ package net.p3pp3rf1y.sophisticatedstorage.client.render;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.mojang.blaze3d.vertex.DefaultedVertexConsumer;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Quaternion;
 import com.mojang.math.Vector3f;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.ItemTransform;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -41,7 +37,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.UnaryOperator;
 
 public class DisplayItemRenderer {
-	private static final RenderType TRANSLUCENT = RenderType.entityTranslucent(InventoryMenu.BLOCK_ATLAS);
 	private static final ItemStack EMPTY_UPGRADE_STACK = new ItemStack(ModItems.UPGRADE_BASE.get());
 	public static final float SMALL_3D_ITEM_SCALE = 0.5f;
 	static final float BIG_2D_ITEM_SCALE = 0.5f;
@@ -107,7 +102,7 @@ public class DisplayItemRenderer {
 			poseStack.scale(UPGRADE_ITEM_SCALE, UPGRADE_ITEM_SCALE, UPGRADE_ITEM_SCALE);
 			ItemStack itemToRender = upgradeItem.isEmpty() ? EMPTY_UPGRADE_STACK : upgradeItem;
 			BakedModel itemModel = minecraft.getItemRenderer().getModel(itemToRender, null, minecraft.player, 0);
-			MultiBufferSource buffer = upgradeItem.isEmpty() ? wrapBuffer(bufferSource, 128) : bufferSource;
+			MultiBufferSource buffer = upgradeItem.isEmpty() ? TranslucentVertexConsumer.wrapBuffer(bufferSource, 128) : bufferSource;
 			minecraft.getItemRenderer().render(itemToRender, ItemTransforms.TransformType.FIXED, false, poseStack, buffer, packedLight, packedOverlay, itemModel);
 			if (renderDisabledUpgradeDisplay) {
 				poseStack.pushPose();
@@ -122,10 +117,6 @@ public class DisplayItemRenderer {
 		}
 
 		poseStack.popPose();
-	}
-
-	private static MultiBufferSource wrapBuffer(MultiBufferSource buffer, int alpha) {
-		return renderType -> new TransparentVertexConsumer(buffer.getBuffer(TRANSLUCENT), alpha);
 	}
 
 	private void renderSingleItem(PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, Minecraft minecraft, boolean renderOnlyCustom, int displayItemIndex, int displayItemCount, ItemStack stack, int rotation) {
@@ -347,54 +338,5 @@ public class DisplayItemRenderer {
 			case WEST -> Vector3f.YP.rotationDegrees(90.0F);
 			case EAST -> Vector3f.YP.rotationDegrees(-90.0F);
 		};
-	}
-
-	private static class TransparentVertexConsumer extends DefaultedVertexConsumer {
-		private final VertexConsumer delegate;
-
-		public TransparentVertexConsumer(VertexConsumer delegate, int alpha) {
-			this.delegate = delegate;
-			defaultA = alpha;
-		}
-
-		@Override
-		public void vertex(float pX, float pY, float pZ, float pRed, float pGreen, float pBlue, float pAlpha, float pTexU, float pTexV, int pOverlayUV, int pLightmapUV, float pNormalX, float pNormalY, float pNormalZ) {
-			super.vertex(pX, pY, pZ, pRed, pGreen, pBlue, defaultA / 256f, pTexU, pTexV, pOverlayUV, pLightmapUV, pNormalX, pNormalY, pNormalZ);
-		}
-
-		@Override
-		public VertexConsumer vertex(double pX, double pY, double pZ) {
-			return delegate.vertex(pX, pY, pZ);
-		}
-
-		@Override
-		public VertexConsumer color(int pRed, int pGreen, int pBlue, int pAlpha) {
-			return delegate.color(pRed, pGreen, pBlue, defaultA);
-		}
-
-		@Override
-		public VertexConsumer uv(float pU, float pV) {
-			return delegate.uv(pU, pV);
-		}
-
-		@Override
-		public VertexConsumer overlayCoords(int pU, int pV) {
-			return delegate.overlayCoords(pU, pV);
-		}
-
-		@Override
-		public VertexConsumer uv2(int pU, int pV) {
-			return delegate.uv2(pU, pV);
-		}
-
-		@Override
-		public VertexConsumer normal(float pX, float pY, float pZ) {
-			return delegate.normal(pX, pY, pZ);
-		}
-
-		@Override
-		public void endVertex() {
-			delegate.endVertex();
-		}
 	}
 }

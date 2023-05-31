@@ -260,6 +260,18 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 		return ret;
 	}
 
+	public List<BakedQuad> getTierQuads(BlockState state, RandomSource rand, String woodName, RenderType renderType) {
+		List<BakedQuad> ret = new ArrayList<>();
+
+		Map<BarrelModelPart, BakedModel> modelParts = getWoodModelParts(woodName, false);
+
+		for (Direction dir : Direction.values()) {
+			addTierQuads(state, dir, rand, ret, modelParts, renderType);
+		}
+
+		return ret;
+	}
+
 	private static Direction getSpriteSide(@Nullable BlockState state, @Nullable Direction side) {
 		if (side == null) {
 			return Direction.NORTH;

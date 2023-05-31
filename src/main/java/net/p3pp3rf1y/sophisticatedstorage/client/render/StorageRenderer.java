@@ -12,18 +12,20 @@ import net.p3pp3rf1y.sophisticatedcore.util.RegistryHelper;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
+import net.p3pp3rf1y.sophisticatedstorage.item.StorageTierUpgradeItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageToolItem;
 
 import java.util.function.Predicate;
 
 public abstract class StorageRenderer<T extends StorageBlockEntity> implements BlockEntityRenderer<T> {
 	private long lastCacheTime = -1;
-	private boolean cachedHoldsItemThatShowsUpgrades = false;
+	private boolean holdsItemThatShowsUpgrades = false;
 	private boolean holdsStorageToolSetToToggleUpgrades = false;
+	private boolean holdsItemThatShowsHiddenTiers = false;
 
 	protected boolean holdsItemThatShowsUpgrades() {
 		refreshCache();
-		return cachedHoldsItemThatShowsUpgrades;
+		return holdsItemThatShowsUpgrades;
 	}
 
 	private void refreshCache() {
@@ -33,17 +35,26 @@ public abstract class StorageRenderer<T extends StorageBlockEntity> implements B
 
 			LocalPlayer player = Minecraft.getInstance().player;
 			if (player == null) {
-				cachedHoldsItemThatShowsUpgrades = false;
+				holdsItemThatShowsUpgrades = false;
 				holdsStorageToolSetToToggleUpgrades = false;
+				holdsItemThatShowsHiddenTiers = false;
 				return;
 			}
 
 			boolean holdsStorageTool = holdsItem(player, this::isStorageTool);
 			holdsStorageToolSetToToggleUpgrades = holdsStorageTool && InventoryHelper.getItemFromEitherHand(player, ModItems.STORAGE_TOOL.get())
-						.map(item -> StorageToolItem.getMode(item) == StorageToolItem.Mode.UPGRADES_DISPLAY).orElse(false);
+					.map(item -> StorageToolItem.getMode(item) == StorageToolItem.Mode.UPGRADES_DISPLAY).orElse(false);
 
-			cachedHoldsItemThatShowsUpgrades = holdsStorageTool || holdsItem(player, this::isUpgrade);
+			holdsItemThatShowsUpgrades = holdsStorageTool || holdsItem(player, this::isUpgrade);
+			holdsItemThatShowsHiddenTiers = (holdsStorageTool && InventoryHelper.getItemFromEitherHand(player, ModItems.STORAGE_TOOL.get())
+					.map(item -> StorageToolItem.getMode(item) == StorageToolItem.Mode.TIER_DISPLAY).orElse(false))
+					|| holdsItem(player, StorageTierUpgradeItem.class::isInstance);
 		}
+	}
+
+	public boolean holdsItemThatShowsHiddenTiers() {
+		refreshCache();
+		return holdsItemThatShowsHiddenTiers;
 	}
 
 	private boolean holdsItem(LocalPlayer player, Predicate<Item> itemMatcher) {

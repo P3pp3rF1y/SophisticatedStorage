@@ -14,6 +14,7 @@ import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -100,7 +101,10 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity> {
 		VertexConsumer vertexconsumer = tierMaterial.buffer(bufferSource, RenderType::entityCutout);
 		if (chestEntity.shouldShowTier()) {
 			renderBottomAndLid(poseStack, vertexconsumer, lidAngle, packedLight, packedOverlay);
+		} else if (holdsItemThatShowsHiddenTiers()) {
+			renderHiddenTier(poseStack, bufferSource, packedLight, packedOverlay, tierMaterial);
 		}
+
 		if (storageWrapper.getRenderInfo().getItemDisplayRenderInfo().getDisplayItem().isEmpty()) {
 			renderLock(poseStack, vertexconsumer, lidAngle, packedLight, packedOverlay);
 		}
@@ -127,6 +131,18 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity> {
 			displayItemRenderer.renderDisplayItem(chestEntity, poseStack, bufferSource, packedLight, packedOverlay);
 			poseStack.popPose();
 		}
+	}
+
+	private void renderHiddenTier(PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, Material tierMaterial) {
+		//noinspection resource
+		TextureAtlasSprite sprite = tierMaterial.sprite();
+		VertexConsumer translucentConsumer = sprite.wrap(bufferSource.getBuffer(RenderType.entityTranslucent(sprite.atlas().location())));
+		poseStack.pushPose();
+		poseStack.translate(-0.005D, -0.005D, -0.005D);
+		poseStack.scale(1.01f, 1.01f, 1.01f);
+		lidPart.render(poseStack, translucentConsumer, packedLight, packedOverlay, 1.0F, 1.0F, 1.0F, 0.5F);
+		bottomPart.render(poseStack, translucentConsumer, packedLight, packedOverlay, 1.0F, 1.0F, 1.0F, 0.5F);
+		poseStack.popPose();
 	}
 
 	private boolean shouldRenderDisplayItem(BlockPos chestPos) {
