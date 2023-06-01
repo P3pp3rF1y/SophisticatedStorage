@@ -126,46 +126,46 @@ public class Config {
 			builder.comment("Server Settings").push("server");
 
 			woodBarrel = new StorageConfig(builder, "Wood Barrel", 27, 1);
-			ironBarrel = new StorageConfig(builder, "Iron Barrel", 54, 1);
-			goldBarrel = new StorageConfig(builder, "Gold Barrel", 81, 2);
-			diamondBarrel = new StorageConfig(builder, "Diamond Barrel", 108, 3);
-			netheriteBarrel = new StorageConfig(builder, "Netherite Barrel", 132, 4);
+			ironBarrel = new StorageConfig(builder, "Iron Barrel", 54, 2);
+			goldBarrel = new StorageConfig(builder, "Gold Barrel", 81, 3);
+			diamondBarrel = new StorageConfig(builder, "Diamond Barrel", 108, 4);
+			netheriteBarrel = new StorageConfig(builder, "Netherite Barrel", 132, 5);
 
 			limitedBarrel1 = new LimitedBarrelConfig(builder, "Limited Barrel I", 32, 1);
-			ironLimitedBarrel1 = new LimitedBarrelConfig(builder, "Limited Iron Barrel I", 64, 1);
-			goldLimitedBarrel1 = new LimitedBarrelConfig(builder, "Limited Gold Barrel I", 96, 2);
-			diamondLimitedBarrel1 = new LimitedBarrelConfig(builder, "Limited Diamond Barrel I", 128, 3);
-			netheriteLimitedBarrel1 = new LimitedBarrelConfig(builder, "Limited Netherite Barrel I", 160, 4);
+			ironLimitedBarrel1 = new LimitedBarrelConfig(builder, "Limited Iron Barrel I", 64, 2);
+			goldLimitedBarrel1 = new LimitedBarrelConfig(builder, "Limited Gold Barrel I", 96, 3);
+			diamondLimitedBarrel1 = new LimitedBarrelConfig(builder, "Limited Diamond Barrel I", 128, 4);
+			netheriteLimitedBarrel1 = new LimitedBarrelConfig(builder, "Limited Netherite Barrel I", 160, 5);
 
 			limitedBarrel2 = new LimitedBarrelConfig(builder, "Limited Barrel II", 16, 1);
-			ironLimitedBarrel2 = new LimitedBarrelConfig(builder, "Limited Iron Barrel II", 32, 1);
-			goldLimitedBarrel2 = new LimitedBarrelConfig(builder, "Limited Gold Barrel II", 48, 2);
-			diamondLimitedBarrel2 = new LimitedBarrelConfig(builder, "Limited Diamond Barrel II", 64, 3);
-			netheriteLimitedBarrel2 = new LimitedBarrelConfig(builder, "Limited Netherite Barrel II", 80, 4);
+			ironLimitedBarrel2 = new LimitedBarrelConfig(builder, "Limited Iron Barrel II", 32, 2);
+			goldLimitedBarrel2 = new LimitedBarrelConfig(builder, "Limited Gold Barrel II", 48, 3);
+			diamondLimitedBarrel2 = new LimitedBarrelConfig(builder, "Limited Diamond Barrel II", 64, 4);
+			netheriteLimitedBarrel2 = new LimitedBarrelConfig(builder, "Limited Netherite Barrel II", 80, 5);
 
 			limitedBarrel3 = new LimitedBarrelConfig(builder, "Limited Barrel III", 10, 1);
-			ironLimitedBarrel3 = new LimitedBarrelConfig(builder, "Limited Iron Barrel III", 20, 1);
-			goldLimitedBarrel3 = new LimitedBarrelConfig(builder, "Limited Gold Barrel III", 30, 2);
-			diamondLimitedBarrel3 = new LimitedBarrelConfig(builder, "Limited Diamond Barrel III", 40, 3);
-			netheriteLimitedBarrel3 = new LimitedBarrelConfig(builder, "Limited Netherite Barrel III", 50, 4);
+			ironLimitedBarrel3 = new LimitedBarrelConfig(builder, "Limited Iron Barrel III", 20, 2);
+			goldLimitedBarrel3 = new LimitedBarrelConfig(builder, "Limited Gold Barrel III", 30, 3);
+			diamondLimitedBarrel3 = new LimitedBarrelConfig(builder, "Limited Diamond Barrel III", 40, 4);
+			netheriteLimitedBarrel3 = new LimitedBarrelConfig(builder, "Limited Netherite Barrel III", 50, 5);
 
 			limitedBarrel4 = new LimitedBarrelConfig(builder, "Limited Barrel IV", 8, 1);
-			ironLimitedBarrel4 = new LimitedBarrelConfig(builder, "Limited Iron Barrel IV", 16, 1);
-			goldLimitedBarrel4 = new LimitedBarrelConfig(builder, "Limited Gold Barrel IV", 24, 2);
-			diamondLimitedBarrel4 = new LimitedBarrelConfig(builder, "Limited Diamond Barrel IV", 32, 3);
-			netheriteLimitedBarrel4 = new LimitedBarrelConfig(builder, "Limited Netherite Barrel IV", 40, 4);
+			ironLimitedBarrel4 = new LimitedBarrelConfig(builder, "Limited Iron Barrel IV", 16, 2);
+			goldLimitedBarrel4 = new LimitedBarrelConfig(builder, "Limited Gold Barrel IV", 24, 3);
+			diamondLimitedBarrel4 = new LimitedBarrelConfig(builder, "Limited Diamond Barrel IV", 32, 4);
+			netheriteLimitedBarrel4 = new LimitedBarrelConfig(builder, "Limited Netherite Barrel IV", 40, 5);
 
 			woodChest = new StorageConfig(builder, "Wood Chest", 27, 1);
-			ironChest = new StorageConfig(builder, "Iron Chest", 54, 1);
-			goldChest = new StorageConfig(builder, "Gold Chest", 81, 2);
-			diamondChest = new StorageConfig(builder, "Diamond Chest", 108, 3);
-			netheriteChest = new StorageConfig(builder, "Netherite Chest", 132, 4);
+			ironChest = new StorageConfig(builder, "Iron Chest", 54, 2);
+			goldChest = new StorageConfig(builder, "Gold Chest", 81, 3);
+			diamondChest = new StorageConfig(builder, "Diamond Chest", 108, 4);
+			netheriteChest = new StorageConfig(builder, "Netherite Chest", 132, 5);
 
 			shulkerBox = new StorageConfig(builder, "Shulker Box", 27, 1);
-			ironShulkerBox = new StorageConfig(builder, "Iron Shulker Box", 54, 1);
-			goldShulkerBox = new StorageConfig(builder, "Gold Shulker Box", 81, 2);
-			diamondShulkerBox = new StorageConfig(builder, "Diamond Shulker Box", 108, 3);
-			netheriteShulkerBox = new StorageConfig(builder, "Netherite Shulker Box", 132, 4);
+			ironShulkerBox = new StorageConfig(builder, "Iron Shulker Box", 54, 2);
+			goldShulkerBox = new StorageConfig(builder, "Gold Shulker Box", 81, 3);
+			diamondShulkerBox = new StorageConfig(builder, "Diamond Shulker Box", 108, 4);
+			netheriteShulkerBox = new StorageConfig(builder, "Netherite Shulker Box", 132, 5);
 
 			stackUpgrade = new StackUpgradeConfig(builder);
 			compactingUpgrade = new FilteredUpgradeConfig(builder, "Compacting Upgrade", "compactingUpgrade", 9, 3);
