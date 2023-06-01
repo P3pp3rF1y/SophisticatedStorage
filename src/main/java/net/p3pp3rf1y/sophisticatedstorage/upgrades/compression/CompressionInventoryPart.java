@@ -386,15 +386,25 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 	}
 
 	private void extractFromCalculatedThisAndPreviousStacks(int extractCount, int slotCalculated) {
+		int countBeforeChange = -1;
+		int multiplier = 1;
 		while (extractCount != 0 && calculatedStacks.containsKey(slotCalculated)) {
 			ItemStack calculatedStack = calculatedStacks.get(slotCalculated);
-			int countBeforeChange = calculatedStack.getCount();
+
+			if (countBeforeChange > 0 && countBeforeChange / multiplier > calculatedStack.getCount()) {
+				extractCount = calculatedStack.getCount() - (countBeforeChange - extractCount * multiplier) / multiplier;
+				if (extractCount <= 0) {
+					break;
+				}
+			}
+
+			countBeforeChange = calculatedStack.getCount();
 			int toSet = getCountChangeLeavingSpaceBeforeMaxInt(countBeforeChange - extractCount, slotCalculated, calculatedStack);
 			calculatedStack.setCount(toSet);
 
 			calculatedStacks.put(slotCalculated, calculatedStack);
 
-			int multiplier = getPrevSlotMultiplier(slotCalculated);
+			multiplier = getPrevSlotMultiplier(slotCalculated);
 			extractCount = countBeforeChange / multiplier - calculatedStack.getCount() / multiplier;
 
 			slotCalculated--;

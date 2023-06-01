@@ -746,4 +746,62 @@ public class CompressionInventoryPartTest {
 				)
 		);
 	}
+
+	@ParameterizedTest
+	@MethodSource("extractingFromFullyFilledSlotsProperlyCalculatesCounts")
+	void extractingFromFullyFilledSlotsProperlyCalculatesCounts(ExtractingFromFullyFilledSlotsProperlyCalculatesCountsParams params) {
+		InventoryHandler invHandler = getFilledInventoryHandler(params.stacks(), params.baseLimit());
+		int minSlot = 0;
+
+		CompressionInventoryPart part = initCompressionInventoryPart(invHandler, new InventoryPartitioner.SlotRange(minSlot, minSlot + params.stacks().size()), () -> getMemorySettings(invHandler, Map.of()));
+
+		part.extractItem(params.extractedStack.getLeft(), params.extractedStack.getRight(), false);
+
+		assertCalculatedStacks(params.expectedCalculatedStacks(), 0, part);
+	}
+
+	private record ExtractingFromFullyFilledSlotsProperlyCalculatesCountsParams(Map<Integer, ItemStack> stacks, int baseLimit,
+																				Pair<Integer, Integer> extractedStack,
+																				Map<Integer, ItemStack> expectedCalculatedStacks) {}
+
+	private static List<ExtractingFromFullyFilledSlotsProperlyCalculatesCountsParams> extractingFromFullyFilledSlotsProperlyCalculatesCounts() {
+		return List.of(
+				new ExtractingFromFullyFilledSlotsProperlyCalculatesCountsParams(
+						Map.of(0, new ItemStack(Items.IRON_BLOCK, 256), 1, new ItemStack(Items.IRON_INGOT, 256)),
+						256,
+						ImmutablePair.of(1, 64),
+						Map.of(0, new ItemStack(Items.IRON_BLOCK, 256), 1, new ItemStack(Items.IRON_INGOT, 2496))
+				),
+				new ExtractingFromFullyFilledSlotsProperlyCalculatesCountsParams(
+						Map.of(0, new ItemStack(Items.IRON_BLOCK, 256), 1, new ItemStack(Items.IRON_INGOT, 256)),
+						256,
+						ImmutablePair.of(1, 256),
+						Map.of(0, new ItemStack(Items.IRON_BLOCK, 256), 1, new ItemStack(Items.IRON_INGOT, 2304))
+				),
+				new ExtractingFromFullyFilledSlotsProperlyCalculatesCountsParams(
+						Map.of(0, new ItemStack(Items.IRON_BLOCK, 256), 1, new ItemStack(Items.IRON_INGOT, 256)),
+						256,
+						ImmutablePair.of(1, 257),
+						Map.of(0, new ItemStack(Items.IRON_BLOCK, 255), 1, new ItemStack(Items.IRON_INGOT, 2303))
+				),
+				new ExtractingFromFullyFilledSlotsProperlyCalculatesCountsParams(
+						Map.of(0, new ItemStack(Items.IRON_BLOCK, 256), 1, new ItemStack(Items.IRON_INGOT, 256)),
+						256,
+						ImmutablePair.of(1, 0),
+						Map.of(0, new ItemStack(Items.IRON_BLOCK, 256), 1, new ItemStack(Items.IRON_INGOT, 2560))
+				),
+				new ExtractingFromFullyFilledSlotsProperlyCalculatesCountsParams(
+						Map.of(0, new ItemStack(Items.IRON_BLOCK, 256), 1, new ItemStack(Items.IRON_INGOT, 256)),
+						256,
+						ImmutablePair.of(1, 256 + 10 * 9),
+						Map.of(0, new ItemStack(Items.IRON_BLOCK, 246), 1, new ItemStack(Items.IRON_INGOT, 2214))
+				),
+				new ExtractingFromFullyFilledSlotsProperlyCalculatesCountsParams(
+						Map.of(0, new ItemStack(Items.IRON_BLOCK, 256), 1, new ItemStack(Items.IRON_INGOT, 256), 2, new ItemStack(Items.IRON_NUGGET, 256)),
+						256,
+						ImmutablePair.of(2, 256 + 10 * 9),
+						Map.of(0, new ItemStack(Items.IRON_BLOCK, 256), 1, new ItemStack(Items.IRON_INGOT, 2550), 2, new ItemStack(Items.IRON_NUGGET, 22950))
+				)
+		);
+	}
 }
