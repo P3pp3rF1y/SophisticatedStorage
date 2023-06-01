@@ -111,7 +111,7 @@ public abstract class StorageWrapper implements IStorageWrapper {
 			upgradeHandler = new UpgradeHandler(getNumberOfUpgradeSlots(), this, getContentsNbt(), getSaveHandler.get(), () -> {
 				if (inventoryHandler != null) {
 					inventoryHandler.clearListeners();
-					inventoryHandler.setSlotLimit(StackUpgradeItem.getInventorySlotLimit(this));
+					inventoryHandler.setBaseSlotLimit(StackUpgradeItem.getInventorySlotLimit(this));
 				}
 				getInventoryHandler().addListener(getSettingsHandler().getTypeCategory(ItemDisplaySettingsCategory.class)::itemChanged);
 				inventoryIOHandler = null;
