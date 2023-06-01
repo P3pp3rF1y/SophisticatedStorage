@@ -543,7 +543,7 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 	public boolean shouldShowTier() {
 		return showTier;
 	}
-	
+
 	@Override
 	public void toggleTierVisiblity() {
 		showTier = !showTier;
@@ -652,6 +652,11 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		@Override
 		public boolean hasEmptySlots() {
 			return itemHandler.hasEmptySlots();
+		}
+
+		@Override
+		public int getInternalSlotLimit(int slot) {
+			return itemHandler.getInternalSlotLimit(slot);
 		}
 
 		@Override
