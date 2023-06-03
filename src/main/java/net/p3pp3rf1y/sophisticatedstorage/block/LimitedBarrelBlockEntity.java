@@ -14,6 +14,7 @@ import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
 import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryHandler;
 import net.p3pp3rf1y.sophisticatedcore.settings.memory.MemorySettingsCategory;
+import net.p3pp3rf1y.sophisticatedcore.upgrades.voiding.VoidUpgradeWrapper;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.RandHelper;
@@ -26,10 +27,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICountDisplay {
 	private static final String SLOT_COUNTS_TAG = "slotCounts";
+	private static final Consumer<VoidUpgradeWrapper> VOID_UPGRADE_VOIDING_OVERFLOW_OF_EVERYTHING_BY_DEFAULT = voidUpgrade -> {
+		voidUpgrade.getFilterLogic().setAllowByDefault(false);
+		voidUpgrade.setShouldVoidOverflowDefaultOrLoadFromNbt(true);
+	};
 	private long lastDepositTime = -100;
 
 	private final List<Integer> slotCounts = new ArrayList<>();
@@ -39,6 +45,11 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 	public LimitedBarrelBlockEntity(BlockPos pos, BlockState state) {
 		super(pos, state, ModBlocks.LIMITED_BARREL_BLOCK_ENTITY_TYPE.get());
 		registerClientNotificationOnCountChange();
+		registerUpgradeDefaults();
+	}
+
+	private void registerUpgradeDefaults() {
+		getStorageWrapper().getUpgradeHandler().registerUpgradeDefaultsHandler(VoidUpgradeWrapper.class, VOID_UPGRADE_VOIDING_OVERFLOW_OF_EVERYTHING_BY_DEFAULT);
 	}
 
 	private void registerClientNotificationOnCountChange() {
