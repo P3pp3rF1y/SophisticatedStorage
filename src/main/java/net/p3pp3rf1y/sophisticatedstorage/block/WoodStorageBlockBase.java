@@ -42,7 +42,8 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 			WoodType.JUNGLE, BlockFamilies.JUNGLE_PLANKS,
 			WoodType.OAK, BlockFamilies.OAK_PLANKS,
 			WoodType.SPRUCE, BlockFamilies.SPRUCE_PLANKS,
-			WoodType.WARPED, BlockFamilies.WARPED_PLANKS);
+			WoodType.WARPED, BlockFamilies.WARPED_PLANKS,
+			WoodType.MANGROVE, BlockFamilies.MANGROVE_PLANKS);
 
 	protected WoodStorageBlockBase(Properties properties, Supplier<Integer> numberOfInventorySlotsSupplier, Supplier<Integer> numberOfUpgradeSlotsSupplier) {
 		super(properties, numberOfInventorySlotsSupplier, numberOfUpgradeSlotsSupplier);

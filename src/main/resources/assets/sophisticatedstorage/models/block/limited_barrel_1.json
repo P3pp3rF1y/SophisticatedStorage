@@ -155,6 +155,20 @@
                 }
             }
         },
+        "mangrove": {
+            "base": {
+                "textures": {
+                    "top": "sophisticatedstorage:block/limited_mangrove_barrel_1_top",
+                    "top_trim": "sophisticatedstorage:block/limited_mangrove_barrel_1_top",
+                    "top_inner_trim": "sophisticatedstorage:block/limited_mangrove_barrel_1_top",
+                    "side": "sophisticatedstorage:block/mangrove_barrel_side",
+                    "side_trim": "sophisticatedstorage:block/mangrove_barrel_side",
+                    "bottom": "sophisticatedstorage:block/mangrove_barrel_bottom",
+                    "bottom_trim": "sophisticatedstorage:block/mangrove_barrel_bottom",
+                    "particle": "sophisticatedstorage:block/limited_mangrove_barrel_1_top"
+                }
+            }
+        },
         "oak": {
             "base": {
                 "textures": {

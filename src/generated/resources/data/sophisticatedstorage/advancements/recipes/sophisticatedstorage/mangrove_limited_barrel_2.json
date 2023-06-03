@@ -1,12 +1,12 @@
 {
   "parent": "minecraft:recipes/root",
   "criteria": {
-    "has_iron_to_diamond_tier_upgrade": {
+    "has_mangrove_plank": {
       "conditions": {
         "items": [
           {
             "items": [
-              "sophisticatedstorage:iron_to_diamond_tier_upgrade"
+              "minecraft:mangrove_planks"
             ]
           }
         ]
@@ -15,20 +15,20 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "sophisticatedstorage:iron_to_netherite_tier_upgrade"
+        "recipe": "sophisticatedstorage:mangrove_limited_barrel_2"
       },
       "trigger": "minecraft:recipe_unlocked"
     }
   },
   "requirements": [
     [
-      "has_iron_to_diamond_tier_upgrade",
+      "has_mangrove_plank",
       "has_the_recipe"
     ]
   ],
   "rewards": {
     "recipes": [
-      "sophisticatedstorage:iron_to_netherite_tier_upgrade"
+      "sophisticatedstorage:mangrove_limited_barrel_2"
     ]
   }
 }

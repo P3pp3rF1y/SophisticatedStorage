@@ -707,6 +707,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 		addQuarkChestRecipe(consumer, "crimson_chest", WoodType.CRIMSON);
 		addQuarkChestRecipe(consumer, "dark_oak_chest", WoodType.DARK_OAK);
 		addQuarkChestRecipe(consumer, "jungle_chest", WoodType.JUNGLE);
+		addQuarkChestRecipe(consumer, "mangrove_chest", WoodType.MANGROVE);
 		addQuarkChestRecipe(consumer, "spruce_chest", WoodType.SPRUCE);
 		addQuarkChestRecipe(consumer, "warped_chest", WoodType.WARPED);
 	}
