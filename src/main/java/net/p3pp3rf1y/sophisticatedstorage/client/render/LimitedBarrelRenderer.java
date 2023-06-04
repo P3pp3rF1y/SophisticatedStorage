@@ -44,6 +44,7 @@ public class LimitedBarrelRenderer extends BarrelRenderer<LimitedBarrelBlockEnti
 
 		renderFrontFace(blockEntity, poseStack, bufferSource, packedLight, packedOverlay, blockState, flatTop, horizontalFacing);
 		renderHiddenTier(blockEntity, poseStack, bufferSource, packedLight, packedOverlay);
+		renderHiddenLock(blockEntity, poseStack, bufferSource, packedLight, packedOverlay);
 	}
 
 	private void renderFrontFace(LimitedBarrelBlockEntity blockEntity, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, BlockState blockState, boolean flatTop, Direction horizontalFacing) {
