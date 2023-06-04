@@ -106,7 +106,7 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity> {
 		}
 
 		if (storageWrapper.getRenderInfo().getItemDisplayRenderInfo().getDisplayItem().isEmpty()) {
-			renderLock(poseStack, vertexconsumer, lidAngle, packedLight, packedOverlay);
+			renderChestLock(poseStack, vertexconsumer, lidAngle, packedLight, packedOverlay);
 		}
 		poseStack.popPose();
 
@@ -117,14 +117,14 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity> {
 			poseStack.scale(1.01f, 1.01f, 1.01f);
 			renderBottomAndLid(poseStack, consumer, finalLidAngle, packedLight, packedOverlay);
 			poseStack.popPose();
-		} else if (shouldRenderDisplayItem(chestEntity.getBlockPos())) {
+		} else if (shouldRenderFrontFace(chestEntity.getBlockPos())) {
 			poseStack.pushPose();
 			poseStack.translate(0.5, 0.5, 0.5);
 			poseStack.mulPose(getNorthBasedRotation(facing));
 
 			poseStack.translate(-0.5, -0.5, -(0.5 - 1 / 16f));
 
-			LockRenderer.renderLock(chestEntity, poseStack, bufferSource, packedLight, packedOverlay, 13F / 16F);
+			LockRenderer.renderLock(chestEntity, poseStack, bufferSource, packedLight, packedOverlay, 13F / 16F, this::holdsToolInToggleLockOrLockDisplay);
 			if (chestEntity.shouldShowUpgrades() || holdsItemThatShowsUpgrades()) {
 				displayItemRenderer.renderUpgradeItems(chestEntity, poseStack, bufferSource, packedLight, packedOverlay, holdsItemThatShowsUpgrades(), shouldShowDisabledUpgradesDisplay(chestEntity));
 			}
@@ -145,7 +145,7 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity> {
 		poseStack.popPose();
 	}
 
-	private boolean shouldRenderDisplayItem(BlockPos chestPos) {
+	private boolean shouldRenderFrontFace(BlockPos chestPos) {
 		Camera camera = Minecraft.getInstance().gameRenderer.getMainCamera();
 		return Vec3.atCenterOf(chestPos).closerThan(camera.getPosition(), 32);
 	}
@@ -166,7 +166,7 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity> {
 		bottomPart.render(poseStack, consumer, packedLight, packedOverlay, tintRed, tingGreen, tintBlue, 1);
 	}
 
-	private void renderLock(PoseStack poseStack, VertexConsumer consumer, float lidAngle, int packedLight, int packedOverlay) {
+	private void renderChestLock(PoseStack poseStack, VertexConsumer consumer, float lidAngle, int packedLight, int packedOverlay) {
 		lockPart.xRot = -(lidAngle * ((float) Math.PI / 2F));
 		lockPart.render(poseStack, consumer, packedLight, packedOverlay);
 	}

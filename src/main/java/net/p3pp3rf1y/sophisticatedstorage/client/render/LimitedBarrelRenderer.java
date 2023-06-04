@@ -5,14 +5,11 @@ import com.mojang.math.Vector3f;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.WoodType;
 import net.minecraft.world.phys.Vec3;
 import net.p3pp3rf1y.sophisticatedcore.util.CountAbbreviator;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlock;
@@ -25,7 +22,7 @@ import java.util.List;
 
 import static net.minecraft.client.Minecraft.UNIFORM_FONT;
 
-public class LimitedBarrelRenderer extends StorageRenderer<LimitedBarrelBlockEntity> {
+public class LimitedBarrelRenderer extends BarrelRenderer<LimitedBarrelBlockEntity> {
 
 	private static final float MULTIPLE_ITEMS_FONT_SCALE = 1 / 96f;
 	private static final float SINGLE_ITEM_FONT_SCALE = 1 / 48f;
@@ -47,6 +44,7 @@ public class LimitedBarrelRenderer extends StorageRenderer<LimitedBarrelBlockEnt
 
 		renderFrontFace(blockEntity, poseStack, bufferSource, packedLight, packedOverlay, blockState, flatTop, horizontalFacing);
 		renderHiddenTier(blockEntity, poseStack, bufferSource, packedLight, packedOverlay);
+		renderHiddenLock(blockEntity, poseStack, bufferSource, packedLight, packedOverlay);
 	}
 
 	private void renderFrontFace(LimitedBarrelBlockEntity blockEntity, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, BlockState blockState, boolean flatTop, Direction horizontalFacing) {
@@ -131,29 +129,5 @@ public class LimitedBarrelRenderer extends StorageRenderer<LimitedBarrelBlockEnt
 			poseStack.popPose();
 		}
 		poseStack.popPose();
-	}
-
-	@Override
-	public int getViewDistance() {
-		return 32;
-	}
-
-	private void renderHiddenTier(LimitedBarrelBlockEntity blockEntity, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
-		if (!blockEntity.shouldShowTier() && holdsItemThatShowsHiddenTiers()) {
-			poseStack.pushPose();
-			poseStack.translate(-0.005, -0.005,  -0.005);
-			poseStack.scale(1.01f, 1.01f, 1.01f);
-
-			if (blockEntity.getLevel() != null) {
-				String woodName = blockEntity.getWoodType().orElse(WoodType.ACACIA).name();
-				BlockState state = blockEntity.getBlockState();
-				BakedModel blockModel = Minecraft.getInstance().getBlockRenderer().getBlockModel(state);
-				if (blockModel instanceof BarrelBakedModelBase barrelBakedModel) {
-					TranslucentVertexConsumer vertexConsumer = new TranslucentVertexConsumer(bufferSource, 128);
-					barrelBakedModel.getTierQuads(state, blockEntity.getLevel().random, woodName, RenderType.cutout()).forEach(quad -> vertexConsumer.putBulkData(poseStack.last(), quad, 1, 1, 1, packedLight, packedOverlay));
-				}
-			}
-			poseStack.popPose();
-		}
 	}
 }

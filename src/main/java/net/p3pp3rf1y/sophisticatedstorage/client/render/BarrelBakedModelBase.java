@@ -243,7 +243,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 		}
 
 		if (showsTier) {
-			addTierQuads(state, side, rand, ret, modelParts, renderType);
+			addPartQuads(state, side, rand, ret, modelParts, BarrelModelPart.TIER, renderType);
 		}
 
 		if (isPacked) {
@@ -261,12 +261,20 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 	}
 
 	public List<BakedQuad> getTierQuads(BlockState state, RandomSource rand, String woodName, RenderType renderType) {
+		return getPartQuads(state, rand, woodName, BarrelModelPart.TIER, renderType);
+	}
+
+	public List<BakedQuad> getLockQuads(BlockState state, RandomSource rand, String woodName, RenderType renderType) {
+		return getPartQuads(state, rand, woodName, BarrelModelPart.LOCKED, renderType);
+	}
+
+	private List<BakedQuad> getPartQuads(BlockState state, RandomSource rand, String woodName, BarrelModelPart part, RenderType renderType) {
 		List<BakedQuad> ret = new ArrayList<>();
 
 		Map<BarrelModelPart, BakedModel> modelParts = getWoodModelParts(woodName, false);
 
 		for (Direction dir : Direction.values()) {
-			addTierQuads(state, dir, rand, ret, modelParts, renderType);
+			addPartQuads(state, dir, rand, ret, modelParts, part, renderType);
 		}
 
 		return ret;
@@ -366,9 +374,6 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 
 	private boolean showsTier(ModelData extraData) {
 		return extraData.has(SHOWS_TIER) && Boolean.TRUE.equals(extraData.get(SHOWS_TIER));
-	}
-	private void addTierQuads(@Nullable BlockState state, @Nullable Direction side, RandomSource rand, List<BakedQuad> ret, Map<BarrelModelPart, BakedModel> modelParts, @Nullable RenderType renderType) {
-		addPartQuads(state, side, rand, ret, modelParts, BarrelModelPart.TIER, renderType);
 	}
 
 	private int createHash(@Nullable BlockState state, @Nullable Direction side, ModelData data) {
