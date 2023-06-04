@@ -112,7 +112,7 @@ public class ShulkerBoxRenderer extends StorageRenderer<ShulkerBoxBlockEntity> {
 			displayItemRenderer.renderUpgradeItems(shulkerBoxEntity, poseStack, bufferSource, packedLight, packedOverlay, holdsItemThatShowsUpgrades(), shouldShowDisabledUpgradesDisplay(shulkerBoxEntity));
 		}
 		displayItemRenderer.renderDisplayItem(shulkerBoxEntity, poseStack, bufferSource, packedLight, packedOverlay);
-		LockRenderer.renderLock(shulkerBoxEntity, poseStack, bufferSource, packedLight, packedOverlay, 15F / 16F);
+		LockRenderer.renderLock(shulkerBoxEntity, poseStack, bufferSource, packedLight, packedOverlay, 15F / 16F, this::holdsToolInToggleLockOrLockDisplay);
 		poseStack.popPose();
 	}
 

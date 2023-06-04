@@ -22,6 +22,7 @@ public abstract class StorageRenderer<T extends StorageBlockEntity> implements B
 	private boolean holdsItemThatShowsUpgrades = false;
 	private boolean holdsStorageToolSetToToggleUpgrades = false;
 	private boolean holdsItemThatShowsHiddenTiers = false;
+	private boolean holdsToolInToggleLockOrLockDisplay = false;
 
 	protected boolean holdsItemThatShowsUpgrades() {
 		refreshCache();
@@ -38,6 +39,7 @@ public abstract class StorageRenderer<T extends StorageBlockEntity> implements B
 				holdsItemThatShowsUpgrades = false;
 				holdsStorageToolSetToToggleUpgrades = false;
 				holdsItemThatShowsHiddenTiers = false;
+				holdsToolInToggleLockOrLockDisplay = false;
 				return;
 			}
 
@@ -49,12 +51,22 @@ public abstract class StorageRenderer<T extends StorageBlockEntity> implements B
 			holdsItemThatShowsHiddenTiers = (holdsStorageTool && InventoryHelper.getItemFromEitherHand(player, ModItems.STORAGE_TOOL.get())
 					.map(item -> StorageToolItem.getMode(item) == StorageToolItem.Mode.TIER_DISPLAY).orElse(false))
 					|| holdsItem(player, StorageTierUpgradeItem.class::isInstance);
+			holdsToolInToggleLockOrLockDisplay = holdsStorageTool && InventoryHelper.getItemFromEitherHand(player, ModItems.STORAGE_TOOL.get())
+					.map(item -> {
+						StorageToolItem.Mode mode = StorageToolItem.getMode(item);
+						return mode == StorageToolItem.Mode.LOCK_DISPLAY || mode == StorageToolItem.Mode.LOCK;
+					}).orElse(false);
 		}
 	}
 
 	public boolean holdsItemThatShowsHiddenTiers() {
 		refreshCache();
 		return holdsItemThatShowsHiddenTiers;
+	}
+
+	public boolean holdsToolInToggleLockOrLockDisplay() {
+		refreshCache();
+		return holdsToolInToggleLockOrLockDisplay;
 	}
 
 	private boolean holdsItem(LocalPlayer player, Predicate<Item> itemMatcher) {
