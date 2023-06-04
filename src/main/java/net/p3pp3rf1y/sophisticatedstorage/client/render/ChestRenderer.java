@@ -13,8 +13,8 @@ import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -32,14 +32,16 @@ import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import java.util.Map;
 import java.util.Optional;
 
-public class ChestRenderer implements BlockEntityRenderer<ChestBlockEntity> {
+import static net.p3pp3rf1y.sophisticatedstorage.client.render.DisplayItemRenderer.getNorthBasedRotation;
+
+public class ChestRenderer extends StorageRenderer<ChestBlockEntity> {
 	private static final String BOTTOM = "bottom";
 	private static final String LID = "lid";
 	private static final String LOCK = "lock";
 	private final ModelPart lidPart;
 	private final ModelPart bottomPart;
 	private final ModelPart lockPart;
-	private final DisplayItemRenderer displayItemRenderer = new DisplayItemRenderer(0.5 * (14.01 / 16), 0.5 * (13.5 / 16) + 0.01);
+	private final DisplayItemRenderer displayItemRenderer = new DisplayItemRenderer(0.5 * (14.01 / 16), new Vec3(-1/16D, 0,  -0.0075));
 
 	public ChestRenderer(BlockEntityRendererProvider.Context context) {
 		ModelPart modelpart = context.bakeLayer(ClientEventHandler.CHEST_LAYER);
@@ -99,9 +101,12 @@ public class ChestRenderer implements BlockEntityRenderer<ChestBlockEntity> {
 		VertexConsumer vertexconsumer = tierMaterial.buffer(bufferSource, RenderType::entityCutout);
 		if (chestEntity.shouldShowTier()) {
 			renderBottomAndLid(poseStack, vertexconsumer, lidAngle, packedLight, packedOverlay);
+		} else if (holdsItemThatShowsHiddenTiers()) {
+			renderHiddenTier(poseStack, bufferSource, packedLight, packedOverlay, tierMaterial);
 		}
+
 		if (storageWrapper.getRenderInfo().getItemDisplayRenderInfo().getDisplayItem().isEmpty()) {
-			renderLock(poseStack, vertexconsumer, lidAngle, packedLight, packedOverlay);
+			renderChestLock(poseStack, vertexconsumer, lidAngle, packedLight, packedOverlay);
 		}
 		poseStack.popPose();
 
@@ -112,13 +117,35 @@ public class ChestRenderer implements BlockEntityRenderer<ChestBlockEntity> {
 			poseStack.scale(1.01f, 1.01f, 1.01f);
 			renderBottomAndLid(poseStack, consumer, finalLidAngle, packedLight, packedOverlay);
 			poseStack.popPose();
-		} else if (shouldRenderDisplayItem(chestEntity.getBlockPos())) {
-			LockRenderer.renderLock(chestEntity, facing, poseStack, bufferSource, packedLight, packedOverlay, 5F / 16F, 7F / 16F);
+		} else if (shouldRenderFrontFace(chestEntity.getBlockPos())) {
+			poseStack.pushPose();
+			poseStack.translate(0.5, 0.5, 0.5);
+			poseStack.mulPose(getNorthBasedRotation(facing));
+
+			poseStack.translate(-0.5, -0.5, -(0.5 - 1 / 16f));
+
+			LockRenderer.renderLock(chestEntity, poseStack, bufferSource, packedLight, packedOverlay, 13F / 16F, this::holdsToolInToggleLockOrLockDisplay);
+			if (chestEntity.shouldShowUpgrades() || holdsItemThatShowsUpgrades()) {
+				displayItemRenderer.renderUpgradeItems(chestEntity, poseStack, bufferSource, packedLight, packedOverlay, holdsItemThatShowsUpgrades(), shouldShowDisabledUpgradesDisplay(chestEntity));
+			}
 			displayItemRenderer.renderDisplayItem(chestEntity, poseStack, bufferSource, packedLight, packedOverlay);
+			poseStack.popPose();
 		}
 	}
 
-	private boolean shouldRenderDisplayItem(BlockPos chestPos) {
+	private void renderHiddenTier(PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, Material tierMaterial) {
+		//noinspection resource
+		TextureAtlasSprite sprite = tierMaterial.sprite();
+		VertexConsumer translucentConsumer = sprite.wrap(bufferSource.getBuffer(RenderType.entityTranslucent(sprite.atlas().location())));
+		poseStack.pushPose();
+		poseStack.translate(-0.005D, -0.005D, -0.005D);
+		poseStack.scale(1.01f, 1.01f, 1.01f);
+		lidPart.render(poseStack, translucentConsumer, packedLight, packedOverlay, 1.0F, 1.0F, 1.0F, 0.5F);
+		bottomPart.render(poseStack, translucentConsumer, packedLight, packedOverlay, 1.0F, 1.0F, 1.0F, 0.5F);
+		poseStack.popPose();
+	}
+
+	private boolean shouldRenderFrontFace(BlockPos chestPos) {
 		Camera camera = Minecraft.getInstance().gameRenderer.getMainCamera();
 		return Vec3.atCenterOf(chestPos).closerThan(camera.getPosition(), 32);
 	}
@@ -139,7 +166,7 @@ public class ChestRenderer implements BlockEntityRenderer<ChestBlockEntity> {
 		bottomPart.render(poseStack, consumer, packedLight, packedOverlay, tintRed, tingGreen, tintBlue, 1);
 	}
 
-	private void renderLock(PoseStack poseStack, VertexConsumer consumer, float lidAngle, int packedLight, int packedOverlay) {
+	private void renderChestLock(PoseStack poseStack, VertexConsumer consumer, float lidAngle, int packedLight, int packedOverlay) {
 		lockPart.xRot = -(lidAngle * ((float) Math.PI / 2F));
 		lockPart.render(poseStack, consumer, packedLight, packedOverlay);
 	}

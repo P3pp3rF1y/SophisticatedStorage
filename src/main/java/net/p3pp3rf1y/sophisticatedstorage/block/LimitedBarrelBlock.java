@@ -143,6 +143,15 @@ public class LimitedBarrelBlock extends BarrelBlock {
 		return true;
 	}
 
+	@Override
+	public boolean trySneakItemInteraction(Player player, InteractionHand hand, BlockState state, Level level, BlockPos pos, BlockHitResult hitVec, ItemStack itemInHand) {
+		if (super.trySneakItemInteraction(player, hand, state, level, pos, hitVec, itemInHand)) {
+			return true;
+		}
+
+		return tryToDyeAll(state, level, pos, hitVec, itemInHand);
+	}
+
 	public boolean tryToDyeAll(BlockState state, Level level, BlockPos pos, BlockHitResult hitVec, ItemStack itemStack) {
 		if (hitVec.getDirection() != getFacing(state) || !(itemStack.getItem() instanceof DyeItem)) {
 			return false;

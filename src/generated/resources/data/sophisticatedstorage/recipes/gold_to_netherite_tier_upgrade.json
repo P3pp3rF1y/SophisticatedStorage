@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:gold_to_netherite_tier_upgrade"
+    }
+  ],
+  "ingredients": [
+    {
+      "item": "sophisticatedstorage:gold_to_diamond_tier_upgrade"
+    },
+    {
+      "tag": "forge:ingots/netherite"
+    }
+  ],
+  "result": {
+    "item": "sophisticatedstorage:gold_to_netherite_tier_upgrade"
+  }
+}

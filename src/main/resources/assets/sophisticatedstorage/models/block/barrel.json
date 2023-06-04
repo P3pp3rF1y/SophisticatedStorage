@@ -231,6 +231,32 @@
                 }
             }
         },
+        "mangrove": {
+            "base": {
+                "textures": {
+                    "top": "sophisticatedstorage:block/mangrove_barrel_top",
+                    "top_trim": "sophisticatedstorage:block/mangrove_barrel_top",
+                    "top_inner_trim": "sophisticatedstorage:block/mangrove_barrel_top",
+                    "side": "sophisticatedstorage:block/mangrove_barrel_side",
+                    "side_trim": "sophisticatedstorage:block/mangrove_barrel_side",
+                    "bottom": "sophisticatedstorage:block/mangrove_barrel_bottom",
+                    "bottom_trim": "sophisticatedstorage:block/mangrove_barrel_bottom",
+                    "particle": "sophisticatedstorage:block/mangrove_barrel_top"
+                }
+            },
+            "base_open": {
+                "textures": {
+                    "top": "sophisticatedstorage:block/mangrove_barrel_top_open",
+                    "top_trim": "sophisticatedstorage:block/mangrove_barrel_top_open",
+                    "top_inner_trim": "sophisticatedstorage:block/mangrove_barrel_top_open",
+                    "side": "sophisticatedstorage:block/mangrove_barrel_side",
+                    "side_trim": "sophisticatedstorage:block/mangrove_barrel_side",
+                    "bottom": "sophisticatedstorage:block/mangrove_barrel_bottom",
+                    "bottom_trim": "sophisticatedstorage:block/mangrove_barrel_bottom",
+                    "particle": "sophisticatedstorage:block/mangrove_barrel_top"
+                }
+            }
+        },
         "oak": {
             "base": {
                 "textures": {

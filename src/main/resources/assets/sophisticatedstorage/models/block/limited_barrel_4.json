@@ -100,6 +100,16 @@
                 }
             }
         },
+        "mangrove": {
+            "base": {
+                "textures": {
+                    "top": "sophisticatedstorage:block/limited_mangrove_barrel_4_top",
+                    "top_trim": "sophisticatedstorage:block/limited_mangrove_barrel_4_top",
+                    "top_inner_trim": "sophisticatedstorage:block/limited_mangrove_barrel_4_top",
+                    "particle": "sophisticatedstorage:block/limited_mangrove_barrel_4_top"
+                }
+            }
+        },
         "oak": {
             "base": {
                 "textures": {
