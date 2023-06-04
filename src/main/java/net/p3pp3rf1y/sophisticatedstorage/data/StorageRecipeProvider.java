@@ -252,6 +252,30 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.unlockedBy(HAS_REDSTONE_TORCH_CRITERION_NAME, has(Items.REDSTONE_TORCH))
 				.save(consumer);
 
+		ShapeBasedRecipeBuilder.shaped(ModItems.BASIC_TO_GOLD_TIER_UPGRADE.get())
+				.pattern("GGG")
+				.pattern("GTG")
+				.pattern("GGG")
+				.define('T', ModItems.BASIC_TO_IRON_TIER_UPGRADE.get())
+				.define('G', Tags.Items.INGOTS_GOLD)
+				.unlockedBy("has_basic_to_iron_tier_upgrade", has(ModItems.BASIC_TO_IRON_TIER_UPGRADE.get()))
+				.save(consumer);
+
+		ShapeBasedRecipeBuilder.shaped(ModItems.BASIC_TO_DIAMOND_TIER_UPGRADE.get())
+				.pattern("DDD")
+				.pattern("DTD")
+				.pattern("DDD")
+				.define('T', ModItems.BASIC_TO_GOLD_TIER_UPGRADE.get())
+				.define('D', Tags.Items.GEMS_DIAMOND)
+				.unlockedBy("has_basic_to_gold_tier_upgrade", has(ModItems.BASIC_TO_GOLD_TIER_UPGRADE.get()))
+				.save(consumer);
+
+		ShapelessBasedRecipeBuilder.shapeless(ModItems.BASIC_TO_NETHERITE_TIER_UPGRADE.get())
+				.requires(ModItems.BASIC_TO_DIAMOND_TIER_UPGRADE.get())
+				.requires(Tags.Items.INGOTS_NETHERITE)
+				.unlockedBy("has_basic_to_diamond_tier_upgrade", has(ModItems.BASIC_TO_DIAMOND_TIER_UPGRADE.get()))
+				.save(consumer);
+
 		ShapeBasedRecipeBuilder.shaped(ModItems.IRON_TO_GOLD_TIER_UPGRADE.get())
 				.pattern("GGG")
 				.pattern("GRG")
@@ -261,6 +285,21 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.unlockedBy(HAS_REDSTONE_TORCH_CRITERION_NAME, has(Items.REDSTONE_TORCH))
 				.save(consumer);
 
+		ShapeBasedRecipeBuilder.shaped(ModItems.IRON_TO_DIAMOND_TIER_UPGRADE.get())
+				.pattern("DDD")
+				.pattern("DTD")
+				.pattern("DDD")
+				.define('T', ModItems.IRON_TO_GOLD_TIER_UPGRADE.get())
+				.define('D', Tags.Items.GEMS_DIAMOND)
+				.unlockedBy("has_iron_to_gold_tier_upgrade", has(ModItems.IRON_TO_GOLD_TIER_UPGRADE.get()))
+				.save(consumer);
+
+		ShapelessBasedRecipeBuilder.shapeless(ModItems.IRON_TO_NETHERITE_TIER_UPGRADE.get())
+				.requires(ModItems.IRON_TO_DIAMOND_TIER_UPGRADE.get())
+				.requires(Tags.Items.INGOTS_NETHERITE)
+				.unlockedBy("has_iron_to_diamond_tier_upgrade", has(ModItems.IRON_TO_DIAMOND_TIER_UPGRADE.get()))
+				.save(consumer);
+
 		ShapeBasedRecipeBuilder.shaped(ModItems.GOLD_TO_DIAMOND_TIER_UPGRADE.get())
 				.pattern("DDD")
 				.pattern("DRD")
@@ -268,6 +307,12 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('R', Items.REDSTONE_TORCH)
 				.define('D', Tags.Items.GEMS_DIAMOND)
 				.unlockedBy(HAS_REDSTONE_TORCH_CRITERION_NAME, has(Items.REDSTONE_TORCH))
+				.save(consumer);
+
+		ShapelessBasedRecipeBuilder.shapeless(ModItems.GOLD_TO_NETHERITE_TIER_UPGRADE.get())
+				.requires(ModItems.GOLD_TO_DIAMOND_TIER_UPGRADE.get())
+				.requires(Tags.Items.INGOTS_NETHERITE)
+				.unlockedBy("has_gold_to_diamond_tier_upgrade", has(ModItems.GOLD_TO_DIAMOND_TIER_UPGRADE.get()))
 				.save(consumer);
 
 		ShapelessBasedRecipeBuilder.shapeless(ModItems.DIAMOND_TO_NETHERITE_TIER_UPGRADE.get())

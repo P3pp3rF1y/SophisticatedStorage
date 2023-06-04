@@ -137,6 +137,7 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 			StorageBlockItem.getMainColorFromStack(stack).ifPresent(be.getStorageWrapper()::setMainColor);
 			StorageBlockItem.getAccentColorFromStack(stack).ifPresent(be.getStorageWrapper()::setAccentColor);
 
+			be.getStorageWrapper().onInit();
 			be.tryToAddToController();
 
 			if (placer != null && placer.getOffhandItem().getItem() == ModItems.STORAGE_TOOL.get()) {
@@ -148,19 +149,23 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 	@SuppressWarnings("java:S1172") //parameter is used in override
 	protected boolean tryItemInteraction(Player player, InteractionHand hand, WoodStorageBlockEntity b, ItemStack stackInHand, Direction facing, BlockHitResult hitResult) {
 		if (stackInHand.getItem() == ModItems.PACKING_TAPE.get()) {
-			if (!player.isCreative()) {
-				stackInHand.setDamageValue(stackInHand.getDamageValue() + 1);
-				if (stackInHand.getDamageValue() >= stackInHand.getMaxDamage()) {
-					player.setItemInHand(hand, ItemStack.EMPTY);
-				}
-			}
-			b.setPacked(true);
-
-			b.removeFromController();
-
-			WorldHelper.notifyBlockUpdate(b);
+			packStorage(player, hand, b, stackInHand);
 			return true;
 		}
-		return false;
+		return tryAddUpgrade(player, hand, b, stackInHand, facing, hitResult);
+	}
+
+	private static void packStorage(Player player, InteractionHand hand, WoodStorageBlockEntity b, ItemStack stackInHand) {
+		if (!player.isCreative()) {
+			stackInHand.setDamageValue(stackInHand.getDamageValue() + 1);
+			if (stackInHand.getDamageValue() >= stackInHand.getMaxDamage()) {
+				player.setItemInHand(hand, ItemStack.EMPTY);
+			}
+		}
+		b.setPacked(true);
+
+		b.removeFromController();
+
+		WorldHelper.notifyBlockUpdate(b);
 	}
 }

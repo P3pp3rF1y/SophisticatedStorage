@@ -4,6 +4,7 @@ import com.mojang.math.Vector3f;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
@@ -17,6 +18,8 @@ import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraftforge.items.ItemHandlerHelper;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.api.IUpgradeRenderer;
 import net.p3pp3rf1y.sophisticatedcore.client.render.UpgradeRenderRegistry;
@@ -24,15 +27,19 @@ import net.p3pp3rf1y.sophisticatedcore.controller.IControllableStorage;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.IUpgradeRenderData;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.UpgradeRenderDataType;
+import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeHandler;
+import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeItemBase;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
+import net.p3pp3rf1y.sophisticatedcore.util.RegistryHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
+import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Random;
 import java.util.function.Supplier;
 
-public abstract class StorageBlockBase extends Block implements IStorageBlock, EntityBlock {
+public abstract class StorageBlockBase extends Block implements IStorageBlock, ISneakItemInteractionBlock, EntityBlock {
 	public static final BooleanProperty TICKING = BooleanProperty.create("ticking");
 	protected final Supplier<Integer> numberOfInventorySlotsSupplier;
 	protected final Supplier<Integer> numberOfUpgradeSlotsSupplier;
@@ -193,5 +200,59 @@ public abstract class StorageBlockBase extends Block implements IStorageBlock, E
 	@Override
 	public void onNeighborChange(BlockState state, LevelReader level, BlockPos pos, BlockPos neighbor) {
 		WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).ifPresent(be -> be.onNeighborChange(neighbor));
+	}
+
+	protected boolean tryAddUpgrade(Player player, InteractionHand hand, StorageBlockEntity b, ItemStack itemInHand, Direction facing, BlockHitResult hitResult) {
+		if (player.getLevel().isClientSide) {
+			return true;
+		}
+
+		if (hitResult.getDirection() != facing) {
+			return false;
+		}
+
+		return tryAddSingleUpgrade(player, hand, b, itemInHand);
+	}
+
+	private static boolean isStorageUpgrade(ItemStack itemInHand) {
+		return itemInHand.getItem() instanceof UpgradeItemBase<?> upgradeItem && RegistryHelper.getRegistryName(upgradeItem).map(r -> r.getNamespace().equals(SophisticatedStorage.MOD_ID)).orElse(false);
+	}
+
+	public boolean tryAddSingleUpgrade(Player player, InteractionHand hand, StorageBlockEntity b, ItemStack itemInHand) {
+		if (isStorageUpgrade(itemInHand)) {
+			UpgradeHandler upgradeHandler = b.getStorageWrapper().getUpgradeHandler();
+			if (InventoryHelper.insertIntoInventory(itemInHand, upgradeHandler, true).getCount() != itemInHand.getCount()) {
+				InventoryHelper.insertIntoInventory(ItemHandlerHelper.copyStackWithSize(itemInHand, 1), upgradeHandler, false);
+				itemInHand.shrink(1);
+				if (itemInHand.isEmpty()) {
+					player.setItemInHand(hand, ItemStack.EMPTY);
+				}
+				return true;
+			}
+		}
+		return false;
+	}
+
+	@Override
+	public boolean trySneakItemInteraction(Player player, InteractionHand hand, BlockState state, Level level, BlockPos pos, BlockHitResult hitVec, ItemStack itemInHand) {
+		if (level.isClientSide() || hitVec.getDirection() != getFacing(state)) {
+			return false;
+		}
+
+		return tryFillUpgrades(player, hand, level, pos, itemInHand);
+	}
+
+	public boolean tryFillUpgrades(Player player, InteractionHand hand, Level level, BlockPos pos, ItemStack itemInHand) {
+		return WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).map(b -> {
+			boolean result = false;
+			while (!itemInHand.isEmpty()) {
+				if (tryAddSingleUpgrade(player, hand, b, itemInHand)) {
+					result = true;
+				} else {
+					break;
+				}
+			}
+			return result;
+		}).orElse(false);
 	}
 }

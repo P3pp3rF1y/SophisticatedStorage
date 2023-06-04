@@ -225,7 +225,8 @@ public abstract class BarrelDynamicModelBase<T extends BarrelDynamicModelBase<T>
 
 		woodModelPartDefinitions.forEach((woodType, definitions) -> definitions.forEach((part, definition) -> {
 			definition.textures().forEach((textureName, material) -> materials.add(material));
-			materials.addAll(modelGetter.apply(definition.modelLocation).getMaterials(modelGetter, missingTextureErrors));
+			//using dummy set for missing textures here as otherwise texture references which will be provided texture later are reported in log
+			materials.addAll(modelGetter.apply(definition.modelLocation).getMaterials(modelGetter, new HashSet<>()));
 		}));
 
 		return materials;

@@ -17,7 +17,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class ControllerBlockEntity extends ControllerBlockEntityBase implements ILockable, ICountDisplay, ITierDisplay {
+public class ControllerBlockEntity extends ControllerBlockEntityBase implements ILockable, ICountDisplay, ITierDisplay, IUpgradeDisplay {
 	private long lastDepositTime = -100;
 
 	public ControllerBlockEntity(BlockPos pos, BlockState state) {
@@ -161,6 +161,30 @@ public class ControllerBlockEntity extends ControllerBlockEntityBase implements 
 			visibleTierStorages.forEach(ITierDisplay::toggleTierVisiblity);
 		} else {
 			invisibleTierStorages.forEach(ITierDisplay::toggleTierVisiblity);
+		}
+	}
+
+	@Override
+	public boolean shouldShowUpgrades() {
+		return false;
+	}
+
+	@Override
+	public void toggleUpgradesVisiblity() {
+		Set<IUpgradeDisplay> invisibleUpgradeStorages = new HashSet<>();
+		Set<IUpgradeDisplay> visibleUpgradeStorages = new HashSet<>();
+		getStoragePositions().forEach(storagePosition -> WorldHelper.getLoadedBlockEntity(level, storagePosition, IUpgradeDisplay.class).ifPresent(upgradeDisplay -> {
+			if (upgradeDisplay.shouldShowUpgrades()) {
+				visibleUpgradeStorages.add(upgradeDisplay);
+			} else {
+				invisibleUpgradeStorages.add(upgradeDisplay);
+			}
+		}));
+
+		if (invisibleUpgradeStorages.isEmpty()) {
+			visibleUpgradeStorages.forEach(IUpgradeDisplay::toggleUpgradesVisiblity);
+		} else {
+			invisibleUpgradeStorages.forEach(IUpgradeDisplay::toggleUpgradesVisiblity);
 		}
 	}
 }
