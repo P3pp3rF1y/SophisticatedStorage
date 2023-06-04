@@ -76,7 +76,7 @@ public class BarrelRenderer<T extends BarrelBlockEntity> extends StorageRenderer
 		}
 	}
 
-	private void renderHiddenLock(T blockEntity, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
+	protected void renderHiddenLock(T blockEntity, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
 		if (!blockEntity.shouldShowLock() && blockEntity.isLocked() && holdsToolInToggleLockOrLockDisplay()) {
 			renderTranslucentQuads(blockEntity, poseStack, bufferSource, packedLight, packedOverlay, BarrelBakedModelBase::getLockQuads);
 		}
@@ -94,7 +94,6 @@ public class BarrelRenderer<T extends BarrelBlockEntity> extends StorageRenderer
 		if (blockEntity.getLevel() != null && blockModel instanceof BarrelBakedModelBase barrelBakedModel) {
 			TranslucentVertexConsumer vertexConsumer = new TranslucentVertexConsumer(bufferSource, 128);
 			getQuads.apply(barrelBakedModel, state, blockEntity.getLevel().random, woodName).forEach(quad -> vertexConsumer.putBulkData(poseStack.last(), quad, 1, 1, 1, packedLight, packedOverlay));
-			barrelBakedModel.getTierQuads(state, blockEntity.getLevel().random, woodName).forEach(quad -> vertexConsumer.putBulkData(poseStack.last(), quad, 1, 1, 1, packedLight, packedOverlay));
 		}
 		poseStack.popPose();
 	}
