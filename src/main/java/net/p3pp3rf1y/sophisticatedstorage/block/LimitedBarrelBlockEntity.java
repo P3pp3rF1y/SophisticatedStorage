@@ -44,12 +44,12 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 
 	public LimitedBarrelBlockEntity(BlockPos pos, BlockState state) {
 		super(pos, state, ModBlocks.LIMITED_BARREL_BLOCK_ENTITY_TYPE.get());
-		registerClientNotificationOnCountChange();
 		registerUpgradeDefaults();
+		registerClientNotificationOnCountChange();
 	}
 
 	private void registerUpgradeDefaults() {
-		getStorageWrapper().getUpgradeHandler().registerUpgradeDefaultsHandler(VoidUpgradeWrapper.class, VOID_UPGRADE_VOIDING_OVERFLOW_OF_EVERYTHING_BY_DEFAULT);
+		getStorageWrapper().registerUpgradeDefaultsHandler(VoidUpgradeWrapper.class, VOID_UPGRADE_VOIDING_OVERFLOW_OF_EVERYTHING_BY_DEFAULT);
 	}
 
 	private void registerClientNotificationOnCountChange() {
