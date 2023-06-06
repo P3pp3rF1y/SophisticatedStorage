@@ -26,6 +26,7 @@ import java.util.function.Consumer;
 
 public class CompressionUpgradeItem extends UpgradeItemBase<CompressionUpgradeItem.Wrapper> {
 	public static final UpgradeType<CompressionUpgradeItem.Wrapper> TYPE = new UpgradeType<>(CompressionUpgradeItem.Wrapper::new);
+	private static final String FIRST_INVENTORY_SLOT_TAG = "firstInventorySlot";
 
 	public CompressionUpgradeItem(CreativeModeTab itemGroup) {
 		super(itemGroup);
@@ -88,9 +89,17 @@ public class CompressionUpgradeItem extends UpgradeItemBase<CompressionUpgradeIt
 		return !errorSlots.isEmpty() ? new UpgradeSlotChangeResult.Fail(StorageTranslationHelper.INSTANCE.translError("add.compression_incompatible_items"), Set.of(), errorSlots, Set.of()) : new UpgradeSlotChangeResult.Success();
 	}
 
+	@Override
+	public ItemStack getCleanedUpgradeStack(ItemStack upgradeStack) {
+		upgradeStack.removeTagKey(FIRST_INVENTORY_SLOT_TAG);
+		return upgradeStack;
+	}
+
 	public static class Wrapper extends UpgradeWrapperBase<Wrapper, CompressionUpgradeItem> {
+
 		@Override
 		public void onAdded() {
+			upgrade.removeTagKey(FIRST_INVENTORY_SLOT_TAG);
 			InventoryPartitioner inventoryPartitioner = storageWrapper.getInventoryHandler().getInventoryPartitioner();
 			inventoryPartitioner.getFirstSpace(Config.SERVER.compressionUpgrade.maxNumberOfSlots.get()).ifPresent(slotRange -> {
 				setFirstInventorySlot(slotRange.firstSlot());
@@ -99,7 +108,7 @@ public class CompressionUpgradeItem extends UpgradeItemBase<CompressionUpgradeIt
 		}
 
 		private void setFirstInventorySlot(int firstInventorySlot) {
-			upgrade.getOrCreateTag().putInt("firstInventorySlot", firstInventorySlot);
+			upgrade.getOrCreateTag().putInt(FIRST_INVENTORY_SLOT_TAG, firstInventorySlot);
 			save();
 		}
 
@@ -117,10 +126,13 @@ public class CompressionUpgradeItem extends UpgradeItemBase<CompressionUpgradeIt
 		public void onBeforeRemoved() {
 			super.onBeforeRemoved();
 			storageWrapper.getInventoryHandler().getInventoryPartitioner().removeInventoryPart(getFirstInventorySlot());
+			save();
 		}
 
+
+
 		private int getFirstInventorySlot() {
-			return NBTHelper.getInt(upgrade, "firstInventorySlot").orElse(-1);
+			return NBTHelper.getInt(upgrade, FIRST_INVENTORY_SLOT_TAG).orElse(-1);
 		}
 
 		protected Wrapper(IStorageWrapper storageWrapper, ItemStack upgrade, Consumer<ItemStack> upgradeSaveHandler) {
