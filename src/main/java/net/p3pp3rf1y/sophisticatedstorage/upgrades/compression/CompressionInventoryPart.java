@@ -17,7 +17,6 @@ import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import org.apache.commons.lang3.function.TriFunction;
 
 import javax.annotation.Nullable;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -93,7 +92,8 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 		Item prevItem = firstItem;
 		for (int slot = lastSlot; slot >= slotRange.firstSlot(); slot--) {
 			if (existingStacks.containsKey(slot) && existingStacks.get(slot).getItem() != prevItem) {
-				return Collections.emptyMap();
+				ret.clear(); //clearing any compressible definition added before as the compression should no longer compress if there are incompatible items present
+				break;
 			} else {
 				Optional<RecipeHelper.CompactingShape> compressionShape = getCompressionShape(prevItem);
 				if (compressionShape.isPresent()) {
@@ -108,7 +108,7 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 		}
 
 		updateSlotLimits(ret);
-		updateInaccessibleAndCompressible(ret);
+		updateInaccessibleAndCompressible(ret, existingStacks);
 
 		return ret;
 	}
@@ -181,13 +181,20 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 		updateInternalStacksWithCounts(toUpdate);
 	}
 
-	private void updateInaccessibleAndCompressible(Map<Integer, SlotDefinition> definitions) {
+	private void updateInaccessibleAndCompressible(Map<Integer, SlotDefinition> definitions, Map<Integer, ItemStack> existingStacks) {
 		for (int slot = slotRange.firstSlot(); slot < slotRange.firstSlot() + slotRange.numberOfSlots(); slot++) {
-			definitions.computeIfAbsent(slot, s -> SlotDefinition.inaccesible());
+			definitions.computeIfAbsent(slot, s -> {
+				if (existingStacks.containsKey(s)) {
+					return new SlotDefinition(existingStacks.get(s).getItem(), 1, true);
+				}
+				return SlotDefinition.inaccesible();
+			});
 			if (!definitions.get(slot).isAccessible()) {
 				continue;
 			}
-			definitions.get(slot).setCompressible((definitions.containsKey(slot - 1) && definitions.get(slot - 1).isAccessible()) || (definitions.containsKey(slot + 1) && definitions.get(slot + 1).isAccessible()));
+			boolean uncompressibledFromNext = definitions.containsKey(slot - 1) && definitions.get(slot - 1).isAccessible() && definitions.get(slot).prevSlotMultiplier() > 1;
+			boolean compressibleFromPrevious = definitions.containsKey(slot + 1) && definitions.get(slot + 1).isAccessible() && definitions.get(slot + 1).prevSlotMultiplier() > 1;
+			definitions.get(slot).setCompressible(uncompressibledFromNext || compressibleFromPrevious);
 		}
 	}
 
