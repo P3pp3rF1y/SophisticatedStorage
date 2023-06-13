@@ -804,4 +804,37 @@ public class CompressionInventoryPartTest {
 				)
 		);
 	}
+
+	@ParameterizedTest
+	@MethodSource("initializingWithPartiallyNonCompressibleItemsDoesntCrashAndAllowsAccessToNonCompressedStacks")
+	void initializingWithPartiallyNonCompressibleItemsDoesntCrashAndAllowsAccessToNonCompressedStacks(InitializingWithPartiallyNonCompressibleItemsDoesntCrashAndAllowsAccessToNonCompressedStacksParams params) {
+		InventoryHandler invHandler = getFilledInventoryHandler(params.stacks(), params.baseLimit());
+		int minSlot = 0;
+
+		CompressionInventoryPart part = initCompressionInventoryPart(invHandler, new InventoryPartitioner.SlotRange(minSlot, minSlot + params.stacks().size()), () -> getMemorySettings(invHandler, Map.of()));
+
+		assertCalculatedStacks(params.calculatedStacks(), 0, part);
+	}
+
+	private record InitializingWithPartiallyNonCompressibleItemsDoesntCrashAndAllowsAccessToNonCompressedStacksParams(Map<Integer, ItemStack> stacks, int baseLimit, Map<Integer, ItemStack> calculatedStacks) {}
+
+	private static List<InitializingWithPartiallyNonCompressibleItemsDoesntCrashAndAllowsAccessToNonCompressedStacksParams> initializingWithPartiallyNonCompressibleItemsDoesntCrashAndAllowsAccessToNonCompressedStacks() {
+		return List.of(
+				new InitializingWithPartiallyNonCompressibleItemsDoesntCrashAndAllowsAccessToNonCompressedStacksParams(
+						Map.of(0, ItemStack.EMPTY, 1, new ItemStack(Items.IRON_AXE), 2, new ItemStack(Items.IRON_INGOT), 3, ItemStack.EMPTY),
+						64,
+						Map.of(0, ItemStack.EMPTY, 1, new ItemStack(Items.IRON_AXE), 2, new ItemStack(Items.IRON_INGOT), 3, ItemStack.EMPTY)
+				),
+				new InitializingWithPartiallyNonCompressibleItemsDoesntCrashAndAllowsAccessToNonCompressedStacksParams(
+						Map.of(0, ItemStack.EMPTY, 1, new ItemStack(Items.IRON_AXE), 2, new ItemStack(Items.IRON_INGOT, 4), 3, new ItemStack(Items.IRON_NUGGET, 3)),
+						256,
+						Map.of(0, ItemStack.EMPTY, 1, new ItemStack(Items.IRON_AXE), 2, new ItemStack(Items.IRON_INGOT, 4), 3, new ItemStack(Items.IRON_NUGGET, 3))
+				),
+				new InitializingWithPartiallyNonCompressibleItemsDoesntCrashAndAllowsAccessToNonCompressedStacksParams(
+						Map.of(0, new ItemStack(Items.IRON_INGOT, 4), 1, new ItemStack(Items.IRON_NUGGET, 3), 2, ItemStack.EMPTY, 3, new ItemStack(Items.IRON_AXE)),
+						256,
+						Map.of(0, new ItemStack(Items.IRON_INGOT, 4), 1, new ItemStack(Items.IRON_NUGGET, 3), 2, ItemStack.EMPTY, 3, new ItemStack(Items.IRON_AXE))
+				)
+		);
+	}
 }
