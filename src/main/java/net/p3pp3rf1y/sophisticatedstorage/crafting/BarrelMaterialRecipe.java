@@ -1,16 +1,12 @@
 package net.p3pp3rf1y.sophisticatedstorage.crafting;
 
-import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CustomRecipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelMaterial;
@@ -55,7 +51,7 @@ public class BarrelMaterialRecipe extends CustomRecipe {
 					} else {
 						return false;
 					}
-				} else if (isFullBlockItem(level, item.getItem())) {
+				} else if (item.getItem() instanceof BlockItem) {
 					boolean isBottomMiddleAndBottomLeftHasBlock = barrelCol == col && barrelRow < row && rowCounts.getOrDefault(row, 0) > 0;
 					if (isBottomMiddleAndBottomLeftHasBlock) {
 						return false;
@@ -85,14 +81,6 @@ public class BarrelMaterialRecipe extends CustomRecipe {
 		}
 
 		return rowCounts.getOrDefault(barrelRow - 1, 0) <= 3 && rowCounts.getOrDefault(barrelRow, 0) <= 2 && rowCounts.getOrDefault(barrelRow + 1, 0) <= 2;
-	}
-
-	private boolean isFullBlockItem(Level level, Item item) {
-		if (!(item instanceof BlockItem blockItem)) {
-			return false;
-		}
-
-		return Block.isShapeFullBlock(blockItem.getBlock().getShape(blockItem.getBlock().defaultBlockState(), level, BlockPos.ZERO, CollisionContext.empty()));
 	}
 
 	@Override
