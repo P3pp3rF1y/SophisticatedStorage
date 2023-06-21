@@ -2,7 +2,7 @@ package net.p3pp3rf1y.sophisticatedstorage.client.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Vector3f;
+import com.mojang.math.Axis;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.geom.ModelPart;
@@ -41,7 +41,7 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity> {
 	private final ModelPart lidPart;
 	private final ModelPart bottomPart;
 	private final ModelPart lockPart;
-	private final DisplayItemRenderer displayItemRenderer = new DisplayItemRenderer(0.5 * (14.01 / 16), new Vec3(-1/16D, 0,  -0.0075));
+	private final DisplayItemRenderer displayItemRenderer = new DisplayItemRenderer(0.5 * (14.01 / 16), new Vec3(-1 / 16D, 0, -0.0075));
 
 	public ChestRenderer(BlockEntityRendererProvider.Context context) {
 		ModelPart modelpart = context.bakeLayer(ClientEventHandler.CHEST_LAYER);
@@ -74,7 +74,7 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity> {
 		Direction facing = blockstate.getValue(ChestBlock.FACING);
 		float f = facing.toYRot();
 		poseStack.translate(0.5D, 0.5D, 0.5D);
-		poseStack.mulPose(Vector3f.YP.rotationDegrees(-f));
+		poseStack.mulPose(Axis.YP.rotationDegrees(-f));
 		poseStack.translate(-0.5D, -0.5D, -0.5D);
 		float lidAngle = chestEntity.getOpenNess(partialTick);
 		lidAngle = 1.0F - lidAngle;
@@ -136,7 +136,7 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity> {
 	private void renderHiddenTier(PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, Material tierMaterial) {
 		//noinspection resource
 		TextureAtlasSprite sprite = tierMaterial.sprite();
-		VertexConsumer translucentConsumer = sprite.wrap(bufferSource.getBuffer(RenderType.entityTranslucent(sprite.atlas().location())));
+		VertexConsumer translucentConsumer = sprite.wrap(bufferSource.getBuffer(RenderType.entityTranslucent(sprite.atlasLocation())));
 		poseStack.pushPose();
 		poseStack.translate(-0.005D, -0.005D, -0.005D);
 		poseStack.scale(1.01f, 1.01f, 1.01f);

@@ -3,18 +3,17 @@ package net.p3pp3rf1y.sophisticatedstorage.client.render;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Quaternion;
-import com.mojang.math.Vector3f;
+import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.ItemTransform;
-import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -24,11 +23,14 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.client.model.data.ModelData;
+import net.minecraftforge.common.util.TransformationHelper;
 import net.p3pp3rf1y.sophisticatedcore.inventory.ItemStackKey;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockBase;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 import java.util.HashSet;
 import java.util.List;
@@ -103,13 +105,13 @@ public class DisplayItemRenderer {
 			ItemStack itemToRender = upgradeItem.isEmpty() ? EMPTY_UPGRADE_STACK : upgradeItem;
 			BakedModel itemModel = minecraft.getItemRenderer().getModel(itemToRender, null, minecraft.player, 0);
 			MultiBufferSource buffer = upgradeItem.isEmpty() ? TranslucentVertexConsumer.wrapBuffer(bufferSource, 128) : bufferSource;
-			minecraft.getItemRenderer().render(itemToRender, ItemTransforms.TransformType.FIXED, false, poseStack, buffer, packedLight, packedOverlay, itemModel);
+			minecraft.getItemRenderer().render(itemToRender, ItemDisplayContext.FIXED, false, poseStack, buffer, packedLight, packedOverlay, itemModel);
 			if (renderDisabledUpgradeDisplay) {
 				poseStack.pushPose();
 				poseStack.translate(0, 0, -0.001f);
 				itemModel = minecraft.getItemRenderer().getModel(INACCESSIBLE_SLOT_STACK, null, minecraft.player, 0);
 				buffer = bufferSource;
-				minecraft.getItemRenderer().render(INACCESSIBLE_SLOT_STACK, ItemTransforms.TransformType.FIXED, false, poseStack, buffer, packedLight, packedOverlay, itemModel);
+				minecraft.getItemRenderer().render(INACCESSIBLE_SLOT_STACK, ItemDisplayContext.FIXED, false, poseStack, buffer, packedLight, packedOverlay, itemModel);
 				poseStack.popPose();
 			}
 			poseStack.popPose();
@@ -133,7 +135,7 @@ public class DisplayItemRenderer {
 
 		Vector3f frontOffset = getDisplayItemIndexFrontOffset(displayItemIndex, displayItemCount, (float) yCenterTranslation);
 		poseStack.translate(frontOffset.x(), frontOffset.y(), -itemOffset);
-		poseStack.mulPose(Vector3f.ZP.rotationDegrees(rotation));
+		poseStack.mulPose(Axis.ZP.rotationDegrees(rotation));
 
 		float itemScale;
 		if (displayItemCount == 1) {
@@ -143,7 +145,7 @@ public class DisplayItemRenderer {
 		}
 		poseStack.scale(itemScale, itemScale, itemScale);
 
-		minecraft.getItemRenderer().render(stack, ItemTransforms.TransformType.FIXED, false, poseStack, bufferSource, packedLight, packedOverlay, itemModel);
+		minecraft.getItemRenderer().render(stack, ItemDisplayContext.FIXED, false, poseStack, bufferSource, packedLight, packedOverlay, itemModel);
 		poseStack.popPose();
 	}
 
@@ -180,7 +182,7 @@ public class DisplayItemRenderer {
 
 	@SuppressWarnings("deprecation")
 	private static double transformBoundsCornersAndCalculateOffset(BakedModel itemModel, Set<Vector3f> points, float additionalScale) {
-		ItemTransform transform = itemModel.getTransforms().getTransform(ItemTransforms.TransformType.FIXED);
+		ItemTransform transform = itemModel.getTransforms().getTransform(ItemDisplayContext.FIXED);
 		points = scalePoints(points, transform.scale);
 		points = rotatePoints(points, transform.rotation);
 		points = translatePoints(points, transform.translation);
@@ -261,9 +263,9 @@ public class DisplayItemRenderer {
 	}
 
 	private static Set<Vector3f> rotatePoints(Set<Vector3f> points, Vector3f rotation) {
-		Quaternion rot = new Quaternion(rotation.x(), rotation.y(), rotation.z(), true);
+		Quaternionf rot = TransformationHelper.quatFromXYZ(rotation.x(), rotation.y(), rotation.z(), true);
 		return transformPoints(points, point -> {
-			point.transform(rot);
+			point.rotate(rot);
 			return point;
 		});
 	}
@@ -329,14 +331,14 @@ public class DisplayItemRenderer {
 		return frontOffset;
 	}
 
-	public static Quaternion getNorthBasedRotation(Direction dir) {
+	public static Quaternionf getNorthBasedRotation(Direction dir) {
 		return switch (dir) {
-			case DOWN -> Vector3f.XP.rotationDegrees(-90.0F);
-			case UP -> Vector3f.XP.rotationDegrees(90.0F);
-			case NORTH -> Quaternion.ONE.copy();
-			case SOUTH -> Vector3f.YP.rotationDegrees(180.0F);
-			case WEST -> Vector3f.YP.rotationDegrees(90.0F);
-			case EAST -> Vector3f.YP.rotationDegrees(-90.0F);
+			case DOWN -> Axis.XP.rotationDegrees(-90.0F);
+			case UP -> Axis.XP.rotationDegrees(90.0F);
+			case NORTH -> new Quaternionf();
+			case SOUTH -> Axis.YP.rotationDegrees(180.0F);
+			case WEST -> Axis.YP.rotationDegrees(90.0F);
+			case EAST -> Axis.YP.rotationDegrees(-90.0F);
 		};
 	}
 }

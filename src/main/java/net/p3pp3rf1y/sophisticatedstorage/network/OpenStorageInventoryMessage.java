@@ -42,11 +42,11 @@ public class OpenStorageInventoryMessage {
 		}
 
 		NetworkHooks.openScreen(player, new SimpleMenuProvider((w, p, pl) -> instantiateContainerMenu(msg, w, pl),
-				WorldHelper.getBlockEntity(player.level, msg.pos, StorageBlockEntity.class).map(StorageBlockEntity::getDisplayName).orElse(Component.empty())), msg.pos);
+				WorldHelper.getBlockEntity(player.level(), msg.pos, StorageBlockEntity.class).map(StorageBlockEntity::getDisplayName).orElse(Component.empty())), msg.pos);
 	}
 
 	private static StorageContainerMenu instantiateContainerMenu(OpenStorageInventoryMessage msg, int windowId, Player player) {
-		if (player.level.getBlockState(msg.pos).getBlock() instanceof LimitedBarrelBlock) {
+		if (player.level().getBlockState(msg.pos).getBlock() instanceof LimitedBarrelBlock) {
 			return new LimitedBarrelContainerMenu(windowId, player, msg.pos);
 		} else {
 			return new StorageContainerMenu(windowId, player, msg.pos);

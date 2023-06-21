@@ -3,30 +3,29 @@ package net.p3pp3rf1y.sophisticatedstorage.client.render;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.mojang.datafixers.util.Either;
-import com.mojang.datafixers.util.Pair;
 import net.minecraft.client.renderer.block.model.BlockElement;
 import net.minecraft.client.renderer.block.model.BlockModel;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.resources.model.BuiltInModel;
 import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.client.resources.model.ModelState;
 import net.minecraft.client.resources.model.UnbakedModel;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.InventoryMenu;
-import net.minecraftforge.client.model.geometry.UnbakedGeometryHelper;
+import net.minecraftforge.client.model.ElementsModel;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Function;
 
 public class CompositeElementsModel extends BlockModel {
@@ -37,10 +36,15 @@ public class CompositeElementsModel extends BlockModel {
 		elements = new ArrayList<>();
 	}
 
-	@SuppressWarnings({"removal", "UnstableApiUsage"}) //need to use this here as there's no alternative before this is refactored in 1.20
 	@Override
-	public BakedModel bake(ModelBakery modelBakery, BlockModel model, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelState, ResourceLocation modelLocation, boolean guiLight3d) {
-		return UnbakedGeometryHelper.bakeVanilla(this, modelBakery, this, spriteGetter, modelState, modelLocation);
+	public BakedModel bake(ModelBaker modelBaker, BlockModel owner, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelState, ResourceLocation modelLocation, boolean guiLight3d) {
+		if (getRootModel() == ModelBakery.BLOCK_ENTITY_MARKER) {
+			var particleSprite = spriteGetter.apply(getMaterial("particle"));
+			return new BuiltInModel(getTransforms(), getOverrides(modelBaker, owner, spriteGetter), particleSprite, getGuiLight().lightLikeBlock());
+		}
+
+		var elementsModel = new ElementsModel(getElements());
+		return elementsModel.bake(customData, modelBaker, spriteGetter, modelState, getOverrides(modelBaker, owner, spriteGetter), modelLocation);
 	}
 
 	@SuppressWarnings({"java:S1874", "deprecation"}) //overriding getElements here
@@ -50,13 +54,11 @@ public class CompositeElementsModel extends BlockModel {
 	}
 
 	@Override
-	public Collection<Material> getMaterials(Function<ResourceLocation, UnbakedModel> pModelGetter, Set<Pair<String, String>> pMissingTextureErrors) {
-		Collection<Material> materials = super.getMaterials(pModelGetter, pMissingTextureErrors);
+	public void resolveParents(Function<ResourceLocation, UnbakedModel> modelGetter) {
+		super.resolveParents(modelGetter);
 
 		copyElementsFromAllIncludedModels();
 		copyTexturesFromAllIncludedModels();
-
-		return materials;
 	}
 
 	@SuppressWarnings({"java:S1874", "deprecation"}) //need to call getElements even though deprecated

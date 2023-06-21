@@ -1,6 +1,6 @@
 package net.p3pp3rf1y.sophisticatedstorage.client.gui;
 
-import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -17,25 +17,25 @@ public class LimitedBarrelScreen extends StorageScreen {
 	}
 
 	@Override
-	protected void drawSlotBg(PoseStack matrixStack, int x, int y) {
-		LimitedBarrelScreen.drawSlotBg(matrixStack, x, y, getMenu().getNumberOfStorageInventorySlots(), getMenu());
+	protected void drawSlotBg(GuiGraphics guiGraphics, int x, int y) {
+		LimitedBarrelScreen.drawSlotBg(guiGraphics, x, y, getMenu().getNumberOfStorageInventorySlots(), getMenu());
 	}
 
-	public static void drawSlotBg(PoseStack matrixStack, int x, int y, int slotsNumber, AbstractContainerMenu menu) {
+	public static void drawSlotBg(GuiGraphics guiGraphics, int x, int y, int slotsNumber, AbstractContainerMenu menu) {
 		Slot firstSlot = menu.getSlot(0);
 		if (slotsNumber == 4) {
-			GuiHelper.renderSlotsBackground(matrixStack, x + firstSlot.x - 1, y + firstSlot.y - 1, 2, 2);
+			GuiHelper.renderSlotsBackground(guiGraphics, x + firstSlot.x - 1, y + firstSlot.y - 1, 2, 2);
 			return;
 		}
 
-		GuiHelper.renderSlotsBackground(matrixStack, x + firstSlot.x - 1, y + firstSlot.y - 1, 1, 1);
+		GuiHelper.renderSlotsBackground(guiGraphics, x + firstSlot.x - 1, y + firstSlot.y - 1, 1, 1);
 
 		if (slotsNumber == 1) {
 			return;
 		}
 
 		Slot secondSlot = menu.getSlot(1);
-		GuiHelper.renderSlotsBackground(matrixStack, x + secondSlot.x - 1, y + secondSlot.y - 1, slotsNumber == 3 ? 2 : 1, 1);
+		GuiHelper.renderSlotsBackground(guiGraphics, x + secondSlot.x - 1, y + secondSlot.y - 1, slotsNumber == 3 ? 2 : 1, 1);
 	}
 
 	@Override

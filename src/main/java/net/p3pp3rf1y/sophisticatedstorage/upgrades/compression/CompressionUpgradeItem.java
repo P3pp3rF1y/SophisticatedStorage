@@ -1,6 +1,5 @@
 package net.p3pp3rf1y.sophisticatedstorage.upgrades.compression;
 
-import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -28,8 +27,8 @@ public class CompressionUpgradeItem extends UpgradeItemBase<CompressionUpgradeIt
 	public static final UpgradeType<CompressionUpgradeItem.Wrapper> TYPE = new UpgradeType<>(CompressionUpgradeItem.Wrapper::new);
 	private static final String FIRST_INVENTORY_SLOT_TAG = "firstInventorySlot";
 
-	public CompressionUpgradeItem(CreativeModeTab itemGroup) {
-		super(itemGroup);
+	public CompressionUpgradeItem() {
+		super();
 		InventoryPartRegistry.registerFactory(CompressionInventoryPart.NAME, CompressionInventoryPart::new);
 	}
 

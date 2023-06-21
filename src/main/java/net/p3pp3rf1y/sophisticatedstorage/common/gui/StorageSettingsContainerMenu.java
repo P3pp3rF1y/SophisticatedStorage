@@ -20,7 +20,7 @@ public class StorageSettingsContainerMenu extends SettingsContainerMenu<IStorage
 		this(ModBlocks.SETTINGS_CONTAINER_TYPE.get(), windowId, player, pos);
 	}
 	protected StorageSettingsContainerMenu(MenuType<?> menuType, int windowId, Player player, BlockPos pos) {
-		super(menuType, windowId, player, getWrapper(player.level, pos));
+		super(menuType, windowId, player, getWrapper(player.level(), pos));
 		this.pos = pos;
 	}
 

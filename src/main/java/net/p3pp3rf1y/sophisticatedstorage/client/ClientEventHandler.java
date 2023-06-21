@@ -7,14 +7,12 @@ import net.minecraft.client.MouseHandler;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.Sheets;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ReloadableResourceManager;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -26,7 +24,6 @@ import net.minecraftforge.client.event.RegisterClientTooltipComponentFactoriesEv
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.client.event.ScreenEvent;
-import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.client.settings.IKeyConflictContext;
 import net.minecraftforge.common.MinecraftForge;
@@ -54,7 +51,6 @@ import net.p3pp3rf1y.sophisticatedstorage.client.render.ClientStorageContentsToo
 import net.p3pp3rf1y.sophisticatedstorage.client.render.ControllerRenderer;
 import net.p3pp3rf1y.sophisticatedstorage.client.render.LimitedBarrelDynamicModel;
 import net.p3pp3rf1y.sophisticatedstorage.client.render.LimitedBarrelRenderer;
-import net.p3pp3rf1y.sophisticatedstorage.client.render.LockRenderer;
 import net.p3pp3rf1y.sophisticatedstorage.client.render.ShulkerBoxDynamicModel;
 import net.p3pp3rf1y.sophisticatedstorage.client.render.ShulkerBoxRenderer;
 import net.p3pp3rf1y.sophisticatedstorage.client.render.SimpleCompositeModel;
@@ -64,8 +60,6 @@ import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageContentsTooltip;
 import net.p3pp3rf1y.sophisticatedstorage.network.ScrolledToolMessage;
 import net.p3pp3rf1y.sophisticatedstorage.network.StoragePacketHandler;
-import net.p3pp3rf1y.sophisticatedstorage.upgrades.compression.CompressionInventoryPart;
-import net.p3pp3rf1y.sophisticatedstorage.upgrades.hopper.HopperUpgradeContainer;
 
 import java.util.Map;
 
@@ -99,7 +93,6 @@ public class ClientEventHandler {
 
 	public static void registerHandlers() {
 		IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
-		modBus.addListener(ClientEventHandler::stitchTextures);
 		modBus.addListener(ClientEventHandler::onModelRegistry);
 		modBus.addListener(ClientEventHandler::registerLayer);
 		modBus.addListener(ClientEventHandler::registerTooltipComponent);
@@ -229,50 +222,6 @@ public class ClientEventHandler {
 
 	private static void registerOverlay(RegisterGuiOverlaysEvent event) {
 		event.registerAbove(VanillaGuiOverlay.HOTBAR.id(), "storage_tool_info", ToolInfoOverlay.HUD_TOOL_INFO);
-	}
-
-	private static void stitchTextures(TextureStitchEvent.Pre event) {
-		stitchBlockAtlasTextures(event);
-		stitchChestTextures(event);
-		stitchShulkerBoxTextures(event);
-		event.addSprite(LockRenderer.LOCK_TEXTURE.texture());
-		event.addSprite(CompressionInventoryPart.EMPTY_COMPRESSION_SLOT.getSecond());
-		event.addSprite(HopperUpgradeContainer.EMPTY_INPUT_FILTER_SLOT_BACKGROUND.getSecond());
-		event.addSprite(HopperUpgradeContainer.EMPTY_OUTPUT_FILTER_SLOT_BACKGROUND.getSecond());
-	}
-
-	private static void stitchShulkerBoxTextures(TextureStitchEvent.Pre event) {
-		if (!event.getAtlas().location().equals(Sheets.SHULKER_SHEET)) {
-			return;
-		}
-
-		event.addSprite(ShulkerBoxRenderer.BASE_TIER_MATERIAL.texture());
-		event.addSprite(ShulkerBoxRenderer.IRON_TIER_MATERIAL.texture());
-		event.addSprite(ShulkerBoxRenderer.GOLD_TIER_MATERIAL.texture());
-		event.addSprite(ShulkerBoxRenderer.DIAMOND_TIER_MATERIAL.texture());
-		event.addSprite(ShulkerBoxRenderer.NETHERITE_TIER_MATERIAL.texture());
-		event.addSprite(ShulkerBoxRenderer.TINTABLE_MAIN_MATERIAL.texture());
-		event.addSprite(ShulkerBoxRenderer.TINTABLE_ACCENT_MATERIAL.texture());
-		event.addSprite(ShulkerBoxRenderer.NO_TINT_MATERIAL.texture());
-	}
-
-	private static void stitchChestTextures(TextureStitchEvent.Pre event) {
-		if (!event.getAtlas().location().equals(Sheets.CHEST_SHEET)) {
-			return;
-		}
-
-		StorageTextureManager.INSTANCE.getUniqueChestMaterials().forEach(mat -> event.addSprite(mat.texture()));
-	}
-
-	private static void stitchBlockAtlasTextures(TextureStitchEvent.Pre event) {
-		if (!event.getAtlas().location().equals(InventoryMenu.BLOCK_ATLAS)) {
-			return;
-		}
-
-		ChestDynamicModel.getWoodBreakTextures().forEach(event::addSprite);
-		event.addSprite(ChestDynamicModel.TINTABLE_BREAK_TEXTURE);
-		event.addSprite(ShulkerBoxDynamicModel.TINTABLE_BREAK_TEXTURE);
-		event.addSprite(ShulkerBoxDynamicModel.MAIN_BREAK_TEXTURE);
 	}
 
 	private static void registerEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {

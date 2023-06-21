@@ -13,7 +13,7 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.p3pp3rf1y.sophisticatedstorage.block.IAdditionalDropDataBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
-import net.p3pp3rf1y.sophisticatedstorage.init.ModLoot;
+import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 
 public class CopyStorageDataFunction extends LootItemConditionalFunction {
 	protected CopyStorageDataFunction(LootItemCondition[] conditionsIn) {
@@ -35,7 +35,7 @@ public class CopyStorageDataFunction extends LootItemConditionalFunction {
 
 	@Override
 	public LootItemFunctionType getType() {
-		return ModLoot.COPY_STORAGE_DATA;
+		return ModItems.COPY_STORAGE_DATA.get();
 	}
 
 

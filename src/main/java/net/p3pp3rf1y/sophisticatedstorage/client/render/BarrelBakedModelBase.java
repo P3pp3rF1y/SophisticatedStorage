@@ -7,9 +7,8 @@ import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.datafixers.util.Either;
-import com.mojang.math.Quaternion;
+import com.mojang.math.Axis;
 import com.mojang.math.Transformation;
-import com.mojang.math.Vector3f;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.RenderType;
@@ -23,6 +22,7 @@ import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -32,6 +32,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockAndTintGetter;
@@ -45,6 +46,7 @@ import net.minecraftforge.client.model.IQuadTransformer;
 import net.minecraftforge.client.model.QuadTransformers;
 import net.minecraftforge.client.model.data.ModelData;
 import net.minecraftforge.client.model.data.ModelProperty;
+import net.minecraftforge.common.util.TransformationHelper;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.p3pp3rf1y.sophisticatedcore.inventory.ItemStackKey;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
@@ -58,6 +60,8 @@ import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.item.BarrelBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -65,7 +69,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -110,6 +113,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 	private static final Vector3f DEFAULT_ROTATION = new Vector3f(0.0F, 0.0F, 0.0F);
 	private static final ItemTransforms ITEM_TRANSFORMS = createItemTransforms();
 	private static final List<BarrelMaterial> PARTICLE_ICON_MATERIAL_PRIORITY = List.of(BarrelMaterial.ALL, BarrelMaterial.ALL_BUT_TRIM, BarrelMaterial.TOP_ALL, BarrelMaterial.TOP);
+
 	@SuppressWarnings("java:S4738") //ItemTransforms require Guava ImmutableMap to be passed in so no way to change that to java Map
 	private static ItemTransforms createItemTransforms() {
 		return new ItemTransforms(new ItemTransform(new Vector3f(75, 45, 0), new Vector3f(0, 2.5f / 16f, 0), new Vector3f(0.375f, 0.375f, 0.375f), DEFAULT_ROTATION), new ItemTransform(new Vector3f(75, 45, 0), new Vector3f(0, 2.5f / 16f, 0), new Vector3f(0.375f, 0.375f, 0.375f), DEFAULT_ROTATION), new ItemTransform(new Vector3f(0, 225, 0), new Vector3f(0, 0, 0), new Vector3f(0.4f, 0.4f, 0.4f), DEFAULT_ROTATION), new ItemTransform(new Vector3f(0, 45, 0), new Vector3f(0, 0, 0), new Vector3f(0.4f, 0.4f, 0.4f), DEFAULT_ROTATION), new ItemTransform(new Vector3f(0, 0, 0), new Vector3f(0, 14.25f / 16f, 0), new Vector3f(1, 1, 1), DEFAULT_ROTATION), new ItemTransform(new Vector3f(30, 45, 0), new Vector3f(0, 0, 0), new Vector3f(0.625f, 0.625f, 0.625f), DEFAULT_ROTATION), new ItemTransform(new Vector3f(0, 0, 0), new Vector3f(0, 3 / 16f, 0), new Vector3f(0.25f, 0.25f, 0.25f), DEFAULT_ROTATION), new ItemTransform(new Vector3f(0, 0, 0), new Vector3f(0, 0, 0), new Vector3f(0.5f, 0.5f, 0.5f), DEFAULT_ROTATION), ImmutableMap.of());
@@ -121,7 +125,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 		BAKED_QUADS_CACHE.invalidateAll();
 	}
 
-
+	private final ModelBaker baker;
 	protected final Map<String, Map<BarrelModelPart, BakedModel>> woodModelParts;
 
 	private final ItemOverrides barrelItemOverrides;
@@ -139,7 +143,8 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 	private final Map<String, Map<BarrelModelPart, BakedModel>> woodPartitionedModelParts;
 	private final Cache<Integer, BakedModel> dynamicBakedModelCache = CacheBuilder.newBuilder().expireAfterAccess(1, TimeUnit.MINUTES).build();
 
-	protected BarrelBakedModelBase(Map<String, Map<BarrelModelPart, BakedModel>> woodModelParts, @Nullable BakedModel flatTopModel, Map<String, Map<DynamicBarrelBakingData.DynamicPart, DynamicBarrelBakingData>> woodDynamicBakingData, Map<String, Map<BarrelModelPart, BakedModel>> woodPartitionedModelParts) {
+	protected BarrelBakedModelBase(ModelBaker baker, Map<String, Map<BarrelModelPart, BakedModel>> woodModelParts, @Nullable BakedModel flatTopModel, Map<String, Map<DynamicBarrelBakingData.DynamicPart, DynamicBarrelBakingData>> woodDynamicBakingData, Map<String, Map<BarrelModelPart, BakedModel>> woodPartitionedModelParts) {
+		this.baker = baker;
 		this.woodModelParts = woodModelParts;
 		barrelItemOverrides = new BarrelItemOverrides(this, flatTopModel);
 		this.woodDynamicBakingData = woodDynamicBakingData;
@@ -171,7 +176,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 
 	@SuppressWarnings("java:S1172") //state used in override
 	protected void rotateDisplayItemFrontOffset(BlockState state, Direction dir, Vector3f frontOffset) {
-		frontOffset.transform(getNorthBasedRotation(dir));
+		frontOffset.rotate(getNorthBasedRotation(dir));
 	}
 
 	@SuppressWarnings("java:S1172") //state used in override
@@ -304,7 +309,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 			BarrelMaterial barrelMaterial = entry.getKey();
 			ResourceLocation blockName = entry.getValue();
 			TextureAtlasSprite sprite = RenderHelper.getSprite(blockName, spriteSide, rand);
-			Either<Material, String> material = Either.left(new Material(InventoryMenu.BLOCK_ATLAS, sprite.getName()));
+			Either<Material, String> material = Either.left(new Material(InventoryMenu.BLOCK_ATLAS, sprite.contents().name()));
 
 			for (BarrelMaterial childMaterial : barrelMaterial.getChildren()) {
 				materials.put(childMaterial.getSerializedName(), material);
@@ -346,7 +351,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 		return extraData.has(MATERIALS) ? Objects.requireNonNull(extraData.get(MATERIALS)) : Collections.emptyMap();
 	}
 
-	private static BakedModel compileAndBakeModel(Map<String, Either<Material, String>> materials, DynamicBarrelBakingData bakingData) {
+	private BakedModel compileAndBakeModel(Map<String, Either<Material, String>> materials, DynamicBarrelBakingData bakingData) {
 		bakingData.modelPartDefinition().textures().forEach((textureName, texture) -> {
 			if (!materials.containsKey(textureName)) {
 				materials.put(textureName, Either.left(texture));
@@ -357,8 +362,8 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 		return baseModelPartDefinition.modelLocation().map(modelLocation -> {
 			BlockModel baseModel = new CompositeElementsModel(modelLocation, materials);
 			ModelBakery bakery = Minecraft.getInstance().getModelManager().getModelBakery();
-			baseModel.getMaterials(bakery::getModel, new HashSet<>()); //need to call getMaterials here to get parent models loaded which happens in that call
-			return baseModel.bake(bakery, baseModel, bakery.getAtlasSet()::getSprite, bakingData.modelState(), bakingData.modelLocation(), false);
+			baseModel.resolveParents(bakery::getModel); //need to call resolveParents here to get parent models loaded
+			return baseModel.bake(baker, baseModel, baker.getModelTextureGetter(), bakingData.modelState(), bakingData.modelLocation(), false);
 		}).orElse(Minecraft.getInstance().getModelManager().getMissingModel());
 	}
 
@@ -498,7 +503,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 			@Nullable Direction dir, int displayItemIndex, int displayItemCount) {
 		List<BakedQuad> quads = model.getQuads(null, dir, rand);
 		quads = MOVE_TO_CORNER.process(quads);
-		quads = QuadTransformers.applying(toTransformation(model.getTransforms().getTransform(ItemTransforms.TransformType.FIXED))).process(quads);
+		quads = QuadTransformers.applying(toTransformation(model.getTransforms().getTransform(ItemDisplayContext.FIXED))).process(quads);
 		if (!model.isGui3d()) {
 			if (displayItemCount == 1) {
 				quads = SCALE_BIG_2D_ITEM.process(quads);
@@ -538,8 +543,8 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 		return new Transformation(transform.translation, quatFromXYZ(transform.rotation, true), transform.scale, null);
 	}
 
-	public Quaternion quatFromXYZ(Vector3f xyz, boolean degrees) {
-		return new Quaternion(xyz.x(), xyz.y(), xyz.z(), degrees);
+	public Quaternionf quatFromXYZ(Vector3f xyz, boolean degrees) {
+		return TransformationHelper.quatFromXYZ(xyz.x(), xyz.y(), xyz.z(), degrees);
 	}
 
 	protected abstract List<BakedQuad> rotateDisplayItemQuads(List<BakedQuad> quads, BlockState state);
@@ -586,7 +591,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 	}
 
 	private IQuadTransformer getDisplayRotation(int rotation) {
-		return DISPLAY_ROTATIONS.computeIfAbsent(rotation, r -> QuadTransformers.applying(new Transformation(null, Vector3f.ZP.rotationDegrees(rotation), null, null)));
+		return DISPLAY_ROTATIONS.computeIfAbsent(rotation, r -> QuadTransformers.applying(new Transformation(null, Axis.ZP.rotationDegrees(rotation), null, null)));
 	}
 
 	private void addTintableModelQuads(@Nullable BlockState state, @Nullable Direction side, RandomSource rand, List<BakedQuad> ret, boolean hasMainColor,
@@ -724,8 +729,8 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 	}
 
 	@Override
-	public BakedModel applyTransform(ItemTransforms.TransformType transformType, PoseStack poseStack, boolean applyLeftHandTransform) {
-		if (transformType == ItemTransforms.TransformType.NONE) {
+	public BakedModel applyTransform(ItemDisplayContext transformType, PoseStack poseStack, boolean applyLeftHandTransform) {
+		if (transformType == ItemDisplayContext.NONE) {
 			return this;
 		}
 

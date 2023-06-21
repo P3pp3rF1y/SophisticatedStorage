@@ -1,5 +1,6 @@
 package net.p3pp3rf1y.sophisticatedstorage.crafting;
 
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.BlockItem;
@@ -24,7 +25,7 @@ public class ShulkerBoxFromChestRecipe extends ShapedRecipe implements IWrapperR
 	private final ShapedRecipe compose;
 
 	public ShulkerBoxFromChestRecipe(ShapedRecipe compose) {
-		super(compose.getId(), compose.getGroup(), compose.getRecipeWidth(), compose.getRecipeHeight(), compose.getIngredients(), compose.getResultItem());
+		super(compose.getId(), compose.getGroup(), compose.category(), compose.getRecipeWidth(), compose.getRecipeHeight(), compose.getIngredients(), compose.result);
 		this.compose = compose;
 		REGISTERED_RECIPES.add(compose.getId());
 	}
@@ -50,8 +51,8 @@ public class ShulkerBoxFromChestRecipe extends ShapedRecipe implements IWrapperR
 	}
 
 	@Override
-	public ItemStack assemble(CraftingContainer inv) {
-		ItemStack shulker = super.assemble(inv);
+	public ItemStack assemble(CraftingContainer inv, RegistryAccess registryAccess) {
+		ItemStack shulker = super.assemble(inv, registryAccess);
 		getChest(inv).ifPresent(chest -> {
 			if (chest.hasCustomHoverName()) {
 				shulker.setHoverName(chest.getHoverName());

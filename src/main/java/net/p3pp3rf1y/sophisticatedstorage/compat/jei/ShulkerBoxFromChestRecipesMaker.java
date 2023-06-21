@@ -5,8 +5,10 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.CraftingContainer;
+import net.minecraft.world.inventory.TransientCraftingContainer;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.ShapedRecipe;
@@ -31,7 +33,7 @@ public class ShulkerBoxFromChestRecipesMaker {
 			}
 
 			getChestItems(originalRecipe).forEach(chestItem -> {
-				CraftingContainer craftinginventory = new CraftingContainer(new AbstractContainerMenu(null, -1) {
+				CraftingContainer craftinginventory = new TransientCraftingContainer(new AbstractContainerMenu(null, -1) {
 					@Override
 					public ItemStack quickMoveStack(Player pPlayer, int pIndex) {
 						return ItemStack.EMPTY;
@@ -63,12 +65,12 @@ public class ShulkerBoxFromChestRecipesMaker {
 					}
 					i++;
 				}
-				ItemStack result = originalRecipe.assemble(craftinginventory);
+				ItemStack result = ClientRecipeHelper.assemble(originalRecipe, craftinginventory);
 				//noinspection ConstantConditions
 				ResourceLocation newId = new ResourceLocation(SophisticatedStorage.MOD_ID, "shulker_from_" + ForgeRegistries.ITEMS.getKey(chestItem.getItem()).getPath()
 						+ result.getOrCreateTag().toString().toLowerCase(Locale.ROOT).replaceAll("[^a-z\\d/._-]", "_"));
 
-				recipes.add(new ShapedRecipe(newId, "", originalRecipe.getRecipeWidth(), originalRecipe.getRecipeHeight(), ingredientsCopy, result));
+				recipes.add(new ShapedRecipe(newId, "", CraftingBookCategory.MISC, originalRecipe.getRecipeWidth(), originalRecipe.getRecipeHeight(), ingredientsCopy, result));
 			});
 		}));
 
@@ -83,7 +85,7 @@ public class ShulkerBoxFromChestRecipesMaker {
 			for (ItemStack ingredientItem : ingredientItems) {
 				Item item = ingredientItem.getItem();
 				if (item instanceof ChestBlockItem) {
-					item.fillItemCategory(SophisticatedStorage.CREATIVE_TAB, chestItems);
+					((ChestBlockItem) item).addCreativeTabItems(chestItems::add);
 				}
 			}
 		}

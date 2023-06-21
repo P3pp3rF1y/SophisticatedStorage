@@ -94,7 +94,7 @@ public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageIte
 
 	@Override
 	public void onDestroyed(ItemEntity itemEntity) {
-		Level level = itemEntity.level;
+		Level level = itemEntity.level();
 		if (level.isClientSide) {
 			return;
 		}

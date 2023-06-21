@@ -18,8 +18,8 @@
           "function": "sophisticatedstorage:copy_storage_data"
         }
       ],
-      "name": "main",
       "rolls": 1.0
     }
-  ]
+  ],
+  "random_sequence": "sophisticatedstorage:blocks/limited_barrel_1"
 }

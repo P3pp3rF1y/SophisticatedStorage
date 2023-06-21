@@ -1,6 +1,7 @@
 package net.p3pp3rf1y.sophisticatedstorage.data;
 
 import net.minecraft.data.DataGenerator;
+import net.minecraft.data.PackOutput;
 import net.minecraftforge.data.event.GatherDataEvent;
 
 public class DataGenerators {
@@ -8,10 +9,11 @@ public class DataGenerators {
 
 	public static void gatherData(GatherDataEvent evt) {
 		DataGenerator generator = evt.getGenerator();
-		BlockTagProvider blockTagProvider = new BlockTagProvider(generator, evt.getExistingFileHelper());
+		PackOutput packOutput = generator.getPackOutput();
+		BlockTagProvider blockTagProvider = new BlockTagProvider(packOutput, evt.getLookupProvider(), evt.getExistingFileHelper());
 		generator.addProvider(evt.includeServer(), blockTagProvider);
-		generator.addProvider(evt.includeServer(), new ItemTagProvider(generator, blockTagProvider, evt.getExistingFileHelper()));
-		generator.addProvider(evt.includeServer(), new StorageBlockLootProvider(generator));
+		generator.addProvider(evt.includeServer(), new ItemTagProvider(packOutput, evt.getLookupProvider(), blockTagProvider.contentsGetter(), evt.getExistingFileHelper()));
+		generator.addProvider(evt.includeServer(), new StorageBlockLootProvider(packOutput));
 		generator.addProvider(evt.includeServer(), new StorageRecipeProvider(generator));
 	}
 }

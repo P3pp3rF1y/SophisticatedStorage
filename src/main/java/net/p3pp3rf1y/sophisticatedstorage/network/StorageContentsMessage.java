@@ -5,7 +5,7 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
-import net.p3pp3rf1y.sophisticatedcore.client.render.ClientStorageContentsTooltip;
+import net.p3pp3rf1y.sophisticatedcore.client.render.ClientStorageContentsTooltipBase;
 import net.p3pp3rf1y.sophisticatedstorage.block.ItemContentsStorage;
 
 import javax.annotation.Nullable;
@@ -44,6 +44,6 @@ public class StorageContentsMessage {
 		}
 
 		ItemContentsStorage.get().setStorageContents(msg.shulkerBoxUuid, msg.contents);
-		ClientStorageContentsTooltip.refreshContents();
+		ClientStorageContentsTooltipBase.refreshContents();
 	}
 }

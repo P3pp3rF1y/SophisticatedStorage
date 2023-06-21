@@ -33,8 +33,8 @@ public class StorageContainerMenu extends StorageContainerMenuBase<IStorageWrapp
 		this(ModBlocks.STORAGE_CONTAINER_TYPE.get(), containerId, player, pos);
 	}
 	public StorageContainerMenu(MenuType<?> menuType, int containerId, Player player, BlockPos pos) {
-		super(menuType, containerId, player, getWrapper(player.level, pos), NoopStorageWrapper.INSTANCE, -1, false);
-		storageBlockEntity = WorldHelper.getBlockEntity(player.level, pos, StorageBlockEntity.class).orElseThrow(() -> new IllegalArgumentException("Incorrect block entity at " + pos + " exptected to find StorageBlockEntity"));
+		super(menuType, containerId, player, getWrapper(player.level(), pos), NoopStorageWrapper.INSTANCE, -1, false);
+		storageBlockEntity = WorldHelper.getBlockEntity(player.level(), pos, StorageBlockEntity.class).orElseThrow(() -> new IllegalArgumentException("Incorrect block entity at " + pos + " exptected to find StorageBlockEntity"));
 		storageBlockEntity.startOpen(player);
 	}
 
@@ -66,7 +66,7 @@ public class StorageContainerMenu extends StorageContainerMenuBase<IStorageWrapp
 		return new StorageUpgradeSlot(upgradeHandler, slotIndex) {
 			@Override
 			protected void onUpgradeChanged() {
-				if (player.getLevel().isClientSide()) {
+				if (player.level().isClientSide()) {
 					return;
 				}
 				storageWrapper.getSettingsHandler().getTypeCategory(ItemDisplaySettingsCategory.class).itemsChanged();
@@ -101,7 +101,7 @@ public class StorageContainerMenu extends StorageContainerMenuBase<IStorageWrapp
 	@Override
 	public boolean stillValid(Player player) {
 		BlockPos pos = storageBlockEntity.getBlockPos();
-		BlockEntity be = player.level.getBlockEntity(pos);
+		BlockEntity be = player.level().getBlockEntity(pos);
 		return be instanceof StorageBlockEntity
 				&& (player.distanceToSqr(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D) <= 64.0D)
 				&& (!(be instanceof WoodStorageBlockEntity woodStorageBlockEntity) || !woodStorageBlockEntity.isPacked());

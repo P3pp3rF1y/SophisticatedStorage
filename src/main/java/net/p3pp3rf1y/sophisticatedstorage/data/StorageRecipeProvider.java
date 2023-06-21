@@ -5,7 +5,6 @@ import net.minecraft.data.DataGenerator;
 import net.minecraft.data.recipes.FinishedRecipe;
 import net.minecraft.data.recipes.RecipeProvider;
 import net.minecraft.data.recipes.SpecialRecipeBuilder;
-import net.minecraft.data.recipes.UpgradeRecipeBuilder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.BlockItem;
@@ -37,12 +36,12 @@ public class StorageRecipeProvider extends RecipeProvider {
 	private static final String HAS_SMELTING_UPGRADE = "has_smelting_upgrade";
 	private static final String PLANK_SUFFIX = "_plank";
 
-	public StorageRecipeProvider(DataGenerator generatorIn) {
-		super(generatorIn);
+	public StorageRecipeProvider(DataGenerator generator) {
+		super(generator.getPackOutput());
 	}
 
 	@Override
-	protected void buildCraftingRecipes(Consumer<FinishedRecipe> consumer) {
+	protected void buildRecipes(Consumer<FinishedRecipe> consumer) {
 		SpecialRecipeBuilder.special(ModBlocks.STORAGE_DYE_RECIPE_SERIALIZER.get()).save(consumer, SophisticatedStorage.getRegistryName("storage_dye"));
 		SpecialRecipeBuilder.special(ModBlocks.FLAT_TOP_BARREL_TOGGLE_RECIPE_SERIALIZER.get()).save(consumer, SophisticatedStorage.getRegistryName("flat_top_barrel_toggle"));
 		SpecialRecipeBuilder.special(ModBlocks.BARREL_MATERIAL_RECIPE_SERIALIZER.get()).save(consumer, SophisticatedStorage.getRegistryName("barrel_material"));
@@ -104,9 +103,10 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.unlockedBy("has_gold_" + RegistryHelper.getItemKey(goldTierItem).getPath(), has(goldTierItem))
 				.save(consumer);
 
-		new UpgradeRecipeBuilder(ModBlocks.SMITHING_STORAGE_UPGRADE_RECIPE_SERIALIZER.get(), Ingredient.of(diamondTierItem),
-				Ingredient.of(Items.NETHERITE_INGOT), netheriteTierItem)
-				.unlocks("has_diamond_" + RegistryHelper.getItemKey(baseTierItem).getPath(), has(diamondTierItem))
+		ShapelessBasedRecipeBuilder.shapeless(netheriteTierItem, ModBlocks.STORAGE_TIER_UPGRADE_SHAPELESS_RECIPE_SERIALIZER.get())
+				.requires(Ingredient.of(diamondTierItem))
+				.requires(Tags.Items.INGOTS_NETHERITE)
+				.unlockedBy("has_diamond_" + RegistryHelper.getItemKey(baseTierItem).getPath(), has(diamondTierItem))
 				.save(consumer, RegistryHelper.getItemKey(netheriteTierItem));
 	}
 

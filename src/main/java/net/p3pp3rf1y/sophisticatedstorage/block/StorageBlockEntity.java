@@ -565,11 +565,28 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 	}
 
 	public void onNeighborChange(BlockPos neighborPos) {
-		Direction direction = Direction.fromNormal(Integer.signum(neighborPos.getX() - worldPosition.getX()), Integer.signum(neighborPos.getY() - worldPosition.getY()), Integer.signum(neighborPos.getZ() - worldPosition.getZ()));
+		Direction direction = getNeighborDirection(neighborPos);
 		if (direction == null) {
 			return;
 		}
-		storageWrapper.getUpgradeHandler().getWrappersThatImplement(INeighborChangeListenerUpgrade.class).forEach(upgrade -> upgrade.onNeighborChange(level, worldPosition, direction));
+		Direction finalDirection = direction;
+		storageWrapper.getUpgradeHandler().getWrappersThatImplement(INeighborChangeListenerUpgrade.class).forEach(upgrade -> upgrade.onNeighborChange(level, worldPosition, finalDirection));
+	}
+
+	@Nullable
+	private Direction getNeighborDirection(BlockPos neighborPos) {
+		Direction direction = null;
+		int normalX = Integer.signum(neighborPos.getX() - worldPosition.getX());
+		int normalY = Integer.signum(neighborPos.getY() - worldPosition.getY());
+		int normalZ = Integer.signum(neighborPos.getZ() - worldPosition.getZ());
+		for (Direction value : Direction.values()) {
+			Vec3i normal = value.getNormal();
+			if (normal.getX() == normalX && normal.getY() == normalY && normal.getZ() == normalZ) {
+				direction = value;
+				break;
+			}
+		}
+		return direction;
 	}
 
 	private static class ContentsFilteredItemHandler implements ITrackedContentsItemHandler {

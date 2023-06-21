@@ -20,7 +20,6 @@ import net.p3pp3rf1y.sophisticatedcore.util.ItemBase;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.RegistryHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
-import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.ICountDisplay;
 import net.p3pp3rf1y.sophisticatedstorage.block.ILockable;
 import net.p3pp3rf1y.sophisticatedstorage.block.ITierDisplay;
@@ -40,7 +39,7 @@ public class StorageToolItem extends ItemBase {
 	private static final String MODE_TAG = "mode";
 
 	public StorageToolItem() {
-		super(new Item.Properties().stacksTo(1), SophisticatedStorage.CREATIVE_TAB);
+		super(new Item.Properties().stacksTo(1));
 	}
 
 	@Override

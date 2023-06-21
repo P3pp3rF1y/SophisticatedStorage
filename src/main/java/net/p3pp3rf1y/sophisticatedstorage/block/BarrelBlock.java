@@ -2,7 +2,6 @@ package net.p3pp3rf1y.sophisticatedstorage.block;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -17,7 +16,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.piglin.PiglinAi;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
@@ -74,15 +72,15 @@ public class BarrelBlock extends WoodStorageBlockBase {
 	}
 
 	@Override
-	public void fillItemCategory(CreativeModeTab tab, NonNullList<ItemStack> items) {
-		super.fillItemCategory(tab, items);
+	public void addCreativeTabItems(Consumer<ItemStack> itemConsumer) {
+		super.addCreativeTabItems(itemConsumer);
 		if (this != ModBlocks.BARREL.get()) {
 			return;
 		}
 
 		ItemStack flatBarrel = WoodStorageBlockItem.setWoodType(new ItemStack(this), WoodType.ACACIA);
 		BarrelBlockItem.toggleFlatTop(flatBarrel);
-		items.add(flatBarrel);
+		itemConsumer.accept(flatBarrel);
 	}
 
 	@SuppressWarnings("deprecation")

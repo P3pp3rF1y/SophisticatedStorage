@@ -139,7 +139,7 @@ public class StorageTextureManager extends SimpleJsonResourceReloadListener {
 		private final String type;
 		private final Map<String, Map<String, ResourceLocation>> textures;
 
-		@SuppressWarnings({"unused", "java:S1172"}) //ignoring unused parameter because it's needed due to two constructors with the same erasure
+		@SuppressWarnings({"unused", "java:S1172"}) //ignoring unused parameter bNatcause it's needed due to two constructors with the same erasure
 		public StorageTextureDefinition(String type, Map<String, Map<String, ResourceLocation>> multiplePartTextures, boolean multipleTextureIgnoredParameter) {
 			this.type = type;
 			textures = multiplePartTextures;

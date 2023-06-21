@@ -1,99 +1,95 @@
 package net.p3pp3rf1y.sophisticatedstorage.data;
 
-import net.minecraft.data.CachedOutput;
-import net.minecraft.data.DataGenerator;
-import net.minecraft.data.DataProvider;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.data.PackOutput;
+import net.minecraft.data.loot.BlockLootSubProvider;
+import net.minecraft.data.loot.LootTableProvider;
+import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.level.ItemLike;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
-import net.minecraft.world.level.storage.loot.LootTables;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
-import net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer;
 import net.minecraft.world.level.storage.loot.functions.CopyNameFunction;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
-public class StorageBlockLootProvider implements DataProvider {
-	private final DataGenerator generator;
-
-	StorageBlockLootProvider(DataGenerator generator) {
-		this.generator = generator;
+public class StorageBlockLootProvider extends LootTableProvider {
+	StorageBlockLootProvider(PackOutput packOutput) {
+		super(packOutput, Set.of(),
+				List.of(
+						new SubProviderEntry(SubProvider::new, LootContextParamSets.BLOCK)
+				)
+		);
 	}
 
-	@Override
-	public void run(CachedOutput cache) throws IOException {
-		Map<ResourceLocation, LootTable.Builder> tables = new HashMap<>();
-
-		tables.put(ModBlocks.BARREL.getId(), getStorage(ModBlocks.BARREL_ITEM.get()));
-		tables.put(ModBlocks.IRON_BARREL.getId(), getStorage(ModBlocks.IRON_BARREL_ITEM.get()));
-		tables.put(ModBlocks.GOLD_BARREL.getId(), getStorage(ModBlocks.GOLD_BARREL_ITEM.get()));
-		tables.put(ModBlocks.DIAMOND_BARREL.getId(), getStorage(ModBlocks.DIAMOND_BARREL_ITEM.get()));
-		tables.put(ModBlocks.NETHERITE_BARREL.getId(), getStorage(ModBlocks.NETHERITE_BARREL_ITEM.get()));
-		tables.put(ModBlocks.LIMITED_BARREL_1.getId(), getStorage(ModBlocks.LIMITED_BARREL_1_ITEM.get()));
-		tables.put(ModBlocks.LIMITED_IRON_BARREL_1.getId(), getStorage(ModBlocks.LIMITED_IRON_BARREL_1_ITEM.get()));
-		tables.put(ModBlocks.LIMITED_GOLD_BARREL_1.getId(), getStorage(ModBlocks.LIMITED_GOLD_BARREL_1_ITEM.get()));
-		tables.put(ModBlocks.LIMITED_DIAMOND_BARREL_1.getId(), getStorage(ModBlocks.LIMITED_DIAMOND_BARREL_1_ITEM.get()));
-		tables.put(ModBlocks.LIMITED_NETHERITE_BARREL_1.getId(), getStorage(ModBlocks.LIMITED_NETHERITE_BARREL_1_ITEM.get()));
-		tables.put(ModBlocks.LIMITED_BARREL_2.getId(), getStorage(ModBlocks.LIMITED_BARREL_2_ITEM.get()));
-		tables.put(ModBlocks.LIMITED_IRON_BARREL_2.getId(), getStorage(ModBlocks.LIMITED_IRON_BARREL_2_ITEM.get()));
-		tables.put(ModBlocks.LIMITED_GOLD_BARREL_2.getId(), getStorage(ModBlocks.LIMITED_GOLD_BARREL_2_ITEM.get()));
-		tables.put(ModBlocks.LIMITED_DIAMOND_BARREL_2.getId(), getStorage(ModBlocks.LIMITED_DIAMOND_BARREL_2_ITEM.get()));
-		tables.put(ModBlocks.LIMITED_NETHERITE_BARREL_2.getId(), getStorage(ModBlocks.LIMITED_NETHERITE_BARREL_2_ITEM.get()));
-		tables.put(ModBlocks.LIMITED_BARREL_3.getId(), getStorage(ModBlocks.LIMITED_BARREL_3_ITEM.get()));
-		tables.put(ModBlocks.LIMITED_IRON_BARREL_3.getId(), getStorage(ModBlocks.LIMITED_IRON_BARREL_3_ITEM.get()));
-		tables.put(ModBlocks.LIMITED_GOLD_BARREL_3.getId(), getStorage(ModBlocks.LIMITED_GOLD_BARREL_3_ITEM.get()));
-		tables.put(ModBlocks.LIMITED_DIAMOND_BARREL_3.getId(), getStorage(ModBlocks.LIMITED_DIAMOND_BARREL_3_ITEM.get()));
-		tables.put(ModBlocks.LIMITED_NETHERITE_BARREL_3.getId(), getStorage(ModBlocks.LIMITED_NETHERITE_BARREL_3_ITEM.get()));
-		tables.put(ModBlocks.LIMITED_BARREL_4.getId(), getStorage(ModBlocks.LIMITED_BARREL_4_ITEM.get()));
-		tables.put(ModBlocks.LIMITED_IRON_BARREL_4.getId(), getStorage(ModBlocks.LIMITED_IRON_BARREL_4_ITEM.get()));
-		tables.put(ModBlocks.LIMITED_GOLD_BARREL_4.getId(), getStorage(ModBlocks.LIMITED_GOLD_BARREL_4_ITEM.get()));
-		tables.put(ModBlocks.LIMITED_DIAMOND_BARREL_4.getId(), getStorage(ModBlocks.LIMITED_DIAMOND_BARREL_4_ITEM.get()));
-		tables.put(ModBlocks.LIMITED_NETHERITE_BARREL_4.getId(), getStorage(ModBlocks.LIMITED_NETHERITE_BARREL_4_ITEM.get()));
-		tables.put(ModBlocks.CHEST.getId(), getStorage(ModBlocks.CHEST_ITEM.get()));
-		tables.put(ModBlocks.IRON_CHEST.getId(), getStorage(ModBlocks.IRON_CHEST_ITEM.get()));
-		tables.put(ModBlocks.GOLD_CHEST.getId(), getStorage(ModBlocks.GOLD_CHEST_ITEM.get()));
-		tables.put(ModBlocks.DIAMOND_CHEST.getId(), getStorage(ModBlocks.DIAMOND_CHEST_ITEM.get()));
-		tables.put(ModBlocks.NETHERITE_CHEST.getId(), getStorage(ModBlocks.NETHERITE_CHEST_ITEM.get()));
-		tables.put(ModBlocks.SHULKER_BOX.getId(), getStorage(ModBlocks.SHULKER_BOX_ITEM.get()));
-		tables.put(ModBlocks.IRON_SHULKER_BOX.getId(), getStorage(ModBlocks.IRON_SHULKER_BOX_ITEM.get()));
-		tables.put(ModBlocks.GOLD_SHULKER_BOX.getId(), getStorage(ModBlocks.GOLD_SHULKER_BOX_ITEM.get()));
-		tables.put(ModBlocks.DIAMOND_SHULKER_BOX.getId(), getStorage(ModBlocks.DIAMOND_SHULKER_BOX_ITEM.get()));
-		tables.put(ModBlocks.NETHERITE_SHULKER_BOX.getId(), getStorage(ModBlocks.NETHERITE_SHULKER_BOX_ITEM.get()));
-		tables.put(ModBlocks.CONTROLLER.getId(), createSingleItemTable(ModBlocks.CONTROLLER_ITEM.get()));
-		tables.put(ModBlocks.STORAGE_LINK.getId(), createSingleItemTable(ModBlocks.STORAGE_LINK_ITEM.get()));
-
-		for (Map.Entry<ResourceLocation, LootTable.Builder> e : tables.entrySet()) {
-			Path path = getPath(generator.getOutputFolder(), e.getKey());
-			DataProvider.saveStable(cache, LootTables.serialize(e.getValue().setParamSet(LootContextParamSets.BLOCK).build()), path);
+	private static class SubProvider extends BlockLootSubProvider {
+		protected SubProvider() {
+			super(Set.of(), FeatureFlags.REGISTRY.allFlags());
 		}
-	}
 
-	@Override
-	public String getName() {
-		return "SophisticatedStorage block loot tables";
-	}
+		@Override
+		public void generate() {
+			add(ModBlocks.BARREL.get(), dropStorageWithContents(ModBlocks.BARREL_ITEM.get()));
+			add(ModBlocks.IRON_BARREL.get(), dropStorageWithContents(ModBlocks.IRON_BARREL_ITEM.get()));
+			add(ModBlocks.GOLD_BARREL.get(), dropStorageWithContents(ModBlocks.GOLD_BARREL_ITEM.get()));
+			add(ModBlocks.DIAMOND_BARREL.get(), dropStorageWithContents(ModBlocks.DIAMOND_BARREL_ITEM.get()));
+			add(ModBlocks.NETHERITE_BARREL.get(), dropStorageWithContents(ModBlocks.NETHERITE_BARREL_ITEM.get()));
+			add(ModBlocks.LIMITED_BARREL_1.get(), dropStorageWithContents(ModBlocks.LIMITED_BARREL_1_ITEM.get()));
+			add(ModBlocks.LIMITED_IRON_BARREL_1.get(), dropStorageWithContents(ModBlocks.LIMITED_IRON_BARREL_1_ITEM.get()));
+			add(ModBlocks.LIMITED_GOLD_BARREL_1.get(), dropStorageWithContents(ModBlocks.LIMITED_GOLD_BARREL_1_ITEM.get()));
+			add(ModBlocks.LIMITED_DIAMOND_BARREL_1.get(), dropStorageWithContents(ModBlocks.LIMITED_DIAMOND_BARREL_1_ITEM.get()));
+			add(ModBlocks.LIMITED_NETHERITE_BARREL_1.get(), dropStorageWithContents(ModBlocks.LIMITED_NETHERITE_BARREL_1_ITEM.get()));
+			add(ModBlocks.LIMITED_BARREL_2.get(), dropStorageWithContents(ModBlocks.LIMITED_BARREL_2_ITEM.get()));
+			add(ModBlocks.LIMITED_IRON_BARREL_2.get(), dropStorageWithContents(ModBlocks.LIMITED_IRON_BARREL_2_ITEM.get()));
+			add(ModBlocks.LIMITED_GOLD_BARREL_2.get(), dropStorageWithContents(ModBlocks.LIMITED_GOLD_BARREL_2_ITEM.get()));
+			add(ModBlocks.LIMITED_DIAMOND_BARREL_2.get(), dropStorageWithContents(ModBlocks.LIMITED_DIAMOND_BARREL_2_ITEM.get()));
+			add(ModBlocks.LIMITED_NETHERITE_BARREL_2.get(), dropStorageWithContents(ModBlocks.LIMITED_NETHERITE_BARREL_2_ITEM.get()));
+			add(ModBlocks.LIMITED_BARREL_3.get(), dropStorageWithContents(ModBlocks.LIMITED_BARREL_3_ITEM.get()));
+			add(ModBlocks.LIMITED_IRON_BARREL_3.get(), dropStorageWithContents(ModBlocks.LIMITED_IRON_BARREL_3_ITEM.get()));
+			add(ModBlocks.LIMITED_GOLD_BARREL_3.get(), dropStorageWithContents(ModBlocks.LIMITED_GOLD_BARREL_3_ITEM.get()));
+			add(ModBlocks.LIMITED_DIAMOND_BARREL_3.get(), dropStorageWithContents(ModBlocks.LIMITED_DIAMOND_BARREL_3_ITEM.get()));
+			add(ModBlocks.LIMITED_NETHERITE_BARREL_3.get(), dropStorageWithContents(ModBlocks.LIMITED_NETHERITE_BARREL_3_ITEM.get()));
+			add(ModBlocks.LIMITED_BARREL_4.get(), dropStorageWithContents(ModBlocks.LIMITED_BARREL_4_ITEM.get()));
+			add(ModBlocks.LIMITED_IRON_BARREL_4.get(), dropStorageWithContents(ModBlocks.LIMITED_IRON_BARREL_4_ITEM.get()));
+			add(ModBlocks.LIMITED_GOLD_BARREL_4.get(), dropStorageWithContents(ModBlocks.LIMITED_GOLD_BARREL_4_ITEM.get()));
+			add(ModBlocks.LIMITED_DIAMOND_BARREL_4.get(), dropStorageWithContents(ModBlocks.LIMITED_DIAMOND_BARREL_4_ITEM.get()));
+			add(ModBlocks.LIMITED_NETHERITE_BARREL_4.get(), dropStorageWithContents(ModBlocks.LIMITED_NETHERITE_BARREL_4_ITEM.get()));
+			add(ModBlocks.CHEST.get(), dropStorageWithContents(ModBlocks.CHEST_ITEM.get()));
+			add(ModBlocks.IRON_CHEST.get(), dropStorageWithContents(ModBlocks.IRON_CHEST_ITEM.get()));
+			add(ModBlocks.GOLD_CHEST.get(), dropStorageWithContents(ModBlocks.GOLD_CHEST_ITEM.get()));
+			add(ModBlocks.DIAMOND_CHEST.get(), dropStorageWithContents(ModBlocks.DIAMOND_CHEST_ITEM.get()));
+			add(ModBlocks.NETHERITE_CHEST.get(), dropStorageWithContents(ModBlocks.NETHERITE_CHEST_ITEM.get()));
+			add(ModBlocks.SHULKER_BOX.get(), dropStorageWithContents(ModBlocks.SHULKER_BOX_ITEM.get()));
+			add(ModBlocks.IRON_SHULKER_BOX.get(), dropStorageWithContents(ModBlocks.IRON_SHULKER_BOX_ITEM.get()));
+			add(ModBlocks.GOLD_SHULKER_BOX.get(), dropStorageWithContents(ModBlocks.GOLD_SHULKER_BOX_ITEM.get()));
+			add(ModBlocks.DIAMOND_SHULKER_BOX.get(), dropStorageWithContents(ModBlocks.DIAMOND_SHULKER_BOX_ITEM.get()));
+			add(ModBlocks.NETHERITE_SHULKER_BOX.get(), dropStorageWithContents(ModBlocks.NETHERITE_SHULKER_BOX_ITEM.get()));
 
-	private static Path getPath(Path root, ResourceLocation id) {
-		return root.resolve("data/" + id.getNamespace() + "/loot_tables/blocks/" + id.getPath() + ".json");
-	}
+			dropSelf(ModBlocks.CONTROLLER.get());
+			dropSelf(ModBlocks.STORAGE_LINK.get());
+		}
 
-	private static LootTable.Builder getStorage(Item storageItem) {
-		LootPoolEntryContainer.Builder<?> entry = LootItem.lootTableItem(storageItem);
-		LootPool.Builder pool = LootPool.lootPool().name("main").setRolls(ConstantValue.exactly(1)).add(entry)
-				.apply(CopyNameFunction.copyName(CopyNameFunction.NameSource.BLOCK_ENTITY))
-				.apply(CopyStorageDataFunction.builder());
-		return LootTable.lootTable().withPool(pool);
-	}
+		@Override
+		protected Iterable<Block> getKnownBlocks() {
+			return ForgeRegistries.BLOCKS.getEntries().stream()
+					.filter(e -> e.getKey().location().getNamespace().equals(SophisticatedStorage.MOD_ID))
+					.map(Map.Entry::getValue)
+					.toList();
+		}
 
-	protected static LootTable.Builder createSingleItemTable(ItemLike item) {
-		return LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(item)));
+		private static LootTable.Builder dropStorageWithContents(Item storageItem) {
+			LootPool.Builder pool = LootPool.lootPool().setRolls(ConstantValue.exactly(1))
+					.add(LootItem.lootTableItem(storageItem))
+					.apply(CopyNameFunction.copyName(CopyNameFunction.NameSource.BLOCK_ENTITY))
+					.apply(CopyStorageDataFunction.builder());
+			return LootTable.lootTable().withPool(pool);
+		}
 	}
 }

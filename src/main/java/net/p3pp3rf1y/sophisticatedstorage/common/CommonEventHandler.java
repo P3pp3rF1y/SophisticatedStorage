@@ -99,7 +99,7 @@ public class CommonEventHandler {
 			return;
 		}
 
-		Level level = player.getLevel();
+		Level level = player.level();
 		WorldHelper.getBlockEntity(level, event.getPos(), WoodStorageBlockEntity.class).ifPresent(wbe -> {
 			if (wbe.isPacked()) {
 				return;

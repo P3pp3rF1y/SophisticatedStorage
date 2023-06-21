@@ -1,6 +1,6 @@
 package net.p3pp3rf1y.sophisticatedstorage.block;
 
-import com.mojang.math.Vector3f;
+import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -12,7 +12,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
@@ -31,16 +30,19 @@ import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.UpgradeRenderDataType;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeHandler;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeItemBase;
+import net.p3pp3rf1y.sophisticatedcore.util.BlockBase;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.RegistryHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
+import org.joml.Vector3f;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public abstract class StorageBlockBase extends Block implements IStorageBlock, ISneakItemInteractionBlock, EntityBlock {
+public abstract class StorageBlockBase extends BlockBase implements IStorageBlock, ISneakItemInteractionBlock, EntityBlock {
 	public static final BooleanProperty TICKING = BooleanProperty.create("ticking");
 	protected final Supplier<Integer> numberOfInventorySlotsSupplier;
 	protected final Supplier<Integer> numberOfUpgradeSlotsSupplier;
@@ -53,6 +55,11 @@ public abstract class StorageBlockBase extends Block implements IStorageBlock, I
 
 	@Override
 	public abstract StorageBlockEntity newBlockEntity(BlockPos pos, BlockState state);
+
+	@Override
+	public void addCreativeTabItems(Consumer<ItemStack> itemConsumer) {
+		itemConsumer.accept(new ItemStack(this));
+	}
 
 	@Nullable
 	protected static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(BlockEntityType<A> typePassedIn, BlockEntityType<E> typeExpected, BlockEntityTicker<? super E> blockEntityTicker) {
@@ -68,10 +75,10 @@ public abstract class StorageBlockBase extends Block implements IStorageBlock, I
 	}
 
 	private static Vector3f getMiddleFacePoint(BlockPos pos, Direction facing, Vector3f vector) {
-		Vector3f point = vector.copy();
+		Vector3f point = new Vector3f(vector);
 		point.add(0, 0, 0.6f);
-		point.transform(Vector3f.XP.rotationDegrees(-90.0F));
-		point.transform(facing.getRotation());
+		point.rotate(Axis.XP.rotationDegrees(-90.0F));
+		point.rotate(facing.getRotation());
 		point.add(pos.getX() + 0.5f, pos.getY() + 0.5f, pos.getZ() + 0.5f);
 		return point;
 	}
@@ -204,7 +211,7 @@ public abstract class StorageBlockBase extends Block implements IStorageBlock, I
 	}
 
 	protected boolean tryAddUpgrade(Player player, InteractionHand hand, StorageBlockEntity b, ItemStack itemInHand, Direction facing, BlockHitResult hitResult) {
-		if (player.getLevel().isClientSide) {
+		if (player.level().isClientSide) {
 			return true;
 		}
 

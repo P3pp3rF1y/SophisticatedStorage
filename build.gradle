@@ -35,6 +35,14 @@ repositories {
         }
     }
     maven { url "https://maven.blamejared.com/" }
+    maven {
+        name = "GitHubPackages"
+        url = uri("https://maven.pkg.github.com/P3pp3rF1y/SophisticatedBackpacks")
+        credentials {
+            username = System.getenv("GITHUB_ACTOR")
+            password = System.getenv("GITHUB_TOKEN")
+        }
+    }
 }
 
 group = 'sophisticatedstorage'
@@ -102,18 +110,20 @@ dependencies {
 
     compileOnly fg.deobf("mezz.jei:jei-${jei_mc_version}:${jei_version}")
     runtimeOnly fg.deobf("mezz.jei:jei-${jei_mc_version}:${jei_version}")
+/*
     compileOnly fg.deobf("curse.maven:quark-243121:${quark_cf_file_id}")
     compileOnly fg.deobf("curse.maven:autoreglib-250363:${autoreglib_cf_file_id}")
     runtimeOnly fg.deobf("curse.maven:quark-243121:${quark_cf_file_id}")
     runtimeOnly fg.deobf("curse.maven:autoreglib-250363:${autoreglib_cf_file_id}")
+*/
 
     if (findProject(':SophisticatedCore') != null) {
         implementation project(':SophisticatedCore')
         testImplementation project(':SophisticatedCore')
     } else {
-        compileOnly fg.deobf("curse.maven:sophisticatedcore-618298:${sc_cf_file_id}")
-        runtimeOnly fg.deobf("curse.maven:sophisticatedcore-618298:${sc_cf_file_id}")
-        testImplementation fg.deobf("curse.maven:sophisticatedcore-618298:${sc_cf_file_id}")
+        compileOnly fg.deobf("sophisticatedcore:sophisticatedcore:${sc_version}")
+        runtimeOnly fg.deobf("sophisticatedcore:sophisticatedcore:${sc_version}")
+        testImplementation fg.deobf("sophisticatedcore:sophisticatedcore:${sc_version}")
     }
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.+'

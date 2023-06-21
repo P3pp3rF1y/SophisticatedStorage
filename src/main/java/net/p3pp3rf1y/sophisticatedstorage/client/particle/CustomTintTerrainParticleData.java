@@ -6,9 +6,9 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.commands.arguments.blocks.BlockStateParser;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Registry;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -54,15 +54,14 @@ public class CustomTintTerrainParticleData extends ParticleType<CustomTintTerrai
 		public CustomTintTerrainParticleData fromCommand(ParticleType<CustomTintTerrainParticleData> particleType, StringReader reader)
 				throws CommandSyntaxException {
 			reader.expect('|');
-			BlockState blockState = Objects.requireNonNull(BlockStateParser.parseForBlock(Registry.BLOCK, reader, false).blockState());
+			BlockState blockState = Objects.requireNonNull(BlockStateParser.parseForBlock(BuiltInRegistries.BLOCK.asLookup(), reader, false).blockState());
 			reader.expect('|');
-			BlockPos pos = fromString(reader.readUnquotedString());
-			return new CustomTintTerrainParticleData(blockState, pos);
+			return new CustomTintTerrainParticleData(blockState, fromString(reader.readUnquotedString()));
 		}
 
 		private BlockPos fromString(String value) {
 			String[] split = value.split(",");
-			return new BlockPos(Double.parseDouble(split[0]), Double.parseDouble(split[1]), Double.parseDouble(split[2]));
+			return BlockPos.containing(Double.parseDouble(split[0]), Double.parseDouble(split[1]), Double.parseDouble(split[2]));
 		}
 
 		@Override

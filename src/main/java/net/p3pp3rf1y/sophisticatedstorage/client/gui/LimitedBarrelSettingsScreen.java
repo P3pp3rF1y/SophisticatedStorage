@@ -1,6 +1,6 @@
 package net.p3pp3rf1y.sophisticatedstorage.client.gui;
 
-import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.Position;
@@ -25,8 +25,8 @@ public class LimitedBarrelSettingsScreen extends StorageSettingsScreen {
 	}
 
 	@Override
-	protected void drawSlotBg(PoseStack matrixStack, int x, int y) {
-		LimitedBarrelScreen.drawSlotBg(matrixStack, x, y, getMenu().getNumberOfStorageInventorySlots(), getMenu());
+	protected void drawSlotBg(GuiGraphics guiGraphics, int x, int y) {
+		LimitedBarrelScreen.drawSlotBg(guiGraphics, x, y, getMenu().getNumberOfStorageInventorySlots(), getMenu());
 	}
 
 	@Override

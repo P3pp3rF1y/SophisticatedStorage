@@ -11,7 +11,7 @@ import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageToolItem;
 
 public class ToolInfoOverlay {
-	public static final IGuiOverlay HUD_TOOL_INFO = (gui, poseStack, partialTicks, width, height) -> {
+	public static final IGuiOverlay HUD_TOOL_INFO = (gui, guiGraphics, partialTicks, width, height) -> {
 		LocalPlayer player = Minecraft.getInstance().player;
 		if (player == null) {
 			return;
@@ -22,7 +22,7 @@ public class ToolInfoOverlay {
 			int i = font.width(overlayMessage);
 			int x = (gui.screenWidth - i) / 2;
 			int y = gui.screenHeight - 75;
-			font.drawShadow(poseStack, overlayMessage, x, y, DyeColor.WHITE.getTextColor());
+			guiGraphics.drawString(font, overlayMessage, x + 1, y, DyeColor.WHITE.getTextColor(), false);
 		});
 	};
 }

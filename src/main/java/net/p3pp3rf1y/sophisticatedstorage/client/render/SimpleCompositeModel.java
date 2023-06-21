@@ -7,7 +7,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.mojang.datafixers.util.Either;
-import com.mojang.datafixers.util.Pair;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.BlockElement;
@@ -17,7 +16,7 @@ import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.Material;
-import net.minecraft.client.resources.model.ModelBakery;
+import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.ModelState;
 import net.minecraft.client.resources.model.UnbakedModel;
 import net.minecraft.core.BlockPos;
@@ -39,9 +38,7 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -57,7 +54,7 @@ public class SimpleCompositeModel implements IUnbakedGeometry<SimpleCompositeMod
 	}
 
 	@Override
-	public BakedModel bake(IGeometryBakingContext context, ModelBakery bakery, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelState, ItemOverrides overrides, ResourceLocation modelLocation) {
+	public BakedModel bake(IGeometryBakingContext context, ModelBaker baker, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelState, ItemOverrides overrides, ResourceLocation modelLocation) {
 		Material particleLocation = context.getMaterial(PARTICLE_MATERIAL);
 		TextureAtlasSprite particle = spriteGetter.apply(particleLocation);
 
@@ -73,7 +70,7 @@ public class SimpleCompositeModel implements IUnbakedGeometry<SimpleCompositeMod
 				continue;
 			}
 			var model = entry.getValue();
-			bakedPartsBuilder.put(name, model.bake(bakery, model, spriteGetter, modelState, modelLocation, true));
+			bakedPartsBuilder.put(name, model.bake(baker, model, spriteGetter, modelState, modelLocation, true));
 		}
 		var bakedParts = bakedPartsBuilder.build();
 
@@ -97,6 +94,11 @@ public class SimpleCompositeModel implements IUnbakedGeometry<SimpleCompositeMod
 		return textures;
 	}
 
+	@Override
+	public void resolveParents(Function<ResourceLocation, UnbakedModel> modelGetter, IGeometryBakingContext context) {
+		children.values().forEach(childModel -> childModel.resolveParents(modelGetter));
+	}
+
 	@SuppressWarnings("java:S1874") //need to get elements from the model so actually need to call getElements here
 	public List<BlockElement> getElements() {
 		List<BlockElement> elements = new ArrayList<>();
@@ -110,19 +112,6 @@ public class SimpleCompositeModel implements IUnbakedGeometry<SimpleCompositeMod
 		});
 
 		return elements;
-	}
-
-	@Override
-	public Collection<Material> getMaterials(IGeometryBakingContext context, Function<ResourceLocation, UnbakedModel> modelGetter, Set<Pair<String, String>> missingTextureErrors) {
-		Set<Material> textures = new HashSet<>();
-		if (context.hasMaterial(PARTICLE_MATERIAL)) {
-			textures.add(context.getMaterial(PARTICLE_MATERIAL));
-		}
-		for (BlockModel part : children.values()) {
-			textures.addAll(part.getMaterials(modelGetter, missingTextureErrors));
-		}
-
-		return textures;
 	}
 
 	@Override

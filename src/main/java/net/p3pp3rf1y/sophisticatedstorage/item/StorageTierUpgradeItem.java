@@ -30,7 +30,6 @@ import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryHandler;
 import net.p3pp3rf1y.sophisticatedcore.util.ColorHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.ItemBase;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
-import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.LimitedBarrelBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockBase;
@@ -58,7 +57,7 @@ public class StorageTierUpgradeItem extends ItemBase {
 	}
 
 	public StorageTierUpgradeItem(TierUpgrade tier, boolean hasTooltip) {
-		super(new Properties(), SophisticatedStorage.CREATIVE_TAB);
+		super(new Properties());
 		this.tier = tier;
 		this.hasTooltip = hasTooltip;
 	}
