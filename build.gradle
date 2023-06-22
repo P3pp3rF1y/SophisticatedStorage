@@ -121,9 +121,15 @@ dependencies {
         implementation project(':SophisticatedCore')
         testImplementation project(':SophisticatedCore')
     } else {
-        compileOnly fg.deobf("sophisticatedcore:sophisticatedcore:${sc_version}")
-        runtimeOnly fg.deobf("sophisticatedcore:sophisticatedcore:${sc_version}")
-        testImplementation fg.deobf("sophisticatedcore:sophisticatedcore:${sc_version}")
+        compileOnly fg.deobf("sophisticatedcore:sophisticatedcore:${sc_version}") {
+            transitive = false
+        }
+        runtimeOnly fg.deobf("sophisticatedcore:sophisticatedcore:${sc_version}") {
+            transitive = false
+        }
+        testImplementation fg.deobf("sophisticatedcore:sophisticatedcore:${sc_version}") {
+            transitive = false
+        }
     }
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.+'
