@@ -111,7 +111,7 @@ dependencies {
     compileOnly fg.deobf("mezz.jei:jei-${jei_mc_version}:${jei_version}")
     runtimeOnly fg.deobf("mezz.jei:jei-${jei_mc_version}:${jei_version}")
     compileOnly fg.deobf("curse.maven:rubidium-574856:${rubidium_cf_file_id}")
-    runtimeOnly fg.deobf("curse.maven:rubidium-574856:${rubidium_cf_file_id}")
+    //runtimeOnly fg.deobf("curse.maven:rubidium-574856:${rubidium_cf_file_id}")
 /*
     compileOnly fg.deobf("curse.maven:quark-243121:${quark_cf_file_id}")
     compileOnly fg.deobf("curse.maven:autoreglib-250363:${autoreglib_cf_file_id}")
