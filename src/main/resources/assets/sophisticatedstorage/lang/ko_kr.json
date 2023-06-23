@@ -165,7 +165,7 @@
     "gui.sophisticatedstorage.upgrades.buttons.io_mode_push": "밀기",
     "gui.sophisticatedstorage.upgrades.buttons.io_mode_pull": "당기기",
     "gui.sophisticatedstorage.upgrades.buttons.io_mode_push_pull": "밀기 & 당기기",
-    "gui.sophisticatedstorage.upgrades.buttons.io_mode_off": "꺼짐",
+    "gui.sophisticatedstorage.upgrades.buttons.io_mode_off": "끄기",
     "gui.sophisticatedstorage.upgrades.buttons.io_mode_disabled": "비활성화됨",
     "gui.sophisticatedstorage.upgrades.buttons.io_mode_side_info": "%s (%s)",
     "gui.sophisticatedstorage.direction.up": "위쪽",
