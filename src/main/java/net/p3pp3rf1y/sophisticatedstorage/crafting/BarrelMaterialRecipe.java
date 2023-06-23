@@ -11,8 +11,6 @@ import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.CustomRecipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelMaterial;
@@ -94,7 +92,7 @@ public class BarrelMaterialRecipe extends CustomRecipe {
 			return false;
 		}
 
-		return Block.isShapeFullBlock(blockItem.getBlock().getShape(blockItem.getBlock().defaultBlockState(), level, BlockPos.ZERO, CollisionContext.empty()));
+		return blockItem.getBlock().defaultBlockState().isSolidRender(level, BlockPos.ZERO);
 	}
 
 	@Override
