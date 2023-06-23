@@ -5,6 +5,7 @@ import net.minecraft.data.loot.BlockLootSubProvider;
 import net.minecraft.data.loot.LootTableProvider;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
@@ -72,8 +73,8 @@ public class StorageBlockLootProvider extends LootTableProvider {
 			add(ModBlocks.DIAMOND_SHULKER_BOX.get(), dropStorageWithContents(ModBlocks.DIAMOND_SHULKER_BOX_ITEM.get()));
 			add(ModBlocks.NETHERITE_SHULKER_BOX.get(), dropStorageWithContents(ModBlocks.NETHERITE_SHULKER_BOX_ITEM.get()));
 
-			dropSelf(ModBlocks.CONTROLLER.get());
-			dropSelf(ModBlocks.STORAGE_LINK.get());
+			add(ModBlocks.CONTROLLER.get(), dropBlock(ModBlocks.CONTROLLER_ITEM.get()));
+			add(ModBlocks.STORAGE_LINK.get(), dropBlock(ModBlocks.STORAGE_LINK_ITEM.get()));
 		}
 
 		@Override
@@ -85,11 +86,15 @@ public class StorageBlockLootProvider extends LootTableProvider {
 		}
 
 		private static LootTable.Builder dropStorageWithContents(Item storageItem) {
-			LootPool.Builder pool = LootPool.lootPool().setRolls(ConstantValue.exactly(1))
+			LootPool.Builder pool = LootPool.lootPool().name("main").setRolls(ConstantValue.exactly(1))
 					.add(LootItem.lootTableItem(storageItem))
 					.apply(CopyNameFunction.copyName(CopyNameFunction.NameSource.BLOCK_ENTITY))
 					.apply(CopyStorageDataFunction.builder());
 			return LootTable.lootTable().withPool(pool);
+		}
+
+		public LootTable.Builder dropBlock(ItemLike pItem) {
+			return LootTable.lootTable().withPool(applyExplosionCondition(pItem, LootPool.lootPool().name("main").setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(pItem))));
 		}
 	}
 }
