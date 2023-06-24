@@ -120,7 +120,7 @@
     "item.sophisticatedstorage.blasting_upgrade.tooltip": "강화 창에서 용광로를 사용할 수 있게 됩니다.",
     "item.sophisticatedstorage.auto_blasting_upgrade": "자동 용광로 강화",
     "item.sophisticatedstorage.auto_blasting_upgrade.tooltip": "강화 창에서 용광로를 사용할 수 있게 됩니다.\n자동으로 용광로에 아이템을 넣고 꺼낼 수 있게 됩니다.",
-    "item.sophisticatedstorage.crafting_upgrade": "제작 강화",
+    "item.sophisticatedstorage.crafting_upgrade": "제작대 강화",
     "item.sophisticatedstorage.crafting_upgrade.tooltip": "강화 창에서 제작대를 사용할 수 있게 됩니다.",
     "item.sophisticatedstorage.stonecutter_upgrade": "석재 절단기 강화",
     "item.sophisticatedstorage.stonecutter_upgrade.tooltip": "강화 창에서 석재 절단기를 사용할 수 있게 됩니다.",
@@ -186,6 +186,6 @@
     "gui.sophisticatedstorage.settings.buttons.context_storage.tooltip": "이 저장소의 설정",
     "gui.sophisticatedstorage.settings.buttons.context_storage.tooltip_detail": "이 저장소를 재정의합니다.",
     "keybind.sophisticatedstorage.category": "정교한 저장소",
-    "keybind.sophisticatedstorage.sort": "저장소 정렬하기",
-    "gui.sophisticatedstorage.status.too_many_item_entity_drops": "너무 많은 (%s개) 아이템 개체가 떨어질 수 있으므로 %s을(를) 부술 수 없습니다.\n이 작업을 건너뛰기 위해 %s을(를) 사용하거나 웅크리고 부수세요."
+    "keybind.sophisticatedstorage.sort": "저장소 정렬",
+    "gui.sophisticatedstorage.status.too_many_item_entity_drops": "%s을(를) 부술 수 없습니다. 너무 많은 %s개의 아이템 개체가 떨어질 수 있습니다.\n이 절차를 건너뛰기 위해서는 %s를 사용하거나 웅크리고 부수세요."
 }
