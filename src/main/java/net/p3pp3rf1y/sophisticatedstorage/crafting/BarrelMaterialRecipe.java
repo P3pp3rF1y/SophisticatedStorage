@@ -1,11 +1,9 @@
 package net.p3pp3rf1y.sophisticatedstorage.crafting;
 
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.CustomRecipe;
@@ -55,7 +53,7 @@ public class BarrelMaterialRecipe extends CustomRecipe {
 					} else {
 						return false;
 					}
-				} else if (isFullBlockItem(level, item.getItem())) {
+				} else if (item.getItem() instanceof BlockItem) {
 					boolean isBottomMiddleAndBottomLeftHasBlock = barrelCol == col && barrelRow < row && rowCounts.getOrDefault(row, 0) > 0;
 					if (isBottomMiddleAndBottomLeftHasBlock) {
 						return false;
@@ -85,14 +83,6 @@ public class BarrelMaterialRecipe extends CustomRecipe {
 		}
 
 		return rowCounts.getOrDefault(barrelRow - 1, 0) <= 3 && rowCounts.getOrDefault(barrelRow, 0) <= 2 && rowCounts.getOrDefault(barrelRow + 1, 0) <= 2;
-	}
-
-	private boolean isFullBlockItem(Level level, Item item) {
-		if (!(item instanceof BlockItem blockItem)) {
-			return false;
-		}
-
-		return blockItem.getBlock().defaultBlockState().isSolidRender(level, BlockPos.ZERO);
 	}
 
 	@Override
