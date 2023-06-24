@@ -103,7 +103,7 @@
     "item.sophisticatedstorage.compacting_upgrade": "압축 강화",
     "item.sophisticatedstorage.compacting_upgrade.tooltip": "아이템을 압축할 수 있게 됩니다.\n2x2 제작법만 사용할 수 있습니다.",
     "item.sophisticatedstorage.advanced_compacting_upgrade": "고급 압축 강화",
-    "item.sophisticatedstorage.advanced_compacting_upgrade.tooltip": "아이템을 압축할 수 있게 됩니다.\n2x2 제작법과 3x3 제작법을 사용할 수 있고, 필터 옵션이 추가됩니다.",
+    "item.sophisticatedstorage.advanced_compacting_upgrade.tooltip": "아이템을 압축할 수 있게 됩니다.\n2x2와 3x3 제작법을 사용할 수 있고, 필터 옵션이 추가됩니다.",
     "item.sophisticatedstorage.void_upgrade": "제거 강화",
     "item.sophisticatedstorage.void_upgrade.tooltip": "필터로 선택한 아이템을 제거할 수 있게 됩니다.",
     "item.sophisticatedstorage.advanced_void_upgrade": "고급 제거 강화",
