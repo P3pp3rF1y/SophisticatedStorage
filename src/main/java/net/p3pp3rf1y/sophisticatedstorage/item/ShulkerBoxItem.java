@@ -122,7 +122,7 @@ public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageIte
 
 			private void initWrapper() {
 				if (wrapper == null) {
-					UUID uuid = NBTHelper.getUniqueId(stack, "uuid").orElse(null);
+					UUID uuid = getContentsUuid(stack).orElse(null);
 					StorageWrapper storageWrapper = new StackStorageWrapper(stack) {
 						@Override
 						protected boolean isAllowedInStorage(ItemStack stack) {
@@ -143,6 +143,10 @@ public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageIte
 		};
 	}
 
+	private Optional<UUID> getContentsUuid(ItemStack stack) {
+		return NBTHelper.getUniqueId(stack, "uuid");
+	}
+
 	@Override
 	public Optional<TooltipComponent> getInventoryTooltip(ItemStack stack) {
 		return Optional.of(new StorageContentsTooltip(stack));
@@ -150,7 +154,12 @@ public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageIte
 
 	@Override
 	public ItemStack stash(ItemStack storageStack, ItemStack stack) {
-		return storageStack.getCapability(CapabilityStorageWrapper.getCapabilityInstance()).map(wrapper -> wrapper.getInventoryForUpgradeProcessing().insertItem(stack, false)).orElse(stack);
+		return storageStack.getCapability(CapabilityStorageWrapper.getCapabilityInstance()).map(wrapper -> {
+			if (wrapper.getContentsUuid().isEmpty()) {
+				wrapper.setContentsUuid(UUID.randomUUID());
+			}
+			return wrapper.getInventoryForUpgradeProcessing().insertItem(stack, false);
+		}).orElse(stack);
 	}
 
 	@Override
@@ -178,7 +187,7 @@ public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageIte
 
 	@Override
 	public boolean overrideStackedOnOther(ItemStack storageStack, Slot slot, ClickAction action, Player player) {
-		if (!slot.mayPickup(player) || action != ClickAction.SECONDARY) {
+		if (storageStack.getCount() > 1 || !slot.mayPickup(player) || slot.getItem().isEmpty() || action != ClickAction.SECONDARY) {
 			return super.overrideStackedOnOther(storageStack, slot, action, player);
 		}
 
@@ -195,7 +204,7 @@ public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageIte
 
 	@Override
 	public boolean overrideOtherStackedOnMe(ItemStack storageStack, ItemStack otherStack, Slot slot, ClickAction action, Player player, SlotAccess carriedAccess) {
-		if (!slot.mayPlace(storageStack) || action != ClickAction.SECONDARY) {
+		if (storageStack.getCount() > 1 || !slot.mayPlace(storageStack) || action != ClickAction.SECONDARY) {
 			return super.overrideOtherStackedOnMe(storageStack, otherStack, slot, action, player, carriedAccess);
 		}
 

@@ -20,7 +20,7 @@ public class RubidiumTranslucentVertexConsumer extends TranslucentVertexConsumer
 
 	@Override
 	public void push(MemoryStack stack, long src, int count, VertexFormatDescription format) {
-		if (buffer instanceof MultiBufferSource.BufferSource bufferSource && bufferSource.builder instanceof VertexBufferWriter vertexBufferWriter) {
+		if (buffer instanceof VertexBufferWriter vertexBufferWriter) {
 			vertexBufferWriter.push(stack, src, count, format);
 		}
 	}
