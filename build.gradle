@@ -35,6 +35,14 @@ repositories {
         }
     }
     maven { url "https://maven.blamejared.com/" }
+    maven {
+        name = "GitHubPackages"
+        url = uri("https://maven.pkg.github.com/p3pp3rf1y/sophisticatedcore")
+        credentials {
+            username = System.getenv("USERNAME")
+            password = System.getenv("READ_PACKAGES_TOKEN")
+        }
+    }
 }
 
 group = 'sophisticatedstorage'
@@ -111,9 +119,15 @@ dependencies {
         implementation project(':SophisticatedCore')
         testImplementation project(':SophisticatedCore')
     } else {
-        compileOnly fg.deobf("curse.maven:sophisticatedcore-618298:${sc_cf_file_id}")
-        runtimeOnly fg.deobf("curse.maven:sophisticatedcore-618298:${sc_cf_file_id}")
-        testImplementation fg.deobf("curse.maven:sophisticatedcore-618298:${sc_cf_file_id}")
+        compileOnly fg.deobf("sophisticatedcore:sophisticatedcore:${sc_version}") {
+            transitive = false
+        }
+        runtimeOnly fg.deobf("sophisticatedcore:sophisticatedcore:${sc_version}") {
+            transitive = false
+        }
+        testImplementation fg.deobf("sophisticatedcore:sophisticatedcore:${sc_version}") {
+            transitive = false
+        }
     }
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.+'
