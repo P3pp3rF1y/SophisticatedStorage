@@ -30,6 +30,9 @@
                 "side_trim": "#side",
                 "bottom_trim": "#bottom"
             }
+        },
+        "locked": {
+            "model": "sophisticatedstorage:block/barrel_part/locked"
         }
     },
     "model_parts": {
