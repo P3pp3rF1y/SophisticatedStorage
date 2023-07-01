@@ -25,6 +25,9 @@
                 "bottom_trim": "#bottom",
                 "top_inner_trim": "#top"
             }
+        },
+        "locked": {
+            "model": "sophisticatedstorage:block/barrel_part/locked"
         }
     },
     "model_parts": {
