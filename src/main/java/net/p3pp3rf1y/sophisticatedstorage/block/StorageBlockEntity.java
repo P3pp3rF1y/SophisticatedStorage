@@ -636,11 +636,7 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		}
 
 		private boolean matchesContents(ItemStack stack) {
-			ItemStackKey isk = new ItemStackKey(stack);
-			if (slotTracker.getFullStacks().contains(isk)) {
-				return true;
-			}
-			return slotTracker.getPartialStacks().contains(isk);
+			return slotTracker.getItems().contains(stack.getItem());
 		}
 
 		@Override
