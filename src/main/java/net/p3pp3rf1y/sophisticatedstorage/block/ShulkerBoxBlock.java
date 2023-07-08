@@ -146,6 +146,7 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 						shulkerBoxItem.getNumberOfUpgradeSlots(stack) - upgradeHandler.getSlots());
 			}
 
+			be.getStorageWrapper().onInit();
 			be.tryToAddToController();
 
 			if (placer != null && placer.getOffhandItem().getItem() == ModItems.STORAGE_TOOL.get()) {
