@@ -70,7 +70,9 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 
 	private void setSlotDefinitions(Map<Integer, SlotDefinition> definitions, boolean initial) {
 		slotDefinitions = definitions;
-		if (!initial) {
+		if (initial) {
+			parent.initFilterItems();
+		} else {
 			parent.onFilterItemsChanged();
 		}
 	}
