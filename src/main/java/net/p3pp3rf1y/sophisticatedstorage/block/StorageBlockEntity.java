@@ -237,10 +237,6 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		loadSynchronizedData(tag);
 		loadControllerPos(tag);
 
-		if (level != null && !level.isClientSide()) {
-			removeControllerPos();
-			tryToAddToController();
-		}
 		isLinkedToController = NBTHelper.getBoolean(tag, "isLinkedToController").orElse(false);
 	}
 
