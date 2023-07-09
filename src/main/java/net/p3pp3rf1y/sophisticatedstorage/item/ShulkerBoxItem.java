@@ -47,7 +47,11 @@ import java.util.function.Consumer;
 
 public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageItem {
 	public ShulkerBoxItem(Block block) {
-		super(block, new Properties().stacksTo(1));
+		this(block, new Properties().stacksTo(1));
+	}
+
+	public ShulkerBoxItem(Block block, Properties properties) {
+		super(block, properties);
 	}
 
 	@Override

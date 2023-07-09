@@ -38,8 +38,8 @@ public class WoodStorageBlockItem extends StorageBlockItem {
 	public static final String WOOD_TYPE_TAG = "woodType";
 	public static final String PACKED_TAG = "packed";
 
-	public WoodStorageBlockItem(Block block) {
-		super(block);
+	public WoodStorageBlockItem(Block block, Properties properties) {
+		super(block, properties);
 	}
 
 	public static void setPacked(ItemStack storageStack, boolean packed) {
