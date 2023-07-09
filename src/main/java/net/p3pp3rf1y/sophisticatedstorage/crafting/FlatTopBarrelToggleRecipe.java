@@ -34,7 +34,7 @@ public class FlatTopBarrelToggleRecipe extends CustomRecipe {
 			}
 		}
 
-		return true;
+		return barrelFound;
 	}
 
 	@Override
