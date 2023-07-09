@@ -18,7 +18,10 @@ public class BarrelBlockItem extends WoodStorageBlockItem {
 	private static final String MATERIALS_TAG = "materials";
 
 	public BarrelBlockItem(Block block) {
-		super(block);
+		this(block, new Properties());
+	}
+	public BarrelBlockItem(Block block, Properties properties) {
+		super(block, properties);
 	}
 
 	public static void toggleFlatTop(ItemStack stack) {
