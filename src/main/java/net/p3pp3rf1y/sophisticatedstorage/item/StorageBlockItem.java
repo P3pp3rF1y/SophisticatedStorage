@@ -14,9 +14,6 @@ public class StorageBlockItem extends BlockItemBase implements ITintableBlockIte
 	private static final String MAIN_COLOR_TAG = "mainColor";
 	private static final String SHOWS_TIER_TAG = "showsTier";
 
-	public StorageBlockItem(Block block) {
-		this(block, new Properties());
-	}
 	public StorageBlockItem(Block block, Properties properties) {
 		super(block, properties);
 	}

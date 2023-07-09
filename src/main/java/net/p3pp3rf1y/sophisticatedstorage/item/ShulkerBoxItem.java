@@ -45,7 +45,11 @@ import java.util.function.Consumer;
 
 public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageItem {
 	public ShulkerBoxItem(Block block) {
-		super(block, new Properties().stacksTo(1));
+		this(block, new Properties().stacksTo(1));
+	}
+
+	public ShulkerBoxItem(Block block, Properties properties) {
+		super(block, properties);
 	}
 
 	@Override
@@ -63,7 +67,7 @@ public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageIte
 	@Override
 	public void appendHoverText(ItemStack stack, @Nullable Level worldIn, List<Component> tooltip, TooltipFlag flagIn) {
 		super.appendHoverText(stack, worldIn, tooltip, flagIn);
-		if (flagIn == TooltipFlag.Default.ADVANCED) {
+		if (flagIn == TooltipFlag.ADVANCED) {
 			stack.getCapability(CapabilityStorageWrapper.getCapabilityInstance())
 					.ifPresent(w -> w.getContentsUuid().ifPresent(uuid -> tooltip.add(Component.literal("UUID: " + uuid).withStyle(ChatFormatting.DARK_GRAY))));
 		}

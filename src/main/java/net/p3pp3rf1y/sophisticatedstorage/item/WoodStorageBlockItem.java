@@ -36,8 +36,8 @@ public class WoodStorageBlockItem extends StorageBlockItem {
 	public static final String WOOD_TYPE_TAG = "woodType";
 	public static final String PACKED_TAG = "packed";
 
-	public WoodStorageBlockItem(Block block) {
-		super(block);
+	public WoodStorageBlockItem(Block block, Properties properties) {
+		super(block, properties);
 	}
 
 	public static void setPacked(ItemStack storageStack, boolean packed) {
@@ -52,7 +52,7 @@ public class WoodStorageBlockItem extends StorageBlockItem {
 	public void appendHoverText(ItemStack stack, @Nullable Level worldIn, List<Component> tooltip, TooltipFlag flagIn) {
 		super.appendHoverText(stack, worldIn, tooltip, flagIn);
 		if (isPacked(stack)) {
-			if (flagIn == TooltipFlag.Default.ADVANCED) {
+			if (flagIn == TooltipFlag.ADVANCED) {
 				stack.getCapability(CapabilityStorageWrapper.getCapabilityInstance())
 						.ifPresent(w -> w.getContentsUuid().ifPresent(uuid -> tooltip.add(Component.literal("UUID: " + uuid).withStyle(ChatFormatting.DARK_GRAY))));
 			}
