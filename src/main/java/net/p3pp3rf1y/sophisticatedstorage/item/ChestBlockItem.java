@@ -11,7 +11,10 @@ import java.util.function.Consumer;
 
 public class ChestBlockItem extends WoodStorageBlockItem {
 	public ChestBlockItem(Block block) {
-		super(block);
+		this(block, new Properties());
+	}
+	public ChestBlockItem(Block block, Properties properties) {
+		super(block, properties);
 	}
 
 	@Override

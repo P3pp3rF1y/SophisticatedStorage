@@ -44,6 +44,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public abstract class StorageBlockEntity extends BlockEntity implements IControllableStorage, ILinkable, ILockable, Nameable, ITierDisplay, IUpgradeDisplay {
 	public static final String STORAGE_WRAPPER_TAG = "storageWrapper";
@@ -136,7 +137,7 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 			public ITrackedContentsItemHandler getInventoryForInputOutput() {
 				if (locked && allowsEmptySlotsMatchingItemInsertsWhenLocked()) {
 					if (contentsFilteredItemHandler == null) {
-						contentsFilteredItemHandler = new ContentsFilteredItemHandler(super.getInventoryForInputOutput(), storageWrapper.getInventoryHandler().getSlotTracker());
+						contentsFilteredItemHandler = new ContentsFilteredItemHandler(super.getInventoryForInputOutput(), storageWrapper.getInventoryHandler().getSlotTracker(), () -> getStorageWrapper().getSettingsHandler().getTypeCategory(MemorySettingsCategory.class));
 					}
 					return contentsFilteredItemHandler;
 				}
@@ -589,10 +590,12 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 
 		private final ITrackedContentsItemHandler itemHandler;
 		private ISlotTracker slotTracker;
+		private final Supplier<MemorySettingsCategory> memorySettingsGetter;
 
-		private ContentsFilteredItemHandler(ITrackedContentsItemHandler itemHandler, ISlotTracker slotTracker) {
+		private ContentsFilteredItemHandler(ITrackedContentsItemHandler itemHandler, ISlotTracker slotTracker, Supplier<MemorySettingsCategory> memorySettingsGetter) {
 			this.itemHandler = itemHandler;
 			this.slotTracker = slotTracker;
+			this.memorySettingsGetter = memorySettingsGetter;
 		}
 
 		@Override
@@ -632,7 +635,7 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		}
 
 		private boolean matchesContents(ItemStack stack) {
-			return slotTracker.getItems().contains(stack.getItem());
+			return slotTracker.getItems().contains(stack.getItem()) || memorySettingsGetter.get().matchesFilter(stack);
 		}
 
 		@Override

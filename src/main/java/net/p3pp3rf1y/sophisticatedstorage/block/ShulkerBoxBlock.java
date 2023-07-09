@@ -33,7 +33,6 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
-import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
@@ -68,10 +67,14 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 	private static final VoxelShape ITEM_ENTITY_COLLISION_SHAPE = box(0.05, 0.05, 0.05, 15.95, 15.95, 15.95);
 
 	public ShulkerBoxBlock(Supplier<Integer> numberOfInventorySlotsSupplier, Supplier<Integer> numberOfUpgradeSlotsSupplier) {
-		super(getProperties().mapColor(MapColor.COLOR_PURPLE), numberOfInventorySlotsSupplier, numberOfUpgradeSlotsSupplier);
+		this(numberOfInventorySlotsSupplier, numberOfUpgradeSlotsSupplier, 2.0F);
 	}
 
-	private static Properties getProperties() {
+	public ShulkerBoxBlock(Supplier<Integer> numberOfInventorySlotsSupplier, Supplier<Integer> numberOfUpgradeSlotsSupplier, float explosionResistance) {
+		super(getProperties(explosionResistance), numberOfInventorySlotsSupplier, numberOfUpgradeSlotsSupplier);
+	}
+
+	private static Properties getProperties(float explosionResistance) {
 		BlockBehaviour.StatePredicate statePredicate = (state, blockGetter, pos) -> {
 			BlockEntity blockentity = blockGetter.getBlockEntity(pos);
 			if (!(blockentity instanceof ShulkerBoxBlockEntity shulkerboxblockentity)) {
@@ -80,7 +83,7 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 				return shulkerboxblockentity.isClosed();
 			}
 		};
-		return BlockBehaviour.Properties.of().strength(2.0F).dynamicShape().noOcclusion().isSuffocating(statePredicate).isViewBlocking(statePredicate).pushReaction(PushReaction.DESTROY);
+		return BlockBehaviour.Properties.of().strength(2.0F, explosionResistance).dynamicShape().noOcclusion().isSuffocating(statePredicate).isViewBlocking(statePredicate).pushReaction(PushReaction.DESTROY).mapColor(DyeColor.PURPLE);
 	}
 
 	@Override
