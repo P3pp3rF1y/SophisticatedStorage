@@ -137,7 +137,7 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 			public ITrackedContentsItemHandler getInventoryForInputOutput() {
 				if (locked && allowsEmptySlotsMatchingItemInsertsWhenLocked()) {
 					if (contentsFilteredItemHandler == null) {
-						contentsFilteredItemHandler = new ContentsFilteredItemHandler(super.getInventoryForInputOutput(), storageWrapper.getInventoryHandler().getSlotTracker(), () -> getStorageWrapper().getSettingsHandler().getTypeCategory(MemorySettingsCategory.class));
+						contentsFilteredItemHandler = new ContentsFilteredItemHandler(super::getInventoryForInputOutput, () -> getStorageWrapper().getInventoryHandler().getSlotTracker(), () -> getStorageWrapper().getSettingsHandler().getTypeCategory(MemorySettingsCategory.class));
 					}
 					return contentsFilteredItemHandler;
 				}
@@ -588,32 +588,32 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 
 	private static class ContentsFilteredItemHandler implements ITrackedContentsItemHandler {
 
-		private final ITrackedContentsItemHandler itemHandler;
-		private ISlotTracker slotTracker;
+		private final Supplier<ITrackedContentsItemHandler> itemHandlerGetter;
+		private final Supplier<ISlotTracker> slotTrackerGetter;
 		private final Supplier<MemorySettingsCategory> memorySettingsGetter;
 
-		private ContentsFilteredItemHandler(ITrackedContentsItemHandler itemHandler, ISlotTracker slotTracker, Supplier<MemorySettingsCategory> memorySettingsGetter) {
-			this.itemHandler = itemHandler;
-			this.slotTracker = slotTracker;
+		private ContentsFilteredItemHandler(Supplier<ITrackedContentsItemHandler> itemHandlerGetter, Supplier<ISlotTracker> slotTrackerGetter, Supplier<MemorySettingsCategory> memorySettingsGetter) {
+			this.itemHandlerGetter = itemHandlerGetter;
+			this.slotTrackerGetter = slotTrackerGetter;
 			this.memorySettingsGetter = memorySettingsGetter;
 		}
 
 		@Override
 		public int getSlots() {
-			return itemHandler.getSlots();
+			return itemHandlerGetter.get().getSlots();
 		}
 
 		@Nonnull
 		@Override
 		public ItemStack getStackInSlot(int slot) {
-			return itemHandler.getStackInSlot(slot);
+			return itemHandlerGetter.get().getStackInSlot(slot);
 		}
 
 		@Nonnull
 		@Override
 		public ItemStack insertItem(int slot, @Nonnull ItemStack stack, boolean simulate) {
 			if (matchesContents(stack)) {
-				return itemHandler.insertItem(slot, stack, simulate);
+				return itemHandlerGetter.get().insertItem(slot, stack, simulate);
 			}
 			return stack;
 		}
@@ -621,59 +621,59 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		@Nonnull
 		@Override
 		public ItemStack extractItem(int slot, int amount, boolean simulate) {
-			return itemHandler.extractItem(slot, amount, simulate);
+			return itemHandlerGetter.get().extractItem(slot, amount, simulate);
 		}
 
 		@Override
 		public int getSlotLimit(int slot) {
-			return itemHandler.getSlotLimit(slot);
+			return itemHandlerGetter.get().getSlotLimit(slot);
 		}
 
 		@Override
 		public boolean isItemValid(int slot, @Nonnull ItemStack stack) {
-			return matchesContents(stack) && itemHandler.isItemValid(slot, stack);
+			return matchesContents(stack) && itemHandlerGetter.get().isItemValid(slot, stack);
 		}
 
 		private boolean matchesContents(ItemStack stack) {
-			return slotTracker.getItems().contains(stack.getItem()) || memorySettingsGetter.get().matchesFilter(stack);
+			return slotTrackerGetter.get().getItems().contains(stack.getItem()) || memorySettingsGetter.get().matchesFilter(stack);
 		}
 
 		@Override
 		public ItemStack insertItem(ItemStack stack, boolean simulate) {
 			if (matchesContents(stack)) {
-				return itemHandler.insertItem(stack, simulate);
+				return itemHandlerGetter.get().insertItem(stack, simulate);
 			}
 			return stack;
 		}
 
 		@Override
 		public Set<ItemStackKey> getTrackedStacks() {
-			return itemHandler.getTrackedStacks();
+			return itemHandlerGetter.get().getTrackedStacks();
 		}
 
 		@Override
 		public void registerTrackingListeners(Consumer<ItemStackKey> onAddStackKey, Consumer<ItemStackKey> onRemoveStackKey, Runnable onAddFirstEmptySlot, Runnable onRemoveLastEmptySlot) {
-			itemHandler.registerTrackingListeners(onAddStackKey, onRemoveStackKey, onAddFirstEmptySlot, onRemoveLastEmptySlot);
+			itemHandlerGetter.get().registerTrackingListeners(onAddStackKey, onRemoveStackKey, onAddFirstEmptySlot, onRemoveLastEmptySlot);
 		}
 
 		@Override
 		public void unregisterStackKeyListeners() {
-			itemHandler.unregisterStackKeyListeners();
+			itemHandlerGetter.get().unregisterStackKeyListeners();
 		}
 
 		@Override
 		public boolean hasEmptySlots() {
-			return itemHandler.hasEmptySlots();
+			return itemHandlerGetter.get().hasEmptySlots();
 		}
 
 		@Override
 		public int getInternalSlotLimit(int slot) {
-			return itemHandler.getInternalSlotLimit(slot);
+			return itemHandlerGetter.get().getInternalSlotLimit(slot);
 		}
 
 		@Override
 		public void setStackInSlot(int slot, @Nonnull ItemStack stack) {
-			itemHandler.setStackInSlot(slot, stack);
+			itemHandlerGetter.get().setStackInSlot(slot, stack);
 		}
 	}
 }
