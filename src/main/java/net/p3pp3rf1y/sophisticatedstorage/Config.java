@@ -1,7 +1,10 @@
 package net.p3pp3rf1y.sophisticatedstorage;
 
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Item;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.event.config.ModConfigEvent;
+import net.minecraftforge.registries.ForgeRegistries;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.FilteredUpgradeConfig;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.cooking.AutoCookingUpgradeConfig;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.cooking.CookingUpgradeConfig;
@@ -13,6 +16,11 @@ import net.p3pp3rf1y.sophisticatedcore.upgrades.xppump.XpPumpUpgradeConfig;
 import net.p3pp3rf1y.sophisticatedstorage.upgrades.compression.CompressionUpgradeConfig;
 import net.p3pp3rf1y.sophisticatedstorage.upgrades.hopper.HopperUpgradeConfig;
 import org.apache.commons.lang3.tuple.Pair;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class Config {
 	private Config() {}
@@ -87,6 +95,7 @@ public class Config {
 		public final StorageConfig goldShulkerBox;
 		public final StorageConfig diamondShulkerBox;
 		public final StorageConfig netheriteShulkerBox;
+		public final ShulkerBoxDisallowedItems shulkerBoxDisallowedItems;
 
 		public final StackUpgradeConfig stackUpgrade;
 		public final FilteredUpgradeConfig compactingUpgrade;
@@ -166,6 +175,7 @@ public class Config {
 			goldShulkerBox = new StorageConfig(builder, "Gold Shulker Box", 81, 3);
 			diamondShulkerBox = new StorageConfig(builder, "Diamond Shulker Box", 108, 4);
 			netheriteShulkerBox = new StorageConfig(builder, "Netherite Shulker Box", 132, 5);
+			shulkerBoxDisallowedItems = new ShulkerBoxDisallowedItems(builder);
 
 			stackUpgrade = new StackUpgradeConfig(builder);
 			compactingUpgrade = new FilteredUpgradeConfig(builder, "Compacting Upgrade", "compactingUpgrade", 9, 3);
@@ -219,6 +229,49 @@ public class Config {
 				baseSlotLimitMultiplier = builder.comment("Multiplier that's used to calculate base slot limit").defineInRange("baseSlotLimitMultiplier", baseSlotLimitMultiplierDefault, 1, 8192);
 				upgradeSlotCount = builder.comment("Number of upgrade slots in the storage").defineInRange("upgradeSlotCount", upgradeSlotCountDefault, 0, 10);
 				builder.pop();
+			}
+		}
+
+		public static class ShulkerBoxDisallowedItems {
+			private final ForgeConfigSpec.BooleanValue containerItemsDisallowed;
+			private final ForgeConfigSpec.ConfigValue<List<String>> disallowedItemsList;
+			private boolean initialized = false;
+			private Set<Item> disallowedItemsSet = null;
+
+			ShulkerBoxDisallowedItems(ForgeConfigSpec.Builder builder) {
+				builder.push("shulkerBoxDisallowedItems");
+				disallowedItemsList = builder.comment("List of items that are not allowed to be put in shulkerboxes - e.g. \"minecraft:bundle\"").define("disallowedItems", new ArrayList<>());
+				containerItemsDisallowed = builder.comment("Determines if container items (those that override canFitInsideContainerItems to false) are able to fit in shulker boxes")
+						.define("containerItemsDisallowed", false);
+				builder.pop();
+			}
+
+			public boolean isItemDisallowed(Item item) {
+				if (!SERVER_SPEC.isLoaded()) {
+					return true;
+				}
+
+				if (!initialized) {
+					loadDisallowedSet();
+				}
+
+				if (Boolean.TRUE.equals(containerItemsDisallowed.get()) && !item.canFitInsideContainerItems()) {
+					return true;
+				}
+
+				return disallowedItemsSet.contains(item);
+			}
+
+			private void loadDisallowedSet() {
+				initialized = true;
+				disallowedItemsSet = new HashSet<>();
+
+				for (String disallowedItemName : disallowedItemsList.get()) {
+					ResourceLocation registryName = new ResourceLocation(disallowedItemName);
+					if (ForgeRegistries.ITEMS.containsKey(registryName)) {
+						disallowedItemsSet.add(ForgeRegistries.ITEMS.getValue(registryName));
+					}
+				}
 			}
 		}
 	}
