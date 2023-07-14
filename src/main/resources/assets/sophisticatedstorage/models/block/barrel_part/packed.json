@@ -1,5 +1,5 @@
 {
-    "parent": "sophisticatedstorage:/block/barrel_part/base",
+    "parent": "sophisticatedstorage:block/barrel_part/base",
     "textures": {
         "top": "sophisticatedstorage:block/barrel_top_packed",
         "side": "sophisticatedstorage:block/barrel_side_packed",

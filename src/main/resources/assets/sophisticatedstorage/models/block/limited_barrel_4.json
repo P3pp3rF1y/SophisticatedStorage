@@ -35,7 +35,7 @@
             }
         },
         "packed": {
-            "model": "sophisticatedstorage:/block/barrel_part/limited_4_base",
+            "model": "sophisticatedstorage:block/barrel_part/limited_4_base",
             "textures": {
                 "top": "sophisticatedstorage:block/barrel_top_packed",
                 "side": "sophisticatedstorage:block/barrel_side_packed",
