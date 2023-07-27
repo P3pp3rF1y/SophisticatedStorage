@@ -1,6 +1,6 @@
 name: Mod Build
 
-on: [ push ]
+on: [ workflow_dispatch, push ]
 
 jobs:
   build:
