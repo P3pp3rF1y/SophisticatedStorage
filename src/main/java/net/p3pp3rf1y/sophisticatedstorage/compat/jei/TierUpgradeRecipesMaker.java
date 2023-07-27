@@ -39,14 +39,12 @@ public class TierUpgradeRecipesMaker {
 				int i = 0;
 				for (Ingredient ingredient : ingredients) {
 					ItemStack[] ingredientItems = ingredient.getItems();
-					if (ingredientItems.length == 1) {
-						if (storageItem.getItem() == ingredientItems[0].getItem()) {
-							ingredientsCopy.add(i, Ingredient.of(storageItem));
-							craftinginventory.setItem(i, storageItem.copy());
-						} else {
-							ingredientsCopy.add(i, ingredient);
-							craftinginventory.setItem(i, ingredientItems[0]);
-						}
+					if (ingredientItems.length == 1 && storageItem.getItem() == ingredientItems[0].getItem()) {
+						ingredientsCopy.add(i, Ingredient.of(storageItem));
+						craftinginventory.setItem(i, storageItem.copy());
+					} else {
+						ingredientsCopy.add(i, ingredient);
+						craftinginventory.setItem(i, ingredientItems[0]);
 					}
 					i++;
 				}
