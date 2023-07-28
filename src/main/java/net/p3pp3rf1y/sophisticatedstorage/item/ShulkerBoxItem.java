@@ -31,6 +31,7 @@ import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.TranslationHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
+import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.block.ItemContentsStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.ShulkerBoxBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
@@ -132,10 +133,8 @@ public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageIte
 					StorageWrapper storageWrapper = new StackStorageWrapper(stack) {
 						@Override
 						protected boolean isAllowedInStorage(ItemStack stack) {
-							//TODO add config with other things that can't go in
-							//TODO add backpacks compat so that they can't go in
 							Block block = Block.byItem(stack.getItem());
-							return !(block instanceof ShulkerBoxBlock) && !(block instanceof net.minecraft.world.level.block.ShulkerBoxBlock);
+							return !(block instanceof ShulkerBoxBlock) && !(block instanceof net.minecraft.world.level.block.ShulkerBoxBlock) && !Config.SERVER.shulkerBoxDisallowedItems.isItemDisallowed(stack.getItem());
 						}
 					};
 					if (uuid != null) {
