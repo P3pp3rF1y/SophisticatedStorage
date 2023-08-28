@@ -13,6 +13,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ReloadableResourceManager;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.inventory.Slot;
@@ -22,6 +23,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.client.event.ModelEvent;
+import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
 import net.minecraftforge.client.event.RegisterClientTooltipComponentFactoriesEvent;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
@@ -31,7 +33,6 @@ import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.client.settings.IKeyConflictContext;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AddPackFindersEvent;
-import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -111,13 +112,13 @@ public class ClientEventHandler {
 		modBus.addListener(ModBlockColors::registerBlockColorHandlers);
 		modBus.addListener(ClientEventHandler::registerStorageLayerLoader);
 		modBus.addListener(ClientEventHandler::onRegisterAdditionalModels);
+		modBus.addListener(ClientEventHandler::onRegisterReloadListeners);
 		IEventBus eventBus = MinecraftForge.EVENT_BUS;
 		eventBus.addListener(ClientStorageContentsTooltip::onWorldLoad);
 		eventBus.addListener(EventPriority.HIGH, ClientEventHandler::handleGuiMouseKeyPress);
 		eventBus.addListener(EventPriority.HIGH, ClientEventHandler::handleGuiKeyPress);
 		eventBus.addListener(ClientEventHandler::onLimitedBarrelClicked);
 		eventBus.addListener(ClientEventHandler::onMouseScrolled);
-		eventBus.addListener(ClientEventHandler::onResourceReload);
 	}
 
 	private static void onRegisterAdditionalModels(ModelEvent.RegisterAdditional event) {
@@ -131,11 +132,6 @@ public class ClientEventHandler {
 				event.register(new ResourceLocation(modelName.getNamespace(), modelName.getPath().substring("models/".length()).replace(".json", "")));
 			}
 		});
-	}
-
-	private static void onResourceReload(AddReloadListenerEvent event) {
-		BarrelDynamicModelBase.invalidateCache();
-		BarrelBakedModelBase.invalidateCache();
 	}
 
 	private static void onMouseScrolled(InputEvent.MouseScrollingEvent evt) {
@@ -213,6 +209,13 @@ public class ClientEventHandler {
 		event.register("chest", ChestDynamicModel.Loader.INSTANCE);
 		event.register("shulker_box", ShulkerBoxDynamicModel.Loader.INSTANCE);
 		event.register("simple_composite", SimpleCompositeModel.Loader.INSTANCE);
+	}
+
+	private static void onRegisterReloadListeners(RegisterClientReloadListenersEvent event) {
+		event.registerReloadListener((ResourceManagerReloadListener) resourceManager -> {
+			BarrelDynamicModelBase.invalidateCache();
+			BarrelBakedModelBase.invalidateCache();
+		});
 	}
 
 	public static void registerLayer(EntityRenderersEvent.RegisterLayerDefinitions event) {
