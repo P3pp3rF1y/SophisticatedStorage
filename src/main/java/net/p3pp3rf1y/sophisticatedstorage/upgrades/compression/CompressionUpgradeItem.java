@@ -8,6 +8,7 @@ import net.p3pp3rf1y.sophisticatedcore.common.gui.UpgradeSlotChangeResult;
 import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryHandler;
 import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryPartRegistry;
 import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryPartitioner;
+import net.p3pp3rf1y.sophisticatedcore.settings.itemdisplay.ItemDisplaySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.settings.memory.MemorySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeItemBase;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeType;
@@ -104,6 +105,7 @@ public class CompressionUpgradeItem extends UpgradeItemBase<CompressionUpgradeIt
 				setFirstInventorySlot(slotRange.firstSlot());
 				inventoryPartitioner.addInventoryPart(slotRange.firstSlot(), slotRange.numberOfSlots(), new CompressionInventoryPart(storageWrapper.getInventoryHandler(), slotRange, () -> storageWrapper.getSettingsHandler().getTypeCategory(MemorySettingsCategory.class)));
 			});
+			storageWrapper.getSettingsHandler().getTypeCategory(ItemDisplaySettingsCategory.class).itemsChanged();
 		}
 
 		private void setFirstInventorySlot(int firstInventorySlot) {
