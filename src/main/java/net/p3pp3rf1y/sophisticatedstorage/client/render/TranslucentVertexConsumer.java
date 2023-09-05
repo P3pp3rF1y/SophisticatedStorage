@@ -6,9 +6,17 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.inventory.InventoryMenu;
 
+import java.util.function.BiFunction;
+
 public class TranslucentVertexConsumer extends DefaultedVertexConsumer {
 	public static final RenderType TRANSLUCENT = RenderType.entityTranslucent(InventoryMenu.BLOCK_ATLAS);
 	private final VertexConsumer delegate;
+
+	private static BiFunction<MultiBufferSource, Integer, VertexConsumer> factory = TranslucentVertexConsumer::new;
+
+	public static void setFactory(BiFunction<MultiBufferSource, Integer, VertexConsumer> factory) {
+		TranslucentVertexConsumer.factory = factory;
+	}
 
 	public TranslucentVertexConsumer(VertexConsumer delegate, int alpha) {
 		this.delegate = delegate;
@@ -20,11 +28,11 @@ public class TranslucentVertexConsumer extends DefaultedVertexConsumer {
 	}
 
 	static MultiBufferSource wrapBuffer(MultiBufferSource buffer, int alpha) {
-		return renderType -> new TranslucentVertexConsumer(buffer, alpha);
+		return renderType -> factory.apply(buffer, alpha);
 	}
 
 	public static VertexConsumer getVertexConsumer(MultiBufferSource buffer, int alpha) {
-		return new TranslucentVertexConsumer(buffer, alpha);
+		return factory.apply(buffer, alpha);
 	}
 
 	@Override
