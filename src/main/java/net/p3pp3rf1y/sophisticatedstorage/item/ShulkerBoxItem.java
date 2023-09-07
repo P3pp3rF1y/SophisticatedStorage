@@ -29,6 +29,7 @@ import net.minecraftforge.fml.DistExecutor;
 import net.p3pp3rf1y.sophisticatedcore.api.IStashStorageItem;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.TranslationHelper;
+import net.p3pp3rf1y.sophisticatedcore.inventory.ItemStackKey;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
@@ -168,8 +169,17 @@ public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageIte
 	}
 
 	@Override
-	public boolean isItemStashable(ItemStack storageStack, ItemStack stack) {
-		return storageStack.getCapability(CapabilityStorageWrapper.getCapabilityInstance()).map(wrapper -> wrapper.getInventoryForUpgradeProcessing().isItemValid(0, stack)).orElse(false);
+	public StashResult getItemStashable(ItemStack storageStack, ItemStack stack) {
+		return storageStack.getCapability(CapabilityStorageWrapper.getCapabilityInstance()).map(wrapper -> {
+			if (wrapper.getInventoryForUpgradeProcessing().insertItem(stack, true).getCount() == stack.getCount()) {
+				return StashResult.NO_SPACE;
+			}
+			if (wrapper.getInventoryForUpgradeProcessing().getTrackedStacks().contains(ItemStackKey.of(stack))) {
+				return StashResult.MATCH_AND_SPACE;
+			}
+
+			return StashResult.SPACE;
+		}).orElse(StashResult.NO_SPACE);
 	}
 
 	public void setNumberOfInventorySlots(ItemStack shulkerBoxStack, int numberOfInventorySlots) {
