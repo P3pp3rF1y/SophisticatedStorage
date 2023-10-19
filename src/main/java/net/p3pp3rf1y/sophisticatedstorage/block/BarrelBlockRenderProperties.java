@@ -21,13 +21,19 @@ class BarrelBlockRenderProperties implements IBlockRenderProperties {
 	private final BarrelBlock barrelBlock;
 	private final Random random = new Random();
 
-	public BarrelBlockRenderProperties(BarrelBlock barrelBlock) {this.barrelBlock = barrelBlock;}
+	public BarrelBlockRenderProperties(BarrelBlock barrelBlock) {
+		this.barrelBlock = barrelBlock;
+	}
 
 	@Override
 	public boolean addHitEffects(BlockState state, Level level, HitResult target, ParticleEngine manager) {
 		if (state.getBlock() != barrelBlock || !(level instanceof ClientLevel clientLevel) || !(target instanceof BlockHitResult blockHitResult)) {
 			return false;
 		}
+		if ((barrelBlock instanceof LimitedBarrelBlock && barrelBlock.getFacing(state) == blockHitResult.getDirection())) {
+			return true;
+		}
+
 		Direction sideHit = blockHitResult.getDirection();
 		BlockPos pos = blockHitResult.getBlockPos();
 		if (state.getRenderShape() != RenderShape.INVISIBLE) {
