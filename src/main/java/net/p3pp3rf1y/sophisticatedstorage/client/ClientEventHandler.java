@@ -34,6 +34,7 @@ import net.minecraftforge.client.settings.IKeyConflictContext;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AddPackFindersEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
@@ -153,9 +154,6 @@ public class ClientEventHandler {
 
 	private static void onLimitedBarrelClicked(PlayerInteractEvent.LeftClickBlock event) {
 		Player player = event.getEntity();
-		if (!player.isCreative()) {
-			return;
-		}
 
 		BlockPos pos = event.getPos();
 		Level level = event.getLevel();
@@ -164,7 +162,14 @@ public class ClientEventHandler {
 			return;
 		}
 		if (limitedBarrel.isLookingAtFront(player, pos, state)) {
-			event.setCanceled(true);
+			if (player.isCreative()) {
+				event.setCanceled(true);
+			} else {
+				if (event.getEntity().getDigSpeed(state, event.getPos()) < 2) {
+					event.setUseItem(Event.Result.DENY);
+					Minecraft.getInstance().gameMode.destroyDelay = 5;
+				}
+			}
 		}
 	}
 
