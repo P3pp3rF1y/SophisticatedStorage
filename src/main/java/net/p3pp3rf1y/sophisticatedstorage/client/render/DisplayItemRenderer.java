@@ -16,7 +16,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
@@ -32,6 +31,7 @@ import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.UnaryOperator;
@@ -43,6 +43,7 @@ public class DisplayItemRenderer {
 	static final float SMALL_2D_ITEM_SCALE = 0.25f;
 	static final float UPGRADE_ITEM_SCALE = 0.125f;
 	private static final ItemStack INACCESSIBLE_SLOT_STACK = new ItemStack(ModItems.INACCESSIBLE_SLOT.get());
+	private static final Random RAND = new Random();
 	private final double yCenterTranslation;
 	private final Vec3 upgradesOffset;
 
@@ -174,7 +175,7 @@ public class DisplayItemRenderer {
 		if (itemModel.isCustomRenderer()) {
 			return transformBoundsCornersAndCalculateOffset(itemModel, getBoundsCornersFromShape(block, level), additionalScale);
 		} else {
-			return transformBoundsCornersAndCalculateOffset(itemModel, getBoundsCornersFromModel(itemModel, level), additionalScale);
+			return transformBoundsCornersAndCalculateOffset(itemModel, getBoundsCornersFromModel(itemModel), additionalScale);
 		}
 	}
 
@@ -195,7 +196,7 @@ public class DisplayItemRenderer {
 		return getCornerPointsRelativeToCenter(shape.bounds());
 	}
 
-	private static Set<Vector3f> getBoundsCornersFromModel(BakedModel itemModel, Level level) {
+	private static Set<Vector3f> getBoundsCornersFromModel(BakedModel itemModel) {
 		float minX = 2;
 		float minY = 2;
 		float minZ = 2;
@@ -204,7 +205,7 @@ public class DisplayItemRenderer {
 		float maxZ = -2;
 
 		for (Direction direction : Direction.values()) {
-			List<BakedQuad> quads = itemModel.getQuads(null, direction, level.random, EmptyModelData.INSTANCE);
+			List<BakedQuad> quads = itemModel.getQuads(null, direction, RAND, EmptyModelData.INSTANCE);
 			for (BakedQuad quad : quads) {
 				int i = 0;
 				int[] verts = quad.getVertices();
@@ -222,7 +223,7 @@ public class DisplayItemRenderer {
 				}
 			}
 		}
-		List<BakedQuad> quads = itemModel.getQuads(null, null, level.random, EmptyModelData.INSTANCE);
+		List<BakedQuad> quads = itemModel.getQuads(null, null, RAND, EmptyModelData.INSTANCE);
 		for (BakedQuad quad : quads) {
 			int i = 0;
 			int[] verts = quad.getVertices();
