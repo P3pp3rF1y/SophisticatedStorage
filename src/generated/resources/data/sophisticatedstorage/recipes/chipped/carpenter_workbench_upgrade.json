@@ -1,0 +1,35 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "conditions": [
+    {
+      "modid": "chipped",
+      "type": "forge:mod_loaded"
+    },
+    {
+      "itemRegistryName": "sophisticatedstorage:chipped/carpenter_workbench_upgrade",
+      "type": "sophisticatedcore:item_enabled"
+    }
+  ],
+  "pattern": [
+    " W ",
+    "IBI",
+    " R "
+  ],
+  "key": {
+    "B": {
+      "item": "sophisticatedstorage:upgrade_base"
+    },
+    "R": {
+      "tag": "forge:dusts/redstone"
+    },
+    "I": {
+      "tag": "forge:ingots/iron"
+    },
+    "W": {
+      "item": "chipped:carpenters_table"
+    }
+  },
+  "result": {
+    "item": "sophisticatedstorage:chipped/carpenter_workbench_upgrade"
+  }
+}
