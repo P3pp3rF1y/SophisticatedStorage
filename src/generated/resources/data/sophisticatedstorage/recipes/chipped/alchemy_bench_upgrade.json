@@ -7,7 +7,7 @@
     },
     {
       "type": "sophisticatedcore:item_enabled",
-      "itemRegistryName": "sophisticatedstorage:chipped/shepherd_workbench_upgrade"
+      "itemRegistryName": "sophisticatedstorage:chipped/alchemy_bench_upgrade"
     }
   ],
   "key": {
@@ -21,7 +21,7 @@
       "tag": "forge:dusts/redstone"
     },
     "W": {
-      "item": "chipped:loom_table"
+      "item": "chipped:alchemy_bench"
     }
   },
   "pattern": [
@@ -30,6 +30,6 @@
     " R "
   ],
   "result": {
-    "item": "sophisticatedstorage:chipped/shepherd_workbench_upgrade"
+    "item": "sophisticatedstorage:chipped/alchemy_bench_upgrade"
   }
 }

@@ -7,7 +7,7 @@
     },
     {
       "type": "sophisticatedcore:item_enabled",
-      "itemRegistryName": "sophisticatedstorage:chipped/tinkerer_workbench_upgrade"
+      "itemRegistryName": "sophisticatedstorage:chipped/tinkering_table_upgrade"
     }
   ],
   "key": {
@@ -30,6 +30,6 @@
     " R "
   ],
   "result": {
-    "item": "sophisticatedstorage:chipped/tinkerer_workbench_upgrade"
+    "item": "sophisticatedstorage:chipped/tinkering_table_upgrade"
   }
 }

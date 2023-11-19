@@ -7,7 +7,7 @@
     },
     {
       "type": "sophisticatedcore:item_enabled",
-      "itemRegistryName": "sophisticatedstorage:chipped/glassblower_workbench_upgrade"
+      "itemRegistryName": "sophisticatedstorage:chipped/glassblower_upgrade"
     }
   ],
   "key": {
@@ -30,6 +30,6 @@
     " R "
   ],
   "result": {
-    "item": "sophisticatedstorage:chipped/glassblower_workbench_upgrade"
+    "item": "sophisticatedstorage:chipped/glassblower_upgrade"
   }
 }

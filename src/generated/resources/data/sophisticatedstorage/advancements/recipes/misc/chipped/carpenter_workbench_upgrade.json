@@ -3,7 +3,7 @@
   "criteria": {
     "has_the_recipe": {
       "conditions": {
-        "recipe": "sophisticatedstorage:chipped/carpenter_workbench_upgrade"
+        "recipe": "sophisticatedstorage:chipped/carpenters_table_upgrade"
       },
       "trigger": "minecraft:recipe_unlocked"
     },
@@ -28,7 +28,7 @@
   ],
   "rewards": {
     "recipes": [
-      "sophisticatedstorage:chipped/carpenter_workbench_upgrade"
+      "sophisticatedstorage:chipped/carpenters_table_upgrade"
     ]
   },
   "sends_telemetry_event": true
