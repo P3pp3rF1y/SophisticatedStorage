@@ -1,7 +1,12 @@
 package net.p3pp3rf1y.sophisticatedstorage.compat.chipped;
 
+import earth.terrarium.chipped.Chipped;
+import earth.terrarium.chipped.recipe.ChippedRecipe;
 import earth.terrarium.chipped.registry.ModRecipeTypes;
+import mezz.jei.api.recipe.RecipeType;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -20,6 +25,7 @@ import net.p3pp3rf1y.sophisticatedcore.compat.chipped.BlockTransformationUpgrade
 import net.p3pp3rf1y.sophisticatedcore.compat.chipped.BlockTransformationUpgradeWrapper;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageButtonDefinitions;
+import net.p3pp3rf1y.sophisticatedstorage.compat.jei.StoragePlugin;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 
 public class ChippedCompat implements ICompat {
@@ -43,6 +49,16 @@ public class ChippedCompat implements ICompat {
 	public void init() {
 		IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
 		modBus.addGenericListener(MenuType.class, this::registerContainers);
+
+		StoragePlugin.setAdditionalCatalystRegistrar(registration -> {
+			registration.addRecipeCatalyst(new ItemStack(BOTANIST_WORKBENCH_UPGRADE.get()), new RecipeType<>(new ResourceLocation(Chipped.MOD_ID, "botanist_workbench"), ChippedRecipe.class));
+			registration.addRecipeCatalyst(new ItemStack(GLASSBLOWER_WORKBENCH_UPGRADE.get()), new RecipeType<>(new ResourceLocation(Chipped.MOD_ID, "glassblower"), ChippedRecipe.class));
+			registration.addRecipeCatalyst(new ItemStack(CARPENTER_WORKBENCH_UPGRADE.get()), new RecipeType<>(new ResourceLocation(Chipped.MOD_ID, "carpenters_table"), ChippedRecipe.class));
+			registration.addRecipeCatalyst(new ItemStack(SHEPHERD_WORKBENCH_UPGRADE.get()), new RecipeType<>(new ResourceLocation(Chipped.MOD_ID, "loom_table"), ChippedRecipe.class));
+			registration.addRecipeCatalyst(new ItemStack(MASON_WORKBENCH_UPGRADE.get()), new RecipeType<>(new ResourceLocation(Chipped.MOD_ID, "mason_table"), ChippedRecipe.class));
+			registration.addRecipeCatalyst(new ItemStack(PHILOSOPHER_WORKBENCH_UPGRADE.get()), new RecipeType<>(new ResourceLocation(Chipped.MOD_ID, "alchemy_bench"), ChippedRecipe.class));
+			registration.addRecipeCatalyst(new ItemStack(TINKERER_WORKBENCH_UPGRADE.get()), new RecipeType<>(new ResourceLocation(Chipped.MOD_ID, "mechanist_workbench"), ChippedRecipe.class));
+		});
 	}
 
 	public void registerContainers(RegistryEvent.Register<MenuType<?>> evt) {
