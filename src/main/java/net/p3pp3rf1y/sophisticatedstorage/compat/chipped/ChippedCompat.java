@@ -1,6 +1,8 @@
 package net.p3pp3rf1y.sophisticatedstorage.compat.chipped;
 
+import earth.terrarium.chipped.common.compat.jei.ChippedRecipeCategory;
 import earth.terrarium.chipped.common.registry.ModRecipeTypes;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.DistExecutor;
@@ -19,6 +21,7 @@ import net.p3pp3rf1y.sophisticatedcore.compat.chipped.BlockTransformationUpgrade
 import net.p3pp3rf1y.sophisticatedcore.compat.chipped.BlockTransformationUpgradeTab;
 import net.p3pp3rf1y.sophisticatedcore.compat.chipped.BlockTransformationUpgradeWrapper;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageButtonDefinitions;
+import net.p3pp3rf1y.sophisticatedstorage.compat.jei.StoragePlugin;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 
 public class ChippedCompat implements ICompat {
@@ -42,6 +45,16 @@ public class ChippedCompat implements ICompat {
 	public void init() {
 		IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
 		modBus.addListener(this::registerContainers);
+
+		StoragePlugin.setAdditionalCatalystRegistrar(registration -> {
+			registration.addRecipeCatalyst(new ItemStack(BOTANIST_WORKBENCH_UPGRADE.get()), ChippedRecipeCategory.BOTANIST_WORKBENCH_RECIPE);
+			registration.addRecipeCatalyst(new ItemStack(GLASSBLOWER_WORKBENCH_UPGRADE.get()), ChippedRecipeCategory.GLASSBLOWER_RECIPE);
+			registration.addRecipeCatalyst(new ItemStack(CARPENTER_WORKBENCH_UPGRADE.get()), ChippedRecipeCategory.CARPENTERS_TABLE_RECIPE);
+			registration.addRecipeCatalyst(new ItemStack(SHEPHERD_WORKBENCH_UPGRADE.get()), ChippedRecipeCategory.LOOM_TABLE_RECIPE);
+			registration.addRecipeCatalyst(new ItemStack(MASON_WORKBENCH_UPGRADE.get()), ChippedRecipeCategory.MASON_TABLE_RECIPE);
+			registration.addRecipeCatalyst(new ItemStack(PHILOSOPHER_WORKBENCH_UPGRADE.get()), ChippedRecipeCategory.ALCHEMY_BENCH_RECIPE);
+			registration.addRecipeCatalyst(new ItemStack(TINKERER_WORKBENCH_UPGRADE.get()), ChippedRecipeCategory.TINKERING_TABLE_RECIPE);
+		});
 	}
 
 	public void registerContainers(RegisterEvent event) {
