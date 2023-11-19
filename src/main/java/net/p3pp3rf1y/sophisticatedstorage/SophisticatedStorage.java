@@ -39,6 +39,7 @@ public class SophisticatedStorage {
 		IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
 		modBus.addListener(Config.SERVER::onConfigReload);
 		commonEventHandler.registerHandlers();
+		ModCompat.initCompats();
 		if (FMLEnvironment.dist == Dist.CLIENT) {
 			ClientEventHandler.registerHandlers();
 		}
@@ -53,7 +54,7 @@ public class SophisticatedStorage {
 
 	private static void setup(FMLCommonSetupEvent event) {
 		StoragePacketHandler.INSTANCE.init();
-		ModCompat.initCompats();
+		ModCompat.compatsSetup();
 		event.enqueueWork(ModBlocks::registerDispenseBehavior);
 		event.enqueueWork(ModBlocks::registerCauldronInteractions);
 	}

@@ -19,12 +19,15 @@ import net.minecraft.world.level.block.state.properties.WoodType;
 import net.minecraftforge.common.Tags;
 import net.minecraftforge.common.crafting.conditions.ModLoadedCondition;
 import net.minecraftforge.registries.ForgeRegistries;
+import net.p3pp3rf1y.sophisticatedcore.compat.CompatModIds;
+import net.p3pp3rf1y.sophisticatedcore.compat.chipped.BlockTransformationUpgradeItem;
 import net.p3pp3rf1y.sophisticatedcore.crafting.ShapeBasedRecipeBuilder;
 import net.p3pp3rf1y.sophisticatedcore.crafting.ShapelessBasedRecipeBuilder;
 import net.p3pp3rf1y.sophisticatedcore.crafting.UpgradeNextTierRecipe;
 import net.p3pp3rf1y.sophisticatedcore.util.RegistryHelper;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.WoodStorageBlockBase;
+import net.p3pp3rf1y.sophisticatedstorage.compat.chipped.ChippedCompat;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.ShulkerBoxFromChestRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.SmithingStorageUpgradeRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.StorageDyeRecipe;
@@ -509,6 +512,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.unlockedBy(HAS_UPGRADE_BASE_CRITERION_NAME, has(ModItems.UPGRADE_BASE.get()))
 				.save(consumer);
 
+
 		ShapeBasedRecipeBuilder.shaped(ModItems.STACK_UPGRADE_TIER_1.get())
 				.pattern("LLL")
 				.pattern("LBL")
@@ -686,6 +690,32 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('O', Items.DROPPER)
 				.define('H', ModItems.HOPPER_UPGRADE.get())
 				.unlockedBy("has_feeding_upgrade", has(ModItems.HOPPER_UPGRADE.get()))
+				.save(consumer);
+
+		addChippedUpgradeRecipes(consumer);
+	}
+
+	private static void addChippedUpgradeRecipes(Consumer<FinishedRecipe> consumer) {
+		addChippedUpgradeRecipe(consumer, ChippedCompat.BOTANIST_WORKBENCH_UPGRADE.get(), earth.terrarium.chipped.registry.ModBlocks.BOTANIST_WORKBENCH.get());
+		addChippedUpgradeRecipe(consumer, ChippedCompat.GLASSBLOWER_WORKBENCH_UPGRADE.get(), earth.terrarium.chipped.registry.ModBlocks.GLASSBLOWER.get());
+		addChippedUpgradeRecipe(consumer, ChippedCompat.CARPENTER_WORKBENCH_UPGRADE.get(), earth.terrarium.chipped.registry.ModBlocks.CARPENTERS_TABLE.get());
+		addChippedUpgradeRecipe(consumer, ChippedCompat.SHEPHERD_WORKBENCH_UPGRADE.get(), earth.terrarium.chipped.registry.ModBlocks.LOOM_TABLE.get());
+		addChippedUpgradeRecipe(consumer, ChippedCompat.MASON_WORKBENCH_UPGRADE.get(), earth.terrarium.chipped.registry.ModBlocks.MASON_TABLE.get());
+		addChippedUpgradeRecipe(consumer, ChippedCompat.PHILOSOPHER_WORKBENCH_UPGRADE.get(), earth.terrarium.chipped.registry.ModBlocks.ALCHEMY_BENCH.get());
+		addChippedUpgradeRecipe(consumer, ChippedCompat.TINKERER_WORKBENCH_UPGRADE.get(), earth.terrarium.chipped.registry.ModBlocks.MECHANIST_WORKBENCH.get());
+	}
+
+	private static void addChippedUpgradeRecipe(Consumer<FinishedRecipe> consumer, BlockTransformationUpgradeItem upgrade, Block workbench) {
+		ShapeBasedRecipeBuilder.shaped(upgrade)
+				.pattern(" W ")
+				.pattern("IBI")
+				.pattern(" R ")
+				.define('B', ModItems.UPGRADE_BASE.get())
+				.define('R', Tags.Items.DUSTS_REDSTONE)
+				.define('I', Tags.Items.INGOTS_IRON)
+				.define('W', workbench)
+				.unlockedBy(HAS_UPGRADE_BASE_CRITERION_NAME, has(ModItems.UPGRADE_BASE.get()))
+				.condition(new ModLoadedCondition(CompatModIds.CHIPPED))
 				.save(consumer);
 	}
 
