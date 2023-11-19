@@ -4,9 +4,9 @@ import net.minecraftforge.fml.ModList;
 import net.p3pp3rf1y.sophisticatedcore.compat.CompatModIds;
 import net.p3pp3rf1y.sophisticatedcore.compat.ICompat;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
+import net.p3pp3rf1y.sophisticatedstorage.compat.chipped.ChippedCompat;
 import net.p3pp3rf1y.sophisticatedstorage.compat.quark.QuarkCompat;
 import net.p3pp3rf1y.sophisticatedstorage.compat.rubidium.RubidiumCompat;
-import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
 import org.apache.maven.artifact.versioning.VersionRange;
 
@@ -23,9 +23,16 @@ public class ModCompat {
 
 	private static final Map<CompatInfo, Supplier<Callable<ICompat>>> compatFactories = new HashMap<>();
 
+	private static final Map<CompatInfo, ICompat> loadedCompats = new HashMap<>();
+
 	static {
 		compatFactories.put(new CompatInfo(CompatModIds.QUARK, null), () -> QuarkCompat::new);
 		compatFactories.put(new CompatInfo(RUBIDIUM_MOD_ID, fromSpec("[0.6.5]")), () -> RubidiumCompat::new);
+		compatFactories.put(new CompatInfo(CompatModIds.CHIPPED, null), () -> ChippedCompat::new);
+	}
+
+	public static void compatsSetup() {
+		loadedCompats.values().forEach(ICompat::setup);
 	}
 
 	@Nullable
@@ -42,16 +49,18 @@ public class ModCompat {
 		for (Map.Entry<CompatInfo, Supplier<Callable<ICompat>>> entry : compatFactories.entrySet()) {
 			if (entry.getKey().isLoaded()) {
 				try {
-					entry.getValue().get().call().setup();
+					loadedCompats.put(entry.getKey(), entry.getValue().get().call());
 				}
 				catch (Exception e) {
 					SophisticatedStorage.LOGGER.error("Error instantiating compatibility ", e);
 				}
 			}
 		}
+
+		loadedCompats.values().forEach(ICompat::init);
 	}
 
-	record CompatInfo(String modId, @Nullable VersionRange supportedVersionRange){
+	record CompatInfo(String modId, @Nullable VersionRange supportedVersionRange) {
 		public boolean isLoaded() {
 			return ModList.get().getModContainerById(modId())
 					.map(container -> supportedVersionRange() == null || supportedVersionRange().containsVersion(container.getModInfo().getVersion()))

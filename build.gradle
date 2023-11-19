@@ -86,6 +86,12 @@ dependencies {
     runtimeOnly fg.deobf("mezz.jei:jei-${jei_mc_version}:${jei_version}")
     compileOnly fg.deobf("curse.maven:rubidium-574856:${rubidium_cf_file_id}")
     compileOnly fg.deobf("curse.maven:jade-324717:${jade_cf_file_id}")
+    compileOnly fg.deobf("curse.maven:chipped-456956:${chipped_cf_file_id}")
+    runtimeOnly fg.deobf("curse.maven:chipped-456956:${chipped_cf_file_id}")
+    compileOnly fg.deobf("curse.maven:athena-841890:${athena_cf_file_id}")
+    runtimeOnly fg.deobf("curse.maven:athena-841890:${athena_cf_file_id}")
+    compileOnly fg.deobf("curse.maven:resourcefullib-570073:${resourcefullib_cf_file_id}")
+    runtimeOnly fg.deobf("curse.maven:resourcefullib-570073:${resourcefullib_cf_file_id}")
 
 /*
     compileOnly fg.deobf("curse.maven:quark-243121:${quark_cf_file_id}")
