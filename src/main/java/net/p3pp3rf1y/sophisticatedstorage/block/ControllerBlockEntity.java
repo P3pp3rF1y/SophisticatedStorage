@@ -17,7 +17,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class ControllerBlockEntity extends ControllerBlockEntityBase implements ILockable, ICountDisplay, ITierDisplay, IUpgradeDisplay {
+public class ControllerBlockEntity extends ControllerBlockEntityBase implements ILockable, ICountDisplay, ITierDisplay, IUpgradeDisplay, IFillLevelDisplay {
 	private long lastDepositTime = -100;
 
 	public ControllerBlockEntity(BlockPos pos, BlockState state) {
@@ -186,5 +186,34 @@ public class ControllerBlockEntity extends ControllerBlockEntityBase implements 
 		} else {
 			invisibleUpgradeStorages.forEach(IUpgradeDisplay::toggleUpgradesVisiblity);
 		}
+	}
+
+	@Override
+	public boolean shouldShowFillLevels() {
+		return false;
+	}
+
+	@Override
+	public void toggleFillLevelVisibility() {
+		Set<IFillLevelDisplay> invisibleFillLevelStorages = new HashSet<>();
+		Set<IFillLevelDisplay> visibleFillLevelStorages = new HashSet<>();
+		getStoragePositions().forEach(storagePosition -> WorldHelper.getLoadedBlockEntity(level, storagePosition, IFillLevelDisplay.class).ifPresent(fillLevelDisplay -> {
+			if (fillLevelDisplay.shouldShowFillLevels()) {
+				visibleFillLevelStorages.add(fillLevelDisplay);
+			} else {
+				invisibleFillLevelStorages.add(fillLevelDisplay);
+			}
+		}));
+
+		if (invisibleFillLevelStorages.isEmpty()) {
+			visibleFillLevelStorages.forEach(IFillLevelDisplay::toggleFillLevelVisibility);
+		} else {
+			invisibleFillLevelStorages.forEach(IFillLevelDisplay::toggleFillLevelVisibility);
+		}
+	}
+
+	@Override
+	public List<Float> getSlotFillLevels() {
+		return List.of();
 	}
 }

@@ -570,6 +570,11 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		storageWrapper.getUpgradeHandler().getWrappersThatImplement(INeighborChangeListenerUpgrade.class).forEach(upgrade -> upgrade.onNeighborChange(level, worldPosition, direction));
 	}
 
+	public float getSlotFillPercentage(int slot) {
+		ItemStack stackInSlot = storageWrapper.getInventoryHandler().getStackInSlot(slot);
+		return stackInSlot.getCount() / (float) storageWrapper.getInventoryHandler().getStackLimit(slot, stackInSlot);
+	}
+
 	private static class ContentsFilteredItemHandler implements ITrackedContentsItemHandler {
 
 		private final Supplier<ITrackedContentsItemHandler> itemHandlerGetter;
