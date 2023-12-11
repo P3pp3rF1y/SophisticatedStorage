@@ -212,10 +212,10 @@ public class ClientEventHandler {
 	private static void addBarrelPartModelsToBake() {
 		Collection<ResourceLocation> models = Minecraft.getInstance().getResourceManager().listResources("models/block/barrel_part", fileName -> fileName.endsWith(".json"));
 		models.forEach(modelName -> {
-					if (modelName.getNamespace().equals(SophisticatedStorage.MOD_ID)) {
-						ForgeModelBakery.addSpecialModel(new ResourceLocation(modelName.getNamespace(), modelName.getPath().substring("models/".length()).replace(".json", "")));
-					}
-				});
+			if (modelName.getNamespace().equals(SophisticatedStorage.MOD_ID)) {
+				ForgeModelBakery.addSpecialModel(new ResourceLocation(modelName.getNamespace(), modelName.getPath().substring("models/".length()).replace(".json", "")));
+			}
+		});
 	}
 
 	private static void onRegisterReloadListeners(RegisterClientReloadListenersEvent event) {
@@ -268,6 +268,7 @@ public class ClientEventHandler {
 		stitchChestTextures(event);
 		stitchShulkerBoxTextures(event);
 		event.addSprite(LockRenderer.LOCK_TEXTURE.texture());
+		event.addSprite(LimitedBarrelRenderer.FILL_INDICATORS_TEXTURE.texture());
 		event.addSprite(CompressionInventoryPart.EMPTY_COMPRESSION_SLOT.getSecond());
 		event.addSprite(HopperUpgradeContainer.EMPTY_INPUT_FILTER_SLOT_BACKGROUND.getSecond());
 		event.addSprite(HopperUpgradeContainer.EMPTY_OUTPUT_FILTER_SLOT_BACKGROUND.getSecond());
