@@ -118,4 +118,8 @@ public class StorageContainerMenu extends StorageContainerMenuBase<IStorageWrapp
 			}
 		}
 	}
+
+	public float getSlotFillPercentage(int slot) {
+		return storageBlockEntity.getSlotFillPercentage(slot);
+	}
 }

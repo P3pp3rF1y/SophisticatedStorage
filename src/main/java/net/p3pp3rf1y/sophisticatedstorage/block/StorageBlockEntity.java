@@ -67,6 +67,8 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 
 	@Nullable
 	private LazyOptional<IItemHandler> itemHandlerCap;
+	@Nullable
+	private LazyOptional<IItemHandler> noSideItemHandlerCap;
 	private boolean locked = false;
 	private boolean showLock = true;
 	private boolean showTier = true;
@@ -367,6 +369,12 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 	@Override
 	public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) {
 		if (cap == ForgeCapabilities.ITEM_HANDLER) {
+			if (side == null) {
+				if (noSideItemHandlerCap == null) {
+					noSideItemHandlerCap = LazyOptional.of(() -> getStorageWrapper().getInventoryForInputOutput());
+				}
+				return noSideItemHandlerCap.cast();
+			}
 			if (itemHandlerCap == null) {
 				itemHandlerCap = LazyOptional.of(() -> new CachedFailedInsertInventoryHandler(getStorageWrapper().getInventoryForInputOutput(), () -> level != null ? level.getGameTime() : 0));
 			}
@@ -386,6 +394,11 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 			LazyOptional<IItemHandler> tempItemHandlerCap = itemHandlerCap;
 			itemHandlerCap = null;
 			tempItemHandlerCap.invalidate();
+		}
+		if (noSideItemHandlerCap != null) {
+			LazyOptional<IItemHandler> tempNoSideItemHandlerCap = noSideItemHandlerCap;
+			noSideItemHandlerCap = null;
+			tempNoSideItemHandlerCap.invalidate();
 		}
 	}
 
@@ -568,6 +581,11 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 			return;
 		}
 		storageWrapper.getUpgradeHandler().getWrappersThatImplement(INeighborChangeListenerUpgrade.class).forEach(upgrade -> upgrade.onNeighborChange(level, worldPosition, direction));
+	}
+
+	public float getSlotFillPercentage(int slot) {
+		ItemStack stackInSlot = storageWrapper.getInventoryHandler().getStackInSlot(slot);
+		return stackInSlot.getCount() / (float) storageWrapper.getInventoryHandler().getStackLimit(slot, stackInSlot);
 	}
 
 	private static class ContentsFilteredItemHandler implements ITrackedContentsItemHandler {

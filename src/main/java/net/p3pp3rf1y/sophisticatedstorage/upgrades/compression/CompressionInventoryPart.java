@@ -26,6 +26,7 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
+import java.util.function.ToIntFunction;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -289,6 +290,10 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 
 	@Override
 	public ItemStack extractItem(int slot, int amount, boolean simulate) {
+		return extractItem(slot, amount, simulate, ItemStack::getMaxStackSize);
+	}
+
+	private ItemStack extractItem(int slot, int amount, boolean simulate, ToIntFunction<ItemStack> getLimit) {
 		if (!slotDefinitions.containsKey(slot) || !slotDefinitions.get(slot).isAccessible()) {
 			return ItemStack.EMPTY;
 		}
@@ -297,6 +302,7 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 		if (toExtract > 0) {
 			SlotDefinition slotDefinition = slotDefinitions.get(slot);
 			ItemStack slotStack = parent.getSlotStack(slot);
+			toExtract = Math.min(toExtract, getLimit.applyAsInt(slotStack));
 			ItemStack result = slotDefinition.isCompressible() ? new ItemStack(slotDefinition.item(), toExtract) : ItemHandlerHelper.copyStackWithSize(slotStack, toExtract);
 
 			if (!simulate) {
@@ -608,7 +614,7 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 		if (currentCount < stack.getCount()) {
 			insertItem(slot, ItemHandlerHelper.copyStackWithSize(stack, stack.getCount() - currentCount), false);
 		} else if (currentCount > stack.getCount()) {
-			extractItem(slot, currentCount - stack.getCount(), false);
+			extractItem(slot, currentCount - stack.getCount(), false, s -> Integer.MAX_VALUE);
 		}
 	}
 

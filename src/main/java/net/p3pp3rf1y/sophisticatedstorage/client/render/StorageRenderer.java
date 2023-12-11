@@ -22,11 +22,18 @@ public abstract class StorageRenderer<T extends StorageBlockEntity> implements B
 	private boolean holdsItemThatShowsUpgrades = false;
 	private boolean holdsStorageToolSetToToggleUpgrades = false;
 	private boolean holdsItemThatShowsHiddenTiers = false;
-	private boolean holdsToolInToggleLockOrLockDisplay = false;
 
+	private boolean holdsItemThatShowsFillLevels = false;
+
+	private boolean holdsToolInToggleLockOrLockDisplay = false;
+	private boolean holdsToolInToggleFillLevelDisplay = false;
 	protected boolean holdsItemThatShowsUpgrades() {
 		refreshCache();
 		return holdsItemThatShowsUpgrades;
+	}
+
+	public boolean holdsItemThatShowsFillLevels() {
+		return holdsItemThatShowsFillLevels;
 	}
 
 	private void refreshCache() {
@@ -48,6 +55,7 @@ public abstract class StorageRenderer<T extends StorageBlockEntity> implements B
 					.map(item -> StorageToolItem.getMode(item) == StorageToolItem.Mode.UPGRADES_DISPLAY).orElse(false);
 
 			holdsItemThatShowsUpgrades = holdsStorageTool || holdsItem(player, this::isUpgrade);
+			holdsItemThatShowsFillLevels = holdsStorageTool || holdsItem(player, StorageTierUpgradeItem.class::isInstance);
 			holdsItemThatShowsHiddenTiers = (holdsStorageTool && InventoryHelper.getItemFromEitherHand(player, ModItems.STORAGE_TOOL.get())
 					.map(item -> StorageToolItem.getMode(item) == StorageToolItem.Mode.TIER_DISPLAY).orElse(false))
 					|| holdsItem(player, StorageTierUpgradeItem.class::isInstance);
@@ -56,6 +64,8 @@ public abstract class StorageRenderer<T extends StorageBlockEntity> implements B
 						StorageToolItem.Mode mode = StorageToolItem.getMode(item);
 						return mode == StorageToolItem.Mode.LOCK_DISPLAY || mode == StorageToolItem.Mode.LOCK;
 					}).orElse(false);
+			holdsToolInToggleFillLevelDisplay = holdsStorageTool && InventoryHelper.getItemFromEitherHand(player, ModItems.STORAGE_TOOL.get())
+					.map(item -> StorageToolItem.getMode(item) == StorageToolItem.Mode.FILL_LEVEL_DISPLAY).orElse(false);
 		}
 	}
 
@@ -67,6 +77,11 @@ public abstract class StorageRenderer<T extends StorageBlockEntity> implements B
 	public boolean holdsToolInToggleLockOrLockDisplay() {
 		refreshCache();
 		return holdsToolInToggleLockOrLockDisplay;
+	}
+
+	public boolean holdsToolInToggleFillLevelDisplay() {
+		refreshCache();
+		return holdsToolInToggleFillLevelDisplay;
 	}
 
 	private boolean holdsItem(LocalPlayer player, Predicate<Item> itemMatcher) {

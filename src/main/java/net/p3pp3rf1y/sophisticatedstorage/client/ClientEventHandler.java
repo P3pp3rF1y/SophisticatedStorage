@@ -244,6 +244,7 @@ public class ClientEventHandler {
 		stitchChestTextures(event);
 		stitchShulkerBoxTextures(event);
 		event.addSprite(LockRenderer.LOCK_TEXTURE.texture());
+		event.addSprite(LimitedBarrelRenderer.FILL_INDICATORS_TEXTURE.texture());
 		event.addSprite(CompressionInventoryPart.EMPTY_COMPRESSION_SLOT.getSecond());
 		event.addSprite(HopperUpgradeContainer.EMPTY_INPUT_FILTER_SLOT_BACKGROUND.getSecond());
 		event.addSprite(HopperUpgradeContainer.EMPTY_OUTPUT_FILTER_SLOT_BACKGROUND.getSecond());
