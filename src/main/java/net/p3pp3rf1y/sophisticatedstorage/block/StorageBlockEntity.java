@@ -376,7 +376,7 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 				return noSideItemHandlerCap.cast();
 			}
 			if (itemHandlerCap == null) {
-				itemHandlerCap = LazyOptional.of(() -> new CachedFailedInsertInventoryHandler(getStorageWrapper().getInventoryForInputOutput(), () -> level != null ? level.getGameTime() : 0));
+				itemHandlerCap = LazyOptional.of(() -> new CachedFailedInsertInventoryHandler(() -> getStorageWrapper().getInventoryForInputOutput(), () -> level != null ? level.getGameTime() : 0));
 			}
 			return itemHandlerCap.cast();
 		}
