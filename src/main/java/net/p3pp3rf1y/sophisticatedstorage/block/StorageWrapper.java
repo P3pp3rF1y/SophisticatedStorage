@@ -185,10 +185,10 @@ public abstract class StorageWrapper implements IStorageWrapper {
 		if (numberOfUpgradeSlots > -1) {
 			tag.putInt("numberOfUpgradeSlots", numberOfUpgradeSlots);
 		}
-		if (mainColor != 0) {
+		if (mainColor > -1) {
 			tag.putInt(MAIN_COLOR_TAG, mainColor);
 		}
-		if (accentColor != 0) {
+		if (accentColor > -1) {
 			tag.putInt(ACCENT_COLOR_TAG, accentColor);
 		}
 		return tag;
