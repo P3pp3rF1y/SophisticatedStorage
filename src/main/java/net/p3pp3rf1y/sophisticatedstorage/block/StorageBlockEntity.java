@@ -9,6 +9,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.Clearable;
 import net.minecraft.world.Nameable;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -47,7 +48,7 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public abstract class StorageBlockEntity extends BlockEntity implements IControllableStorage, ILinkable, ILockable, Nameable, ITierDisplay, IUpgradeDisplay {
+public abstract class StorageBlockEntity extends BlockEntity implements IControllableStorage, ILinkable, ILockable, Nameable, ITierDisplay, IUpgradeDisplay, Clearable {
 	public static final String STORAGE_WRAPPER_TAG = "storageWrapper";
 	private final StorageWrapper storageWrapper;
 	@Nullable
@@ -358,6 +359,27 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 
 		InventoryHelper.dropItems(storageWrapper.getUpgradeHandler(), level, worldPosition);
 		isDroppingContents = false;
+	}
+
+	public void clearContent() {
+		if (level == null || level.isClientSide) {
+			return;
+		}
+
+		isDroppingContents = true;
+		clearHelper(storageWrapper.getInventoryHandler());
+
+		clearHelper(storageWrapper.getUpgradeHandler());
+		isDroppingContents = false;
+	}
+
+	protected void clearHelper(InventoryHandler inventoryHandler) {
+		InventoryHelper.iterate(inventoryHandler, (slot, stack) -> {
+			if (stack.isEmpty()) {
+				return;
+			}
+			inventoryHandler.setStackInSlot(slot, ItemStack.EMPTY);
+		});
 	}
 
 	public void setCustomName(Component customName) {
