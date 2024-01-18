@@ -360,6 +360,18 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		isDroppingContents = false;
 	}
 
+	public void clearContent() {
+		if (level == null || level.isClientSide) {
+			return;
+		}
+
+		isDroppingContents = true;
+		InventoryHelper.deleteItems(storageWrapper.getInventoryHandler());
+
+		InventoryHelper.deleteItems(storageWrapper.getUpgradeHandler());
+		isDroppingContents = false;
+	}
+
 	public void setCustomName(Component customName) {
 		displayName = customName;
 		setChanged();
