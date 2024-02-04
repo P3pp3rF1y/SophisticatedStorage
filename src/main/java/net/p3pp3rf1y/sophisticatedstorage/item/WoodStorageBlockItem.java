@@ -126,6 +126,16 @@ public class WoodStorageBlockItem extends StorageBlockItem {
 					UUID uuid = NBTHelper.getUniqueId(stack, "uuid").orElse(null);
 					StorageWrapper storageWrapper = new StackStorageWrapper(stack) {
 						@Override
+						public String getStorageType() {
+							return "wood_storage"; //isn't really relevant because wooden storage can't have its gui open when in item form
+						}
+
+						@Override
+						public Component getDisplayName() {
+							return Component.empty(); //isn't really relevant because wooden storage can't have its gui open when in item form
+						}
+
+						@Override
 						protected boolean isAllowedInStorage(ItemStack stack) {
 							return false;
 						}

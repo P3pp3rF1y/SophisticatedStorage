@@ -29,7 +29,7 @@ public class CompressionUpgradeItem extends UpgradeItemBase<CompressionUpgradeIt
 	private static final String FIRST_INVENTORY_SLOT_TAG = "firstInventorySlot";
 
 	public CompressionUpgradeItem() {
-		super();
+		super(Config.SERVER.maxUpgradesPerStorage);
 		InventoryPartRegistry.registerFactory(CompressionInventoryPart.NAME, CompressionInventoryPart::new);
 	}
 
@@ -40,6 +40,11 @@ public class CompressionUpgradeItem extends UpgradeItemBase<CompressionUpgradeIt
 
 	@Override
 	public UpgradeSlotChangeResult canAddUpgradeTo(IStorageWrapper storageWrapper, ItemStack upgradeStack, boolean firstLevelStorage, boolean isClientSide) {
+		UpgradeSlotChangeResult result = super.canAddUpgradeTo(storageWrapper, upgradeStack, firstLevelStorage, isClientSide);
+		if (!result.isSuccessful()) {
+			return result;
+		}
+
 		if (isClientSide) {
 			return new UpgradeSlotChangeResult.Success();
 		}

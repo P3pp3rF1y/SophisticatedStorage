@@ -39,11 +39,7 @@ import net.p3pp3rf1y.sophisticatedstorage.upgrades.INeighborChangeListenerUpgrad
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Collections;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -132,6 +128,16 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 			}
 
 			@Override
+			public String getStorageType() {
+				return StorageBlockEntity.this.getStorageType();
+			}
+
+			@Override
+			public Component getDisplayName() {
+				return StorageBlockEntity.this.getDisplayName();
+			}
+
+			@Override
 			protected boolean emptyInventorySlotsAcceptItems() {
 				return !locked || allowsEmptySlotsMatchingItemInsertsWhenLocked();
 			}
@@ -150,6 +156,8 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		};
 		storageWrapper.setUpgradeCachesInvalidatedHandler(this::onUpgradeCachesInvalidated);
 	}
+
+	protected abstract String getStorageType();
 
 	protected void onUpgradeCachesInvalidated() {
 		invalidateStorageCap();

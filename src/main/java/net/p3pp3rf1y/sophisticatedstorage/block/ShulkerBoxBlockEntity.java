@@ -22,6 +22,7 @@ import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import java.util.List;
 
 public class ShulkerBoxBlockEntity extends StorageBlockEntity {
+	public static final String STORAGE_TYPE = "shulker_box";
 	private AnimationStatus animationStatus = AnimationStatus.CLOSED;
 	private float progress;
 	private float progressOld;
@@ -123,6 +124,11 @@ public class ShulkerBoxBlockEntity extends StorageBlockEntity {
 	@Override
 	protected ContainerOpenersCounter getOpenersCounter() {
 		return openersCounter;
+	}
+
+	@Override
+	protected String getStorageType() {
+		return STORAGE_TYPE;
 	}
 
 	public float getProgress(float partialTicks) {
