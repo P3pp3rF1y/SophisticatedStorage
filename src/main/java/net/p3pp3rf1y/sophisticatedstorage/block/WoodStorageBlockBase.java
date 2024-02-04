@@ -164,6 +164,11 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 		}
 		b.setPacked(true);
 
+		BlockState blockState = b.getBlockState();
+		if (blockState.getBlock() instanceof StorageBlockBase storageBlock && blockState.getValue(StorageBlockBase.TICKING)) {
+			storageBlock.setTicking(player.level, b.getBlockPos(), blockState, false);
+		}
+
 		b.removeFromController();
 
 		WorldHelper.notifyBlockUpdate(b);

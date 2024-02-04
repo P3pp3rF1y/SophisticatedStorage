@@ -11,6 +11,7 @@ import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 
 public class ChestBlockEntity extends WoodStorageBlockEntity {
+	public static final String STORAGE_TYPE = "chest";
 	private final ChestLidController chestLidController = new ChestLidController();
 
 	private final ContainerOpenersCounter openersCounter = new ContainerOpenersCounter() {
@@ -38,6 +39,11 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 	@Override
 	protected ContainerOpenersCounter getOpenersCounter() {
 		return openersCounter;
+	}
+
+	@Override
+	protected String getStorageType() {
+		return STORAGE_TYPE;
 	}
 
 	public ChestBlockEntity(BlockPos pos, BlockState state) {

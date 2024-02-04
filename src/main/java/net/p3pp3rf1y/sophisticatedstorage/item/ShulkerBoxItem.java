@@ -133,6 +133,16 @@ public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageIte
 					UUID uuid = getContentsUuid(stack).orElse(null);
 					StorageWrapper storageWrapper = new StackStorageWrapper(stack) {
 						@Override
+						public String getStorageType() {
+							return "shulker_box";
+						}
+
+						@Override
+						public Component getDisplayName() {
+							return new TranslatableComponent(ShulkerBoxItem.this.getDescriptionId());
+						}
+
+						@Override
 						protected boolean isAllowedInStorage(ItemStack stack) {
 							Block block = Block.byItem(stack.getItem());
 							return !(block instanceof ShulkerBoxBlock) && !(block instanceof net.minecraft.world.level.block.ShulkerBoxBlock) && !Config.SERVER.shulkerBoxDisallowedItems.isItemDisallowed(stack.getItem());

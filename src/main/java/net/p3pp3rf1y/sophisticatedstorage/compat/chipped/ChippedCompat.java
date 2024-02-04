@@ -25,6 +25,7 @@ import net.p3pp3rf1y.sophisticatedcore.compat.chipped.BlockTransformationUpgrade
 import net.p3pp3rf1y.sophisticatedcore.compat.chipped.BlockTransformationUpgradeItem;
 import net.p3pp3rf1y.sophisticatedcore.compat.chipped.BlockTransformationUpgradeTab;
 import net.p3pp3rf1y.sophisticatedcore.compat.chipped.BlockTransformationUpgradeWrapper;
+import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageButtonDefinitions;
 import net.p3pp3rf1y.sophisticatedstorage.compat.jei.StoragePlugin;
@@ -35,19 +36,19 @@ import java.util.function.Supplier;
 public class ChippedCompat implements ICompat {
 
 	public static final RegistryObject<BlockTransformationUpgradeItem> BOTANIST_WORKBENCH_UPGRADE = ModItems.ITEMS.register("chipped/botanist_workbench_upgrade",
-			() -> new BlockTransformationUpgradeItem(SophisticatedStorage.CREATIVE_TAB, ModRecipeTypes.BOTANIST_WORKBENCH_TYPE));
+			() -> new BlockTransformationUpgradeItem(SophisticatedStorage.CREATIVE_TAB, ModRecipeTypes.BOTANIST_WORKBENCH_TYPE, Config.SERVER.maxUpgradesPerStorage));
 	public static final RegistryObject<BlockTransformationUpgradeItem> GLASSBLOWER_WORKBENCH_UPGRADE = ModItems.ITEMS.register("chipped/glassblower_workbench_upgrade",
-			() -> new BlockTransformationUpgradeItem(SophisticatedStorage.CREATIVE_TAB, ModRecipeTypes.GLASSBLOWER_TYPE));
+			() -> new BlockTransformationUpgradeItem(SophisticatedStorage.CREATIVE_TAB, ModRecipeTypes.GLASSBLOWER_TYPE, Config.SERVER.maxUpgradesPerStorage));
 	public static final RegistryObject<BlockTransformationUpgradeItem> CARPENTER_WORKBENCH_UPGRADE = ModItems.ITEMS.register("chipped/carpenter_workbench_upgrade",
-			() -> new BlockTransformationUpgradeItem(SophisticatedStorage.CREATIVE_TAB, ModRecipeTypes.CARPENTERS_TABLE_TYPE));
+			() -> new BlockTransformationUpgradeItem(SophisticatedStorage.CREATIVE_TAB, ModRecipeTypes.CARPENTERS_TABLE_TYPE, Config.SERVER.maxUpgradesPerStorage));
 	public static final RegistryObject<BlockTransformationUpgradeItem> SHEPHERD_WORKBENCH_UPGRADE = ModItems.ITEMS.register("chipped/shepherd_workbench_upgrade",
-			() -> new BlockTransformationUpgradeItem(SophisticatedStorage.CREATIVE_TAB, ModRecipeTypes.LOOM_TABLE_TYPE));
+			() -> new BlockTransformationUpgradeItem(SophisticatedStorage.CREATIVE_TAB, ModRecipeTypes.LOOM_TABLE_TYPE, Config.SERVER.maxUpgradesPerStorage));
 	public static final RegistryObject<BlockTransformationUpgradeItem> MASON_WORKBENCH_UPGRADE = ModItems.ITEMS.register("chipped/mason_workbench_upgrade",
-			() -> new BlockTransformationUpgradeItem(SophisticatedStorage.CREATIVE_TAB, ModRecipeTypes.MASON_TABLE_TYPE));
+			() -> new BlockTransformationUpgradeItem(SophisticatedStorage.CREATIVE_TAB, ModRecipeTypes.MASON_TABLE_TYPE, Config.SERVER.maxUpgradesPerStorage));
 	public static final RegistryObject<BlockTransformationUpgradeItem> PHILOSOPHER_WORKBENCH_UPGRADE = ModItems.ITEMS.register("chipped/philosopher_workbench_upgrade",
-			() -> new BlockTransformationUpgradeItem(SophisticatedStorage.CREATIVE_TAB, ModRecipeTypes.ALCHEMY_BENCH_TYPE));
+			() -> new BlockTransformationUpgradeItem(SophisticatedStorage.CREATIVE_TAB, ModRecipeTypes.ALCHEMY_BENCH_TYPE, Config.SERVER.maxUpgradesPerStorage));
 	public static final RegistryObject<BlockTransformationUpgradeItem> TINKERER_WORKBENCH_UPGRADE = ModItems.ITEMS.register("chipped/tinkerer_workbench_upgrade",
-			() -> new BlockTransformationUpgradeItem(SophisticatedStorage.CREATIVE_TAB, ModRecipeTypes.MECHANIST_WORKBENCH_TYPE));
+			() -> new BlockTransformationUpgradeItem(SophisticatedStorage.CREATIVE_TAB, ModRecipeTypes.MECHANIST_WORKBENCH_TYPE, Config.SERVER.maxUpgradesPerStorage));
 
 	@Override
 	public void init() {
