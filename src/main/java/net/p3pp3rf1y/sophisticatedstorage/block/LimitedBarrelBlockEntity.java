@@ -1,11 +1,7 @@
 package net.p3pp3rf1y.sophisticatedstorage.block;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.FloatTag;
-import net.minecraft.nbt.IntTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.*;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -24,11 +20,7 @@ import net.p3pp3rf1y.sophisticatedcore.util.RandHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -40,6 +32,7 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 		voidUpgrade.getFilterLogic().setAllowByDefault(false);
 		voidUpgrade.setShouldVoidOverflowDefaultOrLoadFromNbt(true);
 	};
+	public static final String STORAGE_TYPE = "limited_barrel";
 	private long lastDepositTime = -100;
 
 	private final List<Integer> slotCounts = new ArrayList<>();
@@ -287,5 +280,10 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 		if (!slotColors.isEmpty()) {
 			NBTHelper.putMap(tag, "slotColors", slotColors, String::valueOf, color -> IntTag.valueOf(color.getId()));
 		}
+	}
+
+	@Override
+	protected String getStorageType() {
+		return STORAGE_TYPE;
 	}
 }

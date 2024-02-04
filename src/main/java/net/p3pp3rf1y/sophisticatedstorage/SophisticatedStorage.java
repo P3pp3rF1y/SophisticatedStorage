@@ -13,11 +13,7 @@ import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.p3pp3rf1y.sophisticatedstorage.client.ClientEventHandler;
 import net.p3pp3rf1y.sophisticatedstorage.common.CommonEventHandler;
 import net.p3pp3rf1y.sophisticatedstorage.data.DataGenerators;
-import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
-import net.p3pp3rf1y.sophisticatedstorage.init.ModCompat;
-import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
-import net.p3pp3rf1y.sophisticatedstorage.init.ModLoot;
-import net.p3pp3rf1y.sophisticatedstorage.init.ModParticles;
+import net.p3pp3rf1y.sophisticatedstorage.init.*;
 import net.p3pp3rf1y.sophisticatedstorage.item.CapabilityStorageWrapper;
 import net.p3pp3rf1y.sophisticatedstorage.network.StoragePacketHandler;
 import org.apache.logging.log4j.LogManager;
@@ -36,7 +32,7 @@ public class SophisticatedStorage {
 		ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, Config.SERVER_SPEC);
 		ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, Config.CLIENT_SPEC);
 		IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
-		modBus.addListener(Config.SERVER::onConfigReload);
+		Config.SERVER.initListeners(modBus);
 		commonEventHandler.registerHandlers();
 		ModCompat.initCompats();
 		if (FMLEnvironment.dist == Dist.CLIENT) {
