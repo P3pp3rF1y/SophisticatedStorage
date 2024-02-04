@@ -222,14 +222,12 @@ public abstract class StorageBlockBase extends BlockBase implements IStorageBloc
 		return tryAddSingleUpgrade(player, hand, b, itemInHand);
 	}
 
-	private static boolean isStorageUpgrade(ItemStack itemInHand) {
-		return itemInHand.getItem() instanceof UpgradeItemBase<?> upgradeItem && RegistryHelper.getRegistryName(ForgeRegistries.ITEMS, upgradeItem).map(r -> r.getNamespace().equals(SophisticatedStorage.MOD_ID)).orElse(false);
-	}
-
 	public boolean tryAddSingleUpgrade(Player player, InteractionHand hand, StorageBlockEntity b, ItemStack itemInHand) {
-		if (isStorageUpgrade(itemInHand)) {
+		if (itemInHand.getItem() instanceof UpgradeItemBase<?> upgradeItem
+				&& RegistryHelper.getRegistryName(ForgeRegistries.ITEMS, upgradeItem).map(r -> r.getNamespace().equals(SophisticatedStorage.MOD_ID)).orElse(false)) {
 			UpgradeHandler upgradeHandler = b.getStorageWrapper().getUpgradeHandler();
-			if (InventoryHelper.insertIntoInventory(itemInHand, upgradeHandler, true).getCount() != itemInHand.getCount()) {
+			if (upgradeItem.canAddUpgradeTo(b.getStorageWrapper(), itemInHand, true, b.getLevel().isClientSide()).isSuccessful()
+					&& InventoryHelper.insertIntoInventory(itemInHand, upgradeHandler, true).getCount() != itemInHand.getCount()) {
 				InventoryHelper.insertIntoInventory(ItemHandlerHelper.copyStackWithSize(itemInHand, 1), upgradeHandler, false);
 				itemInHand.shrink(1);
 				if (itemInHand.isEmpty()) {
