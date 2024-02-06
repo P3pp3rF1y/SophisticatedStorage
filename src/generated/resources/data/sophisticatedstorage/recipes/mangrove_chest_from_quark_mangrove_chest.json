@@ -11,9 +11,7 @@
     }
   ],
   "ingredients": [
-    {
-      "item": "quark:mangrove_chest"
-    },
+    [],
     {
       "item": "minecraft:redstone_torch"
     }
