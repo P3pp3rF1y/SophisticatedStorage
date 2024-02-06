@@ -11,9 +11,7 @@
     }
   ],
   "ingredients": [
-    {
-      "item": "quark:jungle_chest"
-    },
+    [],
     {
       "item": "minecraft:redstone_torch"
     }
