@@ -1,0 +1,28 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:stack_upgrade_tier_2"
+    }
+  ],
+  "key": {
+    "B": {
+      "tag": "forge:storage_blocks/iron"
+    },
+    "I": {
+      "tag": "forge:ingots/iron"
+    },
+    "S": {
+      "item": "sophisticatedstorage:stack_upgrade_tier_1_plus"
+    }
+  },
+  "pattern": [
+    " I ",
+    "ISI",
+    " B "
+  ],
+  "result": {
+    "item": "sophisticatedstorage:stack_upgrade_tier_2"
+  }
+}

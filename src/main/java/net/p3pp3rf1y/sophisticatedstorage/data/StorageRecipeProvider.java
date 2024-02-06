@@ -519,6 +519,26 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.unlockedBy(HAS_UPGRADE_BASE_CRITERION_NAME, has(ModItems.UPGRADE_BASE.get()))
 				.save(consumer);
 
+		ShapeBasedRecipeBuilder.shaped(ModItems.STACK_UPGRADE_TIER_1_PLUS.get())
+				.pattern("CCC")
+				.pattern("CSC")
+				.pattern("BCB")
+				.define('S', ModItems.STACK_UPGRADE_TIER_1.get())
+				.define('C', Tags.Items.INGOTS_COPPER)
+				.define('B', Tags.Items.STORAGE_BLOCKS_COPPER)
+				.unlockedBy(HAS_UPGRADE_BASE_CRITERION_NAME, has(ModItems.STACK_UPGRADE_TIER_1.get()))
+				.save(consumer);
+
+		ShapeBasedRecipeBuilder.shaped(ModItems.STACK_UPGRADE_TIER_2.get())
+				.pattern(" I ")
+				.pattern("ISI")
+				.pattern(" B ")
+				.define('S', ModItems.STACK_UPGRADE_TIER_1_PLUS.get())
+				.define('I', Tags.Items.INGOTS_IRON)
+				.define('B', Tags.Items.STORAGE_BLOCKS_IRON)
+				.unlockedBy(HAS_UPGRADE_BASE_CRITERION_NAME, has(ModItems.STACK_UPGRADE_TIER_1_PLUS.get()))
+				.save(consumer, SophisticatedStorage.getRL("stack_upgrade_tier_2_from_tier_1_plus"));
+
 		ShapeBasedRecipeBuilder.shaped(ModItems.STACK_UPGRADE_TIER_2.get())
 				.pattern("III")
 				.pattern("ISI")
