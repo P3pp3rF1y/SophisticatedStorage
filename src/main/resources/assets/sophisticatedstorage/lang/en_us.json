@@ -128,6 +128,8 @@
     "item.sophisticatedstorage.jukebox_upgrade.tooltip": "Portable Jukebox",
     "item.sophisticatedstorage.stack_upgrade_tier_1": "Stack Upgrade Tier 1",
     "item.sophisticatedstorage.stack_upgrade_tier_1.tooltip": "Multiplies the number of stacks that can fit in a slot by 2",
+  "item.sophisticatedstorage.stack_upgrade_tier_1_plus": "Stack Upgrade Tier 1 Plus",
+  "item.sophisticatedstorage.stack_upgrade_tier_1_plus.tooltip": "Multiplies the number of stacks that can fit in a slot by 3",
     "item.sophisticatedstorage.stack_upgrade_tier_2": "Stack Upgrade Tier 2",
     "item.sophisticatedstorage.stack_upgrade_tier_2.tooltip": "Multiplies the number of stacks that can fit in a slot by 4",
     "item.sophisticatedstorage.stack_upgrade_tier_3": "Stack Upgrade Tier 3",
