@@ -96,12 +96,10 @@ dependencies {
     compileOnly fg.deobf("curse.maven:resourcefullib-570073:${resourcefullib_cf_file_id}")
     runtimeOnly fg.deobf("curse.maven:resourcefullib-570073:${resourcefullib_cf_file_id}")
 
-/*
     compileOnly fg.deobf("curse.maven:quark-243121:${quark_cf_file_id}")
-    compileOnly fg.deobf("curse.maven:autoreglib-250363:${autoreglib_cf_file_id}")
+    compileOnly fg.deobf("curse.maven:zeta-968868:${zeta_cf_file_id}")
     runtimeOnly fg.deobf("curse.maven:quark-243121:${quark_cf_file_id}")
-    runtimeOnly fg.deobf("curse.maven:autoreglib-250363:${autoreglib_cf_file_id}")
-*/
+    runtimeOnly fg.deobf("curse.maven:zeta-968868:${zeta_cf_file_id}")
 
     if (findProject(':SophisticatedCore') != null) {
         implementation project(':SophisticatedCore')

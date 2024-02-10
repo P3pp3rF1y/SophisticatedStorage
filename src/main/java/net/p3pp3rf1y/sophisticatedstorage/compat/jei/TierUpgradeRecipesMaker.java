@@ -8,12 +8,7 @@ import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.inventory.TransientCraftingContainer;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.CraftingBookCategory;
-import net.minecraft.world.item.crafting.CraftingRecipe;
-import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.Recipe;
-import net.minecraft.world.item.crafting.ShapedRecipe;
-import net.minecraft.world.item.crafting.ShapelessRecipe;
+import net.minecraft.world.item.crafting.*;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.p3pp3rf1y.sophisticatedcore.compat.jei.ClientRecipeHelper;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
@@ -65,7 +60,9 @@ public class TierUpgradeRecipesMaker {
 						craftinginventory.setItem(i, storageItem.copy());
 					} else {
 						ingredientsCopy.add(i, ingredient);
-						craftinginventory.setItem(i, ingredientItems[0]);
+						if (!ingredient.isEmpty()) {
+							craftinginventory.setItem(i, ingredientItems[0]);
+						}
 					}
 					i++;
 				}

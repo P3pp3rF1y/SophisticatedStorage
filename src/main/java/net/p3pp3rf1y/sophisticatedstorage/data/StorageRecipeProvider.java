@@ -73,13 +73,31 @@ public class StorageRecipeProvider extends RecipeProvider {
 			limitedWoodBarrel4Recipe(consumer, woodType, blockFamily.getBaseBlock(), blockFamily.get(BlockFamily.Variant.SLAB));
 		});
 
-		addStorageTierUpgradeRecipes(consumer, ModBlocks.LIMITED_BARREL_1_ITEM.get(), ModBlocks.LIMITED_IRON_BARREL_1_ITEM.get(), ModBlocks.LIMITED_GOLD_BARREL_1_ITEM.get(), ModBlocks.LIMITED_DIAMOND_BARREL_1_ITEM.get(), ModBlocks.LIMITED_NETHERITE_BARREL_1_ITEM.get());
-		addStorageTierUpgradeRecipes(consumer, ModBlocks.LIMITED_BARREL_2_ITEM.get(), ModBlocks.LIMITED_IRON_BARREL_2_ITEM.get(), ModBlocks.LIMITED_GOLD_BARREL_2_ITEM.get(), ModBlocks.LIMITED_DIAMOND_BARREL_2_ITEM.get(), ModBlocks.LIMITED_NETHERITE_BARREL_2_ITEM.get());
-		addStorageTierUpgradeRecipes(consumer, ModBlocks.LIMITED_BARREL_3_ITEM.get(), ModBlocks.LIMITED_IRON_BARREL_3_ITEM.get(), ModBlocks.LIMITED_GOLD_BARREL_3_ITEM.get(), ModBlocks.LIMITED_DIAMOND_BARREL_3_ITEM.get(), ModBlocks.LIMITED_NETHERITE_BARREL_3_ITEM.get());
-		addStorageTierUpgradeRecipes(consumer, ModBlocks.LIMITED_BARREL_4_ITEM.get(), ModBlocks.LIMITED_IRON_BARREL_4_ITEM.get(), ModBlocks.LIMITED_GOLD_BARREL_4_ITEM.get(), ModBlocks.LIMITED_DIAMOND_BARREL_4_ITEM.get(), ModBlocks.LIMITED_NETHERITE_BARREL_4_ITEM.get());
+		addStorageTierUpgradeRecipes(consumer, ModBlocks.LIMITED_BARREL_1_ITEM.get(), ModBlocks.LIMITED_COPPER_BARREL_1_ITEM.get(), ModBlocks.LIMITED_IRON_BARREL_1_ITEM.get(), ModBlocks.LIMITED_GOLD_BARREL_1_ITEM.get(), ModBlocks.LIMITED_DIAMOND_BARREL_1_ITEM.get(), ModBlocks.LIMITED_NETHERITE_BARREL_1_ITEM.get());
+		addStorageTierUpgradeRecipes(consumer, ModBlocks.LIMITED_BARREL_2_ITEM.get(), ModBlocks.LIMITED_COPPER_BARREL_2_ITEM.get(), ModBlocks.LIMITED_IRON_BARREL_2_ITEM.get(), ModBlocks.LIMITED_GOLD_BARREL_2_ITEM.get(), ModBlocks.LIMITED_DIAMOND_BARREL_2_ITEM.get(), ModBlocks.LIMITED_NETHERITE_BARREL_2_ITEM.get());
+		addStorageTierUpgradeRecipes(consumer, ModBlocks.LIMITED_BARREL_3_ITEM.get(), ModBlocks.LIMITED_COPPER_BARREL_3_ITEM.get(), ModBlocks.LIMITED_IRON_BARREL_3_ITEM.get(), ModBlocks.LIMITED_GOLD_BARREL_3_ITEM.get(), ModBlocks.LIMITED_DIAMOND_BARREL_3_ITEM.get(), ModBlocks.LIMITED_NETHERITE_BARREL_3_ITEM.get());
+		addStorageTierUpgradeRecipes(consumer, ModBlocks.LIMITED_BARREL_4_ITEM.get(), ModBlocks.LIMITED_COPPER_BARREL_4_ITEM.get(), ModBlocks.LIMITED_IRON_BARREL_4_ITEM.get(), ModBlocks.LIMITED_GOLD_BARREL_4_ITEM.get(), ModBlocks.LIMITED_DIAMOND_BARREL_4_ITEM.get(), ModBlocks.LIMITED_NETHERITE_BARREL_4_ITEM.get());
 	}
 
-	private void addStorageTierUpgradeRecipes(Consumer<FinishedRecipe> consumer, BlockItem baseTierItem, BlockItem ironTierItem, BlockItem goldTierItem, BlockItem diamondTierItem, BlockItem netheriteTierItem) {
+	private void addStorageTierUpgradeRecipes(Consumer<FinishedRecipe> consumer, BlockItem baseTierItem, BlockItem copperTierItem, BlockItem ironTierItem, BlockItem goldTierItem, BlockItem diamondTierItem, BlockItem netheriteTierItem) {
+		ShapeBasedRecipeBuilder.shaped(copperTierItem, ModBlocks.STORAGE_TIER_UPGRADE_RECIPE_SERIALIZER.get())
+				.pattern("CCC")
+				.pattern("CSC")
+				.pattern("CCC")
+				.define('C', Tags.Items.INGOTS_COPPER)
+				.define('S', baseTierItem)
+				.unlockedBy("has_" + RegistryHelper.getItemKey(baseTierItem).getPath(), has(baseTierItem))
+				.save(consumer);
+
+		ShapeBasedRecipeBuilder.shaped(ironTierItem, ModBlocks.STORAGE_TIER_UPGRADE_RECIPE_SERIALIZER.get())
+				.pattern(" I ")
+				.pattern("ISI")
+				.pattern(" I ")
+				.define('I', Tags.Items.INGOTS_IRON)
+				.define('S', copperTierItem)
+				.unlockedBy("has_" + RegistryHelper.getItemKey(copperTierItem).getPath(), has(copperTierItem))
+				.save(consumer, SophisticatedStorage.getRL(RegistryHelper.getItemKey(ironTierItem).getPath() + "_from_" + RegistryHelper.getItemKey(copperTierItem).getPath()));
+
 		ShapeBasedRecipeBuilder.shaped(ironTierItem, ModBlocks.STORAGE_TIER_UPGRADE_RECIPE_SERIALIZER.get())
 				.pattern("III")
 				.pattern("ISI")
@@ -95,7 +113,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.pattern("GGG")
 				.define('G', Tags.Items.INGOTS_GOLD)
 				.define('S', ironTierItem)
-				.unlockedBy("has_iron_" + RegistryHelper.getItemKey(ironTierItem).getPath(), has(ironTierItem))
+				.unlockedBy("has_" + RegistryHelper.getItemKey(ironTierItem).getPath(), has(ironTierItem))
 				.save(consumer);
 
 		ShapeBasedRecipeBuilder.shaped(diamondTierItem, ModBlocks.STORAGE_TIER_UPGRADE_RECIPE_SERIALIZER.get())
@@ -104,13 +122,13 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.pattern("DDD")
 				.define('D', Tags.Items.GEMS_DIAMOND)
 				.define('S', goldTierItem)
-				.unlockedBy("has_gold_" + RegistryHelper.getItemKey(goldTierItem).getPath(), has(goldTierItem))
+				.unlockedBy("has_" + RegistryHelper.getItemKey(goldTierItem).getPath(), has(goldTierItem))
 				.save(consumer);
 
 		ShapelessBasedRecipeBuilder.shapeless(netheriteTierItem, ModBlocks.STORAGE_TIER_UPGRADE_SHAPELESS_RECIPE_SERIALIZER.get())
 				.requires(Ingredient.of(diamondTierItem))
 				.requires(Tags.Items.INGOTS_NETHERITE)
-				.unlockedBy("has_diamond_" + RegistryHelper.getItemKey(baseTierItem).getPath(), has(diamondTierItem))
+				.unlockedBy("has_" + RegistryHelper.getItemKey(diamondTierItem).getPath(), has(diamondTierItem))
 				.save(consumer, RegistryHelper.getItemKey(netheriteTierItem));
 	}
 
@@ -195,7 +213,17 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.unlockedBy("has_chest", has(ModBlocks.CHEST_ITEM.get()))
 				.save(consumer, SophisticatedStorage.getRL("shulker_from_chest"));
 
-		addStorageTierUpgradeRecipes(consumer, ModBlocks.SHULKER_BOX_ITEM.get(), ModBlocks.IRON_SHULKER_BOX_ITEM.get(), ModBlocks.GOLD_SHULKER_BOX_ITEM.get(), ModBlocks.DIAMOND_SHULKER_BOX_ITEM.get(), ModBlocks.NETHERITE_SHULKER_BOX_ITEM.get());
+		addStorageTierUpgradeRecipes(consumer, ModBlocks.SHULKER_BOX_ITEM.get(), ModBlocks.COPPER_SHULKER_BOX_ITEM.get(), ModBlocks.IRON_SHULKER_BOX_ITEM.get(), ModBlocks.GOLD_SHULKER_BOX_ITEM.get(), ModBlocks.DIAMOND_SHULKER_BOX_ITEM.get(), ModBlocks.NETHERITE_SHULKER_BOX_ITEM.get());
+
+		ShapeBasedRecipeBuilder.shaped(ModBlocks.COPPER_SHULKER_BOX_ITEM.get(), ModBlocks.SHULKER_BOX_FROM_CHEST_RECIPE_SERIALIZER.get())
+				.pattern("S")
+				.pattern("C")
+				.pattern("S")
+				.define('C', ModBlocks.COPPER_CHEST_ITEM.get())
+				.define('S', Items.SHULKER_SHELL)
+				.unlockedBy("has_copper_chest", has(ModBlocks.COPPER_CHEST_ITEM.get()))
+				.save(consumer, SophisticatedStorage.getRL("copper_shulker_from_copper_chest"));
+
 
 		ShapeBasedRecipeBuilder.shaped(ModBlocks.IRON_SHULKER_BOX_ITEM.get(), ModBlocks.SHULKER_BOX_FROM_CHEST_RECIPE_SERIALIZER.get())
 				.pattern("S")
@@ -244,6 +272,15 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.unlockedBy(HAS_REDSTONE_TORCH_CRITERION_NAME, has(Items.REDSTONE_TORCH))
 				.save(consumer);
 
+		ShapeBasedRecipeBuilder.shaped(ModItems.BASIC_TO_COPPER_TIER_UPGRADE.get())
+				.pattern("CCC")
+				.pattern("CRC")
+				.pattern("CCC")
+				.define('R', Items.REDSTONE_TORCH)
+				.define('C', Tags.Items.INGOTS_COPPER)
+				.unlockedBy(HAS_REDSTONE_TORCH_CRITERION_NAME, has(Items.REDSTONE_TORCH))
+				.save(consumer);
+
 		ShapeBasedRecipeBuilder.shaped(ModItems.BASIC_TO_IRON_TIER_UPGRADE.get())
 				.pattern("III")
 				.pattern("IRI")
@@ -275,6 +312,39 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.requires(ModItems.BASIC_TO_DIAMOND_TIER_UPGRADE.get())
 				.requires(Tags.Items.INGOTS_NETHERITE)
 				.unlockedBy("has_basic_to_diamond_tier_upgrade", has(ModItems.BASIC_TO_DIAMOND_TIER_UPGRADE.get()))
+				.save(consumer);
+
+		ShapeBasedRecipeBuilder.shaped(ModItems.COPPER_TO_IRON_TIER_UPGRADE.get())
+				.pattern("III")
+				.pattern("IRI")
+				.pattern("III")
+				.define('R', Items.REDSTONE_TORCH)
+				.define('I', Tags.Items.INGOTS_IRON)
+				.unlockedBy(HAS_REDSTONE_TORCH_CRITERION_NAME, has(Items.REDSTONE_TORCH))
+				.save(consumer);
+
+		ShapeBasedRecipeBuilder.shaped(ModItems.COPPER_TO_GOLD_TIER_UPGRADE.get())
+				.pattern("GGG")
+				.pattern("GTG")
+				.pattern("GGG")
+				.define('T', ModItems.COPPER_TO_IRON_TIER_UPGRADE.get())
+				.define('G', Tags.Items.INGOTS_GOLD)
+				.unlockedBy("has_copper_to_iron_tier_upgrade", has(ModItems.COPPER_TO_IRON_TIER_UPGRADE.get()))
+				.save(consumer);
+
+		ShapeBasedRecipeBuilder.shaped(ModItems.COPPER_TO_DIAMOND_TIER_UPGRADE.get())
+				.pattern("DDD")
+				.pattern("DTD")
+				.pattern("DDD")
+				.define('T', ModItems.COPPER_TO_GOLD_TIER_UPGRADE.get())
+				.define('D', Tags.Items.GEMS_DIAMOND)
+				.unlockedBy("has_copper_to_gold_tier_upgrade", has(ModItems.COPPER_TO_GOLD_TIER_UPGRADE.get()))
+				.save(consumer);
+
+		ShapelessBasedRecipeBuilder.shapeless(ModItems.COPPER_TO_NETHERITE_TIER_UPGRADE.get())
+				.requires(ModItems.COPPER_TO_DIAMOND_TIER_UPGRADE.get())
+				.requires(Tags.Items.INGOTS_NETHERITE)
+				.unlockedBy("has_copper_to_diamond_tier_upgrade", has(ModItems.COPPER_TO_DIAMOND_TIER_UPGRADE.get()))
 				.save(consumer);
 
 		ShapeBasedRecipeBuilder.shaped(ModItems.IRON_TO_GOLD_TIER_UPGRADE.get())
@@ -745,7 +815,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.unlockedBy("has_vanilla_chest", has(Blocks.CHEST))
 				.save(consumer, SophisticatedStorage.getRL("oak_chest_from_vanilla_chest"));
 
-		addStorageTierUpgradeRecipes(consumer, ModBlocks.CHEST_ITEM.get(), ModBlocks.IRON_CHEST_ITEM.get(), ModBlocks.GOLD_CHEST_ITEM.get(), ModBlocks.DIAMOND_CHEST_ITEM.get(), ModBlocks.NETHERITE_CHEST_ITEM.get());
+		addStorageTierUpgradeRecipes(consumer, ModBlocks.CHEST_ITEM.get(), ModBlocks.COPPER_CHEST_ITEM.get(), ModBlocks.IRON_CHEST_ITEM.get(), ModBlocks.GOLD_CHEST_ITEM.get(), ModBlocks.DIAMOND_CHEST_ITEM.get(), ModBlocks.NETHERITE_CHEST_ITEM.get());
 
 		addQuarkChestRecipes(consumer);
 	}
@@ -786,7 +856,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.unlockedBy("has_vanilla_barrel", has(Blocks.BARREL))
 				.save(consumer, SophisticatedStorage.getRL("spruce_barrel_from_vanilla_barrel"));
 
-		addStorageTierUpgradeRecipes(consumer, ModBlocks.BARREL_ITEM.get(), ModBlocks.IRON_BARREL_ITEM.get(), ModBlocks.GOLD_BARREL_ITEM.get(), ModBlocks.DIAMOND_BARREL_ITEM.get(), ModBlocks.NETHERITE_BARREL_ITEM.get());
+		addStorageTierUpgradeRecipes(consumer, ModBlocks.BARREL_ITEM.get(), ModBlocks.COPPER_BARREL_ITEM.get(), ModBlocks.IRON_BARREL_ITEM.get(), ModBlocks.GOLD_BARREL_ITEM.get(), ModBlocks.DIAMOND_BARREL_ITEM.get(), ModBlocks.NETHERITE_BARREL_ITEM.get());
 	}
 
 	private void woodBarrelRecipe(Consumer<FinishedRecipe> consumer, WoodType woodType, Block planks, Block slab) {

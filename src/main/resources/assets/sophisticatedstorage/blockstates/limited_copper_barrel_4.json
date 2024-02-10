@@ -1,0 +1,110 @@
+{
+  "variants": {
+    "facing=east,flat_top=false,vertical_facing=no": {
+      "x": 270,
+      "y": 270,
+      "model": "sophisticatedstorage:block/limited_copper_barrel_4"
+    },
+    "facing=north,flat_top=false,vertical_facing=no": {
+      "x": 270,
+      "y": 180,
+      "model": "sophisticatedstorage:block/limited_copper_barrel_4"
+    },
+    "facing=south,flat_top=false,vertical_facing=no": {
+      "x": 270,
+      "model": "sophisticatedstorage:block/limited_copper_barrel_4"
+    },
+    "facing=west,flat_top=false,vertical_facing=no": {
+      "x": 270,
+      "y": 90,
+      "model": "sophisticatedstorage:block/limited_copper_barrel_4"
+    },
+    "facing=east,flat_top=false,vertical_facing=down": {
+      "x": 180,
+      "y": 270,
+      "model": "sophisticatedstorage:block/limited_copper_barrel_4"
+    },
+    "facing=north,flat_top=false,vertical_facing=down": {
+      "x": 180,
+      "y": 180,
+      "model": "sophisticatedstorage:block/limited_copper_barrel_4"
+    },
+    "facing=south,flat_top=false,vertical_facing=down": {
+      "x": 180,
+      "model": "sophisticatedstorage:block/limited_copper_barrel_4"
+    },
+    "facing=west,flat_top=false,vertical_facing=down": {
+      "x": 180,
+      "y": 90,
+      "model": "sophisticatedstorage:block/limited_copper_barrel_4"
+    },
+    "facing=east,flat_top=false,vertical_facing=up": {
+      "y": 270,
+      "model": "sophisticatedstorage:block/limited_copper_barrel_4"
+    },
+    "facing=north,flat_top=false,vertical_facing=up": {
+      "y": 180,
+      "model": "sophisticatedstorage:block/limited_copper_barrel_4"
+    },
+    "facing=south,flat_top=false,vertical_facing=up": {
+      "model": "sophisticatedstorage:block/limited_copper_barrel_4"
+    },
+    "facing=west,flat_top=false,vertical_facing=up": {
+      "y": 90,
+      "model": "sophisticatedstorage:block/limited_copper_barrel_4"
+    },
+    "facing=east,flat_top=true,vertical_facing=no": {
+      "x": 270,
+      "y": 270,
+      "model": "sophisticatedstorage:block/flat/limited_copper_barrel_4"
+    },
+    "facing=north,flat_top=true,vertical_facing=no": {
+      "x": 270,
+      "y": 180,
+      "model": "sophisticatedstorage:block/flat/limited_copper_barrel_4"
+    },
+    "facing=south,flat_top=true,vertical_facing=no": {
+      "x": 270,
+      "model": "sophisticatedstorage:block/flat/limited_copper_barrel_4"
+    },
+    "facing=west,flat_top=true,vertical_facing=no": {
+      "x": 270,
+      "y": 90,
+      "model": "sophisticatedstorage:block/flat/limited_copper_barrel_4"
+    },
+    "facing=east,flat_top=true,vertical_facing=down": {
+      "x": 180,
+      "y": 270,
+      "model": "sophisticatedstorage:block/flat/limited_copper_barrel_4"
+    },
+    "facing=north,flat_top=true,vertical_facing=down": {
+      "x": 180,
+      "y": 180,
+      "model": "sophisticatedstorage:block/flat/limited_copper_barrel_4"
+    },
+    "facing=south,flat_top=true,vertical_facing=down": {
+      "x": 180,
+      "model": "sophisticatedstorage:block/flat/limited_copper_barrel_4"
+    },
+    "facing=west,flat_top=true,vertical_facing=down": {
+      "x": 180,
+      "y": 90,
+      "model": "sophisticatedstorage:block/flat/limited_copper_barrel_4"
+    },
+    "facing=east,flat_top=true,vertical_facing=up": {
+      "y": 270,
+      "model": "sophisticatedstorage:block/flat/limited_copper_barrel_4"
+    },
+    "facing=north,flat_top=true,vertical_facing=up": {
+      "y": 180,
+      "model": "sophisticatedstorage:block/flat/limited_copper_barrel_4"
+    },
+    "facing=south,flat_top=true,vertical_facing=up": {
+      "model": "sophisticatedstorage:block/flat/limited_copper_barrel_4"
+    },
+    "facing=west,flat_top=true,vertical_facing=up": {
+      "y": 90,
+      "model": "sophisticatedstorage:block/flat/limited_copper_barrel_4"
+    }
+  }
+}
