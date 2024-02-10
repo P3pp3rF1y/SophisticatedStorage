@@ -11,7 +11,9 @@
     }
   ],
   "ingredients": [
-    [],
+    {
+      "item": "quark:crimson_chest"
+    },
     {
       "item": "minecraft:redstone_torch"
     }
