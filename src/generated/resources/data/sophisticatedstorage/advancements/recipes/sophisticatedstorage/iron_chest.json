@@ -6,13 +6,13 @@
     ]
   },
   "criteria": {
-    "has_chest": {
+    "has_copper_chest": {
       "trigger": "minecraft:inventory_changed",
       "conditions": {
         "items": [
           {
             "items": [
-              "sophisticatedstorage:chest"
+              "sophisticatedstorage:copper_chest"
             ]
           }
         ]
@@ -27,7 +27,7 @@
   },
   "requirements": [
     [
-      "has_chest",
+      "has_copper_chest",
       "has_the_recipe"
     ]
   ]

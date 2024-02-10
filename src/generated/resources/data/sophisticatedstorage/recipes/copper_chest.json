@@ -1,0 +1,25 @@
+{
+  "type": "sophisticatedstorage:storage_tier_upgrade",
+  "conditions": [
+    {
+      "itemRegistryName": "sophisticatedstorage:copper_chest",
+      "type": "sophisticatedcore:item_enabled"
+    }
+  ],
+  "pattern": [
+    "CCC",
+    "CSC",
+    "CCC"
+  ],
+  "key": {
+    "C": {
+      "tag": "forge:ingots/copper"
+    },
+    "S": {
+      "item": "sophisticatedstorage:chest"
+    }
+  },
+  "result": {
+    "item": "sophisticatedstorage:copper_chest"
+  }
+}

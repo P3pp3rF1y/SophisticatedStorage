@@ -6,13 +6,13 @@
     ]
   },
   "criteria": {
-    "has_limited_barrel_1": {
+    "has_limited_copper_barrel_1": {
       "trigger": "minecraft:inventory_changed",
       "conditions": {
         "items": [
           {
             "items": [
-              "sophisticatedstorage:limited_barrel_1"
+              "sophisticatedstorage:limited_copper_barrel_1"
             ]
           }
         ]
@@ -27,7 +27,7 @@
   },
   "requirements": [
     [
-      "has_limited_barrel_1",
+      "has_limited_copper_barrel_1",
       "has_the_recipe"
     ]
   ]
