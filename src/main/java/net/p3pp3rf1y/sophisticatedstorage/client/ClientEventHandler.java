@@ -256,6 +256,7 @@ public class ClientEventHandler {
 		}
 
 		event.addSprite(ShulkerBoxRenderer.BASE_TIER_MATERIAL.texture());
+		event.addSprite(ShulkerBoxRenderer.COPPER_TIER_MATERIAL.texture());
 		event.addSprite(ShulkerBoxRenderer.IRON_TIER_MATERIAL.texture());
 		event.addSprite(ShulkerBoxRenderer.GOLD_TIER_MATERIAL.texture());
 		event.addSprite(ShulkerBoxRenderer.DIAMOND_TIER_MATERIAL.texture());

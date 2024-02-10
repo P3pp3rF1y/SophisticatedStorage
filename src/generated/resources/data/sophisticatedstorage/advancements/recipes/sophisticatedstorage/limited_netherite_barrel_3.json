@@ -1,7 +1,7 @@
 {
   "parent": "minecraft:recipes/root",
   "criteria": {
-    "has_diamond_limited_barrel_3": {
+    "has_limited_diamond_barrel_3": {
       "conditions": {
         "items": [
           {
@@ -22,7 +22,7 @@
   },
   "requirements": [
     [
-      "has_diamond_limited_barrel_3",
+      "has_limited_diamond_barrel_3",
       "has_the_recipe"
     ]
   ],

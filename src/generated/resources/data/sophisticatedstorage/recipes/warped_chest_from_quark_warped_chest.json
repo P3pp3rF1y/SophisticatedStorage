@@ -11,7 +11,9 @@
     }
   ],
   "ingredients": [
-    [],
+    {
+      "item": "quark:warped_chest"
+    },
     {
       "item": "minecraft:redstone_torch"
     }

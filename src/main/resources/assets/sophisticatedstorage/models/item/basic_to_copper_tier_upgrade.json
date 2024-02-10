@@ -1,0 +1,6 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "sophisticatedstorage:item/basic_to_copper_tier_upgrade"
+  }
+}

@@ -1,7 +1,7 @@
 {
   "parent": "minecraft:recipes/root",
   "criteria": {
-    "has_iron_limited_iron_barrel_1": {
+    "has_limited_iron_barrel_1": {
       "conditions": {
         "items": [
           {
@@ -22,7 +22,7 @@
   },
   "requirements": [
     [
-      "has_iron_limited_iron_barrel_1",
+      "has_limited_iron_barrel_1",
       "has_the_recipe"
     ]
   ],

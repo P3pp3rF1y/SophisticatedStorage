@@ -3,6 +3,7 @@
     "textures": {
         "base": "sophisticatedstorage:entity/chest/acacia",
         "wood_tier": "sophisticatedstorage:entity/chest/wood_tier",
+      "copper_tier": "sophisticatedstorage:entity/chest/copper_tier",
         "iron_tier": "sophisticatedstorage:entity/chest/iron_tier",
         "gold_tier": "sophisticatedstorage:entity/chest/gold_tier",
         "diamond_tier": "sophisticatedstorage:entity/chest/diamond_tier",
