@@ -830,6 +830,8 @@ public class StorageRecipeProvider extends RecipeProvider {
 		addQuarkChestRecipe(consumer, "mangrove_chest", WoodType.MANGROVE);
 		addQuarkChestRecipe(consumer, "spruce_chest", WoodType.SPRUCE);
 		addQuarkChestRecipe(consumer, "warped_chest", WoodType.WARPED);
+		addQuarkChestRecipe(consumer, "bamboo_chest", WoodType.BAMBOO);
+		addQuarkChestRecipe(consumer, "cherry_chest", WoodType.CHERRY);
 	}
 
 	private void addQuarkChestRecipe(Consumer<FinishedRecipe> consumer, String name, WoodType woodType) {

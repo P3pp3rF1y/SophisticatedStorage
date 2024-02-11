@@ -60,6 +60,16 @@
                 }
             }
         },
+        "bamboo": {
+            "base": {
+                "textures": {
+                    "top": "sophisticatedstorage:block/limited_bamboo_barrel_4_top",
+                    "top_trim": "sophisticatedstorage:block/limited_bamboo_barrel_4_top",
+                    "top_inner_trim": "sophisticatedstorage:block/limited_bamboo_barrel_4_top",
+                    "particle": "sophisticatedstorage:block/limited_bamboo_barrel_4_top"
+                }
+            }
+        },
         "birch": {
             "base": {
                 "textures": {
@@ -67,6 +77,16 @@
                     "top_trim": "sophisticatedstorage:block/limited_birch_barrel_4_top",
                     "top_inner_trim": "sophisticatedstorage:block/limited_birch_barrel_4_top",
                     "particle": "sophisticatedstorage:block/limited_birch_barrel_4_top"
+                }
+            }
+        },
+        "cherry": {
+            "base": {
+                "textures": {
+                    "top": "sophisticatedstorage:block/limited_cherry_barrel_4_top",
+                    "top_trim": "sophisticatedstorage:block/limited_cherry_barrel_4_top",
+                    "top_inner_trim": "sophisticatedstorage:block/limited_cherry_barrel_4_top",
+                    "particle": "sophisticatedstorage:block/limited_cherry_barrel_4_top"
                 }
             }
         },

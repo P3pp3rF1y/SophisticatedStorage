@@ -102,6 +102,20 @@
                 }
             }
         },
+        "bamboo": {
+            "base": {
+                "textures": {
+                    "top": "sophisticatedstorage:block/limited_bamboo_barrel_1_top",
+                    "top_trim": "sophisticatedstorage:block/limited_bamboo_barrel_1_top",
+                    "top_inner_trim": "sophisticatedstorage:block/limited_bamboo_barrel_1_top",
+                    "side": "sophisticatedstorage:block/bamboo_barrel_side",
+                    "side_trim": "sophisticatedstorage:block/bamboo_barrel_side",
+                    "bottom": "sophisticatedstorage:block/bamboo_barrel_bottom",
+                    "bottom_trim": "sophisticatedstorage:block/bamboo_barrel_bottom",
+                    "particle": "sophisticatedstorage:block/limited_bamboo_barrel_1_top"
+                }
+            }
+        },
         "birch": {
             "base": {
                 "textures": {
@@ -113,6 +127,20 @@
                     "bottom": "sophisticatedstorage:block/birch_barrel_bottom",
                     "bottom_trim": "sophisticatedstorage:block/birch_barrel_bottom",
                     "particle": "sophisticatedstorage:block/limited_birch_barrel_1_top"
+                }
+            }
+        },
+        "cherry": {
+            "base": {
+                "textures": {
+                    "top": "sophisticatedstorage:block/limited_cherry_barrel_1_top",
+                    "top_trim": "sophisticatedstorage:block/limited_cherry_barrel_1_top",
+                    "top_inner_trim": "sophisticatedstorage:block/limited_cherry_barrel_1_top",
+                    "side": "sophisticatedstorage:block/cherry_barrel_side",
+                    "side_trim": "sophisticatedstorage:block/cherry_barrel_side",
+                    "bottom": "sophisticatedstorage:block/cherry_barrel_bottom",
+                    "bottom_trim": "sophisticatedstorage:block/cherry_barrel_bottom",
+                    "particle": "sophisticatedstorage:block/limited_cherry_barrel_1_top"
                 }
             }
         },
