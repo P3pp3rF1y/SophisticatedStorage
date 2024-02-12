@@ -1,5 +1,6 @@
 package net.p3pp3rf1y.sophisticatedstorage.init;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -7,9 +8,11 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.crafting.BlastingRecipe;
 import net.minecraft.world.item.crafting.SmeltingRecipe;
 import net.minecraft.world.item.crafting.SmokingRecipe;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunctionType;
 import net.minecraftforge.api.distmarker.Dist;
@@ -81,6 +84,7 @@ import net.p3pp3rf1y.sophisticatedcore.util.ItemBase;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageButtonDefinitions;
+import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageTranslationHelper;
 import net.p3pp3rf1y.sophisticatedstorage.data.CopyStorageDataFunction;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageTierUpgradeItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageToolItem;
@@ -90,6 +94,9 @@ import net.p3pp3rf1y.sophisticatedstorage.upgrades.hopper.HopperUpgradeContainer
 import net.p3pp3rf1y.sophisticatedstorage.upgrades.hopper.HopperUpgradeItem;
 import net.p3pp3rf1y.sophisticatedstorage.upgrades.hopper.HopperUpgradeTab;
 import net.p3pp3rf1y.sophisticatedstorage.upgrades.hopper.HopperUpgradeWrapper;
+
+import javax.annotation.Nullable;
+import java.util.List;
 
 public class ModItems {
 	private ModItems() {}
@@ -142,6 +149,8 @@ public class ModItems {
 	public static final RegistryObject<StonecutterUpgradeItem> STONECUTTER_UPGRADE = ITEMS.register("stonecutter_upgrade", () -> new StonecutterUpgradeItem(Config.SERVER.maxUpgradesPerStorage));
 	public static final RegistryObject<StackUpgradeItem> STACK_UPGRADE_TIER_1 = ITEMS.register("stack_upgrade_tier_1", () ->
 			new StackUpgradeItem(2, Config.SERVER.maxUpgradesPerStorage));
+	public static final RegistryObject<StackUpgradeItem> STACK_UPGRADE_TIER_1_PLUS = ITEMS.register("stack_upgrade_tier_1_plus", () ->
+			new StackUpgradeItem(3, Config.SERVER.maxUpgradesPerStorage));
 	public static final RegistryObject<StackUpgradeItem> STACK_UPGRADE_TIER_2 = ITEMS.register("stack_upgrade_tier_2", () ->
 			new StackUpgradeItem(4, Config.SERVER.maxUpgradesPerStorage));
 	public static final RegistryObject<StackUpgradeItem> STACK_UPGRADE_TIER_3 = ITEMS.register("stack_upgrade_tier_3", () ->
@@ -159,10 +168,15 @@ public class ModItems {
 	public static final RegistryObject<HopperUpgradeItem> ADVANCED_HOPPER_UPGRADE = ITEMS.register("advanced_hopper_upgrade", () ->
 			new HopperUpgradeItem(Config.SERVER.advancedHopperUpgrade.inputFilterSlots::get, Config.SERVER.advancedHopperUpgrade.outputFilterSlots::get, Config.SERVER.advancedHopperUpgrade.transferSpeedTicks::get, Config.SERVER.advancedHopperUpgrade.maxTransferStackSize::get));
 	public static final RegistryObject<StorageTierUpgradeItem> BASIC_TIER_UPGRADE = ITEMS.register("basic_tier_upgrade", () -> new StorageTierUpgradeItem(StorageTierUpgradeItem.TierUpgrade.BASIC, true));
+	public static final RegistryObject<StorageTierUpgradeItem> BASIC_TO_COPPER_TIER_UPGRADE = ITEMS.register("basic_to_copper_tier_upgrade", () -> new StorageTierUpgradeItem(StorageTierUpgradeItem.TierUpgrade.BASIC_TO_COPPER));
 	public static final RegistryObject<StorageTierUpgradeItem> BASIC_TO_IRON_TIER_UPGRADE = ITEMS.register("basic_to_iron_tier_upgrade", () -> new StorageTierUpgradeItem(StorageTierUpgradeItem.TierUpgrade.BASIC_TO_IRON));
 	public static final RegistryObject<StorageTierUpgradeItem> BASIC_TO_GOLD_TIER_UPGRADE = ITEMS.register("basic_to_gold_tier_upgrade", () -> new StorageTierUpgradeItem(StorageTierUpgradeItem.TierUpgrade.BASIC_TO_GOLD));
 	public static final RegistryObject<StorageTierUpgradeItem> BASIC_TO_DIAMOND_TIER_UPGRADE = ITEMS.register("basic_to_diamond_tier_upgrade", () -> new StorageTierUpgradeItem(StorageTierUpgradeItem.TierUpgrade.BASIC_TO_DIAMOND));
 	public static final RegistryObject<StorageTierUpgradeItem> BASIC_TO_NETHERITE_TIER_UPGRADE = ITEMS.register("basic_to_netherite_tier_upgrade", () -> new StorageTierUpgradeItem(StorageTierUpgradeItem.TierUpgrade.BASIC_TO_NETHERITE));
+	public static final RegistryObject<StorageTierUpgradeItem> COPPER_TO_IRON_TIER_UPGRADE = ITEMS.register("copper_to_iron_tier_upgrade", () -> new StorageTierUpgradeItem(StorageTierUpgradeItem.TierUpgrade.COPPER_TO_IRON));
+	public static final RegistryObject<StorageTierUpgradeItem> COPPER_TO_GOLD_TIER_UPGRADE = ITEMS.register("copper_to_gold_tier_upgrade", () -> new StorageTierUpgradeItem(StorageTierUpgradeItem.TierUpgrade.COPPER_TO_GOLD));
+	public static final RegistryObject<StorageTierUpgradeItem> COPPER_TO_DIAMOND_TIER_UPGRADE = ITEMS.register("copper_to_diamond_tier_upgrade", () -> new StorageTierUpgradeItem(StorageTierUpgradeItem.TierUpgrade.COPPER_TO_DIAMOND));
+	public static final RegistryObject<StorageTierUpgradeItem> COPPER_TO_NETHERITE_TIER_UPGRADE = ITEMS.register("copper_to_netherite_tier_upgrade", () -> new StorageTierUpgradeItem(StorageTierUpgradeItem.TierUpgrade.COPPER_TO_NETHERITE));
 	public static final RegistryObject<StorageTierUpgradeItem> IRON_TO_GOLD_TIER_UPGRADE = ITEMS.register("iron_to_gold_tier_upgrade", () -> new StorageTierUpgradeItem(StorageTierUpgradeItem.TierUpgrade.IRON_TO_GOLD));
 	public static final RegistryObject<StorageTierUpgradeItem> IRON_TO_DIAMOND_TIER_UPGRADE = ITEMS.register("iron_to_diamond_tier_upgrade", () -> new StorageTierUpgradeItem(StorageTierUpgradeItem.TierUpgrade.IRON_TO_DIAMOND));
 	public static final RegistryObject<StorageTierUpgradeItem> IRON_TO_NETHERITE_TIER_UPGRADE = ITEMS.register("iron_to_netherite_tier_upgrade", () -> new StorageTierUpgradeItem(StorageTierUpgradeItem.TierUpgrade.IRON_TO_NETHERITE));
@@ -172,7 +186,16 @@ public class ModItems {
 
 	public static final RegistryObject<ItemBase> UPGRADE_BASE = ITEMS.register("upgrade_base", () -> new ItemBase(new Item.Properties().stacksTo(16)));
 
-	public static final RegistryObject<ItemBase> PACKING_TAPE = ITEMS.register("packing_tape", () -> new ItemBase(new Item.Properties().stacksTo(1).durability(4)));
+	public static final RegistryObject<ItemBase> PACKING_TAPE = ITEMS.register("packing_tape", () -> new ItemBase(new Item.Properties().stacksTo(1).durability(8)) {
+		@Override
+		public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag isAdvanced) {
+			super.appendHoverText(stack, level, tooltip, isAdvanced);
+			tooltip.add(Component.translatable(StorageTranslationHelper.INSTANCE.translItemTooltip("packing_tape"),
+							Component.literal(String.valueOf(getMaxDamage(stack) - getDamage(stack))).withStyle(ChatFormatting.GREEN)
+					).withStyle(ChatFormatting.DARK_GRAY)
+			);
+		}
+	});
 	public static final RegistryObject<ItemBase> STORAGE_TOOL = ITEMS.register("storage_tool", StorageToolItem::new);
 	public static final RegistryObject<ItemBase> DEBUG_TOOL = ITEMS.register("debug_tool", () -> new ItemBase(new Item.Properties().stacksTo(1)));
 	public static final RegistryObject<Item> INACCESSIBLE_SLOT = ITEMS.register("inaccessible_slot", () -> new Item(new Item.Properties().stacksTo(1)));

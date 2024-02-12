@@ -172,7 +172,9 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity> {
 	}
 
 	private Material getTierMaterial(Map<StorageTextureManager.ChestMaterial, Material> chestMaterials, Block block) {
-		if (block == ModBlocks.IRON_CHEST.get()) {
+		if (block == ModBlocks.COPPER_CHEST.get()) {
+			return chestMaterials.get(StorageTextureManager.ChestMaterial.COPPER_TIER);
+		} else if (block == ModBlocks.IRON_CHEST.get()) {
 			return chestMaterials.get(StorageTextureManager.ChestMaterial.IRON_TIER);
 		} else if (block == ModBlocks.GOLD_CHEST.get()) {
 			return chestMaterials.get(StorageTextureManager.ChestMaterial.GOLD_TIER);

@@ -1,5 +1,6 @@
 package net.p3pp3rf1y.sophisticatedstorage.block;
 
+import com.google.common.collect.ImmutableMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.data.BlockFamilies;
@@ -33,16 +34,19 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public abstract class WoodStorageBlockBase extends StorageBlockBase implements IAdditionalDropDataBlock {
-	public static final Map<WoodType, BlockFamily> CUSTOM_TEXTURE_WOOD_TYPES = Map.of(
-			WoodType.ACACIA, BlockFamilies.ACACIA_PLANKS,
-			WoodType.BIRCH, BlockFamilies.BIRCH_PLANKS,
-			WoodType.CRIMSON, BlockFamilies.CRIMSON_PLANKS,
-			WoodType.DARK_OAK, BlockFamilies.DARK_OAK_PLANKS,
-			WoodType.JUNGLE, BlockFamilies.JUNGLE_PLANKS,
-			WoodType.OAK, BlockFamilies.OAK_PLANKS,
-			WoodType.SPRUCE, BlockFamilies.SPRUCE_PLANKS,
-			WoodType.WARPED, BlockFamilies.WARPED_PLANKS,
-			WoodType.MANGROVE, BlockFamilies.MANGROVE_PLANKS);
+	public static final Map<WoodType, BlockFamily> CUSTOM_TEXTURE_WOOD_TYPES = ImmutableMap.<WoodType, BlockFamily>builder()
+			.put(WoodType.ACACIA, BlockFamilies.ACACIA_PLANKS)
+			.put(WoodType.BIRCH, BlockFamilies.BIRCH_PLANKS)
+			.put(WoodType.CRIMSON, BlockFamilies.CRIMSON_PLANKS)
+			.put(WoodType.DARK_OAK, BlockFamilies.DARK_OAK_PLANKS)
+			.put(WoodType.JUNGLE, BlockFamilies.JUNGLE_PLANKS)
+			.put(WoodType.OAK, BlockFamilies.OAK_PLANKS)
+			.put(WoodType.SPRUCE, BlockFamilies.SPRUCE_PLANKS)
+			.put(WoodType.WARPED, BlockFamilies.WARPED_PLANKS)
+			.put(WoodType.MANGROVE, BlockFamilies.MANGROVE_PLANKS)
+			.put(WoodType.CHERRY, BlockFamilies.CHERRY_PLANKS)
+			.put(WoodType.BAMBOO, BlockFamilies.BAMBOO_PLANKS)
+			.build();
 
 	protected WoodStorageBlockBase(Properties properties, Supplier<Integer> numberOfInventorySlotsSupplier, Supplier<Integer> numberOfUpgradeSlotsSupplier) {
 		super(properties, numberOfInventorySlotsSupplier, numberOfUpgradeSlotsSupplier);

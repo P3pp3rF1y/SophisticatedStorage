@@ -30,6 +30,7 @@ public class ShulkerBoxRenderer extends StorageRenderer<ShulkerBoxBlockEntity> {
 	private static final String ENTITY_SHULKER_BOX_FOLDER = "entity/shulker_box/";
 
 	public static final Material BASE_TIER_MATERIAL = new Material(Sheets.SHULKER_SHEET, SophisticatedStorage.getRL(ENTITY_SHULKER_BOX_FOLDER + "base_tier"));
+	public static final Material COPPER_TIER_MATERIAL = new Material(Sheets.SHULKER_SHEET, SophisticatedStorage.getRL(ENTITY_SHULKER_BOX_FOLDER + "copper_tier"));
 	public static final Material IRON_TIER_MATERIAL = new Material(Sheets.SHULKER_SHEET, SophisticatedStorage.getRL(ENTITY_SHULKER_BOX_FOLDER + "iron_tier"));
 	public static final Material GOLD_TIER_MATERIAL = new Material(Sheets.SHULKER_SHEET, SophisticatedStorage.getRL(ENTITY_SHULKER_BOX_FOLDER + "gold_tier"));
 	public static final Material DIAMOND_TIER_MATERIAL = new Material(Sheets.SHULKER_SHEET, SophisticatedStorage.getRL(ENTITY_SHULKER_BOX_FOLDER + "diamond_tier"));
@@ -117,7 +118,9 @@ public class ShulkerBoxRenderer extends StorageRenderer<ShulkerBoxBlockEntity> {
 	}
 
 	private Material getTierMaterial(Block block) {
-		if (block == ModBlocks.IRON_SHULKER_BOX.get()) {
+		if (block == ModBlocks.COPPER_SHULKER_BOX.get()) {
+			return COPPER_TIER_MATERIAL;
+		} else if (block == ModBlocks.IRON_SHULKER_BOX.get()) {
 			return IRON_TIER_MATERIAL;
 		} else if (block == ModBlocks.GOLD_SHULKER_BOX.get()) {
 			return GOLD_TIER_MATERIAL;

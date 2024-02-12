@@ -13,14 +13,7 @@ import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.level.block.state.properties.WoodType;
 
 import javax.annotation.Nullable;
-import java.util.Collection;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Supplier;
 
 @SuppressWarnings("java:S6548") //singleton is intended here
@@ -193,6 +186,7 @@ public class StorageTextureManager extends SimpleJsonResourceReloadListener {
 	public enum ChestMaterial {
 		BASE,
 		WOOD_TIER,
+		COPPER_TIER,
 		IRON_TIER,
 		GOLD_TIER,
 		DIAMOND_TIER,

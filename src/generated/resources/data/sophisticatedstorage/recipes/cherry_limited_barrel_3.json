@@ -1,0 +1,29 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:limited_barrel_3"
+    }
+  ],
+  "key": {
+    "P": {
+      "item": "minecraft:cherry_planks"
+    },
+    "R": {
+      "item": "minecraft:redstone_torch"
+    },
+    "S": {
+      "item": "minecraft:cherry_slab"
+    }
+  },
+  "pattern": [
+    "PSP",
+    "PRP",
+    "SPS"
+  ],
+  "result": {
+    "item": "sophisticatedstorage:limited_barrel_3",
+    "nbt": "{woodType:\"cherry\"}"
+  }
+}
