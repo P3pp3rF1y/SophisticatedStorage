@@ -23,12 +23,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.client.ClientRegistry;
 import net.minecraftforge.client.MinecraftForgeClient;
-import net.minecraftforge.client.event.EntityRenderersEvent;
-import net.minecraftforge.client.event.InputEvent;
-import net.minecraftforge.client.event.ModelRegistryEvent;
-import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
-import net.minecraftforge.client.event.ScreenEvent;
-import net.minecraftforge.client.event.TextureStitchEvent;
+import net.minecraftforge.client.event.*;
 import net.minecraftforge.client.gui.OverlayRegistry;
 import net.minecraftforge.client.model.ForgeModelBakery;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
@@ -50,20 +45,7 @@ import net.p3pp3rf1y.sophisticatedstorage.client.gui.ToolInfoOverlay;
 import net.p3pp3rf1y.sophisticatedstorage.client.init.ModBlockColors;
 import net.p3pp3rf1y.sophisticatedstorage.client.init.ModItemColors;
 import net.p3pp3rf1y.sophisticatedstorage.client.init.ModParticles;
-import net.p3pp3rf1y.sophisticatedstorage.client.render.BarrelBakedModelBase;
-import net.p3pp3rf1y.sophisticatedstorage.client.render.BarrelDynamicModel;
-import net.p3pp3rf1y.sophisticatedstorage.client.render.BarrelDynamicModelBase;
-import net.p3pp3rf1y.sophisticatedstorage.client.render.BarrelRenderer;
-import net.p3pp3rf1y.sophisticatedstorage.client.render.ChestDynamicModel;
-import net.p3pp3rf1y.sophisticatedstorage.client.render.ChestRenderer;
-import net.p3pp3rf1y.sophisticatedstorage.client.render.ClientStorageContentsTooltip;
-import net.p3pp3rf1y.sophisticatedstorage.client.render.ControllerRenderer;
-import net.p3pp3rf1y.sophisticatedstorage.client.render.LimitedBarrelDynamicModel;
-import net.p3pp3rf1y.sophisticatedstorage.client.render.LimitedBarrelRenderer;
-import net.p3pp3rf1y.sophisticatedstorage.client.render.LockRenderer;
-import net.p3pp3rf1y.sophisticatedstorage.client.render.ShulkerBoxDynamicModel;
-import net.p3pp3rf1y.sophisticatedstorage.client.render.ShulkerBoxRenderer;
-import net.p3pp3rf1y.sophisticatedstorage.client.render.SimpleCompositeModel;
+import net.p3pp3rf1y.sophisticatedstorage.client.render.*;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
@@ -231,6 +213,7 @@ public class ClientEventHandler {
 
 	private static void clientSetup(FMLClientSetupEvent event) {
 		ItemBlockRenderTypes.setRenderLayer(ModBlocks.BARREL.get(), RenderType.cutout());
+		ItemBlockRenderTypes.setRenderLayer(ModBlocks.COPPER_BARREL.get(), RenderType.cutout());
 		ItemBlockRenderTypes.setRenderLayer(ModBlocks.IRON_BARREL.get(), RenderType.cutout());
 		ItemBlockRenderTypes.setRenderLayer(ModBlocks.GOLD_BARREL.get(), RenderType.cutout());
 		ItemBlockRenderTypes.setRenderLayer(ModBlocks.DIAMOND_BARREL.get(), RenderType.cutout());
@@ -240,6 +223,10 @@ public class ClientEventHandler {
 		ItemBlockRenderTypes.setRenderLayer(ModBlocks.LIMITED_BARREL_2.get(), RenderType.cutout());
 		ItemBlockRenderTypes.setRenderLayer(ModBlocks.LIMITED_BARREL_3.get(), RenderType.cutout());
 		ItemBlockRenderTypes.setRenderLayer(ModBlocks.LIMITED_BARREL_4.get(), RenderType.cutout());
+		ItemBlockRenderTypes.setRenderLayer(ModBlocks.LIMITED_COPPER_BARREL_1.get(), RenderType.cutout());
+		ItemBlockRenderTypes.setRenderLayer(ModBlocks.LIMITED_COPPER_BARREL_2.get(), RenderType.cutout());
+		ItemBlockRenderTypes.setRenderLayer(ModBlocks.LIMITED_COPPER_BARREL_3.get(), RenderType.cutout());
+		ItemBlockRenderTypes.setRenderLayer(ModBlocks.LIMITED_COPPER_BARREL_4.get(), RenderType.cutout());
 		ItemBlockRenderTypes.setRenderLayer(ModBlocks.LIMITED_IRON_BARREL_1.get(), RenderType.cutout());
 		ItemBlockRenderTypes.setRenderLayer(ModBlocks.LIMITED_IRON_BARREL_2.get(), RenderType.cutout());
 		ItemBlockRenderTypes.setRenderLayer(ModBlocks.LIMITED_IRON_BARREL_3.get(), RenderType.cutout());
@@ -280,6 +267,7 @@ public class ClientEventHandler {
 		}
 
 		event.addSprite(ShulkerBoxRenderer.BASE_TIER_MATERIAL.texture());
+		event.addSprite(ShulkerBoxRenderer.COPPER_TIER_MATERIAL.texture());
 		event.addSprite(ShulkerBoxRenderer.IRON_TIER_MATERIAL.texture());
 		event.addSprite(ShulkerBoxRenderer.GOLD_TIER_MATERIAL.texture());
 		event.addSprite(ShulkerBoxRenderer.DIAMOND_TIER_MATERIAL.texture());

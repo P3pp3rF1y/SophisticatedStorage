@@ -1,0 +1,25 @@
+{
+  "type": "sophisticatedstorage:storage_tier_upgrade",
+  "conditions": [
+    {
+      "itemRegistryName": "sophisticatedstorage:copper_shulker_box",
+      "type": "sophisticatedcore:item_enabled"
+    }
+  ],
+  "pattern": [
+    "CCC",
+    "CSC",
+    "CCC"
+  ],
+  "key": {
+    "C": {
+      "tag": "forge:ingots/copper"
+    },
+    "S": {
+      "item": "sophisticatedstorage:shulker_box"
+    }
+  },
+  "result": {
+    "item": "sophisticatedstorage:copper_shulker_box"
+  }
+}

@@ -94,6 +94,11 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 	}
 
 	@Override
+	public float getSlotFillPercentage(int slot) {
+		return slot > -1 && slot < slotFillLevels.size() ? slotFillLevels.get(slot) : 0;
+	}
+
+	@Override
 	public boolean shouldShowFillLevels() {
 		return showFillLevels;
 	}
