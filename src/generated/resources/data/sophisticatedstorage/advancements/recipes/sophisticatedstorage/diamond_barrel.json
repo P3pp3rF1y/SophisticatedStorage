@@ -1,7 +1,7 @@
 {
   "parent": "minecraft:recipes/root",
   "criteria": {
-    "has_gold_gold_barrel": {
+    "has_gold_barrel": {
       "conditions": {
         "items": [
           {
@@ -22,7 +22,7 @@
   },
   "requirements": [
     [
-      "has_gold_gold_barrel",
+      "has_gold_barrel",
       "has_the_recipe"
     ]
   ],

@@ -1,7 +1,7 @@
 {
   "parent": "minecraft:recipes/root",
   "criteria": {
-    "has_iron_iron_shulker_box": {
+    "has_iron_shulker_box": {
       "conditions": {
         "items": [
           {
@@ -22,7 +22,7 @@
   },
   "requirements": [
     [
-      "has_iron_iron_shulker_box",
+      "has_iron_shulker_box",
       "has_the_recipe"
     ]
   ],

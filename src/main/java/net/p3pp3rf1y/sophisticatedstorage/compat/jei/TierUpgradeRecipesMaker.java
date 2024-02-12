@@ -50,7 +50,9 @@ public class TierUpgradeRecipesMaker {
 						craftinginventory.setItem(i, storageItem.copy());
 					} else {
 						ingredientsCopy.add(i, ingredient);
-						craftinginventory.setItem(i, ingredientItems[0]);
+						if (!ingredient.isEmpty()) {
+							craftinginventory.setItem(i, ingredientItems[0]);
+						}
 					}
 					i++;
 				}
