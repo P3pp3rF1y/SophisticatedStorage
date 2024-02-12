@@ -607,9 +607,9 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		return direction;
 	}
 
+	@SuppressWarnings("unused") //parameter used in override
 	public float getSlotFillPercentage(int slot) {
-		ItemStack stackInSlot = storageWrapper.getInventoryHandler().getStackInSlot(slot);
-		return stackInSlot.getCount() / (float) storageWrapper.getInventoryHandler().getStackLimit(slot, stackInSlot);
+		return 0; //only used in limited barrels
 	}
 
 	private static class ContentsFilteredItemHandler implements ITrackedContentsItemHandler {
