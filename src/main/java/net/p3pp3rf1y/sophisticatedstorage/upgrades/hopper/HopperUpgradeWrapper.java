@@ -27,15 +27,11 @@ import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockBase;
 import net.p3pp3rf1y.sophisticatedstorage.block.VerticalFacing;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.BlockSide;
+import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.upgrades.INeighborChangeListenerUpgrade;
 
 import javax.annotation.Nullable;
-import java.util.EnumMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 
 public class HopperUpgradeWrapper extends UpgradeWrapperBase<HopperUpgradeWrapper, HopperUpgradeItem>
@@ -43,6 +39,7 @@ public class HopperUpgradeWrapper extends UpgradeWrapperBase<HopperUpgradeWrappe
 
 	private Set<Direction> pullDirections = new LinkedHashSet<>();
 	private Set<Direction> pushDirections = new LinkedHashSet<>();
+	private boolean directionsInitialized = false;
 	private final Map<Direction, LazyOptional<IItemHandler>> handlerCache = new EnumMap<>(Direction.class);
 
 	private final ContentsFilterLogic inputFilterLogic;
@@ -144,14 +141,17 @@ public class HopperUpgradeWrapper extends UpgradeWrapperBase<HopperUpgradeWrappe
 	}
 
 	private void initDirections(Level level, BlockPos pos) {
-		if (upgrade.hasTag()) {
+		if (upgrade.hasTag() && (upgrade.getItem() != ModItems.HOPPER_UPGRADE.get() || directionsInitialized)) {
 			return;
 		}
 		BlockState state = level.getBlockState(pos);
 		if (state.getBlock() instanceof StorageBlockBase storageBlock) {
 			Direction horizontalDirection = storageBlock.getHorizontalDirection(state);
 			VerticalFacing verticalFacing = storageBlock.getVerticalFacing(state);
+			pullDirections.clear();
+			pushDirections.clear();
 			initDirections(BlockSide.BOTTOM.toDirection(horizontalDirection, verticalFacing), BlockSide.TOP.toDirection(horizontalDirection, verticalFacing));
+			directionsInitialized = true;
 		}
 	}
 
@@ -269,9 +269,7 @@ public class HopperUpgradeWrapper extends UpgradeWrapperBase<HopperUpgradeWrappe
 	}
 
 	public void initDirections(Direction pushDirection, Direction pullDirection) {
-		if (!upgrade.hasTag()) {
-			setPushingTo(pushDirection, true);
-			setPullingFrom(pullDirection, true);
-		}
+		setPushingTo(pushDirection, true);
+		setPullingFrom(pullDirection, true);
 	}
 }
