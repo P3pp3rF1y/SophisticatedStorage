@@ -10,6 +10,7 @@
     "wood_name.sophisticatedstorage.warped" : "Warped",
     "itemGroup.sophisticatedstorage": "Sophisticated Storage",
     "item.sophisticatedstorage.packing_tape": "Packing Tape",
+    "item.sophisticatedstorage.packing_tape.tooltip": "Remaining uses: %s",
     "item.sophisticatedstorage.storage_tool": "Storage Tool",
     "item.sophisticatedstorage.storage_tool.tooltip": "Links, locks, hides counts/tiers/locks on storages",
     "item.sophisticatedstorage.storage_tool.tooltip.controls": "Use <%s> to Change Mode",
