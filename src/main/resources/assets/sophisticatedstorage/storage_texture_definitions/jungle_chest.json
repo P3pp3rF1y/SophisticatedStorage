@@ -1,6 +1,14 @@
 {
     "parent": "sophisticatedstorage:chest",
     "textures": {
-        "base": "sophisticatedstorage:entity/chest/jungle"
+        "single": {
+            "base": "sophisticatedstorage:entity/chest/jungle"
+        },
+        "left": {
+            "base": "sophisticatedstorage:entity/chest/left_jungle"
+        },
+        "right": {
+            "base": "sophisticatedstorage:entity/chest/right_jungle"
+        }
     }
 }

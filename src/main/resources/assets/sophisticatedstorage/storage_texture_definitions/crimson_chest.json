@@ -1,6 +1,14 @@
 {
     "parent": "sophisticatedstorage:chest",
     "textures": {
-        "base": "sophisticatedstorage:entity/chest/crimson"
+        "single": {
+            "base": "sophisticatedstorage:entity/chest/crimson"
+        },
+        "left": {
+            "base": "sophisticatedstorage:entity/chest/left_crimson"
+        },
+        "right": {
+            "base": "sophisticatedstorage:entity/chest/right_crimson"
+        }
     }
 }

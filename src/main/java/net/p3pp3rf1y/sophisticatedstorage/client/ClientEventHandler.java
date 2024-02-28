@@ -1,12 +1,15 @@
 package net.p3pp3rf1y.sophisticatedstorage.client;
 
 import com.mojang.blaze3d.platform.InputConstants;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.MouseHandler;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ReloadableResourceManager;
@@ -18,14 +21,11 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.client.event.EntityRenderersEvent;
-import net.minecraftforge.client.event.InputEvent;
-import net.minecraftforge.client.event.ModelEvent;
-import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
-import net.minecraftforge.client.event.RegisterClientTooltipComponentFactoriesEvent;
-import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
-import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
-import net.minecraftforge.client.event.ScreenEvent;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraftforge.client.event.*;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.client.settings.IKeyConflictContext;
 import net.minecraftforge.common.MinecraftForge;
@@ -59,6 +59,7 @@ import net.p3pp3rf1y.sophisticatedstorage.client.render.SimpleCompositeModel;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
+import net.p3pp3rf1y.sophisticatedstorage.item.ChestBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageContentsTooltip;
 import net.p3pp3rf1y.sophisticatedstorage.network.ScrolledToolMessage;
 import net.p3pp3rf1y.sophisticatedstorage.network.StoragePacketHandler;
@@ -91,7 +92,11 @@ public class ClientEventHandler {
 	}
 
 	private static final ResourceLocation CHEST_RL = new ResourceLocation(SophisticatedStorage.MOD_ID, "chest");
+	private static final ResourceLocation CHEST_LEFT_RL = new ResourceLocation(SophisticatedStorage.MOD_ID, "chest_left");
+	private static final ResourceLocation CHEST_RIGHT_RL = new ResourceLocation(SophisticatedStorage.MOD_ID, "chest_right");
 	public static final ModelLayerLocation CHEST_LAYER = new ModelLayerLocation(CHEST_RL, "main");
+	public static final ModelLayerLocation CHEST_LEFT_LAYER = new ModelLayerLocation(CHEST_LEFT_RL, "main");
+	public static final ModelLayerLocation CHEST_RIGHT_LAYER = new ModelLayerLocation(CHEST_RIGHT_RL, "main");
 
 	public static void registerHandlers() {
 		IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
@@ -113,6 +118,28 @@ public class ClientEventHandler {
 		eventBus.addListener(EventPriority.HIGH, ClientEventHandler::handleGuiKeyPress);
 		eventBus.addListener(ClientEventHandler::onLimitedBarrelClicked);
 		eventBus.addListener(ClientEventHandler::onMouseScrolled);
+		eventBus.addListener(ClientEventHandler::onRenderHighlight);
+	}
+
+	private static void onRenderHighlight(RenderHighlightEvent.Block event) {
+		Minecraft minecraft = Minecraft.getInstance();
+		LocalPlayer player = minecraft.player;
+		if (player == null) {
+			return;
+		}
+
+		if (player.getMainHandItem().getItem() instanceof ChestBlockItem && ChestBlockItem.isDoubleChest(player.getMainHandItem())) {
+			BlockHitResult hitresult = event.getTarget();
+			BlockPos otherPos = hitresult.getBlockPos().relative(player.getDirection().getClockWise());
+			Level level = player.level();
+			BlockState blockState = level.getBlockState(otherPos);
+			if (!blockState.isAir() && level.getWorldBorder().isWithinBounds(otherPos)) {
+				VertexConsumer vertexConsumer = event.getMultiBufferSource().getBuffer(RenderType.lines());
+				Vec3 cameraPos = event.getCamera().getPosition();
+				LevelRenderer.renderShape(event.getPoseStack(), vertexConsumer, blockState.getShape(level, otherPos, CollisionContext.of(event.getCamera().getEntity())),
+						otherPos.getX() - cameraPos.x, otherPos.getY() - cameraPos.y, otherPos.getZ() - cameraPos.z, 0.0F, 0.0F, 0.0F, 0.4F);
+			}
+		}
 	}
 
 	private static void onRegisterAdditionalModels(ModelEvent.RegisterAdditional event) {
@@ -218,6 +245,8 @@ public class ClientEventHandler {
 
 	public static void registerLayer(EntityRenderersEvent.RegisterLayerDefinitions event) {
 		event.registerLayerDefinition(CHEST_LAYER, () -> ChestRenderer.createSingleBodyLayer(true));
+		event.registerLayerDefinition(CHEST_LEFT_LAYER, ChestRenderer::createDoubleBodyLeftLayer);
+		event.registerLayerDefinition(CHEST_RIGHT_LAYER, ChestRenderer::createDoubleBodyRightLayer);
 	}
 
 	private static void registerKeyMappings(RegisterKeyMappingsEvent event) {

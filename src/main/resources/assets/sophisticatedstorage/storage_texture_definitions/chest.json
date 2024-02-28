@@ -1,15 +1,41 @@
 {
-    "type": "chest",
-    "textures": {
-        "base": "sophisticatedstorage:entity/chest/acacia",
-        "wood_tier": "sophisticatedstorage:entity/chest/wood_tier",
+  "type": "chest",
+  "textures": {
+    "single": {
+      "base": "sophisticatedstorage:entity/chest/acacia",
+      "wood_tier": "sophisticatedstorage:entity/chest/wood_tier",
       "copper_tier": "sophisticatedstorage:entity/chest/copper_tier",
-        "iron_tier": "sophisticatedstorage:entity/chest/iron_tier",
-        "gold_tier": "sophisticatedstorage:entity/chest/gold_tier",
-        "diamond_tier": "sophisticatedstorage:entity/chest/diamond_tier",
-        "netherite_tier": "sophisticatedstorage:entity/chest/netherite_tier",
-        "tintable_main": "sophisticatedstorage:entity/chest/tintable_main",
-        "tintable_accent": "sophisticatedstorage:entity/chest/tintable_accent",
-        "packed": "sophisticatedstorage:entity/chest/packed"
+      "iron_tier": "sophisticatedstorage:entity/chest/iron_tier",
+      "gold_tier": "sophisticatedstorage:entity/chest/gold_tier",
+      "diamond_tier": "sophisticatedstorage:entity/chest/diamond_tier",
+      "netherite_tier": "sophisticatedstorage:entity/chest/netherite_tier",
+      "tintable_main": "sophisticatedstorage:entity/chest/tintable_main",
+      "tintable_accent": "sophisticatedstorage:entity/chest/tintable_accent",
+      "packed": "sophisticatedstorage:entity/chest/packed"
+    },
+    "left": {
+      "base": "sophisticatedstorage:entity/chest/left_acacia",
+        "wood_tier": "sophisticatedstorage:entity/chest/left_wood_tier",
+        "copper_tier": "sophisticatedstorage:entity/chest/left_copper_tier",
+        "iron_tier": "sophisticatedstorage:entity/chest/left_iron_tier",
+        "gold_tier": "sophisticatedstorage:entity/chest/left_gold_tier",
+        "diamond_tier": "sophisticatedstorage:entity/chest/left_diamond_tier",
+        "netherite_tier": "sophisticatedstorage:entity/chest/left_netherite_tier",
+        "tintable_main": "sophisticatedstorage:entity/chest/left_tintable_main",
+        "tintable_accent": "sophisticatedstorage:entity/chest/left_tintable_accent",
+        "packed": "sophisticatedstorage:entity/chest/left_packed"
+    },
+    "right": {
+      "base": "sophisticatedstorage:entity/chest/right_acacia",
+        "wood_tier": "sophisticatedstorage:entity/chest/right_wood_tier",
+        "copper_tier": "sophisticatedstorage:entity/chest/right_copper_tier",
+        "iron_tier": "sophisticatedstorage:entity/chest/right_iron_tier",
+        "gold_tier": "sophisticatedstorage:entity/chest/right_gold_tier",
+        "diamond_tier": "sophisticatedstorage:entity/chest/right_diamond_tier",
+        "netherite_tier": "sophisticatedstorage:entity/chest/right_netherite_tier",
+        "tintable_main": "sophisticatedstorage:entity/chest/right_tintable_main",
+        "tintable_accent": "sophisticatedstorage:entity/chest/right_tintable_accent",
+        "packed": "sophisticatedstorage:entity/chest/right_packed"
     }
+  }
 }

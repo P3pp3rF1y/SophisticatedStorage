@@ -1,5 +1,6 @@
 package net.p3pp3rf1y.sophisticatedstorage.client.render;
 
+import com.google.common.base.Objects;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -13,10 +14,12 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.state.properties.ChestType;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import net.p3pp3rf1y.sophisticatedstorage.block.ChestBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.ChestBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.block.ITintableBlockItem;
+import net.p3pp3rf1y.sophisticatedstorage.item.ChestBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
 
@@ -31,6 +34,13 @@ public class ChestItemRenderer extends BlockEntityWithoutLevelRenderer {
 		}
 	});
 
+	private final LoadingCache<DoubleChestBlockEntityKey, ChestBlockEntity> doubleChestBlockEntities = CacheBuilder.newBuilder().maximumSize(512L).weakKeys().build(new CacheLoader<>() {
+		@Override
+		public ChestBlockEntity load(DoubleChestBlockEntityKey key) {
+			return new ChestBlockEntity(BlockPos.ZERO, key.blockItem().getBlock().defaultBlockState().setValue(ChestBlock.FACING, Direction.SOUTH).setValue(ChestBlock.TYPE, key.chestType()));
+		}
+	});
+
 	public ChestItemRenderer(BlockEntityRenderDispatcher blockEntityRenderDispatcher, EntityModelSet entityModelSet) {
 		super(blockEntityRenderDispatcher, entityModelSet);
 		this.blockEntityRenderDispatcher = blockEntityRenderDispatcher;
@@ -42,8 +52,24 @@ public class ChestItemRenderer extends BlockEntityWithoutLevelRenderer {
 			return;
 		}
 
-		ChestBlockEntity chestBlockEntity = chestBlockEntities.getUnchecked(blockItem);
+		if (ChestBlockItem.isDoubleChest(stack)) {
+			ChestBlockEntity leftChestBlockEntity = doubleChestBlockEntities.getUnchecked(new DoubleChestBlockEntityKey(blockItem, ChestType.LEFT));
+			poseStack.pushPose();
+			poseStack.scale(0.8F, 0.8F, 0.8F);
+			poseStack.translate(0.72D, 0.0D, 0.0D);
+			renderBlockEntity(stack, poseStack, buffer, packedLight, packedOverlay, leftChestBlockEntity);
+			ChestBlockEntity rightChestBlockEntity = doubleChestBlockEntities.getUnchecked(new DoubleChestBlockEntityKey(blockItem, ChestType.RIGHT));
+			poseStack.translate(-1D, 0.0D, 0.0D);
+			renderBlockEntity(stack, poseStack, buffer, packedLight, packedOverlay, rightChestBlockEntity);
+			poseStack.popPose();
+			return;
+		}
 
+		ChestBlockEntity chestBlockEntity = chestBlockEntities.getUnchecked(blockItem);
+		renderBlockEntity(stack, poseStack, buffer, packedLight, packedOverlay, chestBlockEntity);
+	}
+
+	private void renderBlockEntity(ItemStack stack, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay, ChestBlockEntity chestBlockEntity) {
 		if (stack.getItem() instanceof ITintableBlockItem tintableBlockItem) {
 			chestBlockEntity.getStorageWrapper().setMainColor(tintableBlockItem.getMainColor(stack).orElse(-1));
 			chestBlockEntity.getStorageWrapper().setAccentColor(tintableBlockItem.getAccentColor(stack).orElse(-1));
@@ -59,6 +85,21 @@ public class ChestItemRenderer extends BlockEntityWithoutLevelRenderer {
 		var blockentityrenderer = blockEntityRenderDispatcher.getRenderer(chestBlockEntity);
 		if (blockentityrenderer != null) {
 			blockentityrenderer.render(chestBlockEntity, 0.0F, poseStack, buffer, packedLight, packedOverlay);
+		}
+	}
+
+	private record DoubleChestBlockEntityKey(BlockItem blockItem, ChestType chestType) {
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) return true;
+			if (o == null || getClass() != o.getClass()) return false;
+			DoubleChestBlockEntityKey that = (DoubleChestBlockEntityKey) o;
+			return Objects.equal(blockItem, that.blockItem) && chestType == that.chestType;
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hashCode(blockItem, chestType);
 		}
 	}
 }
