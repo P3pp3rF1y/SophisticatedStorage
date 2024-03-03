@@ -1,9 +1,9 @@
 package net.p3pp3rf1y.sophisticatedstorage.block;
 
+import com.mojang.math.Axis;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stats;
@@ -11,8 +11,10 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.SimpleMenuProvider;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.Cat;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.piglin.PiglinAi;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -20,6 +22,7 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
@@ -44,10 +47,11 @@ import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.item.CapabilityStorageWrapper;
 import net.p3pp3rf1y.sophisticatedstorage.item.ChestBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
+import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
+import org.joml.Vector3f;
 
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.function.BiPredicate;
 import java.util.function.Supplier;
 
 public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterloggedBlock, IDisplaySideStorage {
@@ -69,12 +73,6 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 		registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(WATERLOGGED, false).setValue(TICKING, false).setValue(TYPE, ChestType.SINGLE));
 	}
 
-	public DoubleBlockCombiner.NeighborCombineResult<? extends ChestBlockEntity> combine(BlockState state, Level pLevel, BlockPos pos, boolean override) {
-		BiPredicate<LevelAccessor, BlockPos> isChestBlocked = override ? ((l, p) -> false) : ChestBlock::isChestBlockedAt;
-		return DoubleBlockCombiner.combineWithNeigbour(ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get(), this::getBlockType, ChestBlock::getConnectedDirection, FACING, state, pLevel, pos, isChestBlocked);
-	}
-
-	//TODO add check for this during chest open
 	public static boolean isChestBlockedAt(LevelAccessor level, BlockPos pos) {
 		return isBlockedChestByBlock(level, pos) || isCatSittingOnChest(level, pos);
 	}
@@ -89,8 +87,9 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 		return blockState.getValue(TYPE) == ChestType.LEFT ? direction.getClockWise() : direction.getCounterClockWise();
 	}
 
-	private static boolean isCatSittingOnChest(LevelAccessor pLevel, BlockPos pPos) {
-		List<Cat> list = pLevel.getEntitiesOfClass(Cat.class, new AABB(pPos.getX(), pPos.getY() + 1, pPos.getZ(), pPos.getX() + 1, pPos.getY() + 2, pPos.getZ() + 1));
+	private static boolean isCatSittingOnChest(LevelAccessor level, BlockPos pos) {
+		List<Cat> list = level.getEntitiesOfClass(Cat.class,
+				new AABB(pos.getX(), (double) pos.getY() + 1, pos.getZ(), (double) pos.getX() + 1, (double) pos.getY() + 2, (double) pos.getZ() + 1));
 		if (!list.isEmpty()) {
 			for (Cat cat : list) {
 				if (cat.isInSittingPose()) {
@@ -102,15 +101,6 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 		return false;
 	}
 
-	private DoubleBlockCombiner.BlockType getBlockType(BlockState blockState) {
-		ChestType chesttype = blockState.getValue(TYPE);
-		if (chesttype == ChestType.SINGLE) {
-			return DoubleBlockCombiner.BlockType.SINGLE;
-		} else {
-			return chesttype == ChestType.RIGHT ? DoubleBlockCombiner.BlockType.FIRST : DoubleBlockCombiner.BlockType.SECOND;
-		}
-	}
-
 	@SuppressWarnings("deprecation")
 	@Override
 	public RenderShape getRenderShape(BlockState state) {
@@ -120,21 +110,59 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 	@SuppressWarnings("deprecation")
 	@Override
 	public BlockState updateShape(BlockState state, Direction facing, BlockState facingState, LevelAccessor level, BlockPos currentPos, BlockPos facingPos) {
-		if (state.getValue(WATERLOGGED)) {
+		if (level.getBlockEntity(currentPos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get()).map(StorageBlockEntity::isBeingUpgraded).orElse(false)) {
+			return state;
+		}
+		if (Boolean.TRUE.equals(state.getValue(WATERLOGGED))) {
 			level.scheduleTick(currentPos, Fluids.WATER, Fluids.WATER.getTickDelay(level));
 		}
 
-		if (facingState.is(this) && facing.getAxis().isHorizontal()) {
+		if (isSameChest(facingState, level, currentPos, facingPos) && facing.getAxis().isHorizontal()) {
 			ChestType chesttype = facingState.getValue(TYPE);
 			if (state.getValue(TYPE) == ChestType.SINGLE && chesttype != ChestType.SINGLE && state.getValue(FACING) == facingState.getValue(FACING) && getConnectedDirection(facingState) == facing.getOpposite()) {
+				level.getBlockEntity(currentPos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get()).ifPresent(be -> {
+					if (state.getBlock() instanceof ChestBlock chestBlock && be.getStorageWrapper().getInventoryHandler().getSlots() <= chestBlock.getNumberOfInventorySlots()) {
+						joinWithChest(level, facingPos, chesttype.getOpposite(), be);
+					}
+					if (be.isMainChest()) {
+						be.getStorageWrapper().getUpgradeHandler().refreshUpgradeWrappers();
+					}
+				});
 				return state.setValue(TYPE, chesttype.getOpposite());
 			}
 		} else if (getConnectedDirection(state) == facing) {
+			level.getBlockEntity(currentPos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get()).ifPresent(be -> {
+				if (!level.isClientSide() && !be.isBeingUpgraded()) {
+					if (be.isMainChest() && state.getBlock() instanceof ChestBlock chestBlock) {
+						be.dropSecondPartContents(chestBlock, facingPos);
+					} else if (!be.isMainChest()) {
+						be.removeDoubleMainPos();
+					}
+				}
+			});
 			return state.setValue(TYPE, ChestType.SINGLE);
 		}
 
 		return super.updateShape(state, facing, facingState, level, currentPos, facingPos);
 	}
+
+	private boolean isSameChest(BlockState facingState, LevelAccessor level, BlockPos currentPos, BlockPos facingPos) {
+		if (!facingState.is(this)) {
+			return false;
+		}
+
+		return level.getBlockEntity(facingPos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get())
+				.flatMap(facingBE ->
+						level.getBlockEntity(currentPos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get())
+								.map(currentBE ->
+										currentBE.isPacked() == facingBE.isPacked()
+												&& currentBE.getStorageWrapper().getMainColor() == facingBE.getStorageWrapper().getMainColor()
+												&& currentBE.getStorageWrapper().getAccentColor() == facingBE.getStorageWrapper().getAccentColor()
+												&& currentBE.getWoodType().orElse(WoodType.ACACIA) == facingBE.getWoodType().orElse(WoodType.ACACIA)
+								)
+				).orElse(false);
+	}
+
 
 	@SuppressWarnings("deprecation")
 	@Override
@@ -169,21 +197,24 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 		return chestBeingPlaced.getCapability(CapabilityStorageWrapper.getCapabilityInstance())
 				.map(wrapper ->
 						getStateForPlacement(context, direction, fluidstate,
-								wrapper.getMainColor(), wrapper.getAccentColor(), InventoryHelper.isEmpty(wrapper.getUpgradeHandler()))
+								wrapper.getMainColor(), wrapper.getAccentColor(),
+								WoodStorageBlockItem.getWoodType(chestBeingPlaced).orElse(WoodType.ACACIA),
+								InventoryHelper.isEmpty(wrapper.getUpgradeHandler()))
 				)
 				.orElse(
 						getStateForPlacement(context, direction, fluidstate,
 								StorageBlockItem.getMainColorFromStack(chestBeingPlaced).orElse(-1),
-								StorageBlockItem.getAccentColorFromStack(chestBeingPlaced).orElse(-1), true)
+								StorageBlockItem.getAccentColorFromStack(chestBeingPlaced).orElse(-1),
+								WoodStorageBlockItem.getWoodType(chestBeingPlaced).orElse(WoodType.ACACIA), true)
 				);
 	}
 
-	private BlockState getStateForPlacement(BlockPlaceContext context, Direction direction, FluidState fluidstate, int mainColor, int accentColor, boolean itemHasNoUpgrades) {
+	private BlockState getStateForPlacement(BlockPlaceContext context, Direction direction, FluidState fluidstate, int mainColor, int accentColor, WoodType woodType, boolean itemHasNoUpgrades) {
 		ChestType chestType = ChestType.SINGLE;
 		Direction clickedFace = context.getClickedFace();
 		boolean isHoldingSneak = context.isSecondaryUseActive();
 		if (clickedFace.getAxis().isHorizontal() && isHoldingSneak) {
-			Direction partnerFacing = this.candidatePartnerFacing(context, clickedFace.getOpposite(), mainColor, accentColor, itemHasNoUpgrades);
+			Direction partnerFacing = this.candidatePartnerFacing(context, clickedFace.getOpposite(), mainColor, accentColor, woodType, itemHasNoUpgrades);
 			if (partnerFacing != null && partnerFacing.getAxis() != clickedFace.getAxis()) {
 				direction = partnerFacing;
 				chestType = partnerFacing.getCounterClockWise() == clickedFace.getOpposite() ? ChestType.RIGHT : ChestType.LEFT;
@@ -191,9 +222,9 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 		}
 
 		if (chestType == ChestType.SINGLE && !isHoldingSneak) {
-			if (direction == this.candidatePartnerFacing(context, direction.getClockWise(), mainColor, accentColor, itemHasNoUpgrades)) {
+			if (direction == this.candidatePartnerFacing(context, direction.getClockWise(), mainColor, accentColor, woodType, itemHasNoUpgrades)) {
 				chestType = ChestType.LEFT;
-			} else if (direction == this.candidatePartnerFacing(context, direction.getCounterClockWise(), mainColor, accentColor, itemHasNoUpgrades)) {
+			} else if (direction == this.candidatePartnerFacing(context, direction.getCounterClockWise(), mainColor, accentColor, woodType, itemHasNoUpgrades)) {
 				chestType = ChestType.RIGHT;
 			}
 		}
@@ -201,7 +232,7 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 	}
 
 	@Nullable
-	private Direction candidatePartnerFacing(BlockPlaceContext context, Direction direction, int mainColor, int accentColor, boolean itemHasNoUpgrades) {
+	private Direction candidatePartnerFacing(BlockPlaceContext context, Direction direction, int mainColor, int accentColor, WoodType woodType, boolean itemHasNoUpgrades) {
 		BlockPos neighborChestPos = context.getClickedPos().relative(direction);
 		BlockState blockstate = context.getLevel().getBlockState(neighborChestPos);
 		if (!blockstate.is(this) || blockstate.getValue(TYPE) != ChestType.SINGLE) {
@@ -210,6 +241,7 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 
 		if (context.getLevel().getBlockEntity(neighborChestPos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get())
 				.map(be -> mainColor == be.getStorageWrapper().getMainColor() && accentColor == be.getStorageWrapper().getAccentColor()
+						&& woodType == be.getWoodType().orElse(WoodType.ACACIA)
 						&& (itemHasNoUpgrades || InventoryHelper.isEmpty(be.getStorageWrapper().getUpgradeHandler()))).orElse(false)) {
 			return blockstate.getValue(FACING);
 		}
@@ -231,11 +263,19 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 	@SuppressWarnings("deprecation")
 	@Override
 	public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
+		if (isChestBlockedAt(level, pos) || (state.getValue(TYPE) != ChestType.SINGLE && isChestBlockedAt(level, pos.relative(getConnectedDirection(state))))) {
+			return InteractionResult.PASS;
+		}
+
 		return WorldHelper.getBlockEntity(level, pos, ChestBlockEntity.class).map(b -> {
 			ItemStack stackInHand = player.getItemInHand(hand);
 
+			BlockPos mainChestPos;
 			if (!b.isMainChest()) {
-				b = WorldHelper.getBlockEntity(level, pos.relative(getConnectedDirection(state)), ChestBlockEntity.class).orElse(b);
+				mainChestPos = pos.relative(getConnectedDirection(state));
+				b = WorldHelper.getBlockEntity(level, mainChestPos, ChestBlockEntity.class).orElse(b);
+			} else {
+				mainChestPos = pos;
 			}
 
 			if (b.isPacked()) {
@@ -250,8 +290,9 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 			}
 
 			player.awardStat(Stats.CUSTOM.get(Stats.OPEN_CHEST));
-			NetworkHooks.openScreen((ServerPlayer) player, new SimpleMenuProvider((w, p, pl) -> new StorageContainerMenu(w, pl, pos),
-					WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).map(StorageBlockEntity::getDisplayName).orElse(Component.empty())), pos);
+
+			NetworkHooks.openScreen((ServerPlayer) player,
+					new SimpleMenuProvider((w, p, pl) -> new StorageContainerMenu(w, pl, mainChestPos), b.getDisplayName()), mainChestPos);
 			PiglinAi.angerNearbyPiglins(player, true);
 
 			return InteractionResult.CONSUME;
@@ -277,24 +318,36 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 			return;
 		}
 
-		level.getBlockEntity(pos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get()).ifPresent(be ->
-				level.getBlockEntity(pos.relative(getConnectedDirection(state)), ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get())
-						.ifPresent(otherBE -> {
-							if (InventoryHelper.isEmpty(be.getStorageWrapper().getUpgradeHandler())
-									&& (chestType == ChestType.LEFT || !InventoryHelper.isEmpty(otherBE.getStorageWrapper().getUpgradeHandler()))) {
-								be.joinWithChest(otherBE);
-							} else {
-								otherBE.joinWithChest(be);
-							}
-							be.syncTogglesFrom(otherBE);
-						})
+		BlockPos otherPos = pos.relative(getConnectedDirection(state));
+		joinChests(level, pos, otherPos, chestType);
+		state.updateNeighbourShapes(level, pos, 3);
+	}
+
+	private static void joinChests(LevelAccessor level, BlockPos pos, BlockPos otherPos, ChestType currentChestType) {
+		level.getBlockEntity(pos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get()).ifPresent(currentBE ->
+				joinWithChest(level, otherPos, currentChestType, currentBE)
 		);
+	}
+
+	private static void joinWithChest(LevelAccessor level, BlockPos otherPos, ChestType currentChestType, ChestBlockEntity currentBE) {
+		level.getBlockEntity(otherPos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get())
+				.ifPresent(otherBE -> {
+					if (InventoryHelper.isEmpty(currentBE.getStorageWrapper().getUpgradeHandler())
+							&& (currentChestType == ChestType.LEFT || !InventoryHelper.isEmpty(otherBE.getStorageWrapper().getUpgradeHandler()))) {
+						currentBE.joinWithChest(otherBE);
+						currentBE.syncTogglesFrom(otherBE);
+					} else {
+						otherBE.joinWithChest(currentBE);
+						otherBE.syncTogglesFrom(currentBE);
+					}
+				});
 	}
 
 	@Override
 	public boolean onDestroyedByPlayer(BlockState state, Level level, BlockPos pos, Player player, boolean willHarvest, FluidState fluid) {
 		if (state.getValue(TYPE) != ChestType.SINGLE) {
 			level.getBlockEntity(pos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get()).ifPresent(be -> {
+				be.setDestroyedByPlayer();
 				if (be.isPacked() && !be.isMainChest()) {
 					//copy storage wrapper to "not main" chest so that its data can be transferred to stack properly
 					BlockPos otherPartPos = pos.relative(getConnectedDirection(state));
@@ -387,10 +440,54 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 		return state.getValue(FACING);
 	}
 
-	//TODO add break override that properly handles copying stacks and settings over to the other part and handling overflowed stacks by dropping them on the ground
-
 	@Override
 	public boolean canChangeDisplaySide(BlockState state) {
 		return state.getValue(TYPE) != ChestType.SINGLE;
+	}
+
+	@Override
+	public BlockPos getNeighborPos(BlockState state, BlockPos origin, Direction facing) {
+		if (state.getValue(TYPE) == ChestType.SINGLE) {
+			return origin.relative(facing);
+		} else {
+			if (getConnectedDirection(state) == facing) {
+				return origin.relative(facing).relative(facing);
+			}
+			return origin.relative(facing);
+		}
+	}
+
+	@Override
+	public void onNeighborChange(BlockState state, LevelReader level, BlockPos pos, BlockPos neighbor) {
+		if (state.getValue(TYPE) != ChestType.SINGLE && pos.relative(getConnectedDirection(state)).equals(neighbor)) {
+			return;
+		}
+		super.onNeighborChange(state, level, pos, neighbor);
+	}
+
+	@Override
+	public void entityInside(BlockState state, Level world, BlockPos pos, Entity entity) {
+		super.entityInside(state, world, pos, entity);
+		if (!world.isClientSide && entity instanceof ItemEntity itemEntity) {
+			WorldHelper.getBlockEntity(world, pos, ChestBlockEntity.class).ifPresent(te -> tryToPickup(world, itemEntity, te.getMainStorageWrapper()));
+		}
+	}
+
+	@Override
+	protected Vector3f getMiddleFacePoint(BlockState state, BlockPos pos, Direction facing, Vector3f vector) {
+		Vector3f point = new Vector3f(vector);
+		float xOffset = 0;
+		ChestType type = state.getValue(TYPE);
+		if (type == ChestType.LEFT) {
+			xOffset = -0.5f;
+		} else if (type == ChestType.RIGHT) {
+			xOffset = 0.5f;
+		}
+		point.add(xOffset, 0, 0.6f);
+		point.rotate(Axis.XP.rotationDegrees(-90.0F));
+		point.rotate(facing.getRotation());
+
+		point.add(pos.getX() + 0.5f, pos.getY() + 0.5f, pos.getZ() + 0.5f);
+		return point;
 	}
 }

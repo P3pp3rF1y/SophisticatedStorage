@@ -3,9 +3,7 @@ package net.p3pp3rf1y.sophisticatedstorage.item;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import net.minecraftforge.common.util.NonNullLazy;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
@@ -40,10 +38,5 @@ public class ChestBlockItem extends WoodStorageBlockItem {
 
 	public static void setDoubleChest(ItemStack stack, boolean doubleChest) {
 		stack.getOrCreateTag().putBoolean(DOUBLE_CHEST_TAG, doubleChest);
-	}
-
-	@Override
-	protected boolean placeBlock(BlockPlaceContext pContext, BlockState pState) {
-		return super.placeBlock(pContext, pState);
 	}
 }

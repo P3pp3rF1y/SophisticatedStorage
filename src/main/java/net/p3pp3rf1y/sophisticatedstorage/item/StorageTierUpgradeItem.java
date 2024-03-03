@@ -17,8 +17,9 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ShulkerBoxBlock;
 import net.minecraft.world.level.block.entity.BarrelBlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
 import net.minecraft.world.level.block.entity.ShulkerBoxBlockEntity;
-import net.minecraft.world.level.block.entity.*;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.ChestType;
@@ -30,7 +31,6 @@ import net.p3pp3rf1y.sophisticatedcore.util.ColorHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.ItemBase;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.block.*;
-import net.p3pp3rf1y.sophisticatedstorage.block.ChestBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageTranslationHelper;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 
@@ -121,19 +121,20 @@ public class StorageTierUpgradeItem extends ItemBase {
 			if (!(newBlockState.getBlock() instanceof StorageBlockBase newStorageBlock)) {
 				return false;
 			}
-			upgradeStorageBlock(pos, level, blockEntity, newBlockState, newStorageBlock.getNumberOfInventorySlots(), newStorageBlock.getNumberOfUpgradeSlots());
+			upgradeStorageBlock(pos, level, blockEntity, newBlockState, newStorageBlock.getNumberOfInventorySlots(), newStorageBlock.getNumberOfUpgradeSlots()).setBeingUpgraded(false);
 			return true;
 		}
 
-		private void upgradeStorageBlock(BlockPos pos, Level level, StorageBlockEntity blockEntity, BlockState newBlockState, int newInventorySize, int newUpgradeSize) {
+		private StorageBlockEntity upgradeStorageBlock(BlockPos pos, Level level, StorageBlockEntity blockEntity, BlockState newBlockState, int newInventorySize, int newUpgradeSize) {
 			CompoundTag beTag = new CompoundTag();
 			blockEntity.saveAdditional(beTag);
 
 			StorageBlockEntity newBlockEntity = newBlock().newBlockEntity(pos, newBlockState);
 			//noinspection ConstantConditions - all storage blocks create a block entity so no chancde of null here
+			newBlockEntity.setBeingUpgraded(true);
 			newBlockEntity.load(beTag);
 
-			blockEntity.setBeingUpgraded();
+			blockEntity.setBeingUpgraded(true);
 			level.removeBlockEntity(pos);
 			level.removeBlock(pos, false);
 
@@ -141,6 +142,7 @@ public class StorageTierUpgradeItem extends ItemBase {
 			level.setBlockEntity(newBlockEntity);
 			newBlockEntity.changeStorageSize(newInventorySize - newBlockEntity.getStorageWrapper().getInventoryHandler().getSlots(), newUpgradeSize - newBlockEntity.getStorageWrapper().getUpgradeHandler().getSlots());
 			WorldHelper.notifyBlockUpdate(newBlockEntity);
+			return newBlockEntity;
 		}
 
 		private boolean upgradeDoubleChest(BlockPos pos, Level level, BlockState state, ChestBlockEntity chestBlockEntity) {
@@ -151,14 +153,18 @@ public class StorageTierUpgradeItem extends ItemBase {
 				return false;
 			}
 
+			chestBlockEntity.setBeingUpgraded(true);
+			otherBlockEntity.setBeingUpgraded(true);
 			if (chestBlockEntity.isMainChest()) {
-				upgradeStorageBlock(pos, level, chestBlockEntity, getBlockState(state), storageBlock.getNumberOfInventorySlots() * 2, storageBlock.getNumberOfUpgradeSlots());
-				upgradeStorageBlock(otherPos, level, otherBlockEntity, otherBlockState, storageBlock.getNumberOfInventorySlots(), storageBlock.getNumberOfUpgradeSlots());
+				StorageBlockEntity newMainBE = upgradeStorageBlock(pos, level, chestBlockEntity, getBlockState(state), storageBlock.getNumberOfInventorySlots() * 2, storageBlock.getNumberOfUpgradeSlots());
+				upgradeStorageBlock(otherPos, level, otherBlockEntity, otherBlockState, storageBlock.getNumberOfInventorySlots(), storageBlock.getNumberOfUpgradeSlots()).setBeingUpgraded(false);
+				newMainBE.setBeingUpgraded(false);
 			} else {
-				upgradeStorageBlock(pos, level, chestBlockEntity, getBlockState(state), storageBlock.getNumberOfInventorySlots(), storageBlock.getNumberOfUpgradeSlots());
-				upgradeStorageBlock(otherPos, level, otherBlockEntity, otherBlockState, storageBlock.getNumberOfInventorySlots() * 2, storageBlock.getNumberOfUpgradeSlots());
+				StorageBlockEntity newOtherBE = upgradeStorageBlock(pos, level, chestBlockEntity, getBlockState(state), storageBlock.getNumberOfInventorySlots(), storageBlock.getNumberOfUpgradeSlots());
+				upgradeStorageBlock(otherPos, level, otherBlockEntity, otherBlockState, storageBlock.getNumberOfInventorySlots() * 2, storageBlock.getNumberOfUpgradeSlots()).setBeingUpgraded(false);
+				newOtherBE.setBeingUpgraded(false);
 			}
-			//TODO make sure that this still correctly registers with controller and doesn't cause the other part to register with it
+			otherBlockState.updateNeighbourShapes(level, otherPos, 3);
 
 			return true;
 		}
@@ -239,9 +245,16 @@ public class StorageTierUpgradeItem extends ItemBase {
 				upgradeStorage(otherPos, level, otherState, otherBE);
 				level.getBlockEntity(otherPos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get())
 						.ifPresent(otherChestBE -> {
-							level.getBlockEntity(pos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get()).ifPresent(otherChestBE::joinWithChest);
+							level.getBlockEntity(pos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get()).ifPresent(mainBE -> {
+								if (state.getValue(net.minecraft.world.level.block.ChestBlock.TYPE) == ChestType.LEFT) {
+									mainBE.joinWithChest(otherChestBE);
+								} else {
+									otherChestBE.joinWithChest(mainBE);
+								}
+							});
 							WorldHelper.notifyBlockUpdate(otherChestBE);
 						});
+				level.getBlockState(otherPos).updateNeighbourShapes(level, otherPos, 3);
 			}
 			return true;
 		}

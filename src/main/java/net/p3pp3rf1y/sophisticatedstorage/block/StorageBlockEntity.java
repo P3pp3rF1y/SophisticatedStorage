@@ -158,6 +158,7 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		storageWrapper.setUpgradeCachesInvalidatedHandler(this::onUpgradeCachesInvalidated);
 	}
 
+	@SuppressWarnings("java:S1172") //parameter used in override
 	protected ItemStack addWrappedStorageStackData(ItemStack cloneItemStack, BlockState state) {
 		return cloneItemStack;
 	}
@@ -487,8 +488,12 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		return isLinked() || IControllableStorage.super.canBeConnected();
 	}
 
-	public void setBeingUpgraded() {
-		isBeingUpgraded = true;
+	public void setBeingUpgraded(boolean isBeingUpgraded) {
+		this.isBeingUpgraded = isBeingUpgraded;
+	}
+
+	public boolean isBeingUpgraded() {
+		return isBeingUpgraded;
 	}
 
 	@Override
@@ -595,7 +600,7 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 	}
 
 	@Nullable
-	private Direction getNeighborDirection(BlockPos neighborPos) {
+	protected Direction getNeighborDirection(BlockPos neighborPos) {
 		Direction direction = null;
 		int normalX = Integer.signum(neighborPos.getX() - worldPosition.getX());
 		int normalY = Integer.signum(neighborPos.getY() - worldPosition.getY());

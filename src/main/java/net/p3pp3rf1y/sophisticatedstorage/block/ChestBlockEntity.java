@@ -3,7 +3,10 @@ package net.p3pp3rf1y.sophisticatedstorage.block;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.TickTask;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.Containers;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -23,16 +26,18 @@ import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.item.ChestBlockItem;
+import net.p3pp3rf1y.sophisticatedstorage.upgrades.INeighborChangeListenerUpgrade;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.BiConsumer;
 
 public class ChestBlockEntity extends WoodStorageBlockEntity {
 	public static final String STORAGE_TYPE = "chest";
 	public static final String DOUBLE_CHEST_MAIN_POS_TAG = "doubleMainPos";
 	private final ChestLidController chestLidController = new ChestLidController();
-	//TODO add persistence and synchronization to client
 	@Nullable
 	private BlockPos doubleMainPos = null;
 
@@ -64,15 +69,20 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 		@Override
 		public void incrementOpeners(Player player, Level level, BlockPos pos, BlockState state) {
 			super.incrementOpeners(player, level, pos, state);
-			runOnTheOtherPart(level, pos, state, (blockEntity, neighborPos) -> blockEntity.openersCounter.incrementOpeners(player, level, neighborPos, state));
+			if (isMainChest()) {
+				runOnTheOtherPart(level, pos, state, (blockEntity, neighborPos) -> blockEntity.openersCounter.incrementOpeners(player, level, neighborPos, state));
+			}
 		}
 
 		@Override
 		public void decrementOpeners(Player player, Level level, BlockPos pos, BlockState state) {
 			super.decrementOpeners(player, level, pos, state);
-			runOnTheOtherPart(level, pos, state, (blockEntity, neighborPos) -> blockEntity.openersCounter.decrementOpeners(player, level, neighborPos, state));
+			if (isMainChest()) {
+				runOnTheOtherPart(level, pos, state, (blockEntity, neighborPos) -> blockEntity.openersCounter.decrementOpeners(player, level, neighborPos, state));
+			}
 		}
 	};
+	private boolean isDestroyedByPlayer = false;
 
 	public void joinWithChest(ChestBlockEntity mainBE) {
 		setMainPos(mainBE.getBlockPos());
@@ -84,6 +94,7 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 
 	public void setMainPos(BlockPos doubleMainPos) {
 		this.doubleMainPos = doubleMainPos;
+		setChanged();
 	}
 
 	private void expandAndMoveItemsAndSettings(ChestBlockEntity mainBE) {
@@ -149,7 +160,7 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 
 	@Override
 	public void dropContents() {
-		if (getBlockState().getValue(ChestBlock.TYPE) != ChestType.SINGLE) {
+		if (isDestroyedByPlayer && getBlockState().getValue(ChestBlock.TYPE) != ChestType.SINGLE) {
 			if (doubleMainPos != null) {
 				moveMyStacksFromMain();
 			} else {
@@ -157,6 +168,15 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 			}
 		}
 		super.dropContents();
+	}
+
+	@Override
+	public void onNeighborChange(BlockPos neighborPos) {
+		Direction direction = getNeighborDirection(neighborPos);
+		if (direction == null) {
+			return;
+		}
+		getMainStorageWrapper().getUpgradeHandler().getWrappersThatImplement(INeighborChangeListenerUpgrade.class).forEach(upgrade -> upgrade.onNeighborChange(level, worldPosition, direction));
 	}
 
 	private void moveOtherPartStacksToIt() {
@@ -173,13 +193,15 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 			copySettings(this, be, firstIndex, -firstIndex);
 			be.removeControllerPos();
 			be.tryToAddToController();
+			be.getStorageWrapper().getUpgradeHandler().refreshUpgradeWrappers();
 			WorldHelper.notifyBlockUpdate(be);
 		});
 	}
 
 	private void moveMyStacksFromMain() {
 		level.getBlockEntity(doubleMainPos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get()).ifPresent(mainBE -> {
-			InventoryHandler mainInventoryHandler = mainBE.getStorageWrapper().getInventoryHandler();
+			StorageWrapper mainStorageWrapper = mainBE.getStorageWrapper();
+			InventoryHandler mainInventoryHandler = mainStorageWrapper.getInventoryHandler();
 			int firstIndex = mainInventoryHandler.getSlots() / 2;
 
 			for (int slot = firstIndex; slot < mainInventoryHandler.getSlots(); slot++) {
@@ -190,16 +212,10 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 
 			mainBE.changeStorageSize(inventorySlotDiff, 0);
 			deleteSettingsFromSlot(mainBE, firstIndex);
-			mainBE.getStorageWrapper().getSettingsHandler().getTypeCategory(ItemDisplaySettingsCategory.class).setDisplaySide(DisplaySide.FRONT);
+			mainStorageWrapper.getSettingsHandler().getTypeCategory(ItemDisplaySettingsCategory.class).setDisplaySide(DisplaySide.FRONT);
+			mainStorageWrapper.getUpgradeHandler().refreshUpgradeWrappers();
 			WorldHelper.notifyBlockUpdate(mainBE);
 		});
-	}
-
-	@Override
-	public void onLoad() {
-		//TODO handle overflow items from double chest if this was moved using another mod that didn't unjoin it correctly first
-		//TODO if moved using incorrect way (cardboard box or carry mod) mainPos may not be in correct place - recreate somehow?
-		super.onLoad();
 	}
 
 	@Override
@@ -342,5 +358,58 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 	@Override
 	public boolean canBeLinked() {
 		return isMainChest() && super.canBeLinked();
+	}
+
+	public void dropSecondPartContents(ChestBlock chestBlock, BlockPos dropPosition) {
+		InventoryHandler invHandler = getStorageWrapper().getInventoryHandler();
+
+		List<ItemStack> dropItems = new ArrayList<>();
+
+		for (int slot = chestBlock.getNumberOfInventorySlots(); slot < invHandler.getSlots(); slot++) {
+			ItemStack slotStack = invHandler.getStackInSlot(slot);
+
+			if (!slotStack.isEmpty()) {
+				dropItems.add(slotStack.copy());
+			}
+		}
+
+		if (level instanceof ServerLevel serverLevel) {
+			serverLevel.getServer().tell(new TickTask(serverLevel.getServer().getTickCount(), () ->
+					dropItems.forEach(itemStack -> Containers.dropItemStack(serverLevel, dropPosition.getX(), dropPosition.getY(), dropPosition.getZ(), itemStack)))
+			);
+		}
+
+		int inventorySlotDiff = chestBlock.getNumberOfInventorySlots() - invHandler.getSlots();
+
+		changeStorageSize(inventorySlotDiff, 0);
+		deleteSettingsFromSlot(this, chestBlock.getNumberOfInventorySlots());
+		getStorageWrapper().getSettingsHandler().getTypeCategory(ItemDisplaySettingsCategory.class).setDisplaySide(DisplaySide.FRONT);
+		getStorageWrapper().getUpgradeHandler().refreshUpgradeWrappers();
+		WorldHelper.notifyBlockUpdate(this);
+	}
+
+	public void setDestroyedByPlayer() {
+		isDestroyedByPlayer = true;
+	}
+
+	@Override
+	public void load(CompoundTag tag) {
+		super.load(tag);
+		if (!isBeingUpgraded() && getBlockState().getValue(ChestBlock.TYPE) == ChestType.SINGLE) {
+			if (getBlockState().getBlock() instanceof ChestBlock chestBlock
+					&& getStorageWrapper().getInventoryHandler().getSlots() > chestBlock.getNumberOfInventorySlots()) {
+				dropSecondPartContents(chestBlock, worldPosition);
+			}
+			if (!isMainChest()) {
+				removeDoubleMainPos();
+			}
+		}
+	}
+
+	@Override
+	public void changeSlots(int newSlots) {
+		if (hasStorageData()) {
+			super.changeSlots(newSlots);
+		}
 	}
 }

@@ -130,6 +130,7 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 		WorldHelper.getBlockEntity(level, pos, WoodStorageBlockEntity.class).ifPresent(be -> {
 			NBTHelper.getUniqueId(stack, "uuid").ifPresent(uuid -> {
 				ItemContentsStorage itemContentsStorage = ItemContentsStorage.get();
+				be.setBeingUpgraded(true);
 				be.load(itemContentsStorage.getOrCreateStorageContents(uuid));
 				itemContentsStorage.removeStorageContents(uuid);
 			});
@@ -145,6 +146,7 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 			if (placer != null && placer.getOffhandItem().getItem() == ModItems.STORAGE_TOOL.get()) {
 				StorageToolItem.useOffHandOnPlaced(placer.getOffhandItem(), be);
 			}
+			be.setBeingUpgraded(false);
 		});
 	}
 
