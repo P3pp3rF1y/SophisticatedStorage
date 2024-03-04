@@ -197,7 +197,8 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 		return chestBeingPlaced.getCapability(CapabilityStorageWrapper.getCapabilityInstance())
 				.map(wrapper ->
 						getStateForPlacement(context, direction, fluidstate,
-								wrapper.getMainColor(), wrapper.getAccentColor(),
+								StorageBlockItem.getMainColorFromStack(chestBeingPlaced).orElse(-1),
+								StorageBlockItem.getAccentColorFromStack(chestBeingPlaced).orElse(-1),
 								WoodStorageBlockItem.getWoodType(chestBeingPlaced).orElse(WoodType.ACACIA),
 								InventoryHelper.isEmpty(wrapper.getUpgradeHandler()))
 				)
