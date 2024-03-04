@@ -317,9 +317,9 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.save(consumer);
 
 		ShapeBasedRecipeBuilder.shaped(ModItems.COPPER_TO_IRON_TIER_UPGRADE.get())
-				.pattern("III")
+				.pattern(" I ")
 				.pattern("IRI")
-				.pattern("III")
+				.pattern(" I ")
 				.define('R', Items.REDSTONE_TORCH)
 				.define('I', Tags.Items.INGOTS_IRON)
 				.unlockedBy(HAS_REDSTONE_TORCH_CRITERION_NAME, has(Items.REDSTONE_TORCH))
