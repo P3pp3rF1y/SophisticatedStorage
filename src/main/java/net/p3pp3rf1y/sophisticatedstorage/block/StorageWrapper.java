@@ -198,6 +198,7 @@ public abstract class StorageWrapper implements IStorageWrapper {
 		loadContents(tag);
 		loadData(tag);
 
+		initInventoryHandler();
 		getUpgradeHandler().refreshUpgradeWrappers();
 		if (Thread.currentThread().getThreadGroup() == SidedThreadGroups.SERVER && getRenderInfo().getUpgradeItems().size() != getUpgradeHandler().getSlots()) {
 			getUpgradeHandler().setRenderUpgradeItems();
@@ -433,16 +434,12 @@ public abstract class StorageWrapper implements IStorageWrapper {
 		return columnsTaken;
 	}
 
-	public void increaseSize(int additionalInventorySlots, int additionalUpgradeSlots) {
-		if (additionalInventorySlots > 0) {
-			numberOfInventorySlots += additionalInventorySlots;
-			getInventoryHandler().changeSlots(additionalInventorySlots);
-		}
+	public void changeSize(int additionalInventorySlots, int additionalUpgradeSlots) {
+		numberOfInventorySlots += additionalInventorySlots;
+		getInventoryHandler().changeSlots(additionalInventorySlots);
 
-		if (additionalUpgradeSlots > 0) {
-			numberOfUpgradeSlots += additionalUpgradeSlots;
-			getUpgradeHandler().increaseSize(additionalUpgradeSlots);
-		}
+		numberOfUpgradeSlots += additionalUpgradeSlots;
+		getUpgradeHandler().increaseSize(additionalUpgradeSlots);
 	}
 
 	public <T extends IUpgradeWrapper> void registerUpgradeDefaultsHandler(Class<T> upgradeClass, Consumer<T> defaultsHandler) {

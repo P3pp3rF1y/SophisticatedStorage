@@ -92,7 +92,11 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 
 	@Override
 	public void addCreativeTabItems(Consumer<ItemStack> itemConsumer) {
-		CUSTOM_TEXTURE_WOOD_TYPES.keySet().forEach(woodType -> itemConsumer.accept(WoodStorageBlockItem.setWoodType(new ItemStack(this), woodType)));
+		if (Boolean.TRUE.equals(Config.CLIENT.showSingleWoodVariantOnly.get())) {
+			itemConsumer.accept(WoodStorageBlockItem.setWoodType(new ItemStack(this), WoodType.ACACIA));
+		} else {
+			CUSTOM_TEXTURE_WOOD_TYPES.keySet().forEach(woodType -> itemConsumer.accept(WoodStorageBlockItem.setWoodType(new ItemStack(this), woodType)));
+		}
 
 		if (isBasicTier() || Boolean.TRUE.equals(Config.CLIENT.showHigherTierTintedVariants.get())) {
 			for (DyeColor color : DyeColor.values()) {
@@ -130,6 +134,7 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 		WorldHelper.getBlockEntity(level, pos, WoodStorageBlockEntity.class).ifPresent(be -> {
 			NBTHelper.getUniqueId(stack, "uuid").ifPresent(uuid -> {
 				ItemContentsStorage itemContentsStorage = ItemContentsStorage.get();
+				be.setBeingUpgraded(true);
 				be.load(itemContentsStorage.getOrCreateStorageContents(uuid));
 				itemContentsStorage.removeStorageContents(uuid);
 			});
@@ -137,9 +142,7 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 			if (stack.hasCustomHoverName()) {
 				be.setCustomName(stack.getHoverName());
 			}
-			WoodStorageBlockItem.getWoodType(stack).ifPresent(be::setWoodType);
-			StorageBlockItem.getMainColorFromStack(stack).ifPresent(be.getStorageWrapper()::setMainColor);
-			StorageBlockItem.getAccentColorFromStack(stack).ifPresent(be.getStorageWrapper()::setAccentColor);
+			setRenderBlockRenderProperties(stack, be);
 
 			be.getStorageWrapper().onInit();
 			be.tryToAddToController();
@@ -147,7 +150,14 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 			if (placer != null && placer.getOffhandItem().getItem() == ModItems.STORAGE_TOOL.get()) {
 				StorageToolItem.useOffHandOnPlaced(placer.getOffhandItem(), be);
 			}
+			be.setBeingUpgraded(false);
 		});
+	}
+
+	protected void setRenderBlockRenderProperties(ItemStack stack, WoodStorageBlockEntity be) {
+		WoodStorageBlockItem.getWoodType(stack).ifPresent(be::setWoodType);
+		StorageBlockItem.getMainColorFromStack(stack).ifPresent(be.getStorageWrapper()::setMainColor);
+		StorageBlockItem.getAccentColorFromStack(stack).ifPresent(be.getStorageWrapper()::setAccentColor);
 	}
 
 	@SuppressWarnings("java:S1172") //parameter is used in override
@@ -159,7 +169,7 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 		return tryAddUpgrade(player, hand, b, stackInHand, facing, hitResult);
 	}
 
-	private static void packStorage(Player player, InteractionHand hand, WoodStorageBlockEntity b, ItemStack stackInHand) {
+	protected void packStorage(Player player, InteractionHand hand, WoodStorageBlockEntity b, ItemStack stackInHand) {
 		if (!player.isCreative()) {
 			stackInHand.setDamageValue(stackInHand.getDamageValue() + 1);
 			if (stackInHand.getDamageValue() >= stackInHand.getMaxDamage()) {

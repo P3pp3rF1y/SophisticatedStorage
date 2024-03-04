@@ -50,12 +50,15 @@ public class Config {
 
 	public static class Client {
 		public final ForgeConfigSpec.BooleanValue showHigherTierTintedVariants;
+		public final ForgeConfigSpec.BooleanValue showSingleWoodVariantOnly;
 
 		public Client(ForgeConfigSpec.Builder builder) {
 			builder.comment("Client-side Settings").push("client");
 
 			showHigherTierTintedVariants = builder.comment("Determines whether JEI and creative tab will show tinted storage items for iron and higher tiers. Can help with easily removing many of these items from there.")
 					.worldRestart().define("showHigherTierTintedVariants", true);
+			showSingleWoodVariantOnly = builder.comment("Determines whether JEI and creative tab will show only single wood variant of storage item per tier. Makes creative tab and .")
+					.worldRestart().define("showSingleWoodVariantOnly", false);
 
 			builder.pop();
 		}

@@ -15,9 +15,9 @@
     }
   },
   "pattern": [
-    "III",
+    " I ",
     "IRI",
-    "III"
+    " I "
   ],
   "result": {
     "item": "sophisticatedstorage:copper_to_iron_tier_upgrade"

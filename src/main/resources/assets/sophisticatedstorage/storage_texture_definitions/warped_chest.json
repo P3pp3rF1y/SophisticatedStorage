@@ -1,6 +1,14 @@
 {
     "parent": "sophisticatedstorage:chest",
     "textures": {
-        "base": "sophisticatedstorage:entity/chest/warped"
+        "single": {
+            "base": "sophisticatedstorage:entity/chest/warped"
+        },
+        "left": {
+            "base": "sophisticatedstorage:entity/chest/left_warped"
+        },
+        "right": {
+            "base": "sophisticatedstorage:entity/chest/right_warped"
+        }
     }
 }

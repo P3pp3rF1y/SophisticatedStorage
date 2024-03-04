@@ -156,7 +156,8 @@ public class HopperUpgradeWrapper extends UpgradeWrapperBase<HopperUpgradeWrappe
 	}
 
 	private Optional<WorldlyContainer> getWorldlyContainer(Level level, BlockPos pos, Direction direction) {
-		BlockPos offsetPos = pos.relative(direction);
+		BlockState storageState = level.getBlockState(pos);
+		BlockPos offsetPos = storageState.getBlock() instanceof StorageBlockBase storageBlock ? storageBlock.getNeighborPos(storageState, pos, direction) : pos.relative(direction);
 		BlockState state = level.getBlockState(offsetPos);
 		if (state.getBlock() instanceof WorldlyContainerHolder worldlyContainerHolder) {
 			return Optional.of(worldlyContainerHolder.getContainer(state, level, offsetPos));
@@ -197,7 +198,9 @@ public class HopperUpgradeWrapper extends UpgradeWrapperBase<HopperUpgradeWrappe
 	}
 
 	public void updateCacheOnSide(Level level, BlockPos pos, Direction direction) {
-		WorldHelper.getLoadedBlockEntity(level, pos.relative(direction)).ifPresentOrElse(blockEntity -> {
+		BlockState storageState = level.getBlockState(pos);
+		BlockPos offsetPos = storageState.getBlock() instanceof StorageBlockBase storageBlock ? storageBlock.getNeighborPos(storageState, pos, direction) : pos.relative(direction);
+		WorldHelper.getLoadedBlockEntity(level, offsetPos).ifPresentOrElse(blockEntity -> {
 			LazyOptional<IItemHandler> lazyOptional = blockEntity.getCapability(ForgeCapabilities.ITEM_HANDLER, direction.getOpposite());
 			if (lazyOptional.isPresent()) {
 				handlerCache.put(direction, lazyOptional);

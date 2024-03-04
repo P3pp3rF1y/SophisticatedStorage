@@ -91,7 +91,8 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 			@Override
 			public ItemStack getWrappedStorageStack() {
 				BlockPos pos = getBlockPos();
-				return getBlockState().getBlock().getCloneItemStack(getBlockState(), new BlockHitResult(new Vec3(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5), Direction.DOWN, pos, true), getLevel(), pos, null);
+				BlockState state = getBlockState();
+				return addWrappedStorageStackData(state.getBlock().getCloneItemStack(state, new BlockHitResult(new Vec3(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5), Direction.DOWN, pos, true), getLevel(), pos, null), state);
 			}
 
 			@Override
@@ -155,6 +156,11 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 			}
 		};
 		storageWrapper.setUpgradeCachesInvalidatedHandler(this::onUpgradeCachesInvalidated);
+	}
+
+	@SuppressWarnings("java:S1172") //parameter used in override
+	protected ItemStack addWrappedStorageStackData(ItemStack cloneItemStack, BlockState state) {
+		return cloneItemStack;
 	}
 
 	protected abstract String getStorageType();
@@ -349,12 +355,10 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		return true;
 	}
 
-	public void increaseStorageSize(int additionalInventorySlots, int additionalUpgradeSlots) {
+	public void changeStorageSize(int additionalInventorySlots, int additionalUpgradeSlots) {
 		int currentInventorySlots = getStorageWrapper().getInventoryHandler().getSlots();
-		getStorageWrapper().increaseSize(additionalInventorySlots, additionalUpgradeSlots);
-		if (additionalInventorySlots > 0) {
-			changeSlots(currentInventorySlots + additionalInventorySlots);
-		}
+		getStorageWrapper().changeSize(additionalInventorySlots, additionalUpgradeSlots);
+		changeSlots(currentInventorySlots + additionalInventorySlots);
 	}
 
 	public void dropContents() {
@@ -484,8 +488,12 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		return isLinked() || IControllableStorage.super.canBeConnected();
 	}
 
-	public void setBeingUpgraded() {
-		isBeingUpgraded = true;
+	public void setBeingUpgraded(boolean isBeingUpgraded) {
+		this.isBeingUpgraded = isBeingUpgraded;
+	}
+
+	public boolean isBeingUpgraded() {
+		return isBeingUpgraded;
 	}
 
 	@Override
@@ -592,7 +600,7 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 	}
 
 	@Nullable
-	private Direction getNeighborDirection(BlockPos neighborPos) {
+	protected Direction getNeighborDirection(BlockPos neighborPos) {
 		Direction direction = null;
 		int normalX = Integer.signum(neighborPos.getX() - worldPosition.getX());
 		int normalY = Integer.signum(neighborPos.getY() - worldPosition.getY());
