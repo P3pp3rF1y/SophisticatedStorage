@@ -43,13 +43,13 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 
 	private final ContainerOpenersCounter openersCounter = new ContainerOpenersCounter() {
 		protected void onOpen(Level level, BlockPos pos, BlockState state) {
-			if (state.getValue(ChestBlock.TYPE) != ChestType.RIGHT) {
+			if (state.getValue(ChestBlock.TYPE) != ChestType.LEFT) {
 				playSound(state, SoundEvents.CHEST_OPEN);
 			}
 		}
 
 		protected void onClose(Level level, BlockPos pos, BlockState state) {
-			if (state.getValue(ChestBlock.TYPE) != ChestType.RIGHT) {
+			if (state.getValue(ChestBlock.TYPE) != ChestType.LEFT) {
 				playSound(state, SoundEvents.CHEST_CLOSE);
 			}
 		}
