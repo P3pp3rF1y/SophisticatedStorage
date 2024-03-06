@@ -237,7 +237,6 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity> {
 			TextureAtlasSprite sprite = tierMaterial.sprite();
 			VertexConsumer translucentConsumer = sprite.wrap(bufferSource.getBuffer(RenderType.entityTranslucent(sprite.atlasLocation())));
 			poseStack.pushPose();
-			//TODO figure out if I need to do special translate / scale here for double chests
 			poseStack.translate(-0.005D, -0.005D, -0.005D);
 			poseStack.scale(1.01f, 1.01f, 1.01f);
 			lidPart.render(poseStack, translucentConsumer, packedLight, packedOverlay, 1.0F, 1.0F, 1.0F, 0.5F);
