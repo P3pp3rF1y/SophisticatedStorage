@@ -248,7 +248,9 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 	@Override
 	public void toggleLock() {
 		super.toggleLock();
-		runOnTheOtherPart(level, worldPosition, level.getBlockState(worldPosition), (be, pos) -> be.toggleJustMyLock());
+		if (level != null) {
+			runOnTheOtherPart(level, worldPosition, level.getBlockState(worldPosition), (be, pos) -> be.toggleJustMyLock());
+		}
 	}
 
 	private void toggleJustMyLock() {
@@ -258,7 +260,9 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 	@Override
 	public void toggleLockVisibility() {
 		super.toggleLockVisibility();
-		runOnTheOtherPart(level, worldPosition, level.getBlockState(worldPosition), (be, pos) -> be.toggleJustMyLockVisibility());
+		if (level != null) {
+			runOnTheOtherPart(level, worldPosition, level.getBlockState(worldPosition), (be, pos) -> be.toggleJustMyLockVisibility());
+		}
 	}
 
 	private void toggleJustMyLockVisibility() {
@@ -268,7 +272,9 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 	@Override
 	public void toggleTierVisiblity() {
 		super.toggleTierVisiblity();
-		runOnTheOtherPart(level, worldPosition, level.getBlockState(worldPosition), (be, pos) -> be.toggleJustMyTierVisiblity());
+		if (level != null) {
+			runOnTheOtherPart(level, worldPosition, level.getBlockState(worldPosition), (be, pos) -> be.toggleJustMyTierVisiblity());
+		}
 	}
 
 	private void toggleJustMyTierVisiblity() {
@@ -278,7 +284,9 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 	@Override
 	public void toggleUpgradesVisiblity() {
 		super.toggleUpgradesVisiblity();
-		runOnTheOtherPart(level, worldPosition, level.getBlockState(worldPosition), (be, pos) -> be.toggleJustMyUpgradesVisiblity());
+		if (level != null) {
+			runOnTheOtherPart(level, worldPosition, level.getBlockState(worldPosition), (be, pos) -> be.toggleJustMyUpgradesVisiblity());
+		}
 	}
 
 	private void toggleJustMyUpgradesVisiblity() {

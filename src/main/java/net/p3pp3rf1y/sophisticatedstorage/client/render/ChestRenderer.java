@@ -101,13 +101,12 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity> {
 		lidAngle = 1.0F - lidAngle;
 		lidAngle = 1.0F - lidAngle * lidAngle * lidAngle;
 
-		float finalLidAngle = lidAngle;
 		StorageWrapper storageWrapper = chestEntity.getMainStorageWrapper();
 		boolean hasMainColor = storageWrapper.hasMainColor();
 		boolean hasAccentColor = storageWrapper.hasAccentColor();
 
 		if (woodType.isPresent() || !(hasMainColor && hasAccentColor)) {
-			subRenderer.renderBottomAndLid(poseStack, bufferSource, finalLidAngle, packedLight, packedOverlay, StorageTextureManager.ChestMaterial.BASE);
+			subRenderer.renderBottomAndLid(poseStack, bufferSource, lidAngle, packedLight, packedOverlay, StorageTextureManager.ChestMaterial.BASE);
 		}
 		if (hasMainColor) {
 			subRenderer.renderBottomAndLidWithTint(poseStack, bufferSource, lidAngle, packedLight, packedOverlay, storageWrapper.getMainColor(), StorageTextureManager.ChestMaterial.TINTABLE_MAIN);
@@ -130,7 +129,7 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity> {
 			poseStack.pushPose();
 			poseStack.translate(-0.005D, -0.005D, -0.005D);
 			poseStack.scale(1.01f, 1.01f, 1.01f);
-			subRenderer.renderBottomAndLid(poseStack, bufferSource, finalLidAngle, packedLight, packedOverlay, StorageTextureManager.ChestMaterial.PACKED);
+			subRenderer.renderBottomAndLid(poseStack, bufferSource, lidAngle, packedLight, packedOverlay, StorageTextureManager.ChestMaterial.PACKED);
 			poseStack.popPose();
 		} else if (shouldRenderFrontFace(chestEntity.getBlockPos())) {
 			poseStack.pushPose();
@@ -150,7 +149,7 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity> {
 			}
 
 			if (chestEntity.isMainChest()) {
-				renderLocked(chestEntity, poseStack, bufferSource, packedLight, packedOverlay, chestType);
+				renderLocked(chestEntity, poseStack, bufferSource, packedLight, packedOverlay, chestType, lidAngle);
 			}
 			poseStack.popPose();
 
@@ -187,8 +186,13 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity> {
 		displayItemRenderer.renderDisplayItem(poseStack, bufferSource, packedLight, packedOverlay, displayItem);
 	}
 
-	private void renderLocked(ChestBlockEntity chestEntity, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, ChestType chestType) {
+	private void renderLocked(ChestBlockEntity chestEntity, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, ChestType chestType, float lidAngle) {
 		poseStack.pushPose();
+		if (lidAngle > 0) {
+			poseStack.translate(0, 9/16D, 14/16D);
+			poseStack.mulPose(Axis.XP.rotationDegrees(lidAngle * 90));
+			poseStack.translate(0, -9/16D, -14/16D);
+		}
 		if (chestType == ChestType.LEFT) {
 			poseStack.translate(0.5, 0, 0);
 		} else if (chestType == ChestType.RIGHT) {
@@ -233,7 +237,6 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity> {
 			TextureAtlasSprite sprite = tierMaterial.sprite();
 			VertexConsumer translucentConsumer = sprite.wrap(bufferSource.getBuffer(RenderType.entityTranslucent(sprite.atlasLocation())));
 			poseStack.pushPose();
-			//TODO figure out if I need to do special translate / scale here for double chests
 			poseStack.translate(-0.005D, -0.005D, -0.005D);
 			poseStack.scale(1.01f, 1.01f, 1.01f);
 			lidPart.render(poseStack, translucentConsumer, packedLight, packedOverlay, 1.0F, 1.0F, 1.0F, 0.5F);
