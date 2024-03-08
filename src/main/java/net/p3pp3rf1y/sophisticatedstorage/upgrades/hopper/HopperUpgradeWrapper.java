@@ -198,6 +198,11 @@ public class HopperUpgradeWrapper extends UpgradeWrapperBase<HopperUpgradeWrappe
 	}
 
 	public void updateCacheOnSide(Level level, BlockPos pos, Direction direction) {
+		if (!level.isLoaded(pos) || !level.isLoaded(pos.relative(direction))) {
+			handlerCache.remove(direction);
+			return;
+		}
+
 		BlockState storageState = level.getBlockState(pos);
 		BlockPos offsetPos = storageState.getBlock() instanceof StorageBlockBase storageBlock ? storageBlock.getNeighborPos(storageState, pos, direction) : pos.relative(direction);
 		WorldHelper.getLoadedBlockEntity(level, offsetPos).ifPresentOrElse(blockEntity -> {
