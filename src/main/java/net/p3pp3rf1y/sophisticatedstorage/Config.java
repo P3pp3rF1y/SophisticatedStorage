@@ -33,6 +33,8 @@ import java.util.*;
 public class Config {
 	private Config() {}
 
+	private static final String MAX_UPGRADES_MATCHER = "([a-z0-9_]+\\|[a-z0-9_/.-]+\\|\\d+)";
+
 	public static final Client CLIENT;
 	public static final ForgeConfigSpec CLIENT_SPEC;
 
@@ -340,12 +342,13 @@ public class Config {
 		}
 
 		public static class MaxUgradesPerStorageConfig implements IUpgradeCountLimitConfig {
-			private final ForgeConfigSpec.ConfigValue<List<String>> maxUpgradesPerStorageList;
+			private final ForgeConfigSpec.ConfigValue<List<? extends String>> maxUpgradesPerStorageList;
 			@Nullable
 			private Map<String, Map<String, Integer>> maxUpgradesPerStorage = null;
 
 			protected MaxUgradesPerStorageConfig(ForgeConfigSpec.Builder builder, Map<String, Map<String, Integer>> defaultUpgradesPerStorage) {
-				maxUpgradesPerStorageList = builder.comment("Limit of maximum number of upgrades of type per storage in format of \"StorageType|UpgradeRegistryName[or UpgradeGroup]|MaxNumber\"").define("maxUpgradesPerStorage", convertToList(defaultUpgradesPerStorage));
+				maxUpgradesPerStorageList = builder.comment("Limit of maximum number of upgrades of type per storage in format of \"StorageType|UpgradeRegistryName[or UpgradeGroup]|MaxNumber\"")
+						.defineList("maxUpgradesPerStorage", convertToList(defaultUpgradesPerStorage), mapping -> ((String) mapping).matches(MAX_UPGRADES_MATCHER));
 			}
 
 			private List<String> convertToList(Map<String, Map<String, Integer>> defaultUpgradesPerStorage) {
