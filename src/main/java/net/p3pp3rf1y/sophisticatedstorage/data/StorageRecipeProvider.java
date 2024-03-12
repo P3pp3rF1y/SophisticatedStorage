@@ -37,7 +37,8 @@ import java.util.function.Consumer;
 public class StorageRecipeProvider extends RecipeProvider {
 	private static final String HAS_UPGRADE_BASE_CRITERION_NAME = "has_upgrade_base";
 	private static final String HAS_REDSTONE_TORCH_CRITERION_NAME = "has_redstone_torch";
-	private static final String HAS_SMELTING_UPGRADE = "has_smelting_upgrade";
+	private static final String HAS_SMELTING_UPGRADE_CRITERION_NAME = "has_smelting_upgrade";
+	public static final String HAS_BASE_TIER_WOODEN_STORAGE_CRITERION_NAME = "has_base_tier_wooden_storage";
 	private static final String PLANK_SUFFIX = "_plank";
 
 	public StorageRecipeProvider(DataGenerator generator) {
@@ -141,7 +142,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('C', Items.COMPARATOR)
 				.define('P', ItemTags.PLANKS)
 				.define('B', ModBlocks.BASE_TIER_WOODEN_STORAGE_TAG)
-				.unlockedBy("has_base_tier_wooden_storage", has(ModBlocks.BASE_TIER_WOODEN_STORAGE_TAG))
+				.unlockedBy(HAS_BASE_TIER_WOODEN_STORAGE_CRITERION_NAME, has(ModBlocks.BASE_TIER_WOODEN_STORAGE_TAG))
 				.save(consumer);
 
 		ShapelessBasedRecipeBuilder.shapeless(ModBlocks.STORAGE_LINK_ITEM.get(), 3)
@@ -170,6 +171,57 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('R', Items.REDSTONE_TORCH)
 				.unlockedBy(HAS_REDSTONE_TORCH_CRITERION_NAME, has(Items.REDSTONE_TORCH))
 				.save(consumer);
+
+		ShapeBasedRecipeBuilder.shaped(ModBlocks.STORAGE_IO_ITEM.get())
+				.pattern("SPS")
+				.pattern("RBG")
+				.pattern("SPS")
+				.define('S', Tags.Items.STONE)
+				.define('P', ItemTags.PLANKS)
+				.define('R', Items.REPEATER)
+				.define('G', Tags.Items.INGOTS_GOLD)
+				.define('B', ModBlocks.BASE_TIER_WOODEN_STORAGE_TAG)
+				.unlockedBy(HAS_BASE_TIER_WOODEN_STORAGE_CRITERION_NAME, has(ModBlocks.BASE_TIER_WOODEN_STORAGE_TAG))
+				.save(consumer);
+
+		ShapeBasedRecipeBuilder.shaped(ModBlocks.STORAGE_OUTPUT_ITEM.get())
+				.pattern("SGS")
+				.pattern("PBP")
+				.pattern("SRS")
+				.define('S', Tags.Items.STONE)
+				.define('P', ItemTags.PLANKS)
+				.define('R', Items.REPEATER)
+				.define('G', Tags.Items.INGOTS_GOLD)
+				.define('B', ModBlocks.BASE_TIER_WOODEN_STORAGE_TAG)
+				.unlockedBy(HAS_BASE_TIER_WOODEN_STORAGE_CRITERION_NAME, has(ModBlocks.BASE_TIER_WOODEN_STORAGE_TAG))
+				.save(consumer);
+
+		ShapeBasedRecipeBuilder.shaped(ModBlocks.STORAGE_INPUT_ITEM.get())
+				.pattern("SRS")
+				.pattern("PBP")
+				.pattern("SGS")
+				.define('S', Tags.Items.STONE)
+				.define('P', ItemTags.PLANKS)
+				.define('R', Items.REPEATER)
+				.define('G', Tags.Items.INGOTS_GOLD)
+				.define('B', ModBlocks.BASE_TIER_WOODEN_STORAGE_TAG)
+				.unlockedBy(HAS_BASE_TIER_WOODEN_STORAGE_CRITERION_NAME, has(ModBlocks.BASE_TIER_WOODEN_STORAGE_TAG))
+				.save(consumer);
+
+		ShapelessBasedRecipeBuilder.shapeless(ModBlocks.STORAGE_INPUT_ITEM.get())
+				.requires(ModBlocks.STORAGE_IO_ITEM.get())
+				.unlockedBy("has_storage_io", has(ModBlocks.STORAGE_IO_ITEM.get()))
+				.save(consumer, "storage_input_from_io");
+
+		ShapelessBasedRecipeBuilder.shapeless(ModBlocks.STORAGE_OUTPUT_ITEM.get())
+				.requires(ModBlocks.STORAGE_INPUT_ITEM.get())
+				.unlockedBy("has_storage_input", has(ModBlocks.STORAGE_INPUT_ITEM.get()))
+				.save(consumer, "storage_output_from_input");
+
+		ShapelessBasedRecipeBuilder.shapeless(ModBlocks.STORAGE_IO_ITEM.get())
+				.requires(ModBlocks.STORAGE_OUTPUT_ITEM.get())
+				.unlockedBy("has_storage_output", has(ModBlocks.STORAGE_OUTPUT_ITEM.get()))
+				.save(consumer, "storage_io_from_output");
 	}
 
 	private void addShulkerBoxRecipes(Consumer<FinishedRecipe> consumer) {
@@ -555,7 +607,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('R', Tags.Items.DUSTS_REDSTONE)
 				.define('H', Items.HOPPER)
 				.define('S', ModItems.SMELTING_UPGRADE.get())
-				.unlockedBy(HAS_SMELTING_UPGRADE, has(ModItems.SMELTING_UPGRADE.get()))
+				.unlockedBy(HAS_SMELTING_UPGRADE_CRITERION_NAME, has(ModItems.SMELTING_UPGRADE.get()))
 				.save(consumer);
 
 		ShapeBasedRecipeBuilder.shaped(ModItems.CRAFTING_UPGRADE.get())
@@ -678,7 +730,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.pattern(" L ")
 				.define('S', ModItems.SMELTING_UPGRADE.get())
 				.define('L', ItemTags.LOGS)
-				.unlockedBy(HAS_SMELTING_UPGRADE, has(ModItems.SMELTING_UPGRADE.get()))
+				.unlockedBy(HAS_SMELTING_UPGRADE_CRITERION_NAME, has(ModItems.SMELTING_UPGRADE.get()))
 				.save(consumer, SophisticatedStorage.getRL("smoking_upgrade_from_smelting_upgrade"));
 
 		ShapeBasedRecipeBuilder.shaped(ModItems.AUTO_SMOKING_UPGRADE.get(), ModRecipes.UPGRADE_NEXT_TIER_SERIALIZER.get())
@@ -720,7 +772,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('S', ModItems.SMELTING_UPGRADE.get())
 				.define('I', Tags.Items.INGOTS_IRON)
 				.define('T', Items.SMOOTH_STONE)
-				.unlockedBy(HAS_SMELTING_UPGRADE, has(ModItems.SMELTING_UPGRADE.get()))
+				.unlockedBy(HAS_SMELTING_UPGRADE_CRITERION_NAME, has(ModItems.SMELTING_UPGRADE.get()))
 				.save(consumer, SophisticatedStorage.getRL("blasting_upgrade_from_smelting_upgrade"));
 
 		ShapeBasedRecipeBuilder.shaped(ModItems.AUTO_BLASTING_UPGRADE.get(), ModRecipes.UPGRADE_NEXT_TIER_SERIALIZER.get())
