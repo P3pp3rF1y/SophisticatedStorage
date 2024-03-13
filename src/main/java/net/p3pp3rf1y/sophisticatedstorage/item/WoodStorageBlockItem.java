@@ -167,4 +167,12 @@ public class WoodStorageBlockItem extends StorageBlockItem {
 		}
 		return Component.translatable(descriptionId, Component.translatable("wood_name.sophisticatedstorage." + woodType.name().toLowerCase(Locale.ROOT)), " ");
 	}
+
+	public static void setNumberOfInventorySlots(ItemStack storageStack, int numberOfInventorySlots) {
+		NBTHelper.putInt(storageStack.getOrCreateTag(), "numberOfInventorySlots", numberOfInventorySlots);
+	}
+
+	public static  void setNumberOfUpgradeSlots(ItemStack storageStack, int numberOfUpgradeSlots) {
+		NBTHelper.putInt(storageStack.getOrCreateTag(), "numberOfUpgradeSlots", numberOfUpgradeSlots);
+	}
 }
