@@ -54,7 +54,10 @@ public class ControllerBlock extends BlockBase implements ISneakItemInteractionB
 	@Override
 	public void setPlacedBy(Level pLevel, BlockPos pPos, BlockState pState, @Nullable LivingEntity pPlacer, ItemStack pStack) {
 		super.setPlacedBy(pLevel, pPos, pState, pPlacer, pStack);
-		WorldHelper.getBlockEntity(pLevel, pPos, ControllerBlockEntity.class).ifPresent(ControllerBlockEntityBase::searchAndAddStorages);
+		if (pLevel.isClientSide()) {
+			return;
+		}
+		WorldHelper.getBlockEntity(pLevel, pPos, ControllerBlockEntity.class).ifPresent(ControllerBlockEntityBase::searchAndAddBoundables);
 	}
 
 	@SuppressWarnings("deprecation")

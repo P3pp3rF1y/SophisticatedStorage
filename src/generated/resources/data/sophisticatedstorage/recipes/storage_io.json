@@ -1,0 +1,34 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:storage_io"
+    }
+  ],
+  "key": {
+    "B": {
+      "tag": "sophisticatedstorage:base_tier_wooden_storage"
+    },
+    "G": {
+      "tag": "forge:ingots/gold"
+    },
+    "P": {
+      "tag": "minecraft:planks"
+    },
+    "R": {
+      "item": "minecraft:repeater"
+    },
+    "S": {
+      "tag": "forge:stone"
+    }
+  },
+  "pattern": [
+    "SPS",
+    "RBG",
+    "SPS"
+  ],
+  "result": {
+    "item": "sophisticatedstorage:storage_io"
+  }
+}

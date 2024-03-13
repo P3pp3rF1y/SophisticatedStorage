@@ -1,0 +1,7 @@
+{
+    "variants": {
+        "": {
+            "model": "sophisticatedstorage:block/storage_io"
+        }
+    }
+}

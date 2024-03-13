@@ -19,6 +19,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
@@ -162,7 +163,7 @@ public class ModBlocks {
 
 	private static final String CHEST_REG_NAME = "chest";
 	public static final RegistryObject<ChestBlock> CHEST = BLOCKS.register(CHEST_REG_NAME, () -> new ChestBlock(Config.SERVER.woodChest.inventorySlotCount, Config.SERVER.woodChest.upgradeSlotCount));
-    public static final RegistryObject<ChestBlock> COPPER_CHEST = BLOCKS.register("copper_chest", () -> new ChestBlock(Config.SERVER.copperChest.inventorySlotCount::get, Config.SERVER.copperChest.upgradeSlotCount::get));
+    public static final RegistryObject<ChestBlock> COPPER_CHEST = BLOCKS.register("copper_chest", () -> new ChestBlock(Config.SERVER.copperChest.inventorySlotCount, Config.SERVER.copperChest.upgradeSlotCount));
 	public static final RegistryObject<ChestBlock> IRON_CHEST = BLOCKS.register("iron_chest", () -> new ChestBlock(Config.SERVER.ironChest.inventorySlotCount, Config.SERVER.ironChest.upgradeSlotCount));
 	public static final RegistryObject<ChestBlock> GOLD_CHEST = BLOCKS.register("gold_chest", () -> new ChestBlock(Config.SERVER.goldChest.inventorySlotCount, Config.SERVER.goldChest.upgradeSlotCount));
 	public static final RegistryObject<ChestBlock> DIAMOND_CHEST = BLOCKS.register("diamond_chest", () -> new ChestBlock(Config.SERVER.diamondChest.inventorySlotCount, Config.SERVER.diamondChest.upgradeSlotCount));
@@ -176,7 +177,7 @@ public class ModBlocks {
 
 	private static final String SHULKER_BOX_REG_NAME = "shulker_box";
 	public static final RegistryObject<ShulkerBoxBlock> SHULKER_BOX = BLOCKS.register(SHULKER_BOX_REG_NAME, () -> new ShulkerBoxBlock(Config.SERVER.shulkerBox.inventorySlotCount, Config.SERVER.shulkerBox.upgradeSlotCount));
-    public static final RegistryObject<ShulkerBoxBlock> COPPER_SHULKER_BOX = BLOCKS.register("copper_shulker_box", () -> new ShulkerBoxBlock(Config.SERVER.copperShulkerBox.inventorySlotCount::get, Config.SERVER.copperShulkerBox.upgradeSlotCount::get));
+    public static final RegistryObject<ShulkerBoxBlock> COPPER_SHULKER_BOX = BLOCKS.register("copper_shulker_box", () -> new ShulkerBoxBlock(Config.SERVER.copperShulkerBox.inventorySlotCount, Config.SERVER.copperShulkerBox.upgradeSlotCount));
 	public static final RegistryObject<ShulkerBoxBlock> IRON_SHULKER_BOX = BLOCKS.register("iron_shulker_box", () -> new ShulkerBoxBlock(Config.SERVER.ironShulkerBox.inventorySlotCount, Config.SERVER.ironShulkerBox.upgradeSlotCount));
 	public static final RegistryObject<ShulkerBoxBlock> GOLD_SHULKER_BOX = BLOCKS.register("gold_shulker_box", () -> new ShulkerBoxBlock(Config.SERVER.goldShulkerBox.inventorySlotCount, Config.SERVER.goldShulkerBox.upgradeSlotCount));
 	public static final RegistryObject<ShulkerBoxBlock> DIAMOND_SHULKER_BOX = BLOCKS.register("diamond_shulker_box", () -> new ShulkerBoxBlock(Config.SERVER.diamondShulkerBox.inventorySlotCount, Config.SERVER.diamondShulkerBox.upgradeSlotCount));
@@ -194,6 +195,26 @@ public class ModBlocks {
 	public static final RegistryObject<StorageLinkBlock> STORAGE_LINK = BLOCKS.register(STORAGE_LINK_REG_NAME, StorageLinkBlock::new);
 	public static final RegistryObject<BlockItem> CONTROLLER_ITEM = ITEMS.register(CONTROLLER_REG_NAME, () -> new BlockItemBase(CONTROLLER.get(), new Item.Properties()));
 	public static final RegistryObject<BlockItem> STORAGE_LINK_ITEM = ITEMS.register(STORAGE_LINK_REG_NAME, () -> new BlockItemBase(STORAGE_LINK.get(), new Item.Properties()));
+	public static final String STORAGE_IO_REG_NAME = "storage_io";
+	public static final RegistryObject<StorageIOBlock> STORAGE_IO = BLOCKS.register(STORAGE_IO_REG_NAME, StorageIOBlock::new);
+	public static final String STORAGE_INPUT_REG_NAME = "storage_input";
+	public static final RegistryObject<StorageIOBlock> STORAGE_INPUT = BLOCKS.register(STORAGE_INPUT_REG_NAME, () -> new StorageIOBlock() {
+		@Override
+		public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+			return new StorageInputBlockEntity(pos, state);
+		}
+	});
+	public static final String STORAGE_OUTPUT_REG_NAME = "storage_output";
+	public static final RegistryObject<StorageIOBlock> STORAGE_OUTPUT = BLOCKS.register(STORAGE_OUTPUT_REG_NAME, () -> new StorageIOBlock() {
+		@Override
+		public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+			return new StorageOutputBlockEntity(pos, state);
+		}
+	});
+
+	public static final RegistryObject<BlockItem> STORAGE_IO_ITEM = ITEMS.register(STORAGE_IO_REG_NAME, () -> new BlockItemBase(STORAGE_IO.get(), new Item.Properties()));
+	public static final RegistryObject<BlockItem> STORAGE_INPUT_ITEM = ITEMS.register(STORAGE_INPUT_REG_NAME, () -> new BlockItemBase(STORAGE_INPUT.get(), new Item.Properties()));
+	public static final RegistryObject<BlockItem> STORAGE_OUTPUT_ITEM = ITEMS.register(STORAGE_OUTPUT_REG_NAME, () -> new BlockItemBase(STORAGE_OUTPUT.get(), new Item.Properties()));
 
 	@SuppressWarnings("ConstantConditions") //no datafixer type needed
 	public static final RegistryObject<BlockEntityType<BarrelBlockEntity>> BARREL_BLOCK_ENTITY_TYPE = BLOCK_ENTITY_TYPES.register(BARREL_REG_NAME, () ->
@@ -228,6 +249,21 @@ public class ModBlocks {
 	@SuppressWarnings("ConstantConditions") //no datafixer type needed
 	public static final RegistryObject<BlockEntityType<StorageLinkBlockEntity>> STORAGE_LINK_BLOCK_ENTITY_TYPE = BLOCK_ENTITY_TYPES.register(STORAGE_LINK_REG_NAME, () ->
 			BlockEntityType.Builder.of(StorageLinkBlockEntity::new, STORAGE_LINK.get())
+					.build(null));
+
+	@SuppressWarnings("ConstantConditions") //no datafixer type needed
+	public static final RegistryObject<BlockEntityType<StorageIOBlockEntity>> STORAGE_IO_BLOCK_ENTITY_TYPE = BLOCK_ENTITY_TYPES.register(STORAGE_IO_REG_NAME, () ->
+			BlockEntityType.Builder.of(StorageIOBlockEntity::new, STORAGE_IO.get())
+					.build(null));
+
+	@SuppressWarnings("ConstantConditions") //no datafixer type needed
+	public static final RegistryObject<BlockEntityType<StorageInputBlockEntity>> STORAGE_INPUT_BLOCK_ENTITY_TYPE = BLOCK_ENTITY_TYPES.register(STORAGE_INPUT_REG_NAME, () ->
+			BlockEntityType.Builder.of(StorageInputBlockEntity::new, STORAGE_INPUT.get())
+					.build(null));
+
+	@SuppressWarnings("ConstantConditions") //no datafixer type needed
+	public static final RegistryObject<BlockEntityType<StorageOutputBlockEntity>> STORAGE_OUTPUT_BLOCK_ENTITY_TYPE = BLOCK_ENTITY_TYPES.register(STORAGE_OUTPUT_REG_NAME, () ->
+			BlockEntityType.Builder.of(StorageOutputBlockEntity::new, STORAGE_OUTPUT.get())
 					.build(null));
 
 	public static final RegistryObject<MenuType<StorageContainerMenu>> STORAGE_CONTAINER_TYPE = MENU_TYPES.register("storage",

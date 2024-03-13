@@ -7,6 +7,9 @@
     "sophisticatedstorage:diamond_shulker_box",
     "sophisticatedstorage:netherite_shulker_box",
     "sophisticatedstorage:controller",
-    "sophisticatedstorage:storage_link"
+    "sophisticatedstorage:storage_link",
+    "sophisticatedstorage:storage_io",
+    "sophisticatedstorage:storage_input",
+    "sophisticatedstorage:storage_output"
   ]
 }

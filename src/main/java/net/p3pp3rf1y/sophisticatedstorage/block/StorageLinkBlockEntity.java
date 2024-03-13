@@ -6,6 +6,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.p3pp3rf1y.sophisticatedcore.controller.ControllerBlockEntityBase;
 import net.p3pp3rf1y.sophisticatedcore.controller.ILinkable;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 
@@ -56,6 +57,21 @@ public class StorageLinkBlockEntity extends BlockEntity implements ILinkable {
 	@Override
 	public boolean canConnectStorages() {
 		return true;
+	}
+
+	@Override
+	public boolean canBeConnected() {
+		return false;
+	}
+
+	@Override
+	public void registerController(ControllerBlockEntityBase controllerBlockEntity) {
+		setControllerPos(controllerBlockEntity.getBlockPos());
+	}
+
+	@Override
+	public void unregisterController() {
+		removeControllerPos();
 	}
 
 	@Override

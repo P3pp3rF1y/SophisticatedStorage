@@ -28,7 +28,8 @@ public class BlockTagProvider extends BlockTagsProvider {
 				ModBlocks.CHEST.get(), ModBlocks.COPPER_CHEST.get(), ModBlocks.IRON_CHEST.get(), ModBlocks.GOLD_CHEST.get(), ModBlocks.DIAMOND_CHEST.get(), ModBlocks.NETHERITE_CHEST.get()
 		);
 		tag(BlockTags.MINEABLE_WITH_PICKAXE).add(
-				ModBlocks.SHULKER_BOX.get(), ModBlocks.COPPER_SHULKER_BOX.get(), ModBlocks.IRON_SHULKER_BOX.get(), ModBlocks.GOLD_SHULKER_BOX.get(), ModBlocks.DIAMOND_SHULKER_BOX.get(), ModBlocks.NETHERITE_SHULKER_BOX.get(), ModBlocks.CONTROLLER.get(), ModBlocks.STORAGE_LINK.get()
+				ModBlocks.SHULKER_BOX.get(), ModBlocks.COPPER_SHULKER_BOX.get(), ModBlocks.IRON_SHULKER_BOX.get(), ModBlocks.GOLD_SHULKER_BOX.get(), ModBlocks.DIAMOND_SHULKER_BOX.get(), ModBlocks.NETHERITE_SHULKER_BOX.get(),
+				ModBlocks.CONTROLLER.get(), ModBlocks.STORAGE_LINK.get(), ModBlocks.STORAGE_IO.get(), ModBlocks.STORAGE_INPUT.get(), ModBlocks.STORAGE_OUTPUT.get()
 		);
 		tag(BlockTags.GUARDED_BY_PIGLINS).add(
 				ModBlocks.BARREL.get(), ModBlocks.COPPER_BARREL.get(), ModBlocks.IRON_BARREL.get(), ModBlocks.GOLD_BARREL.get(), ModBlocks.DIAMOND_BARREL.get(), ModBlocks.NETHERITE_BARREL.get(),

@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:storage_input"
+    }
+  ],
+  "ingredients": [
+    {
+      "item": "sophisticatedstorage:storage_io"
+    }
+  ],
+  "result": {
+    "item": "sophisticatedstorage:storage_input"
+  }
+}
