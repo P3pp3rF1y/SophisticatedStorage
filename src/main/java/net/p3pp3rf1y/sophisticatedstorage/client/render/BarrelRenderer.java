@@ -3,6 +3,7 @@ package net.p3pp3rf1y.sophisticatedstorage.client.render;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
@@ -23,25 +24,27 @@ public class BarrelRenderer<T extends BarrelBlockEntity> extends StorageRenderer
 
 	@Override
 	public void render(T blockEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
-		boolean flatTop = Boolean.TRUE.equals(blockEntity.getBlockState().getValue(BarrelBlock.FLAT_TOP));
-		if (blockEntity.isPacked()) {
+		BlockState blockState = blockEntity.getBlockState();
+		boolean flatTop = Boolean.TRUE.equals(blockState.getValue(BarrelBlock.FLAT_TOP));
+		if (blockEntity.isPacked() || !(blockState.getBlock() instanceof BarrelBlock storageBlock)) {
 			return;
 		}
 
-		renderFrontFace(blockEntity, poseStack, bufferSource, packedLight, packedOverlay, flatTop);
+		packedLight = LevelRenderer.getLightColor(blockEntity.getLevel(), blockEntity.getBlockPos().relative(storageBlock.getFacing(blockState)));
+
+		renderFrontFace(blockEntity, poseStack, bufferSource, packedLight, packedOverlay, flatTop, blockState);
 		renderHiddenTier(blockEntity, poseStack, bufferSource, packedLight, packedOverlay);
 		renderHiddenLock(blockEntity, poseStack, bufferSource, packedLight, packedOverlay);
 	}
 
-	private void renderFrontFace(T blockEntity, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, boolean flatTop) {
+	private void renderFrontFace(T blockEntity, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, boolean flatTop, BlockState blockState) {
 		if ((!blockEntity.hasDynamicRenderer() && !holdsItemThatShowsUpgrades() && !blockEntity.shouldShowUpgrades())) {
 			return;
 		}
 
-		BlockState blockState = blockEntity.getBlockState();
-		Direction facing = blockState.getValue(BarrelBlock.FACING);
-
 		poseStack.pushPose();
+
+		Direction facing = blockState.getValue(BarrelBlock.FACING);
 
 		poseStack.translate(0.5, 0.5, 0.5);
 		poseStack.mulPose(DisplayItemRenderer.getNorthBasedRotation(facing));
