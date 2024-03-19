@@ -12,12 +12,7 @@ import com.mojang.math.Transformation;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.block.model.BlockModel;
-import net.minecraft.client.renderer.block.model.FaceBakery;
-import net.minecraft.client.renderer.block.model.ItemOverrides;
-import net.minecraft.client.renderer.block.model.ItemTransform;
-import net.minecraft.client.renderer.block.model.ItemTransforms;
+import net.minecraft.client.renderer.block.model.*;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
@@ -31,10 +26,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.inventory.InventoryMenu;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemDisplayContext;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
+import net.minecraft.world.item.*;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -65,15 +57,7 @@ import org.joml.Vector3f;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -189,12 +173,12 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 
 	@Override
 	public ChunkRenderTypeSet getRenderTypes(BlockState state, RandomSource rand, ModelData data) {
-		return ChunkRenderTypeSet.of(RenderType.cutout());
+		return ChunkRenderTypeSet.of(RenderType.cutout(), RenderType.translucent());
 	}
 
 	@Override
 	public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, RandomSource rand, ModelData extraData, @Nullable RenderType renderType) {
-		int hash = createHash(state, side, extraData);
+		int hash = createHash(state, side, extraData, renderType);
 		List<BakedQuad> quads = BAKED_QUADS_CACHE.getIfPresent(hash);
 		if (quads != null) {
 			return quads;
@@ -241,7 +225,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 
 		addTintableModelQuads(state, side, rand, ret, hasMainColor, hasAccentColor, modelParts, renderType);
 
-		if (isBakedDynamically) {
+		if (isBakedDynamically && (renderType == null || renderType == RenderType.cutout())) {
 			bakeAndAddDynamicQuads(getSpriteSide(state, side), rand, woodName, materials, rendersUsingSplitModel,
 					!hasMainColor || materialModelParts.contains(BarrelMaterial.MaterialModelPart.CORE), !hasAccentColor || materialModelParts.contains(BarrelMaterial.MaterialModelPart.TRIM))
 					.forEach(bakedModel -> ret.addAll(bakedModel.getQuads(state, side, rand, ModelData.EMPTY, renderType)));
@@ -257,7 +241,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 			if (showsLocked(extraData)) {
 				addPartQuads(state, side, rand, ret, modelParts, BarrelModelPart.LOCKED, renderType);
 			}
-			addDisplayItemQuads(state, side, rand, ret, extraData);
+			addDisplayItemQuads(state, side, rand, ret, extraData, renderType);
 		}
 
 		BAKED_QUADS_CACHE.put(hash, ret);
@@ -381,10 +365,10 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 		return extraData.has(SHOWS_TIER) && Boolean.TRUE.equals(extraData.get(SHOWS_TIER));
 	}
 
-	private int createHash(@Nullable BlockState state, @Nullable Direction side, ModelData data) {
+	private int createHash(@Nullable BlockState state, @Nullable Direction side, ModelData data, RenderType renderType) {
 		int hash;
 		if (state != null) {
-			hash = getInWorldBlockHash(state, data);
+			hash = getInWorldBlockHash(state, data, renderType);
 		} else {
 			hash = getItemBlockHash();
 		}
@@ -405,9 +389,10 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 		return hash;
 	}
 
-	protected int getInWorldBlockHash(BlockState state, ModelData data) {
+	protected int getInWorldBlockHash(BlockState state, ModelData data, @Nullable RenderType renderType) {
 		int hash = state.getBlock().hashCode();
 
+		hash = hash * 31 + (renderType == null ? 0 : renderType.hashCode());
 		//noinspection ConstantConditions
 		hash = hash * 31 + (data.has(WOOD_NAME) ? data.get(WOOD_NAME).hashCode() + 1 : 0);
 		hash = hash * 31 + (data.has(HAS_MAIN_COLOR) && Boolean.TRUE.equals(data.get(HAS_MAIN_COLOR)) ? 1 : 0);
@@ -446,7 +431,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 		return hash;
 	}
 
-	private void addDisplayItemQuads(@Nullable BlockState state, @Nullable Direction side, RandomSource rand, List<BakedQuad> ret, ModelData data) {
+	private void addDisplayItemQuads(@Nullable BlockState state, @Nullable Direction side, RandomSource rand, List<BakedQuad> ret, ModelData data, @Nullable RenderType renderType) {
 		if (state == null || side != null || !(state.getBlock() instanceof BarrelBlock barrelBlock)) {
 			return;
 		}
@@ -467,7 +452,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 				}
 
 				BakedModel model = itemRenderer.getModel(item, null, minecraft.player, 0);
-				if (!model.isCustomRenderer()) {
+				if (!model.isCustomRenderer() && shouldRenderForRenderType(item, renderType, model)) {
 					int rotation = displayItem.getRotation();
 					for (Direction face : Direction.values()) {
 						addRenderedItemSide(state, rand, ret, item, model, rotation, face, index, barrelBlock.getDisplayItemsCount(displayItems));
@@ -479,6 +464,22 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 		}
 
 		addInaccessibleSlotsQuads(state, rand, ret, data, barrelBlock, displayItems, minecraft);
+	}
+
+	private static boolean shouldRenderForRenderType(ItemStack item, @Nullable RenderType renderType, BakedModel model) {
+		ClientLevel clientLevel = Minecraft.getInstance().level;
+		if (renderType == null || clientLevel == null) {
+			return true;
+		}
+
+		if (item.getItem() instanceof BlockItem blockItem) {
+			ChunkRenderTypeSet renderTypes = model.getRenderTypes(blockItem.getBlock().defaultBlockState(), clientLevel.getRandom(), ModelData.EMPTY);
+			if (renderTypes.contains(RenderType.translucent())) {
+				return renderType == RenderType.translucent() || renderTypes.asList().size() > 1;
+			}
+		}
+
+		return renderType != RenderType.translucent();
 	}
 
 	private void addInaccessibleSlotsQuads(BlockState state, RandomSource rand, List<BakedQuad> ret, ModelData data, BarrelBlock barrelBlock,
@@ -596,6 +597,10 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 
 	private void addTintableModelQuads(@Nullable BlockState state, @Nullable Direction side, RandomSource rand, List<BakedQuad> ret, boolean hasMainColor,
 			boolean hasAccentColor, Map<BarrelModelPart, BakedModel> modelParts, @Nullable RenderType renderType) {
+		if (renderType != null && renderType != RenderType.cutout()) {
+			return;
+		}
+
 		if (hasAccentColor) {
 			addPartQuads(state, side, rand, ret, modelParts, BarrelModelPart.TINTABLE_ACCENT, renderType);
 		}
@@ -613,6 +618,10 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 
 	private void addPartQuads(@Nullable BlockState state, @Nullable Direction side, RandomSource rand, List<BakedQuad> ret,
 			Map<BarrelModelPart, BakedModel> modelParts, BarrelModelPart part, @Nullable RenderType renderType) {
+		if (renderType != null && renderType != RenderType.cutout()) {
+			return;
+		}
+
 		if (modelParts.containsKey(part)) {
 			ret.addAll(modelParts.getOrDefault(part, Minecraft.getInstance().getModelManager().getMissingModel()).getQuads(state, side, rand, ModelData.EMPTY, renderType));
 		}
@@ -634,7 +643,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 
 	@Override
 	public boolean useAmbientOcclusion() {
-		return false; //because occlusion calculation makes display item dark on faces that are exposed to light
+		return true;
 	}
 
 	@Override

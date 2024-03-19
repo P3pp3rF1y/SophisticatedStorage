@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -17,11 +18,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.p3pp3rf1y.sophisticatedcore.util.CountAbbreviator;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
-import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlock;
-import net.p3pp3rf1y.sophisticatedstorage.block.LimitedBarrelBlock;
-import net.p3pp3rf1y.sophisticatedstorage.block.LimitedBarrelBlockEntity;
-import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockBase;
-import net.p3pp3rf1y.sophisticatedstorage.block.VerticalFacing;
+import net.p3pp3rf1y.sophisticatedstorage.block.*;
 import org.joml.Vector3f;
 
 import java.util.List;
@@ -40,14 +37,16 @@ public class LimitedBarrelRenderer extends BarrelRenderer<LimitedBarrelBlockEnti
 	@Override
 	public void render(LimitedBarrelBlockEntity blockEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
 		BlockState blockState = blockEntity.getBlockState();
-		if (blockEntity.isPacked() || !(blockState.getBlock() instanceof StorageBlockBase)
+		if (blockEntity.isPacked() || !(blockState.getBlock() instanceof StorageBlockBase storageBlock)
 				|| (!blockEntity.hasDynamicRenderer() && !blockEntity.shouldShowCounts() && !holdsItemThatShowsUpgrades() && !blockEntity.shouldShowUpgrades())) {
 			return;
 		}
 		boolean flatTop = blockState.getValue(BarrelBlock.FLAT_TOP);
 
 		Direction horizontalFacing = blockState.getValue(LimitedBarrelBlock.HORIZONTAL_FACING);
-		renderItemCounts(blockEntity, poseStack, bufferSource, packedLight, flatTop, horizontalFacing, blockState.getValue(LimitedBarrelBlock.VERTICAL_FACING));
+		renderItemCounts(blockEntity, poseStack, bufferSource, flatTop, horizontalFacing, blockState.getValue(LimitedBarrelBlock.VERTICAL_FACING));
+
+		packedLight = LevelRenderer.getLightColor(blockEntity.getLevel(), blockEntity.getBlockPos().relative(storageBlock.getFacing(blockState)));
 
 		renderFrontFace(blockEntity, poseStack, bufferSource, packedLight, packedOverlay, blockState, flatTop, horizontalFacing);
 		renderHiddenTier(blockEntity, poseStack, bufferSource, packedLight, packedOverlay);
@@ -129,10 +128,12 @@ public class LimitedBarrelRenderer extends BarrelRenderer<LimitedBarrelBlockEnti
 		}
 	}
 
-	private void renderItemCounts(LimitedBarrelBlockEntity blockEntity, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, boolean flatTop, Direction horizontalFacing, VerticalFacing verticalFacing) {
+	private void renderItemCounts(LimitedBarrelBlockEntity blockEntity, PoseStack poseStack, MultiBufferSource bufferSource, boolean flatTop, Direction horizontalFacing, VerticalFacing verticalFacing) {
 		if (!blockEntity.shouldShowCounts()) {
 			return;
 		}
+
+		int packedLight = LevelRenderer.getLightColor(blockEntity.getLevel(), blockEntity.getBlockPos().relative(verticalFacing != VerticalFacing.NO ? verticalFacing.getDirection() : horizontalFacing));
 
 		poseStack.pushPose();
 
