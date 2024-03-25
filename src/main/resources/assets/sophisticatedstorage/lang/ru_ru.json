@@ -167,7 +167,7 @@
     "item.sophisticatedstorage.xp_pump_upgrade": "Улучшение «Помпа опыта»",
     "item.sophisticatedstorage.xp_pump_upgrade.tooltip": "Перекачивает опыт между баком от соответствующего улучшения и игроком",
     "item.sophisticatedstorage.advanced_pump_upgrade": "Продвиутое улучшение «Помпа»",
-    "item.sophisticatedstorage.advanced_pump_upgrade.tooltip": "Перекачивает жидкости между баком от соответствующего улучшения и прилегающими блоками.\nРаботает с резервуарами в руке и разлитыми на земле жидкостями.\nПозволяет фильтровать перекачиваемые жидкости",
+    "item.sophisticatedstorage.advanced_pump_upgrade.tooltip": "Перекачивает жидкости между баком от соответствующего улучшения и прилегающими блоками.\nРаботает с резервуарами в руке и разлитыми в мире жидкостями.\nПозволяет фильтровать перекачиваемые жидкости",
     "item.sophisticatedstorage.compression_upgrade": "Улучшение «Уплотнение»",
     "item.sophisticatedstorage.compression_upgrade.tooltip": "Предварительно сжимает/разжимает предметы",
     "item.sophisticatedstorage.hopper_upgrade": "Улучшение «Воронка»",
