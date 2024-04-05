@@ -166,6 +166,7 @@ public class Config {
 		private void clearCache() {
 			stackUpgrade.clearNonStackableItems();
 			maxUpgradesPerStorage.clearCache();
+			compressionUpgrade.clearCache();
 		}
 
 		public Server(ForgeConfigSpec.Builder builder) {
