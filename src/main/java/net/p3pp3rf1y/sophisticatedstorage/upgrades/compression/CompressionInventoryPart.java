@@ -17,12 +17,7 @@ import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import org.apache.commons.lang3.function.TriFunction;
 
 import javax.annotation.Nullable;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
@@ -39,6 +34,8 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 	private final InventoryHandler parent;
 	private final InventoryPartitioner.SlotRange slotRange;
 	private final Supplier<MemorySettingsCategory> getMemorySettings;
+	@SuppressWarnings("FieldCanBeLocal") //need field instead of local variable because it's wrapped in WeakReference in RecipeHelper
+	private final Runnable recipeChangeListener = () -> calculateStacks(false);
 
 	private Map<Integer, SlotDefinition> slotDefinitions = new HashMap<>();
 	private final Map<Integer, ItemStack> calculatedStacks = new HashMap<>();
@@ -47,6 +44,8 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 		this.parent = parent;
 		this.slotRange = slotRange;
 		this.getMemorySettings = getMemorySettings;
+
+		RecipeHelper.addRecipeChangeListener(recipeChangeListener);
 	}
 
 	@Override
@@ -75,6 +74,7 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 			parent.initFilterItems();
 		} else {
 			parent.onFilterItemsChanged();
+			slotDefinitions.forEach((slot, definition) -> parent.triggerOnChangeListeners(slot));
 		}
 	}
 
