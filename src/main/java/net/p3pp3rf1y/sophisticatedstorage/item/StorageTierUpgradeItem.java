@@ -230,13 +230,16 @@ public class StorageTierUpgradeItem extends ItemBase {
 			BlockState otherState;
 			if (state.getBlock() instanceof net.minecraft.world.level.block.ChestBlock) {
 				otherState = level.getBlockState(pos.relative(net.minecraft.world.level.block.ChestBlock.getConnectedDirection(state)));
+				if (otherState.getBlock() != state.getBlock()) {
+					otherState = null;
+				}
 			} else {
 				otherState = null;
 			}
 
 			StorageBlockEntity upgradedBe = upgradeStorage(pos, level, state, be);
 			upgradedBe.tryToAddToController();
-			if (otherState.getValue(net.minecraft.world.level.block.ChestBlock.TYPE) != ChestType.SINGLE && state.getBlock() instanceof net.minecraft.world.level.block.ChestBlock) {
+			if (otherState != null && otherState.getValue(net.minecraft.world.level.block.ChestBlock.TYPE) != ChestType.SINGLE && state.getBlock() instanceof net.minecraft.world.level.block.ChestBlock) {
 				BlockPos otherPos = pos.relative(net.minecraft.world.level.block.ChestBlock.getConnectedDirection(state));
 				B otherBE = WorldHelper.getBlockEntity(level, otherPos, blockEntityClass()).orElse(null);
 				if (otherBE == null) {
