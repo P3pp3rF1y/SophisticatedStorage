@@ -13,6 +13,7 @@ import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
+import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
 
 import javax.annotation.Nonnull;
@@ -71,7 +72,7 @@ public abstract class WoodStorageBlockEntity extends StorageBlockEntity {
 		return makeWoodStorageDescriptionId(getWoodType().orElse(null));
 	}
 
-	private Component makeWoodStorageDescriptionId(WoodType wt) {
+	private Component makeWoodStorageDescriptionId(@Nullable WoodType wt) {
 		String id = Util.makeDescriptionId("block", Objects.requireNonNull(ForgeRegistries.BLOCKS.getKey(getBlockState().getBlock())));
 		return WoodStorageBlockItem.getDisplayName(id, wt);
 	}
@@ -86,7 +87,7 @@ public abstract class WoodStorageBlockEntity extends StorageBlockEntity {
 
 	@Override
 	public boolean shouldDropContents() {
-		return !isPacked();
+		return !isPacked() && !Config.COMMON.dropPacked.get();
 	}
 
 	@Nonnull
