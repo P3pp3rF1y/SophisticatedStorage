@@ -28,6 +28,7 @@ import net.p3pp3rf1y.sophisticatedcore.util.RegistryHelper;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.WoodStorageBlockBase;
 import net.p3pp3rf1y.sophisticatedstorage.compat.chipped.ChippedCompat;
+import net.p3pp3rf1y.sophisticatedstorage.crafting.DropPackedDisabledCondition;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
@@ -63,6 +64,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.requires(Tags.Items.SLIMEBALLS)
 				.requires(Items.PAPER)
 				.unlockedBy("has_slime", has(Tags.Items.SLIMEBALLS))
+				.condition(new DropPackedDisabledCondition())
 				.save(consumer);
 	}
 

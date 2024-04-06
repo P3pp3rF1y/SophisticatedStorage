@@ -6,6 +6,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.data.BlockFamilies;
 import net.minecraft.data.BlockFamily;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -18,6 +19,7 @@ import net.minecraft.world.level.block.state.properties.WoodType;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.p3pp3rf1y.sophisticatedcore.util.ColorHelper;
+import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
@@ -59,7 +61,7 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 	public void addDropData(ItemStack stack, StorageBlockEntity be) {
 		if (be instanceof WoodStorageBlockEntity wbe) {
 			addNameWoodAndTintData(stack, wbe);
-			if (wbe.isPacked()) {
+			if (wbe.isPacked() || shouldNonEmptyDropPacked(wbe)) {
 				StorageWrapper storageWrapper = be.getStorageWrapper();
 				UUID storageUuid = storageWrapper.getContentsUuid().orElse(UUID.randomUUID());
 				CompoundTag storageContents = wbe.getStorageContentsTag();
@@ -73,6 +75,14 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 				WoodStorageBlockItem.setNumberOfUpgradeSlots(stack, storageWrapper.getUpgradeHandler().getSlots());
 			}
 		}
+	}
+
+	private static boolean shouldNonEmptyDropPacked(WoodStorageBlockEntity wbe) {
+		if (Boolean.FALSE.equals(Config.COMMON.dropPacked.get())) {
+			return false;
+		}
+
+		return !InventoryHelper.isEmpty(wbe.getStorageWrapper().getInventoryHandler()) || !InventoryHelper.isEmpty(wbe.getStorageWrapper().getUpgradeHandler());
 	}
 
 	private void addNameWoodAndTintData(ItemStack stack, WoodStorageBlockEntity wbe) {
@@ -165,7 +175,11 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 	@SuppressWarnings("java:S1172") //parameter is used in override
 	protected boolean tryItemInteraction(Player player, InteractionHand hand, WoodStorageBlockEntity b, ItemStack stackInHand, Direction facing, BlockHitResult hitResult) {
 		if (stackInHand.getItem() == ModItems.PACKING_TAPE.get()) {
-			packStorage(player, hand, b, stackInHand);
+			if (Boolean.TRUE.equals(Config.COMMON.dropPacked.get())) {
+				player.displayClientMessage(Component.translatable("gui.sophisticatedstorage.status.packing_tape_disabled"), true);
+			} else {
+				packStorage(player, hand, b, stackInHand);
+			}
 			return true;
 		}
 		return tryAddUpgrade(player, hand, b, stackInHand, facing, hitResult);

@@ -40,14 +40,31 @@ public class Config {
 
 	public static final Server SERVER;
 	public static final ForgeConfigSpec SERVER_SPEC;
+	public static final Common COMMON;
+	public static final ForgeConfigSpec COMMON_SPEC;
 
 	static {
-		final Pair<Server, ForgeConfigSpec> commonSpec = new ForgeConfigSpec.Builder().configure(Server::new);
-		SERVER_SPEC = commonSpec.getRight();
-		SERVER = commonSpec.getLeft();
+		final Pair<Server, ForgeConfigSpec> serverSpec = new ForgeConfigSpec.Builder().configure(Server::new);
+		SERVER_SPEC = serverSpec.getRight();
+		SERVER = serverSpec.getLeft();
 		final Pair<Client, ForgeConfigSpec> clientSpec = new ForgeConfigSpec.Builder().configure(Client::new);
 		CLIENT_SPEC = clientSpec.getRight();
 		CLIENT = clientSpec.getLeft();
+		final Pair<Common, ForgeConfigSpec> commonSpec = new ForgeConfigSpec.Builder().configure(Common::new);
+		COMMON_SPEC = commonSpec.getRight();
+		COMMON = commonSpec.getLeft();
+	}
+
+	public static class Common {
+		public final ForgeConfigSpec.BooleanValue dropPacked;
+
+		public Common(ForgeConfigSpec.Builder builder) {
+			builder.comment("Common Settings").push("common");
+
+			dropPacked = builder.comment("Determines whether chests / barrels are always dropped as packed with their contents when broken without the need to use packing tape").define("dropPacked", false);
+
+			builder.pop();
+		}
 	}
 
 	public static class Client {

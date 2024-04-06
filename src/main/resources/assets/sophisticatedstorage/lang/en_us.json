@@ -13,6 +13,7 @@
   "itemGroup.sophisticatedstorage": "Sophisticated Storage",
   "item.sophisticatedstorage.packing_tape": "Packing Tape",
   "item.sophisticatedstorage.packing_tape.tooltip": "Remaining uses: %s",
+  "item.sophisticatedstorage.packing_tape.tooltip.disabled": "Disabled - config set to drop all storages as packed",
   "item.sophisticatedstorage.storage_tool": "Storage Tool",
   "item.sophisticatedstorage.storage_tool.tooltip": "Links, locks, hides counts/tiers/locks on storages",
   "item.sophisticatedstorage.storage_tool.tooltip.controls": "Use <%s> to Change Mode",
@@ -232,5 +233,6 @@
   "keybind.sophisticatedstorage.category": "Sophisticated Storage",
   "keybind.sophisticatedstorage.sort": "Sort Storage",
   "gui.sophisticatedstorage.status.too_many_item_entity_drops": "Can't break the %s as it would cause too many (%s) item entities to drop from it\nConsider using %s or break it while sneaking to skip this check",
-  "gui.sophisticatedstorage.status.too_low_tier_upgrade_count": "Upgrading requires %s %ss"
+  "gui.sophisticatedstorage.status.too_low_tier_upgrade_count": "Upgrading requires %s %ss",
+  "gui.sophisticatedstorage.status.packing_tape_disabled": "Config set to drop all storages as packed without the need for packing tape"
 }

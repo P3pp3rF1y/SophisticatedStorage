@@ -16,6 +16,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunctionType;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.common.crafting.CraftingHelper;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.registries.DeferredRegister;
@@ -86,6 +87,7 @@ import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageButtonDefinitions;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageTranslationHelper;
+import net.p3pp3rf1y.sophisticatedstorage.crafting.DropPackedDisabledCondition;
 import net.p3pp3rf1y.sophisticatedstorage.data.CopyStorageDataFunction;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageTierUpgradeItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageToolItem;
@@ -98,10 +100,12 @@ import net.p3pp3rf1y.sophisticatedstorage.upgrades.hopper.HopperUpgradeWrapper;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.IntSupplier;
 
 public class ModItems {
-	private ModItems() {}
+	private ModItems() {
+	}
 
 	public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, SophisticatedStorage.MOD_ID);
 	public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB.location(), SophisticatedStorage.MOD_ID);
@@ -188,14 +192,26 @@ public class ModItems {
 
 	public static final RegistryObject<ItemBase> UPGRADE_BASE = ITEMS.register("upgrade_base", () -> new ItemBase(new Item.Properties().stacksTo(16)));
 
-	public static final RegistryObject<ItemBase> PACKING_TAPE = ITEMS.register("packing_tape", () -> new ItemBase(new Item.Properties().stacksTo(1).durability(8)) {
+	public static final String PACKING_TAPE_NAME = "packing_tape";
+	public static final RegistryObject<ItemBase> PACKING_TAPE = ITEMS.register(PACKING_TAPE_NAME, () -> new ItemBase(new Item.Properties().stacksTo(1).durability(8)) {
 		@Override
 		public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag isAdvanced) {
 			super.appendHoverText(stack, level, tooltip, isAdvanced);
-			tooltip.add(Component.translatable(StorageTranslationHelper.INSTANCE.translItemTooltip("packing_tape"),
-							Component.literal(String.valueOf(getMaxDamage(stack) - getDamage(stack))).withStyle(ChatFormatting.GREEN)
-					).withStyle(ChatFormatting.DARK_GRAY)
-			);
+			if (Boolean.TRUE.equals(Config.COMMON.dropPacked.get())) {
+				tooltip.add(Component.translatable(StorageTranslationHelper.INSTANCE.translItemTooltip(PACKING_TAPE_NAME) + ".disabled").withStyle(ChatFormatting.RED));
+			} else {
+				tooltip.add(Component.translatable(StorageTranslationHelper.INSTANCE.translItemTooltip(PACKING_TAPE_NAME),
+								Component.literal(String.valueOf(getMaxDamage(stack) - getDamage(stack))).withStyle(ChatFormatting.GREEN)
+						).withStyle(ChatFormatting.DARK_GRAY)
+				);
+			}
+		}
+
+		@Override
+		public void addCreativeTabItems(Consumer<ItemStack> itemConsumer) {
+			if (!Boolean.TRUE.equals(Config.COMMON.dropPacked.get())) {
+				super.addCreativeTabItems(itemConsumer);
+			}
 		}
 	});
 	public static final RegistryObject<ItemBase> STORAGE_TOOL = ITEMS.register("storage_tool", StorageToolItem::new);
@@ -217,6 +233,13 @@ public class ModItems {
 		CREATIVE_MODE_TABS.register(modBus);
 		LOOT_FUNCTION_TYPES.register(modBus);
 		modBus.addListener(ModItems::registerContainers);
+		modBus.addListener(ModItems::registerRecipeCondition);
+	}
+
+	private static void registerRecipeCondition(RegisterEvent event) {
+		if (event.getRegistryKey().equals(ForgeRegistries.Keys.RECIPE_SERIALIZERS)) {
+			CraftingHelper.register(DropPackedDisabledCondition.Serializer.INSTANCE);
+		}
 	}
 
 	private static final UpgradeContainerType<PickupUpgradeWrapper, ContentsFilteredUpgradeContainer<PickupUpgradeWrapper>> PICKUP_BASIC_TYPE = new UpgradeContainerType<>(ContentsFilteredUpgradeContainer::new);
