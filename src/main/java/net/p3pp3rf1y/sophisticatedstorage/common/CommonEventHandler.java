@@ -2,12 +2,17 @@ package net.p3pp3rf1y.sophisticatedstorage.common;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.TickTask;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -100,7 +105,8 @@ public class CommonEventHandler {
 		}
 
 		Level level = player.level();
-		WorldHelper.getBlockEntity(level, event.getPos(), WoodStorageBlockEntity.class).ifPresent(wbe -> {
+		BlockPos pos = event.getPos();
+		WorldHelper.getBlockEntity(level, pos, WoodStorageBlockEntity.class).ifPresent(wbe -> {
 			if (wbe.isPacked() || Boolean.TRUE.equals(Config.COMMON.dropPacked.get())) {
 				return;
 			}
@@ -117,11 +123,17 @@ public class CommonEventHandler {
 				event.setCanceled(true);
 				ItemBase packingTapeItem = ModItems.PACKING_TAPE.get();
 				Component packingTapeItemName = packingTapeItem.getName(new ItemStack(packingTapeItem)).copy().withStyle(ChatFormatting.GREEN);
+				BlockState state = event.getState();
 				player.sendSystemMessage(StorageTranslationHelper.INSTANCE.translStatusMessage("too_many_item_entity_drops",
-						event.getState().getBlock().getName().withStyle(ChatFormatting.GREEN),
+						state.getBlock().getCloneItemStack(state, new BlockHitResult(new Vec3(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5), Direction.DOWN, pos, true), level, pos, player).getHoverName().copy().withStyle(ChatFormatting.GREEN),
 						Component.literal(String.valueOf(droppedItemEntityCount.get())).withStyle(ChatFormatting.RED),
 						packingTapeItemName)
 				);
+				if (level instanceof ServerLevel serverLevel) {
+					serverLevel.getServer().tell(new TickTask(serverLevel.getServer().getTickCount(), () ->
+							WorldHelper.notifyBlockUpdate(wbe)
+					));
+				}
 			}
 		});
 	}
