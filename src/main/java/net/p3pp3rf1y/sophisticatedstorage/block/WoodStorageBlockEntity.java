@@ -13,7 +13,6 @@ import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
-import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
 
 import javax.annotation.Nonnull;
@@ -87,7 +86,7 @@ public abstract class WoodStorageBlockEntity extends StorageBlockEntity {
 
 	@Override
 	public boolean shouldDropContents() {
-		return !isPacked() && !Config.COMMON.dropPacked.get();
+		return !isPacked();
 	}
 
 	@Nonnull
