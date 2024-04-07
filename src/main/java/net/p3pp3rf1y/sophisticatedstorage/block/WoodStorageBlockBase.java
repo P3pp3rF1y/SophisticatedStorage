@@ -9,6 +9,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
@@ -170,6 +171,27 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 		WoodStorageBlockItem.getWoodType(stack).ifPresent(be::setWoodType);
 		StorageBlockItem.getMainColorFromStack(stack).ifPresent(be.getStorageWrapper()::setMainColor);
 		StorageBlockItem.getAccentColorFromStack(stack).ifPresent(be.getStorageWrapper()::setAccentColor);
+	}
+
+	@Override
+	public void playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
+		super.playerWillDestroy(level, pos, state, player);
+		WorldHelper.getBlockEntity(level, pos, WoodStorageBlockEntity.class)
+				.ifPresent(wbe -> {
+					if (Boolean.TRUE.equals(Config.COMMON.dropPacked.get())) {
+						wbe.setPacked(true);
+
+						if (player.isCreative() && (
+								!InventoryHelper.isEmpty(wbe.getStorageWrapper().getInventoryHandler()) || !InventoryHelper.isEmpty(wbe.getStorageWrapper().getUpgradeHandler())
+						)) {
+							ItemStack drop = new ItemStack(this);
+							addDropData(drop, wbe);
+							ItemEntity itementity = new ItemEntity(level, pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, drop);
+							itementity.setDefaultPickUpDelay();
+							level.addFreshEntity(itementity);
+						}
+					}
+				});
 	}
 
 	@SuppressWarnings("java:S1172") //parameter is used in override
