@@ -31,6 +31,7 @@ public class SophisticatedStorage {
 	public SophisticatedStorage() {
 		ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, Config.SERVER_SPEC);
 		ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, Config.CLIENT_SPEC);
+		ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.COMMON_SPEC);
 		IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
 		Config.SERVER.initListeners(modBus);
 		commonEventHandler.registerHandlers();

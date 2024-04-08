@@ -2,6 +2,9 @@
   "type": "minecraft:crafting_shapeless",
   "conditions": [
     {
+      "type": "sophisticatedstorage:drop_packed_disabled"
+    },
+    {
       "type": "sophisticatedcore:item_enabled",
       "itemRegistryName": "sophisticatedstorage:packing_tape"
     }
