@@ -182,7 +182,7 @@
     "gui.sophisticatedstorage.upgrades.advanced_hopper": "Продв. воронка",
     "gui.sophisticatedstorage.upgrades.advanced_hopper.tooltip": "Продв. настройки воронки",
     "gui.sophisticatedstorage.error.add.compression_incompatible_items": "Предметы в данных слотах инвентаря не могут быть сжаты из вариантов предыдущего слота",
-    "gui.sophisticatedstorage.error.add.compression_no_space": "Отсутствуют дополнительные слоты инвентаря для работы улучшения «Сжатие»",
+    "gui.sophisticatedstorage.error.add.compression_no_space": "Отсутствуют дополнительные слоты инвентаря для работы улучшения «Уплотнение»",
     "gui.sophisticatedstorage.settings.tooltip": "Общие настройки",
     "gui.sophisticatedstorage.settings.title": "Общие настройки",
     "gui.sophisticatedstorage.settings.storage": "Хранилище",
