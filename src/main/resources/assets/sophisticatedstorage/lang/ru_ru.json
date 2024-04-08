@@ -13,6 +13,7 @@
     "itemGroup.sophisticatedstorage": "Sophisticated Storage",
     "item.sophisticatedstorage.packing_tape": "Упаковочная лента",
     "item.sophisticatedstorage.packing_tape.tooltip": "Осталось использований: %s",
+    "item.sophisticatedstorage.packing_tape.tooltip.disabled": "Отключена - настроена конфигурация на выпадение хранилищ уже упакованными",
     "item.sophisticatedstorage.storage_tool": "Ключ системы хранения",
     "item.sophisticatedstorage.storage_tool.tooltip": "Связывает и блокирует хранилища, а также показывает и скрывает отображаемые элементы",
     "item.sophisticatedstorage.storage_tool.tooltip.controls": "<%s> для смены режима",
@@ -230,5 +231,6 @@
     "keybind.sophisticatedstorage.category": "Sophisticated Storage",
     "keybind.sophisticatedstorage.sort": "Сортировка хранилища",
     "gui.sophisticatedstorage.status.too_many_item_entity_drops": "%s нежелательно ломать из-за слишком большого количества (%s) выбрасываемых предметов-сущностей.\n%s вам в помощь — или ломайте хранилище с зажатым SHIFT для игнорирования предупреждения",
-    "gui.sophisticatedstorage.status.too_low_tier_upgrade_count": "Для повышения уровня необходимы %s %s"
+    "gui.sophisticatedstorage.status.too_low_tier_upgrade_count": "Для повышения уровня необходимы %s %s",
+    "gui.sophisticatedstorage.status.packing_tape_disabled": "Настроена конфигурация на выпадение хранилищ уже упакованными, без нужды в упаковочной ленте"
 }
