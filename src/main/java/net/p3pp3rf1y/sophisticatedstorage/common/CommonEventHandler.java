@@ -1,18 +1,26 @@
 package net.p3pp3rf1y.sophisticatedstorage.common;
 
+import com.google.common.collect.Queues;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.TickTask;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.LogicalSide;
 import net.p3pp3rf1y.sophisticatedcore.network.PacketHandler;
 import net.p3pp3rf1y.sophisticatedcore.network.SyncPlayerSettingsMessage;
 import net.p3pp3rf1y.sophisticatedcore.settings.SettingsManager;
@@ -28,10 +36,14 @@ import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageTranslationHelper;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.settings.StorageSettingsHandler;
 
+import java.util.Iterator;
+import java.util.Queue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class CommonEventHandler {
 	private static final int AVERAGE_MAX_ITEM_ENTITY_DROP_COUNT = 20;
+
+	private final Queue<TickTask> pendingTickTasks = Queues.newConcurrentLinkedQueue();
 
 	public void registerHandlers() {
 		IEventBus eventBus = MinecraftForge.EVENT_BUS;
@@ -41,6 +53,7 @@ public class CommonEventHandler {
 		eventBus.addListener(this::onBlockBreak);
 		eventBus.addListener(this::onLimitedBarrelLeftClicked);
 		eventBus.addListener(this::onSneakItemBlockInteraction);
+		eventBus.addListener(this::onLevelTick);
 	}
 
 	private void onLimitedBarrelLeftClicked(PlayerInteractEvent.LeftClickBlock event) {
@@ -93,6 +106,22 @@ public class CommonEventHandler {
 		sendPlayerSettingsToClient(event.getEntity());
 	}
 
+	private void onLevelTick(TickEvent.LevelTickEvent event) {
+		if (event.side != LogicalSide.SERVER || !(event.level instanceof ServerLevel serverLevel) || pendingTickTasks.isEmpty()) {
+			return;
+		}
+
+		Iterator<TickTask> it = pendingTickTasks.iterator();
+
+		while (it.hasNext()) {
+			TickTask tickTask = it.next();
+			if (tickTask.getTick() <= serverLevel.getServer().getTickCount()) {
+				tickTask.run();
+				it.remove();
+			}
+		}
+	}
+
 	private void onBlockBreak(BlockEvent.BreakEvent event) {
 		Player player = event.getPlayer();
 		if (!(event.getState().getBlock() instanceof WoodStorageBlockBase) || player.isShiftKeyDown()) {
@@ -100,7 +129,8 @@ public class CommonEventHandler {
 		}
 
 		Level level = player.level();
-		WorldHelper.getBlockEntity(level, event.getPos(), WoodStorageBlockEntity.class).ifPresent(wbe -> {
+		BlockPos pos = event.getPos();
+		WorldHelper.getBlockEntity(level, pos, WoodStorageBlockEntity.class).ifPresent(wbe -> {
 			if (wbe.isPacked() || Boolean.TRUE.equals(Config.COMMON.dropPacked.get())) {
 				return;
 			}
@@ -117,11 +147,19 @@ public class CommonEventHandler {
 				event.setCanceled(true);
 				ItemBase packingTapeItem = ModItems.PACKING_TAPE.get();
 				Component packingTapeItemName = packingTapeItem.getName(new ItemStack(packingTapeItem)).copy().withStyle(ChatFormatting.GREEN);
+				BlockState state = event.getState();
 				player.sendSystemMessage(StorageTranslationHelper.INSTANCE.translStatusMessage("too_many_item_entity_drops",
-						event.getState().getBlock().getName().withStyle(ChatFormatting.GREEN),
+						state.getBlock().getCloneItemStack(state, new BlockHitResult(new Vec3(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5), Direction.DOWN, pos, true), level, pos, player).getHoverName().copy().withStyle(ChatFormatting.GREEN),
 						Component.literal(String.valueOf(droppedItemEntityCount.get())).withStyle(ChatFormatting.RED),
 						packingTapeItemName)
 				);
+				if (level instanceof ServerLevel serverLevel) {
+					level.scheduleTick(pos, state.getBlock(), 2);
+					pendingTickTasks.add(new TickTask(serverLevel.getServer().getTickCount() + 2, () -> {
+						wbe.setUpdateBlockRender();
+						WorldHelper.notifyBlockUpdate(wbe);
+					}));
+				}
 			}
 		});
 	}
