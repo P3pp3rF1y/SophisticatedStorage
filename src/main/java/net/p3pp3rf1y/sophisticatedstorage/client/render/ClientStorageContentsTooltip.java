@@ -3,19 +3,20 @@ package net.p3pp3rf1y.sophisticatedstorage.client.render;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.event.level.LevelEvent;
+import net.neoforged.neoforge.event.level.LevelEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
 import net.p3pp3rf1y.sophisticatedcore.client.render.ClientStorageContentsTooltipBase;
-import net.p3pp3rf1y.sophisticatedstorage.item.CapabilityStorageWrapper;
+import net.p3pp3rf1y.sophisticatedstorage.item.StackStorageWrapper;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageContentsTooltip;
-import net.p3pp3rf1y.sophisticatedstorage.network.RequestStorageContentsMessage;
-import net.p3pp3rf1y.sophisticatedstorage.network.StoragePacketHandler;
+import net.p3pp3rf1y.sophisticatedstorage.network.RequestStorageContentsPacket;
 
 import java.util.UUID;
 
 public class ClientStorageContentsTooltip extends ClientStorageContentsTooltipBase {
 	private final ItemStack storageItem;
 
-	@SuppressWarnings("unused") //parameter needs to be there so that addListener logic would know which event this method listens to
+	@SuppressWarnings("unused")
+	//parameter needs to be there so that addListener logic would know which event this method listens to
 	public static void onWorldLoad(LevelEvent.Load event) {
 		refreshContents();
 		lastRequestTime = 0;
@@ -23,7 +24,7 @@ public class ClientStorageContentsTooltip extends ClientStorageContentsTooltipBa
 
 	@Override
 	public void renderImage(Font font, int leftX, int topY, GuiGraphics guiGraphics) {
-		storageItem.getCapability(CapabilityStorageWrapper.getCapabilityInstance()).ifPresent(wrapper -> renderTooltip(wrapper, font, leftX, topY, guiGraphics));
+		renderTooltip(StackStorageWrapper.fromData(storageItem), font, leftX, topY, guiGraphics);
 	}
 
 	public ClientStorageContentsTooltip(StorageContentsTooltip tooltip) {
@@ -32,6 +33,6 @@ public class ClientStorageContentsTooltip extends ClientStorageContentsTooltipBa
 
 	@Override
 	protected void sendInventorySyncRequest(UUID uuid) {
-		StoragePacketHandler.INSTANCE.sendToServer(new RequestStorageContentsMessage(uuid));
+		PacketDistributor.SERVER.noArg().send(new RequestStorageContentsPacket(uuid));
 	}
 }

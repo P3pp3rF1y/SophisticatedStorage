@@ -1,4 +1,10 @@
 {
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:iron_barrel"
+    }
+  ],
   "parent": "minecraft:recipes/root",
   "criteria": {
     "has_copper_barrel": {
@@ -22,14 +28,13 @@
   },
   "requirements": [
     [
-      "has_copper_barrel",
-      "has_the_recipe"
+      "has_the_recipe",
+      "has_copper_barrel"
     ]
   ],
   "rewards": {
     "recipes": [
       "sophisticatedstorage:iron_barrel_from_copper_barrel"
     ]
-  },
-  "sends_telemetry_event": true
+  }
 }

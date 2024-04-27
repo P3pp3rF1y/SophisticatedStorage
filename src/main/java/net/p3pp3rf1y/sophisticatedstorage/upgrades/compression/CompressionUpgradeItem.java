@@ -23,7 +23,7 @@ import java.util.*;
 import java.util.function.Consumer;
 
 public class CompressionUpgradeItem extends UpgradeItemBase<CompressionUpgradeItem.Wrapper> {
-	public static final UpgradeType<CompressionUpgradeItem.Wrapper> TYPE = new UpgradeType<>(CompressionUpgradeItem.Wrapper::new);
+	public static final UpgradeType<Wrapper> TYPE = new UpgradeType<>(Wrapper::new);
 	private static final String FIRST_INVENTORY_SLOT_TAG = "firstInventorySlot";
 	public static final List<UpgradeConflictDefinition> UPGRADE_CONFLICT_DEFINITIONS = List.of(new UpgradeConflictDefinition(CompactingUpgradeItem.class::isInstance, 0, StorageTranslationHelper.INSTANCE.translError("add.compacting_exists")));
 

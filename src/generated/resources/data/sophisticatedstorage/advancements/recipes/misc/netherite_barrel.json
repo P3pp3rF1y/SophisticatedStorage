@@ -1,4 +1,10 @@
 {
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:netherite_barrel"
+    }
+  ],
   "parent": "minecraft:recipes/root",
   "criteria": {
     "has_diamond_barrel": {
@@ -22,14 +28,13 @@
   },
   "requirements": [
     [
-      "has_diamond_barrel",
-      "has_the_recipe"
+      "has_the_recipe",
+      "has_diamond_barrel"
     ]
   ],
   "rewards": {
     "recipes": [
       "sophisticatedstorage:netherite_barrel"
     ]
-  },
-  "sends_telemetry_event": true
+  }
 }

@@ -11,7 +11,7 @@ public class LimitedBarrelSettingsContainerMenu extends StorageSettingsContainer
 		super(ModBlocks.LIMITED_BARREL_SETTINGS_CONTAINER_TYPE.get(), windowId, player, pos);
 	}
 
-	public static LimitedBarrelSettingsContainerMenu fromBuffer(int windowId, Inventory playerInventory, FriendlyByteBuf packetBuffer) {
-		return new LimitedBarrelSettingsContainerMenu(windowId, playerInventory.player, packetBuffer.readBlockPos());
+	public static LimitedBarrelSettingsContainerMenu fromBuffer(int windowId, Inventory playerInventory, FriendlyByteBuf buffer) {
+		return new LimitedBarrelSettingsContainerMenu(windowId, playerInventory.player, buffer.readBlockPos());
 	}
 }

@@ -1,4 +1,10 @@
 {
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:limited_copper_barrel_3"
+    }
+  ],
   "parent": "minecraft:recipes/root",
   "criteria": {
     "has_limited_barrel_3": {
@@ -22,14 +28,13 @@
   },
   "requirements": [
     [
-      "has_limited_barrel_3",
-      "has_the_recipe"
+      "has_the_recipe",
+      "has_limited_barrel_3"
     ]
   ],
   "rewards": {
     "recipes": [
       "sophisticatedstorage:limited_copper_barrel_3"
     ]
-  },
-  "sends_telemetry_event": true
+  }
 }

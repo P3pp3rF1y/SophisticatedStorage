@@ -33,8 +33,8 @@ public class StorageSettingsContainerMenu extends SettingsContainerMenu<IStorage
 		//noop
 	}
 
-	public static StorageSettingsContainerMenu fromBuffer(int windowId, Inventory playerInventory, FriendlyByteBuf packetBuffer) {
-		return new StorageSettingsContainerMenu(windowId, playerInventory.player, packetBuffer.readBlockPos());
+	public static StorageSettingsContainerMenu fromBuffer(int windowId, Inventory playerInventory, FriendlyByteBuf buffer) {
+		return new StorageSettingsContainerMenu(windowId, playerInventory.player, buffer.readBlockPos());
 	}
 
 	@Override

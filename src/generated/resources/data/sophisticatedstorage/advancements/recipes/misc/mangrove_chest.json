@@ -1,4 +1,10 @@
 {
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:chest"
+    }
+  ],
   "parent": "minecraft:recipes/root",
   "criteria": {
     "has_mangrove_plank": {
@@ -22,14 +28,13 @@
   },
   "requirements": [
     [
-      "has_mangrove_plank",
-      "has_the_recipe"
+      "has_the_recipe",
+      "has_mangrove_plank"
     ]
   ],
   "rewards": {
     "recipes": [
       "sophisticatedstorage:mangrove_chest"
     ]
-  },
-  "sends_telemetry_event": true
+  }
 }

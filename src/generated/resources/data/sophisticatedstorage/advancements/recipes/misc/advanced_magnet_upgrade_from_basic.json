@@ -1,4 +1,10 @@
 {
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:advanced_magnet_upgrade"
+    }
+  ],
   "parent": "minecraft:recipes/root",
   "criteria": {
     "has_magnet_upgrade": {
@@ -22,14 +28,13 @@
   },
   "requirements": [
     [
-      "has_magnet_upgrade",
-      "has_the_recipe"
+      "has_the_recipe",
+      "has_magnet_upgrade"
     ]
   ],
   "rewards": {
     "recipes": [
       "sophisticatedstorage:advanced_magnet_upgrade_from_basic"
     ]
-  },
-  "sends_telemetry_event": true
+  }
 }

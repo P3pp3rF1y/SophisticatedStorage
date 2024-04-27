@@ -1,4 +1,10 @@
 {
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:basic_tier_upgrade"
+    }
+  ],
   "parent": "minecraft:recipes/root",
   "criteria": {
     "has_redstone_torch": {
@@ -22,14 +28,13 @@
   },
   "requirements": [
     [
-      "has_redstone_torch",
-      "has_the_recipe"
+      "has_the_recipe",
+      "has_redstone_torch"
     ]
   ],
   "rewards": {
     "recipes": [
       "sophisticatedstorage:basic_tier_upgrade"
     ]
-  },
-  "sends_telemetry_event": true
+  }
 }

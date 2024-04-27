@@ -1,4 +1,10 @@
 {
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:gold_shulker_box"
+    }
+  ],
   "parent": "minecraft:recipes/root",
   "criteria": {
     "has_gold_chest": {
@@ -22,14 +28,13 @@
   },
   "requirements": [
     [
-      "has_gold_chest",
-      "has_the_recipe"
+      "has_the_recipe",
+      "has_gold_chest"
     ]
   ],
   "rewards": {
     "recipes": [
       "sophisticatedstorage:gold_shulker_from_gold_chest"
     ]
-  },
-  "sends_telemetry_event": true
+  }
 }

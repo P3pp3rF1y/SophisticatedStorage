@@ -1,11 +1,12 @@
 {
-  "type": "minecraft:crafting_shaped",
-  "conditions": [
+  "neoforge:conditions": [
     {
       "type": "sophisticatedcore:item_enabled",
       "itemRegistryName": "sophisticatedstorage:storage_output"
     }
   ],
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
   "key": {
     "B": {
       "tag": "sophisticatedstorage:base_tier_wooden_storage"

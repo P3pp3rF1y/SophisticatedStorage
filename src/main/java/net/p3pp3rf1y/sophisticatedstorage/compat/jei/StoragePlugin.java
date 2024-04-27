@@ -14,7 +14,6 @@ import mezz.jei.api.runtime.IJeiRuntime;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.SettingsScreen;
 import net.p3pp3rf1y.sophisticatedcore.compat.jei.ClientRecipeHelper;
 import net.p3pp3rf1y.sophisticatedcore.compat.jei.CraftingContainerRecipeTransferHandlerBase;
@@ -39,7 +38,9 @@ import java.util.function.Consumer;
 @SuppressWarnings("unused")
 @JeiPlugin
 public class StoragePlugin implements IModPlugin {
-	private static Consumer<IRecipeCatalystRegistration> additionalCatalystRegistrar = registration -> {};
+	private static Consumer<IRecipeCatalystRegistration> additionalCatalystRegistrar = registration -> {
+	};
+
 	public static void setAdditionalCatalystRegistrar(Consumer<IRecipeCatalystRegistration> additionalCatalystRegistrar) {
 		StoragePlugin.additionalCatalystRegistrar = additionalCatalystRegistrar;
 	}
@@ -145,11 +146,9 @@ public class StoragePlugin implements IModPlugin {
 	@Override
 	public void onRuntimeAvailable(IJeiRuntime jeiRuntime) {
 		IRecipeManager recipeManager = jeiRuntime.getRecipeManager();
-		ClientRecipeHelper.getRecipeByKey(ModBlocks.CONTROLLER_ITEM.getId()).ifPresent(controllerRecipe -> {
-			if (controllerRecipe instanceof CraftingRecipe craftingRecipe) {
-				recipeManager.hideRecipes(RecipeTypes.CRAFTING, Collections.singleton(craftingRecipe));
-			}
-		});
+		ClientRecipeHelper.getRecipeByKey(ModBlocks.CONTROLLER_ITEM.getId()).ifPresent(controllerRecipe ->
+				recipeManager.hideRecipes(RecipeTypes.CRAFTING, Collections.singleton(RecipeTypes.CRAFTING.getRecipeClass().cast(controllerRecipe)))
+		);
 	}
 
 	@Override

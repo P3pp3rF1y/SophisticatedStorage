@@ -1,11 +1,12 @@
 {
-  "type": "minecraft:crafting_shapeless",
-  "conditions": [
+  "neoforge:conditions": [
     {
       "type": "sophisticatedcore:item_enabled",
       "itemRegistryName": "sophisticatedstorage:shulker_box"
     }
   ],
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
   "ingredients": [
     {
       "item": "minecraft:gray_shulker_box"

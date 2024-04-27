@@ -1,7 +1,6 @@
 package net.p3pp3rf1y.sophisticatedstorage.crafting;
 
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
@@ -14,8 +13,8 @@ import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.item.BarrelBlockItem;
 
 public class FlatTopBarrelToggleRecipe extends CustomRecipe {
-	public FlatTopBarrelToggleRecipe(ResourceLocation registryName, CraftingBookCategory category) {
-		super(registryName, category);
+	public FlatTopBarrelToggleRecipe(CraftingBookCategory category) {
+		super(category);
 	}
 
 	@Override

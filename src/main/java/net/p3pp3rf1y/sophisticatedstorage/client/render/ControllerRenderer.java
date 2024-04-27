@@ -18,9 +18,11 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.p3pp3rf1y.sophisticatedcore.controller.ControllerBlockEntityBase;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 import net.p3pp3rf1y.sophisticatedstorage.block.ControllerBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
@@ -108,16 +110,16 @@ public class ControllerRenderer implements BlockEntityRenderer<ControllerBlockEn
 
 		Vec3 center = shape.bounds().getCenter();
 
-		VertexConsumer pBuffer = bufferSource.getBuffer(LineRenderType.LINES);
+		VertexConsumer buffer = bufferSource.getBuffer(LineRenderType.LINES);
 
 		Matrix4f matrix4f = poseStack.last().pose();
 		Matrix3f matrix3f = poseStack.last().normal();
 		float normalX = (float) (pos.getX() - initialPos.getX() + (0.5F - center.x()));
 		float normalY = (float) (pos.getY() - initialPos.getY() + (0.5F - center.y()));
 		float normalZ = (float) (pos.getZ() - initialPos.getZ() + (0.5F - center.z()));
-		pBuffer.vertex(matrix4f, 0.5F, 0.5F, 0.5F).color(red, green, blue, 255)
+		buffer.vertex(matrix4f, 0.5F, 0.5F, 0.5F).color(red, green, blue, 255)
 				.normal(matrix3f, normalX, normalY, normalZ).endVertex();
-		pBuffer.vertex(matrix4f, (float) (pos.getX() - initialPos.getX() + center.x()), (float) (pos.getY() - initialPos.getY() + center.y()), (float) (pos.getZ() - initialPos.getZ() + center.z())).color(red, green, blue, 255)
+		buffer.vertex(matrix4f, (float) (pos.getX() - initialPos.getX() + center.x()), (float) (pos.getY() - initialPos.getY() + center.y()), (float) (pos.getZ() - initialPos.getZ() + center.z())).color(red, green, blue, 255)
 				.normal(matrix3f, normalX, normalY, normalZ).endVertex();
 	}
 
@@ -139,22 +141,27 @@ public class ControllerRenderer implements BlockEntityRenderer<ControllerBlockEn
 	}
 
 	@Override
-	public boolean shouldRenderOffScreen(ControllerBlockEntity pBlockEntity) {
+	public boolean shouldRenderOffScreen(ControllerBlockEntity blockEntity) {
 		return true;
 	}
 
 	private static class LineRenderType extends RenderType {
-		public LineRenderType(String pName, VertexFormat pFormat, VertexFormat.Mode pMode, int pBufferSize, boolean pAffectsCrumbling, boolean pSortOnUpload, Runnable pSetupState, Runnable pClearState) {
-			super(pName, pFormat, pMode, pBufferSize, pAffectsCrumbling, pSortOnUpload, pSetupState, pClearState);
+		public LineRenderType(String name, VertexFormat format, VertexFormat.Mode mode, int bufferSize, boolean affectsCrumbling, boolean sortOnUpload, Runnable setupState, Runnable clearState) {
+			super(name, format, mode, bufferSize, affectsCrumbling, sortOnUpload, setupState, clearState);
 		}
 
-		private static final RenderType LINES = RenderType.create("storage_lines", DefaultVertexFormat.POSITION_COLOR_NORMAL, VertexFormat.Mode.LINES, 256,
-				RenderType.CompositeState.builder()
+		private static final RenderType LINES = RenderType.create("storage_lines", DefaultVertexFormat.POSITION_COLOR_NORMAL, VertexFormat.Mode.LINES, 256, false, false,
+				CompositeState.builder()
 						.setShaderState(RENDERTYPE_LINES_SHADER)
 						.setDepthTestState(NO_DEPTH_TEST)
-						.setLineState(new RenderStateShard.LineStateShard(OptionalDouble.empty()))
+						.setLineState(new LineStateShard(OptionalDouble.empty()))
 						.setLayeringState(VIEW_OFFSET_Z_LAYERING)
 						.setCullState(RenderStateShard.NO_CULL)
 						.createCompositeState(false));
+	}
+
+	@Override
+	public AABB getRenderBoundingBox(ControllerBlockEntity blockEntity) {
+		return new AABB(blockEntity.getBlockPos()).inflate(ControllerBlockEntityBase.SEARCH_RANGE);
 	}
 }

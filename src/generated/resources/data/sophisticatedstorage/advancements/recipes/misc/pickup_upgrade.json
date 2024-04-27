@@ -1,4 +1,10 @@
 {
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:pickup_upgrade"
+    }
+  ],
   "parent": "minecraft:recipes/root",
   "criteria": {
     "has_the_recipe": {
@@ -22,14 +28,13 @@
   },
   "requirements": [
     [
-      "has_upgrade_base",
-      "has_the_recipe"
+      "has_the_recipe",
+      "has_upgrade_base"
     ]
   ],
   "rewards": {
     "recipes": [
       "sophisticatedstorage:pickup_upgrade"
     ]
-  },
-  "sends_telemetry_event": true
+  }
 }

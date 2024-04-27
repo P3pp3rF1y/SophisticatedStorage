@@ -1,4 +1,10 @@
 {
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:limited_barrel_4"
+    }
+  ],
   "parent": "minecraft:recipes/root",
   "criteria": {
     "has_spruce_plank": {
@@ -22,14 +28,13 @@
   },
   "requirements": [
     [
-      "has_spruce_plank",
-      "has_the_recipe"
+      "has_the_recipe",
+      "has_spruce_plank"
     ]
   ],
   "rewards": {
     "recipes": [
       "sophisticatedstorage:spruce_limited_barrel_4"
     ]
-  },
-  "sends_telemetry_event": true
+  }
 }

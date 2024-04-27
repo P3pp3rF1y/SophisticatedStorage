@@ -15,6 +15,7 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import net.minecraft.world.phys.BlockHitResult;
@@ -72,8 +73,6 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 				}
 				WoodStorageBlockItem.setPacked(stack, true);
 				StorageBlockItem.setShowsTier(stack, be.shouldShowTier());
-				WoodStorageBlockItem.setNumberOfUpgradeSlots(stack, storageWrapper.getInventoryHandler().getSlots());
-				WoodStorageBlockItem.setNumberOfUpgradeSlots(stack, storageWrapper.getUpgradeHandler().getSlots());
 			}
 		}
 	}
@@ -136,9 +135,9 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 	}
 
 	@Override
-	public ItemStack getCloneItemStack(BlockState state, HitResult target, BlockGetter world, BlockPos pos, Player player) {
+	public ItemStack getCloneItemStack(BlockState state, HitResult target, LevelReader level, BlockPos pos, Player player) {
 		ItemStack stack = new ItemStack(this);
-		addNameWoodAndTintData(stack, world, pos);
+		addNameWoodAndTintData(stack, level, pos);
 		return stack;
 	}
 
@@ -174,8 +173,8 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 	}
 
 	@Override
-	public void playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
-		super.playerWillDestroy(level, pos, state, player);
+	public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
+		BlockState ret = super.playerWillDestroy(level, pos, state, player);
 		WorldHelper.getBlockEntity(level, pos, WoodStorageBlockEntity.class)
 				.ifPresent(wbe -> {
 					if (Boolean.TRUE.equals(Config.COMMON.dropPacked.get())) {
@@ -192,6 +191,7 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 						}
 					}
 				});
+		return ret;
 	}
 
 	@SuppressWarnings("java:S1172") //parameter is used in override

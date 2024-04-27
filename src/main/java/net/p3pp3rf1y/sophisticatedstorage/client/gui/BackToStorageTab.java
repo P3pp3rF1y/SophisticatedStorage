@@ -2,15 +2,11 @@ package net.p3pp3rf1y.sophisticatedstorage.client.gui;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.neoforged.neoforge.network.PacketDistributor;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.Tab;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.controls.ImageButton;
-import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.Dimension;
-import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.GuiHelper;
-import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.Position;
-import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.TextureBlitData;
-import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.UV;
-import net.p3pp3rf1y.sophisticatedstorage.network.OpenStorageInventoryMessage;
-import net.p3pp3rf1y.sophisticatedstorage.network.StoragePacketHandler;
+import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.*;
+import net.p3pp3rf1y.sophisticatedstorage.network.OpenStorageInventoryPacket;
 
 public class BackToStorageTab extends Tab {
 	private static final TextureBlitData ICON = new TextureBlitData(GuiHelper.ICONS, Dimension.SQUARE_256, new UV(64, 80), Dimension.SQUARE_16);
@@ -24,6 +20,6 @@ public class BackToStorageTab extends Tab {
 
 	@Override
 	protected void onTabIconClicked(int button) {
-		StoragePacketHandler.INSTANCE.sendToServer(new OpenStorageInventoryMessage(pos));
+		PacketDistributor.SERVER.noArg().send(new OpenStorageInventoryPacket(pos));
 	}
 }

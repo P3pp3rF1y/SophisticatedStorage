@@ -1,4 +1,10 @@
 {
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:shulker_box"
+    }
+  ],
   "parent": "minecraft:recipes/root",
   "criteria": {
     "has_purple_shulker_box": {
@@ -22,14 +28,13 @@
   },
   "requirements": [
     [
-      "has_purple_shulker_box",
-      "has_the_recipe"
+      "has_the_recipe",
+      "has_purple_shulker_box"
     ]
   ],
   "rewards": {
     "recipes": [
       "sophisticatedstorage:purple_shulker_box_to_sophisticated"
     ]
-  },
-  "sends_telemetry_event": true
+  }
 }

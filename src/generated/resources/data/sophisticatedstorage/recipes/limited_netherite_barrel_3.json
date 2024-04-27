@@ -1,11 +1,12 @@
 {
-  "type": "sophisticatedstorage:storage_tier_upgrade_shapeless",
-  "conditions": [
+  "neoforge:conditions": [
     {
       "type": "sophisticatedcore:item_enabled",
       "itemRegistryName": "sophisticatedstorage:limited_netherite_barrel_3"
     }
   ],
+  "type": "sophisticatedstorage:storage_tier_upgrade_shapeless",
+  "category": "misc",
   "ingredients": [
     {
       "item": "sophisticatedstorage:limited_diamond_barrel_3"

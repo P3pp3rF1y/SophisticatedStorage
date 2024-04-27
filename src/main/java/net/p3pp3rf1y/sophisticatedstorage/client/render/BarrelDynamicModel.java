@@ -7,7 +7,7 @@ import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.client.model.data.ModelData;
+import net.neoforged.neoforge.client.model.data.ModelData;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlock;
 
 import javax.annotation.Nullable;
@@ -64,7 +64,7 @@ public class BarrelDynamicModel extends BarrelDynamicModelBase<BarrelDynamicMode
 
 	@SuppressWarnings("java:S6548") //singleton is intended here
 	public static final class Loader extends BarrelDynamicModelBase.Loader<BarrelDynamicModel> {
-		public static final BarrelDynamicModel.Loader INSTANCE = new BarrelDynamicModel.Loader();
+		public static final Loader INSTANCE = new Loader();
 
 		@Override
 		protected BarrelDynamicModel instantiateModel(@Nullable ResourceLocation parentLocation, Map<String, Map<BarrelModelPart, BarrelModelPartDefinition>> woodOverrides, @Nullable ResourceLocation flatTopModelName, Map<DynamicBarrelBakingData.DynamicPart, ResourceLocation> dynamicPartModels, Map<String, Map<BarrelModelPart, BarrelModelPartDefinition>> woodPartitionedModelPartDefinitions) {

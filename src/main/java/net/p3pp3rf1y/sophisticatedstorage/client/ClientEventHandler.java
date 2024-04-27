@@ -22,19 +22,18 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
-import net.minecraftforge.client.event.*;
-import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
-import net.minecraftforge.client.settings.IKeyConflictContext;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.AddPackFindersEvent;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.eventbus.api.Event;
-import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.neoforged.bus.api.Event;
+import net.neoforged.bus.api.EventPriority;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.client.event.*;
+import net.neoforged.neoforge.client.gui.overlay.VanillaGuiOverlay;
+import net.neoforged.neoforge.client.settings.IKeyConflictContext;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.AddPackFindersEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.LimitedBarrelBlock;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageScreen;
@@ -43,30 +42,18 @@ import net.p3pp3rf1y.sophisticatedstorage.client.gui.ToolInfoOverlay;
 import net.p3pp3rf1y.sophisticatedstorage.client.init.ModBlockColors;
 import net.p3pp3rf1y.sophisticatedstorage.client.init.ModItemColors;
 import net.p3pp3rf1y.sophisticatedstorage.client.init.ModParticles;
-import net.p3pp3rf1y.sophisticatedstorage.client.render.BarrelBakedModelBase;
-import net.p3pp3rf1y.sophisticatedstorage.client.render.BarrelDynamicModel;
-import net.p3pp3rf1y.sophisticatedstorage.client.render.BarrelDynamicModelBase;
-import net.p3pp3rf1y.sophisticatedstorage.client.render.BarrelRenderer;
-import net.p3pp3rf1y.sophisticatedstorage.client.render.ChestDynamicModel;
-import net.p3pp3rf1y.sophisticatedstorage.client.render.ChestRenderer;
-import net.p3pp3rf1y.sophisticatedstorage.client.render.ClientStorageContentsTooltip;
-import net.p3pp3rf1y.sophisticatedstorage.client.render.ControllerRenderer;
-import net.p3pp3rf1y.sophisticatedstorage.client.render.LimitedBarrelDynamicModel;
-import net.p3pp3rf1y.sophisticatedstorage.client.render.LimitedBarrelRenderer;
-import net.p3pp3rf1y.sophisticatedstorage.client.render.ShulkerBoxDynamicModel;
-import net.p3pp3rf1y.sophisticatedstorage.client.render.ShulkerBoxRenderer;
-import net.p3pp3rf1y.sophisticatedstorage.client.render.SimpleCompositeModel;
+import net.p3pp3rf1y.sophisticatedstorage.client.render.*;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.item.ChestBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageContentsTooltip;
-import net.p3pp3rf1y.sophisticatedstorage.network.ScrolledToolMessage;
-import net.p3pp3rf1y.sophisticatedstorage.network.StoragePacketHandler;
+import net.p3pp3rf1y.sophisticatedstorage.network.RequestPlayerSettingsPacket;
+import net.p3pp3rf1y.sophisticatedstorage.network.ScrolledToolPacket;
 
 import java.util.Map;
 
-import static net.minecraftforge.client.settings.KeyConflictContext.GUI;
+import static net.neoforged.neoforge.client.settings.KeyConflictContext.GUI;
 
 public class ClientEventHandler {
 	private ClientEventHandler() {}
@@ -98,8 +85,7 @@ public class ClientEventHandler {
 	public static final ModelLayerLocation CHEST_LEFT_LAYER = new ModelLayerLocation(CHEST_LEFT_RL, "main");
 	public static final ModelLayerLocation CHEST_RIGHT_LAYER = new ModelLayerLocation(CHEST_RIGHT_RL, "main");
 
-	public static void registerHandlers() {
-		IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
+	public static void registerHandlers(IEventBus modBus) {
 		modBus.addListener(ClientEventHandler::onModelRegistry);
 		modBus.addListener(ClientEventHandler::registerLayer);
 		modBus.addListener(ClientEventHandler::registerTooltipComponent);
@@ -112,13 +98,18 @@ public class ClientEventHandler {
 		modBus.addListener(ClientEventHandler::registerStorageLayerLoader);
 		modBus.addListener(ClientEventHandler::onRegisterAdditionalModels);
 		modBus.addListener(ClientEventHandler::onRegisterReloadListeners);
-		IEventBus eventBus = MinecraftForge.EVENT_BUS;
+		IEventBus eventBus = NeoForge.EVENT_BUS;
 		eventBus.addListener(ClientStorageContentsTooltip::onWorldLoad);
 		eventBus.addListener(EventPriority.HIGH, ClientEventHandler::handleGuiMouseKeyPress);
 		eventBus.addListener(EventPriority.HIGH, ClientEventHandler::handleGuiKeyPress);
 		eventBus.addListener(ClientEventHandler::onLimitedBarrelClicked);
 		eventBus.addListener(ClientEventHandler::onMouseScrolled);
 		eventBus.addListener(ClientEventHandler::onRenderHighlight);
+		eventBus.addListener(ClientEventHandler::onPlayerLoggingIn);
+	}
+
+	private static void onPlayerLoggingIn(ClientPlayerNetworkEvent.LoggingIn event) {
+		PacketDistributor.SERVER.noArg().send(new RequestPlayerSettingsPacket());
 	}
 
 	private static void onRenderHighlight(RenderHighlightEvent.Block event) {
@@ -168,7 +159,7 @@ public class ClientEventHandler {
 		if (stack.getItem() != ModItems.STORAGE_TOOL.get()) {
 			return;
 		}
-		StoragePacketHandler.INSTANCE.sendToServer(new ScrolledToolMessage(evt.getScrollDelta() > 0));
+		PacketDistributor.SERVER.noArg().send(new ScrolledToolPacket(evt.getScrollDeltaY() > 0));
 		evt.setCanceled(true);
 	}
 
@@ -229,11 +220,11 @@ public class ClientEventHandler {
 	}
 
 	private static void onModelRegistry(ModelEvent.RegisterGeometryLoaders event) {
-		event.register("barrel", BarrelDynamicModel.Loader.INSTANCE);
-		event.register("limited_barrel", LimitedBarrelDynamicModel.Loader.INSTANCE);
-		event.register("chest", ChestDynamicModel.Loader.INSTANCE);
-		event.register("shulker_box", ShulkerBoxDynamicModel.Loader.INSTANCE);
-		event.register("simple_composite", SimpleCompositeModel.Loader.INSTANCE);
+		event.register(new ResourceLocation(SophisticatedStorage.MOD_ID, "barrel"), BarrelDynamicModel.Loader.INSTANCE);
+		event.register(new ResourceLocation(SophisticatedStorage.MOD_ID, "limited_barrel"), LimitedBarrelDynamicModel.Loader.INSTANCE);
+		event.register(new ResourceLocation(SophisticatedStorage.MOD_ID, "chest"), ChestDynamicModel.Loader.INSTANCE);
+		event.register(new ResourceLocation(SophisticatedStorage.MOD_ID, "shulker_box"), ShulkerBoxDynamicModel.Loader.INSTANCE);
+		event.register(new ResourceLocation(SophisticatedStorage.MOD_ID, "simple_composite"), SimpleCompositeModel.Loader.INSTANCE);
 	}
 
 	private static void onRegisterReloadListeners(RegisterClientReloadListenersEvent event) {
@@ -258,7 +249,7 @@ public class ClientEventHandler {
 	}
 
 	private static void registerOverlay(RegisterGuiOverlaysEvent event) {
-		event.registerAbove(VanillaGuiOverlay.HOTBAR.id(), "storage_tool_info", ToolInfoOverlay.HUD_TOOL_INFO);
+		event.registerAbove(VanillaGuiOverlay.HOTBAR.id(), new ResourceLocation(SophisticatedStorage.MOD_ID, "storage_tool_info"), ToolInfoOverlay.HUD_TOOL_INFO);
 	}
 
 	private static void registerEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {

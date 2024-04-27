@@ -1,4 +1,10 @@
 {
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:diamond_barrel"
+    }
+  ],
   "parent": "minecraft:recipes/root",
   "criteria": {
     "has_gold_barrel": {
@@ -22,14 +28,13 @@
   },
   "requirements": [
     [
-      "has_gold_barrel",
-      "has_the_recipe"
+      "has_the_recipe",
+      "has_gold_barrel"
     ]
   ],
   "rewards": {
     "recipes": [
       "sophisticatedstorage:diamond_barrel"
     ]
-  },
-  "sends_telemetry_event": true
+  }
 }

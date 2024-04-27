@@ -1,6 +1,6 @@
 package net.p3pp3rf1y.sophisticatedstorage.client.init;
 
-import net.minecraftforge.client.event.RegisterParticleProvidersEvent;
+import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
 import net.p3pp3rf1y.sophisticatedstorage.client.particle.CustomTintTerrainParticle;
 
 public class ModParticles {

@@ -1,4 +1,10 @@
 {
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:storage_output"
+    }
+  ],
   "parent": "minecraft:recipes/root",
   "criteria": {
     "has_storage_input": {
@@ -22,14 +28,13 @@
   },
   "requirements": [
     [
-      "has_storage_input",
-      "has_the_recipe"
+      "has_the_recipe",
+      "has_storage_input"
     ]
   ],
   "rewards": {
     "recipes": [
       "minecraft:storage_output_from_input"
     ]
-  },
-  "sends_telemetry_event": true
+  }
 }

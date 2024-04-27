@@ -1,6 +1,7 @@
 package net.p3pp3rf1y.sophisticatedstorage.crafting;
 
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.BlockItem;
@@ -9,23 +10,18 @@ import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.CustomRecipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.registries.ForgeRegistries;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelMaterial;
 import net.p3pp3rf1y.sophisticatedstorage.block.ITintableBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.item.BarrelBlockItem;
 
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class BarrelMaterialRecipe extends CustomRecipe {
-	public BarrelMaterialRecipe(ResourceLocation registryName, CraftingBookCategory category) {
-		super(registryName, category);
+	public BarrelMaterialRecipe(CraftingBookCategory category) {
+		super(category);
 	}
 
 	@Override
@@ -208,7 +204,7 @@ public class BarrelMaterialRecipe extends CustomRecipe {
 					boolean firstMaterial = true;
 					for (BarrelMaterial barrelMaterial : barrelMaterials) {
 						if (!materials.containsKey(barrelMaterial) || firstMaterial) {
-							materials.put(barrelMaterial, ForgeRegistries.BLOCKS.getKey(blockItem.getBlock()));
+							materials.put(barrelMaterial, BuiltInRegistries.BLOCK.getKey(blockItem.getBlock()));
 						}
 						firstMaterial = false;
 					}

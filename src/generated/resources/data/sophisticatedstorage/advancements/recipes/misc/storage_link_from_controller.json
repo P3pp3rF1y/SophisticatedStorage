@@ -1,4 +1,10 @@
 {
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:storage_link"
+    }
+  ],
   "parent": "minecraft:recipes/root",
   "criteria": {
     "has_controller": {
@@ -22,14 +28,13 @@
   },
   "requirements": [
     [
-      "has_controller",
-      "has_the_recipe"
+      "has_the_recipe",
+      "has_controller"
     ]
   ],
   "rewards": {
     "recipes": [
       "sophisticatedstorage:storage_link_from_controller"
     ]
-  },
-  "sends_telemetry_event": true
+  }
 }

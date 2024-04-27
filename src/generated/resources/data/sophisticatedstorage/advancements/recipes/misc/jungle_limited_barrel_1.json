@@ -1,4 +1,10 @@
 {
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:limited_barrel_1"
+    }
+  ],
   "parent": "minecraft:recipes/root",
   "criteria": {
     "has_jungle_plank": {
@@ -22,14 +28,13 @@
   },
   "requirements": [
     [
-      "has_jungle_plank",
-      "has_the_recipe"
+      "has_the_recipe",
+      "has_jungle_plank"
     ]
   ],
   "rewards": {
     "recipes": [
       "sophisticatedstorage:jungle_limited_barrel_1"
     ]
-  },
-  "sends_telemetry_event": true
+  }
 }

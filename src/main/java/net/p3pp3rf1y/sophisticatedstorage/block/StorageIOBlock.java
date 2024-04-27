@@ -40,8 +40,9 @@ public class StorageIOBlock extends BlockBase implements EntityBlock {
 	}
 
 	@Override
-	public void playerWillDestroy(Level pLevel, BlockPos pPos, BlockState pState, Player pPlayer) {
-		super.playerWillDestroy(pLevel, pPos, pState, pPlayer);
-		WorldHelper.getBlockEntity(pLevel, pPos, StorageBlockEntity.class).ifPresent(IControllableStorage::removeFromController);
+	public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
+		BlockState ret = super.playerWillDestroy(level, pos, state, player);
+		WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).ifPresent(IControllableStorage::removeFromController);
+		return ret;
 	}
 }

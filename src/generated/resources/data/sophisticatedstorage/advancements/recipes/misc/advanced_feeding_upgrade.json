@@ -1,4 +1,10 @@
 {
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:advanced_feeding_upgrade"
+    }
+  ],
   "parent": "minecraft:recipes/root",
   "criteria": {
     "has_feeding_upgrade": {
@@ -22,14 +28,13 @@
   },
   "requirements": [
     [
-      "has_feeding_upgrade",
-      "has_the_recipe"
+      "has_the_recipe",
+      "has_feeding_upgrade"
     ]
   ],
   "rewards": {
     "recipes": [
       "sophisticatedstorage:advanced_feeding_upgrade"
     ]
-  },
-  "sends_telemetry_event": true
+  }
 }

@@ -1,5 +1,6 @@
 package net.p3pp3rf1y.sophisticatedstorage.data;
 
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.loot.BlockLootSubProvider;
 import net.minecraft.data.loot.LootTableProvider;
@@ -13,7 +14,6 @@ import net.minecraft.world.level.storage.loot.entries.LootItem;
 import net.minecraft.world.level.storage.loot.functions.CopyNameFunction;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
-import net.minecraftforge.registries.ForgeRegistries;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 
@@ -89,7 +89,7 @@ public class StorageBlockLootProvider extends LootTableProvider {
 
 		@Override
 		protected Iterable<Block> getKnownBlocks() {
-			return ForgeRegistries.BLOCKS.getEntries().stream()
+			return BuiltInRegistries.BLOCK.entrySet().stream()
 					.filter(e -> e.getKey().location().getNamespace().equals(SophisticatedStorage.MOD_ID))
 					.map(Map.Entry::getValue)
 					.toList();
@@ -103,8 +103,8 @@ public class StorageBlockLootProvider extends LootTableProvider {
 			return LootTable.lootTable().withPool(pool);
 		}
 
-		public LootTable.Builder dropBlock(ItemLike pItem) {
-			return LootTable.lootTable().withPool(applyExplosionCondition(pItem, LootPool.lootPool().name("main").setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(pItem))));
+		public LootTable.Builder dropBlock(ItemLike item) {
+			return LootTable.lootTable().withPool(applyExplosionCondition(item, LootPool.lootPool().name("main").setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(item))));
 		}
 	}
 }

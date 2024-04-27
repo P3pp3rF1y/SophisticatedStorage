@@ -1,16 +1,16 @@
 package net.p3pp3rf1y.sophisticatedstorage.upgrades.hopper;
 
-import net.minecraftforge.common.ForgeConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec;
 
 public class HopperUpgradeConfig {
-	public final ForgeConfigSpec.IntValue inputFilterSlots;
-	public final ForgeConfigSpec.IntValue inputFilterSlotsInRow;
-	public final ForgeConfigSpec.IntValue outputFilterSlots;
-	public final ForgeConfigSpec.IntValue outputFilterSlotsInRow;
-	public final ForgeConfigSpec.IntValue transferSpeedTicks;
-	public final ForgeConfigSpec.IntValue maxTransferStackSize;
+	public final ModConfigSpec.IntValue inputFilterSlots;
+	public final ModConfigSpec.IntValue inputFilterSlotsInRow;
+	public final ModConfigSpec.IntValue outputFilterSlots;
+	public final ModConfigSpec.IntValue outputFilterSlotsInRow;
+	public final ModConfigSpec.IntValue transferSpeedTicks;
+	public final ModConfigSpec.IntValue maxTransferStackSize;
 
-	public HopperUpgradeConfig(ForgeConfigSpec.Builder builder, String upgradeName, String path, int defaultInputFilterSlots, int defaultInputFilterSlotsInRow, int defaultOutputFilterSlots, int defaultOutputFilterSlotsInRow, int defaultTransferSpeedTicks, int defaultMaxTransferStackSize) {
+	public HopperUpgradeConfig(ModConfigSpec.Builder builder, String upgradeName, String path, int defaultInputFilterSlots, int defaultInputFilterSlotsInRow, int defaultOutputFilterSlots, int defaultOutputFilterSlotsInRow, int defaultTransferSpeedTicks, int defaultMaxTransferStackSize) {
 		builder.comment(upgradeName + " Settings").push(path);
 		inputFilterSlots = builder.comment("Number of input filter slots").defineInRange("inputFilterSlots", defaultInputFilterSlots, 1, 8);
 		inputFilterSlotsInRow = builder.comment("Number of input filter slots displayed in a row").defineInRange("inputFilterSlotsInRow", defaultInputFilterSlotsInRow, 1, 4);

@@ -22,6 +22,7 @@ import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.LivingEntity;
@@ -32,14 +33,13 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.WoodType;
-import net.minecraftforge.client.ChunkRenderTypeSet;
-import net.minecraftforge.client.model.IDynamicBakedModel;
-import net.minecraftforge.client.model.IQuadTransformer;
-import net.minecraftforge.client.model.QuadTransformers;
-import net.minecraftforge.client.model.data.ModelData;
-import net.minecraftforge.client.model.data.ModelProperty;
-import net.minecraftforge.common.util.TransformationHelper;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.client.ChunkRenderTypeSet;
+import net.neoforged.neoforge.client.model.IDynamicBakedModel;
+import net.neoforged.neoforge.client.model.IQuadTransformer;
+import net.neoforged.neoforge.client.model.QuadTransformers;
+import net.neoforged.neoforge.client.model.data.ModelData;
+import net.neoforged.neoforge.client.model.data.ModelProperty;
+import net.neoforged.neoforge.common.util.TransformationHelper;
 import net.p3pp3rf1y.sophisticatedcore.inventory.ItemStackKey;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
@@ -327,7 +327,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 	}
 
 	private BlockState getDefaultBlockState(ResourceLocation blockName) {
-		Block block = ForgeRegistries.BLOCKS.getValue(blockName);
+		Block block = BuiltInRegistries.BLOCK.get(blockName);
 		return block != null ? block.defaultBlockState() : Blocks.AIR.defaultBlockState();
 	}
 
@@ -365,7 +365,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 		return extraData.has(SHOWS_TIER) && Boolean.TRUE.equals(extraData.get(SHOWS_TIER));
 	}
 
-	private int createHash(@Nullable BlockState state, @Nullable Direction side, ModelData data, RenderType renderType) {
+	private int createHash(@Nullable BlockState state, @Nullable Direction side, ModelData data, @Nullable RenderType renderType) {
 		int hash;
 		if (state != null) {
 			hash = getInWorldBlockHash(state, data, renderType);

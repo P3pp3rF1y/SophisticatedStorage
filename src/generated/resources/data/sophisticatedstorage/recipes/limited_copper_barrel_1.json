@@ -1,11 +1,12 @@
 {
-  "type": "sophisticatedstorage:storage_tier_upgrade",
-  "conditions": [
+  "neoforge:conditions": [
     {
       "type": "sophisticatedcore:item_enabled",
       "itemRegistryName": "sophisticatedstorage:limited_copper_barrel_1"
     }
   ],
+  "type": "sophisticatedstorage:storage_tier_upgrade",
+  "category": "misc",
   "key": {
     "C": {
       "tag": "forge:ingots/copper"

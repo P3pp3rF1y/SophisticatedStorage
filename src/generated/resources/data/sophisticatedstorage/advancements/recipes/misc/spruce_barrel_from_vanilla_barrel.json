@@ -1,4 +1,10 @@
 {
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:barrel"
+    }
+  ],
   "parent": "minecraft:recipes/root",
   "criteria": {
     "has_the_recipe": {
@@ -22,14 +28,13 @@
   },
   "requirements": [
     [
-      "has_vanilla_barrel",
-      "has_the_recipe"
+      "has_the_recipe",
+      "has_vanilla_barrel"
     ]
   ],
   "rewards": {
     "recipes": [
       "sophisticatedstorage:spruce_barrel_from_vanilla_barrel"
     ]
-  },
-  "sends_telemetry_event": true
+  }
 }

@@ -9,8 +9,8 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.storage.DimensionDataStorage;
-import net.minecraftforge.fml.util.thread.SidedThreadGroups;
-import net.minecraftforge.server.ServerLifecycleHooks;
+import net.neoforged.fml.util.thread.SidedThreadGroups;
+import net.neoforged.neoforge.server.ServerLifecycleHooks;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 
 import java.util.HashMap;
@@ -24,7 +24,8 @@ public class ItemContentsStorage extends SavedData {
 	private final Map<UUID, CompoundTag> storageContents = new HashMap<>();
 	private static final ItemContentsStorage clientStorageCopy = new ItemContentsStorage();
 
-	private ItemContentsStorage() {}
+	private ItemContentsStorage() {
+	}
 
 	public static ItemContentsStorage get() {
 		if (Thread.currentThread().getThreadGroup() == SidedThreadGroups.SERVER) {
@@ -33,7 +34,7 @@ public class ItemContentsStorage extends SavedData {
 				ServerLevel overworld = server.getLevel(Level.OVERWORLD);
 				//noinspection ConstantConditions - by this time overworld is loaded
 				DimensionDataStorage storage = overworld.getDataStorage();
-				return storage.computeIfAbsent(ItemContentsStorage::load, ItemContentsStorage::new, SAVED_DATA_NAME);
+				return storage.computeIfAbsent(new Factory<>(ItemContentsStorage::new, ItemContentsStorage::load), SAVED_DATA_NAME);
 			}
 		}
 		return clientStorageCopy;
@@ -46,7 +47,7 @@ public class ItemContentsStorage extends SavedData {
 	}
 
 	private static void readStorageContents(CompoundTag nbt, ItemContentsStorage storage) {
-		ListTag storageContents =  nbt.getList(nbt.contains("shulkerBoxContents") ? "shulkerBoxContents" : "storageContents", Tag.TAG_COMPOUND);
+		ListTag storageContents = nbt.getList(nbt.contains("shulkerBoxContents") ? "shulkerBoxContents" : "storageContents", Tag.TAG_COMPOUND);
 		for (Tag n : storageContents) {
 			CompoundTag uuidContentsPair = (CompoundTag) n;
 			UUID uuid = NbtUtils.loadUUID(Objects.requireNonNull(uuidContentsPair.get("uuid")));

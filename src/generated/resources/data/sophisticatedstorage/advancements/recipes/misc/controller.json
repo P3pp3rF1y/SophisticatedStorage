@@ -1,4 +1,10 @@
 {
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:controller"
+    }
+  ],
   "parent": "minecraft:recipes/root",
   "criteria": {
     "has_base_tier_wooden_storage": {
@@ -20,14 +26,13 @@
   },
   "requirements": [
     [
-      "has_base_tier_wooden_storage",
-      "has_the_recipe"
+      "has_the_recipe",
+      "has_base_tier_wooden_storage"
     ]
   ],
   "rewards": {
     "recipes": [
       "sophisticatedstorage:controller"
     ]
-  },
-  "sends_telemetry_event": true
+  }
 }

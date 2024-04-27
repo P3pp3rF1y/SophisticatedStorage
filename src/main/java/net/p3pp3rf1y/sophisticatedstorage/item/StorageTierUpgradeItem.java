@@ -113,7 +113,7 @@ public class StorageTierUpgradeItem extends ItemBase {
 
 		@Override
 		boolean upgradeStorage(@Nullable Player player, BlockPos pos, Level level, BlockState state, StorageBlockEntity blockEntity) {
-			if (blockEntity instanceof net.p3pp3rf1y.sophisticatedstorage.block.ChestBlockEntity chestBlockEntity && state.getValue(ChestBlock.TYPE) != ChestType.SINGLE) {
+			if (blockEntity instanceof ChestBlockEntity chestBlockEntity && state.getValue(ChestBlock.TYPE) != ChestType.SINGLE) {
 				return upgradeDoubleChest(pos, level, state, chestBlockEntity);
 			}
 
@@ -554,7 +554,7 @@ public class StorageTierUpgradeItem extends ItemBase {
 			this.blockUpgradeDefinitions = blockUpgradeDefinitions;
 		}
 
-		public void addTierUpgradeDefinition(Block block, StorageTierUpgradeItem.VanillaTierUpgradeDefinition<?> tierUpgradeDefinition) {
+		public void addTierUpgradeDefinition(Block block, VanillaTierUpgradeDefinition<?> tierUpgradeDefinition) {
 			blockUpgradeDefinitions.put(block, tierUpgradeDefinition);
 		}
 

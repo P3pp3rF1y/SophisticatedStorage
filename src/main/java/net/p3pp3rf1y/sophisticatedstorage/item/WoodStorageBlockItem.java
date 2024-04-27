@@ -1,10 +1,7 @@
 package net.p3pp3rf1y.sophisticatedstorage.item;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.ItemStack;
@@ -12,25 +9,14 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.properties.WoodType;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ICapabilityProvider;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.fml.DistExecutor;
-import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
+import net.neoforged.fml.loading.FMLEnvironment;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.TranslationHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
-import net.p3pp3rf1y.sophisticatedstorage.block.ItemContentsStorage;
-import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
-import net.p3pp3rf1y.sophisticatedstorage.block.StorageWrapper;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class WoodStorageBlockItem extends StorageBlockItem {
 	public static final String WOOD_TYPE_TAG = "woodType";
@@ -53,8 +39,7 @@ public class WoodStorageBlockItem extends StorageBlockItem {
 		super.appendHoverText(stack, worldIn, tooltip, flagIn);
 		if (isPacked(stack)) {
 			if (flagIn == TooltipFlag.ADVANCED) {
-				stack.getCapability(CapabilityStorageWrapper.getCapabilityInstance())
-						.ifPresent(w -> w.getContentsUuid().ifPresent(uuid -> tooltip.add(Component.literal("UUID: " + uuid).withStyle(ChatFormatting.DARK_GRAY))));
+				StackStorageWrapper.fromData(stack).getContentsUuid().ifPresent(uuid -> tooltip.add(Component.literal("UUID: " + uuid).withStyle(ChatFormatting.DARK_GRAY)));
 			}
 			if (!Screen.hasShiftDown()) {
 				tooltip.add(Component.translatable(
@@ -71,14 +56,10 @@ public class WoodStorageBlockItem extends StorageBlockItem {
 			return Optional.empty();
 		}
 
-		AtomicReference<TooltipComponent> ret = new AtomicReference<>(null);
-		DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
-			Minecraft mc = Minecraft.getInstance();
-			if (Screen.hasShiftDown() || (mc.player != null && !mc.player.containerMenu.getCarried().isEmpty())) {
-				ret.set(new StorageContentsTooltip(stack));
-			}
-		});
-		return Optional.ofNullable(ret.get());
+		if (FMLEnvironment.dist.isClient()) {
+			return Optional.ofNullable(StorageItemClient.getTooltipImage(stack));
+		}
+		return Optional.empty();
 	}
 
 	@Override
@@ -106,51 +87,6 @@ public class WoodStorageBlockItem extends StorageBlockItem {
 				.flatMap(woodType -> WoodType.values().filter(wt -> wt.name().equals(woodType)).findFirst());
 	}
 
-	@Override
-	public ICapabilityProvider initCapabilities(ItemStack stack, @Nullable CompoundTag nbt) {
-		return new ICapabilityProvider() {
-			private IStorageWrapper wrapper = null;
-
-			@Nonnull
-			@Override
-			public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) {
-				if (stack.getCount() == 1 && cap == CapabilityStorageWrapper.getCapabilityInstance()) {
-					initWrapper();
-					return LazyOptional.of(() -> wrapper).cast();
-				}
-				return LazyOptional.empty();
-			}
-
-			private void initWrapper() {
-				if (wrapper == null) {
-					UUID uuid = NBTHelper.getUniqueId(stack, "uuid").orElse(null);
-					StorageWrapper storageWrapper = new StackStorageWrapper(stack) {
-						@Override
-						public String getStorageType() {
-							return "wood_storage"; //isn't really relevant because wooden storage can't have its gui open when in item form
-						}
-
-						@Override
-						public Component getDisplayName() {
-							return Component.empty(); //isn't really relevant because wooden storage can't have its gui open when in item form
-						}
-
-						@Override
-						protected boolean isAllowedInStorage(ItemStack stack) {
-							return false;
-						}
-					};
-					if (uuid != null) {
-						CompoundTag compoundtag = ItemContentsStorage.get().getOrCreateStorageContents(uuid).getCompound(StorageBlockEntity.STORAGE_WRAPPER_TAG);
-						storageWrapper.load(compoundtag);
-						storageWrapper.setContentsUuid(uuid); //setting here because client side the uuid isn't in contentsnbt before this data is synced from server and it would create a new one otherwise
-					}
-					wrapper = storageWrapper;
-				}
-			}
-		};
-	}
-
 	public static ItemStack setWoodType(ItemStack storageStack, WoodType woodType) {
 		storageStack.getOrCreateTag().putString(WOOD_TYPE_TAG, woodType.name());
 		return storageStack;
@@ -166,13 +102,5 @@ public class WoodStorageBlockItem extends StorageBlockItem {
 			return Component.translatable(descriptionId, "", "");
 		}
 		return Component.translatable(descriptionId, Component.translatable("wood_name.sophisticatedstorage." + woodType.name().toLowerCase(Locale.ROOT)), " ");
-	}
-
-	public static void setNumberOfInventorySlots(ItemStack storageStack, int numberOfInventorySlots) {
-		NBTHelper.putInt(storageStack.getOrCreateTag(), "numberOfInventorySlots", numberOfInventorySlots);
-	}
-
-	public static  void setNumberOfUpgradeSlots(ItemStack storageStack, int numberOfUpgradeSlots) {
-		NBTHelper.putInt(storageStack.getOrCreateTag(), "numberOfUpgradeSlots", numberOfUpgradeSlots);
 	}
 }

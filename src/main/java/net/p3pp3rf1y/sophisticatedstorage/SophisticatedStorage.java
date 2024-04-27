@@ -1,23 +1,17 @@
 package net.p3pp3rf1y.sophisticatedstorage;
 
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.ModLoadingContext;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.fml.loading.FMLEnvironment;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.ModLoadingContext;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.config.ModConfig;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.fml.loading.FMLEnvironment;
 import net.p3pp3rf1y.sophisticatedstorage.client.ClientEventHandler;
 import net.p3pp3rf1y.sophisticatedstorage.common.CommonEventHandler;
 import net.p3pp3rf1y.sophisticatedstorage.data.DataGenerators;
-import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
-import net.p3pp3rf1y.sophisticatedstorage.init.ModCompat;
-import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
-import net.p3pp3rf1y.sophisticatedstorage.init.ModParticles;
-import net.p3pp3rf1y.sophisticatedstorage.item.CapabilityStorageWrapper;
-import net.p3pp3rf1y.sophisticatedstorage.network.StoragePacketHandler;
+import net.p3pp3rf1y.sophisticatedstorage.init.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -28,28 +22,25 @@ public class SophisticatedStorage {
 	private final CommonEventHandler commonEventHandler = new CommonEventHandler();
 
 	@SuppressWarnings("java:S1118") //needs to be public for mod to work
-	public SophisticatedStorage() {
+	public SophisticatedStorage(IEventBus modBus) {
 		ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, Config.SERVER_SPEC);
 		ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, Config.CLIENT_SPEC);
 		ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.COMMON_SPEC);
-		IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
 		Config.SERVER.initListeners(modBus);
 		commonEventHandler.registerHandlers();
-		ModCompat.initCompats();
+		ModCompat.register();
 		if (FMLEnvironment.dist == Dist.CLIENT) {
-			ClientEventHandler.registerHandlers();
+			ClientEventHandler.registerHandlers(modBus);
 		}
 		ModBlocks.registerHandlers(modBus);
 		ModItems.registerHandlers(modBus);
+		modBus.addListener(ModPackets::registerPackets);
 		modBus.addListener(SophisticatedStorage::setup);
 		modBus.addListener(DataGenerators::gatherData);
-		modBus.addListener(CapabilityStorageWrapper::onRegister);
 		ModParticles.registerParticles(modBus);
 	}
 
 	private static void setup(FMLCommonSetupEvent event) {
-		StoragePacketHandler.INSTANCE.init();
-		ModCompat.compatsSetup();
 		event.enqueueWork(ModBlocks::registerDispenseBehavior);
 		event.enqueueWork(ModBlocks::registerCauldronInteractions);
 	}

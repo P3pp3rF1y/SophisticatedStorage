@@ -30,7 +30,7 @@ public class SideIOContainer {
 		this.canSideIOBeDisabled = canSideIOBeDisabled;
 	}
 
-	public boolean handleMessage(CompoundTag data) {
+	public boolean handlePacket(CompoundTag data) {
 		if (data.contains(DATA_IO_MODE_PREFIX)) {
 			IOMode ioMode = NBTHelper.getEnumConstant(data, DATA_IO_MODE_PREFIX, IOMode::fromName).orElse(IOMode.OFF);
 			BlockSide side = NBTHelper.getEnumConstant(data, DATA_SIDE_PREFIX, BlockSide::fromName).orElse(BlockSide.FRONT);

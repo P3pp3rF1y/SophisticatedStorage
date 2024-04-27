@@ -1,4 +1,10 @@
 {
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:iron_shulker_box"
+    }
+  ],
   "parent": "minecraft:recipes/root",
   "criteria": {
     "has_iron_chest": {
@@ -22,14 +28,13 @@
   },
   "requirements": [
     [
-      "has_iron_chest",
-      "has_the_recipe"
+      "has_the_recipe",
+      "has_iron_chest"
     ]
   ],
   "rewards": {
     "recipes": [
       "sophisticatedstorage:iron_shulker_from_iron_chest"
     ]
-  },
-  "sends_telemetry_event": true
+  }
 }

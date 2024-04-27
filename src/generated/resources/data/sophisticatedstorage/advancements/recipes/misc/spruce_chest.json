@@ -1,4 +1,10 @@
 {
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:chest"
+    }
+  ],
   "parent": "minecraft:recipes/root",
   "criteria": {
     "has_spruce_plank": {
@@ -22,14 +28,13 @@
   },
   "requirements": [
     [
-      "has_spruce_plank",
-      "has_the_recipe"
+      "has_the_recipe",
+      "has_spruce_plank"
     ]
   ],
   "rewards": {
     "recipes": [
       "sophisticatedstorage:spruce_chest"
     ]
-  },
-  "sends_telemetry_event": true
+  }
 }

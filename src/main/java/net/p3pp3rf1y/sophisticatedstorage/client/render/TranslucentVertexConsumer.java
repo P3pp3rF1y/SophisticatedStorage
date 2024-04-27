@@ -36,8 +36,8 @@ public class TranslucentVertexConsumer extends DefaultedVertexConsumer {
 	}
 
 	@Override
-	public void vertex(float pX, float pY, float pZ, float pRed, float pGreen, float pBlue, float pAlpha, float pTexU, float pTexV, int pOverlayUV, int pLightmapUV, float pNormalX, float pNormalY, float pNormalZ) {
-		super.vertex(pX, pY, pZ, pRed, pGreen, pBlue, defaultA / 256f, pTexU, pTexV, pOverlayUV, pLightmapUV, pNormalX, pNormalY, pNormalZ);
+	public void vertex(float pX, float pY, float pZ, float red, float green, float blue, float alpha, float texU, float texV, int overlayUV, int lightmapUV, float normalX, float normalY, float normalZ) {
+		super.vertex(pX, pY, pZ, red, green, blue, defaultA / 256f, texU, texV, overlayUV, lightmapUV, normalX, normalY, normalZ);
 	}
 
 	@Override
@@ -46,8 +46,8 @@ public class TranslucentVertexConsumer extends DefaultedVertexConsumer {
 	}
 
 	@Override
-	public VertexConsumer color(int pRed, int pGreen, int pBlue, int pAlpha) {
-		return delegate.color(pRed, pGreen, pBlue, defaultA);
+	public VertexConsumer color(int red, int green, int blue, int alpha) {
+		return delegate.color(red, green, blue, defaultA);
 	}
 
 	@Override

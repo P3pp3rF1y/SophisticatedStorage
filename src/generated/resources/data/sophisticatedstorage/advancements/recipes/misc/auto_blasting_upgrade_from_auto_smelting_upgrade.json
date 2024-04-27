@@ -1,4 +1,10 @@
 {
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:auto_blasting_upgrade"
+    }
+  ],
   "parent": "minecraft:recipes/root",
   "criteria": {
     "has_auto_smelting_upgrade": {
@@ -22,14 +28,13 @@
   },
   "requirements": [
     [
-      "has_auto_smelting_upgrade",
-      "has_the_recipe"
+      "has_the_recipe",
+      "has_auto_smelting_upgrade"
     ]
   ],
   "rewards": {
     "recipes": [
       "sophisticatedstorage:auto_blasting_upgrade_from_auto_smelting_upgrade"
     ]
-  },
-  "sends_telemetry_event": true
+  }
 }

@@ -1,4 +1,10 @@
 {
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:advanced_void_upgrade"
+    }
+  ],
   "parent": "minecraft:recipes/root",
   "criteria": {
     "has_the_recipe": {
@@ -22,14 +28,13 @@
   },
   "requirements": [
     [
-      "has_void_upgrade",
-      "has_the_recipe"
+      "has_the_recipe",
+      "has_void_upgrade"
     ]
   ],
   "rewards": {
     "recipes": [
       "sophisticatedstorage:advanced_void_upgrade"
     ]
-  },
-  "sends_telemetry_event": true
+  }
 }

@@ -1,6 +1,6 @@
 package net.p3pp3rf1y.sophisticatedstorage.client.init;
 
-import net.minecraftforge.client.event.RegisterColorHandlersEvent;
+import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
 

@@ -1,8 +1,8 @@
 package net.p3pp3rf1y.sophisticatedstorage.settings;
 
 import net.minecraft.nbt.CompoundTag;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryHandler;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
 import net.p3pp3rf1y.sophisticatedcore.settings.ISettingsCategory;
@@ -18,7 +18,7 @@ public abstract class StorageSettingsHandler extends SettingsHandler {
 	public static final String SOPHISTICATED_STORAGE_SETTINGS_PLAYER_TAG = "sophisticatedStorageSettings";
 
 	static {
-		MinecraftForge.EVENT_BUS.addListener(StorageSettingsHandler::onPlayerClone);
+		NeoForge.EVENT_BUS.addListener(StorageSettingsHandler::onPlayerClone);
 	}
 
 	private static void onPlayerClone(PlayerEvent.Clone event) {
@@ -54,8 +54,8 @@ public abstract class StorageSettingsHandler extends SettingsHandler {
 	}
 
 	@Override
-	public ISettingsCategory instantiateGlobalSettingsCategory(CompoundTag categoryNbt, Consumer<CompoundTag> saveNbt) {
-		return new MainSettingsCategory(categoryNbt, saveNbt, SOPHISTICATED_STORAGE_SETTINGS_PLAYER_TAG);
+	public ISettingsCategory<?> instantiateGlobalSettingsCategory(CompoundTag categoryNbt, Consumer<CompoundTag> saveNbt) {
+		return new MainSettingsCategory<>(categoryNbt, saveNbt, SOPHISTICATED_STORAGE_SETTINGS_PLAYER_TAG);
 	}
 
 	@Override

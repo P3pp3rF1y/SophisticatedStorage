@@ -9,13 +9,13 @@ import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.client.model.data.ModelData;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.client.model.data.ModelData;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -25,7 +25,8 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class RenderHelper {
-	private RenderHelper() {}
+	private RenderHelper() {
+	}
 
 	private static final Cache<Integer, TextureAtlasSprite> SPRITE_CACHE = CacheBuilder.newBuilder().expireAfterAccess(1, TimeUnit.MINUTES).build();
 
@@ -54,7 +55,8 @@ public class RenderHelper {
 		return sprite;
 	}
 
-	@SuppressWarnings("java:S1874") //need to call deprecated getQuads here as well just in case it was overriden by mods instead of the main one
+	@SuppressWarnings("java:S1874")
+	//need to call deprecated getQuads here as well just in case it was overriden by mods instead of the main one
 	@Nullable
 	private static TextureAtlasSprite parseSpriteFromModel(BlockState blockState, @Nullable Direction direction, RandomSource rand) {
 		TextureAtlasSprite sprite = null;
@@ -78,16 +80,14 @@ public class RenderHelper {
 					}
 				}
 			}
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			// NO OP
 		}
 
 		if (sprite == null) {
 			try {
 				sprite = blockModel.getParticleIcon(ModelData.EMPTY);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				// NO OP
 			}
 		}
@@ -96,13 +96,13 @@ public class RenderHelper {
 	}
 
 	private static BlockState getDefaultBlockState(ResourceLocation blockName) {
-		Block block = ForgeRegistries.BLOCKS.getValue(blockName);
-		return block != null ? block.defaultBlockState() : Blocks.AIR.defaultBlockState();
+		return BuiltInRegistries.BLOCK.getOptional(blockName).map(Block::defaultBlockState).orElse(Blocks.AIR.defaultBlockState());
 	}
 
 	static void renderQuad(VertexConsumer consumer, Matrix4f pose, Vector3f normal, int packedOverlay, int packedLight, float alpha) {
 		renderQuad(consumer, pose, normal, packedOverlay, packedLight, alpha, 0, 0, 1, 1);
 	}
+
 	static void renderQuad(VertexConsumer consumer, Matrix4f pose, Vector3f normal, int packedOverlay, int packedLight, float alpha, float minU, float minV, float maxU, float maxV) {
 		int minX = 0;
 		int minY = 0;
@@ -115,9 +115,9 @@ public class RenderHelper {
 		addVertex(pose, normal, consumer, maxY, maxX, packedOverlay, packedLight, minU, minV, alpha);
 	}
 
-	private static void addVertex(Matrix4f pose, Vector3f normal, VertexConsumer pConsumer, int pY, float pX, int packedOverlay, int packedLight, float u, float v, float alpha) {
+	private static void addVertex(Matrix4f pose, Vector3f normal, VertexConsumer consumer, int pY, float pX, int packedOverlay, int packedLight, float u, float v, float alpha) {
 		Vector4f pos = new Vector4f(pX, pY, 0, 1.0F);
 		pose.transform(pos);
-		pConsumer.vertex(pos.x(), pos.y(), pos.z(), 1, 1, 1, alpha, u, v, packedOverlay, packedLight, normal.x(), normal.y(), normal.z());
+		consumer.vertex(pos.x(), pos.y(), pos.z(), 1, 1, 1, alpha, u, v, packedOverlay, packedLight, normal.x(), normal.y(), normal.z());
 	}
 }

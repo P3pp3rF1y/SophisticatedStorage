@@ -19,10 +19,7 @@ import net.minecraft.world.level.block.entity.ContainerOpenersCounter;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.items.IItemHandler;
+import net.neoforged.neoforge.items.IItemHandler;
 import net.p3pp3rf1y.sophisticatedcore.controller.IControllableStorage;
 import net.p3pp3rf1y.sophisticatedcore.controller.ILinkable;
 import net.p3pp3rf1y.sophisticatedcore.inventory.CachedFailedInsertInventoryHandler;
@@ -62,9 +59,7 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 	private boolean chunkBeingUnloaded = false;
 
 	@Nullable
-	private LazyOptional<IItemHandler> itemHandlerCap;
-	@Nullable
-	private LazyOptional<IItemHandler> noSideItemHandlerCap;
+	private IItemHandler cachedFailedInsertItemHandler;
 	private boolean locked = false;
 	private boolean showLock = true;
 	private boolean showTier = true;
@@ -166,7 +161,7 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 	protected abstract String getStorageType();
 
 	protected void onUpgradeCachesInvalidated() {
-		invalidateStorageCap();
+		invalidateCapabilities();
 	}
 
 	public boolean isOpen() {
@@ -377,41 +372,15 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		setChanged();
 	}
 
-	@Nonnull
-	@Override
-	public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) {
-		if (cap == ForgeCapabilities.ITEM_HANDLER) {
-			if (side == null) {
-				if (noSideItemHandlerCap == null) {
-					noSideItemHandlerCap = LazyOptional.of(() -> getStorageWrapper().getInventoryForInputOutput());
-				}
-				return noSideItemHandlerCap.cast();
-			}
-			if (itemHandlerCap == null) {
-				itemHandlerCap = LazyOptional.of(() -> new CachedFailedInsertInventoryHandler(() -> getStorageWrapper().getInventoryForInputOutput(), () -> level != null ? level.getGameTime() : 0));
-			}
-			return itemHandlerCap.cast();
+	@Nullable
+	public IItemHandler getExternalItemHandler(@Nullable Direction side) {
+		if (side == null) {
+			return getStorageWrapper().getInventoryForInputOutput();
 		}
-		return super.getCapability(cap, side);
-	}
-
-	@Override
-	public void invalidateCaps() {
-		super.invalidateCaps();
-		invalidateStorageCap();
-	}
-
-	private void invalidateStorageCap() {
-		if (itemHandlerCap != null) {
-			LazyOptional<IItemHandler> tempItemHandlerCap = itemHandlerCap;
-			itemHandlerCap = null;
-			tempItemHandlerCap.invalidate();
+		if (cachedFailedInsertItemHandler == null) {
+			cachedFailedInsertItemHandler = new CachedFailedInsertInventoryHandler(() -> getStorageWrapper().getInventoryForInputOutput(), () -> level != null ? level.getGameTime() : 0);
 		}
-		if (noSideItemHandlerCap != null) {
-			LazyOptional<IItemHandler> tempNoSideItemHandlerCap = noSideItemHandlerCap;
-			noSideItemHandlerCap = null;
-			tempNoSideItemHandlerCap.invalidate();
-		}
+		return cachedFailedInsertItemHandler;
 	}
 
 	public boolean shouldDropContents() {
@@ -526,7 +495,7 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		updateEmptySlots();
 		if (allowsEmptySlotsMatchingItemInsertsWhenLocked()) {
 			contentsFilteredItemHandler = null;
-			invalidateStorageCap();
+			invalidateCapabilities();
 		}
 		setChanged();
 		WorldHelper.notifyBlockUpdate(this);
@@ -546,7 +515,7 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		updateEmptySlots();
 		if (allowsEmptySlotsMatchingItemInsertsWhenLocked()) {
 			contentsFilteredItemHandler = null;
-			invalidateStorageCap();
+			invalidateCapabilities();
 		}
 		setChanged();
 		setUpdateBlockRender();

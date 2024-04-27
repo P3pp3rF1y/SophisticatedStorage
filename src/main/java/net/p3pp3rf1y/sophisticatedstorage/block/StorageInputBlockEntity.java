@@ -4,29 +4,41 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.items.IItemHandler;
+import net.neoforged.neoforge.items.IItemHandler;
 import net.p3pp3rf1y.sophisticatedcore.inventory.IItemHandlerSimpleInserter;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class StorageInputBlockEntity extends StorageIOBlockEntity {
+	@Nullable
+	private IItemHandler itemHandler;
+
 	public StorageInputBlockEntity(BlockPos pos, BlockState state) {
 		super(ModBlocks.STORAGE_INPUT_BLOCK_ENTITY_TYPE.get(), pos, state);
 	}
 
+	@Nullable
 	@Override
-	protected <T> LazyOptional<T> getControllerCapability(Capability<T> cap, @Nullable Direction side, ControllerBlockEntity c) {
-		if (cap == ForgeCapabilities.ITEM_HANDLER) {
-				return c.getCapability(ForgeCapabilities.ITEM_HANDLER, null) //passing null side to not get the cache failed handler
-						.map(itemHandler -> LazyOptional.of(() -> itemHandler instanceof IItemHandlerSimpleInserter simpleInserter ? new SingleSlotInputItemHandlerWrapper(simpleInserter) : itemHandler))
-						.orElseGet(LazyOptional::empty).cast();
+	public IItemHandler getExternalItemHandler(@Nullable Direction side) {
+		if (getControllerPos().isEmpty()) {
+			return null;
 		}
 
-		return super.getControllerCapability(cap, side, c);
+		if (itemHandler == null) {
+			itemHandler = super.getExternalItemHandler(side);
+			if (itemHandler instanceof IItemHandlerSimpleInserter simpleInserter) {
+				itemHandler = new SingleSlotInputItemHandlerWrapper(simpleInserter);
+			}
+		}
+
+		return itemHandler;
+	}
+
+	@Override
+	protected void invalidateItemHandlerCache() {
+		super.invalidateItemHandlerCache();
+		itemHandler = null;
 	}
 
 	private static class SingleSlotInputItemHandlerWrapper implements IItemHandler {

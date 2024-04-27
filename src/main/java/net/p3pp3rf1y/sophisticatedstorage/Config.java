@@ -1,11 +1,11 @@
 package net.p3pp3rf1y.sophisticatedstorage;
 
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
-import net.minecraftforge.common.ForgeConfigSpec;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.event.config.ModConfigEvent;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.event.config.ModConfigEvent;
+import net.neoforged.neoforge.common.ModConfigSpec;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.FilteredUpgradeConfig;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.IUpgradeCountLimitConfig;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeGroup;
@@ -31,34 +31,35 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 
 public class Config {
-	private Config() {}
+	private Config() {
+	}
 
 	private static final String MAX_UPGRADES_MATCHER = "([a-z0-9_]+\\|[a-z0-9_/.-]+\\|\\d+)";
 
 	public static final Client CLIENT;
-	public static final ForgeConfigSpec CLIENT_SPEC;
+	public static final ModConfigSpec CLIENT_SPEC;
 
 	public static final Server SERVER;
-	public static final ForgeConfigSpec SERVER_SPEC;
+	public static final ModConfigSpec SERVER_SPEC;
 	public static final Common COMMON;
-	public static final ForgeConfigSpec COMMON_SPEC;
+	public static final ModConfigSpec COMMON_SPEC;
 
 	static {
-		final Pair<Server, ForgeConfigSpec> serverSpec = new ForgeConfigSpec.Builder().configure(Server::new);
+		final Pair<Server, ModConfigSpec> serverSpec = new ModConfigSpec.Builder().configure(Server::new);
 		SERVER_SPEC = serverSpec.getRight();
 		SERVER = serverSpec.getLeft();
-		final Pair<Client, ForgeConfigSpec> clientSpec = new ForgeConfigSpec.Builder().configure(Client::new);
+		final Pair<Client, ModConfigSpec> clientSpec = new ModConfigSpec.Builder().configure(Client::new);
 		CLIENT_SPEC = clientSpec.getRight();
 		CLIENT = clientSpec.getLeft();
-		final Pair<Common, ForgeConfigSpec> commonSpec = new ForgeConfigSpec.Builder().configure(Common::new);
+		final Pair<Common, ModConfigSpec> commonSpec = new ModConfigSpec.Builder().configure(Common::new);
 		COMMON_SPEC = commonSpec.getRight();
 		COMMON = commonSpec.getLeft();
 	}
 
 	public static class Common {
-		public final ForgeConfigSpec.BooleanValue dropPacked;
+		public final ModConfigSpec.BooleanValue dropPacked;
 
-		public Common(ForgeConfigSpec.Builder builder) {
+		public Common(ModConfigSpec.Builder builder) {
 			builder.comment("Common Settings").push("common");
 
 			dropPacked = builder.comment("Determines whether chests / barrels are always dropped as packed with their contents when broken without the need to use packing tape").define("dropPacked", false);
@@ -68,10 +69,10 @@ public class Config {
 	}
 
 	public static class Client {
-		public final ForgeConfigSpec.BooleanValue showHigherTierTintedVariants;
-		public final ForgeConfigSpec.BooleanValue showSingleWoodVariantOnly;
+		public final ModConfigSpec.BooleanValue showHigherTierTintedVariants;
+		public final ModConfigSpec.BooleanValue showSingleWoodVariantOnly;
 
-		public Client(ForgeConfigSpec.Builder builder) {
+		public Client(ModConfigSpec.Builder builder) {
 			builder.comment("Client-side Settings").push("client");
 
 			showHigherTierTintedVariants = builder.comment("Determines whether JEI and creative tab will show tinted storage items for iron and higher tiers. Can help with easily removing many of these items from there.")
@@ -137,8 +138,6 @@ public class Config {
 		public final StackUpgradeConfig stackUpgrade;
 		public final FilteredUpgradeConfig compactingUpgrade;
 		public final FilteredUpgradeConfig advancedCompactingUpgrade;
-		public final FilteredUpgradeConfig depositUpgrade;
-		public final FilteredUpgradeConfig advancedDepositUpgrade;
 		public final FilteredUpgradeConfig feedingUpgrade;
 		public final FilteredUpgradeConfig advancedFeedingUpgrade;
 		public final FilteredUpgradeConfig filterUpgrade;
@@ -161,7 +160,7 @@ public class Config {
 		public final HopperUpgradeConfig hopperUpgrade;
 		public final HopperUpgradeConfig advancedHopperUpgrade;
 
-		public final ForgeConfigSpec.IntValue tooManyItemEntityDrops;
+		public final ModConfigSpec.IntValue tooManyItemEntityDrops;
 		public final MaxUgradesPerStorageConfig maxUpgradesPerStorage;
 
 		public void initListeners(IEventBus modBus) {
@@ -169,7 +168,8 @@ public class Config {
 			modBus.addListener(this::onConfigLoad);
 		}
 
-		@SuppressWarnings("unused") //need the Event parameter for forge reflection to understand what event this listens to
+		@SuppressWarnings("unused")
+		//need the Event parameter for forge reflection to understand what event this listens to
 		public void onConfigReload(ModConfigEvent.Reloading event) {
 			clearCache();
 		}
@@ -186,7 +186,7 @@ public class Config {
 			compressionUpgrade.clearCache();
 		}
 
-		public Server(ForgeConfigSpec.Builder builder) {
+		public Server(ModConfigSpec.Builder builder) {
 			builder.comment("Server Settings").push("server");
 
 			woodBarrel = new StorageConfig(builder, "Wood Barrel", 27, 1);
@@ -242,8 +242,6 @@ public class Config {
 			stackUpgrade = new StackUpgradeConfig(builder);
 			compactingUpgrade = new FilteredUpgradeConfig(builder, "Compacting Upgrade", "compactingUpgrade", 9, 3);
 			advancedCompactingUpgrade = new FilteredUpgradeConfig(builder, "Advanced Compacting Upgrade", "advancedCompactingUpgrade", 16, 4);
-			depositUpgrade = new FilteredUpgradeConfig(builder, "Deposit Upgrade", "depositUpgrade", 9, 3);
-			advancedDepositUpgrade = new FilteredUpgradeConfig(builder, "Advanced Deposit Upgrade", "advancedDepositUpgrade", 16, 4);
 			feedingUpgrade = new FilteredUpgradeConfig(builder, "Feeding Upgrade", "feedingUpgrade", 9, 3);
 			advancedFeedingUpgrade = new FilteredUpgradeConfig(builder, "Advanced Feeding Upgrade", "advancedFeedingUpgrade", 16, 4);
 			filterUpgrade = new FilteredUpgradeConfig(builder, "Filter Upgrade", "filterUpgrade", 9, 3);
@@ -293,10 +291,10 @@ public class Config {
 		}
 
 		public static class StorageConfig {
-			public final ForgeConfigSpec.IntValue inventorySlotCount;
-			public final ForgeConfigSpec.IntValue upgradeSlotCount;
+			public final ModConfigSpec.IntValue inventorySlotCount;
+			public final ModConfigSpec.IntValue upgradeSlotCount;
 
-			public StorageConfig(ForgeConfigSpec.Builder builder, String storagePrefix, int inventorySlotCountDefault, int upgradeSlotCountDefault) {
+			public StorageConfig(ModConfigSpec.Builder builder, String storagePrefix, int inventorySlotCountDefault, int upgradeSlotCountDefault) {
 				builder.comment(storagePrefix + " Settings").push(storagePrefix.replace(" ", ""));
 				inventorySlotCount = builder.comment("Number of inventory slots in the storage").defineInRange("inventorySlotCount", inventorySlotCountDefault, 1, 180);
 				upgradeSlotCount = builder.comment("Number of upgrade slots in the storage").defineInRange("upgradeSlotCount", upgradeSlotCountDefault, 0, 10);
@@ -305,10 +303,10 @@ public class Config {
 		}
 
 		public static class LimitedBarrelConfig {
-			public final ForgeConfigSpec.IntValue baseSlotLimitMultiplier;
-			public final ForgeConfigSpec.IntValue upgradeSlotCount;
+			public final ModConfigSpec.IntValue baseSlotLimitMultiplier;
+			public final ModConfigSpec.IntValue upgradeSlotCount;
 
-			public LimitedBarrelConfig(ForgeConfigSpec.Builder builder, String storagePrefix, int baseSlotLimitMultiplierDefault, int upgradeSlotCountDefault) {
+			public LimitedBarrelConfig(ModConfigSpec.Builder builder, String storagePrefix, int baseSlotLimitMultiplierDefault, int upgradeSlotCountDefault) {
 				builder.comment(storagePrefix + " Settings").push(storagePrefix.replace(" ", ""));
 				baseSlotLimitMultiplier = builder.comment("Multiplier that's used to calculate base slot limit").defineInRange("baseSlotLimitMultiplier", baseSlotLimitMultiplierDefault, 1, 8192);
 				upgradeSlotCount = builder.comment("Number of upgrade slots in the storage").defineInRange("upgradeSlotCount", upgradeSlotCountDefault, 0, 10);
@@ -317,12 +315,12 @@ public class Config {
 		}
 
 		public static class ShulkerBoxDisallowedItems {
-			private final ForgeConfigSpec.BooleanValue containerItemsDisallowed;
-			private final ForgeConfigSpec.ConfigValue<List<String>> disallowedItemsList;
+			private final ModConfigSpec.BooleanValue containerItemsDisallowed;
+			private final ModConfigSpec.ConfigValue<List<String>> disallowedItemsList;
 			private boolean initialized = false;
 			private Set<Item> disallowedItemsSet = null;
 
-			ShulkerBoxDisallowedItems(ForgeConfigSpec.Builder builder) {
+			ShulkerBoxDisallowedItems(ModConfigSpec.Builder builder) {
 				builder.push("shulkerBoxDisallowedItems");
 				disallowedItemsList = builder.comment("List of items that are not allowed to be put in shulkerboxes - e.g. \"minecraft:bundle\"").define("disallowedItems", new ArrayList<>());
 				containerItemsDisallowed = builder.comment("Determines if container items (those that override canFitInsideContainerItems to false) are able to fit in shulker boxes")
@@ -352,19 +350,17 @@ public class Config {
 
 				for (String disallowedItemName : disallowedItemsList.get()) {
 					ResourceLocation registryName = new ResourceLocation(disallowedItemName);
-					if (ForgeRegistries.ITEMS.containsKey(registryName)) {
-						disallowedItemsSet.add(ForgeRegistries.ITEMS.getValue(registryName));
-					}
+					BuiltInRegistries.ITEM.getOptional(registryName).ifPresent(disallowedItemsSet::add);
 				}
 			}
 		}
 
 		public static class MaxUgradesPerStorageConfig implements IUpgradeCountLimitConfig {
-			private final ForgeConfigSpec.ConfigValue<List<? extends String>> maxUpgradesPerStorageList;
+			private final ModConfigSpec.ConfigValue<List<? extends String>> maxUpgradesPerStorageList;
 			@Nullable
 			private Map<String, Map<String, Integer>> maxUpgradesPerStorage = null;
 
-			protected MaxUgradesPerStorageConfig(ForgeConfigSpec.Builder builder, Map<String, Map<String, Integer>> defaultUpgradesPerStorage) {
+			protected MaxUgradesPerStorageConfig(ModConfigSpec.Builder builder, Map<String, Map<String, Integer>> defaultUpgradesPerStorage) {
 				maxUpgradesPerStorageList = builder.comment("Limit of maximum number of upgrades of type per storage in format of \"StorageType|UpgradeRegistryName[or UpgradeGroup]|MaxNumber\"")
 						.defineList("maxUpgradesPerStorage", convertToList(defaultUpgradesPerStorage), mapping -> ((String) mapping).matches(MAX_UPGRADES_MATCHER));
 			}

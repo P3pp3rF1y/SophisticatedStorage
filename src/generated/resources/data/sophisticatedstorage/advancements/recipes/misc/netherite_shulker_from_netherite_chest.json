@@ -1,4 +1,10 @@
 {
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:netherite_shulker_box"
+    }
+  ],
   "parent": "minecraft:recipes/root",
   "criteria": {
     "has_netherite_chest": {
@@ -22,14 +28,13 @@
   },
   "requirements": [
     [
-      "has_netherite_chest",
-      "has_the_recipe"
+      "has_the_recipe",
+      "has_netherite_chest"
     ]
   ],
   "rewards": {
     "recipes": [
       "sophisticatedstorage:netherite_shulker_from_netherite_chest"
     ]
-  },
-  "sends_telemetry_event": true
+  }
 }

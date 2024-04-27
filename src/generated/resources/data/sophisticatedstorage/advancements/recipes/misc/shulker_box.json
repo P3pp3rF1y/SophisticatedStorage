@@ -1,4 +1,10 @@
 {
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:shulker_box"
+    }
+  ],
   "parent": "minecraft:recipes/root",
   "criteria": {
     "has_shulker_shell": {
@@ -22,14 +28,13 @@
   },
   "requirements": [
     [
-      "has_shulker_shell",
-      "has_the_recipe"
+      "has_the_recipe",
+      "has_shulker_shell"
     ]
   ],
   "rewards": {
     "recipes": [
       "sophisticatedstorage:shulker_box"
     ]
-  },
-  "sends_telemetry_event": true
+  }
 }

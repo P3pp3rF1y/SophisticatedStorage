@@ -1,4 +1,10 @@
 {
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:basic_to_diamond_tier_upgrade"
+    }
+  ],
   "parent": "minecraft:recipes/root",
   "criteria": {
     "has_basic_to_gold_tier_upgrade": {
@@ -22,14 +28,13 @@
   },
   "requirements": [
     [
-      "has_basic_to_gold_tier_upgrade",
-      "has_the_recipe"
+      "has_the_recipe",
+      "has_basic_to_gold_tier_upgrade"
     ]
   ],
   "rewards": {
     "recipes": [
       "sophisticatedstorage:basic_to_diamond_tier_upgrade"
     ]
-  },
-  "sends_telemetry_event": true
+  }
 }

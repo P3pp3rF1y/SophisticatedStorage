@@ -1,4 +1,10 @@
 {
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:chest"
+    }
+  ],
   "parent": "minecraft:recipes/root",
   "criteria": {
     "has_the_recipe": {
@@ -22,14 +28,13 @@
   },
   "requirements": [
     [
-      "has_vanilla_chest",
-      "has_the_recipe"
+      "has_the_recipe",
+      "has_vanilla_chest"
     ]
   ],
   "rewards": {
     "recipes": [
       "sophisticatedstorage:oak_chest_from_vanilla_chest"
     ]
-  },
-  "sends_telemetry_event": true
+  }
 }

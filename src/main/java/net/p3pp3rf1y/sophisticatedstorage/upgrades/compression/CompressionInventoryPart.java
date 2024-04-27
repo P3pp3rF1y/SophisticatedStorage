@@ -6,7 +6,7 @@ import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraftforge.items.ItemHandlerHelper;
+import net.neoforged.neoforge.items.ItemHandlerHelper;
 import net.p3pp3rf1y.sophisticatedcore.inventory.IInventoryPartHandler;
 import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryHandler;
 import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryPartitioner;
@@ -462,15 +462,13 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 			return stack;
 		}
 
-		int limit = 0;
-
 		Map<Integer, SlotDefinition> definitions = slotDefinitions;
 
 		if (definitions.isEmpty()) {
 			definitions = getSlotDefinitions(stack.getItem(), slot, Map.of());
 		}
 
-		limit = getStackLimit(definitions.get(slot));
+		int limit = getStackLimit(definitions.get(slot));
 
 		int currentCalculatedCount = calculatedStacks.containsKey(slot) ? calculatedStacks.get(slot).getCount() : 0;
 		int inserted = Math.min(Math.max(parent.getBaseStackLimit(stack) - parent.getSlotStack(slot).getCount(), limit - currentCalculatedCount), stack.getCount());

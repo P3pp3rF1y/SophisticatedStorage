@@ -11,7 +11,7 @@ import java.util.List;
 class BlockSideTest {
 	@ParameterizedTest
 	@MethodSource("fromDirectionConvertsCorrectly")
-	public void fromDirectionConvertsCorrectly(FromDirectionParams fromDirectionParams) {
+	void fromDirectionConvertsCorrectly(FromDirectionParams fromDirectionParams) {
 		Assertions.assertEquals(fromDirectionParams.expectedSide, BlockSide.fromDirection(fromDirectionParams.direction, fromDirectionParams.baseHorizontalDirection, fromDirectionParams.baseVerticalFacing));
 	}
 
@@ -66,7 +66,7 @@ class BlockSideTest {
 
 	@ParameterizedTest
 	@MethodSource("toDirectionConvertsCorrectly")
-	public void toDirectionConvertsCorrectly(ToDirectionParams toDirectionParams) {
+	void toDirectionConvertsCorrectly(ToDirectionParams toDirectionParams) {
 		Assertions.assertEquals(toDirectionParams.expectedDirection, toDirectionParams.side.toDirection(toDirectionParams.baseHorizontalDirection, toDirectionParams.baseVerticalFacing));
 	}
 

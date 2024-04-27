@@ -46,7 +46,7 @@ public class SideIOControl extends CompositeWidgetBase<WidgetBase> {
 	}
 
 	@Override
-	public void updateNarration(NarrationElementOutput pNarrationElementOutput) {
+	public void updateNarration(NarrationElementOutput narrationElementOutput) {
 		//noop
 	}
 

@@ -1,4 +1,10 @@
 {
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:limited_diamond_barrel_4"
+    }
+  ],
   "parent": "minecraft:recipes/root",
   "criteria": {
     "has_limited_gold_barrel_4": {
@@ -22,14 +28,13 @@
   },
   "requirements": [
     [
-      "has_limited_gold_barrel_4",
-      "has_the_recipe"
+      "has_the_recipe",
+      "has_limited_gold_barrel_4"
     ]
   ],
   "rewards": {
     "recipes": [
       "sophisticatedstorage:limited_diamond_barrel_4"
     ]
-  },
-  "sends_telemetry_event": true
+  }
 }

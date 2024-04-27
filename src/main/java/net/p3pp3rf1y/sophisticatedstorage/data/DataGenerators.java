@@ -2,7 +2,7 @@ package net.p3pp3rf1y.sophisticatedstorage.data;
 
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.PackOutput;
-import net.minecraftforge.data.event.GatherDataEvent;
+import net.neoforged.neoforge.data.event.GatherDataEvent;
 
 public class DataGenerators {
 	private DataGenerators() {}

@@ -1,4 +1,10 @@
 {
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:smoking_upgrade"
+    }
+  ],
   "parent": "minecraft:recipes/root",
   "criteria": {
     "has_smelting_upgrade": {
@@ -22,14 +28,13 @@
   },
   "requirements": [
     [
-      "has_smelting_upgrade",
-      "has_the_recipe"
+      "has_the_recipe",
+      "has_smelting_upgrade"
     ]
   ],
   "rewards": {
     "recipes": [
       "sophisticatedstorage:smoking_upgrade_from_smelting_upgrade"
     ]
-  },
-  "sends_telemetry_event": true
+  }
 }

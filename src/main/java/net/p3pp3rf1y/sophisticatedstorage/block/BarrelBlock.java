@@ -5,7 +5,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stats;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
@@ -18,10 +17,7 @@ import net.minecraft.world.entity.monster.piglin.PiglinAi;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
-import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.EmptyBlockGetter;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.*;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
@@ -39,10 +35,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.EntityCollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.extensions.common.IClientBlockExtensions;
-import net.minecraftforge.network.NetworkHooks;
+import net.neoforged.neoforge.client.extensions.common.IClientBlockExtensions;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.client.particle.CustomTintTerrainParticleData;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
@@ -104,7 +97,6 @@ public class BarrelBlock extends WoodStorageBlockBase {
 		return true;
 	}
 
-	@OnlyIn(Dist.CLIENT)
 	@Override
 	public void initializeClient(Consumer<IClientBlockExtensions> consumer) {
 		consumer.accept(new BarrelBlockClientExtensions(this));
@@ -127,8 +119,12 @@ public class BarrelBlock extends WoodStorageBlockBase {
 			}
 
 			player.awardStat(Stats.OPEN_BARREL);
-			NetworkHooks.openScreen((ServerPlayer) player, new SimpleMenuProvider((w, p, pl) -> instantiateContainerMenu(w, pl, pos),
-					WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).map(StorageBlockEntity::getDisplayName).orElse(Component.empty())), pos);
+			player.openMenu(
+					new SimpleMenuProvider(
+							(w, p, pl) -> instantiateContainerMenu(w, pl, pos),
+							WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).map(StorageBlockEntity::getDisplayName).orElse(Component.empty())
+					), pos
+			);
 			PiglinAi.angerNearbyPiglins(player, true);
 			return InteractionResult.CONSUME;
 		}).orElse(InteractionResult.PASS);
@@ -172,7 +168,7 @@ public class BarrelBlock extends WoodStorageBlockBase {
 	}
 
 	@Override
-	public ItemStack getCloneItemStack(BlockState state, HitResult target, BlockGetter world, BlockPos pos, Player player) {
+	public ItemStack getCloneItemStack(BlockState state, HitResult target, LevelReader world, BlockPos pos, Player player) {
 		ItemStack cloneItemStack = super.getCloneItemStack(state, target, world, pos, player);
 		BarrelBlockItem.setFlatTop(cloneItemStack, state.getValue(FLAT_TOP));
 		WorldHelper.getBlockEntity(world, pos, BarrelBlockEntity.class).ifPresent(barrelBlockEntity -> {
@@ -211,7 +207,7 @@ public class BarrelBlock extends WoodStorageBlockBase {
 
 	@SuppressWarnings("deprecation")
 	@Override
-	public VoxelShape getBlockSupportShape(BlockState pState, BlockGetter pReader, BlockPos pPos) {
+	public VoxelShape getBlockSupportShape(BlockState state, BlockGetter reader, BlockPos pos) {
 		return Shapes.block();
 	}
 
@@ -236,12 +232,12 @@ public class BarrelBlock extends WoodStorageBlockBase {
 	}
 
 	@Override
-	public VoxelShape getOcclusionShape(BlockState pState, BlockGetter pLevel, BlockPos pPos) {
+	public VoxelShape getOcclusionShape(BlockState state, BlockGetter level, BlockPos pos) {
 		return Shapes.block();
 	}
 
 	@Override
-	public boolean useShapeForLightOcclusion(BlockState pState) {
+	public boolean useShapeForLightOcclusion(BlockState state) {
 		return true;
 	}
 }

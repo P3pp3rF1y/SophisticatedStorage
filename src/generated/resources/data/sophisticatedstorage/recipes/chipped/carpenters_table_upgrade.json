@@ -1,8 +1,7 @@
 {
-  "type": "minecraft:crafting_shaped",
-  "conditions": [
+  "neoforge:conditions": [
     {
-      "type": "forge:mod_loaded",
+      "type": "neoforge:mod_loaded",
       "modid": "chipped"
     },
     {
@@ -10,6 +9,8 @@
       "itemRegistryName": "sophisticatedstorage:chipped/carpenters_table_upgrade"
     }
   ],
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
   "key": {
     "B": {
       "item": "sophisticatedstorage:upgrade_base"

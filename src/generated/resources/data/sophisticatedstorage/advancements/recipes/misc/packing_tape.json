@@ -1,4 +1,9 @@
 {
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedstorage:drop_packed_disabled"
+    }
+  ],
   "parent": "minecraft:recipes/root",
   "criteria": {
     "has_slime": {
@@ -20,14 +25,13 @@
   },
   "requirements": [
     [
-      "has_slime",
-      "has_the_recipe"
+      "has_the_recipe",
+      "has_slime"
     ]
   ],
   "rewards": {
     "recipes": [
       "sophisticatedstorage:packing_tape"
     ]
-  },
-  "sends_telemetry_event": true
+  }
 }

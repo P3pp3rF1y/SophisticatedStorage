@@ -3,12 +3,14 @@ package net.p3pp3rf1y.sophisticatedstorage.block;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.util.LazyOptional;
+import net.neoforged.neoforge.capabilities.BlockCapabilityCache;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.items.IItemHandler;
 import net.p3pp3rf1y.sophisticatedcore.controller.ControllerBlockEntityBase;
 import net.p3pp3rf1y.sophisticatedcore.controller.IControllerBoundable;
 import net.p3pp3rf1y.sophisticatedcore.controller.ILinkable;
@@ -17,13 +19,17 @@ import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.Collections;
+import java.util.Optional;
+import java.util.Set;
 
 public class StorageIOBlockEntity extends BlockEntity implements IControllerBoundable, ILinkable {
 	@Nullable
 	private BlockPos controllerPos = null;
 	private boolean isLinkedToController = false;
-	private Map<Capability<?>, Map<Direction, LazyOptional<?>>> capabilitySideCache = new HashMap<>();
+	@Nullable
+	private BlockCapabilityCache<IItemHandler, Direction> controllerItemHandlerCache;
+
 	protected StorageIOBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
 		super(type, pos, state);
 	}
@@ -45,7 +51,7 @@ public class StorageIOBlockEntity extends BlockEntity implements IControllerBoun
 	@Override
 	public void setControllerPos(BlockPos controllerPos) {
 		this.controllerPos = controllerPos;
-		invalidateAllCapabilityCache();
+		controllerItemHandlerCache = null;
 		setChanged();
 	}
 
@@ -81,17 +87,8 @@ public class StorageIOBlockEntity extends BlockEntity implements IControllerBoun
 	@Override
 	public void removeControllerPos() {
 		controllerPos = null;
-		invalidateAllCapabilityCache();
-		capabilitySideCache.clear();
+		controllerItemHandlerCache = null;
 		setChanged();
-	}
-
-	@SuppressWarnings("java:S1640") //can't use EnumMap because one of keys is null
-	private void invalidateAllCapabilityCache() {
-		capabilitySideCache.forEach((cap, map) -> {
-			HashMap<Direction, LazyOptional<?>> copy = new HashMap<>(map); //to prevent concurrent modification exception
-			copy.forEach((side, lazyOptional) -> lazyOptional.invalidate());
-		});
 	}
 
 	@Override
@@ -152,34 +149,33 @@ public class StorageIOBlockEntity extends BlockEntity implements IControllerBoun
 		isLinkedToController = NBTHelper.getBoolean(tag, "isLinkedToController").orElse(false);
 	}
 
-	@Override
+	protected void invalidateItemHandlerCache() {
+		controllerItemHandlerCache = null;
+		invalidateCapabilities();
+	}
+
+	@Nullable
 	@SuppressWarnings("java:S1640") //can't use EnumMap because one of keys is null
-	public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) {
+	public IItemHandler getExternalItemHandler(@Nullable Direction side) {
 		if (getControllerPos().isEmpty()) {
-			return super.getCapability(cap, side);
+			return null;
 		}
 
-		if (!capabilitySideCache.containsKey(cap) || !capabilitySideCache.get(cap).containsKey(side)) {
-			LazyOptional<T> lazyOptional = getControllerPos().flatMap(p -> WorldHelper.getLoadedBlockEntity(getLevel(), p, ControllerBlockEntity.class))
-					.map(c -> getControllerCapability(cap, side, c))
-					.orElseGet(() -> super.getCapability(cap, side));
-			capabilitySideCache.computeIfAbsent(cap, k -> new HashMap<>()).put(side, lazyOptional);
-			if (lazyOptional.isPresent()) {
-				lazyOptional.addListener(l -> removeCapabilityCacheOnSide(cap, side));
-			}
+		if (controllerItemHandlerCache == null && level instanceof ServerLevel serverLevel) {
+			controllerItemHandlerCache = BlockCapabilityCache.create(
+					Capabilities.ItemHandler.BLOCK,
+					serverLevel,
+					getControllerPos().get(),
+					Direction.UP,
+					() -> !isRemoved(),
+					this::invalidateItemHandlerCache
+			);
 		}
 
-		return capabilitySideCache.get(cap).get(side).cast();
-	}
-
-	private <T> void removeCapabilityCacheOnSide(Capability<T> cap, @Nullable Direction side) {
-		if (capabilitySideCache.containsKey(cap) && capabilitySideCache.get(cap).containsKey(side)) {
-			capabilitySideCache.get(cap).get(side).invalidate();
-			capabilitySideCache.get(cap).remove(side);
+		if (controllerItemHandlerCache != null) {
+			return controllerItemHandlerCache.getCapability();
+		} else {
+			return WorldHelper.getBlockEntity(getLevel(), getControllerPos().get(), ControllerBlockEntity.class).map(c -> c.getExternalItemHandler(side)).orElse(null);
 		}
-	}
-
-	protected <T> LazyOptional<T> getControllerCapability(Capability<T> cap, @Nullable Direction side, ControllerBlockEntity c) {
-		return c.getCapability(cap, side);
 	}
 }

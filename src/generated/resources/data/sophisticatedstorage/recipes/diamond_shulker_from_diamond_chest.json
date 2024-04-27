@@ -1,11 +1,12 @@
 {
-  "type": "sophisticatedstorage:shulker_box_from_chest",
-  "conditions": [
+  "neoforge:conditions": [
     {
       "type": "sophisticatedcore:item_enabled",
       "itemRegistryName": "sophisticatedstorage:diamond_shulker_box"
     }
   ],
+  "type": "sophisticatedstorage:shulker_box_from_chest",
+  "category": "misc",
   "key": {
     "C": {
       "item": "sophisticatedstorage:diamond_chest"

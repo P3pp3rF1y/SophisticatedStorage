@@ -1,6 +1,7 @@
 package net.p3pp3rf1y.sophisticatedstorage.compat.jei;
 
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -9,7 +10,6 @@ import net.minecraft.world.inventory.TransientCraftingContainer;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.*;
-import net.minecraftforge.registries.ForgeRegistries;
 import net.p3pp3rf1y.sophisticatedcore.compat.jei.ClientRecipeHelper;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.StorageTierUpgradeRecipe;
@@ -20,30 +20,33 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
+import java.util.Optional;
 
 public class TierUpgradeRecipesMaker {
 	private TierUpgradeRecipesMaker() {}
 
-	public static List<CraftingRecipe> getShapedCraftingRecipes() {
-		RecipeConstructor<StorageTierUpgradeRecipe> constructRecipe = (originalRecipe, id, ingredients, result) -> new ShapedRecipe(id, "", CraftingBookCategory.MISC, originalRecipe.getRecipeWidth(), originalRecipe.getRecipeHeight(), ingredients, result);
-		return getCraftingRecipes(constructRecipe, StorageTierUpgradeRecipe.REGISTERED_RECIPES, StorageTierUpgradeRecipe.class);
+	public static List<RecipeHolder<CraftingRecipe>> getShapedCraftingRecipes() {
+		RecipeConstructor<StorageTierUpgradeRecipe> constructRecipe = (originalRecipe, ingredients, result) -> {
+			ShapedRecipePattern pattern = new ShapedRecipePattern(originalRecipe.getRecipeWidth(), originalRecipe.getRecipeHeight(), ingredients, Optional.empty());
+			return new ShapedRecipe("", CraftingBookCategory.MISC, pattern, result);
+		};
+		return getCraftingRecipes(constructRecipe, StorageTierUpgradeRecipe.class);
 	}
 
-	public static List<CraftingRecipe> getShapelessCraftingRecipes() {
-		RecipeConstructor<StorageTierUpgradeShapelessRecipe> constructRecipe = (originalRecipe, id, ingredients, result) -> new ShapelessRecipe(id, "", CraftingBookCategory.MISC, result, ingredients);
-		return getCraftingRecipes(constructRecipe, StorageTierUpgradeShapelessRecipe.REGISTERED_RECIPES, StorageTierUpgradeShapelessRecipe.class);
+	public static List<RecipeHolder<CraftingRecipe>> getShapelessCraftingRecipes() {
+		RecipeConstructor<StorageTierUpgradeShapelessRecipe> constructRecipe = (originalRecipe, ingredients, result) -> new ShapelessRecipe("", CraftingBookCategory.MISC, result, ingredients);
+		return getCraftingRecipes(constructRecipe, StorageTierUpgradeShapelessRecipe.class);
 	}
 
 	@NotNull
-	private static <T extends CraftingRecipe> List<CraftingRecipe> getCraftingRecipes(RecipeConstructor<T> constructRecipe, Set<ResourceLocation> registeredRecipes, Class<T> originalRecipeClass) {
-		return ClientRecipeHelper.getAndTransformAvailableItemGroupRecipes(registeredRecipes, originalRecipeClass, recipe -> {
-			List<CraftingRecipe> itemGroupRecipes = new ArrayList<>();
+	private static <T extends CraftingRecipe> List<RecipeHolder<CraftingRecipe>> getCraftingRecipes(RecipeConstructor<T> constructRecipe, Class<T> originalRecipeClass) {
+		return ClientRecipeHelper.transformAllRecipesOfTypeIntoMultiple(RecipeType.CRAFTING, originalRecipeClass, recipe -> {
+			List<RecipeHolder<CraftingRecipe>> itemGroupRecipes = new ArrayList<>();
 			getStorageItems(recipe).forEach(storageItem -> {
 				NonNullList<Ingredient> ingredients = recipe.getIngredients();
 				CraftingContainer craftinginventory = new TransientCraftingContainer(new AbstractContainerMenu(null, -1) {
 					@Override
-					public ItemStack quickMoveStack(Player pPlayer, int pIndex) {
+					public ItemStack quickMoveStack(Player player, int index) {
 						return ItemStack.EMPTY;
 					}
 
@@ -67,9 +70,8 @@ public class TierUpgradeRecipesMaker {
 					i++;
 				}
 				ItemStack result = ClientRecipeHelper.assemble(recipe, craftinginventory);
-				//noinspection ConstantConditions
-				ResourceLocation id = new ResourceLocation(SophisticatedStorage.MOD_ID, "tier_upgrade_" + ForgeRegistries.ITEMS.getKey(storageItem.getItem()).getPath() + result.getOrCreateTag().toString().toLowerCase(Locale.ROOT).replaceAll("[{\",}:\s]", "_"));
-				itemGroupRecipes.add(constructRecipe.construct(recipe, id, ingredientsCopy, result));
+				ResourceLocation id = new ResourceLocation(SophisticatedStorage.MOD_ID, "tier_upgrade_" + BuiltInRegistries.ITEM.getKey(storageItem.getItem()).getPath() + result.getOrCreateTag().toString().toLowerCase(Locale.ROOT).replaceAll("[{\",}:\s]", "_"));
+				itemGroupRecipes.add(new RecipeHolder<>(id, constructRecipe.construct(recipe, ingredientsCopy, result)));
 			});
 			return itemGroupRecipes;
 		});
@@ -92,6 +94,6 @@ public class TierUpgradeRecipesMaker {
 	}
 
 	private interface RecipeConstructor<T extends Recipe<?>> {
-		CraftingRecipe construct(T originalRecipe, ResourceLocation id, NonNullList<Ingredient> ingredients, ItemStack result);
+		CraftingRecipe construct(T originalRecipe, NonNullList<Ingredient> ingredients, ItemStack result);
 	}
 }

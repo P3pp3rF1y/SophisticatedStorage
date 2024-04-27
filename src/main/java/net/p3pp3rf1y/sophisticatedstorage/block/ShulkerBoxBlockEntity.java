@@ -98,7 +98,7 @@ public class ShulkerBoxBlockEntity extends StorageBlockEntity {
 		state.updateNeighbourShapes(level, pos, 3);
 	}
 
-	public ShulkerBoxBlockEntity.AnimationStatus getAnimationStatus() {
+	public AnimationStatus getAnimationStatus() {
 		return animationStatus;
 	}
 

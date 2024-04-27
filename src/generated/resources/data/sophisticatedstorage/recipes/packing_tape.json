@@ -1,14 +1,11 @@
 {
-  "type": "minecraft:crafting_shapeless",
-  "conditions": [
+  "neoforge:conditions": [
     {
       "type": "sophisticatedstorage:drop_packed_disabled"
-    },
-    {
-      "type": "sophisticatedcore:item_enabled",
-      "itemRegistryName": "sophisticatedstorage:packing_tape"
     }
   ],
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
   "ingredients": [
     {
       "tag": "forge:slimeballs"

@@ -1,11 +1,11 @@
 package net.p3pp3rf1y.sophisticatedstorage.block;
 
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.fml.util.thread.SidedThreadGroups;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.fml.util.thread.SidedThreadGroups;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.SortBy;
 import net.p3pp3rf1y.sophisticatedcore.inventory.ITrackedContentsItemHandler;
@@ -64,7 +64,8 @@ public abstract class StorageWrapper implements IStorageWrapper {
 	private int mainColor = -1;
 	private int accentColor = -1;
 
-	private Runnable upgradeCachesInvalidatedHandler = () -> {};
+	private Runnable upgradeCachesInvalidatedHandler = () -> {
+	};
 
 	private final Map<Class<? extends IUpgradeWrapper>, Consumer<? extends IUpgradeWrapper>> upgradeDefaultsHandlers = new HashMap<>();
 
@@ -118,8 +119,7 @@ public abstract class StorageWrapper implements IStorageWrapper {
 			}) {
 				@Override
 				public boolean isItemValid(int slot, ItemStack stack) {
-					//noinspection ConstantConditions - by this time the upgrade has registryName so it can't be null
-					return super.isItemValid(slot, stack) && (stack.isEmpty() || SophisticatedStorage.MOD_ID.equals(ForgeRegistries.ITEMS.getKey(stack.getItem()).getNamespace()) || stack.is(ModItems.STORAGE_UPGRADE_TAG));
+					return super.isItemValid(slot, stack) && (stack.isEmpty() || SophisticatedStorage.MOD_ID.equals(BuiltInRegistries.ITEM.getKey(stack.getItem()).getNamespace()) || stack.is(ModItems.STORAGE_UPGRADE_TAG));
 				}
 
 				@Override

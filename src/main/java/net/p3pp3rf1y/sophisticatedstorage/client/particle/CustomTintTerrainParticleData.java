@@ -12,8 +12,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.GameData;
+import net.neoforged.neoforge.registries.GameData;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModParticles;
 
 import java.util.Objects;
@@ -45,7 +44,7 @@ public class CustomTintTerrainParticleData extends ParticleType<CustomTintTerrai
 
 	@Override
 	public String writeToString() {
-		return ForgeRegistries.PARTICLE_TYPES.getKey(getType()) + "|" + BlockStateParser.serialize(state) + "|" + pos.toShortString();
+		return BuiltInRegistries.PARTICLE_TYPE.getKey(getType()) + "|" + BlockStateParser.serialize(state) + "|" + pos.toShortString();
 	}
 
 	@SuppressWarnings("deprecation")

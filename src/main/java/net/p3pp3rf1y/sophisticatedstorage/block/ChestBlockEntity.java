@@ -14,8 +14,7 @@ import net.minecraft.world.level.block.entity.ChestLidController;
 import net.minecraft.world.level.block.entity.ContainerOpenersCounter;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.ChestType;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.util.LazyOptional;
+import net.neoforged.neoforge.items.IItemHandler;
 import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryHandler;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.DisplaySide;
 import net.p3pp3rf1y.sophisticatedcore.settings.ISettingsCategory;
@@ -27,7 +26,6 @@ import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.item.ChestBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.upgrades.INeighborChangeListenerUpgrade;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -308,18 +306,18 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 		doubleMainPos = null;
 	}
 
-	@NotNull
+	@org.jetbrains.annotations.Nullable
 	@Override
-	public <T> LazyOptional<T> getCapability(Capability<T> cap, @org.jetbrains.annotations.Nullable Direction side) {
+	public IItemHandler getExternalItemHandler(@org.jetbrains.annotations.Nullable Direction side) {
 		if (level == null) {
-			return LazyOptional.empty();
+			return null;
 		}
 
 		if (doubleMainPos != null) {
-			return level.getBlockEntity(doubleMainPos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get()).map(be -> be.getCapability(cap, side)).orElseGet(LazyOptional::empty);
+			return level.getBlockEntity(doubleMainPos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get()).map(be -> be.getExternalItemHandler(side)).orElse(null);
 		}
 
-		return super.getCapability(cap, side);
+		return super.getExternalItemHandler(side);
 	}
 
 	public boolean isMainChest() {

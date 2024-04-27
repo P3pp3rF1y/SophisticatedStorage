@@ -1,4 +1,10 @@
 {
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:barrel"
+    }
+  ],
   "parent": "minecraft:recipes/root",
   "criteria": {
     "has_crimson_plank": {
@@ -22,14 +28,13 @@
   },
   "requirements": [
     [
-      "has_crimson_plank",
-      "has_the_recipe"
+      "has_the_recipe",
+      "has_crimson_plank"
     ]
   ],
   "rewards": {
     "recipes": [
       "sophisticatedstorage:crimson_barrel"
     ]
-  },
-  "sends_telemetry_event": true
+  }
 }

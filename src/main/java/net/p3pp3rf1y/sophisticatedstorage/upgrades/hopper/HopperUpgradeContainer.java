@@ -116,10 +116,10 @@ public class HopperUpgradeContainer extends UpgradeContainerBase<HopperUpgradeWr
 	}
 
 	@Override
-	public void handleMessage(CompoundTag data) {
-		inputFilterLogicContainer.handleMessage(data);
-		outputFilterLogicContainer.handleMessage(data);
-		sideIOContainer.handleMessage(data);
+	public void handlePacket(CompoundTag data) {
+		inputFilterLogicContainer.handlePacket(data);
+		outputFilterLogicContainer.handlePacket(data);
+		sideIOContainer.handlePacket(data);
 	}
 
 	public ContentsFilterLogicContainer getInputFilterLogicContainer() {

@@ -1,11 +1,12 @@
 {
-  "type": "sophisticatedstorage:storage_tier_upgrade_shapeless",
-  "conditions": [
+  "neoforge:conditions": [
     {
       "type": "sophisticatedcore:item_enabled",
       "itemRegistryName": "sophisticatedstorage:netherite_chest"
     }
   ],
+  "type": "sophisticatedstorage:storage_tier_upgrade_shapeless",
+  "category": "misc",
   "ingredients": [
     {
       "item": "sophisticatedstorage:diamond_chest"

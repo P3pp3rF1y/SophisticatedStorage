@@ -1,4 +1,10 @@
 {
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:barrel"
+    }
+  ],
   "parent": "minecraft:recipes/root",
   "criteria": {
     "has_bamboo_plank": {
@@ -22,14 +28,13 @@
   },
   "requirements": [
     [
-      "has_bamboo_plank",
-      "has_the_recipe"
+      "has_the_recipe",
+      "has_bamboo_plank"
     ]
   ],
   "rewards": {
     "recipes": [
       "sophisticatedstorage:bamboo_barrel"
     ]
-  },
-  "sends_telemetry_event": true
+  }
 }

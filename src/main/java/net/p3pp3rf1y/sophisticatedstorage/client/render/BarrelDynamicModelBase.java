@@ -10,29 +10,18 @@ import com.mojang.math.Transformation;
 import net.minecraft.client.renderer.block.model.BlockModel;
 import net.minecraft.client.renderer.block.model.ItemOverrides;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.client.resources.model.Material;
-import net.minecraft.client.resources.model.ModelBaker;
-import net.minecraft.client.resources.model.ModelState;
-import net.minecraft.client.resources.model.UnbakedModel;
+import net.minecraft.client.resources.model.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.InventoryMenu;
-import net.minecraftforge.client.model.geometry.IGeometryBakingContext;
-import net.minecraftforge.client.model.geometry.IGeometryLoader;
-import net.minecraftforge.client.model.geometry.IUnbakedGeometry;
+import net.neoforged.neoforge.client.model.geometry.IGeometryBakingContext;
+import net.neoforged.neoforge.client.model.geometry.IGeometryLoader;
+import net.neoforged.neoforge.client.model.geometry.IUnbakedGeometry;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.WoodStorageBlockBase;
 import org.joml.Quaternionf;
 
 import javax.annotation.Nullable;
-import java.util.Collections;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -58,7 +47,7 @@ public abstract class BarrelDynamicModelBase<T extends BarrelDynamicModelBase<T>
 	private final Map<String, Map<BarrelModelPart, BarrelModelPartDefinition>> woodPartitionedModelPartDefinitions;
 
 	protected BarrelDynamicModelBase(@Nullable ResourceLocation parentLocation, Map<String, Map<BarrelModelPart, BarrelModelPartDefinition>> woodModelPartDefinitions,
-			@Nullable ResourceLocation flatTopModelName, Map<DynamicBarrelBakingData.DynamicPart, ResourceLocation> dynamicPartModels, Map<String, Map<BarrelModelPart, BarrelModelPartDefinition>> woodPartitionedModelPartDefinitions) {
+									 @Nullable ResourceLocation flatTopModelName, Map<DynamicBarrelBakingData.DynamicPart, ResourceLocation> dynamicPartModels, Map<String, Map<BarrelModelPart, BarrelModelPartDefinition>> woodPartitionedModelPartDefinitions) {
 		this.parentLocation = parentLocation;
 		this.woodModelPartDefinitions = woodModelPartDefinitions;
 		this.flatTopModelName = flatTopModelName;
@@ -133,7 +122,7 @@ public abstract class BarrelDynamicModelBase<T extends BarrelDynamicModelBase<T>
 	}
 
 	private Map<String, Map<BarrelModelPart, BakedModel>> bakeWoodModelParts(ModelBaker baker, Function<Material, TextureAtlasSprite> spriteGetter,
-			ModelState modelTransform, ResourceLocation modelLocation, Map<String, Map<BarrelModelPart, BarrelModelPartDefinition>> definitions) {
+																			 ModelState modelTransform, ResourceLocation modelLocation, Map<String, Map<BarrelModelPart, BarrelModelPartDefinition>> definitions) {
 		Map<String, Map<BarrelModelPart, UnbakedModel>> woodModels = createUnbakedWoodModelParts(definitions);
 
 		ImmutableMap.Builder<String, Map<BarrelModelPart, BakedModel>> builder = ImmutableMap.builder();
@@ -176,8 +165,7 @@ public abstract class BarrelDynamicModelBase<T extends BarrelDynamicModelBase<T>
 
 	@SuppressWarnings("java:S5803") //need to use textureMap to calculate hash based on it as well
 	private int getBakedModelHash(UnbakedModel model, ModelState modelTransform, BarrelModelPart part) {
-		int hash = 0;
-		hash = part.hashCode();
+		int hash = part.hashCode();
 		for (ResourceLocation dependency : model.getDependencies()) {
 			hash = 31 * hash + dependency.hashCode();
 		}
@@ -212,7 +200,7 @@ public abstract class BarrelDynamicModelBase<T extends BarrelDynamicModelBase<T>
 	}
 
 	protected abstract BarrelBakedModelBase instantiateBakedModel(ModelBaker baker, Map<String, Map<BarrelModelPart, BakedModel>> woodModelParts, @Nullable BakedModel flatTopModel,
-			Map<String, Map<DynamicBarrelBakingData.DynamicPart, DynamicBarrelBakingData>> woodDynamicBakingData, Map<String, Map<BarrelModelPart, BakedModel>> woodPartitionedModelParts);
+																  Map<String, Map<DynamicBarrelBakingData.DynamicPart, DynamicBarrelBakingData>> woodDynamicBakingData, Map<String, Map<BarrelModelPart, BakedModel>> woodPartitionedModelParts);
 
 	@Override
 	public void resolveParents(Function<ResourceLocation, UnbakedModel> modelGetter, IGeometryBakingContext context) {
@@ -423,7 +411,7 @@ public abstract class BarrelDynamicModelBase<T extends BarrelDynamicModelBase<T>
 		}
 
 		protected abstract T instantiateModel(@Nullable ResourceLocation parentLocation, Map<String, Map<BarrelModelPart, BarrelModelPartDefinition>> woodOverrides,
-				@Nullable ResourceLocation flatTopModelName, Map<DynamicBarrelBakingData.DynamicPart, ResourceLocation> dynamicPartModels, Map<String, Map<BarrelModelPart, BarrelModelPartDefinition>> partitionedWoodOverrides);
+											  @Nullable ResourceLocation flatTopModelName, Map<DynamicBarrelBakingData.DynamicPart, ResourceLocation> dynamicPartModels, Map<String, Map<BarrelModelPart, BarrelModelPartDefinition>> partitionedWoodOverrides);
 	}
 
 	public static final class BarrelModelPartDefinition {
@@ -475,12 +463,18 @@ public abstract class BarrelDynamicModelBase<T extends BarrelDynamicModelBase<T>
 			return Optional.ofNullable(modelLocation);
 		}
 
-		public Map<String, Material> textures() {return textures;}
+		public Map<String, Material> textures() {
+			return textures;
+		}
 
 		@Override
 		public boolean equals(Object obj) {
-			if (obj == this) {return true;}
-			if (obj == null || obj.getClass() != getClass()) {return false;}
+			if (obj == this) {
+				return true;
+			}
+			if (obj == null || obj.getClass() != getClass()) {
+				return false;
+			}
 			var that = (BarrelModelPartDefinition) obj;
 			return Objects.equals(modelLocation, that.modelLocation) &&
 					Objects.equals(textures, that.textures);

@@ -1,4 +1,10 @@
 {
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:limited_iron_barrel_2"
+    }
+  ],
   "parent": "minecraft:recipes/root",
   "criteria": {
     "has_limited_barrel_2": {
@@ -22,14 +28,13 @@
   },
   "requirements": [
     [
-      "has_limited_barrel_2",
-      "has_the_recipe"
+      "has_the_recipe",
+      "has_limited_barrel_2"
     ]
   ],
   "rewards": {
     "recipes": [
       "sophisticatedstorage:limited_iron_barrel_2"
     ]
-  },
-  "sends_telemetry_event": true
+  }
 }

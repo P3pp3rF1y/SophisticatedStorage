@@ -3,19 +3,16 @@ package net.p3pp3rf1y.sophisticatedstorage.block;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.WoodType;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.items.IItemHandler;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.Optional;
@@ -72,7 +69,7 @@ public abstract class WoodStorageBlockEntity extends StorageBlockEntity {
 	}
 
 	private Component makeWoodStorageDescriptionId(@Nullable WoodType wt) {
-		String id = Util.makeDescriptionId("block", Objects.requireNonNull(ForgeRegistries.BLOCKS.getKey(getBlockState().getBlock())));
+		String id = Util.makeDescriptionId("block", Objects.requireNonNull(BuiltInRegistries.BLOCK.getKey(getBlockState().getBlock())));
 		return WoodStorageBlockItem.getDisplayName(id, wt);
 	}
 
@@ -89,14 +86,13 @@ public abstract class WoodStorageBlockEntity extends StorageBlockEntity {
 		return !isPacked();
 	}
 
-	@Nonnull
+	@Nullable
 	@Override
-	public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) {
-		if (isPacked() && cap == ForgeCapabilities.ITEM_HANDLER) {
-			return LazyOptional.empty();
+	public IItemHandler getExternalItemHandler(@Nullable Direction side) {
+		if (isPacked()) {
+			return null;
 		}
-
-		return super.getCapability(cap, side);
+		return super.getExternalItemHandler(side);
 	}
 
 	@Override

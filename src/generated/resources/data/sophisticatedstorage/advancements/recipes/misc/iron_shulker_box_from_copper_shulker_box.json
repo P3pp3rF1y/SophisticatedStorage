@@ -1,4 +1,10 @@
 {
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:iron_shulker_box"
+    }
+  ],
   "parent": "minecraft:recipes/root",
   "criteria": {
     "has_copper_shulker_box": {
@@ -22,14 +28,13 @@
   },
   "requirements": [
     [
-      "has_copper_shulker_box",
-      "has_the_recipe"
+      "has_the_recipe",
+      "has_copper_shulker_box"
     ]
   ],
   "rewards": {
     "recipes": [
       "sophisticatedstorage:iron_shulker_box_from_copper_shulker_box"
     ]
-  },
-  "sends_telemetry_event": true
+  }
 }

@@ -14,8 +14,8 @@ public class LimitedBarrelContainerMenu extends StorageContainerMenu{
 		super(LIMITED_BARREL_CONTAINER_TYPE.get(), containerId, player, pos);
 	}
 
-	public static LimitedBarrelContainerMenu fromBuffer(int windowId, Inventory playerInventory, FriendlyByteBuf packetBuffer) {
-		return new LimitedBarrelContainerMenu(windowId, playerInventory.player, packetBuffer.readBlockPos());
+	public static LimitedBarrelContainerMenu fromBuffer(int windowId, Inventory playerInventory, FriendlyByteBuf buffer) {
+		return new LimitedBarrelContainerMenu(windowId, playerInventory.player, buffer.readBlockPos());
 	}
 
 	@Override

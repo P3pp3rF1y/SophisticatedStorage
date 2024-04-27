@@ -1,4 +1,10 @@
 {
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:auto_blasting_upgrade"
+    }
+  ],
   "parent": "minecraft:recipes/root",
   "criteria": {
     "has_blasting_upgrade": {
@@ -22,14 +28,13 @@
   },
   "requirements": [
     [
-      "has_blasting_upgrade",
-      "has_the_recipe"
+      "has_the_recipe",
+      "has_blasting_upgrade"
     ]
   ],
   "rewards": {
     "recipes": [
       "sophisticatedstorage:auto_blasting_upgrade"
     ]
-  },
-  "sends_telemetry_event": true
+  }
 }
