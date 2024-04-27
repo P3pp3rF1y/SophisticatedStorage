@@ -185,10 +185,6 @@ static def getStable() {
     return ""
 }
 
-tasks.named('publish').configure {
-    dependsOn 'reobfJar'
-}
-
 publishing {
     repositories {
         maven {
