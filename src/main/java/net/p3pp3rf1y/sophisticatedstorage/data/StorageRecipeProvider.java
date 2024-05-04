@@ -691,6 +691,16 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.unlockedBy(HAS_UPGRADE_BASE_CRITERION_NAME, has(ModItems.STACK_UPGRADE_TIER_3.get()))
 				.save(recipeOutput);
 
+		ShapeBasedRecipeBuilder.shaped(ModItems.STACK_UPGRADE_TIER_5.get())
+				.pattern("NNN")
+				.pattern("NSN")
+				.pattern("BNB")
+				.define('S', ModItems.STACK_UPGRADE_TIER_4.get())
+				.define('N', Tags.Items.INGOTS_NETHERITE)
+				.define('B', Tags.Items.STORAGE_BLOCKS_NETHERITE)
+				.unlockedBy(HAS_UPGRADE_BASE_CRITERION_NAME, has(ModItems.STACK_UPGRADE_TIER_4.get()))
+				.save(recipeOutput);
+
 		ShapeBasedRecipeBuilder.shaped(ModItems.JUKEBOX_UPGRADE.get())
 				.pattern(" J ")
 				.pattern("IBI")

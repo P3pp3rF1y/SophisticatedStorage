@@ -163,6 +163,8 @@
   "item.sophisticatedstorage.stack_upgrade_tier_3.tooltip": "Multiplies the number of stacks that can fit in a slot by 8",
   "item.sophisticatedstorage.stack_upgrade_tier_4": "Stack Upgrade Tier 4",
   "item.sophisticatedstorage.stack_upgrade_tier_4.tooltip": "Multiplies the number of stacks that can fit in a slot by 16",
+  "item.sophisticatedstorage.stack_upgrade_tier_5": "Stack Upgrade Tier 5",
+  "item.sophisticatedstorage.stack_upgrade_tier_5.tooltip": "Multiplies the number of stacks that can fit in a slot by 32",
   "item.sophisticatedstorage.pump_upgrade": "Pump Upgrade",
   "item.sophisticatedstorage.pump_upgrade.tooltip": "Pumps fluids between Tank upgrade and adjacent blocks",
   "item.sophisticatedstorage.xp_pump_upgrade": "Experience Pump Upgrade",
