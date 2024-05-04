@@ -163,6 +163,8 @@ public class ModItems {
 			new StackUpgradeItem(8, Config.SERVER.maxUpgradesPerStorage));
 	public static final RegistryObject<StackUpgradeItem> STACK_UPGRADE_TIER_4 = ITEMS.register("stack_upgrade_tier_4", () ->
 			new StackUpgradeItem(16, Config.SERVER.maxUpgradesPerStorage));
+	public static final RegistryObject<StackUpgradeItem> STACK_UPGRADE_TIER_5 = ITEMS.register("stack_upgrade_tier_5", () ->
+			new StackUpgradeItem(32, Config.SERVER.maxUpgradesPerStorage));
 	public static final String JUKEBOX_UPGRADE_NAME = "jukebox_upgrade";
 	public static final RegistryObject<JukeboxUpgradeItem> JUKEBOX_UPGRADE = ITEMS.register(JUKEBOX_UPGRADE_NAME, () -> new JukeboxUpgradeItem(Config.SERVER.maxUpgradesPerStorage));
 	public static final RegistryObject<PumpUpgradeItem> PUMP_UPGRADE = ITEMS.register("pump_upgrade", () -> new PumpUpgradeItem(false, false, Config.SERVER.pumpUpgrade, Config.SERVER.maxUpgradesPerStorage));

@@ -1,0 +1,28 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:stack_upgrade_tier_5"
+    }
+  ],
+  "key": {
+    "B": {
+      "tag": "forge:storage_blocks/netherite"
+    },
+    "N": {
+      "tag": "forge:ingots/netherite"
+    },
+    "S": {
+      "item": "sophisticatedstorage:stack_upgrade_tier_4"
+    }
+  },
+  "pattern": [
+    "NNN",
+    "NSN",
+    "BNB"
+  ],
+  "result": {
+    "item": "sophisticatedstorage:stack_upgrade_tier_5"
+  }
+}
