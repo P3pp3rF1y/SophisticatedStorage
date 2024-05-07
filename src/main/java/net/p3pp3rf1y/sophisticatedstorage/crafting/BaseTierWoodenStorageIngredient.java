@@ -16,7 +16,8 @@ import java.util.List;
 import java.util.stream.Stream;
 
 public class BaseTierWoodenStorageIngredient extends Ingredient {
-	public BaseTierWoodenStorageIngredient() {
+	public static final BaseTierWoodenStorageIngredient INSTANCE = new BaseTierWoodenStorageIngredient();
+	private BaseTierWoodenStorageIngredient() {
 		super(getChestsAndBarrels());
 	}
 
