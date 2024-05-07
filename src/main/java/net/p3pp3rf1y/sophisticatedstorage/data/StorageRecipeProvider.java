@@ -140,7 +140,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('S', Tags.Items.STONE)
 				.define('C', Items.COMPARATOR)
 				.define('P', ItemTags.PLANKS)
-				.define('B', ModBlocks.BASE_TIER_WOODEN_STORAGE_TAG)
+				.define('B', new BaseTierWoodenStorageIngredient())
 				.unlockedBy(HAS_BASE_TIER_WOODEN_STORAGE_CRITERION_NAME, has(ModBlocks.BASE_TIER_WOODEN_STORAGE_TAG))
 				.save(recipeOutput);
 
@@ -179,7 +179,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('P', ItemTags.PLANKS)
 				.define('R', Items.REPEATER)
 				.define('G', Tags.Items.INGOTS_GOLD)
-				.define('B', ModBlocks.BASE_TIER_WOODEN_STORAGE_TAG)
+				.define('B',  new BaseTierWoodenStorageIngredient())
 				.unlockedBy(HAS_BASE_TIER_WOODEN_STORAGE_CRITERION_NAME, has(ModBlocks.BASE_TIER_WOODEN_STORAGE_TAG))
 				.save(recipeOutput);
 
@@ -191,7 +191,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('P', ItemTags.PLANKS)
 				.define('R', Items.REPEATER)
 				.define('G', Tags.Items.INGOTS_GOLD)
-				.define('B', ModBlocks.BASE_TIER_WOODEN_STORAGE_TAG)
+				.define('B',  new BaseTierWoodenStorageIngredient())
 				.unlockedBy(HAS_BASE_TIER_WOODEN_STORAGE_CRITERION_NAME, has(ModBlocks.BASE_TIER_WOODEN_STORAGE_TAG))
 				.save(recipeOutput);
 
@@ -203,7 +203,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('P', ItemTags.PLANKS)
 				.define('R', Items.REPEATER)
 				.define('G', Tags.Items.INGOTS_GOLD)
-				.define('B', ModBlocks.BASE_TIER_WOODEN_STORAGE_TAG)
+				.define('B',  new BaseTierWoodenStorageIngredient())
 				.unlockedBy(HAS_BASE_TIER_WOODEN_STORAGE_CRITERION_NAME, has(ModBlocks.BASE_TIER_WOODEN_STORAGE_TAG))
 				.save(recipeOutput);
 

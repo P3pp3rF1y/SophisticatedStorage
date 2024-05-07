@@ -9,7 +9,7 @@
   "category": "misc",
   "key": {
     "B": {
-      "tag": "sophisticatedstorage:base_tier_wooden_storage"
+      "type": "sophisticatedstorage:base_tier_wooden_storage"
     },
     "G": {
       "tag": "forge:ingots/gold"
