@@ -7,16 +7,12 @@ import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.handlers.IGuiContainerHandler;
 import mezz.jei.api.helpers.IStackHelper;
 import mezz.jei.api.ingredients.subtypes.IIngredientSubtypeInterpreter;
-import mezz.jei.api.recipe.IRecipeManager;
 import mezz.jei.api.recipe.transfer.IRecipeTransferHandlerHelper;
 import mezz.jei.api.registration.*;
-import mezz.jei.api.runtime.IJeiRuntime;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.SettingsScreen;
-import net.p3pp3rf1y.sophisticatedcore.compat.jei.ClientRecipeHelper;
 import net.p3pp3rf1y.sophisticatedcore.compat.jei.CraftingContainerRecipeTransferHandlerBase;
 import net.p3pp3rf1y.sophisticatedcore.compat.jei.SettingsGhostIngredientHandler;
 import net.p3pp3rf1y.sophisticatedcore.compat.jei.StorageGhostIngredientHandler;
@@ -31,7 +27,6 @@ import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.StringJoiner;
 import java.util.function.Consumer;
@@ -143,21 +138,10 @@ public class StoragePlugin implements IModPlugin {
 	}
 
 	@Override
-	public void onRuntimeAvailable(IJeiRuntime jeiRuntime) {
-		IRecipeManager recipeManager = jeiRuntime.getRecipeManager();
-		ClientRecipeHelper.getRecipeByKey(ModBlocks.CONTROLLER_ITEM.getId()).ifPresent(controllerRecipe -> {
-			if (controllerRecipe instanceof CraftingRecipe craftingRecipe) {
-				recipeManager.hideRecipes(RecipeTypes.CRAFTING, Collections.singleton(craftingRecipe));
-			}
-		});
-	}
-
-	@Override
 	public void registerRecipes(IRecipeRegistration registration) {
 		registration.addRecipes(RecipeTypes.CRAFTING, DyeRecipesMaker.getRecipes());
 		registration.addRecipes(RecipeTypes.CRAFTING, TierUpgradeRecipesMaker.getShapedCraftingRecipes());
 		registration.addRecipes(RecipeTypes.CRAFTING, TierUpgradeRecipesMaker.getShapelessCraftingRecipes());
-		registration.addRecipes(RecipeTypes.CRAFTING, ControllerRecipesMaker.getRecipes());
 		registration.addRecipes(RecipeTypes.CRAFTING, ShulkerBoxFromChestRecipesMaker.getRecipes());
 		registration.addRecipes(RecipeTypes.CRAFTING, FlatBarrelRecipesMaker.getRecipes());
 	}
