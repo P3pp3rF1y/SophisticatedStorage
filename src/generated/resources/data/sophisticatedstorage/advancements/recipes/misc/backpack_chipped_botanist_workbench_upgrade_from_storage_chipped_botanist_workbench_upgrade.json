@@ -1,0 +1,48 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "chipped"
+    },
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "sophisticatedbackpacks"
+    },
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedbackpacks:chipped/botanist_workbench_upgrade"
+    }
+  ],
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_storage_upgrade": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "sophisticatedstorage:chipped/botanist_workbench_upgrade"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "sophisticatedstorage:backpack_chipped_botanist_workbench_upgrade_from_storage_chipped_botanist_workbench_upgrade"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_storage_upgrade"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "sophisticatedstorage:backpack_chipped_botanist_workbench_upgrade_from_storage_chipped_botanist_workbench_upgrade"
+    ]
+  }
+}
