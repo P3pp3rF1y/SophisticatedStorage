@@ -50,6 +50,11 @@ public class BaseTierWoodenStorageIngredient extends Ingredient {
 		return json;
 	}
 
+	@Override
+	public IIngredientSerializer<? extends Ingredient> getSerializer() {
+		return Serializer.INSTANCE;
+	}
+
 	public static class Serializer implements IIngredientSerializer<BaseTierWoodenStorageIngredient>
 	{
 		public static final Serializer INSTANCE = new Serializer();
