@@ -31,7 +31,7 @@ repositories {
     }
     maven { url "https://maven.blamejared.com/" }
     maven {
-        name = "GitHubPackages"
+        name = "GHPCore"
         url = uri("https://maven.pkg.github.com/p3pp3rf1y/sophisticatedcore")
         credentials {
             username = System.getenv("USERNAME")
@@ -39,6 +39,17 @@ repositories {
         }
         content {
             includeGroupByRegex "sophisticatedcore.*"
+        }
+    }
+    maven {
+        name = "GHPBackpacks"
+        url = uri("https://maven.pkg.github.com/p3pp3rf1y/sophisticatedbackpacks")
+        credentials {
+            username = System.getenv("USERNAME")
+            password = System.getenv("READ_PACKAGES_TOKEN")
+        }
+        content {
+            includeGroupByRegex "sophisticatedbackpacks.*"
         }
     }
 }
@@ -79,6 +90,11 @@ minecraft {
                         source project(':SophisticatedCore').sourceSets.main
                     }
                 }
+                if (findProject(':SophisticatedBackpacks') != null) {
+                    SophisticatedBackpacks {
+                        source project(':SophisticatedBackpacks').sourceSets.main
+                    }
+                }
             }
             args '--mod', 'sophisticatedstorage', '--all', '--output', file('src/generated/resources/')
         }
@@ -112,13 +128,21 @@ dependencies {
         implementation project(':SophisticatedCore')
         testImplementation project(':SophisticatedCore')
     } else {
-        compileOnly fg.deobf("sophisticatedcore:sophisticatedcore:${sc_version}") {
-            transitive = false
-        }
-        runtimeOnly fg.deobf("sophisticatedcore:sophisticatedcore:${sc_version}") {
+        implementation fg.deobf("sophisticatedcore:sophisticatedcore:${sc_version}") {
             transitive = false
         }
         testImplementation fg.deobf("sophisticatedcore:sophisticatedcore:${sc_version}") {
+            transitive = false
+        }
+    }
+    if (findProject(':SophisticatedBackpacks') != null) {
+        implementation project(':SophisticatedBackpacks')
+        testImplementation project(':SophisticatedBackpacks')
+    } else {
+        implementation fg.deobf("sophisticatedbackpacks:sophisticatedbackpacks:${sb_version}") {
+            transitive = false
+        }
+        testImplementation fg.deobf("sophisticatedbackpacks:sophisticatedbackpacks:${sb_version}") {
             transitive = false
         }
     }

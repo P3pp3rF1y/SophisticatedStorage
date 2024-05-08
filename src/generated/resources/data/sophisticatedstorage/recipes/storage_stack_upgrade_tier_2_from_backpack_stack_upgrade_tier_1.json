@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "conditions": [
+    {
+      "type": "forge:mod_loaded",
+      "modid": "sophisticatedbackpacks"
+    },
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:stack_upgrade_tier_2"
+    }
+  ],
+  "key": {
+    "P": {
+      "tag": "minecraft:planks"
+    },
+    "S": {
+      "item": "sophisticatedbackpacks:stack_upgrade_tier_1"
+    }
+  },
+  "pattern": [
+    "PSP",
+    " P ",
+    "P P"
+  ],
+  "result": {
+    "count": 3,
+    "item": "sophisticatedstorage:stack_upgrade_tier_2"
+  }
+}

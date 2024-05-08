@@ -1,0 +1,32 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "conditions": [
+    {
+      "type": "forge:mod_loaded",
+      "modid": "sophisticatedbackpacks"
+    },
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedbackpacks:advanced_filter_upgrade"
+    }
+  ],
+  "key": {
+    "L": {
+      "tag": "forge:leather"
+    },
+    "T": {
+      "tag": "forge:string"
+    },
+    "U": {
+      "item": "sophisticatedstorage:advanced_filter_upgrade"
+    }
+  },
+  "pattern": [
+    "TUT",
+    " L ",
+    "T T"
+  ],
+  "result": {
+    "item": "sophisticatedbackpacks:advanced_filter_upgrade"
+  }
+}

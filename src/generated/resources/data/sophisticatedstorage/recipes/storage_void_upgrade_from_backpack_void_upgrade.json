@@ -1,0 +1,29 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "conditions": [
+    {
+      "type": "forge:mod_loaded",
+      "modid": "sophisticatedbackpacks"
+    },
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:void_upgrade"
+    }
+  ],
+  "key": {
+    "P": {
+      "tag": "minecraft:planks"
+    },
+    "U": {
+      "item": "sophisticatedbackpacks:void_upgrade"
+    }
+  },
+  "pattern": [
+    "PUP",
+    " P ",
+    "P P"
+  ],
+  "result": {
+    "item": "sophisticatedstorage:void_upgrade"
+  }
+}
