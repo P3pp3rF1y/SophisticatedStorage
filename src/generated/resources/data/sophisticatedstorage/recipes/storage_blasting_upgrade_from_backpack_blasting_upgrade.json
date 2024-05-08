@@ -1,0 +1,29 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "conditions": [
+    {
+      "type": "forge:mod_loaded",
+      "modid": "sophisticatedbackpacks"
+    },
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:blasting_upgrade"
+    }
+  ],
+  "key": {
+    "P": {
+      "tag": "minecraft:planks"
+    },
+    "U": {
+      "item": "sophisticatedbackpacks:blasting_upgrade"
+    }
+  },
+  "pattern": [
+    "PUP",
+    " P ",
+    "P P"
+  ],
+  "result": {
+    "item": "sophisticatedstorage:blasting_upgrade"
+  }
+}

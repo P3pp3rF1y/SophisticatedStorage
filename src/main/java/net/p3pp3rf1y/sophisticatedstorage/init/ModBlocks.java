@@ -4,6 +4,7 @@ import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.cauldron.CauldronInteraction;
 import net.minecraft.core.dispenser.ShulkerBoxDispenseBehavior;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -27,6 +28,7 @@ import net.minecraft.world.level.block.state.properties.WoodType;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.crafting.CraftingHelper;
 import net.minecraftforge.common.extensions.IForgeMenuType;
 import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -34,6 +36,7 @@ import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.RegisterEvent;
 import net.minecraftforge.registries.RegistryObject;
 import net.p3pp3rf1y.sophisticatedcore.util.BlockItemBase;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
@@ -293,11 +296,18 @@ public class ModBlocks {
 		MENU_TYPES.register(modBus);
 		RECIPE_SERIALIZERS.register(modBus);
 		modBus.addListener(ModBlocks::registerContainers);
+		modBus.addListener(ModBlocks::registerRecipeSerializers);
 		MinecraftForge.EVENT_BUS.addListener(ModBlocks::onResourceReload);
 	}
 
 	private static void onResourceReload(AddReloadListenerEvent event) {
 		ShulkerBoxFromChestRecipe.REGISTERED_RECIPES.clear();
+	}
+
+	private static void registerRecipeSerializers(RegisterEvent event) {
+		if (event.getRegistryKey().equals(ForgeRegistries.Keys.RECIPE_SERIALIZERS)) {
+			CraftingHelper.register(new ResourceLocation(SophisticatedStorage.MOD_ID, "base_tier_wooden_storage"), BaseTierWoodenStorageIngredient.Serializer.INSTANCE);
+		}
 	}
 
 	private static void registerContainers(FMLClientSetupEvent evt) {

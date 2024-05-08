@@ -1,0 +1,35 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_backpack_upgrade": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "sophisticatedbackpacks:auto_blasting_upgrade"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "sophisticatedstorage:storage_auto_blasting_upgrade_from_backpack_auto_blasting_upgrade"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_backpack_upgrade",
+      "has_the_recipe"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "sophisticatedstorage:storage_auto_blasting_upgrade_from_backpack_auto_blasting_upgrade"
+    ]
+  },
+  "sends_telemetry_event": true
+}

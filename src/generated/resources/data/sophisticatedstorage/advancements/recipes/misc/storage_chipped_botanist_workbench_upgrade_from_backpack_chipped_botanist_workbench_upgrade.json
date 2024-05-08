@@ -1,0 +1,35 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_backpack_upgrade": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "sophisticatedbackpacks:chipped/botanist_workbench_upgrade"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "sophisticatedstorage:storage_chipped_botanist_workbench_upgrade_from_backpack_chipped_botanist_workbench_upgrade"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_backpack_upgrade",
+      "has_the_recipe"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "sophisticatedstorage:storage_chipped_botanist_workbench_upgrade_from_backpack_chipped_botanist_workbench_upgrade"
+    ]
+  },
+  "sends_telemetry_event": true
+}

@@ -1,0 +1,36 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "conditions": [
+    {
+      "type": "forge:mod_loaded",
+      "modid": "chipped"
+    },
+    {
+      "type": "forge:mod_loaded",
+      "modid": "sophisticatedbackpacks"
+    },
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedbackpacks:chipped/glassblower_upgrade"
+    }
+  ],
+  "key": {
+    "L": {
+      "tag": "forge:leather"
+    },
+    "T": {
+      "tag": "forge:string"
+    },
+    "U": {
+      "item": "sophisticatedstorage:chipped/glassblower_upgrade"
+    }
+  },
+  "pattern": [
+    "TUT",
+    " L ",
+    "T T"
+  ],
+  "result": {
+    "item": "sophisticatedbackpacks:chipped/glassblower_upgrade"
+  }
+}

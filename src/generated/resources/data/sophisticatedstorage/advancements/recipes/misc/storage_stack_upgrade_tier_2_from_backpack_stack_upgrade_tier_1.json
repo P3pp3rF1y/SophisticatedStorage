@@ -1,0 +1,35 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_backpack_stack_upgrade": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "sophisticatedbackpacks:stack_upgrade_tier_1"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "sophisticatedstorage:storage_stack_upgrade_tier_2_from_backpack_stack_upgrade_tier_1"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_backpack_stack_upgrade",
+      "has_the_recipe"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "sophisticatedstorage:storage_stack_upgrade_tier_2_from_backpack_stack_upgrade_tier_1"
+    ]
+  },
+  "sends_telemetry_event": true
+}
