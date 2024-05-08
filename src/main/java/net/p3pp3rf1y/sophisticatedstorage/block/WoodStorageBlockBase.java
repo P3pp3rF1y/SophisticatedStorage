@@ -104,13 +104,13 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 
 	@Override
 	public void addCreativeTabItems(Consumer<ItemStack> itemConsumer) {
-		if (Boolean.TRUE.equals(Config.CLIENT.showSingleWoodVariantOnly.get())) {
+		if (!Config.CLIENT_SPEC.isLoaded() || Boolean.TRUE.equals(Config.CLIENT.showSingleWoodVariantOnly.get())) {
 			itemConsumer.accept(WoodStorageBlockItem.setWoodType(new ItemStack(this), WoodType.ACACIA));
 		} else {
 			CUSTOM_TEXTURE_WOOD_TYPES.keySet().forEach(woodType -> itemConsumer.accept(WoodStorageBlockItem.setWoodType(new ItemStack(this), woodType)));
 		}
 
-		if (isBasicTier() || Boolean.TRUE.equals(Config.CLIENT.showHigherTierTintedVariants.get())) {
+		if (isBasicTier() || Boolean.TRUE.equals(!Config.CLIENT_SPEC.isLoaded() || Config.CLIENT.showHigherTierTintedVariants.get())) {
 			for (DyeColor color : DyeColor.values()) {
 				ItemStack storageStack = new ItemStack(this);
 				if (storageStack.getItem() instanceof ITintableBlockItem tintableBlockItem) {

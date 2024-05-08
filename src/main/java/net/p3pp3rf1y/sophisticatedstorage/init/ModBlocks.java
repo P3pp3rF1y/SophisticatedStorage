@@ -30,9 +30,12 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
+import net.neoforged.neoforge.common.crafting.IngredientType;
 import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
+import net.neoforged.neoforge.internal.versions.neoforge.NeoForgeVersion;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
+import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import net.p3pp3rf1y.sophisticatedcore.util.BlockItemBase;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
@@ -282,6 +285,9 @@ public class ModBlocks {
 	public static final Supplier<RecipeSerializer<?>> SHULKER_BOX_FROM_CHEST_RECIPE_SERIALIZER = RECIPE_SERIALIZERS.register("shulker_box_from_chest", ShulkerBoxFromChestRecipe.Serializer::new);
 	public static final Supplier<SimpleCraftingRecipeSerializer<?>> FLAT_TOP_BARREL_TOGGLE_RECIPE_SERIALIZER = RECIPE_SERIALIZERS.register("flat_top_barrel_toggle", () -> new SimpleCraftingRecipeSerializer<>(FlatTopBarrelToggleRecipe::new));
 	public static final Supplier<SimpleCraftingRecipeSerializer<?>> BARREL_MATERIAL_RECIPE_SERIALIZER = RECIPE_SERIALIZERS.register("barrel_material", () -> new SimpleCraftingRecipeSerializer<>(BarrelMaterialRecipe::new));
+	private static final DeferredRegister<IngredientType<?>> INGREDIENT_TYPES = DeferredRegister.create(NeoForgeRegistries.Keys.INGREDIENT_TYPES, SophisticatedStorage.MOD_ID);
+	public static final Supplier<IngredientType<BaseTierWoodenStorageIngredient>> BASE_TIER_WOODEN_STORAGE_INGREDIENT_TYPE = INGREDIENT_TYPES.register("base_tier_wooden_storage", () -> new IngredientType<>(BaseTierWoodenStorageIngredient.CODEC));
+
 
 	public static void registerHandlers(IEventBus modBus) {
 		BLOCKS.register(modBus);
@@ -289,6 +295,7 @@ public class ModBlocks {
 		BLOCK_ENTITY_TYPES.register(modBus);
 		MENU_TYPES.register(modBus);
 		RECIPE_SERIALIZERS.register(modBus);
+		INGREDIENT_TYPES.register(modBus);
 		modBus.addListener(ModBlocks::registerCapabilities);
 		if (FMLEnvironment.dist.isClient()) {
 			ModBlocksClient.init(modBus);

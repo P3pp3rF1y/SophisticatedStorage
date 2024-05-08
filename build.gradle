@@ -30,7 +30,7 @@ repositories {
     }
     maven { url "https://maven.blamejared.com/" }
     maven {
-        name = "GitHubPackages"
+        name = "GHPCore"
         url = uri("https://maven.pkg.github.com/p3pp3rf1y/sophisticatedcore")
         credentials {
             username = System.getenv("USERNAME")
@@ -38,6 +38,17 @@ repositories {
         }
         content {
             includeGroupByRegex "sophisticatedcore.*"
+        }
+    }
+    maven {
+        name = "GHPBackpacks"
+        url = uri("https://maven.pkg.github.com/p3pp3rf1y/sophisticatedbackpacks")
+        credentials {
+            username = System.getenv("USERNAME")
+            password = System.getenv("READ_PACKAGES_TOKEN")
+        }
+        content {
+            includeGroupByRegex "sophisticatedbackpacks.*"
         }
     }
 }
@@ -84,6 +95,9 @@ runs {
         if (findProject(':SophisticatedCore') != null) {
             modSource project(':SophisticatedCore').sourceSets.main
         }
+        if (findProject(':SophisticatedBackpacks') != null) {
+            modSource project(':SophisticatedBackpacks').sourceSets.main
+        }
     }
 }
 
@@ -120,8 +134,21 @@ dependencies {
             transitive = false
         }
     }
+    if (findProject(':SophisticatedBackpacks') != null) {
+        dependencies.implementation project(':SophisticatedBackpacks')
+    } else {
+        dependencies.implementation("sophisticatedbackpacks:sophisticatedbackpacks:${sb_version}") {
+            transitive = false
+        }
+        dependencies.testImplementation("sophisticatedbackpacks:sophisticatedbackpacks:${sb_version}") {
+            transitive = false
+        }
+    }
 
-//    implementation files('/libs/sophisticatedcore-1.20.4-0.6.18.-SNAPSHOT.jar')
+/*
+    implementation files('/libs/sophisticatedcore-1.20.4-0.6.18.-SNAPSHOT.jar')
+    implementation files('/libs/sophisticatedbackpacks-1.20.4-3.20.5.-SNAPSHOT.jar')
+*/
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.+'
     testImplementation 'org.junit.jupiter:junit-jupiter-params:5.9.+'
