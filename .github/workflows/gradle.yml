@@ -1,6 +1,6 @@
 name: Mod Build
 
-on: [ push ]
+on: [ workflow_dispatch, push ]
 
 jobs:
   build:
@@ -16,6 +16,9 @@ jobs:
           distribution: zulu
           cache: gradle
       - name: Build with Gradle
+        env:
+          USERNAME: ${{ secrets.USERNAME }}
+          READ_PACKAGES_TOKEN: ${{ secrets.READ_PACKAGES_TOKEN }}
         uses: nick-invision/retry@v2
         with:
           timeout_minutes: 10

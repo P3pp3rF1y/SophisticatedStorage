@@ -5,11 +5,13 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.TextComponent;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.SimpleMenuProvider;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Shulker;
@@ -37,6 +39,7 @@ import net.minecraft.world.level.material.Material;
 import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.EntityCollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
@@ -49,10 +52,12 @@ import net.p3pp3rf1y.sophisticatedcore.util.ColorHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
+import net.p3pp3rf1y.sophisticatedstorage.client.particle.CustomTintTerrainParticleData;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.item.ShulkerBoxItem;
+import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageToolItem;
 
 import javax.annotation.Nullable;
@@ -64,10 +69,14 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 	private static final VoxelShape ITEM_ENTITY_COLLISION_SHAPE = box(0.05, 0.05, 0.05, 15.95, 15.95, 15.95);
 
 	public ShulkerBoxBlock(Supplier<Integer> numberOfInventorySlotsSupplier, Supplier<Integer> numberOfUpgradeSlotsSupplier) {
-		super(getProperties(), numberOfInventorySlotsSupplier, numberOfUpgradeSlotsSupplier);
+		this(numberOfInventorySlotsSupplier, numberOfUpgradeSlotsSupplier, 2.0F);
 	}
 
-	private static Properties getProperties() {
+	public ShulkerBoxBlock(Supplier<Integer> numberOfInventorySlotsSupplier, Supplier<Integer> numberOfUpgradeSlotsSupplier, float explosionResistance) {
+		super(getProperties(explosionResistance), numberOfInventorySlotsSupplier, numberOfUpgradeSlotsSupplier);
+	}
+
+	private static Properties getProperties(float explosionResistance) {
 		BlockBehaviour.StatePredicate statePredicate = (state, blockGetter, pos) -> {
 			BlockEntity blockentity = blockGetter.getBlockEntity(pos);
 			if (!(blockentity instanceof ShulkerBoxBlockEntity shulkerboxblockentity)) {
@@ -76,7 +85,7 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 				return shulkerboxblockentity.isClosed();
 			}
 		};
-		return BlockBehaviour.Properties.of(Material.SHULKER_SHELL).strength(2.0F).dynamicShape().noOcclusion().isSuffocating(statePredicate).isViewBlocking(statePredicate);
+		return BlockBehaviour.Properties.of(Material.SHULKER_SHELL).strength(2.0F, explosionResistance).dynamicShape().noOcclusion().isSuffocating(statePredicate).isViewBlocking(statePredicate);
 	}
 
 	@Override
@@ -93,7 +102,9 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 	@SuppressWarnings("deprecation")
 	@Override
 	public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
-		if (level.isClientSide) {
+		if (hand == InteractionHand.OFF_HAND) {
+			return InteractionResult.PASS;
+		} else if (level.isClientSide) {
 			return InteractionResult.SUCCESS;
 		} else if (player.isSpectator()) {
 			return InteractionResult.CONSUME;
@@ -101,14 +112,21 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 			return InteractionResult.PASS;
 		}
 
-		WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).ifPresent(b -> {
+		return WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).map(b -> {
+			if (tryItemInteraction(player, hand, b, player.getItemInHand(hand), getFacing(state), hitResult)) {
+				return InteractionResult.SUCCESS;
+			}
+
 			player.awardStat(Stats.CUSTOM.get(Stats.OPEN_SHULKER_BOX));
 			NetworkHooks.openGui((ServerPlayer) player, new SimpleMenuProvider((w, p, pl) -> new StorageContainerMenu(w, pl, pos),
 					WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).map(StorageBlockEntity::getDisplayName).orElse(TextComponent.EMPTY)), pos);
 			PiglinAi.angerNearbyPiglins(player, true);
-		});
+			return InteractionResult.CONSUME;
+		}).orElse(InteractionResult.PASS);
+	}
 
-		return InteractionResult.CONSUME;
+	private boolean tryItemInteraction(Player player, InteractionHand hand, StorageBlockEntity b, ItemStack itemInHand, Direction facing, BlockHitResult hitResult) {
+		return tryAddUpgrade(player, hand, b, itemInHand, facing, hitResult);
 	}
 
 	@Override
@@ -133,6 +151,7 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 						shulkerBoxItem.getNumberOfUpgradeSlots(stack) - upgradeHandler.getSlots());
 			}
 
+			be.getStorageWrapper().onInit();
 			be.tryToAddToController();
 
 			if (placer != null && placer.getOffhandItem().getItem() == ModItems.STORAGE_TOOL.get()) {
@@ -215,6 +234,7 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 			NBTHelper.setUniqueId(stack, "uuid", shulkerBoxUuid);
 		}
 		addBasicPropertiesToStack(stack, be, storageWrapper);
+		StorageBlockItem.setShowsTier(stack, be.shouldShowTier());
 	}
 
 	private void addBasicPropertiesToStack(ItemStack stack, StorageBlockEntity be, StorageWrapper storageWrapper) {
@@ -311,5 +331,20 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 	@Override
 	public boolean isCollisionShapeFullBlock(BlockState state, BlockGetter level, BlockPos pos) {
 		return false;
+	}
+
+	@Override
+	public boolean addLandingEffects(BlockState state1, ServerLevel level, BlockPos pos, BlockState state2, LivingEntity entity, int numberOfParticles) {
+		level.sendParticles(new CustomTintTerrainParticleData(state1, pos), entity.getX(), entity.getY(), entity.getZ(), numberOfParticles, 0.0D, 0.0D, 0.0D, 0.15D);
+		return true;
+	}
+
+	@Override
+	public boolean addRunningEffects(BlockState state, Level level, BlockPos pos, Entity entity) {
+		Vec3 vec3 = entity.getDeltaMovement();
+		level.addParticle(new CustomTintTerrainParticleData(state, pos),
+				entity.getX() + (level.random.nextDouble() - 0.5D) * entity.getBbWidth(), entity.getY() + 0.1D, entity.getZ() + (level.random.nextDouble() - 0.5D) * entity.getBbWidth(),
+				vec3.x * -4.0D, 1.5D, vec3.z * -4.0D);
+		return true;
 	}
 }

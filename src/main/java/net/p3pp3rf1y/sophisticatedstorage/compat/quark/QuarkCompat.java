@@ -30,10 +30,18 @@ public class QuarkCompat implements ICompat {
 		CHESTS.forEach((name, woodType) -> {
 			Block chest = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(CompatModIds.QUARK, name));
 			if (chest != null) {
-				StorageTierUpgradeItem.addTierUpgradeDefinition(StorageTierUpgradeItem.TierUpgrade.BASIC, chest,
+				StorageTierUpgradeItem.TierUpgrade.BASIC.addTierUpgradeDefinition(chest,
 						new StorageTierUpgradeItem.VanillaTierUpgradeDefinition<>(ChestBlockEntity.class, chestBlockEntity -> chestBlockEntity.openersCounter.getOpenerCount() > 0, ModBlocks.CHEST.get(), woodType, ChestBlock.FACING));
-				StorageTierUpgradeItem.addTierUpgradeDefinition(StorageTierUpgradeItem.TierUpgrade.BASIC_TO_IRON, chest,
+				StorageTierUpgradeItem.TierUpgrade.BASIC_TO_COPPER.addTierUpgradeDefinition(chest,
+						new StorageTierUpgradeItem.VanillaTierUpgradeDefinition<>(ChestBlockEntity.class, blockEntity -> blockEntity.openersCounter.getOpenerCount() > 0, ModBlocks.COPPER_CHEST.get(), woodType, ChestBlock.FACING));
+				StorageTierUpgradeItem.TierUpgrade.BASIC_TO_IRON.addTierUpgradeDefinition(chest,
 						new StorageTierUpgradeItem.VanillaTierUpgradeDefinition<>(ChestBlockEntity.class, blockEntity -> blockEntity.openersCounter.getOpenerCount() > 0, ModBlocks.IRON_CHEST.get(), woodType, ChestBlock.FACING));
+				StorageTierUpgradeItem.TierUpgrade.BASIC_TO_GOLD.addTierUpgradeDefinition(chest,
+						new StorageTierUpgradeItem.VanillaTierUpgradeDefinition<>(ChestBlockEntity.class, blockEntity -> blockEntity.openersCounter.getOpenerCount() > 0, ModBlocks.GOLD_CHEST.get(), woodType, ChestBlock.FACING));
+				StorageTierUpgradeItem.TierUpgrade.BASIC_TO_DIAMOND.addTierUpgradeDefinition(chest,
+						new StorageTierUpgradeItem.VanillaTierUpgradeDefinition<>(ChestBlockEntity.class, blockEntity -> blockEntity.openersCounter.getOpenerCount() > 0, ModBlocks.DIAMOND_CHEST.get(), woodType, ChestBlock.FACING));
+				StorageTierUpgradeItem.TierUpgrade.BASIC_TO_NETHERITE.addTierUpgradeDefinition(chest,
+						new StorageTierUpgradeItem.VanillaTierUpgradeDefinition<>(ChestBlockEntity.class, blockEntity -> blockEntity.openersCounter.getOpenerCount() > 0, ModBlocks.NETHERITE_CHEST.get(), woodType, ChestBlock.FACING));
 			}
 		});
 	}

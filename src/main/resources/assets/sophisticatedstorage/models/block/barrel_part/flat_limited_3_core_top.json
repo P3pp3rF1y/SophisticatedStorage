@@ -1,0 +1,28 @@
+{
+    "textures": {
+        "top": "sophisticatedstorage:block/limited_acacia_barrel_3_top"
+    },
+    "elements": [
+        {
+            "from": [1, 15, 1],
+            "to": [15, 16, 7],
+            "faces": {
+                "up": {"uv": [1, 1, 15, 7], "texture": "#top", "cullface": "up"}
+            }
+        },
+        {
+            "from": [1, 15, 9],
+            "to": [7, 16, 15],
+            "faces": {
+                "up": {"uv": [1, 9, 7, 15], "texture": "#top", "cullface": "up"}
+            }
+        },
+        {
+            "from": [9, 15, 9],
+            "to": [15, 16, 15],
+            "faces": {
+                "up": {"uv": [9, 9, 15, 15], "texture": "#top", "cullface": "up"}
+            }
+        }
+    ]
+}

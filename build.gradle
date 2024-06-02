@@ -8,8 +8,8 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
-        classpath group: 'org.parchmentmc', name: 'librarian', version: '1.+', changing: true
+        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.74'
+        classpath 'org.parchmentmc:librarian:1.2.0.7-dev-SNAPSHOT'
     }
 }
 
@@ -24,7 +24,6 @@ apply plugin: 'idea'
 
 repositories {
     mavenCentral()
-    maven { url "https://dvs1.progwml6.com/files/maven" }
     maven { url "https://maven.theillusivec4.top/" }
     maven { url "https://maven.tterrag.com/" }
     maven { url = "https://modmaven.dev/" }
@@ -36,6 +35,17 @@ repositories {
         }
     }
     maven { url "https://maven.blamejared.com/" }
+    maven {
+        name = "GitHubPackages"
+        url = uri("https://maven.pkg.github.com/p3pp3rf1y/sophisticatedcore")
+        credentials {
+            username = System.getenv("USERNAME")
+            password = System.getenv("READ_PACKAGES_TOKEN")
+        }
+        content {
+            includeGroupByRegex "sophisticatedcore.*"
+        }
+    }
 }
 
 group = 'sophisticatedstorage'
@@ -107,17 +117,37 @@ dependencies {
     compileOnly fg.deobf("curse.maven:autoreglib-250363:${autoreglib_cf_file_id}")
     runtimeOnly fg.deobf("curse.maven:quark-243121:${quark_cf_file_id}")
     runtimeOnly fg.deobf("curse.maven:autoreglib-250363:${autoreglib_cf_file_id}")
+    compileOnly fg.deobf("curse.maven:chipped-456956:${chipped_cf_file_id}")
+    runtimeOnly fg.deobf("curse.maven:chipped-456956:${chipped_cf_file_id}")
+    compileOnly fg.deobf("curse.maven:ctm-267602:${ctm_cf_file_id}")
+    runtimeOnly fg.deobf("curse.maven:ctm-267602:${ctm_cf_file_id}")
 
     if (findProject(':SophisticatedCore') != null) {
         implementation project(':SophisticatedCore')
+        testImplementation project(':SophisticatedCore')
     } else {
-        compileOnly fg.deobf("curse.maven:sophisticatedcore-618298:${sc_cf_file_id}")
-        runtimeOnly fg.deobf("curse.maven:sophisticatedcore-618298:${sc_cf_file_id}")
+        compileOnly fg.deobf("sophisticatedcore:sophisticatedcore:${sc_version}") {
+            transitive = false
+        }
+        runtimeOnly fg.deobf("sophisticatedcore:sophisticatedcore:${sc_version}") {
+            transitive = false
+        }
+        testImplementation fg.deobf("sophisticatedcore:sophisticatedcore:${sc_version}") {
+            transitive = false
+        }
     }
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.+'
+    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.9.+'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.+'
+    testImplementation "org.mockito:mockito-core:5.1.+"
 }
 
 test {
-    useTestNG()
+    useJUnitPlatform()
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
 }
 
 task generateSources(type: Copy) {

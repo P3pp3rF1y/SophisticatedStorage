@@ -1,6 +1,7 @@
 package net.p3pp3rf1y.sophisticatedstorage.block;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -16,7 +17,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class ControllerBlockEntity extends ControllerBlockEntityBase implements ILockable, ICountDisplay {
+public class ControllerBlockEntity extends ControllerBlockEntityBase implements ILockable, ICountDisplay, ITierDisplay, IUpgradeDisplay, IFillLevelDisplay {
 	private long lastDepositTime = -100;
 
 	public ControllerBlockEntity(BlockPos pos, BlockState state) {
@@ -36,7 +37,7 @@ public class ControllerBlockEntity extends ControllerBlockEntityBase implements 
 		boolean doubleClick = gameTime - lastDepositTime < 10;
 		lastDepositTime = gameTime;
 		if (doubleClick) {
-			player.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null).ifPresent(
+			player.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, Direction.UP).ifPresent(
 					playerInventory -> InventoryHelper.iterate(playerInventory, (slot, stack) -> {
 								if (canDepositStack(stack)) {
 									ItemStack resultStack = insertItem(stack, true, false);
@@ -57,7 +58,7 @@ public class ControllerBlockEntity extends ControllerBlockEntityBase implements 
 	}
 
 	private boolean canDepositStack(ItemStack stack) {
-		return hasStack(stack) || isMemorizedItem(stack);
+		return hasItem(stack.getItem()) || isMemorizedItem(stack) || isFilterItem(stack.getItem());
 	}
 
 	@Override
@@ -136,6 +137,83 @@ public class ControllerBlockEntity extends ControllerBlockEntityBase implements 
 
 	@Override
 	public List<Integer> getSlotCounts() {
+		return List.of();
+	}
+
+	@Override
+	public boolean shouldShowTier() {
+		return false;
+	}
+
+	@Override
+	public void toggleTierVisiblity() {
+		Set<ITierDisplay> invisibleTierStorages = new HashSet<>();
+		Set<ITierDisplay> visibleTierStorages = new HashSet<>();
+		getStoragePositions().forEach(storagePosition -> WorldHelper.getLoadedBlockEntity(level, storagePosition, ITierDisplay.class).ifPresent(tierDisplay -> {
+			if (tierDisplay.shouldShowTier()) {
+				visibleTierStorages.add(tierDisplay);
+			} else {
+				invisibleTierStorages.add(tierDisplay);
+			}
+		}));
+
+		if (invisibleTierStorages.isEmpty()) {
+			visibleTierStorages.forEach(ITierDisplay::toggleTierVisiblity);
+		} else {
+			invisibleTierStorages.forEach(ITierDisplay::toggleTierVisiblity);
+		}
+	}
+
+	@Override
+	public boolean shouldShowUpgrades() {
+		return false;
+	}
+
+	@Override
+	public void toggleUpgradesVisiblity() {
+		Set<IUpgradeDisplay> invisibleUpgradeStorages = new HashSet<>();
+		Set<IUpgradeDisplay> visibleUpgradeStorages = new HashSet<>();
+		getStoragePositions().forEach(storagePosition -> WorldHelper.getLoadedBlockEntity(level, storagePosition, IUpgradeDisplay.class).ifPresent(upgradeDisplay -> {
+			if (upgradeDisplay.shouldShowUpgrades()) {
+				visibleUpgradeStorages.add(upgradeDisplay);
+			} else {
+				invisibleUpgradeStorages.add(upgradeDisplay);
+			}
+		}));
+
+		if (invisibleUpgradeStorages.isEmpty()) {
+			visibleUpgradeStorages.forEach(IUpgradeDisplay::toggleUpgradesVisiblity);
+		} else {
+			invisibleUpgradeStorages.forEach(IUpgradeDisplay::toggleUpgradesVisiblity);
+		}
+	}
+
+	@Override
+	public boolean shouldShowFillLevels() {
+		return false;
+	}
+
+	@Override
+	public void toggleFillLevelVisibility() {
+		Set<IFillLevelDisplay> invisibleFillLevelStorages = new HashSet<>();
+		Set<IFillLevelDisplay> visibleFillLevelStorages = new HashSet<>();
+		getStoragePositions().forEach(storagePosition -> WorldHelper.getLoadedBlockEntity(level, storagePosition, IFillLevelDisplay.class).ifPresent(fillLevelDisplay -> {
+			if (fillLevelDisplay.shouldShowFillLevels()) {
+				visibleFillLevelStorages.add(fillLevelDisplay);
+			} else {
+				invisibleFillLevelStorages.add(fillLevelDisplay);
+			}
+		}));
+
+		if (invisibleFillLevelStorages.isEmpty()) {
+			visibleFillLevelStorages.forEach(IFillLevelDisplay::toggleFillLevelVisibility);
+		} else {
+			invisibleFillLevelStorages.forEach(IFillLevelDisplay::toggleFillLevelVisibility);
+		}
+	}
+
+	@Override
+	public List<Float> getSlotFillLevels() {
 		return List.of();
 	}
 }

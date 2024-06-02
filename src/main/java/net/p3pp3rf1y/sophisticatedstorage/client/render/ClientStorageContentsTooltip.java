@@ -5,10 +5,10 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.event.world.WorldEvent;
-import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.item.CapabilityStorageWrapper;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageContentsTooltip;
 import net.p3pp3rf1y.sophisticatedstorage.network.RequestStorageContentsMessage;
+import net.p3pp3rf1y.sophisticatedstorage.network.StoragePacketHandler;
 
 import java.util.UUID;
 
@@ -32,6 +32,6 @@ public class ClientStorageContentsTooltip extends net.p3pp3rf1y.sophisticatedcor
 
 	@Override
 	protected void sendInventorySyncRequest(UUID uuid) {
-		SophisticatedStorage.PACKET_HANDLER.sendToServer(new RequestStorageContentsMessage(uuid));
+		StoragePacketHandler.INSTANCE.sendToServer(new RequestStorageContentsMessage(uuid));
 	}
 }

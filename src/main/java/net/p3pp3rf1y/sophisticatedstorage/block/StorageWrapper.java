@@ -4,6 +4,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.fml.util.thread.SidedThreadGroups;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.SortBy;
 import net.p3pp3rf1y.sophisticatedcore.inventory.ITrackedContentsItemHandler;
@@ -15,6 +16,7 @@ import net.p3pp3rf1y.sophisticatedcore.settings.SettingsHandler;
 import net.p3pp3rf1y.sophisticatedcore.settings.itemdisplay.ItemDisplaySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.settings.memory.MemorySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.settings.nosort.NoSortSettingsCategory;
+import net.p3pp3rf1y.sophisticatedcore.upgrades.IUpgradeWrapper;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeHandler;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.stack.StackUpgradeItem;
 import net.p3pp3rf1y.sophisticatedcore.util.InventorySorter;
@@ -26,11 +28,13 @@ import net.p3pp3rf1y.sophisticatedstorage.settings.StorageSettingsHandler;
 
 import javax.annotation.Nullable;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public abstract class StorageWrapper implements IStorageWrapper {
@@ -66,6 +70,8 @@ public abstract class StorageWrapper implements IStorageWrapper {
 	private int accentColor = -1;
 
 	private Runnable upgradeCachesInvalidatedHandler = () -> {};
+
+	private final Map<Class<? extends IUpgradeWrapper>, Consumer<? extends IUpgradeWrapper>> upgradeDefaultsHandlers = new HashMap<>();
 
 	protected StorageWrapper(Supplier<Runnable> getSaveHandler, Runnable onSerializeRenderInfo, Runnable markContentsDirty) {
 		this(getSaveHandler, onSerializeRenderInfo, markContentsDirty, 1);
@@ -109,7 +115,7 @@ public abstract class StorageWrapper implements IStorageWrapper {
 			upgradeHandler = new UpgradeHandler(getNumberOfUpgradeSlots(), this, getContentsNbt(), getSaveHandler.get(), () -> {
 				if (inventoryHandler != null) {
 					inventoryHandler.clearListeners();
-					inventoryHandler.setSlotLimit(StackUpgradeItem.getInventorySlotLimit(this));
+					inventoryHandler.setBaseSlotLimit(StackUpgradeItem.getInventorySlotLimit(this));
 				}
 				getInventoryHandler().addListener(getSettingsHandler().getTypeCategory(ItemDisplaySettingsCategory.class)::itemChanged);
 				inventoryIOHandler = null;
@@ -128,8 +134,14 @@ public abstract class StorageWrapper implements IStorageWrapper {
 				}
 
 			};
+			upgradeDefaultsHandlers.forEach(this::registerUpgradeDefaultsHandlerInUpgradeHandler);
 		}
 		return upgradeHandler;
+	}
+
+	private <T extends IUpgradeWrapper> void registerUpgradeDefaultsHandlerInUpgradeHandler(Class<T> wrapperClass, Consumer<? extends IUpgradeWrapper> defaultsHandler) {
+		//noinspection DataFlowIssue, unchecked - only called after upgradeHandler is initialized
+		upgradeHandler.registerUpgradeDefaultsHandler(wrapperClass, (Consumer<T>) defaultsHandler);
 	}
 
 	@Override
@@ -184,6 +196,11 @@ public abstract class StorageWrapper implements IStorageWrapper {
 	public void load(CompoundTag tag) {
 		loadContents(tag);
 		loadData(tag);
+
+		getUpgradeHandler().refreshUpgradeWrappers();
+		if (Thread.currentThread().getThreadGroup() == SidedThreadGroups.SERVER && getRenderInfo().getUpgradeItems().size() != getUpgradeHandler().getSlots()) {
+			getUpgradeHandler().setRenderUpgradeItems();
+		}
 	}
 
 	private void loadData(CompoundTag tag) {
@@ -231,14 +248,14 @@ public abstract class StorageWrapper implements IStorageWrapper {
 	}
 
 	private void initInventoryHandler() {
-		inventoryHandler = new InventoryHandler(getNumberOfInventorySlots(), this, getContentsNbt(), getSaveHandler.get(), StackUpgradeItem.getInventorySlotLimit(this), Config.COMMON.stackUpgrade) {
+		inventoryHandler = new InventoryHandler(getNumberOfInventorySlots(), this, getContentsNbt(), getSaveHandler.get(), StackUpgradeItem.getInventorySlotLimit(this), Config.SERVER.stackUpgrade) {
 			@Override
 			protected boolean isAllowed(ItemStack stack) {
 				return isAllowedInStorage(stack);
 			}
 		};
 		inventoryHandler.addListener(getSettingsHandler().getTypeCategory(ItemDisplaySettingsCategory.class)::itemChanged);
-		inventoryHandler.getSlotTracker().setShouldInsertIntoEmpty(this::emptyInventorySlotsAcceptItems);
+		inventoryHandler.setShouldInsertIntoEmpty(this::emptyInventorySlotsAcceptItems);
 	}
 
 	protected boolean emptyInventorySlotsAcceptItems() {
@@ -359,6 +376,7 @@ public abstract class StorageWrapper implements IStorageWrapper {
 		Set<Integer> slotIndexesExcludedFromSort = new HashSet<>();
 		slotIndexesExcludedFromSort.addAll(getSettingsHandler().getTypeCategory(NoSortSettingsCategory.class).getNoSortSlots());
 		slotIndexesExcludedFromSort.addAll(getSettingsHandler().getTypeCategory(MemorySettingsCategory.class).getSlotIndexes());
+		slotIndexesExcludedFromSort.addAll(getInventoryHandler().getNoSortSlots());
 		InventorySorter.sortHandler(getInventoryHandler(), getComparator(), slotIndexesExcludedFromSort);
 	}
 
@@ -424,5 +442,9 @@ public abstract class StorageWrapper implements IStorageWrapper {
 			numberOfUpgradeSlots += additionalUpgradeSlots;
 			getUpgradeHandler().increaseSize(additionalUpgradeSlots);
 		}
+	}
+
+	public <T extends IUpgradeWrapper> void registerUpgradeDefaultsHandler(Class<T> upgradeClass, Consumer<T> defaultsHandler) {
+		upgradeDefaultsHandlers.put(upgradeClass, defaultsHandler);
 	}
 }

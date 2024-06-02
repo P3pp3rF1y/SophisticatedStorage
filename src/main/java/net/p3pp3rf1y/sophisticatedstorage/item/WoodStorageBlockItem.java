@@ -38,8 +38,8 @@ public class WoodStorageBlockItem extends StorageBlockItem {
 	public static final String WOOD_TYPE_TAG = "woodType";
 	public static final String PACKED_TAG = "packed";
 
-	public WoodStorageBlockItem(Block block) {
-		super(block);
+	public WoodStorageBlockItem(Block block, Properties properties) {
+		super(block, properties);
 	}
 
 	public static void setPacked(ItemStack storageStack, boolean packed) {
@@ -127,6 +127,16 @@ public class WoodStorageBlockItem extends StorageBlockItem {
 				if (wrapper == null) {
 					UUID uuid = NBTHelper.getUniqueId(stack, "uuid").orElse(null);
 					StorageWrapper storageWrapper = new StackStorageWrapper(stack) {
+						@Override
+						public String getStorageType() {
+							return "wood_storage"; //isn't really relevant because wooden storage can't have its gui open when in item form
+						}
+
+						@Override
+						public Component getDisplayName() {
+							return TextComponent.EMPTY; //isn't really relevant because wooden storage can't have its gui open when in item form
+						}
+
 						@Override
 						protected boolean isAllowedInStorage(ItemStack stack) {
 							return false;

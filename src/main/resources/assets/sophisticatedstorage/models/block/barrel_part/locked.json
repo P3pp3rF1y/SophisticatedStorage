@@ -1,0 +1,15 @@
+{
+	"parent": "minecraft:block/block",
+	"textures": {
+		"top": "sophisticatedstorage:block/lock"
+	},
+	"elements": [
+		{
+			"from": [7.5, 15.01, 0],
+			"to": [8.5, 16.01, 1],
+			"faces": {
+				"up": {"uv": [0, 0, 16, 16], "texture": "#top", "cullface": "up"}
+			}
+		}
+	]
+}

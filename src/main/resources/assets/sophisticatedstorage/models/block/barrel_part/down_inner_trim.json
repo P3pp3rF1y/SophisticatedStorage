@@ -1,0 +1,16 @@
+{
+    "textures": {
+        "top_inner_trim": "sophisticatedstorage:block/limited_acacia_barrel_1_top"
+    },
+    "elements": [
+        {
+            "from": [7, 14.5, 9],
+            "to": [9, 15.5, 15],
+            "faces": {
+                "east": {"uv": [9, 9, 10, 15], "rotation": 90, "texture": "#top_inner_trim"},
+                "west": {"uv": [6, 9, 7, 15], "rotation": 270, "texture": "#top_inner_trim"},
+                "up": {"uv": [7, 9, 9, 15], "texture": "#top_inner_trim", "cullface": "up"}
+            }
+        }
+    ]
+}

@@ -1,0 +1,34 @@
+{
+  "parent": "minecraft:recipes/root",
+  "rewards": {
+    "recipes": [
+      "sophisticatedstorage:copper_to_netherite_tier_upgrade"
+    ]
+  },
+  "criteria": {
+    "has_copper_to_diamond_tier_upgrade": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "sophisticatedstorage:copper_to_diamond_tier_upgrade"
+            ]
+          }
+        ]
+      }
+    },
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "sophisticatedstorage:copper_to_netherite_tier_upgrade"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_copper_to_diamond_tier_upgrade",
+      "has_the_recipe"
+    ]
+  ]
+}

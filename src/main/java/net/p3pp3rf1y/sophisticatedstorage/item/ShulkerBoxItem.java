@@ -9,7 +9,11 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.ClickAction;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -25,8 +29,10 @@ import net.minecraftforge.fml.DistExecutor;
 import net.p3pp3rf1y.sophisticatedcore.api.IStashStorageItem;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.TranslationHelper;
+import net.p3pp3rf1y.sophisticatedcore.settings.memory.MemorySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
+import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.block.ItemContentsStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.ShulkerBoxBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
@@ -43,7 +49,11 @@ import java.util.function.Consumer;
 
 public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageItem {
 	public ShulkerBoxItem(Block block) {
-		super(block, new Properties().stacksTo(1));
+		this(block, new Properties().stacksTo(1));
+	}
+
+	public ShulkerBoxItem(Block block, Properties properties) {
+		super(block, properties);
 	}
 
 	@Override
@@ -120,14 +130,22 @@ public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageIte
 
 			private void initWrapper() {
 				if (wrapper == null) {
-					UUID uuid = NBTHelper.getUniqueId(stack, "uuid").orElse(null);
+					UUID uuid = getContentsUuid(stack).orElse(null);
 					StorageWrapper storageWrapper = new StackStorageWrapper(stack) {
 						@Override
+						public String getStorageType() {
+							return "shulker_box";
+						}
+
+						@Override
+						public Component getDisplayName() {
+							return new TranslatableComponent(ShulkerBoxItem.this.getDescriptionId());
+						}
+
+						@Override
 						protected boolean isAllowedInStorage(ItemStack stack) {
-							//TODO add config with other things that can't go in
-							//TODO add backpacks compat so that they can't go in
 							Block block = Block.byItem(stack.getItem());
-							return !(block instanceof ShulkerBoxBlock) && !(block instanceof net.minecraft.world.level.block.ShulkerBoxBlock);
+							return !(block instanceof ShulkerBoxBlock) && !(block instanceof net.minecraft.world.level.block.ShulkerBoxBlock) && !Config.SERVER.shulkerBoxDisallowedItems.isItemDisallowed(stack.getItem());
 						}
 					};
 					if (uuid != null) {
@@ -141,6 +159,10 @@ public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageIte
 		};
 	}
 
+	private Optional<UUID> getContentsUuid(ItemStack stack) {
+		return NBTHelper.getUniqueId(stack, "uuid");
+	}
+
 	@Override
 	public Optional<TooltipComponent> getInventoryTooltip(ItemStack stack) {
 		return Optional.of(new StorageContentsTooltip(stack));
@@ -148,12 +170,26 @@ public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageIte
 
 	@Override
 	public ItemStack stash(ItemStack storageStack, ItemStack stack) {
-		return storageStack.getCapability(CapabilityStorageWrapper.getCapabilityInstance()).map(wrapper -> wrapper.getInventoryForUpgradeProcessing().insertItem(stack, false)).orElse(stack);
+		return storageStack.getCapability(CapabilityStorageWrapper.getCapabilityInstance()).map(wrapper -> {
+			if (wrapper.getContentsUuid().isEmpty()) {
+				wrapper.setContentsUuid(UUID.randomUUID());
+			}
+			return wrapper.getInventoryForUpgradeProcessing().insertItem(stack, false);
+		}).orElse(stack);
 	}
 
 	@Override
-	public boolean isItemStashable(ItemStack storageStack, ItemStack stack) {
-		return storageStack.getCapability(CapabilityStorageWrapper.getCapabilityInstance()).map(wrapper -> wrapper.getInventoryForUpgradeProcessing().isItemValid(0, stack)).orElse(false);
+	public StashResult getItemStashable(ItemStack storageStack, ItemStack stack) {
+		return storageStack.getCapability(CapabilityStorageWrapper.getCapabilityInstance()).map(wrapper -> {
+			if (wrapper.getInventoryForUpgradeProcessing().insertItem(stack, true).getCount() == stack.getCount()) {
+				return StashResult.NO_SPACE;
+			}
+			if (wrapper.getInventoryHandler().getSlotTracker().getItems().contains(stack.getItem()) || wrapper.getSettingsHandler().getTypeCategory(MemorySettingsCategory.class).matchesFilter(stack)) {
+				return StashResult.MATCH_AND_SPACE;
+			}
+
+			return StashResult.SPACE;
+		}).orElse(StashResult.NO_SPACE);
 	}
 
 	public void setNumberOfInventorySlots(ItemStack shulkerBoxStack, int numberOfInventorySlots) {
@@ -172,5 +208,38 @@ public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageIte
 
 	public void setNumberOfUpgradeSlots(ItemStack shulkerBoxStack, int numberOfUpgradeSlots) {
 		NBTHelper.putInt(shulkerBoxStack.getOrCreateTag(), "numberOfUpgradeSlots", numberOfUpgradeSlots);
+	}
+
+	@Override
+	public boolean overrideStackedOnOther(ItemStack storageStack, Slot slot, ClickAction action, Player player) {
+		if (storageStack.getCount() > 1 || !slot.mayPickup(player) || slot.getItem().isEmpty() || action != ClickAction.SECONDARY) {
+			return super.overrideStackedOnOther(storageStack, slot, action, player);
+		}
+
+		ItemStack stackToStash = slot.getItem();
+		ItemStack stashResult = stash(storageStack, stackToStash);
+		if (stashResult.getCount() != stackToStash.getCount()) {
+			slot.set(stashResult);
+			slot.onTake(player, stashResult);
+			return true;
+		}
+
+		return super.overrideStackedOnOther(storageStack, slot, action, player);
+	}
+
+	@Override
+	public boolean overrideOtherStackedOnMe(ItemStack storageStack, ItemStack otherStack, Slot slot, ClickAction action, Player player, SlotAccess carriedAccess) {
+		if (storageStack.getCount() > 1 || !slot.mayPlace(storageStack) || action != ClickAction.SECONDARY) {
+			return super.overrideOtherStackedOnMe(storageStack, otherStack, slot, action, player, carriedAccess);
+		}
+
+		ItemStack result = stash(storageStack, otherStack);
+		if (result.getCount() != otherStack.getCount()) {
+			carriedAccess.set(result);
+			slot.set(storageStack);
+			return true;
+		}
+
+		return super.overrideOtherStackedOnMe(storageStack, otherStack, slot, action, player, carriedAccess);
 	}
 }

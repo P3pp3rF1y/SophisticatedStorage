@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "conditions": [
+    {
+      "itemRegistryName": "sophisticatedstorage:basic_to_netherite_tier_upgrade",
+      "type": "sophisticatedcore:item_enabled"
+    }
+  ],
+  "ingredients": [
+    {
+      "item": "sophisticatedstorage:basic_to_diamond_tier_upgrade"
+    },
+    {
+      "tag": "forge:ingots/netherite"
+    }
+  ],
+  "result": {
+    "item": "sophisticatedstorage:basic_to_netherite_tier_upgrade"
+  }
+}

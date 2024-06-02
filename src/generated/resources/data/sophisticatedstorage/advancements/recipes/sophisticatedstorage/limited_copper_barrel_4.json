@@ -1,0 +1,34 @@
+{
+  "parent": "minecraft:recipes/root",
+  "rewards": {
+    "recipes": [
+      "sophisticatedstorage:limited_copper_barrel_4"
+    ]
+  },
+  "criteria": {
+    "has_limited_barrel_4": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "sophisticatedstorage:limited_barrel_4"
+            ]
+          }
+        ]
+      }
+    },
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "sophisticatedstorage:limited_copper_barrel_4"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_limited_barrel_4",
+      "has_the_recipe"
+    ]
+  ]
+}

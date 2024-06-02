@@ -15,12 +15,15 @@ public class CustomTintTerrainParticle extends TerrainParticle {
 	public CustomTintTerrainParticle(ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed, BlockState state, BlockPos pos) {
 		super(level, x, y, z, xSpeed, ySpeed, zSpeed, state);
 
+		int color;
 		if (state.getBlock() instanceof BarrelBlock) {
-			int i = Minecraft.getInstance().getBlockColors().getColor(state, level, pos, 1000);
-			rCol *= (i >> 16 & 255) / 255.0F;
-			gCol *= (i >> 8 & 255) / 255.0F;
-			bCol *= (i & 255) / 255.0F;
+			color = Minecraft.getInstance().getBlockColors().getColor(state, level, pos, 1000);
+		} else {
+			color = Minecraft.getInstance().getBlockColors().getColor(state, level, pos, 0);
 		}
+		rCol *= (color >> 16 & 255) / 255.0F;
+		gCol *= (color >> 8 & 255) / 255.0F;
+		bCol *= (color & 255) / 255.0F;
 	}
 
 	public static class Factory implements ParticleProvider<CustomTintTerrainParticleData> {

@@ -14,6 +14,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ReloadableResourceManager;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.inventory.Slot;
@@ -22,17 +23,15 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.client.ClientRegistry;
 import net.minecraftforge.client.MinecraftForgeClient;
-import net.minecraftforge.client.event.EntityRenderersEvent;
-import net.minecraftforge.client.event.InputEvent;
-import net.minecraftforge.client.event.ModelRegistryEvent;
-import net.minecraftforge.client.event.ScreenEvent;
-import net.minecraftforge.client.event.TextureStitchEvent;
+import net.minecraftforge.client.event.*;
 import net.minecraftforge.client.gui.OverlayRegistry;
+import net.minecraftforge.client.model.ForgeModelBakery;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.client.settings.IKeyConflictContext;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AddPackFindersEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
@@ -46,23 +45,17 @@ import net.p3pp3rf1y.sophisticatedstorage.client.gui.ToolInfoOverlay;
 import net.p3pp3rf1y.sophisticatedstorage.client.init.ModBlockColors;
 import net.p3pp3rf1y.sophisticatedstorage.client.init.ModItemColors;
 import net.p3pp3rf1y.sophisticatedstorage.client.init.ModParticles;
-import net.p3pp3rf1y.sophisticatedstorage.client.render.BarrelDynamicModel;
-import net.p3pp3rf1y.sophisticatedstorage.client.render.BarrelDynamicModelBase;
-import net.p3pp3rf1y.sophisticatedstorage.client.render.BarrelRenderer;
-import net.p3pp3rf1y.sophisticatedstorage.client.render.ChestDynamicModel;
-import net.p3pp3rf1y.sophisticatedstorage.client.render.ChestRenderer;
-import net.p3pp3rf1y.sophisticatedstorage.client.render.ClientStorageContentsTooltip;
-import net.p3pp3rf1y.sophisticatedstorage.client.render.ControllerRenderer;
-import net.p3pp3rf1y.sophisticatedstorage.client.render.LimitedBarrelDynamicModel;
-import net.p3pp3rf1y.sophisticatedstorage.client.render.LimitedBarrelRenderer;
-import net.p3pp3rf1y.sophisticatedstorage.client.render.LockRenderer;
-import net.p3pp3rf1y.sophisticatedstorage.client.render.ShulkerBoxDynamicModel;
-import net.p3pp3rf1y.sophisticatedstorage.client.render.ShulkerBoxRenderer;
+import net.p3pp3rf1y.sophisticatedstorage.client.render.*;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageContentsTooltip;
 import net.p3pp3rf1y.sophisticatedstorage.network.ScrolledToolMessage;
+import net.p3pp3rf1y.sophisticatedstorage.network.StoragePacketHandler;
+import net.p3pp3rf1y.sophisticatedstorage.upgrades.compression.CompressionInventoryPart;
+import net.p3pp3rf1y.sophisticatedstorage.upgrades.hopper.HopperUpgradeContainer;
+
+import java.util.Collection;
 
 import static net.minecraftforge.client.gui.ForgeIngameGui.HOTBAR_ELEMENT;
 import static net.minecraftforge.client.settings.KeyConflictContext.GUI;
@@ -75,6 +68,7 @@ public class ClientEventHandler {
 	public static final KeyMapping SORT_KEYBIND = new KeyMapping(StorageTranslationHelper.INSTANCE.translKeybind("sort"),
 			StorageGuiKeyConflictContext.INSTANCE, InputConstants.Type.MOUSE.getOrCreate(MIDDLE_BUTTON), KEYBIND_SOPHISTICATEDSTORAGE_CATEGORY);
 
+	@SuppressWarnings("java:S6548") //singleton is intended here
 	private static class StorageGuiKeyConflictContext implements IKeyConflictContext {
 		public static final StorageGuiKeyConflictContext INSTANCE = new StorageGuiKeyConflictContext();
 
@@ -102,6 +96,7 @@ public class ClientEventHandler {
 		modBus.addListener(ClientEventHandler::registerEntityRenderers);
 		modBus.addListener(ModParticles::registerFactories);
 		modBus.addListener(ClientEventHandler::registerStorageLayerLoader);
+		modBus.addListener(ClientEventHandler::onRegisterReloadListeners);
 		IEventBus eventBus = MinecraftForge.EVENT_BUS;
 		eventBus.addListener(ClientStorageContentsTooltip::onWorldLoad);
 		eventBus.addListener(EventPriority.HIGH, ClientEventHandler::handleGuiMouseKeyPress);
@@ -110,27 +105,26 @@ public class ClientEventHandler {
 		eventBus.addListener(ClientEventHandler::onMouseScrolled);
 	}
 
-
 	private static void onMouseScrolled(InputEvent.MouseScrollEvent evt) {
 		Minecraft mc = Minecraft.getInstance();
-		if (mc.screen != null || !Screen.hasShiftDown()) {
+		if (mc.screen != null) {
 			return;
 		}
 		LocalPlayer player = mc.player;
-		if (player == null) {
+		if (player == null || !player.isShiftKeyDown()) {
 			return;
 		}
 		ItemStack stack = player.getMainHandItem();
 		if (stack.getItem() != ModItems.STORAGE_TOOL.get()) {
 			return;
 		}
-		SophisticatedStorage.PACKET_HANDLER.sendToServer(new ScrolledToolMessage(evt.getScrollDelta() > 0));
+		StoragePacketHandler.INSTANCE.sendToServer(new ScrolledToolMessage(evt.getScrollDelta() > 0));
 		evt.setCanceled(true);
 	}
 
 	private static void onLimitedBarrelClicked(PlayerInteractEvent.LeftClickBlock event) {
 		Player player = event.getPlayer();
-		if (!player.isCreative()) {
+		if (!player.getLevel().isClientSide()) {
 			return;
 		}
 
@@ -141,7 +135,14 @@ public class ClientEventHandler {
 			return;
 		}
 		if (limitedBarrel.isLookingAtFront(player, pos, state)) {
-			event.setCanceled(true);
+			if (player.isCreative()) {
+				event.setCanceled(true);
+			} else {
+				if (player.getDigSpeed(state, event.getPos()) < 2) {
+					event.setUseItem(Event.Result.DENY);
+					Minecraft.getInstance().gameMode.destroyDelay = 5;
+				}
+			}
 		}
 	}
 
@@ -185,6 +186,25 @@ public class ClientEventHandler {
 		ModelLoaderRegistry.registerLoader(SophisticatedStorage.getRL("limited_barrel"), LimitedBarrelDynamicModel.Loader.INSTANCE);
 		ModelLoaderRegistry.registerLoader(SophisticatedStorage.getRL("chest"), ChestDynamicModel.Loader.INSTANCE);
 		ModelLoaderRegistry.registerLoader(SophisticatedStorage.getRL("shulker_box"), ShulkerBoxDynamicModel.Loader.INSTANCE);
+		ModelLoaderRegistry.registerLoader(SophisticatedStorage.getRL("simple_composite"), SimpleCompositeModel.Loader.INSTANCE);
+
+		addBarrelPartModelsToBake();
+	}
+
+	private static void addBarrelPartModelsToBake() {
+		Collection<ResourceLocation> models = Minecraft.getInstance().getResourceManager().listResources("models/block/barrel_part", fileName -> fileName.endsWith(".json"));
+		models.forEach(modelName -> {
+			if (modelName.getNamespace().equals(SophisticatedStorage.MOD_ID)) {
+				ForgeModelBakery.addSpecialModel(new ResourceLocation(modelName.getNamespace(), modelName.getPath().substring("models/".length()).replace(".json", "")));
+			}
+		});
+	}
+
+	private static void onRegisterReloadListeners(RegisterClientReloadListenersEvent event) {
+		event.registerReloadListener((ResourceManagerReloadListener) resourceManager -> {
+			BarrelDynamicModelBase.invalidateCache();
+			BarrelBakedModelBase.invalidateCache();
+		});
 	}
 
 	public static void registerLayer(EntityRenderersEvent.RegisterLayerDefinitions event) {
@@ -193,6 +213,7 @@ public class ClientEventHandler {
 
 	private static void clientSetup(FMLClientSetupEvent event) {
 		ItemBlockRenderTypes.setRenderLayer(ModBlocks.BARREL.get(), RenderType.cutout());
+		ItemBlockRenderTypes.setRenderLayer(ModBlocks.COPPER_BARREL.get(), RenderType.cutout());
 		ItemBlockRenderTypes.setRenderLayer(ModBlocks.IRON_BARREL.get(), RenderType.cutout());
 		ItemBlockRenderTypes.setRenderLayer(ModBlocks.GOLD_BARREL.get(), RenderType.cutout());
 		ItemBlockRenderTypes.setRenderLayer(ModBlocks.DIAMOND_BARREL.get(), RenderType.cutout());
@@ -202,6 +223,10 @@ public class ClientEventHandler {
 		ItemBlockRenderTypes.setRenderLayer(ModBlocks.LIMITED_BARREL_2.get(), RenderType.cutout());
 		ItemBlockRenderTypes.setRenderLayer(ModBlocks.LIMITED_BARREL_3.get(), RenderType.cutout());
 		ItemBlockRenderTypes.setRenderLayer(ModBlocks.LIMITED_BARREL_4.get(), RenderType.cutout());
+		ItemBlockRenderTypes.setRenderLayer(ModBlocks.LIMITED_COPPER_BARREL_1.get(), RenderType.cutout());
+		ItemBlockRenderTypes.setRenderLayer(ModBlocks.LIMITED_COPPER_BARREL_2.get(), RenderType.cutout());
+		ItemBlockRenderTypes.setRenderLayer(ModBlocks.LIMITED_COPPER_BARREL_3.get(), RenderType.cutout());
+		ItemBlockRenderTypes.setRenderLayer(ModBlocks.LIMITED_COPPER_BARREL_4.get(), RenderType.cutout());
 		ItemBlockRenderTypes.setRenderLayer(ModBlocks.LIMITED_IRON_BARREL_1.get(), RenderType.cutout());
 		ItemBlockRenderTypes.setRenderLayer(ModBlocks.LIMITED_IRON_BARREL_2.get(), RenderType.cutout());
 		ItemBlockRenderTypes.setRenderLayer(ModBlocks.LIMITED_IRON_BARREL_3.get(), RenderType.cutout());
@@ -230,6 +255,10 @@ public class ClientEventHandler {
 		stitchChestTextures(event);
 		stitchShulkerBoxTextures(event);
 		event.addSprite(LockRenderer.LOCK_TEXTURE.texture());
+		event.addSprite(LimitedBarrelRenderer.FILL_INDICATORS_TEXTURE.texture());
+		event.addSprite(CompressionInventoryPart.EMPTY_COMPRESSION_SLOT.getSecond());
+		event.addSprite(HopperUpgradeContainer.EMPTY_INPUT_FILTER_SLOT_BACKGROUND.getSecond());
+		event.addSprite(HopperUpgradeContainer.EMPTY_OUTPUT_FILTER_SLOT_BACKGROUND.getSecond());
 	}
 
 	private static void stitchShulkerBoxTextures(TextureStitchEvent.Pre event) {
@@ -238,6 +267,7 @@ public class ClientEventHandler {
 		}
 
 		event.addSprite(ShulkerBoxRenderer.BASE_TIER_MATERIAL.texture());
+		event.addSprite(ShulkerBoxRenderer.COPPER_TIER_MATERIAL.texture());
 		event.addSprite(ShulkerBoxRenderer.IRON_TIER_MATERIAL.texture());
 		event.addSprite(ShulkerBoxRenderer.GOLD_TIER_MATERIAL.texture());
 		event.addSprite(ShulkerBoxRenderer.DIAMOND_TIER_MATERIAL.texture());
@@ -260,7 +290,6 @@ public class ClientEventHandler {
 			return;
 		}
 
-		BarrelDynamicModelBase.getTextures().forEach(mat -> event.addSprite(mat.texture()));
 		ChestDynamicModel.getWoodBreakTextures().forEach(event::addSprite);
 		event.addSprite(ChestDynamicModel.TINTABLE_BREAK_TEXTURE);
 		event.addSprite(ShulkerBoxDynamicModel.TINTABLE_BREAK_TEXTURE);
@@ -268,7 +297,7 @@ public class ClientEventHandler {
 	}
 
 	private static void registerEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {
-		event.registerBlockEntityRenderer(ModBlocks.BARREL_BLOCK_ENTITY_TYPE.get(), context -> new BarrelRenderer());
+		event.registerBlockEntityRenderer(ModBlocks.BARREL_BLOCK_ENTITY_TYPE.get(), context -> new BarrelRenderer<>());
 		event.registerBlockEntityRenderer(ModBlocks.LIMITED_BARREL_BLOCK_ENTITY_TYPE.get(), context -> new LimitedBarrelRenderer());
 		event.registerBlockEntityRenderer(ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get(), ChestRenderer::new);
 		event.registerBlockEntityRenderer(ModBlocks.SHULKER_BOX_BLOCK_ENTITY_TYPE.get(), ShulkerBoxRenderer::new);
