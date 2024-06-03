@@ -21,6 +21,11 @@ plugins {
 apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'org.parchmentmc.librarian.forgegradle'
 apply plugin: 'idea'
+apply plugin: 'eclipse'
+
+if (findProject(':SophisticatedCore') != null) {
+    evaluationDependsOn(':SophisticatedCore')
+}
 
 repositories {
     mavenCentral()
@@ -89,6 +94,8 @@ minecraft {
             property "mixin.env.disableRefMap", "true"
             //property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
             workingDirectory project.file('run')
+			args '--mod', 'sophisticatedstorage', '--all', '--output', file('src/generated/resources/')
+
             mods {
                 if (findProject(':SophisticatedCore') != null) {
                     SophisticatedCore {
@@ -99,7 +106,6 @@ minecraft {
                     source sourceSets.main
                 }
             }
-            args '--mod', 'sophisticatedstorage', '--all', '--output', file('src/generated/resources/')
         }
     }
 }
@@ -111,20 +117,8 @@ sourceSets.main.resources {
 dependencies {
     minecraft "net.minecraftforge:forge:${project.minecraft_version}-${project.forge_version}"
 
-    compileOnly fg.deobf("mezz.jei:jei-${jei_mc_version}:${jei_version}:api")
-    runtimeOnly fg.deobf("mezz.jei:jei-${jei_mc_version}:${jei_version}")
-    compileOnly fg.deobf("curse.maven:quark-243121:${quark_cf_file_id}")
-    compileOnly fg.deobf("curse.maven:autoreglib-250363:${autoreglib_cf_file_id}")
-    runtimeOnly fg.deobf("curse.maven:quark-243121:${quark_cf_file_id}")
-    runtimeOnly fg.deobf("curse.maven:autoreglib-250363:${autoreglib_cf_file_id}")
-    compileOnly fg.deobf("curse.maven:chipped-456956:${chipped_cf_file_id}")
-    runtimeOnly fg.deobf("curse.maven:chipped-456956:${chipped_cf_file_id}")
-    compileOnly fg.deobf("curse.maven:ctm-267602:${ctm_cf_file_id}")
-    runtimeOnly fg.deobf("curse.maven:ctm-267602:${ctm_cf_file_id}")
-
     if (findProject(':SophisticatedCore') != null) {
         implementation project(':SophisticatedCore')
-        testImplementation project(':SophisticatedCore')
     } else {
         compileOnly fg.deobf("sophisticatedcore:sophisticatedcore:${sc_version}") {
             transitive = false
@@ -136,6 +130,17 @@ dependencies {
             transitive = false
         }
     }
+
+	compileOnly fg.deobf("mezz.jei:jei-${jei_mc_version}:${jei_version}:api")
+    runtimeOnly fg.deobf("mezz.jei:jei-${jei_mc_version}:${jei_version}")
+    compileOnly fg.deobf("curse.maven:quark-243121:${quark_cf_file_id}")
+    compileOnly fg.deobf("curse.maven:autoreglib-250363:${autoreglib_cf_file_id}")
+    runtimeOnly fg.deobf("curse.maven:quark-243121:${quark_cf_file_id}")
+    runtimeOnly fg.deobf("curse.maven:autoreglib-250363:${autoreglib_cf_file_id}")
+    compileOnly fg.deobf("curse.maven:chipped-456956:${chipped_cf_file_id}")
+    runtimeOnly fg.deobf("curse.maven:chipped-456956:${chipped_cf_file_id}")
+    compileOnly fg.deobf("curse.maven:ctm-267602:${ctm_cf_file_id}")
+    runtimeOnly fg.deobf("curse.maven:ctm-267602:${ctm_cf_file_id}")
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.+'
     testImplementation 'org.junit.jupiter:junit-jupiter-params:5.9.+'
@@ -185,7 +190,7 @@ static def getBuildNumber() {
 }
 
 static def getStable() {
-    if ((System.getenv("GITHUB_REF") == null || System.getenv("GITHUB_REF").endsWith("-dev"))) {
+    if ((System.getenv("GITHUB_REF") != null && System.getenv("GITHUB_REF").endsWith("-dev"))) {
         return "-alpha"
     }
     return ""
@@ -212,7 +217,7 @@ publishing {
 
 sonarqube {
     properties {
-        property "sonar.projectName", "sophisticatedstorage"
+        property "sonar.projectName", "SophisticatedStorage"
         property "sonar.projectKey", "sophisticatedstorage:SophisticatedStorage"
     }
 }
