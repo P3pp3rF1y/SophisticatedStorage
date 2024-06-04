@@ -735,6 +735,17 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.unlockedBy(HAS_UPGRADE_BASE_CRITERION_NAME, has(ModItems.UPGRADE_BASE.get()))
 				.save(consumer);
 
+		ShapeBasedRecipeBuilder.shaped(ModItems.ADVANCED_CRAFTING_UPGRADE.get())
+				.pattern(" D ")
+				.pattern("GCG")
+				.pattern("RRR")
+				.define('D', Tags.Items.GEMS_DIAMOND)
+				.define('G', Tags.Items.INGOTS_GOLD)
+				.define('R', Tags.Items.DUSTS_REDSTONE)
+				.define('C', ModItems.CRAFTING_UPGRADE.get())
+				.unlockedBy("has_crafting_upgrade", has(ModItems.CRAFTING_UPGRADE.get()))
+				.save(consumer);
+
 		ShapeBasedRecipeBuilder.shaped(ModItems.STONECUTTER_UPGRADE.get())
 				.pattern(" S ")
 				.pattern("IBI")
