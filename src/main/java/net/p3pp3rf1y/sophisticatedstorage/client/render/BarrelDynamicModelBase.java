@@ -307,7 +307,7 @@ public abstract class BarrelDynamicModelBase<T extends BarrelDynamicModelBase<T>
 		public T read(JsonObject modelContents, JsonDeserializationContext deserializationContext) {
 			ResourceLocation parentLocation = null;
 			if (modelContents.has("parent")) {
-				parentLocation = new ResourceLocation(modelContents.get("parent").getAsString());
+				parentLocation = ResourceLocation.fromNamespaceAndPath(modelContents.get("parent").getAsString());
 			}
 
 			Map<BarrelModelPart, BarrelModelPartDefinition> modelParts = readModelParts(modelContents, "model_parts");
@@ -333,7 +333,7 @@ public abstract class BarrelDynamicModelBase<T extends BarrelDynamicModelBase<T>
 		private static ResourceLocation readFlatTopModel(JsonObject modelContents) {
 			ResourceLocation flatTopModelName = null;
 			if (modelContents.has("flat_top_model")) {
-				flatTopModelName = new ResourceLocation(modelContents.get("flat_top_model").getAsString());
+				flatTopModelName = ResourceLocation.fromNamespaceAndPath(modelContents.get("flat_top_model").getAsString());
 			}
 			return flatTopModelName;
 		}
@@ -371,7 +371,7 @@ public abstract class BarrelDynamicModelBase<T extends BarrelDynamicModelBase<T>
 				JsonObject dynamicPartsJson = modelContents.getAsJsonObject("dynamic_part_models");
 				for (Map.Entry<String, JsonElement> entry : dynamicPartsJson.entrySet()) {
 					DynamicBarrelBakingData.DynamicPart.getByNameOptional(entry.getKey()).ifPresent(part ->
-							dynamicPartModels.put(part, new ResourceLocation(entry.getValue().getAsString())));
+							dynamicPartModels.put(part, ResourceLocation.fromNamespaceAndPath(entry.getValue().getAsString())));
 				}
 			}
 			return dynamicPartModels;
@@ -443,7 +443,7 @@ public abstract class BarrelDynamicModelBase<T extends BarrelDynamicModelBase<T>
 		public static BarrelModelPartDefinition deserialize(JsonObject json) {
 			ResourceLocation modelLocation = null;
 			if (json.has("model")) {
-				modelLocation = new ResourceLocation(json.get("model").getAsString());
+				modelLocation = ResourceLocation.fromNamespaceAndPath(json.get("model").getAsString());
 			}
 			Map<String, Material> textures = new HashMap<>();
 			if (json.has("textures")) {
@@ -453,7 +453,7 @@ public abstract class BarrelDynamicModelBase<T extends BarrelDynamicModelBase<T>
 					if (textureName.startsWith("#")) {
 						textureName = REFERENCE_PREFIX + textureName.substring(1);
 					}
-					textures.put(entry.getKey(), new Material(InventoryMenu.BLOCK_ATLAS, new ResourceLocation(textureName)));
+					textures.put(entry.getKey(), new Material(InventoryMenu.BLOCK_ATLAS, ResourceLocation.fromNamespaceAndPath(textureName)));
 				}
 			}
 			return new BarrelModelPartDefinition(modelLocation, textures);

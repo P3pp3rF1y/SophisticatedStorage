@@ -78,9 +78,9 @@ public class ClientEventHandler {
 		}
 	}
 
-	private static final ResourceLocation CHEST_RL = new ResourceLocation(SophisticatedStorage.MOD_ID, "chest");
-	private static final ResourceLocation CHEST_LEFT_RL = new ResourceLocation(SophisticatedStorage.MOD_ID, "chest_left");
-	private static final ResourceLocation CHEST_RIGHT_RL = new ResourceLocation(SophisticatedStorage.MOD_ID, "chest_right");
+	private static final ResourceLocation CHEST_RL = ResourceLocation.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "chest");
+	private static final ResourceLocation CHEST_LEFT_RL = ResourceLocation.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "chest_left");
+	private static final ResourceLocation CHEST_RIGHT_RL = ResourceLocation.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "chest_right");
 	public static final ModelLayerLocation CHEST_LAYER = new ModelLayerLocation(CHEST_RL, "main");
 	public static final ModelLayerLocation CHEST_LEFT_LAYER = new ModelLayerLocation(CHEST_LEFT_RL, "main");
 	public static final ModelLayerLocation CHEST_RIGHT_LAYER = new ModelLayerLocation(CHEST_RIGHT_RL, "main");
@@ -141,7 +141,7 @@ public class ClientEventHandler {
 		Map<ResourceLocation, Resource> models = Minecraft.getInstance().getResourceManager().listResources("models/block/barrel_part", fileName -> fileName.getPath().endsWith(".json"));
 		models.forEach((modelName, resource) -> {
 			if (modelName.getNamespace().equals(SophisticatedStorage.MOD_ID)) {
-				event.register(new ResourceLocation(modelName.getNamespace(), modelName.getPath().substring("models/".length()).replace(".json", "")));
+				event.register(ResourceLocation.fromNamespaceAndPath(modelName.getNamespace(), modelName.getPath().substring("models/".length()).replace(".json", "")));
 			}
 		});
 	}
@@ -220,11 +220,11 @@ public class ClientEventHandler {
 	}
 
 	private static void onModelRegistry(ModelEvent.RegisterGeometryLoaders event) {
-		event.register(new ResourceLocation(SophisticatedStorage.MOD_ID, "barrel"), BarrelDynamicModel.Loader.INSTANCE);
-		event.register(new ResourceLocation(SophisticatedStorage.MOD_ID, "limited_barrel"), LimitedBarrelDynamicModel.Loader.INSTANCE);
-		event.register(new ResourceLocation(SophisticatedStorage.MOD_ID, "chest"), ChestDynamicModel.Loader.INSTANCE);
-		event.register(new ResourceLocation(SophisticatedStorage.MOD_ID, "shulker_box"), ShulkerBoxDynamicModel.Loader.INSTANCE);
-		event.register(new ResourceLocation(SophisticatedStorage.MOD_ID, "simple_composite"), SimpleCompositeModel.Loader.INSTANCE);
+		event.register(ResourceLocation.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "barrel"), BarrelDynamicModel.Loader.INSTANCE);
+		event.register(ResourceLocation.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "limited_barrel"), LimitedBarrelDynamicModel.Loader.INSTANCE);
+		event.register(ResourceLocation.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "chest"), ChestDynamicModel.Loader.INSTANCE);
+		event.register(ResourceLocation.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "shulker_box"), ShulkerBoxDynamicModel.Loader.INSTANCE);
+		event.register(ResourceLocation.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "simple_composite"), SimpleCompositeModel.Loader.INSTANCE);
 	}
 
 	private static void onRegisterReloadListeners(RegisterClientReloadListenersEvent event) {
@@ -249,7 +249,7 @@ public class ClientEventHandler {
 	}
 
 	private static void registerOverlay(RegisterGuiOverlaysEvent event) {
-		event.registerAbove(VanillaGuiOverlay.HOTBAR.id(), new ResourceLocation(SophisticatedStorage.MOD_ID, "storage_tool_info"), ToolInfoOverlay.HUD_TOOL_INFO);
+		event.registerAbove(VanillaGuiOverlay.HOTBAR.id(), ResourceLocation.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "storage_tool_info"), ToolInfoOverlay.HUD_TOOL_INFO);
 	}
 
 	private static void registerEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {

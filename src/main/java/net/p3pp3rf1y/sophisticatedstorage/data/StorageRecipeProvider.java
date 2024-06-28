@@ -133,8 +133,8 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.pattern("TST")
 				.pattern("SLS")
 				.pattern("T T")
-				.define('T', Tags.Items.STRING)
-				.define('L', Tags.Items.LEATHER)
+				.define('T', Tags.Items.STRINGS)
+				.define('L', Tags.Items.LEATHERS)
 				.define('S', storageStackUpgrade)
 				.unlockedBy("has_storage_stack_upgrade", has(storageStackUpgrade))
 				.save(recipeOutput, SophisticatedStorage.getRL("backpack_" + RegistryHelper.getItemKey(backpackStackUpgrade).getPath() + "_from_storage_" + RegistryHelper.getItemKey(storageStackUpgrade).getPath()));
@@ -145,8 +145,8 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.pattern("TUT")
 				.pattern(" L ")
 				.pattern("T T")
-				.define('T', Tags.Items.STRING)
-				.define('L', Tags.Items.LEATHER)
+				.define('T', Tags.Items.STRINGS)
+				.define('L', Tags.Items.LEATHERS)
 				.define('U', storageUpgrade)
 				.unlockedBy("has_storage_upgrade", has(storageUpgrade))
 				.save(recipeOutput, SophisticatedStorage.getRL("backpack_" + RegistryHelper.getItemKey(backpackUpgrade).getPath() + "_from_storage_" + RegistryHelper.getItemKey(storageUpgrade).getPath()));
@@ -246,7 +246,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.pattern("SCS")
 				.pattern("PBP")
 				.pattern("SCS")
-				.define('S', Tags.Items.STONE)
+				.define('S', Tags.Items.STONES)
 				.define('C', Items.COMPARATOR)
 				.define('P', ItemTags.PLANKS)
 				.define('B', new BaseTierWoodenStorageIngredient())
@@ -265,7 +265,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('E', Tags.Items.ENDER_PEARLS)
 				.define('P', ItemTags.PLANKS)
 				.define('R', Items.REPEATER)
-				.define('S', Tags.Items.STONE)
+				.define('S', Tags.Items.STONES)
 				.unlockedBy("has_repeater", has(Items.REPEATER))
 				.save(recipeOutput);
 
@@ -284,7 +284,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.pattern("SPS")
 				.pattern("RBG")
 				.pattern("SPS")
-				.define('S', Tags.Items.STONE)
+				.define('S', Tags.Items.STONES)
 				.define('P', ItemTags.PLANKS)
 				.define('R', Items.REPEATER)
 				.define('G', Tags.Items.INGOTS_GOLD)
@@ -296,7 +296,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.pattern("SGS")
 				.pattern("PBP")
 				.pattern("SRS")
-				.define('S', Tags.Items.STONE)
+				.define('S', Tags.Items.STONES)
 				.define('P', ItemTags.PLANKS)
 				.define('R', Items.REPEATER)
 				.define('G', Tags.Items.INGOTS_GOLD)
@@ -308,7 +308,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.pattern("SRS")
 				.pattern("PBP")
 				.pattern("SGS")
-				.define('S', Tags.Items.STONE)
+				.define('S', Tags.Items.STONES)
 				.define('P', ItemTags.PLANKS)
 				.define('R', Items.REPEATER)
 				.define('G', Tags.Items.INGOTS_GOLD)
@@ -592,7 +592,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.pattern("RSR")
 				.define('B', ModItems.UPGRADE_BASE.get())
 				.define('R', Tags.Items.DUSTS_REDSTONE)
-				.define('S', Tags.Items.STRING)
+				.define('S', Tags.Items.STRINGS)
 				.unlockedBy(HAS_UPGRADE_BASE_CRITERION_NAME, has(ModItems.UPGRADE_BASE.get()))
 				.save(recipeOutput);
 
@@ -680,7 +680,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.pattern("ROR")
 				.define('B', ModItems.UPGRADE_BASE.get())
 				.define('E', Tags.Items.ENDER_PEARLS)
-				.define('O', Tags.Items.OBSIDIAN)
+				.define('O', Tags.Items.OBSIDIANS)
 				.define('R', Tags.Items.DUSTS_REDSTONE)
 				.unlockedBy(HAS_UPGRADE_BASE_CRITERION_NAME, has(ModItems.UPGRADE_BASE.get()))
 				.save(recipeOutput);
@@ -986,18 +986,18 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('P', ItemTags.PLANKS)
 				.define('U', backpackUpgrade)
 				.unlockedBy("has_backpack_upgrade", has(backpackUpgrade))
-				.save(sbChippedRecipeOutput, new ResourceLocation(SophisticatedStorage.MOD_ID, "storage_" + getChippedItemPath(upgrade) + "_from_backpack_" + getChippedItemPath(backpackUpgrade)));
+				.save(sbChippedRecipeOutput, ResourceLocation.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "storage_" + getChippedItemPath(upgrade) + "_from_backpack_" + getChippedItemPath(backpackUpgrade)));
 
 		//backpack from storage upgrade
 		ShapeBasedRecipeBuilder.shaped(backpackUpgrade)
 				.pattern("TUT")
 				.pattern(" L ")
 				.pattern("T T")
-				.define('T', Tags.Items.STRING)
-				.define('L', Tags.Items.LEATHER)
+				.define('T', Tags.Items.STRINGS)
+				.define('L', Tags.Items.LEATHERS)
 				.define('U', upgrade)
 				.unlockedBy("has_storage_upgrade", has(upgrade))
-				.save(sbChippedRecipeOutput, new ResourceLocation(SophisticatedStorage.MOD_ID, "backpack_" + getChippedItemPath(backpackUpgrade) + "_from_storage_" + getChippedItemPath(upgrade)));
+				.save(sbChippedRecipeOutput, ResourceLocation.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "backpack_" + getChippedItemPath(backpackUpgrade) + "_from_storage_" + getChippedItemPath(upgrade)));
 	}
 
 	private static String getChippedItemPath(BlockTransformationUpgradeItem upgrade) {
@@ -1042,7 +1042,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 	}
 
 	private Block getBlock(String registryName) {
-		return BuiltInRegistries.BLOCK.get(new ResourceLocation(registryName));
+		return BuiltInRegistries.BLOCK.get(ResourceLocation.parse(registryName));
 	}
 
 	private void addBarrelRecipes(RecipeOutput recipeOutput) {

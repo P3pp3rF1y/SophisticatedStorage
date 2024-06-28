@@ -7,7 +7,7 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Player;
-import net.neoforged.neoforge.network.handling.PlayPayloadContext;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.LimitedBarrelBlock;
@@ -16,7 +16,7 @@ import net.p3pp3rf1y.sophisticatedstorage.common.gui.LimitedBarrelContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
 
 public class OpenStorageInventoryPacket implements CustomPacketPayload {
-	public static final ResourceLocation ID = new ResourceLocation(SophisticatedStorage.MOD_ID, "open_storage_inventory");
+	public static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "open_storage_inventory");
 	private final BlockPos pos;
 
 	public OpenStorageInventoryPacket(BlockPos pos) {
@@ -27,7 +27,7 @@ public class OpenStorageInventoryPacket implements CustomPacketPayload {
 		this(buffer.readBlockPos());
 	}
 
-	public void handle(PlayPayloadContext context) {
+	public void handle(IPayloadContext context) {
 		context.workHandler().execute(() -> context.player().ifPresent(this::handlePacket));
 	}
 

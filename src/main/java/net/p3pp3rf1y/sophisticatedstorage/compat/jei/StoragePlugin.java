@@ -43,7 +43,7 @@ public class StoragePlugin implements IModPlugin {
 
 	@Override
 	public ResourceLocation getPluginUid() {
-		return new ResourceLocation(SophisticatedStorage.MOD_ID, "default");
+		return ResourceLocation.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "default");
 	}
 
 	@Override

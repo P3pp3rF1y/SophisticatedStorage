@@ -5,9 +5,10 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
-import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelMaterial;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageTranslationHelper;
+import net.p3pp3rf1y.sophisticatedstorage.init.ModDataComponents;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 import java.util.Optional;
@@ -30,14 +31,15 @@ public class BarrelBlockItem extends WoodStorageBlockItem {
 
 	public static void setFlatTop(ItemStack stack, boolean flatTop) {
 		if (flatTop) {
-			NBTHelper.setBoolean(stack, FLAT_TOP_TAG, true);
+			stack.set(ModDataComponents.FLAT_TOP, true);
 		} else {
-			NBTHelper.removeTag(stack, FLAT_TOP_TAG);
+			stack.remove(ModDataComponents.FLAT_TOP);
 		}
 	}
 
 	public static boolean isFlatTop(ItemStack stack) {
-		return NBTHelper.getBoolean(stack, FLAT_TOP_TAG).orElse(false);
+		@Nullable Boolean flatTop = stack.get(ModDataComponents.FLAT_TOP);
+		return flatTop != null && flatTop;
 	}
 
 	public static void setMaterials(ItemStack barrel, Map<BarrelMaterial, ResourceLocation> materials) {
@@ -45,7 +47,7 @@ public class BarrelBlockItem extends WoodStorageBlockItem {
 	}
 
 	public static Map<BarrelMaterial, ResourceLocation> getMaterials(ItemStack barrel) {
-		return NBTHelper.getMap(barrel, MATERIALS_TAG, BarrelMaterial::fromName, (bm, tag) -> Optional.of(new ResourceLocation(tag.getAsString()))).orElse(Map.of());
+		return NBTHelper.getMap(barrel, MATERIALS_TAG, BarrelMaterial::fromName, (bm, tag) -> Optional.of(ResourceLocation.fromNamespaceAndPath(tag.getAsString()))).orElse(Map.of());
 	}
 
 	public static void removeMaterials(ItemStack stack) {

@@ -62,7 +62,7 @@ public class CompressionInventoryPartTest {
 		recipeHelperMock.when(() -> RecipeHelper.getUncompactingResult(Items.IRON_INGOT)).thenReturn(new RecipeHelper.UncompactingResult(Items.IRON_NUGGET, RecipeHelper.CompactingShape.THREE_BY_THREE_UNCRAFTABLE));
 
 		ss = Mockito.mockStatic(SophisticatedStorage.class);
-		ss.when(() -> SophisticatedStorage.getRL(anyString())).thenAnswer(i -> new ResourceLocation(i.getArgument(0)));
+		ss.when(() -> SophisticatedStorage.getRL(anyString())).thenAnswer(i -> ResourceLocation.fromNamespaceAndPath(i.getArgument(0)));
 	}
 
 	@BeforeEach

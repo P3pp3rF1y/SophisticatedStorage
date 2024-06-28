@@ -9,6 +9,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -106,7 +107,7 @@ public class LimitedBarrelBlock extends BarrelBlock {
 	}
 
 	@Override
-	public void appendHoverText(ItemStack stack, @Nullable BlockGetter level, List<Component> tooltip, TooltipFlag flat) {
+	public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltip, TooltipFlag flat) {
 		int numberOfInventorySlots = getNumberOfInventorySlots();
 		String translationKey = numberOfInventorySlots == 1 ? "limited_barrel_singular" : "limited_barrel_plural";
 		tooltip.add(Component.translatable(StorageTranslationHelper.INSTANCE.translBlockTooltipKey(translationKey), String.valueOf(numberOfInventorySlots), String.valueOf(getBaseStackSizeMultiplier())).withStyle(ChatFormatting.DARK_GRAY));

@@ -2,7 +2,7 @@ plugins {
     id 'java-library'
     id 'idea'
     id 'maven-publish'
-    id 'net.neoforged.gradle.userdev' version '7.0.101'
+    id 'net.neoforged.gradle.userdev' version '7.0.142'
     id "org.sonarqube" version "5.0.0.4638"
 }
 
@@ -57,7 +57,7 @@ base {
     archivesName = mod_id
 }
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
 minecraft {
     accessTransformers {
@@ -65,8 +65,6 @@ minecraft {
         //entry('public net.minecraft.world.item.crafting.ShapelessRecipe result #result')
     }
 }
-
-sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '17'
 
 runs {
     configureEach {

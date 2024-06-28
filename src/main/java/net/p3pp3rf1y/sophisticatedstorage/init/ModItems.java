@@ -95,7 +95,7 @@ public class ModItems {
 	public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB.location(), SophisticatedStorage.MOD_ID);
 	public static final DeferredRegister<LootItemFunctionType> LOOT_FUNCTION_TYPES = DeferredRegister.create(Registries.LOOT_FUNCTION_TYPE.location(), SophisticatedStorage.MOD_ID);
 	private static final DeferredRegister<Codec<? extends ICondition>> CONDITION_CODECS = DeferredRegister.create(NeoForgeRegistries.Keys.CONDITION_CODECS, SophisticatedStorage.MOD_ID);
-	public static final ResourceLocation STORAGE_UPGRADE_TAG_NAME = new ResourceLocation(SophisticatedStorage.MOD_ID, "upgrade");
+	public static final ResourceLocation STORAGE_UPGRADE_TAG_NAME = ResourceLocation.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "upgrade");
 
 	public static final TagKey<Item> STORAGE_UPGRADE_TAG = TagKey.create(Registries.ITEM, STORAGE_UPGRADE_TAG_NAME);
 
@@ -181,8 +181,8 @@ public class ModItems {
 	public static final String PACKING_TAPE_NAME = "packing_tape";
 	public static final Supplier<ItemBase> PACKING_TAPE = ITEMS.register(PACKING_TAPE_NAME, () -> new ItemBase(new Item.Properties().stacksTo(1).durability(8)) {
 		@Override
-		public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag isAdvanced) {
-			super.appendHoverText(stack, level, tooltip, isAdvanced);
+		public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltip, TooltipFlag isAdvanced) {
+			super.appendHoverText(stack, context, tooltip, isAdvanced);
 			if (Boolean.TRUE.equals(Config.COMMON.dropPacked.get())) {
 				tooltip.add(Component.translatable(StorageTranslationHelper.INSTANCE.translItemTooltip(PACKING_TAPE_NAME) + ".disabled").withStyle(ChatFormatting.RED));
 			} else {
@@ -224,6 +224,7 @@ public class ModItems {
 		LOOT_FUNCTION_TYPES.register(modBus);
 		ATTACHMENT_TYPES.register(modBus);
 		CONDITION_CODECS.register(modBus);
+		ModDataComponents.register(modBus);
 		modBus.addListener(ModItems::registerContainers);
 		if (FMLEnvironment.dist.isClient()) {
 			ModItemsClient.init(modBus);

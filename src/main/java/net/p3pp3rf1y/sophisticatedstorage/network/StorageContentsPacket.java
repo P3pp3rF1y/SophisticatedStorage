@@ -4,7 +4,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.neoforge.network.handling.PlayPayloadContext;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.p3pp3rf1y.sophisticatedcore.client.render.ClientStorageContentsTooltipBase;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.ItemContentsStorage;
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 import java.util.UUID;
 
 public class StorageContentsPacket implements CustomPacketPayload {
-	public static final ResourceLocation ID = new ResourceLocation(SophisticatedStorage.MOD_ID, "storage_contents");
+	public static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "storage_contents");
 	private final UUID shulkerBoxUuid;
 	@Nullable
 	private final CompoundTag contents;
@@ -27,7 +27,7 @@ public class StorageContentsPacket implements CustomPacketPayload {
 		this(buffer.readUUID(), buffer.readNbt());
 	}
 
-	public void handle(PlayPayloadContext context) {
+	public void handle(IPayloadContext context) {
 		context.workHandler().execute(this::handlePacket);
 	}
 

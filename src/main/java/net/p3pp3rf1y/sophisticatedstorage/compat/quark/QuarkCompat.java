@@ -27,7 +27,7 @@ public class QuarkCompat implements ICompat {
 	@Override
 	public void setup() {
 		CHESTS.forEach((name, woodType) ->
-				BuiltInRegistries.BLOCK.getOptional(new ResourceLocation(CompatModIds.QUARK, name)).ifPresent(chest -> {
+				BuiltInRegistries.BLOCK.getOptional(ResourceLocation.fromNamespaceAndPath(CompatModIds.QUARK, name)).ifPresent(chest -> {
 					StorageTierUpgradeItem.TierUpgrade.BASIC.addTierUpgradeDefinition(chest,
 							new StorageTierUpgradeItem.VanillaTierUpgradeDefinition<>(ChestBlockEntity.class, chestBlockEntity -> chestBlockEntity.openersCounter.getOpenerCount() > 0, ModBlocks.CHEST.get(), woodType, ChestBlock.FACING, ChestBlock.WATERLOGGED, ChestBlock.TYPE));
 					StorageTierUpgradeItem.TierUpgrade.BASIC_TO_COPPER.addTierUpgradeDefinition(chest,

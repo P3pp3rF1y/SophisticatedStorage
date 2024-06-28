@@ -110,7 +110,7 @@ public class BarrelBlockEntity extends WoodStorageBlockEntity {
 	@Override
 	public void loadSynchronizedData(CompoundTag tag) {
 		super.loadSynchronizedData(tag);
-		materials = NBTHelper.getMap(tag, MATERIALS_TAG, BarrelMaterial::fromName, (bm, t) -> Optional.of(new ResourceLocation(t.getAsString()))).orElse(Map.of());
+		materials = NBTHelper.getMap(tag, MATERIALS_TAG, BarrelMaterial::fromName, (bm, t) -> Optional.of(ResourceLocation.fromNamespaceAndPath(t.getAsString()))).orElse(Map.of());
 	}
 
 	public void setMaterials(Map<BarrelMaterial, ResourceLocation> materials) {

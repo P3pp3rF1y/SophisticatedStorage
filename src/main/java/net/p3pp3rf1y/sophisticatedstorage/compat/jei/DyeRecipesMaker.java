@@ -95,7 +95,7 @@ public class DyeRecipesMaker {
 				tintableBlockItem.setMainColor(result, ColorHelper.getColor(DyeColor.YELLOW.getTextureDiffuseColors()));
 				tintableBlockItem.setAccentColor(result, ColorHelper.getColor(DyeColor.LIME.getTextureDiffuseColors()));
 			}
-			ResourceLocation id = new ResourceLocation(SophisticatedStorage.MOD_ID, "multiple_colors");
+			ResourceLocation id = ResourceLocation.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "multiple_colors");
 			ShapedRecipePattern pattern = new ShapedRecipePattern(3, 1, ingredients, Optional.empty());
 			recipes.add(new RecipeHolder<>(id, new ShapedRecipe("", CraftingBookCategory.MISC, pattern, result)));
 		});
@@ -112,7 +112,7 @@ public class DyeRecipesMaker {
 					tintableBlockItem.setMainColor(result, ColorHelper.getColor(color.getTextureDiffuseColors()));
 					tintableBlockItem.setAccentColor(result, ColorHelper.getColor(color.getTextureDiffuseColors()));
 				}
-				ResourceLocation id = new ResourceLocation(SophisticatedStorage.MOD_ID, "single_color_" + color.getSerializedName());
+				ResourceLocation id = ResourceLocation.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "single_color_" + color.getSerializedName());
 				ShapedRecipePattern pattern = new ShapedRecipePattern(1, 2, ingredients, Optional.empty());
 				recipes.add(new RecipeHolder<>(id, new ShapedRecipe("", CraftingBookCategory.MISC, pattern, result)));
 			});

@@ -2,7 +2,9 @@ package net.p3pp3rf1y.sophisticatedstorage.item;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -14,32 +16,29 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.neoforged.neoforge.network.codec.NeoForgeStreamCodecs;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.TranslationHelper;
 import net.p3pp3rf1y.sophisticatedcore.controller.ILinkable;
 import net.p3pp3rf1y.sophisticatedcore.util.ItemBase;
-import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.RegistryHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.block.*;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageTranslationHelper;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
+import net.p3pp3rf1y.sophisticatedstorage.init.ModDataComponents;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
 public class StorageToolItem extends ItemBase {
 
-	private static final String CONTROLLER_POS_TAG = "controllerPos";
-	private static final String MODE_TAG = "mode";
-
 	public StorageToolItem() {
 		super(new Properties().stacksTo(1));
 	}
 
 	@Override
-	public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltipComponents, TooltipFlag flag) {
+	public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltipComponents, TooltipFlag flag) {
 		tooltipComponents.addAll(StorageTranslationHelper.INSTANCE.getTranslatedLines(stack.getItem().getDescriptionId() + TranslationHelper.TOOLTIP_SUFFIX, null, ChatFormatting.DARK_GRAY));
 		String itemName = RegistryHelper.getItemKey(stack.getItem()).getPath();
 		tooltipComponents.add(Component.translatable(StorageTranslationHelper.INSTANCE.translItemTooltip(itemName) + ".controls",
@@ -141,15 +140,15 @@ public class StorageToolItem extends ItemBase {
 	}
 
 	private void setControllerLink(ItemStack tool, BlockPos pos) {
-		NBTHelper.setLong(tool, CONTROLLER_POS_TAG, pos.asLong());
+		tool.set(ModDataComponents.CONTROLLER_POS, pos);
 	}
 
 	public static Optional<BlockPos> getControllerLink(ItemStack tool) {
-		return NBTHelper.getLong(tool, CONTROLLER_POS_TAG).map(BlockPos::of);
+		return Optional.ofNullable(tool.get(ModDataComponents.CONTROLLER_POS));
 	}
 
 	private void removeControllerLink(ItemStack tool) {
-		NBTHelper.removeTag(tool, CONTROLLER_POS_TAG);
+		tool.remove(ModDataComponents.CONTROLLER_POS);
 	}
 
 	public static Component getOverlayMessage(ItemStack tool) {
@@ -160,20 +159,26 @@ public class StorageToolItem extends ItemBase {
 					getControllerLink(tool).map(controllerPos -> StorageTranslationHelper.INSTANCE.translItemOverlayMessage(item, "linking", controllerPos.getX(), controllerPos.getY(), controllerPos.getZ()))
 							.orElseGet(() -> StorageTranslationHelper.INSTANCE.translItemOverlayMessage(item, "unlinking"));
 			case LOCK -> StorageTranslationHelper.INSTANCE.translItemOverlayMessage(item, "toggling_lock");
-			case LOCK_DISPLAY -> StorageTranslationHelper.INSTANCE.translItemOverlayMessage(item, "toggling_lock_display");
-			case COUNT_DISPLAY -> StorageTranslationHelper.INSTANCE.translItemOverlayMessage(item, "toggling_count_display");
-			case TIER_DISPLAY -> StorageTranslationHelper.INSTANCE.translItemOverlayMessage(item, "toggling_tier_display");
-			case UPGRADES_DISPLAY -> StorageTranslationHelper.INSTANCE.translItemOverlayMessage(item, "toggling_upgrades_display");
-			case FILL_LEVEL_DISPLAY -> StorageTranslationHelper.INSTANCE.translItemOverlayMessage(item, "toggling_fill_level_display");
+			case LOCK_DISPLAY ->
+					StorageTranslationHelper.INSTANCE.translItemOverlayMessage(item, "toggling_lock_display");
+			case COUNT_DISPLAY ->
+					StorageTranslationHelper.INSTANCE.translItemOverlayMessage(item, "toggling_count_display");
+			case TIER_DISPLAY ->
+					StorageTranslationHelper.INSTANCE.translItemOverlayMessage(item, "toggling_tier_display");
+			case UPGRADES_DISPLAY ->
+					StorageTranslationHelper.INSTANCE.translItemOverlayMessage(item, "toggling_upgrades_display");
+			case FILL_LEVEL_DISPLAY ->
+					StorageTranslationHelper.INSTANCE.translItemOverlayMessage(item, "toggling_fill_level_display");
 		};
 	}
 
 	public static Mode getMode(ItemStack tool) {
-		return NBTHelper.getEnumConstant(tool, MODE_TAG, Mode::valueOf).orElse(Mode.LINK);
+		Mode mode = tool.get(ModDataComponents.TOOL_MODE);
+		return mode != null ? mode : Mode.LINK;
 	}
 
 	public static void cycleMode(ItemStack tool, boolean next) {
-		NBTHelper.setEnumConstant(tool, MODE_TAG, (next ? getMode(tool).next() : getMode(tool).previous()));
+		tool.set(ModDataComponents.TOOL_MODE, next ? getMode(tool).next() : getMode(tool).previous());
 	}
 
 	public enum Mode implements StringRepresentable {
@@ -184,6 +189,9 @@ public class StorageToolItem extends ItemBase {
 		TIER_DISPLAY,
 		UPGRADES_DISPLAY,
 		FILL_LEVEL_DISPLAY;
+
+		public static final StringRepresentable.EnumCodec<Mode> CODEC = StringRepresentable.fromEnum(Mode::values);
+		public static final StreamCodec<FriendlyByteBuf, Mode> STREAM_CODEC = NeoForgeStreamCodecs.enumCodec(Mode.class);
 
 		public Mode next() {
 			return values()[(ordinal() + 1) % values().length];
