@@ -1,8 +1,7 @@
 package net.p3pp3rf1y.sophisticatedstorage.block;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.IntTag;
+import net.minecraft.nbt.*;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -21,26 +20,26 @@ import net.p3pp3rf1y.sophisticatedcore.util.RandHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICountDisplay {
+public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICountDisplay, IFillLevelDisplay {
 	private static final String SLOT_COUNTS_TAG = "slotCounts";
+	private static final String SLOT_FILL_LEVELS_TAG = "slotFillLevels";
 	private static final Consumer<VoidUpgradeWrapper> VOID_UPGRADE_VOIDING_OVERFLOW_OF_EVERYTHING_BY_DEFAULT = voidUpgrade -> {
 		voidUpgrade.getFilterLogic().setAllowByDefault(false);
 		voidUpgrade.setShouldVoidOverflowDefaultOrLoadFromNbt(true);
 	};
+	public static final String STORAGE_TYPE = "limited_barrel";
 	private long lastDepositTime = -100;
 
 	private final List<Integer> slotCounts = new ArrayList<>();
+	private final List<Float> slotFillLevels = new ArrayList<>();
 	private Map<Integer, DyeColor> slotColors = new HashMap<>();
 	private boolean showCounts = true;
+	private boolean showFillLevels = false;
 
 	public LimitedBarrelBlockEntity(BlockPos pos, BlockState state) {
 		super(pos, state, ModBlocks.LIMITED_BARREL_BLOCK_ENTITY_TYPE.get());
@@ -84,8 +83,31 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 		WorldHelper.notifyBlockUpdate(this);
 	}
 
+	@Override
 	public List<Integer> getSlotCounts() {
 		return slotCounts;
+	}
+
+	@Override
+	public List<Float> getSlotFillLevels() {
+		return slotFillLevels;
+	}
+
+	@Override
+	public float getSlotFillPercentage(int slot) {
+		return slot > -1 && slot < slotFillLevels.size() ? slotFillLevels.get(slot) : 0;
+	}
+
+	@Override
+	public boolean shouldShowFillLevels() {
+		return showFillLevels;
+	}
+
+	@Override
+	public void toggleFillLevelVisibility() {
+		showFillLevels = !showFillLevels;
+		setChanged();
+		WorldHelper.notifyBlockUpdate(this);
 	}
 
 	public boolean applyDye(int slot, ItemStack dyeStack, DyeColor dyeColor, boolean applyToAll) {
@@ -97,7 +119,7 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 		InventoryHandler invHandler = storageWrapper.getInventoryHandler();
 		if (applyToAll) {
 			boolean success = false;
-			for(int i = 0; i < invHandler.getSlots(); i++) {
+			for (int i = 0; i < invHandler.getSlots(); i++) {
 				success |= applyDye(i, dyeColor, invHandler);
 			}
 			if (!success) {
@@ -207,8 +229,13 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 	public CompoundTag getUpdateTag() {
 		CompoundTag updateTag = super.getUpdateTag();
 		List<Integer> sc = new ArrayList<>();
-		InventoryHelper.iterate(getStorageWrapper().getInventoryHandler(), (slot, stack) -> sc.add(slot, stack.getCount()));
+		ListTag sfl = new ListTag();
+		InventoryHelper.iterate(getStorageWrapper().getInventoryHandler(), (slot, stack) -> {
+			sc.add(slot, stack.getCount());
+			sfl.add(slot, FloatTag.valueOf(stack.getCount() / (float) getStorageWrapper().getInventoryHandler().getStackLimit(slot, stack)));
+		});
 		updateTag.putIntArray(SLOT_COUNTS_TAG, sc);
+		updateTag.put(SLOT_FILL_LEVELS_TAG, sfl);
 		return updateTag;
 	}
 
@@ -228,7 +255,21 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 				}
 			}
 		}
+		if (tag.contains(SLOT_FILL_LEVELS_TAG)) {
+			ListTag fillLevelsList = tag.getList(SLOT_FILL_LEVELS_TAG, Tag.TAG_FLOAT);
+			if (slotFillLevels.size() != fillLevelsList.size()) {
+				slotFillLevels.clear();
+				for (int i = 0; i < fillLevelsList.size(); i++) {
+					slotFillLevels.add(i, fillLevelsList.getFloat(i));
+				}
+			} else {
+				for (int i = 0; i < fillLevelsList.size(); i++) {
+					slotFillLevels.set(i, fillLevelsList.getFloat(i));
+				}
+			}
+		}
 		showCounts = NBTHelper.getBoolean(tag, "showCounts").orElse(true);
+		showFillLevels = NBTHelper.getBoolean(tag, "showFillLevels").orElse(false);
 		slotColors = NBTHelper.getMap(tag, "slotColors", Integer::valueOf, (tagName, t) -> Optional.of(DyeColor.byId(((IntTag) t).getAsInt()))).orElseGet(HashMap::new);
 	}
 
@@ -238,8 +279,16 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 		if (!showCounts) {
 			tag.putBoolean("showCounts", showCounts);
 		}
-		if (slotColors.size() > 0) {
+		if (showFillLevels) {
+			tag.putBoolean("showFillLevels", showFillLevels);
+		}
+		if (!slotColors.isEmpty()) {
 			NBTHelper.putMap(tag, "slotColors", slotColors, String::valueOf, color -> IntTag.valueOf(color.getId()));
 		}
+	}
+
+	@Override
+	protected String getStorageType() {
+		return STORAGE_TYPE;
 	}
 }

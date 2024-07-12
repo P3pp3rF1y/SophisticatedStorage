@@ -16,11 +16,13 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 
 import java.util.List;
 
 public class ShulkerBoxBlockEntity extends StorageBlockEntity {
+	public static final String STORAGE_TYPE = "shulker_box";
 	private AnimationStatus animationStatus = AnimationStatus.CLOSED;
 	private float progress;
 	private float progressOld;
@@ -88,10 +90,8 @@ public class ShulkerBoxBlockEntity extends StorageBlockEntity {
 
 	@Override
 	protected boolean isAllowedInStorage(ItemStack stack) {
-		//TODO add config with other things that can't go in
-		//TODO add backpacks compat so that they can't go in
 		Block block = Block.byItem(stack.getItem());
-		return !(block instanceof ShulkerBoxBlock) && !(block instanceof net.minecraft.world.level.block.ShulkerBoxBlock);
+		return !(block instanceof ShulkerBoxBlock) && !(block instanceof net.minecraft.world.level.block.ShulkerBoxBlock) && !Config.SERVER.shulkerBoxDisallowedItems.isItemDisallowed(stack.getItem());
 	}
 
 	private static void doNeighborUpdates(Level level, BlockPos pos, BlockState state) {
@@ -124,6 +124,11 @@ public class ShulkerBoxBlockEntity extends StorageBlockEntity {
 	@Override
 	protected ContainerOpenersCounter getOpenersCounter() {
 		return openersCounter;
+	}
+
+	@Override
+	protected String getStorageType() {
+		return STORAGE_TYPE;
 	}
 
 	public float getProgress(float partialTicks) {

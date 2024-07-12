@@ -7,6 +7,7 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.Item;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeItemBase;
+import net.p3pp3rf1y.sophisticatedcore.upgrades.stack.StackUpgradeItem;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.RegistryHelper;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
@@ -22,11 +23,18 @@ public abstract class StorageRenderer<T extends StorageBlockEntity> implements B
 	private boolean holdsItemThatShowsUpgrades = false;
 	private boolean holdsStorageToolSetToToggleUpgrades = false;
 	private boolean holdsItemThatShowsHiddenTiers = false;
-	private boolean holdsToolInToggleLockOrLockDisplay = false;
 
+	private boolean holdsItemThatShowsFillLevels = false;
+
+	private boolean holdsToolInToggleLockOrLockDisplay = false;
+	private boolean holdsToolInToggleFillLevelDisplay = false;
 	protected boolean holdsItemThatShowsUpgrades() {
 		refreshCache();
 		return holdsItemThatShowsUpgrades;
+	}
+
+	public boolean holdsItemThatShowsFillLevels() {
+		return holdsItemThatShowsFillLevels;
 	}
 
 	private void refreshCache() {
@@ -48,6 +56,7 @@ public abstract class StorageRenderer<T extends StorageBlockEntity> implements B
 					.map(item -> StorageToolItem.getMode(item) == StorageToolItem.Mode.UPGRADES_DISPLAY).orElse(false);
 
 			holdsItemThatShowsUpgrades = holdsStorageTool || holdsItem(player, this::isUpgrade);
+			holdsItemThatShowsFillLevels = holdsStorageTool || holdsItem(player, StorageTierUpgradeItem.class::isInstance) || holdsItem(player, item -> isStorageItem(item) && item instanceof StackUpgradeItem);
 			holdsItemThatShowsHiddenTiers = (holdsStorageTool && InventoryHelper.getItemFromEitherHand(player, ModItems.STORAGE_TOOL.get())
 					.map(item -> StorageToolItem.getMode(item) == StorageToolItem.Mode.TIER_DISPLAY).orElse(false))
 					|| holdsItem(player, StorageTierUpgradeItem.class::isInstance);
@@ -56,6 +65,8 @@ public abstract class StorageRenderer<T extends StorageBlockEntity> implements B
 						StorageToolItem.Mode mode = StorageToolItem.getMode(item);
 						return mode == StorageToolItem.Mode.LOCK_DISPLAY || mode == StorageToolItem.Mode.LOCK;
 					}).orElse(false);
+			holdsToolInToggleFillLevelDisplay = holdsStorageTool && InventoryHelper.getItemFromEitherHand(player, ModItems.STORAGE_TOOL.get())
+					.map(item -> StorageToolItem.getMode(item) == StorageToolItem.Mode.FILL_LEVEL_DISPLAY).orElse(false);
 		}
 	}
 
@@ -69,6 +80,11 @@ public abstract class StorageRenderer<T extends StorageBlockEntity> implements B
 		return holdsToolInToggleLockOrLockDisplay;
 	}
 
+	public boolean holdsToolInToggleFillLevelDisplay() {
+		refreshCache();
+		return holdsToolInToggleFillLevelDisplay;
+	}
+
 	private boolean holdsItem(LocalPlayer player, Predicate<Item> itemMatcher) {
 		return itemMatcher.test(player.getItemInHand(InteractionHand.MAIN_HAND).getItem())
 				|| itemMatcher.test(player.getItemInHand(InteractionHand.OFF_HAND).getItem());
@@ -79,7 +95,11 @@ public abstract class StorageRenderer<T extends StorageBlockEntity> implements B
 	}
 
 	private boolean isUpgrade(Item item) {
-		return item instanceof UpgradeItemBase && RegistryHelper.getItemKey(item).getNamespace().equals(SophisticatedStorage.MOD_ID);
+		return item instanceof UpgradeItemBase && isStorageItem(item);
+	}
+
+	private static boolean isStorageItem(Item item) {
+		return RegistryHelper.getItemKey(item).getNamespace().equals(SophisticatedStorage.MOD_ID);
 	}
 
 	public boolean shouldShowDisabledUpgradesDisplay(T storageBlockEntity) {

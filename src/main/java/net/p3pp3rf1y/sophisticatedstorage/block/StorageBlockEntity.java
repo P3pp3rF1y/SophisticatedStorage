@@ -25,6 +25,7 @@ import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.p3pp3rf1y.sophisticatedcore.controller.IControllableStorage;
 import net.p3pp3rf1y.sophisticatedcore.controller.ILinkable;
+import net.p3pp3rf1y.sophisticatedcore.inventory.CachedFailedInsertInventoryHandler;
 import net.p3pp3rf1y.sophisticatedcore.inventory.ISlotTracker;
 import net.p3pp3rf1y.sophisticatedcore.inventory.ITrackedContentsItemHandler;
 import net.p3pp3rf1y.sophisticatedcore.inventory.ItemStackKey;
@@ -38,12 +39,9 @@ import net.p3pp3rf1y.sophisticatedstorage.upgrades.INeighborChangeListenerUpgrad
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Collections;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public abstract class StorageBlockEntity extends BlockEntity implements IControllableStorage, ILinkable, ILockable, Nameable, ITierDisplay, IUpgradeDisplay {
 	public static final String STORAGE_WRAPPER_TAG = "storageWrapper";
@@ -65,6 +63,8 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 
 	@Nullable
 	private LazyOptional<IItemHandler> itemHandlerCap;
+	@Nullable
+	private LazyOptional<IItemHandler> noSideItemHandlerCap;
 	private boolean locked = false;
 	private boolean showLock = true;
 	private boolean showTier = true;
@@ -128,6 +128,16 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 			}
 
 			@Override
+			public String getStorageType() {
+				return StorageBlockEntity.this.getStorageType();
+			}
+
+			@Override
+			public Component getDisplayName() {
+				return StorageBlockEntity.this.getDisplayName();
+			}
+
+			@Override
 			protected boolean emptyInventorySlotsAcceptItems() {
 				return !locked || allowsEmptySlotsMatchingItemInsertsWhenLocked();
 			}
@@ -136,7 +146,7 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 			public ITrackedContentsItemHandler getInventoryForInputOutput() {
 				if (locked && allowsEmptySlotsMatchingItemInsertsWhenLocked()) {
 					if (contentsFilteredItemHandler == null) {
-						contentsFilteredItemHandler = new ContentsFilteredItemHandler(super.getInventoryForInputOutput(), storageWrapper.getInventoryHandler().getSlotTracker());
+						contentsFilteredItemHandler = new ContentsFilteredItemHandler(super::getInventoryForInputOutput, () -> getStorageWrapper().getInventoryHandler().getSlotTracker(), () -> getStorageWrapper().getSettingsHandler().getTypeCategory(MemorySettingsCategory.class));
 					}
 					return contentsFilteredItemHandler;
 				}
@@ -146,6 +156,8 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		};
 		storageWrapper.setUpgradeCachesInvalidatedHandler(this::onUpgradeCachesInvalidated);
 	}
+
+	protected abstract String getStorageType();
 
 	protected void onUpgradeCachesInvalidated() {
 		invalidateStorageCap();
@@ -237,10 +249,6 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		loadSynchronizedData(tag);
 		loadControllerPos(tag);
 
-		if (level != null && !level.isClientSide()) {
-			removeControllerPos();
-			tryToAddToController();
-		}
 		isLinkedToController = NBTHelper.getBoolean(tag, "isLinkedToController").orElse(false);
 	}
 
@@ -369,8 +377,14 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 	@Override
 	public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) {
 		if (cap == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
+			if (side == null) {
+				if (noSideItemHandlerCap == null) {
+					noSideItemHandlerCap = LazyOptional.of(() -> getStorageWrapper().getInventoryForInputOutput());
+				}
+				return noSideItemHandlerCap.cast();
+			}
 			if (itemHandlerCap == null) {
-				itemHandlerCap = LazyOptional.of(getStorageWrapper()::getInventoryForInputOutput);
+				itemHandlerCap = LazyOptional.of(() -> new CachedFailedInsertInventoryHandler(() -> getStorageWrapper().getInventoryForInputOutput(), () -> level != null ? level.getGameTime() : 0));
 			}
 			return itemHandlerCap.cast();
 		}
@@ -388,6 +402,11 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 			LazyOptional<IItemHandler> tempItemHandlerCap = itemHandlerCap;
 			itemHandlerCap = null;
 			tempItemHandlerCap.invalidate();
+		}
+		if (noSideItemHandlerCap != null) {
+			LazyOptional<IItemHandler> tempNoSideItemHandlerCap = noSideItemHandlerCap;
+			noSideItemHandlerCap = null;
+			tempNoSideItemHandlerCap.invalidate();
 		}
 	}
 
@@ -572,32 +591,39 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		storageWrapper.getUpgradeHandler().getWrappersThatImplement(INeighborChangeListenerUpgrade.class).forEach(upgrade -> upgrade.onNeighborChange(level, worldPosition, direction));
 	}
 
+	@SuppressWarnings("unused") //parameter used in override
+	public float getSlotFillPercentage(int slot) {
+		return 0; //only used in limited barrels
+	}
+
 	private static class ContentsFilteredItemHandler implements ITrackedContentsItemHandler {
 
-		private final ITrackedContentsItemHandler itemHandler;
-		private ISlotTracker slotTracker;
+		private final Supplier<ITrackedContentsItemHandler> itemHandlerGetter;
+		private final Supplier<ISlotTracker> slotTrackerGetter;
+		private final Supplier<MemorySettingsCategory> memorySettingsGetter;
 
-		private ContentsFilteredItemHandler(ITrackedContentsItemHandler itemHandler, ISlotTracker slotTracker) {
-			this.itemHandler = itemHandler;
-			this.slotTracker = slotTracker;
+		private ContentsFilteredItemHandler(Supplier<ITrackedContentsItemHandler> itemHandlerGetter, Supplier<ISlotTracker> slotTrackerGetter, Supplier<MemorySettingsCategory> memorySettingsGetter) {
+			this.itemHandlerGetter = itemHandlerGetter;
+			this.slotTrackerGetter = slotTrackerGetter;
+			this.memorySettingsGetter = memorySettingsGetter;
 		}
 
 		@Override
 		public int getSlots() {
-			return itemHandler.getSlots();
+			return itemHandlerGetter.get().getSlots();
 		}
 
 		@Nonnull
 		@Override
 		public ItemStack getStackInSlot(int slot) {
-			return itemHandler.getStackInSlot(slot);
+			return itemHandlerGetter.get().getStackInSlot(slot);
 		}
 
 		@Nonnull
 		@Override
 		public ItemStack insertItem(int slot, @Nonnull ItemStack stack, boolean simulate) {
 			if (matchesContents(stack)) {
-				return itemHandler.insertItem(slot, stack, simulate);
+				return itemHandlerGetter.get().insertItem(slot, stack, simulate);
 			}
 			return stack;
 		}
@@ -605,63 +631,59 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		@Nonnull
 		@Override
 		public ItemStack extractItem(int slot, int amount, boolean simulate) {
-			return itemHandler.extractItem(slot, amount, simulate);
+			return itemHandlerGetter.get().extractItem(slot, amount, simulate);
 		}
 
 		@Override
 		public int getSlotLimit(int slot) {
-			return itemHandler.getSlotLimit(slot);
+			return itemHandlerGetter.get().getSlotLimit(slot);
 		}
 
 		@Override
 		public boolean isItemValid(int slot, @Nonnull ItemStack stack) {
-			return matchesContents(stack) && itemHandler.isItemValid(slot, stack);
+			return matchesContents(stack) && itemHandlerGetter.get().isItemValid(slot, stack);
 		}
 
 		private boolean matchesContents(ItemStack stack) {
-			ItemStackKey isk = new ItemStackKey(stack);
-			if (slotTracker.getFullStacks().contains(isk)) {
-				return true;
-			}
-			return slotTracker.getPartialStacks().contains(isk);
+			return slotTrackerGetter.get().getItems().contains(stack.getItem()) || memorySettingsGetter.get().matchesFilter(stack);
 		}
 
 		@Override
 		public ItemStack insertItem(ItemStack stack, boolean simulate) {
 			if (matchesContents(stack)) {
-				return itemHandler.insertItem(stack, simulate);
+				return itemHandlerGetter.get().insertItem(stack, simulate);
 			}
 			return stack;
 		}
 
 		@Override
 		public Set<ItemStackKey> getTrackedStacks() {
-			return itemHandler.getTrackedStacks();
+			return itemHandlerGetter.get().getTrackedStacks();
 		}
 
 		@Override
 		public void registerTrackingListeners(Consumer<ItemStackKey> onAddStackKey, Consumer<ItemStackKey> onRemoveStackKey, Runnable onAddFirstEmptySlot, Runnable onRemoveLastEmptySlot) {
-			itemHandler.registerTrackingListeners(onAddStackKey, onRemoveStackKey, onAddFirstEmptySlot, onRemoveLastEmptySlot);
+			itemHandlerGetter.get().registerTrackingListeners(onAddStackKey, onRemoveStackKey, onAddFirstEmptySlot, onRemoveLastEmptySlot);
 		}
 
 		@Override
 		public void unregisterStackKeyListeners() {
-			itemHandler.unregisterStackKeyListeners();
+			itemHandlerGetter.get().unregisterStackKeyListeners();
 		}
 
 		@Override
 		public boolean hasEmptySlots() {
-			return itemHandler.hasEmptySlots();
+			return itemHandlerGetter.get().hasEmptySlots();
 		}
 
 		@Override
 		public int getInternalSlotLimit(int slot) {
-			return itemHandler.getInternalSlotLimit(slot);
+			return itemHandlerGetter.get().getInternalSlotLimit(slot);
 		}
 
 		@Override
 		public void setStackInSlot(int slot, @Nonnull ItemStack stack) {
-			itemHandler.setStackInSlot(slot, stack);
+			itemHandlerGetter.get().setStackInSlot(slot, stack);
 		}
 	}
 }

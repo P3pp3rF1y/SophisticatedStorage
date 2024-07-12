@@ -69,10 +69,14 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 	private static final VoxelShape ITEM_ENTITY_COLLISION_SHAPE = box(0.05, 0.05, 0.05, 15.95, 15.95, 15.95);
 
 	public ShulkerBoxBlock(Supplier<Integer> numberOfInventorySlotsSupplier, Supplier<Integer> numberOfUpgradeSlotsSupplier) {
-		super(getProperties(), numberOfInventorySlotsSupplier, numberOfUpgradeSlotsSupplier);
+		this(numberOfInventorySlotsSupplier, numberOfUpgradeSlotsSupplier, 2.0F);
 	}
 
-	private static Properties getProperties() {
+	public ShulkerBoxBlock(Supplier<Integer> numberOfInventorySlotsSupplier, Supplier<Integer> numberOfUpgradeSlotsSupplier, float explosionResistance) {
+		super(getProperties(explosionResistance), numberOfInventorySlotsSupplier, numberOfUpgradeSlotsSupplier);
+	}
+
+	private static Properties getProperties(float explosionResistance) {
 		BlockBehaviour.StatePredicate statePredicate = (state, blockGetter, pos) -> {
 			BlockEntity blockentity = blockGetter.getBlockEntity(pos);
 			if (!(blockentity instanceof ShulkerBoxBlockEntity shulkerboxblockentity)) {
@@ -81,7 +85,7 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 				return shulkerboxblockentity.isClosed();
 			}
 		};
-		return BlockBehaviour.Properties.of(Material.SHULKER_SHELL).strength(2.0F).dynamicShape().noOcclusion().isSuffocating(statePredicate).isViewBlocking(statePredicate);
+		return BlockBehaviour.Properties.of(Material.SHULKER_SHELL).strength(2.0F, explosionResistance).dynamicShape().noOcclusion().isSuffocating(statePredicate).isViewBlocking(statePredicate);
 	}
 
 	@Override
@@ -147,6 +151,7 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 						shulkerBoxItem.getNumberOfUpgradeSlots(stack) - upgradeHandler.getSlots());
 			}
 
+			be.getStorageWrapper().onInit();
 			be.tryToAddToController();
 
 			if (placer != null && placer.getOffhandItem().getItem() == ModItems.STORAGE_TOOL.get()) {

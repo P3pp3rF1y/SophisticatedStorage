@@ -9,10 +9,12 @@ import net.p3pp3rf1y.sophisticatedstorage.block.ItemContentsStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageWrapper;
 
+import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.UUID;
 
 abstract class StackStorageWrapper extends StorageWrapper {
+	private static final String CONTENTS_TAG = "contents";
 	private final ItemStack storageStack;
 
 	public StackStorageWrapper(ItemStack storageStack) {
@@ -22,12 +24,7 @@ abstract class StackStorageWrapper extends StorageWrapper {
 
 	private UUID getNewUuid() {
 		UUID newUuid = UUID.randomUUID();
-		NBTHelper.setUniqueId(storageStack, "uuid", newUuid);
-		CompoundTag mainTag = new CompoundTag();
-		CompoundTag storageWrapperTag = new CompoundTag();
-		storageWrapperTag.put("contents", new CompoundTag());
-		mainTag.put(StorageBlockEntity.STORAGE_WRAPPER_TAG, storageWrapperTag);
-		ItemContentsStorage.get().setStorageContents(newUuid, mainTag);
+		setContentsUuid(newUuid);
 		return newUuid;
 	}
 
@@ -37,11 +34,28 @@ abstract class StackStorageWrapper extends StorageWrapper {
 	}
 
 	@Override
+	public void setContentsUuid(@Nullable UUID contentsUuid) {
+		super.setContentsUuid(contentsUuid);
+		if (contentsUuid != null) {
+			NBTHelper.setUniqueId(storageStack, "uuid", contentsUuid);
+			ItemContentsStorage itemContentsStorage = ItemContentsStorage.get();
+			CompoundTag storageContents = itemContentsStorage.getOrCreateStorageContents(contentsUuid);
+			if (!storageContents.contains(StorageBlockEntity.STORAGE_WRAPPER_TAG)) {
+				CompoundTag storageWrapperTag = new CompoundTag();
+				storageWrapperTag.put(CONTENTS_TAG, new CompoundTag());
+				storageContents.put(StorageBlockEntity.STORAGE_WRAPPER_TAG, storageWrapperTag);
+			}
+
+			onContentsNbtUpdated();
+		}
+	}
+
+	@Override
 	protected CompoundTag getContentsNbt() {
 		if (contentsUuid == null) {
 			contentsUuid = getNewUuid();
 		}
-		return ItemContentsStorage.get().getOrCreateStorageContents(contentsUuid).getCompound(StorageBlockEntity.STORAGE_WRAPPER_TAG).getCompound("contents");
+		return ItemContentsStorage.get().getOrCreateStorageContents(contentsUuid).getCompound(StorageBlockEntity.STORAGE_WRAPPER_TAG).getCompound(CONTENTS_TAG);
 	}
 
 	@Override

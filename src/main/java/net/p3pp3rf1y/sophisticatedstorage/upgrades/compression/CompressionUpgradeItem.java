@@ -9,6 +9,7 @@ import net.p3pp3rf1y.sophisticatedcore.common.gui.UpgradeSlotChangeResult;
 import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryHandler;
 import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryPartRegistry;
 import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryPartitioner;
+import net.p3pp3rf1y.sophisticatedcore.settings.itemdisplay.ItemDisplaySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.settings.memory.MemorySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeItemBase;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeType;
@@ -29,7 +30,7 @@ public class CompressionUpgradeItem extends UpgradeItemBase<CompressionUpgradeIt
 	private static final String FIRST_INVENTORY_SLOT_TAG = "firstInventorySlot";
 
 	public CompressionUpgradeItem(CreativeModeTab itemGroup) {
-		super(itemGroup);
+		super(itemGroup, Config.SERVER.maxUpgradesPerStorage);
 		InventoryPartRegistry.registerFactory(CompressionInventoryPart.NAME, CompressionInventoryPart::new);
 	}
 
@@ -40,6 +41,11 @@ public class CompressionUpgradeItem extends UpgradeItemBase<CompressionUpgradeIt
 
 	@Override
 	public UpgradeSlotChangeResult canAddUpgradeTo(IStorageWrapper storageWrapper, ItemStack upgradeStack, boolean firstLevelStorage, boolean isClientSide) {
+		UpgradeSlotChangeResult result = super.canAddUpgradeTo(storageWrapper, upgradeStack, firstLevelStorage, isClientSide);
+		if (!result.isSuccessful()) {
+			return result;
+		}
+
 		if (isClientSide) {
 			return new UpgradeSlotChangeResult.Success();
 		}
@@ -105,6 +111,7 @@ public class CompressionUpgradeItem extends UpgradeItemBase<CompressionUpgradeIt
 				setFirstInventorySlot(slotRange.firstSlot());
 				inventoryPartitioner.addInventoryPart(slotRange.firstSlot(), slotRange.numberOfSlots(), new CompressionInventoryPart(storageWrapper.getInventoryHandler(), slotRange, () -> storageWrapper.getSettingsHandler().getTypeCategory(MemorySettingsCategory.class)));
 			});
+			storageWrapper.getSettingsHandler().getTypeCategory(ItemDisplaySettingsCategory.class).itemsChanged();
 		}
 
 		private void setFirstInventorySlot(int firstInventorySlot) {

@@ -1,0 +1,34 @@
+{
+  "parent": "minecraft:recipes/root",
+  "rewards": {
+    "recipes": [
+      "sophisticatedstorage:iron_barrel_from_copper_barrel"
+    ]
+  },
+  "criteria": {
+    "has_copper_barrel": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "sophisticatedstorage:copper_barrel"
+            ]
+          }
+        ]
+      }
+    },
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "sophisticatedstorage:iron_barrel_from_copper_barrel"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_copper_barrel",
+      "has_the_recipe"
+    ]
+  ]
+}

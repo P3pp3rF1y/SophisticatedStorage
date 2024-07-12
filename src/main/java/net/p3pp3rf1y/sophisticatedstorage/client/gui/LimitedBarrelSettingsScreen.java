@@ -26,7 +26,7 @@ public class LimitedBarrelSettingsScreen extends StorageSettingsScreen {
 
 	@Override
 	protected void drawSlotBg(PoseStack matrixStack, int x, int y) {
-		LimitedBarrelScreen.drawSlotBg(matrixStack, x, y, getMenu().getNumberOfStorageInventorySlots(), getMenu());
+		LimitedBarrelScreen.drawSlotBg(this, matrixStack, x, y, getMenu().getNumberOfStorageInventorySlots());
 	}
 
 	@Override
