@@ -31,6 +31,7 @@ import java.util.function.Supplier;
 
 import static org.junit.jupiter.api.AssertionFailureBuilder.assertionFailure;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
 public class CompressionInventoryPartTest {
@@ -74,10 +75,11 @@ public class CompressionInventoryPartTest {
 		InventoryHandler inventoryHandler = Mockito.mock(InventoryHandler.class);
 		when(inventoryHandler.getBaseStackLimit(any(ItemStack.class))).thenAnswer(i -> {
 			ItemStack stack = i.getArgument(0);
-			int limit = MathHelper.intMaxCappedMultiply(stack.getMaxStackSize(), (baseSlotLimit / 64));
+			int maxStackSize = stack.isEmpty() ? 64 : stack.getMaxStackSize();
+			int limit = MathHelper.intMaxCappedMultiply(maxStackSize, (baseSlotLimit / 64));
 			int remainder = baseSlotLimit % 64;
 			if (remainder > 0) {
-				limit = MathHelper.intMaxCappedAddition(limit, remainder * stack.getMaxStackSize() / 64);
+				limit = MathHelper.intMaxCappedAddition(limit, remainder * maxStackSize / 64);
 			}
 			return limit;
 		});
@@ -532,7 +534,7 @@ public class CompressionInventoryPartTest {
 
 		ItemStack insertResult = part.insertItem(1, new ItemStack(Items.GOLD_NUGGET, 10), false, (s, st, sim) -> ItemStack.EMPTY);
 
-		assertEquals(ItemStack.EMPTY, insertResult);
+		assertTrue(insertResult.isEmpty());
 	}
 
 	@Test

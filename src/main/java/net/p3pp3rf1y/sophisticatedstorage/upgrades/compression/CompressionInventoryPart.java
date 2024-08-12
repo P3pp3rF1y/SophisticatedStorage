@@ -290,7 +290,7 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 
 	@Override
 	public ItemStack extractItem(int slot, int amount, boolean simulate) {
-		return extractItem(slot, amount, simulate, ItemStack::getMaxStackSize);
+		return extractItem(slot, amount, simulate, s -> s.isEmpty() ? 64 : s.getMaxStackSize());
 	}
 
 	private ItemStack extractItem(int slot, int amount, boolean simulate, ToIntFunction<ItemStack> getLimit) {
