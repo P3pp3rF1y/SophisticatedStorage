@@ -1,21 +1,16 @@
 package net.p3pp3rf1y.sophisticatedstorage.client.particle;
 
-import com.mojang.brigadier.StringReader;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.commands.arguments.blocks.BlockStateParser;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.registries.GameData;
+import net.p3pp3rf1y.sophisticatedcore.util.StreamCodecHelper;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModParticles;
-
-import java.util.Objects;
 
 public class CustomTintTerrainParticleData extends ParticleType<CustomTintTerrainParticleData> implements ParticleOptions {
 	private final BlockState state;
@@ -26,7 +21,7 @@ public class CustomTintTerrainParticleData extends ParticleType<CustomTintTerrai
 	}
 
 	public CustomTintTerrainParticleData(BlockState state, BlockPos pos) {
-		super(false, DESERIALIZER);
+		super(false);
 		this.state = state;
 		this.pos = pos;
 	}
@@ -36,48 +31,26 @@ public class CustomTintTerrainParticleData extends ParticleType<CustomTintTerrai
 		return ModParticles.TERRAIN_PARTICLE.get();
 	}
 
-	@Override
-	public void writeToNetwork(FriendlyByteBuf buffer) {
-		buffer.writeVarInt(GameData.getBlockStateIDMap().getId(state));
-		buffer.writeBlockPos(pos);
-	}
-
-	@Override
-	public String writeToString() {
-		return BuiltInRegistries.PARTICLE_TYPE.getKey(getType()) + "|" + BlockStateParser.serialize(state) + "|" + pos.toShortString();
-	}
-
-	@SuppressWarnings("deprecation")
-	public static final Deserializer<CustomTintTerrainParticleData> DESERIALIZER = new Deserializer<>() {
-		@Override
-		public CustomTintTerrainParticleData fromCommand(ParticleType<CustomTintTerrainParticleData> particleType, StringReader reader)
-				throws CommandSyntaxException {
-			reader.expect('|');
-			BlockState blockState = Objects.requireNonNull(BlockStateParser.parseForBlock(BuiltInRegistries.BLOCK.asLookup(), reader, false).blockState());
-			reader.expect('|');
-			return new CustomTintTerrainParticleData(blockState, fromString(reader.readUnquotedString()));
-		}
-
-		private BlockPos fromString(String value) {
-			String[] split = value.split(",");
-			return BlockPos.containing(Double.parseDouble(split[0]), Double.parseDouble(split[1]), Double.parseDouble(split[2]));
-		}
-
-		@Override
-		public CustomTintTerrainParticleData fromNetwork(ParticleType<CustomTintTerrainParticleData> particleType, FriendlyByteBuf buffer) {
-			return new CustomTintTerrainParticleData(Objects.requireNonNull(GameData.getBlockStateIDMap().byId(buffer.readVarInt())), buffer.readBlockPos());
-		}
-	};
-
-	private final Codec<CustomTintTerrainParticleData> codec = RecordCodecBuilder.create(
+	private final MapCodec<CustomTintTerrainParticleData> codec = RecordCodecBuilder.mapCodec(
 			particleDataInstance -> particleDataInstance.group(
 					BlockState.CODEC.fieldOf("state").forGetter(data -> data.state),
 					BlockPos.CODEC.fieldOf("pos").forGetter(data -> data.pos)
 			).apply(particleDataInstance, CustomTintTerrainParticleData::new));
+	private final StreamCodec<RegistryFriendlyByteBuf, CustomTintTerrainParticleData> streamCodec = StreamCodec.composite(
+			StreamCodecHelper.BLOCKSTATE,
+			CustomTintTerrainParticleData::getState,
+			BlockPos.STREAM_CODEC,
+			CustomTintTerrainParticleData::getPos,
+			CustomTintTerrainParticleData::new);
 
 	@Override
-	public Codec<CustomTintTerrainParticleData> codec() {
+	public MapCodec<CustomTintTerrainParticleData> codec() {
 		return codec;
+	}
+
+	@Override
+	public StreamCodec<? super RegistryFriendlyByteBuf, CustomTintTerrainParticleData> streamCodec() {
+		return streamCodec;
 	}
 
 	public BlockState getState() {

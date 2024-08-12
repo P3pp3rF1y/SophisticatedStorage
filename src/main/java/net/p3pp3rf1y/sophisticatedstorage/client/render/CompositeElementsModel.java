@@ -27,14 +27,14 @@ public class CompositeElementsModel extends BlockModel {
 	}
 
 	@Override
-	public BakedModel bake(ModelBaker modelBaker, BlockModel owner, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelState, ResourceLocation modelLocation, boolean guiLight3d) {
+	public BakedModel bake(ModelBaker modelBaker, BlockModel owner, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelState, boolean guiLight3d) {
 		if (getRootModel() == ModelBakery.BLOCK_ENTITY_MARKER) {
 			var particleSprite = spriteGetter.apply(getMaterial("particle"));
 			return new BuiltInModel(getTransforms(), getOverrides(modelBaker, owner, spriteGetter), particleSprite, getGuiLight().lightLikeBlock());
 		}
 
 		var elementsModel = new ElementsModel(getElements());
-		return elementsModel.bake(customData, modelBaker, spriteGetter, modelState, getOverrides(modelBaker, owner, spriteGetter), modelLocation);
+		return elementsModel.bake(customData, modelBaker, spriteGetter, modelState, getOverrides(modelBaker, owner, spriteGetter));
 	}
 
 	@SuppressWarnings({"java:S1874", "deprecation"}) //overriding getElements here

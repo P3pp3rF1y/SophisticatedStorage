@@ -9,14 +9,13 @@ import net.minecraft.client.resources.model.Material;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
-import org.joml.Matrix4f;
 import org.joml.Vector3f;
-import org.joml.Vector4f;
 
 import java.util.function.BooleanSupplier;
 
 public class LockRenderer {
-	private LockRenderer() {}
+	private LockRenderer() {
+	}
 
 	public static final Material LOCK_TEXTURE = new Material(InventoryMenu.BLOCK_ATLAS, SophisticatedStorage.getRL("block/lock"));
 
@@ -31,7 +30,6 @@ public class LockRenderer {
 		VertexConsumer vertexConsumer;
 		boolean translucentRender = !blockEntity.shouldShowLock() && holdsCorrectItem.getAsBoolean();
 		if (translucentRender) {
-			//noinspection resource
 			TextureAtlasSprite sprite = LockRenderer.LOCK_TEXTURE.sprite();
 			vertexConsumer = sprite.wrap(bufferSource.getBuffer(RenderType.entityTranslucent(sprite.atlasLocation())));
 		} else {

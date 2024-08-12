@@ -1,0 +1,38 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:limited_barrel_1"
+    }
+  ],
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_acacia_plank": {
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:acacia_planks"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "sophisticatedstorage:acacia_limited_barrel_1"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_acacia_plank"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "sophisticatedstorage:acacia_limited_barrel_1"
+    ]
+  }
+}

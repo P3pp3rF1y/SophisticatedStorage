@@ -3,11 +3,10 @@ package net.p3pp3rf1y.sophisticatedstorage;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.ModLoadingContext;
+import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.neoforged.fml.loading.FMLEnvironment;
 import net.p3pp3rf1y.sophisticatedstorage.client.ClientEventHandler;
 import net.p3pp3rf1y.sophisticatedstorage.common.CommonEventHandler;
 import net.p3pp3rf1y.sophisticatedstorage.data.DataGenerators;
@@ -22,19 +21,19 @@ public class SophisticatedStorage {
 	private final CommonEventHandler commonEventHandler = new CommonEventHandler();
 
 	@SuppressWarnings("java:S1118") //needs to be public for mod to work
-	public SophisticatedStorage(IEventBus modBus) {
-		ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, Config.SERVER_SPEC);
-		ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, Config.CLIENT_SPEC);
-		ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.COMMON_SPEC);
+	public SophisticatedStorage(IEventBus modBus, Dist dist, ModContainer container) {
+		container.registerConfig(ModConfig.Type.SERVER, Config.SERVER_SPEC);
+		container.registerConfig(ModConfig.Type.CLIENT, Config.CLIENT_SPEC);
+		container.registerConfig(ModConfig.Type.COMMON, Config.COMMON_SPEC);
 		Config.SERVER.initListeners(modBus);
 		commonEventHandler.registerHandlers();
 		ModCompat.register();
-		if (FMLEnvironment.dist == Dist.CLIENT) {
+		if (dist == Dist.CLIENT) {
 			ClientEventHandler.registerHandlers(modBus);
 		}
 		ModBlocks.registerHandlers(modBus);
 		ModItems.registerHandlers(modBus);
-		modBus.addListener(ModPackets::registerPackets);
+		modBus.addListener(ModPayloads::registerPackets);
 		modBus.addListener(SophisticatedStorage::setup);
 		modBus.addListener(DataGenerators::gatherData);
 		ModParticles.registerParticles(modBus);
@@ -46,7 +45,7 @@ public class SophisticatedStorage {
 	}
 
 	public static ResourceLocation getRL(String regName) {
-		return ResourceLocation.fromNamespaceAndPath(getRegistryName(regName));
+		return ResourceLocation.parse(getRegistryName(regName));
 	}
 
 	public static String getRegistryName(String regName) {

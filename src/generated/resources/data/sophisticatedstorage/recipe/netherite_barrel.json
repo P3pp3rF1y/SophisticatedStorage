@@ -1,0 +1,22 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:netherite_barrel"
+    }
+  ],
+  "type": "sophisticatedstorage:storage_tier_upgrade_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "sophisticatedstorage:diamond_barrel"
+    },
+    {
+      "tag": "c:ingots/netherite"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "sophisticatedstorage:netherite_barrel"
+  }
+}

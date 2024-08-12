@@ -1,0 +1,38 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:advanced_hopper_upgrade"
+    }
+  ],
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_feeding_upgrade": {
+      "conditions": {
+        "items": [
+          {
+            "items": "sophisticatedstorage:hopper_upgrade"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "sophisticatedstorage:advanced_hopper_upgrade"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_feeding_upgrade"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "sophisticatedstorage:advanced_hopper_upgrade"
+    ]
+  }
+}

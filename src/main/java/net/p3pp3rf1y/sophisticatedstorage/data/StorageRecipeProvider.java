@@ -1,5 +1,6 @@
 package net.p3pp3rf1y.sophisticatedstorage.data;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.BlockFamily;
 import net.minecraft.data.DataGenerator;
@@ -34,6 +35,7 @@ import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 public class StorageRecipeProvider extends RecipeProvider {
@@ -43,8 +45,8 @@ public class StorageRecipeProvider extends RecipeProvider {
 	public static final String HAS_BASE_TIER_WOODEN_STORAGE_CRITERION_NAME = "has_base_tier_wooden_storage";
 	private static final String PLANK_SUFFIX = "_plank";
 
-	public StorageRecipeProvider(DataGenerator generator) {
-		super(generator.getPackOutput());
+	public StorageRecipeProvider(DataGenerator generator, CompletableFuture<HolderLookup.Provider> registries) {
+		super(generator.getPackOutput(), registries);
 	}
 
 	@Override
@@ -249,7 +251,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('S', Tags.Items.STONES)
 				.define('C', Items.COMPARATOR)
 				.define('P', ItemTags.PLANKS)
-				.define('B', new BaseTierWoodenStorageIngredient())
+				.define('B', new BaseTierWoodenStorageIngredient().toVanilla())
 				.unlockedBy(HAS_BASE_TIER_WOODEN_STORAGE_CRITERION_NAME, has(ModBlocks.BASE_TIER_WOODEN_STORAGE_TAG))
 				.save(recipeOutput);
 
@@ -288,7 +290,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('P', ItemTags.PLANKS)
 				.define('R', Items.REPEATER)
 				.define('G', Tags.Items.INGOTS_GOLD)
-				.define('B',  new BaseTierWoodenStorageIngredient())
+				.define('B', new BaseTierWoodenStorageIngredient().toVanilla())
 				.unlockedBy(HAS_BASE_TIER_WOODEN_STORAGE_CRITERION_NAME, has(ModBlocks.BASE_TIER_WOODEN_STORAGE_TAG))
 				.save(recipeOutput);
 
@@ -300,7 +302,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('P', ItemTags.PLANKS)
 				.define('R', Items.REPEATER)
 				.define('G', Tags.Items.INGOTS_GOLD)
-				.define('B',  new BaseTierWoodenStorageIngredient())
+				.define('B', new BaseTierWoodenStorageIngredient().toVanilla())
 				.unlockedBy(HAS_BASE_TIER_WOODEN_STORAGE_CRITERION_NAME, has(ModBlocks.BASE_TIER_WOODEN_STORAGE_TAG))
 				.save(recipeOutput);
 
@@ -312,7 +314,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('P', ItemTags.PLANKS)
 				.define('R', Items.REPEATER)
 				.define('G', Tags.Items.INGOTS_GOLD)
-				.define('B',  new BaseTierWoodenStorageIngredient())
+				.define('B', new BaseTierWoodenStorageIngredient().toVanilla())
 				.unlockedBy(HAS_BASE_TIER_WOODEN_STORAGE_CRITERION_NAME, has(ModBlocks.BASE_TIER_WOODEN_STORAGE_TAG))
 				.save(recipeOutput);
 

@@ -1,0 +1,37 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedstorage:drop_packed_disabled"
+    }
+  ],
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_slime": {
+      "conditions": {
+        "items": [
+          {
+            "items": "#c:slimeballs"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "sophisticatedstorage:packing_tape"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_slime"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "sophisticatedstorage:packing_tape"
+    ]
+  }
+}

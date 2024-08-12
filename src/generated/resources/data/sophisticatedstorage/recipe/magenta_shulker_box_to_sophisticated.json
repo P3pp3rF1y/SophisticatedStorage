@@ -1,0 +1,26 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:shulker_box"
+    }
+  ],
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "minecraft:magenta_shulker_box"
+    },
+    {
+      "item": "minecraft:redstone_torch"
+    }
+  ],
+  "result": {
+    "components": {
+      "sophisticatedcore:accent_color": -3715395,
+      "sophisticatedcore:main_color": -3715395
+    },
+    "count": 1,
+    "id": "sophisticatedstorage:shulker_box"
+  }
+}

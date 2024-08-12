@@ -27,7 +27,6 @@ import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 import net.p3pp3rf1y.sophisticatedstorage.block.ControllerBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageToolItem;
-import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 
@@ -53,7 +52,7 @@ public class ControllerRenderer implements BlockEntityRenderer<ControllerBlockEn
 			}
 
 			if (StorageToolItem.getControllerLink(storageTool).map(controllerPos -> controllerPos.equals(controller.getBlockPos())).orElse(false)) {
-				renderBlockOutline(controller.getBlockPos(), controller.getBlockPos(), level, poseStack, bufferSource, DyeColor.LIGHT_BLUE.getTextureDiffuseColors());
+				renderBlockOutline(controller.getBlockPos(), controller.getBlockPos(), level, poseStack, bufferSource, DyeColor.LIGHT_BLUE.getTextColor());
 			}
 			renderLinkedBlocksOutline(controller, level, poseStack, bufferSource);
 		});
@@ -88,54 +87,50 @@ public class ControllerRenderer implements BlockEntityRenderer<ControllerBlockEn
 		}
 	}
 
-	@SuppressWarnings("java:S1874")
 	private void renderLinkedBlocksOutline(ControllerBlockEntity controller, ClientLevel level, PoseStack poseStack, MultiBufferSource bufferSource) {
 		controller.getLinkedBlocks().forEach(pos -> {
 			BlockState state = level.getBlockState(pos);
-			//noinspection deprecation
-			VoxelShape shape = state.getBlock().getShape(state, level, pos, CollisionContext.empty());
-			renderLineBetweenBlocks(controller.getBlockPos(), pos, shape, poseStack, bufferSource, DyeColor.LIME.getTextureDiffuseColors());
-			renderBlockOutline(controller.getBlockPos(), pos, shape, poseStack, bufferSource, DyeColor.LIME.getTextureDiffuseColors());
+			VoxelShape shape = state.getShape(level, pos, CollisionContext.empty());
+			renderLineBetweenBlocks(controller.getBlockPos(), pos, shape, poseStack, bufferSource, DyeColor.LIME.getTextColor());
+			renderBlockOutline(controller.getBlockPos(), pos, shape, poseStack, bufferSource, DyeColor.LIME.getTextColor());
 		});
 	}
 
-	private void renderLineBetweenBlocks(BlockPos initialPos, BlockPos pos, VoxelShape shape, PoseStack poseStack, MultiBufferSource bufferSource, float[] color) {
+	private void renderLineBetweenBlocks(BlockPos initialPos, BlockPos pos, VoxelShape shape, PoseStack poseStack, MultiBufferSource bufferSource, int color) {
 		if (shape.isEmpty()) {
 			return;
 		}
 
-		float red = color[0];
-		float green = color[1];
-		float blue = color[2];
+		int red = color >> 16 & 255;
+		int green = color >> 8 & 255;
+		int blue = color & 255;
 
 		Vec3 center = shape.bounds().getCenter();
 
 		VertexConsumer buffer = bufferSource.getBuffer(LineRenderType.LINES);
 
-		Matrix4f matrix4f = poseStack.last().pose();
-		Matrix3f matrix3f = poseStack.last().normal();
+		PoseStack.Pose pose = poseStack.last();
+		Matrix4f matrix4f = pose.pose();
 		float normalX = (float) (pos.getX() - initialPos.getX() + (0.5F - center.x()));
 		float normalY = (float) (pos.getY() - initialPos.getY() + (0.5F - center.y()));
 		float normalZ = (float) (pos.getZ() - initialPos.getZ() + (0.5F - center.z()));
-		buffer.vertex(matrix4f, 0.5F, 0.5F, 0.5F).color(red, green, blue, 255)
-				.normal(matrix3f, normalX, normalY, normalZ).endVertex();
-		buffer.vertex(matrix4f, (float) (pos.getX() - initialPos.getX() + center.x()), (float) (pos.getY() - initialPos.getY() + center.y()), (float) (pos.getZ() - initialPos.getZ() + center.z())).color(red, green, blue, 255)
-				.normal(matrix3f, normalX, normalY, normalZ).endVertex();
+		buffer.addVertex(matrix4f, 0.5F, 0.5F, 0.5F).setColor(red, green, blue, 255)
+				.setNormal(pose, normalX, normalY, normalZ);
+		buffer.addVertex(matrix4f, (float) (pos.getX() - initialPos.getX() + center.x()), (float) (pos.getY() - initialPos.getY() + center.y()), (float) (pos.getZ() - initialPos.getZ() + center.z())).setColor(red, green, blue, 255)
+				.setNormal(pose, normalX, normalY, normalZ);
 	}
 
-	@SuppressWarnings("java:S1874")
-	private void renderBlockOutline(BlockPos controllerPos, BlockPos pos, ClientLevel level, PoseStack poseStack, MultiBufferSource bufferSource, float[] color) {
+	private void renderBlockOutline(BlockPos controllerPos, BlockPos pos, ClientLevel level, PoseStack poseStack, MultiBufferSource bufferSource, int color) {
 		BlockState state = level.getBlockState(pos);
-		//noinspection deprecation
-		VoxelShape shape = state.getBlock().getShape(state, level, pos, CollisionContext.empty());
+		VoxelShape shape = state.getShape(level, pos, CollisionContext.empty());
 		renderBlockOutline(controllerPos, pos, shape, poseStack, bufferSource, color);
 	}
 
-	private void renderBlockOutline(BlockPos controllerPos, BlockPos pos, VoxelShape shape, PoseStack poseStack, MultiBufferSource bufferSource, float[] color) {
+	private void renderBlockOutline(BlockPos controllerPos, BlockPos pos, VoxelShape shape, PoseStack poseStack, MultiBufferSource bufferSource, int color) {
 		VertexConsumer vertexConsumer = bufferSource.getBuffer(LineRenderType.LINES);
-		float red = color[0];
-		float green = color[1];
-		float blue = color[2];
+		float red = (float) (color >> 16 & 255) / 255.0F;
+		float green = (float) (color >> 8 & 255) / 255.0F;
+		float blue = (float) (color & 255) / 255.0F;
 
 		LevelRenderer.renderShape(poseStack, vertexConsumer, shape, (double) -controllerPos.getX() + pos.getX(), (double) -controllerPos.getY() + pos.getY(), (double) -controllerPos.getZ() + pos.getZ(), red, green, blue, 1);
 	}

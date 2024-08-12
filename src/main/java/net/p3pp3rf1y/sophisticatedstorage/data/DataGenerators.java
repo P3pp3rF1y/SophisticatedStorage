@@ -13,7 +13,7 @@ public class DataGenerators {
 		BlockTagProvider blockTagProvider = new BlockTagProvider(packOutput, evt.getLookupProvider(), evt.getExistingFileHelper());
 		generator.addProvider(evt.includeServer(), blockTagProvider);
 		generator.addProvider(evt.includeServer(), new ItemTagProvider(packOutput, evt.getLookupProvider(), blockTagProvider.contentsGetter(), evt.getExistingFileHelper()));
-		generator.addProvider(evt.includeServer(), new StorageBlockLootProvider(packOutput));
-		generator.addProvider(evt.includeServer(), new StorageRecipeProvider(generator));
+		generator.addProvider(evt.includeServer(), new StorageBlockLootProvider(packOutput, evt.getLookupProvider()));
+		generator.addProvider(evt.includeServer(), new StorageRecipeProvider(generator, evt.getLookupProvider()));
 	}
 }

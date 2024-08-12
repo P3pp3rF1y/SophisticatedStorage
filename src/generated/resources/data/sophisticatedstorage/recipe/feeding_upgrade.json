@@ -1,0 +1,36 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:feeding_upgrade"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": {
+      "item": "minecraft:golden_apple"
+    },
+    "B": {
+      "item": "sophisticatedstorage:upgrade_base"
+    },
+    "C": {
+      "item": "minecraft:golden_carrot"
+    },
+    "E": {
+      "tag": "c:ender_pearls"
+    },
+    "M": {
+      "item": "minecraft:glistering_melon_slice"
+    }
+  },
+  "pattern": [
+    " C ",
+    "ABM",
+    " E "
+  ],
+  "result": {
+    "count": 1,
+    "id": "sophisticatedstorage:feeding_upgrade"
+  }
+}

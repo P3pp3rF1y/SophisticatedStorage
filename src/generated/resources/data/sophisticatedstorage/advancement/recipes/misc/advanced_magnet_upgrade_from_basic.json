@@ -1,0 +1,38 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:advanced_magnet_upgrade"
+    }
+  ],
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_magnet_upgrade": {
+      "conditions": {
+        "items": [
+          {
+            "items": "sophisticatedstorage:magnet_upgrade"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "sophisticatedstorage:advanced_magnet_upgrade_from_basic"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_magnet_upgrade"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "sophisticatedstorage:advanced_magnet_upgrade_from_basic"
+    ]
+  }
+}

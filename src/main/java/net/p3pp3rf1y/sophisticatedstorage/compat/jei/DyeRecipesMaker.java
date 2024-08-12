@@ -6,7 +6,6 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.*;
-import net.p3pp3rf1y.sophisticatedcore.util.ColorHelper;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.ITintableBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockBase;
@@ -92,8 +91,8 @@ public class DyeRecipesMaker {
 
 			ItemStack result = new ItemStack(block);
 			if (result.getItem() instanceof ITintableBlockItem tintableBlockItem) {
-				tintableBlockItem.setMainColor(result, ColorHelper.getColor(DyeColor.YELLOW.getTextureDiffuseColors()));
-				tintableBlockItem.setAccentColor(result, ColorHelper.getColor(DyeColor.LIME.getTextureDiffuseColors()));
+				tintableBlockItem.setMainColor(result, DyeColor.YELLOW.getTextureDiffuseColor());
+				tintableBlockItem.setAccentColor(result, DyeColor.LIME.getTextureDiffuseColor());
 			}
 			ResourceLocation id = ResourceLocation.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "multiple_colors");
 			ShapedRecipePattern pattern = new ShapedRecipePattern(3, 1, ingredients, Optional.empty());
@@ -109,8 +108,8 @@ public class DyeRecipesMaker {
 				ingredients.add(Ingredient.of(color.getTag()));
 				ItemStack result = new ItemStack(block);
 				if (result.getItem() instanceof ITintableBlockItem tintableBlockItem) {
-					tintableBlockItem.setMainColor(result, ColorHelper.getColor(color.getTextureDiffuseColors()));
-					tintableBlockItem.setAccentColor(result, ColorHelper.getColor(color.getTextureDiffuseColors()));
+					tintableBlockItem.setMainColor(result, color.getTextureDiffuseColor());
+					tintableBlockItem.setAccentColor(result, color.getTextureDiffuseColor());
 				}
 				ResourceLocation id = ResourceLocation.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "single_color_" + color.getSerializedName());
 				ShapedRecipePattern pattern = new ShapedRecipePattern(1, 2, ingredients, Optional.empty());

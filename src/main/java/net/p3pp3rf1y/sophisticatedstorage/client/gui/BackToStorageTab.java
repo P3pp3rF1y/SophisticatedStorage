@@ -6,7 +6,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.Tab;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.controls.ImageButton;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.*;
-import net.p3pp3rf1y.sophisticatedstorage.network.OpenStorageInventoryPacket;
+import net.p3pp3rf1y.sophisticatedstorage.network.OpenStorageInventoryPayload;
 
 public class BackToStorageTab extends Tab {
 	private static final TextureBlitData ICON = new TextureBlitData(GuiHelper.ICONS, Dimension.SQUARE_256, new UV(64, 80), Dimension.SQUARE_16);
@@ -20,6 +20,6 @@ public class BackToStorageTab extends Tab {
 
 	@Override
 	protected void onTabIconClicked(int button) {
-		PacketDistributor.SERVER.noArg().send(new OpenStorageInventoryPacket(pos));
+		PacketDistributor.sendToServer(new OpenStorageInventoryPayload(pos));
 	}
 }

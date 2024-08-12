@@ -1,0 +1,36 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:advanced_hopper_upgrade"
+    }
+  ],
+  "type": "sophisticatedcore:upgrade_next_tier",
+  "category": "misc",
+  "key": {
+    "D": {
+      "tag": "c:gems/diamond"
+    },
+    "G": {
+      "tag": "c:ingots/gold"
+    },
+    "H": {
+      "item": "sophisticatedstorage:hopper_upgrade"
+    },
+    "O": {
+      "item": "minecraft:dropper"
+    },
+    "R": {
+      "tag": "c:dusts/redstone"
+    }
+  },
+  "pattern": [
+    " D ",
+    "GHG",
+    "ROR"
+  ],
+  "result": {
+    "count": 1,
+    "id": "sophisticatedstorage:advanced_hopper_upgrade"
+  }
+}

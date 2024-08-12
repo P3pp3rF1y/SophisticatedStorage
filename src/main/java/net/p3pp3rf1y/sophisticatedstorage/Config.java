@@ -349,7 +349,7 @@ public class Config {
 				disallowedItemsSet = new HashSet<>();
 
 				for (String disallowedItemName : disallowedItemsList.get()) {
-					ResourceLocation registryName = ResourceLocation.fromNamespaceAndPath(disallowedItemName);
+					ResourceLocation registryName = ResourceLocation.parse(disallowedItemName);
 					BuiltInRegistries.ITEM.getOptional(registryName).ifPresent(disallowedItemsSet::add);
 				}
 			}

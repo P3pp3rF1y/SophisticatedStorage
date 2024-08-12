@@ -26,7 +26,6 @@ public class StorageIOBlock extends BlockBase implements EntityBlock {
 		return new StorageIOBlockEntity(pos, state);
 	}
 
-	@SuppressWarnings({"java:S1874", "deprecation"})
 	@Override
 	public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean isMoving) {
 		super.onRemove(state, level, pos, newState, isMoving);

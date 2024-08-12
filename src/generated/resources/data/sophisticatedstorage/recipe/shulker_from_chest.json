@@ -1,0 +1,27 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:shulker_box"
+    }
+  ],
+  "type": "sophisticatedstorage:shulker_box_from_chest",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "sophisticatedstorage:chest"
+    },
+    "S": {
+      "item": "minecraft:shulker_shell"
+    }
+  },
+  "pattern": [
+    "S",
+    "C",
+    "S"
+  ],
+  "result": {
+    "count": 1,
+    "id": "sophisticatedstorage:shulker_box"
+  }
+}

@@ -1,6 +1,5 @@
 package net.p3pp3rf1y.sophisticatedstorage.data;
 
-import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -15,7 +14,7 @@ import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 
 public class CopyStorageDataFunction implements LootItemFunction {
 	private static final CopyStorageDataFunction INSTANCE = new CopyStorageDataFunction();
-	public static final Codec<CopyStorageDataFunction> CODEC = MapCodec.unit(INSTANCE).stable().codec();
+	public static final MapCodec<CopyStorageDataFunction> CODEC = MapCodec.unit(INSTANCE).stable();
 
 	private CopyStorageDataFunction() {
 	}
@@ -34,7 +33,7 @@ public class CopyStorageDataFunction implements LootItemFunction {
 	}
 
 	@Override
-	public LootItemFunctionType getType() {
+	public LootItemFunctionType<? extends LootItemFunction> getType() {
 		return ModItems.COPY_STORAGE_DATA.get();
 	}
 

@@ -25,7 +25,7 @@ public class StorageOutputBlockEntity extends StorageIOBlockEntity {
 			return null;
 		}
 		if (itemHandler == null) {
-			itemHandler = super.getExternalItemHandler(side);
+			itemHandler = super.getExternalItemHandler(null);
 			if (itemHandler instanceof IItemHandlerSimpleInserter simpleInserter) {
 				itemHandler = new OutputOnlyItemHandlerWrapper(simpleInserter);
 			}

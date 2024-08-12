@@ -26,7 +26,6 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.neoforged.neoforge.client.model.data.ModelData;
 import net.neoforged.neoforge.common.util.TransformationHelper;
-import net.p3pp3rf1y.sophisticatedcore.inventory.ItemStackKey;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockBase;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
@@ -157,7 +156,7 @@ public class DisplayItemRenderer {
 	}
 
 	public static double getDisplayItemOffset(ItemStack item, BakedModel itemModel, float additionalScale) {
-		int hash = ItemStackKey.getHashCode(item) * 31 + Float.hashCode(additionalScale);
+		int hash = ItemStack.hashItemAndComponents(item) * 31 + Float.hashCode(additionalScale);
 		Double offset = ITEM_HASHCODE_OFFSETS.getIfPresent(hash);
 		if (offset != null) {
 			return offset;
@@ -198,9 +197,8 @@ public class DisplayItemRenderer {
 		return ((zScale * (2 / 15.95D)) - getMaxZ(points)) * additionalScale; //15.95 because of z-fighting if displayed model had surface offset exactly 1 pixel from the top most surface
 	}
 
-	@SuppressWarnings("deprecation")
 	private static Set<Vector3f> getBoundsCornersFromShape(Block block, ClientLevel level) {
-		VoxelShape shape = block.getShape(block.defaultBlockState(), level, BlockPos.ZERO, CollisionContext.empty());
+		VoxelShape shape = block.defaultBlockState().getShape(level, BlockPos.ZERO, CollisionContext.empty());
 		return getCornerPointsRelativeToCenter(shape.bounds());
 	}
 

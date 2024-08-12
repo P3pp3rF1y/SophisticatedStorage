@@ -1,0 +1,33 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:controller"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "type": "sophisticatedstorage:base_tier_wooden_storage"
+    },
+    "C": {
+      "item": "minecraft:comparator"
+    },
+    "P": {
+      "tag": "minecraft:planks"
+    },
+    "S": {
+      "tag": "c:stones"
+    }
+  },
+  "pattern": [
+    "SCS",
+    "PBP",
+    "SCS"
+  ],
+  "result": {
+    "count": 1,
+    "id": "sophisticatedstorage:controller"
+  }
+}

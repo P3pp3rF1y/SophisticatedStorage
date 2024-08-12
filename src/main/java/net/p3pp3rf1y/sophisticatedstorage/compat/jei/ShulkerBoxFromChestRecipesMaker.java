@@ -61,10 +61,10 @@ public class ShulkerBoxFromChestRecipesMaker {
 					}
 					i++;
 				}
-				ItemStack result = ClientRecipeHelper.assemble(originalRecipe, craftinginventory);
+				ItemStack result = ClientRecipeHelper.assemble(originalRecipe, craftinginventory.asCraftInput());
 				ResourceLocation newId = ResourceLocation.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "shulker_from_" + BuiltInRegistries.ITEM.getKey(chestItem.getItem()).getPath()
-						+ result.getOrCreateTag().toString().toLowerCase(Locale.ROOT).replaceAll("[^a-z\\d/._-]", "_"));
-				ShapedRecipePattern pattern = new ShapedRecipePattern(originalRecipe.getRecipeWidth(), originalRecipe.getRecipeHeight(), ingredientsCopy, Optional.empty());
+						+ result.getComponentsPatch().toString().toLowerCase(Locale.ROOT).replaceAll("[{\",}:>=@\\[\\]\\s]", "_"));
+				ShapedRecipePattern pattern = new ShapedRecipePattern(originalRecipe.getWidth(), originalRecipe.getHeight(), ingredientsCopy, Optional.empty());
 
 				recipes.add(new RecipeHolder<>(newId, new ShapedRecipe("", CraftingBookCategory.MISC, pattern, result)));
 			});

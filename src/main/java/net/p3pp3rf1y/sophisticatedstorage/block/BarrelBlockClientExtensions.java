@@ -17,7 +17,7 @@ import net.p3pp3rf1y.sophisticatedstorage.client.particle.CustomTintTerrainParti
 
 import java.util.Random;
 
-class BarrelBlockClientExtensions implements IClientBlockExtensions {
+public class BarrelBlockClientExtensions implements IClientBlockExtensions {
 	private final BarrelBlock barrelBlock;
 	private final Random random = new Random();
 

@@ -9,6 +9,7 @@ import net.minecraft.stats.Stats;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -105,7 +106,6 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 		return RenderShape.ENTITYBLOCK_ANIMATED;
 	}
 
-	@SuppressWarnings("deprecation")
 	@Override
 	public BlockState updateShape(BlockState state, Direction facing, BlockState facingState, LevelAccessor level, BlockPos currentPos, BlockPos facingPos) {
 		if (level.getBlockEntity(currentPos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get()).map(StorageBlockEntity::isBeingUpgraded).orElse(false)) {
@@ -162,7 +162,6 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 	}
 
 
-	@SuppressWarnings("deprecation")
 	@Override
 	public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
 		if (state.getValue(TYPE) == ChestType.SINGLE) {
@@ -196,7 +195,7 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 				StorageBlockItem.getMainColorFromStack(chestBeingPlaced).orElse(-1),
 				StorageBlockItem.getAccentColorFromStack(chestBeingPlaced).orElse(-1),
 				WoodStorageBlockItem.getWoodType(chestBeingPlaced).orElse(WoodType.ACACIA),
-				InventoryHelper.isEmpty(StackStorageWrapper.fromData(chestBeingPlaced).getUpgradeHandler()));
+				InventoryHelper.isEmpty(StackStorageWrapper.fromStack(context.getLevel().registryAccess(), chestBeingPlaced).getUpgradeHandler()));
 	}
 
 	private BlockState getStateForPlacement(BlockPlaceContext context, Direction direction, FluidState fluidstate, int mainColor, int accentColor, WoodType woodType, boolean itemHasNoUpgrades) {
@@ -244,22 +243,41 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 		return level.isClientSide ? createTickerHelper(blockEntityType, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get(), (l, p, s, be) -> ChestBlockEntity.lidAnimateTick(be)) : super.getTicker(level, state, blockEntityType);
 	}
 
-	@SuppressWarnings("deprecation")
 	@Override
 	public FluidState getFluidState(BlockState state) {
 		return Boolean.TRUE.equals(state.getValue(WATERLOGGED)) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
 	}
 
-	@SuppressWarnings("deprecation")
 	@Override
-	public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
+	protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
+		return WorldHelper.getBlockEntity(level, pos, ChestBlockEntity.class).map(b -> {
+			BlockPos mainChestPos;
+			if (!b.isMainChest()) {
+				mainChestPos = pos.relative(getConnectedDirection(state));
+				b = WorldHelper.getBlockEntity(level, mainChestPos, ChestBlockEntity.class).orElse(b);
+			}
+
+			if (b.isPacked()) {
+				return ItemInteractionResult.FAIL;
+			}
+			if (level.isClientSide || hand == InteractionHand.OFF_HAND) {
+				return ItemInteractionResult.SUCCESS;
+			}
+
+			if (tryItemInteraction(player, hand, b, stack, state.getValue(FACING), hitResult)) {
+				return ItemInteractionResult.SUCCESS;
+			}
+			return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+		}).orElse(ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION);
+	}
+
+	@Override
+	public InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
 		if (isChestBlockedAt(level, pos) || (state.getValue(TYPE) != ChestType.SINGLE && isChestBlockedAt(level, pos.relative(getConnectedDirection(state))))) {
 			return InteractionResult.PASS;
 		}
 
 		return WorldHelper.getBlockEntity(level, pos, ChestBlockEntity.class).map(b -> {
-			ItemStack stackInHand = player.getItemInHand(hand);
-
 			BlockPos mainChestPos;
 			if (!b.isMainChest()) {
 				mainChestPos = pos.relative(getConnectedDirection(state));
@@ -271,11 +289,8 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 			if (b.isPacked()) {
 				return InteractionResult.PASS;
 			}
-			if (level.isClientSide || hand == InteractionHand.OFF_HAND) {
-				return InteractionResult.SUCCESS;
-			}
 
-			if (tryItemInteraction(player, hand, b, stackInHand, state.getValue(FACING), hitResult)) {
+			if (level.isClientSide) {
 				return InteractionResult.SUCCESS;
 			}
 
@@ -342,7 +357,7 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 					//copy storage wrapper to "not main" chest so that its data can be transferred to stack properly
 					BlockPos otherPartPos = pos.relative(getConnectedDirection(state));
 					level.getBlockEntity(otherPartPos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get())
-							.ifPresent(mainBe -> be.getStorageWrapper().load(mainBe.getStorageWrapper().save(new CompoundTag())));
+							.ifPresent(mainBe -> be.getStorageWrapper().load(level.registryAccess(), mainBe.getStorageWrapper().save(new CompoundTag())));
 				}
 			});
 		}
@@ -391,7 +406,6 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 		return new ChestBlockEntity(pos, state);
 	}
 
-	@SuppressWarnings("deprecation")
 	@Override
 	public boolean isCollisionShapeFullBlock(BlockState state, BlockGetter level, BlockPos pos) {
 		return false;
@@ -408,13 +422,11 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 		builder.add(FACING, WATERLOGGED, TICKING, TYPE);
 	}
 
-	@SuppressWarnings("deprecation")
 	@Override
-	public boolean isPathfindable(BlockState state, BlockGetter level, BlockPos pos, PathComputationType type) {
+	protected boolean isPathfindable(BlockState pState, PathComputationType pPathComputationType) {
 		return false;
 	}
 
-	@SuppressWarnings("deprecation")
 	@Override
 	public void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
 		WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).ifPresent(StorageBlockEntity::recheckOpen);

@@ -1,0 +1,38 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:iron_barrel"
+    }
+  ],
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_copper_barrel": {
+      "conditions": {
+        "items": [
+          {
+            "items": "sophisticatedstorage:copper_barrel"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "sophisticatedstorage:iron_barrel_from_copper_barrel"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_copper_barrel"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "sophisticatedstorage:iron_barrel_from_copper_barrel"
+    ]
+  }
+}

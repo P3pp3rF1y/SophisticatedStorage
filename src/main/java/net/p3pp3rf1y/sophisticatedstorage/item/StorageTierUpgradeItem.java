@@ -28,7 +28,6 @@ import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.TranslationHelper;
 import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryHandler;
-import net.p3pp3rf1y.sophisticatedcore.util.ColorHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.ItemBase;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.block.*;
@@ -128,12 +127,12 @@ public class StorageTierUpgradeItem extends ItemBase {
 
 		private StorageBlockEntity upgradeStorageBlock(BlockPos pos, Level level, StorageBlockEntity blockEntity, BlockState newBlockState, int newInventorySize, int newUpgradeSize) {
 			CompoundTag beTag = new CompoundTag();
-			blockEntity.saveAdditional(beTag);
+			blockEntity.saveAdditional(beTag, level.registryAccess());
 
 			StorageBlockEntity newBlockEntity = newBlock().newBlockEntity(pos, newBlockState);
 			//noinspection ConstantConditions - all storage blocks create a block entity so no chancde of null here
 			newBlockEntity.setBeingUpgraded(true);
-			newBlockEntity.load(beTag);
+			newBlockEntity.loadAdditional(beTag, level.registryAccess());
 
 			blockEntity.setBeingUpgraded(true);
 			level.removeBlockEntity(pos);
@@ -201,7 +200,7 @@ public class StorageTierUpgradeItem extends ItemBase {
 		}
 
 		private VanillaTierUpgradeDefinition(Class<B> blockEntityClass, Predicate<B> isUpgradingBlocked, StorageBlockBase newBlock, @Nullable WoodType woodType, DyeColor color, Property<?>... propertiesToCopy) {
-			this(blockEntityClass, isUpgradingBlocked, newBlock, woodType, ColorHelper.getColor(color.getTextureDiffuseColors()), propertiesToCopy);
+			this(blockEntityClass, isUpgradingBlocked, newBlock, woodType, color.getTextureDiffuseColor(), propertiesToCopy);
 		}
 
 		private VanillaTierUpgradeDefinition(Class<B> blockEntityClass, Predicate<B> isUpgradingBlocked, StorageBlockBase newBlock, @Nullable WoodType woodType, int color, Property<?>... propertiesToCopy) {
@@ -306,7 +305,7 @@ public class StorageTierUpgradeItem extends ItemBase {
 				wbe.setWoodType(woodType);
 			}
 
-			if (color > -1) {
+			if (color != -1) {
 				storageWrapper.setMainColor(color);
 				storageWrapper.setAccentColor(color);
 			}

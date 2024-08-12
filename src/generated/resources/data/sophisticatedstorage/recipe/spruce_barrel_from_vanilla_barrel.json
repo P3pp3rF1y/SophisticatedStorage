@@ -1,0 +1,25 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:barrel"
+    }
+  ],
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "minecraft:barrel"
+    },
+    {
+      "item": "minecraft:redstone_torch"
+    }
+  ],
+  "result": {
+    "components": {
+      "sophisticatedstorage:wood_type": "spruce"
+    },
+    "count": 1,
+    "id": "sophisticatedstorage:barrel"
+  }
+}

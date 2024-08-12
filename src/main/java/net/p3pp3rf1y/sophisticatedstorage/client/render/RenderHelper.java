@@ -118,6 +118,7 @@ public class RenderHelper {
 	private static void addVertex(Matrix4f pose, Vector3f normal, VertexConsumer consumer, int pY, float pX, int packedOverlay, int packedLight, float u, float v, float alpha) {
 		Vector4f pos = new Vector4f(pX, pY, 0, 1.0F);
 		pose.transform(pos);
-		consumer.vertex(pos.x(), pos.y(), pos.z(), 1, 1, 1, alpha, u, v, packedOverlay, packedLight, normal.x(), normal.y(), normal.z());
+		int color = ((int)(alpha * 255)) << 24 | 255 << 16 | 255 << 8 | 255;
+		consumer.addVertex(pos.x(), pos.y(), pos.z(), color, u, v, packedOverlay, packedLight, normal.x(), normal.y(), normal.z());
 	}
 }

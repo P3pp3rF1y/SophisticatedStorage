@@ -1,6 +1,5 @@
 package net.p3pp3rf1y.sophisticatedstorage.client.render;
 
-import com.mojang.blaze3d.vertex.DefaultedVertexConsumer;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -8,15 +7,12 @@ import net.minecraft.world.inventory.InventoryMenu;
 
 import java.util.function.BiFunction;
 
-public class TranslucentVertexConsumer extends DefaultedVertexConsumer {
+public class TranslucentVertexConsumer implements VertexConsumer {
 	public static final RenderType TRANSLUCENT = RenderType.entityTranslucent(InventoryMenu.BLOCK_ATLAS);
 	private final VertexConsumer delegate;
 
 	private static BiFunction<MultiBufferSource, Integer, VertexConsumer> factory = TranslucentVertexConsumer::new;
-
-	public static void setFactory(BiFunction<MultiBufferSource, Integer, VertexConsumer> factory) {
-		TranslucentVertexConsumer.factory = factory;
-	}
+	private final int defaultA;
 
 	public TranslucentVertexConsumer(VertexConsumer delegate, int alpha) {
 		this.delegate = delegate;
@@ -36,42 +32,38 @@ public class TranslucentVertexConsumer extends DefaultedVertexConsumer {
 	}
 
 	@Override
-	public void vertex(float pX, float pY, float pZ, float red, float green, float blue, float alpha, float texU, float texV, int overlayUV, int lightmapUV, float normalX, float normalY, float normalZ) {
-		super.vertex(pX, pY, pZ, red, green, blue, defaultA / 256f, texU, texV, overlayUV, lightmapUV, normalX, normalY, normalZ);
+	public void addVertex(float x, float y, float z, int color, float texU, float texV, int overlayUV, int lightmapUV, float normalX, float normalY, float normalZ) {
+		int modifiedColor = defaultA << 24 | color & 0xFFFFFF;
+		VertexConsumer.super.addVertex(x, y, z, modifiedColor, texU, texV, overlayUV, lightmapUV, normalX, normalY, normalZ);
 	}
 
 	@Override
-	public VertexConsumer vertex(double pX, double pY, double pZ) {
-		return delegate.vertex(pX, pY, pZ);
+	public VertexConsumer addVertex(float x, float y, float z) {
+		return delegate.addVertex(x, y, z);
 	}
 
 	@Override
-	public VertexConsumer color(int red, int green, int blue, int alpha) {
-		return delegate.color(red, green, blue, defaultA);
+	public VertexConsumer setColor(int red, int green, int blue, int alpha) {
+		return delegate.setColor(red, green, blue, defaultA);
 	}
 
 	@Override
-	public VertexConsumer uv(float pU, float pV) {
-		return delegate.uv(pU, pV);
+	public VertexConsumer setUv(float u, float v) {
+		return delegate.setUv(u, v);
 	}
 
 	@Override
-	public VertexConsumer overlayCoords(int pU, int pV) {
-		return delegate.overlayCoords(pU, pV);
+	public VertexConsumer setUv1(int u1, int v1) {
+		return delegate.setUv1(u1, v1);
 	}
 
 	@Override
-	public VertexConsumer uv2(int pU, int pV) {
-		return delegate.uv2(pU, pV);
+	public VertexConsumer setUv2(int u2, int v2) {
+		return delegate.setUv2(u2, v2);
 	}
 
 	@Override
-	public VertexConsumer normal(float pX, float pY, float pZ) {
-		return delegate.normal(pX, pY, pZ);
-	}
-
-	@Override
-	public void endVertex() {
-		delegate.endVertex();
+	public VertexConsumer setNormal(float normalX, float normalY, float normalZ) {
+		return delegate.setNormal(normalX, normalY, normalZ);
 	}
 }

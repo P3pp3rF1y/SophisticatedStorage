@@ -3,6 +3,7 @@ package net.p3pp3rf1y.sophisticatedstorage.block;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -38,14 +39,14 @@ public abstract class WoodStorageBlockEntity extends StorageBlockEntity {
 	}
 
 	public CompoundTag getStorageContentsTag() {
-		CompoundTag contents = saveWithoutMetadata();
+		CompoundTag contents = saveWithoutMetadata(level.registryAccess());
 		contents.putBoolean(PACKED_TAG, false);
 		return contents;
 	}
 
 	@Override
-	public void loadSynchronizedData(CompoundTag tag) {
-		super.loadSynchronizedData(tag);
+	public void loadSynchronizedData(CompoundTag tag, HolderLookup.Provider registries) {
+		super.loadSynchronizedData(tag, registries);
 		woodType = NBTHelper.getString(tag, "woodType").flatMap(woodTypeName -> WoodType.values().filter(wt -> wt.name().equals(woodTypeName)).findFirst())
 				.orElse(getStorageWrapper().hasMainColor() && getStorageWrapper().hasAccentColor() ? null : WoodType.ACACIA);
 		packed = tag.getBoolean(PACKED_TAG);

@@ -98,7 +98,7 @@ public class BarrelRenderer<T extends BarrelBlockEntity> extends StorageRenderer
 
 		if (blockEntity.getLevel() != null && blockModel instanceof BarrelBakedModelBase barrelBakedModel) {
 			VertexConsumer vertexConsumer = TranslucentVertexConsumer.getVertexConsumer(bufferSource, 128);
-			getQuads.apply(barrelBakedModel, state, blockEntity.getLevel().random, woodName, RenderType.cutout()).forEach(quad -> vertexConsumer.putBulkData(poseStack.last(), quad, 1, 1, 1, packedLight, packedOverlay));
+			getQuads.apply(barrelBakedModel, state, blockEntity.getLevel().random, woodName, RenderType.cutout()).forEach(quad -> vertexConsumer.putBulkData(poseStack.last(), quad, 1, 1, 1, 1, packedLight, packedOverlay, false));
 		}
 		poseStack.popPose();
 	}

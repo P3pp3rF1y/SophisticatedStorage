@@ -1,0 +1,22 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:netherite_shulker_box"
+    }
+  ],
+  "type": "sophisticatedstorage:storage_tier_upgrade_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "sophisticatedstorage:diamond_shulker_box"
+    },
+    {
+      "tag": "c:ingots/netherite"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "sophisticatedstorage:netherite_shulker_box"
+  }
+}

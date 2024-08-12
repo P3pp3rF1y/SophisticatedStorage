@@ -1,12 +1,12 @@
 package net.p3pp3rf1y.sophisticatedstorage.crafting;
 
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingBookCategory;
+import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.CustomRecipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
@@ -25,7 +25,7 @@ public class BarrelMaterialRecipe extends CustomRecipe {
 	}
 
 	@Override
-	public boolean matches(CraftingContainer container, Level level) {
+	public boolean matches(CraftingInput input, Level level) {
 		int barrelRow = -1;
 		int barrelCol = -1;
 		int minRowWithBlock = Integer.MAX_VALUE;
@@ -35,9 +35,9 @@ public class BarrelMaterialRecipe extends CustomRecipe {
 
 		Map<Integer, Integer> rowCounts = new HashMap<>();
 
-		for (int row = 0; row < container.getHeight(); row++) {
-			for (int col = 0; col < container.getWidth(); col++) {
-				ItemStack item = container.getItem(col + row * container.getWidth());
+		for (int row = 0; row < input.height(); row++) {
+			for (int col = 0; col < input.width(); col++) {
+				ItemStack item = input.getItem(col + row * input.width());
 				if (item.isEmpty()) {
 					continue;
 				}
@@ -82,14 +82,14 @@ public class BarrelMaterialRecipe extends CustomRecipe {
 	}
 
 	@Override
-	public ItemStack assemble(CraftingContainer container, RegistryAccess registryAccess) {
+	public ItemStack assemble(CraftingInput input, HolderLookup.Provider registries) {
 		int barrelColumn = -1;
 		int barrelRow = -1;
 		ItemStack barrelStackCopy = ItemStack.EMPTY;
 
-		for (int row = 0; row < container.getHeight(); row++) {
-			for (int col = 0; col < container.getWidth(); col++) {
-				ItemStack item = container.getItem(col + row * container.getWidth());
+		for (int row = 0; row < input.height(); row++) {
+			for (int col = 0; col < input.width(); col++) {
+				ItemStack item = input.getItem(col + row * input.width());
 				if (item.isEmpty()) {
 					continue;
 				}
@@ -107,7 +107,7 @@ public class BarrelMaterialRecipe extends CustomRecipe {
 		materials.putAll(BarrelBlockItem.getMaterials(barrelStackCopy));
 		uncompactMaterials(materials);
 
-		fillGridMaterials(container, barrelColumn, barrelRow, materials);
+		fillGridMaterials(input, barrelColumn, barrelRow, materials);
 		fillEmptyMaterialsWithDefaults(materials);
 		compactMaterials(materials);
 
@@ -191,10 +191,10 @@ public class BarrelMaterialRecipe extends CustomRecipe {
 		}
 	}
 
-	private void fillGridMaterials(CraftingContainer container, int barrelColumn, int barrelRow, Map<BarrelMaterial, ResourceLocation> materials) {
-		for (int row = 0; row < container.getHeight(); row++) {
-			for (int col = 0; col < container.getWidth(); col++) {
-				ItemStack item = container.getItem(col + row * container.getWidth());
+	private void fillGridMaterials(CraftingInput input, int barrelColumn, int barrelRow, Map<BarrelMaterial, ResourceLocation> materials) {
+		for (int row = 0; row < input.height(); row++) {
+			for (int col = 0; col < input.width(); col++) {
+				ItemStack item = input.getItem(col + row * input.width());
 				if ((row == barrelRow && col == barrelColumn) || item.isEmpty()) {
 					continue;
 				}

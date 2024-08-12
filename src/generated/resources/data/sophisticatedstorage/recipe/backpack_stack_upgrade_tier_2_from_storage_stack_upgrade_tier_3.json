@@ -1,0 +1,34 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "sophisticatedbackpacks"
+    },
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedbackpacks:stack_upgrade_tier_2"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "L": {
+      "tag": "c:leathers"
+    },
+    "S": {
+      "item": "sophisticatedstorage:stack_upgrade_tier_3"
+    },
+    "T": {
+      "tag": "c:strings"
+    }
+  },
+  "pattern": [
+    "TST",
+    "SLS",
+    "T T"
+  ],
+  "result": {
+    "count": 1,
+    "id": "sophisticatedbackpacks:stack_upgrade_tier_2"
+  }
+}

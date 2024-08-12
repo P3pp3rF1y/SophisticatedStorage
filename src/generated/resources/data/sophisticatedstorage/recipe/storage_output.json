@@ -1,0 +1,36 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:storage_output"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "type": "sophisticatedstorage:base_tier_wooden_storage"
+    },
+    "G": {
+      "tag": "c:ingots/gold"
+    },
+    "P": {
+      "tag": "minecraft:planks"
+    },
+    "R": {
+      "item": "minecraft:repeater"
+    },
+    "S": {
+      "tag": "c:stones"
+    }
+  },
+  "pattern": [
+    "SGS",
+    "PBP",
+    "SRS"
+  ],
+  "result": {
+    "count": 1,
+    "id": "sophisticatedstorage:storage_output"
+  }
+}

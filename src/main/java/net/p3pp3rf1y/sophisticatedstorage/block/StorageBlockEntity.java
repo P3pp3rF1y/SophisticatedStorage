@@ -2,6 +2,7 @@ package net.p3pp3rf1y.sophisticatedstorage.block;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
@@ -174,8 +175,8 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 	}
 
 	@Override
-	public void saveAdditional(CompoundTag tag) {
-		super.saveAdditional(tag);
+	public void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+		super.saveAdditional(tag, registries);
 		saveStorageWrapper(tag);
 		saveSynchronizedData(tag);
 		saveControllerPos(tag);
@@ -194,7 +195,7 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 
 	protected void saveSynchronizedData(CompoundTag tag) {
 		if (displayName != null) {
-			tag.putString("displayName", Component.Serializer.toJson(displayName));
+			tag.putString("displayName", Component.Serializer.toJson(displayName, level.registryAccess()));
 		}
 		if (updateBlockRender) {
 			tag.putBoolean("updateBlockRender", true);
@@ -244,17 +245,17 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 	}
 
 	@Override
-	public void load(CompoundTag tag) {
-		super.load(tag);
-		loadStorageWrapper(tag);
-		loadSynchronizedData(tag);
+	public void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+		super.loadAdditional(tag, registries);
+		loadStorageWrapper(tag, registries);
+		loadSynchronizedData(tag, registries);
 		loadControllerPos(tag);
 
 		isLinkedToController = NBTHelper.getBoolean(tag, "isLinkedToController").orElse(false);
 	}
 
-	private void loadStorageWrapper(CompoundTag tag) {
-		NBTHelper.getCompound(tag, STORAGE_WRAPPER_TAG).ifPresent(storageWrapper::load);
+	private void loadStorageWrapper(CompoundTag tag, HolderLookup.Provider registries) {
+		NBTHelper.getCompound(tag, STORAGE_WRAPPER_TAG).ifPresent(wrapperTag -> storageWrapper.load(registries, wrapperTag));
 	}
 
 	@Override
@@ -264,8 +265,8 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		registerWithControllerOnLoad();
 	}
 
-	public void loadSynchronizedData(CompoundTag tag) {
-		displayName = NBTHelper.getComponent(tag, "displayName").orElse(null);
+	public void loadSynchronizedData(CompoundTag tag, HolderLookup.Provider registries) {
+		displayName = NBTHelper.getComponent(tag, "displayName", registries).orElse(null);
 		locked = NBTHelper.getBoolean(tag, "locked").orElse(false);
 		showLock = NBTHelper.getBoolean(tag, "showLock").orElse(true);
 		showTier = NBTHelper.getBoolean(tag, "showTier").orElse(true);
@@ -301,14 +302,14 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 	}
 
 	@Override
-	public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt) {
+	public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider registries) {
 		CompoundTag tag = pkt.getTag();
 		if (tag == null) {
 			return;
 		}
 
-		loadStorageWrapper(tag);
-		loadSynchronizedData(tag);
+		loadStorageWrapper(tag, registries);
+		loadSynchronizedData(tag,registries);
 	}
 
 	public void setUpdateBlockRender() {
@@ -316,8 +317,8 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 	}
 
 	@Override
-	public CompoundTag getUpdateTag() {
-		CompoundTag tag = super.getUpdateTag();
+	public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+		CompoundTag tag = super.getUpdateTag(registries);
 		saveStorageWrapperClientData(tag);
 		saveSynchronizedData(tag);
 		return tag;

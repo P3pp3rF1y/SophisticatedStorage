@@ -239,8 +239,11 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity> {
 			poseStack.pushPose();
 			poseStack.translate(-0.005D, -0.005D, -0.005D);
 			poseStack.scale(1.01f, 1.01f, 1.01f);
-			lidPart.render(poseStack, translucentConsumer, packedLight, packedOverlay, 1.0F, 1.0F, 1.0F, 0.5F);
-			bottomPart.render(poseStack, translucentConsumer, packedLight, packedOverlay, 1.0F, 1.0F, 1.0F, 0.5F);
+
+			int color = 0x7F_FFFFFF;
+
+			lidPart.render(poseStack, translucentConsumer, packedLight, packedOverlay, 0x7F_FFFFFF);
+			bottomPart.render(poseStack, translucentConsumer, packedLight, packedOverlay, 0x7F_FFFFFF);
 			poseStack.popPose();
 		}
 
@@ -256,14 +259,12 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity> {
 		}
 
 		private void renderBottomAndLidWithTint(PoseStack poseStack, MultiBufferSource bufferSource, float lidAngle, int packedLight, int packedOverlay, int tint, StorageTextureManager.ChestMaterial chestMaterial) {
-			float tintRed = (tint >> 16 & 255) / 255.0F;
-			float tingGreen = (tint >> 8 & 255) / 255.0F;
-			float tintBlue = (tint & 255) / 255.0F;
-
 			VertexConsumer consumer = chestMaterials.get(chestMaterial).buffer(bufferSource, RenderType::entityCutout);
 			lidPart.xRot = -(lidAngle * ((float) Math.PI / 2F));
-			lidPart.render(poseStack, consumer, packedLight, packedOverlay, tintRed, tingGreen, tintBlue, 1);
-			bottomPart.render(poseStack, consumer, packedLight, packedOverlay, tintRed, tingGreen, tintBlue, 1);
+			int color = 0xFF_000000 | tint;
+
+			lidPart.render(poseStack, consumer, packedLight, packedOverlay, color);
+			bottomPart.render(poseStack, consumer, packedLight, packedOverlay, color);
 		}
 
 		private void renderChestLock(PoseStack poseStack, MultiBufferSource bufferSource, float lidAngle, int packedLight, int packedOverlay) {

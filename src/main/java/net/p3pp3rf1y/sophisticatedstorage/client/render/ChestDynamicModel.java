@@ -31,7 +31,10 @@ import net.p3pp3rf1y.sophisticatedstorage.block.WoodStorageBlockEntity;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 public class ChestDynamicModel implements IUnbakedGeometry<ChestDynamicModel> {
@@ -44,7 +47,7 @@ public class ChestDynamicModel implements IUnbakedGeometry<ChestDynamicModel> {
 	}
 
 	@Override
-	public BakedModel bake(IGeometryBakingContext context, ModelBaker baker, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelState, ItemOverrides overrides, ResourceLocation modelLocation) {
+	public BakedModel bake(IGeometryBakingContext context, ModelBaker baker, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelState, ItemOverrides overrides) {
 		return new ChestBakedModel();
 	}
 
@@ -91,7 +94,7 @@ public class ChestDynamicModel implements IUnbakedGeometry<ChestDynamicModel> {
 			return WorldHelper.getBlockEntity(level, pos, WoodStorageBlockEntity.class)
 					.map(be -> {
 						ModelData.Builder builder = ModelData.builder();
-						builder.with(HAS_MAIN_COLOR, be.getStorageWrapper().getMainColor() > -1);
+						builder.with(HAS_MAIN_COLOR, be.getStorageWrapper().getMainColor() != -1);
 						be.getWoodType().ifPresent(n -> builder.with(WOOD_NAME, n.name()));
 						return builder.build();
 					}).orElse(ModelData.EMPTY);

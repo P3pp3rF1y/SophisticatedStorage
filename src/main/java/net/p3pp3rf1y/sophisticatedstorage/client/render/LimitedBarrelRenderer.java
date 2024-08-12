@@ -181,7 +181,6 @@ public class LimitedBarrelRenderer extends BarrelRenderer<LimitedBarrelBlockEnti
 		poseStack.pushPose();
 		VertexConsumer vertexConsumer;
 		if (translucentRender) {
-			//noinspection resource
 			TextureAtlasSprite sprite = FILL_INDICATORS_TEXTURE.sprite();
 			vertexConsumer = sprite.wrap(bufferSource.getBuffer(RenderType.entityTranslucent(sprite.atlasLocation())));
 		} else {

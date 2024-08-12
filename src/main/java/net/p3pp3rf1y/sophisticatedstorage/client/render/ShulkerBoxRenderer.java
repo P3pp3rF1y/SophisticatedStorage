@@ -72,24 +72,25 @@ public class ShulkerBoxRenderer extends StorageRenderer<ShulkerBoxBlockEntity> {
 
 		if (mainColor == -1 || accentColor == -1) {
 			VertexConsumer vertexconsumer = NO_TINT_MATERIAL.buffer(bufferSource, RenderType::entityCutoutNoCull);
-			model.renderToBuffer(poseStack, vertexconsumer, packedLight, packedOverlay, 1.0F, 1.0F, 1.0F, 1.0F);
+			model.renderToBuffer(poseStack, vertexconsumer, packedLight, packedOverlay);
 		}
-		if (mainColor > -1) {
+		if (mainColor != -1) {
 			renderTintedModel(poseStack, bufferSource, packedLight, packedOverlay, mainColor, TINTABLE_MAIN_MATERIAL);
 		}
-		if (accentColor > -1) {
+		if (accentColor != -1) {
 			renderTintedModel(poseStack, bufferSource, packedLight, packedOverlay, accentColor, TINTABLE_ACCENT_MATERIAL);
 		}
 		if (shulkerBoxEntity.shouldShowTier()) {
 			VertexConsumer vertexconsumer = getTierMaterial(blockState.getBlock()).buffer(bufferSource, RenderType::entityCutoutNoCull);
-			model.renderToBuffer(poseStack, vertexconsumer, packedLight, packedOverlay, 1.0F, 1.0F, 1.0F, 1.0F);
+			model.renderToBuffer(poseStack, vertexconsumer, packedLight, packedOverlay);
 		} else if (holdsItemThatShowsHiddenTiers()) {
 			TextureAtlasSprite sprite = getTierMaterial(blockState.getBlock()).sprite();
 			VertexConsumer vertexconsumer = sprite.wrap(bufferSource.getBuffer(RenderType.entityTranslucent(sprite.atlasLocation())));
 			poseStack.pushPose();
 			poseStack.translate(0, -0.01, 0);
 			poseStack.scale(1.01f, 1.01f, 1.01f);
-			model.renderToBuffer(poseStack, vertexconsumer, packedLight, packedOverlay, 1.0F, 1.0F, 1.0F, 0.5F);
+			int color = 0x7F_FFFFFF;
+			model.renderToBuffer(poseStack, vertexconsumer, packedLight, packedOverlay, color);
 			poseStack.popPose();
 		}
 
@@ -132,11 +133,9 @@ public class ShulkerBoxRenderer extends StorageRenderer<ShulkerBoxBlockEntity> {
 	}
 
 	private void renderTintedModel(PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, int mainColor, Material material) {
-		float tintRed = (mainColor >> 16 & 255) / 255.0F;
-		float tingGreen = (mainColor >> 8 & 255) / 255.0F;
-		float tintBlue = (mainColor & 255) / 255.0F;
+		int color = 0xFF_000000 | mainColor;
 
 		VertexConsumer vertexconsumer = material.buffer(bufferSource, RenderType::entityCutoutNoCull);
-		model.renderToBuffer(poseStack, vertexconsumer, packedLight, packedOverlay, tintRed, tingGreen, tintBlue, 1.0F);
+		model.renderToBuffer(poseStack, vertexconsumer, packedLight, packedOverlay, color);
 	}
 }

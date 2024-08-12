@@ -1,0 +1,38 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:barrel"
+    }
+  ],
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "sophisticatedstorage:warped_barrel"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    },
+    "has_warped_plank": {
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:warped_planks"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_warped_plank"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "sophisticatedstorage:warped_barrel"
+    ]
+  }
+}

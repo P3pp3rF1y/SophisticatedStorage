@@ -1,5 +1,6 @@
 package net.p3pp3rf1y.sophisticatedstorage.data;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.loot.BlockLootSubProvider;
@@ -20,19 +21,21 @@ import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 public class StorageBlockLootProvider extends LootTableProvider {
-	StorageBlockLootProvider(PackOutput packOutput) {
+	StorageBlockLootProvider(PackOutput packOutput, CompletableFuture<HolderLookup.Provider> registries) {
 		super(packOutput, Set.of(),
 				List.of(
 						new SubProviderEntry(SubProvider::new, LootContextParamSets.BLOCK)
-				)
+				),
+				registries
 		);
 	}
 
 	private static class SubProvider extends BlockLootSubProvider {
-		protected SubProvider() {
-			super(Set.of(), FeatureFlags.REGISTRY.allFlags());
+		protected SubProvider(HolderLookup.Provider registries) {
+			super(Set.of(), FeatureFlags.REGISTRY.allFlags(), registries);
 		}
 
 		@Override

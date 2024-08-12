@@ -1,14 +1,15 @@
 package net.p3pp3rf1y.sophisticatedstorage.item;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
+import net.p3pp3rf1y.sophisticatedcore.init.ModCoreDataComponents;
+import net.p3pp3rf1y.sophisticatedcore.inventory.StorageWrapperRepository;
 import net.p3pp3rf1y.sophisticatedcore.util.BlockItemBase;
-import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.block.*;
-import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
@@ -18,17 +19,20 @@ public class StackStorageWrapper extends StorageWrapper {
 	private static final String CONTENTS_TAG = "contents";
 	private ItemStack storageStack;
 
-	public StackStorageWrapper() {
-		super(() -> () -> {}, () -> {}, () -> {});
+	public StackStorageWrapper(ItemStack storageStack) {
+		super(() -> () -> {
+		}, () -> {
+		}, () -> {
+		});
+		setStorageStack(storageStack);
 	}
 
-	public static StackStorageWrapper fromData(ItemStack stack) {
-		StackStorageWrapper stackStorageWrapper = stack.getData(ModItems.STACK_STORAGE_WRAPPER);
-		stackStorageWrapper.setStorageStack(stack);
-		UUID uuid = NBTHelper.getUniqueId(stack, "uuid").orElse(null);
+	public static StackStorageWrapper fromStack(HolderLookup.Provider registries, ItemStack stack) {
+		StackStorageWrapper stackStorageWrapper = StorageWrapperRepository.getStorageWrapper(stack, StackStorageWrapper.class, StackStorageWrapper::new);
+		UUID uuid = stack.get(ModCoreDataComponents.STORAGE_UUID);
 		if (uuid != null) {
 			CompoundTag compoundtag = ItemContentsStorage.get().getOrCreateStorageContents(uuid).getCompound(StorageBlockEntity.STORAGE_WRAPPER_TAG);
-			stackStorageWrapper.load(compoundtag);
+			stackStorageWrapper.load(registries, compoundtag);
 			stackStorageWrapper.setContentsUuid(uuid); //setting here because client side the uuid isn't in contentsnbt before this data is synced from server and it would create a new one otherwise
 		}
 
@@ -50,7 +54,7 @@ public class StackStorageWrapper extends StorageWrapper {
 	public void setContentsUuid(@Nullable UUID contentsUuid) {
 		super.setContentsUuid(contentsUuid);
 		if (contentsUuid != null) {
-			NBTHelper.setUniqueId(storageStack, "uuid", contentsUuid);
+			storageStack.set(ModCoreDataComponents.STORAGE_UUID, contentsUuid);
 			ItemContentsStorage itemContentsStorage = ItemContentsStorage.get();
 			CompoundTag storageContents = itemContentsStorage.getOrCreateStorageContents(contentsUuid);
 			if (!storageContents.contains(StorageBlockEntity.STORAGE_WRAPPER_TAG)) {
@@ -83,8 +87,8 @@ public class StackStorageWrapper extends StorageWrapper {
 
 	@Override
 	protected void loadSlotNumbers(CompoundTag tag) {
-		numberOfInventorySlots = NBTHelper.getInt(storageStack, "numberOfInventorySlots").orElse(0);
-		numberOfUpgradeSlots = NBTHelper.getInt(storageStack, "numberOfUpgradeSlots").orElse(0);
+		numberOfInventorySlots = storageStack.getOrDefault(ModCoreDataComponents.NUMBER_OF_INVENTORY_SLOTS, 0);
+		numberOfUpgradeSlots = storageStack.getOrDefault(ModCoreDataComponents.NUMBER_OF_UPGRADE_SLOTS, 0);
 	}
 
 	@Override

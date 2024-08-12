@@ -1,0 +1,19 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:storage_input"
+    }
+  ],
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "sophisticatedstorage:storage_io"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "sophisticatedstorage:storage_input"
+  }
+}

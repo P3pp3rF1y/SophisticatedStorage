@@ -1,0 +1,30 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:stack_upgrade_tier_1_plus"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "tag": "c:storage_blocks/copper"
+    },
+    "C": {
+      "tag": "c:ingots/copper"
+    },
+    "S": {
+      "item": "sophisticatedstorage:stack_upgrade_tier_1"
+    }
+  },
+  "pattern": [
+    "CCC",
+    "CSC",
+    "BCB"
+  ],
+  "result": {
+    "count": 1,
+    "id": "sophisticatedstorage:stack_upgrade_tier_1_plus"
+  }
+}

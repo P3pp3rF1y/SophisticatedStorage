@@ -6,7 +6,6 @@ import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.neoforged.neoforge.items.ItemHandlerHelper;
 import net.p3pp3rf1y.sophisticatedcore.inventory.IInventoryPartHandler;
 import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryHandler;
 import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryPartitioner;
@@ -34,7 +33,8 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 	private final InventoryHandler parent;
 	private final InventoryPartitioner.SlotRange slotRange;
 	private final Supplier<MemorySettingsCategory> getMemorySettings;
-	@SuppressWarnings("FieldCanBeLocal") //need field instead of local variable because it's wrapped in WeakReference in RecipeHelper
+	@SuppressWarnings("FieldCanBeLocal")
+	//need field instead of local variable because it's wrapped in WeakReference in RecipeHelper
 	private final Runnable recipeChangeListener = () -> calculateStacks(false);
 
 	private Map<Integer, SlotDefinition> slotDefinitions = new HashMap<>();
@@ -303,7 +303,7 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 			SlotDefinition slotDefinition = slotDefinitions.get(slot);
 			ItemStack slotStack = parent.getSlotStack(slot);
 			toExtract = Math.min(toExtract, getLimit.applyAsInt(slotStack));
-			ItemStack result = slotDefinition.isCompressible() ? new ItemStack(slotDefinition.item(), toExtract) : ItemHandlerHelper.copyStackWithSize(slotStack, toExtract);
+			ItemStack result = slotDefinition.isCompressible() ? new ItemStack(slotDefinition.item(), toExtract) : slotStack.copyWithCount(toExtract);
 
 			if (!simulate) {
 				if (slotDefinition.isCompressible()) {
@@ -477,7 +477,7 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 			return stack;
 		}
 
-		ItemStack result = ItemHandlerHelper.copyStackWithSize(stack, stack.getCount() - inserted);
+		ItemStack result = stack.copyWithCount(stack.getCount() - inserted);
 
 		if (simulate) {
 			return result;
@@ -493,7 +493,7 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 			insertIntoInternalAndCalculated(slot, inserted);
 		} else if (inserted > 0) {
 			calculatedStacks.compute(slot, (s, st) -> {
-				if (st ==null || st.isEmpty()) {
+				if (st == null || st.isEmpty()) {
 					ItemStack copy = stack.copy();
 					copy.setCount(inserted);
 					return copy;
@@ -610,7 +610,7 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 	public void setStackInSlot(int slot, ItemStack stack, BiConsumer<Integer, ItemStack> setStackInSlotSuper) {
 		int currentCount = calculatedStacks.containsKey(slot) ? calculatedStacks.get(slot).getCount() : 0;
 		if (currentCount < stack.getCount()) {
-			insertItem(slot, ItemHandlerHelper.copyStackWithSize(stack, stack.getCount() - currentCount), false);
+			insertItem(slot, stack.copyWithCount(stack.getCount() - currentCount), false);
 		} else if (currentCount > stack.getCount()) {
 			extractItem(slot, currentCount - stack.getCount(), false, s -> Integer.MAX_VALUE);
 		}
@@ -725,13 +725,21 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 			isCompressible = compressible;
 		}
 
-		public Item item() {return item;}
+		public Item item() {
+			return item;
+		}
 
-		public int prevSlotMultiplier() {return prevSlotMultiplier;}
+		public int prevSlotMultiplier() {
+			return prevSlotMultiplier;
+		}
 
-		public int slotLimit() {return slotLimit;}
+		public int slotLimit() {
+			return slotLimit;
+		}
 
-		public boolean isAccessible() {return isAccessible;}
+		public boolean isAccessible() {
+			return isAccessible;
+		}
 
 		public boolean isCompressible() {
 			return isCompressible;

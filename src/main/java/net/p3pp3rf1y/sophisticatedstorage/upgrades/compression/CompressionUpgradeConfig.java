@@ -54,9 +54,9 @@ public class CompressionUpgradeConfig {
 			additionalDecompressibleItems.get().forEach(decompressibleItem -> {
 				Matcher matcher = pattern.matcher(decompressibleItem);
 				if (matcher.find()) {
-					Item fromItem = BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(matcher.group(1)));
+					Item fromItem = BuiltInRegistries.ITEM.get(ResourceLocation.parse(matcher.group(1)));
 					int count = Integer.parseInt(matcher.group(2));
-					Item toItem = BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(matcher.group(3)));
+					Item toItem = BuiltInRegistries.ITEM.get(ResourceLocation.parse(matcher.group(3)));
 					if (fromItem != Items.AIR && toItem != Items.AIR && (count == 4 || count == 9)) {
 						additionalDecompressibleItemsMap.put(fromItem, new RecipeHelper.UncompactingResult(toItem, count == 4 ? RecipeHelper.CompactingShape.TWO_BY_TWO_UNCRAFTABLE : RecipeHelper.CompactingShape.THREE_BY_THREE_UNCRAFTABLE));
 					}

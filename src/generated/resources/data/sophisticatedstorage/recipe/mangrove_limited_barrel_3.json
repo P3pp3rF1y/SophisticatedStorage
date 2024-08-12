@@ -1,0 +1,33 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:limited_barrel_3"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": {
+      "item": "minecraft:mangrove_planks"
+    },
+    "R": {
+      "item": "minecraft:redstone_torch"
+    },
+    "S": {
+      "item": "minecraft:mangrove_slab"
+    }
+  },
+  "pattern": [
+    "PSP",
+    "PRP",
+    "SPS"
+  ],
+  "result": {
+    "components": {
+      "sophisticatedstorage:wood_type": "mangrove"
+    },
+    "count": 1,
+    "id": "sophisticatedstorage:limited_barrel_3"
+  }
+}

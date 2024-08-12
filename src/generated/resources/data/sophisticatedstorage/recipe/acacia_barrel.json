@@ -1,0 +1,33 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:barrel"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": {
+      "item": "minecraft:acacia_planks"
+    },
+    "R": {
+      "item": "minecraft:redstone_torch"
+    },
+    "S": {
+      "item": "minecraft:acacia_slab"
+    }
+  },
+  "pattern": [
+    "PSP",
+    "PRP",
+    "PSP"
+  ],
+  "result": {
+    "components": {
+      "sophisticatedstorage:wood_type": "acacia"
+    },
+    "count": 1,
+    "id": "sophisticatedstorage:barrel"
+  }
+}

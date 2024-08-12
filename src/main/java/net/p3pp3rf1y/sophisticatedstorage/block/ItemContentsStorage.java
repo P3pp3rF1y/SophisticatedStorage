@@ -1,5 +1,6 @@
 package net.p3pp3rf1y.sophisticatedstorage.block;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
@@ -40,7 +41,7 @@ public class ItemContentsStorage extends SavedData {
 		return clientStorageCopy;
 	}
 
-	public static ItemContentsStorage load(CompoundTag nbt) {
+	public static ItemContentsStorage load(CompoundTag nbt, HolderLookup.Provider registries) {
 		ItemContentsStorage storage = new ItemContentsStorage();
 		readStorageContents(nbt, storage);
 		return storage;
@@ -57,7 +58,7 @@ public class ItemContentsStorage extends SavedData {
 	}
 
 	@Override
-	public CompoundTag save(CompoundTag compound) {
+	public CompoundTag save(CompoundTag compound, HolderLookup.Provider registries) {
 		CompoundTag ret = new CompoundTag();
 		writeStorageContents(ret);
 		return ret;

@@ -26,7 +26,7 @@ public class StorageInputBlockEntity extends StorageIOBlockEntity {
 		}
 
 		if (itemHandler == null) {
-			itemHandler = super.getExternalItemHandler(side);
+			itemHandler = super.getExternalItemHandler(null);
 			if (itemHandler instanceof IItemHandlerSimpleInserter simpleInserter) {
 				itemHandler = new SingleSlotInputItemHandlerWrapper(simpleInserter);
 			}

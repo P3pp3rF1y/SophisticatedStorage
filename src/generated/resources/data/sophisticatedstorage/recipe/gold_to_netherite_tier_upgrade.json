@@ -1,0 +1,22 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:gold_to_netherite_tier_upgrade"
+    }
+  ],
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "sophisticatedstorage:gold_to_diamond_tier_upgrade"
+    },
+    {
+      "tag": "c:ingots/netherite"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "sophisticatedstorage:gold_to_netherite_tier_upgrade"
+  }
+}

@@ -9,6 +9,7 @@ import net.minecraft.stats.Stats;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -35,7 +36,6 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.EntityCollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.neoforged.neoforge.client.extensions.common.IClientBlockExtensions;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.client.particle.CustomTintTerrainParticleData;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
@@ -98,36 +98,33 @@ public class BarrelBlock extends WoodStorageBlockBase {
 	}
 
 	@Override
-	public void initializeClient(Consumer<IClientBlockExtensions> consumer) {
-		consumer.accept(new BarrelBlockClientExtensions(this));
-	}
-
-	@SuppressWarnings("deprecation")
-	@Override
-	public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
+	public ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
 		return WorldHelper.getBlockEntity(level, pos, WoodStorageBlockEntity.class).map(b -> {
-			ItemStack stackInHand = player.getItemInHand(hand);
 			if (b.isPacked()) {
-				return InteractionResult.PASS;
+				return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
 			}
 			if (level.isClientSide || hand == InteractionHand.OFF_HAND) {
-				return InteractionResult.SUCCESS;
+				return ItemInteractionResult.SUCCESS;
 			}
 
-			if (tryItemInteraction(player, hand, b, stackInHand, getFacing(state), hitResult)) {
-				return InteractionResult.SUCCESS;
+			if (tryItemInteraction(player, hand, b, stack, getFacing(state), hitResult)) {
+				return ItemInteractionResult.SUCCESS;
 			}
+			return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+		}).orElse(ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION);
+	}
 
-			player.awardStat(Stats.OPEN_BARREL);
-			player.openMenu(
-					new SimpleMenuProvider(
-							(w, p, pl) -> instantiateContainerMenu(w, pl, pos),
-							WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).map(StorageBlockEntity::getDisplayName).orElse(Component.empty())
-					), pos
-			);
-			PiglinAi.angerNearbyPiglins(player, true);
-			return InteractionResult.CONSUME;
-		}).orElse(InteractionResult.PASS);
+	@Override
+	protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
+		player.awardStat(Stats.OPEN_BARREL);
+		player.openMenu(
+				new SimpleMenuProvider(
+						(w, p, pl) -> instantiateContainerMenu(w, pl, pos),
+						WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).map(StorageBlockEntity::getDisplayName).orElse(Component.empty())
+				), pos
+		);
+		PiglinAi.angerNearbyPiglins(player, true);
+		return InteractionResult.CONSUME;
 	}
 
 	@Override
@@ -145,7 +142,6 @@ public class BarrelBlock extends WoodStorageBlockBase {
 		return new StorageContainerMenu(w, pl, pos);
 	}
 
-	@SuppressWarnings("deprecation")
 	@Override
 	public void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
 		WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).ifPresent(StorageBlockEntity::recheckOpen);

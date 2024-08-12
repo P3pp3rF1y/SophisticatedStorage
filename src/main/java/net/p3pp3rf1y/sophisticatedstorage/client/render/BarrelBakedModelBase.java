@@ -40,7 +40,6 @@ import net.neoforged.neoforge.client.model.QuadTransformers;
 import net.neoforged.neoforge.client.model.data.ModelData;
 import net.neoforged.neoforge.client.model.data.ModelProperty;
 import net.neoforged.neoforge.common.util.TransformationHelper;
-import net.p3pp3rf1y.sophisticatedcore.inventory.ItemStackKey;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlock;
@@ -347,7 +346,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 			BlockModel baseModel = new CompositeElementsModel(modelLocation, materials);
 			ModelBakery bakery = Minecraft.getInstance().getModelManager().getModelBakery();
 			baseModel.resolveParents(bakery::getModel); //need to call resolveParents here to get parent models loaded
-			return baseModel.bake(baker, baseModel, baker.getModelTextureGetter(), bakingData.modelState(), bakingData.modelLocation(), false);
+			return baseModel.bake(baker, baseModel, baker.getModelTextureGetter(), bakingData.modelState(), false);
 		}).orElse(Minecraft.getInstance().getModelManager().getMissingModel());
 	}
 
@@ -426,7 +425,8 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 
 	private int getDisplayItemHash(RenderInfo.DisplayItem displayItem) {
 		int hash = displayItem.getRotation();
-		hash = hash * 31 + ItemStackKey.getHashCode(displayItem.getItem());
+		ItemStack stack = displayItem.getItem();
+		hash = hash * 31 + ItemStack.hashItemAndComponents(stack);
 		hash = hash * 31 + displayItem.getSlotIndex();
 		return hash;
 	}
@@ -584,7 +584,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 
 	@SuppressWarnings("java:S1172") //state used in override
 	protected int calculateDirectionMoveHash(BlockState state, ItemStack displayItem, int displayItemIndex, int displayItemCount, boolean isFlatTop) {
-		int hashCode = ItemStackKey.getHashCode(displayItem);
+		int hashCode = ItemStack.hashItemAndComponents(displayItem);
 		hashCode = hashCode * 31 + displayItemIndex;
 		hashCode = hashCode * 31 + displayItemCount;
 		hashCode = hashCode * 31 + (isFlatTop ? 1 : 0);

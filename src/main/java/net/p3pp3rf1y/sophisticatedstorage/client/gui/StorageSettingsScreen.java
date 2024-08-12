@@ -7,7 +7,7 @@ import net.p3pp3rf1y.sophisticatedcore.client.gui.SettingsScreen;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.Position;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.SettingsContainerMenu;
 import net.p3pp3rf1y.sophisticatedcore.settings.StorageSettingsTabControlBase;
-import net.p3pp3rf1y.sophisticatedstorage.network.OpenStorageInventoryPacket;
+import net.p3pp3rf1y.sophisticatedstorage.network.OpenStorageInventoryPayload;
 
 public class StorageSettingsScreen extends SettingsScreen {
 	public StorageSettingsScreen(SettingsContainerMenu<?> screenContainer, Inventory inv, Component title) {
@@ -21,7 +21,7 @@ public class StorageSettingsScreen extends SettingsScreen {
 
 	@Override
 	protected void sendStorageInventoryScreenOpenMessage() {
-		PacketDistributor.SERVER.noArg().send(new OpenStorageInventoryPacket(menu.getBlockPosition()));
+		PacketDistributor.sendToServer(new OpenStorageInventoryPayload(menu.getBlockPosition()));
 	}
 
 	public static StorageSettingsScreen constructScreen(SettingsContainerMenu<?> screenContainer, Inventory inventory, Component title) {

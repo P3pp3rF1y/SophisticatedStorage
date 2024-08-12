@@ -2,6 +2,7 @@ package net.p3pp3rf1y.sophisticatedstorage.block;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
@@ -134,8 +135,8 @@ public class StorageIOBlockEntity extends BlockEntity implements IControllerBoun
 	}
 
 	@Override
-	protected void saveAdditional(CompoundTag tag) {
-		super.saveAdditional(tag);
+	protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+		super.saveAdditional(tag, registries);
 		saveControllerPos(tag);
 		if (isLinkedToController) {
 			tag.putBoolean("isLinkedToController", isLinkedToController);
@@ -143,8 +144,8 @@ public class StorageIOBlockEntity extends BlockEntity implements IControllerBoun
 	}
 
 	@Override
-	public void load(CompoundTag tag) {
-		super.load(tag);
+	public void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+		super.loadAdditional(tag, registries);
 		loadControllerPos(tag);
 		isLinkedToController = NBTHelper.getBoolean(tag, "isLinkedToController").orElse(false);
 	}
@@ -166,7 +167,7 @@ public class StorageIOBlockEntity extends BlockEntity implements IControllerBoun
 					Capabilities.ItemHandler.BLOCK,
 					serverLevel,
 					getControllerPos().get(),
-					Direction.UP,
+					side,
 					() -> !isRemoved(),
 					this::invalidateItemHandlerCache
 			);

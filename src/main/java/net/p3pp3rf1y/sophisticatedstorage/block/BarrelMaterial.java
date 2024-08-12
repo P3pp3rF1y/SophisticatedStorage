@@ -1,7 +1,11 @@
 package net.p3pp3rf1y.sophisticatedstorage.block;
 
 import com.google.common.collect.ImmutableMap;
+import com.mojang.serialization.Codec;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.StringRepresentable;
+import net.neoforged.neoforge.network.codec.NeoForgeStreamCodecs;
 
 import java.util.List;
 import java.util.Map;
@@ -20,6 +24,9 @@ public enum BarrelMaterial implements StringRepresentable {
 	TOP_ALL("top_all", MaterialModelPart.BOTH, TOP, TOP_TRIM, TOP_INNER_TRIM),
 	SIDE_ALL("side_all", MaterialModelPart.BOTH, SIDE, SIDE_TRIM),
 	BOTTOM_ALL("bottom_all", MaterialModelPart.BOTH, BOTTOM, BOTTOM_TRIM);
+
+	public static final Codec<BarrelMaterial> CODEC = StringRepresentable.fromEnum(BarrelMaterial::values);
+	public static final StreamCodec<FriendlyByteBuf, BarrelMaterial> STREAM_CODEC = NeoForgeStreamCodecs.enumCodec(BarrelMaterial.class);
 
 	private final String name;
 

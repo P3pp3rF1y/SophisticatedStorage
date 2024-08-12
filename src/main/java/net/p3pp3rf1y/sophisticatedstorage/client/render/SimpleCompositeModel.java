@@ -42,7 +42,7 @@ public class SimpleCompositeModel implements IUnbakedGeometry<SimpleCompositeMod
 	}
 
 	@Override
-	public BakedModel bake(IGeometryBakingContext context, ModelBaker baker, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelState, ItemOverrides overrides, ResourceLocation modelLocation) {
+	public BakedModel bake(IGeometryBakingContext context, ModelBaker baker, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelState, ItemOverrides overrides) {
 		Material particleLocation = context.getMaterial(PARTICLE_MATERIAL);
 		TextureAtlasSprite particle = spriteGetter.apply(particleLocation);
 
@@ -58,7 +58,7 @@ public class SimpleCompositeModel implements IUnbakedGeometry<SimpleCompositeMod
 				continue;
 			}
 			var model = entry.getValue();
-			bakedPartsBuilder.put(name, model.bake(baker, model, spriteGetter, modelState, modelLocation, true));
+			bakedPartsBuilder.put(name, model.bake(baker, model, spriteGetter, modelState, true));
 		}
 		var bakedParts = bakedPartsBuilder.build();
 

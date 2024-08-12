@@ -1,0 +1,38 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:auto_blasting_upgrade"
+    }
+  ],
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_blasting_upgrade": {
+      "conditions": {
+        "items": [
+          {
+            "items": "sophisticatedstorage:blasting_upgrade"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "sophisticatedstorage:auto_blasting_upgrade"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_blasting_upgrade"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "sophisticatedstorage:auto_blasting_upgrade"
+    ]
+  }
+}

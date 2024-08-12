@@ -1,0 +1,30 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:stack_upgrade_tier_3"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "tag": "c:storage_blocks/gold"
+    },
+    "G": {
+      "tag": "c:ingots/gold"
+    },
+    "S": {
+      "item": "sophisticatedstorage:stack_upgrade_tier_2"
+    }
+  },
+  "pattern": [
+    "GGG",
+    "GSG",
+    "BGB"
+  ],
+  "result": {
+    "count": 1,
+    "id": "sophisticatedstorage:stack_upgrade_tier_3"
+  }
+}

@@ -64,14 +64,12 @@ public class StorageLinkBlock extends BlockBase implements EntityBlock {
 		return blockstate.is(this) && blockstate.getValue(FACING) == direction ? defaultBlockState().setValue(FACING, direction.getOpposite()) : defaultBlockState().setValue(FACING, direction);
 	}
 
-	@SuppressWarnings("deprecation")
 	@Override
 	public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
 		Direction dir = state.getValue(FACING);
 		return ROTATED_SHAPES.computeIfAbsent(dir, k -> SHAPE.getRotatedShape(dir));
 	}
 
-	@SuppressWarnings("deprecation")
 	@Override
 	public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean isMoving) {
 		if (!state.is(newState.getBlock())) {

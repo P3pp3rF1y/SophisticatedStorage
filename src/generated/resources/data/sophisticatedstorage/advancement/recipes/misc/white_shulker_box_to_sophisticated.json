@@ -1,0 +1,38 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:shulker_box"
+    }
+  ],
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "sophisticatedstorage:white_shulker_box_to_sophisticated"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    },
+    "has_white_shulker_box": {
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:white_shulker_box"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_white_shulker_box"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "sophisticatedstorage:white_shulker_box_to_sophisticated"
+    ]
+  }
+}

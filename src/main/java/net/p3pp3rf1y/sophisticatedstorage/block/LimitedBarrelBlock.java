@@ -13,7 +13,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.BlockPlaceContext;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
@@ -222,11 +221,10 @@ public class LimitedBarrelBlock extends BarrelBlock {
 	}
 
 	private Optional<BlockHitResult> getHitResult(Player player) {
-		HitResult hitResult = player.pick(player.getBlockReach(), 0, false);
+		HitResult hitResult = player.pick(player.blockInteractionRange(), 0, false);
 		return hitResult instanceof BlockHitResult blockHitResult ? Optional.of(blockHitResult) : Optional.empty();
 	}
 
-	@SuppressWarnings({"deprecation"})
 	@Override
 	public void attack(BlockState state, Level level, BlockPos pos, Player player) {
 		if (level.isClientSide()) {

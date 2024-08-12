@@ -27,7 +27,7 @@ public class TierUpgradeRecipesMaker {
 
 	public static List<RecipeHolder<CraftingRecipe>> getShapedCraftingRecipes() {
 		RecipeConstructor<StorageTierUpgradeRecipe> constructRecipe = (originalRecipe, ingredients, result) -> {
-			ShapedRecipePattern pattern = new ShapedRecipePattern(originalRecipe.getRecipeWidth(), originalRecipe.getRecipeHeight(), ingredients, Optional.empty());
+			ShapedRecipePattern pattern = new ShapedRecipePattern(originalRecipe.getWidth(), originalRecipe.getHeight(), ingredients, Optional.empty());
 			return new ShapedRecipe("", CraftingBookCategory.MISC, pattern, result);
 		};
 		return getCraftingRecipes(constructRecipe, StorageTierUpgradeRecipe.class);
@@ -69,8 +69,8 @@ public class TierUpgradeRecipesMaker {
 					}
 					i++;
 				}
-				ItemStack result = ClientRecipeHelper.assemble(recipe, craftinginventory);
-				ResourceLocation id = ResourceLocation.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "tier_upgrade_" + BuiltInRegistries.ITEM.getKey(storageItem.getItem()).getPath() + result.getOrCreateTag().toString().toLowerCase(Locale.ROOT).replaceAll("[{\",}:\s]", "_"));
+				ItemStack result = ClientRecipeHelper.assemble(recipe, craftinginventory.asCraftInput());
+				ResourceLocation id = ResourceLocation.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "tier_upgrade_" + BuiltInRegistries.ITEM.getKey(storageItem.getItem()).getPath() + result.getComponentsPatch().toString().toLowerCase(Locale.ROOT).replaceAll("[{\",}:>=@\\[\\]\\s]", "_"));
 				itemGroupRecipes.add(new RecipeHolder<>(id, constructRecipe.construct(recipe, ingredientsCopy, result)));
 			});
 			return itemGroupRecipes;
