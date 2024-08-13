@@ -5,10 +5,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.p3pp3rf1y.sophisticatedcore.SophisticatedCore;
+import net.p3pp3rf1y.sophisticatedcore.common.gui.SophisticatedMenuProvider;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.block.LimitedBarrelBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
@@ -29,9 +29,10 @@ public record OpenStorageInventoryPayload(BlockPos pos) implements CustomPacketP
 
 	public static void handlePayload(OpenStorageInventoryPayload payload, IPayloadContext context) {
 		context.player().openMenu(
-				new SimpleMenuProvider(
+				new SophisticatedMenuProvider(
 						(w, p, pl) -> instantiateContainerMenu(w, pl, payload.pos),
-						WorldHelper.getBlockEntity(context.player().level(), payload.pos, StorageBlockEntity.class).map(StorageBlockEntity::getDisplayName).orElse(Component.empty())
+						WorldHelper.getBlockEntity(context.player().level(), payload.pos, StorageBlockEntity.class).map(StorageBlockEntity::getDisplayName).orElse(Component.empty()),
+						false
 				),
 				payload.pos
 		);

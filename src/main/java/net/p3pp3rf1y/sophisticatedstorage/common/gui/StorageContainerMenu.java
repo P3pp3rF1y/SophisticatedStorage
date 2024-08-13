@@ -3,7 +3,6 @@ package net.p3pp3rf1y.sophisticatedstorage.common.gui;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MenuType;
@@ -11,6 +10,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.ISyncedContainer;
+import net.p3pp3rf1y.sophisticatedcore.common.gui.SophisticatedMenuProvider;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.StorageContainerMenuBase;
 import net.p3pp3rf1y.sophisticatedcore.settings.itemdisplay.ItemDisplaySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.settings.memory.MemorySettingsCategory;
@@ -79,8 +79,8 @@ public class StorageContainerMenu extends StorageContainerMenuBase<IStorageWrapp
 			sendToServer(data -> data.putString(ACTION_TAG, "openSettings"));
 			return;
 		}
-		getBlockPosition().ifPresent(pos -> player.openMenu(new SimpleMenuProvider((w, p, pl) -> instantiateSettingsContainerMenu(w, pl, pos),
-				Component.translatable(StorageTranslationHelper.INSTANCE.translGui("settings.title"))), storageBlockEntity.getBlockPos()));
+		getBlockPosition().ifPresent(pos -> player.openMenu(new SophisticatedMenuProvider((w, p, pl) -> instantiateSettingsContainerMenu(w, pl, pos),
+				Component.translatable(StorageTranslationHelper.INSTANCE.translGui("settings.title")), false), storageBlockEntity.getBlockPos()));
 	}
 
 	protected StorageSettingsContainerMenu instantiateSettingsContainerMenu(int windowId, Player player, BlockPos pos) {
