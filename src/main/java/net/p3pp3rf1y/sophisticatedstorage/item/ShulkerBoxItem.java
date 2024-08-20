@@ -82,12 +82,12 @@ public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageIte
 		return Optional.of(new StorageContentsTooltip(stack));
 	}
 
-	public ItemStack stash(HolderLookup.Provider registries, ItemStack storageStack, ItemStack stack) {
+	public ItemStack stash(HolderLookup.Provider registries, ItemStack storageStack, ItemStack stack, boolean simulate) {
 		StackStorageWrapper wrapper = StackStorageWrapper.fromStack(registries, storageStack);
 		if (wrapper.getContentsUuid().isEmpty()) {
 			wrapper.setContentsUuid(UUID.randomUUID());
 		}
-		return wrapper.getInventoryForUpgradeProcessing().insertItem(stack, false);
+		return wrapper.getInventoryForUpgradeProcessing().insertItem(stack, simulate);
 	}
 
 	@Override
@@ -129,10 +129,11 @@ public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageIte
 		}
 
 		ItemStack stackToStash = slot.getItem();
-		ItemStack stashResult = stash(player.level().registryAccess(), storageStack, stackToStash);
+		ItemStack stashResult = stash(player.level().registryAccess(), storageStack, stackToStash, true);
 		if (stashResult.getCount() != stackToStash.getCount()) {
-			slot.set(stashResult);
-			slot.onTake(player, stashResult);
+			int countToTake = stackToStash.getCount() - stashResult.getCount();
+			ItemStack takeResult = slot.safeTake(countToTake, countToTake, player);
+			stash(player.level().registryAccess(), storageStack, takeResult, false);
 			return true;
 		}
 
@@ -145,7 +146,7 @@ public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageIte
 			return super.overrideOtherStackedOnMe(storageStack, otherStack, slot, action, player, carriedAccess);
 		}
 
-		ItemStack result = stash(player.level().registryAccess(), storageStack, otherStack);
+		ItemStack result = stash(player.level().registryAccess(), storageStack, otherStack, false);
 		if (result.getCount() != otherStack.getCount()) {
 			carriedAccess.set(result);
 			slot.set(storageStack);
