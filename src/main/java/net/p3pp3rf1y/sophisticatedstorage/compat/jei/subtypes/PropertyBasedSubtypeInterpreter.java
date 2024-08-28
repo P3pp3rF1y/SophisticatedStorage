@@ -23,7 +23,7 @@ public abstract class PropertyBasedSubtypeInterpreter implements ISubtypeInterpr
 	}
 
 	@Override
-	public final Object getSubtypeData(ItemStack ingredient, UidContext context) {
+	public final @Nullable Object getSubtypeData(ItemStack ingredient, UidContext context) {
 		boolean allNulls = true;
 		List<@Nullable Object> results = new ArrayList<>(propertyGetters.size());
 		for (Function<ItemStack, @Nullable Object> propertyGetter : propertyGetters) {
