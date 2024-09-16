@@ -36,8 +36,15 @@ jobs:
           min-versions-to-keep: 10
       - name: Publish to CurseForge
         env:
-          CURSEFORGE_TOkEN: ${{ secrets.CURSEFORGE_TOKEN }}
-        run: ./gradlew curseforge
+          CURSEFORGE_TOKEN: ${{ secrets.CURSEFORGE_TOKEN }}
+        run: |
+          BRANCH_NAME=${GITHUB_REF##*/}
+          if [[ "$BRANCH_NAME" =~ ^[0-9]+\.[0-9]+\.([0-9]+|x)$ ]]; then
+            ./gradlew curseforge
+          else
+            echo "Branch name does not match the pattern: $BRANCH_NAME. Skipping CurseForge upload."
+            exit 0
+          fi
       - name: Code Quality
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
