@@ -448,14 +448,17 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 	}
 
 	@Override
-	public BlockPos getNeighborPos(BlockState state, BlockPos origin, Direction facing) {
+	public List<BlockPos> getNeighborPos(BlockState state, BlockPos origin, Direction facing) {
 		if (state.getValue(TYPE) == ChestType.SINGLE) {
-			return origin.relative(facing);
+			return List.of(origin.relative(facing));
 		} else {
-			if (getConnectedDirection(state) == facing) {
-				return origin.relative(facing).relative(facing);
+			Direction connectedDirection = getConnectedDirection(state);
+			if (connectedDirection == facing) {
+				return List.of(origin.relative(facing).relative(facing));
+			} else if (connectedDirection.getOpposite() == facing) {
+				return List.of(origin.relative(facing));
 			}
-			return origin.relative(facing);
+			return List.of(origin.relative(facing), origin.relative(connectedDirection).relative(facing));
 		}
 	}
 
