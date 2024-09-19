@@ -268,7 +268,7 @@ public abstract class StorageBlockBase extends BlockBase implements IStorageBloc
 	}
 
 	@SuppressWarnings("java:S1172") // Parameter used in overrides
-	public BlockPos getNeighborPos(BlockState state, BlockPos origin, Direction facing) {
-		return origin.relative(facing);
+	public List<BlockPos> getNeighborPos(BlockState state, BlockPos origin, Direction facing) {
+		return List.of(origin.relative(facing));
 	}
 }
