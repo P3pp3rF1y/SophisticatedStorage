@@ -133,7 +133,7 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 			}
 		} else if (getConnectedDirection(state) == facing) {
 			level.getBlockEntity(currentPos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get()).ifPresent(be -> {
-				if (!level.isClientSide() && !be.isBeingUpgraded()) {
+				if (!level.isClientSide() && !be.isBeingUpgraded() && !be.isPacked()) {
 					if (be.isMainChest() && state.getBlock() instanceof ChestBlock chestBlock) {
 						be.dropSecondPartContents(chestBlock, facingPos);
 					} else if (!be.isMainChest()) {
