@@ -559,6 +559,10 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 			}
 
 			if (amountToSet != 0) {
+				if (!slotDefinitions.containsKey(slot + 1)) {
+					SophisticatedStorage.LOGGER.error("Compression inventory is in an invalid state. Slot {} is compressible, there's stack remaining to insert but slot {} is not defined.\nSlot Definitions\n{}", slot, slot + 1, slotDefinitions);
+					break;
+				}
 				totalMultiplier /= getPrevSlotMultiplier(slot + 1);
 			}
 			slot++;
@@ -737,6 +741,17 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 
 		public boolean isCompressible() {
 			return isCompressible;
+		}
+
+		@Override
+		public String toString() {
+			return "SlotDefinition{" +
+					"item=" + item +
+					", prevSlotMultiplier=" + prevSlotMultiplier +
+					", slotLimit=" + slotLimit +
+					", isAccessible=" + isAccessible +
+					", isCompressible=" + isCompressible +
+					'}';
 		}
 	}
 }
