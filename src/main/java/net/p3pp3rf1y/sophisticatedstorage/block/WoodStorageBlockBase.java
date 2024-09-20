@@ -72,7 +72,7 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 				}
 				WoodStorageBlockItem.setPacked(stack, true);
 				StorageBlockItem.setShowsTier(stack, be.shouldShowTier());
-				WoodStorageBlockItem.setNumberOfUpgradeSlots(stack, storageWrapper.getInventoryHandler().getSlots());
+				WoodStorageBlockItem.setNumberOfInventorySlots(stack, storageWrapper.getInventoryHandler().getSlots());
 				WoodStorageBlockItem.setNumberOfUpgradeSlots(stack, storageWrapper.getUpgradeHandler().getSlots());
 			}
 		}
@@ -214,12 +214,13 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 				player.setItemInHand(hand, ItemStack.EMPTY);
 			}
 		}
-		b.setPacked(true);
 
 		BlockState blockState = b.getBlockState();
 		if (blockState.getBlock() instanceof StorageBlockBase storageBlock && blockState.getValue(StorageBlockBase.TICKING)) {
 			storageBlock.setTicking(player.level(), b.getBlockPos(), blockState, false);
 		}
+
+		b.setPacked(true);
 
 		b.removeFromController();
 

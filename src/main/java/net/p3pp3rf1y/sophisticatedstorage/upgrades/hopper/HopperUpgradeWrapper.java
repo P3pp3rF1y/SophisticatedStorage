@@ -40,7 +40,7 @@ public class HopperUpgradeWrapper extends UpgradeWrapperBase<HopperUpgradeWrappe
 	private Set<Direction> pullDirections = new LinkedHashSet<>();
 	private Set<Direction> pushDirections = new LinkedHashSet<>();
 	private boolean directionsInitialized = false;
-	private final Map<Direction, LazyOptional<IItemHandler>> handlerCache = new EnumMap<>(Direction.class);
+	private final Map<Direction, List<LazyOptional<IItemHandler>>> handlerCache = new EnumMap<>(Direction.class);
 
 	private final ContentsFilterLogic inputFilterLogic;
 	private final ContentsFilterLogic outputFilterLogic;
@@ -65,18 +65,37 @@ public class HopperUpgradeWrapper extends UpgradeWrapperBase<HopperUpgradeWrappe
 		}
 
 		for (Direction pushDirection : pushDirections) {
-			if (getItemHandler(level, pos, pushDirection).map(this::pushItems)
-					.orElse(getWorldlyContainer(level, pos, pushDirection).map(container -> pushItemsToContainer(container, pushDirection.getOpposite()))
-							.orElse(false))) {
-				break;
+			boolean done = false;
+			for (LazyOptional<IItemHandler> itemHandler : getItemHandlers(level, pos, pushDirection)) {
+				if (itemHandler.map(this::pushItems).orElse(false)) {
+					done = true;
+					break;
+				}
+			}
+			if (!done) {
+				for (WorldlyContainer worldlyContainer : getWorldlyContainers(level, pos, pushDirection)) {
+					if (pushItemsToContainer(worldlyContainer, pushDirection.getOpposite())) {
+						break;
+					}
+				}
 			}
 		}
 
 		for (Direction pullDirection : pullDirections) {
-			if (getItemHandler(level, pos, pullDirection).map(this::pullItems)
-					.orElse(getWorldlyContainer(level, pos, pullDirection).map(container -> pullItemsFromContainer(container, pullDirection.getOpposite()))
-							.orElse(false))) {
-				break;
+			boolean done = false;
+			for (LazyOptional<IItemHandler> itemHandler : getItemHandlers(level, pos, pullDirection)) {
+				if (itemHandler.map(this::pullItems).orElse(false)) {
+					done = true;
+					break;
+				}
+			}
+
+			if (!done) {
+				for (WorldlyContainer worldlyContainer : getWorldlyContainers(level, pos, pullDirection)) {
+					if (pullItemsFromContainer(worldlyContainer, pullDirection.getOpposite())) {
+						break;
+					}
+				}
 			}
 		}
 
@@ -155,14 +174,17 @@ public class HopperUpgradeWrapper extends UpgradeWrapperBase<HopperUpgradeWrappe
 		}
 	}
 
-	private Optional<WorldlyContainer> getWorldlyContainer(Level level, BlockPos pos, Direction direction) {
+	private List<WorldlyContainer> getWorldlyContainers(Level level, BlockPos pos, Direction direction) {
 		BlockState storageState = level.getBlockState(pos);
-		BlockPos offsetPos = storageState.getBlock() instanceof StorageBlockBase storageBlock ? storageBlock.getNeighborPos(storageState, pos, direction) : pos.relative(direction);
-		BlockState state = level.getBlockState(offsetPos);
-		if (state.getBlock() instanceof WorldlyContainerHolder worldlyContainerHolder) {
-			return Optional.of(worldlyContainerHolder.getContainer(state, level, offsetPos));
-		}
-		return Optional.empty();
+		List<BlockPos> offsetPositions = storageState.getBlock() instanceof StorageBlockBase storageBlock ? storageBlock.getNeighborPos(storageState, pos, direction) : List.of(pos.relative(direction));
+		List<WorldlyContainer> worldlyContainers = new ArrayList<>();
+		offsetPositions.forEach(offsetPos -> {
+			BlockState state = level.getBlockState(offsetPos);
+			if (state.getBlock() instanceof WorldlyContainerHolder worldlyContainerHolder) {
+				worldlyContainers.add(worldlyContainerHolder.getContainer(state, level, offsetPos));
+			}
+		});
+		return worldlyContainers;
 	}
 
 	private boolean pullItems(IItemHandler fromHandler) {
@@ -204,19 +226,20 @@ public class HopperUpgradeWrapper extends UpgradeWrapperBase<HopperUpgradeWrappe
 		}
 
 		BlockState storageState = level.getBlockState(pos);
-		BlockPos offsetPos = storageState.getBlock() instanceof StorageBlockBase storageBlock ? storageBlock.getNeighborPos(storageState, pos, direction) : pos.relative(direction);
-		WorldHelper.getLoadedBlockEntity(level, offsetPos).ifPresentOrElse(blockEntity -> {
-			LazyOptional<IItemHandler> lazyOptional = blockEntity.getCapability(ForgeCapabilities.ITEM_HANDLER, direction.getOpposite());
-			if (lazyOptional.isPresent()) {
-				handlerCache.put(direction, lazyOptional);
-				lazyOptional.addListener(l -> updateCacheOnSide(level, pos, direction));
-			} else {
-				handlerCache.put(direction, LazyOptional.empty());
-			}
-		}, () -> handlerCache.put(direction, LazyOptional.empty()));
+		List<BlockPos> offsetPositions = storageState.getBlock() instanceof StorageBlockBase storageBlock ? storageBlock.getNeighborPos(storageState, pos, direction) : List.of(pos.relative(direction));
+		List<LazyOptional<IItemHandler>> caches = new ArrayList<>();
+		offsetPositions.forEach(offsetPos ->
+				WorldHelper.getLoadedBlockEntity(level, offsetPos).ifPresent(blockEntity -> {
+					LazyOptional<IItemHandler> lazyOptional = blockEntity.getCapability(ForgeCapabilities.ITEM_HANDLER, direction.getOpposite());
+					if (lazyOptional.isPresent()) {
+						lazyOptional.addListener(l -> updateCacheOnSide(level, pos, direction));
+						caches.add(lazyOptional);
+					}
+				}));
+		handlerCache.put(direction, caches);
 	}
 
-	private LazyOptional<IItemHandler> getItemHandler(Level level, BlockPos pos, Direction direction) {
+	private List<LazyOptional<IItemHandler>> getItemHandlers(Level level, BlockPos pos, Direction direction) {
 		if (!handlerCache.containsKey(direction)) {
 			updateCacheOnSide(level, pos, direction);
 		}
