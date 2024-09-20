@@ -42,6 +42,7 @@ import net.minecraftforge.network.NetworkHooks;
 import net.p3pp3rf1y.sophisticatedcore.api.IDisplaySideStorage;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
+import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.item.CapabilityStorageWrapper;
@@ -349,11 +350,18 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 		if (state.getValue(TYPE) != ChestType.SINGLE) {
 			level.getBlockEntity(pos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get()).ifPresent(be -> {
 				be.setDestroyedByPlayer();
-				if (be.isPacked() && !be.isMainChest()) {
+				if ((be.isPacked() || Boolean.TRUE.equals(Config.COMMON.dropPacked.get())) && !be.isMainChest()) {
 					//copy storage wrapper to "not main" chest so that its data can be transferred to stack properly
 					BlockPos otherPartPos = pos.relative(getConnectedDirection(state));
 					level.getBlockEntity(otherPartPos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get())
-							.ifPresent(mainBe -> be.getStorageWrapper().load(mainBe.getStorageWrapper().save(new CompoundTag())));
+							.ifPresent(mainBe -> {
+								be.getStorageWrapper().load(mainBe.getStorageWrapper().save(new CompoundTag()));
+
+								//remove main chest contents
+								CompoundTag contentsTag = new CompoundTag();
+								contentsTag.put(StorageWrapper.CONTENTS_TAG, new CompoundTag());
+								mainBe.getStorageWrapper().load(contentsTag);
+							});
 				}
 			});
 		}
