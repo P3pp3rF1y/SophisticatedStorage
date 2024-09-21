@@ -23,6 +23,7 @@ public class StorageIOBlockEntity extends BlockEntity implements IControllerBoun
 	@Nullable
 	private BlockPos controllerPos = null;
 	private boolean isLinkedToController = false;
+	private boolean chunkBeingUnloaded = false;
 	private Map<Capability<?>, Map<Direction, LazyOptional<?>>> capabilitySideCache = new HashMap<>();
 	protected StorageIOBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
 		super(type, pos, state);
@@ -181,5 +182,21 @@ public class StorageIOBlockEntity extends BlockEntity implements IControllerBoun
 
 	protected <T> LazyOptional<T> getControllerCapability(Capability<T> cap, @Nullable Direction side, ControllerBlockEntity c) {
 		return c.getCapability(cap, side);
+	}
+
+
+	@Override
+	public void onChunkUnloaded() {
+		super.onChunkUnloaded();
+		chunkBeingUnloaded = true;
+	}
+
+	@Override
+	public void setRemoved() {
+		if (!chunkBeingUnloaded && level != null) {
+			unlinkFromController();
+		}
+
+		super.setRemoved();
 	}
 }
