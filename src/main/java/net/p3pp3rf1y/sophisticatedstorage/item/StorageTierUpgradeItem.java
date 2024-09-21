@@ -228,7 +228,7 @@ public class StorageTierUpgradeItem extends ItemBase {
 				return false;
 			}
 			BlockState otherState;
-			if (state.getBlock() instanceof net.minecraft.world.level.block.ChestBlock) {
+			if (state.getBlock() instanceof net.minecraft.world.level.block.ChestBlock && state.getValue(net.minecraft.world.level.block.ChestBlock.TYPE) != ChestType.SINGLE) {
 				otherState = level.getBlockState(pos.relative(net.minecraft.world.level.block.ChestBlock.getConnectedDirection(state)));
 				if (otherState.getBlock() != state.getBlock()) {
 					otherState = null;
