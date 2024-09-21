@@ -70,7 +70,7 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 		public void incrementOpeners(Player player, Level level, BlockPos pos, BlockState state) {
 			super.incrementOpeners(player, level, pos, state);
 			if (isMainChest()) {
-				runOnTheOtherPart(level, pos, state, (blockEntity, neighborPos) -> blockEntity.openersCounter.incrementOpeners(player, level, neighborPos, state));
+				runOnTheOtherPart(level, pos, state, (blockEntity, neighborPos) -> blockEntity.openersCounter.incrementOpeners(player, level, neighborPos, level.getBlockState(neighborPos)));
 			}
 		}
 
@@ -78,7 +78,7 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 		public void decrementOpeners(Player player, Level level, BlockPos pos, BlockState state) {
 			super.decrementOpeners(player, level, pos, state);
 			if (isMainChest()) {
-				runOnTheOtherPart(level, pos, state, (blockEntity, neighborPos) -> blockEntity.openersCounter.decrementOpeners(player, level, neighborPos, state));
+				runOnTheOtherPart(level, pos, state, (blockEntity, neighborPos) -> blockEntity.openersCounter.decrementOpeners(player, level, neighborPos, level.getBlockState(neighborPos)));
 			}
 		}
 	};
