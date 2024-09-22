@@ -5,6 +5,7 @@ plugins {
     id 'net.neoforged.moddev' version '1.0.14'
     id "org.sonarqube" version "5.0.0.4638"
     id "net.darkhax.curseforgegradle" version "1.1.15"
+    id "com.modrinth.minotaur" version "2.+"
 }
 
 idea {
@@ -368,6 +369,23 @@ task curseforge(type: net.darkhax.curseforgegradle.TaskPublishCurseForge) {
     mainFile.addOptional('jei')
     mainFile.addOptional('crafting-tweaks')
     onlyIf { !project.ext.changelog.isEmpty() }
+}
+
+tasks.modrinth.dependsOn(tasks.generateChangelog)
+tasks.modrinth.onlyIf { !project.ext.changelog.isEmpty() }
+modrinth {
+    token = System.getenv("MODRINTH_TOKEN")
+    projectId = "${modrinth_project_id}"
+    versionType = "${release_type}"
+    uploadFile = jar
+    gameVersions = "${release_versions}".split(',').collect {e -> e}
+    loaders = ["neoforge"]
+    dependencies {
+        required.project "sophisticated-core"
+        optional.project "jei"
+        optional.project "crafting-tweaks"
+    }
+    changelog = "${ project.ext.changelog }"
 }
 
 task printVersionName {
