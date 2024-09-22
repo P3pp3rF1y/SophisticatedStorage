@@ -13,6 +13,7 @@
   "itemGroup.sophisticatedstorage": "精妙存储",
   "item.sophisticatedstorage.packing_tape": "包装带",
   "item.sophisticatedstorage.packing_tape.tooltip": "剩余可用次数：%s",
+  "item.sophisticatedstorage.packing_tape.tooltip.disabled": "已禁用 - 配置文件设置为以打包状态掉落所有容器",
   "item.sophisticatedstorage.storage_tool": "存储工具",
   "item.sophisticatedstorage.storage_tool.tooltip": "链接, 锁定, 隐藏容器上的数量和锁定",
   "item.sophisticatedstorage.storage_tool.tooltip.controls": "使用<%s>来改变模式",
@@ -162,6 +163,8 @@
   "item.sophisticatedstorage.stack_upgrade_tier_3.tooltip": "物品堆叠上限×8",
   "item.sophisticatedstorage.stack_upgrade_tier_4": "堆叠升级T4",
   "item.sophisticatedstorage.stack_upgrade_tier_4.tooltip": "物品堆叠上限×16",
+  "item.sophisticatedstorage.stack_upgrade_tier_5": "堆叠升级T5",
+  "item.sophisticatedstorage.stack_upgrade_tier_5.tooltip": "物品堆叠上限×32",
   "item.sophisticatedstorage.pump_upgrade": "液泵升级",
   "item.sophisticatedstorage.pump_upgrade.tooltip": "在储罐升级和相邻方块之间泵送流体",
   "item.sophisticatedstorage.xp_pump_upgrade": "经验泵升级",
@@ -194,6 +197,8 @@
   "gui.sophisticatedstorage.upgrades.advanced_hopper.tooltip": "高级漏斗设置",
   "gui.sophisticatedstorage.error.add.compression_incompatible_items": "这个槽位中的物品无法从前一个槽位中压缩",
   "gui.sophisticatedstorage.error.add.compression_no_space": "这个压缩升级没有额外的槽位可管理",
+  "gui.sophisticatedstorage.error.add.compression_exists": "另一插槽中已存在压缩升级",
+  "gui.sophisticatedstorage.error.add.compacting_exists": "另一插槽中已存在压制升级",
   "gui.sophisticatedstorage.settings.tooltip": "设置",
   "gui.sophisticatedstorage.settings.title": "设置",
   "gui.sophisticatedstorage.settings.storage": "容器",
@@ -230,5 +235,6 @@
   "keybind.sophisticatedstorage.category": "精妙存储",
   "keybind.sophisticatedstorage.sort": "整理容器",
   "gui.sophisticatedstorage.status.too_many_item_entity_drops": "无法破坏该%s，将会导致过多（%s）掉落物实体从中掉落\n请考虑使用%s或者按住Shift进行破坏来跳过此项检查",
-  "gui.sophisticatedstorage.status.too_low_tier_upgrade_count": "升级需要%s个%s"
+  "gui.sophisticatedstorage.status.too_low_tier_upgrade_count": "升级需要%s个%s",
+  "gui.sophisticatedstorage.status.packing_tape_disabled": "配置文件设置为以打包状态掉落所有容器，无需包装带"
 }

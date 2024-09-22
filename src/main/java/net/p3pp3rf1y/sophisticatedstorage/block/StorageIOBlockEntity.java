@@ -28,6 +28,8 @@ public class StorageIOBlockEntity extends BlockEntity implements IControllerBoun
 	@Nullable
 	private BlockPos controllerPos = null;
 	private boolean isLinkedToController = false;
+	private boolean chunkBeingUnloaded = false;
+
 	@Nullable
 	private BlockCapabilityCache<IItemHandler, Direction> controllerItemHandlerCache;
 
@@ -178,5 +180,20 @@ public class StorageIOBlockEntity extends BlockEntity implements IControllerBoun
 		} else {
 			return WorldHelper.getBlockEntity(getLevel(), getControllerPos().get(), ControllerBlockEntity.class).map(c -> c.getExternalItemHandler(side)).orElse(null);
 		}
+	}
+
+	@Override
+	public void onChunkUnloaded() {
+		super.onChunkUnloaded();
+		chunkBeingUnloaded = true;
+	}
+
+	@Override
+	public void setRemoved() {
+		if (!chunkBeingUnloaded && level != null) {
+			unlinkFromController();
+		}
+
+		super.setRemoved();
 	}
 }

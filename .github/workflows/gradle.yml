@@ -47,6 +47,17 @@ jobs:
             echo "Branch name does not match the pattern: $BRANCH_NAME. Skipping CurseForge upload."
             exit 0
           fi
+      - name: Publish to Modrinth
+        env:
+          MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
+        run: |
+          BRANCH_NAME=${GITHUB_REF##*/}
+          if [[ "$BRANCH_NAME" =~ ^[0-9]+\.[0-9]+\.([0-9]+|x)$ ]]; then
+            ./gradlew modrinth
+          else
+            echo "Branch name does not match the pattern: $BRANCH_NAME. Skipping Modrinth upload."
+            exit 0
+          fi
       - name: Code Quality
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

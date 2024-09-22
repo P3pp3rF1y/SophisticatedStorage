@@ -25,6 +25,13 @@ ordering="NONE"
 side="BOTH"
 
 [[dependencies.${mod_id}]]
+modId="jei"
+type="optional"
+versionRange="${jei_version_range}"
+ordering="NONE"
+side="CLIENT"
+
+[[dependencies.${mod_id}]]
 modId="neoforge"
 type="required"
 versionRange="${neo_version_range}"

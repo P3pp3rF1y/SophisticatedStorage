@@ -5,6 +5,7 @@ plugins {
     id 'net.neoforged.moddev' version '1.0.14'
     id "org.sonarqube" version "5.0.0.4638"
     id "net.darkhax.curseforgegradle" version "1.1.15"
+    id "com.modrinth.minotaur" version "2.+"
 }
 
 idea {
@@ -124,7 +125,7 @@ configurations {
 }
 
 dependencies {
-    compileOnly "mezz.jei:jei-${jei_mc_version}:${jei_version}"
+    compileOnly "mezz.jei:jei-${jei_mc_version}-api:${jei_version}"
     localRuntime "mezz.jei:jei-${jei_mc_version}:${jei_version}"
     compileOnly "curse.maven:embeddium-908741:${embeddium_cf_file_id}"
     compileOnly "curse.maven:jade-324717:${jade_cf_file_id}"
@@ -181,6 +182,7 @@ var generateModMetadata = tasks.register("generateModMetadata", ProcessResources
             mod_issue_tracker_url: mod_issue_tracker_url, mod_logo_file: mod_logo_file, mod_credits: mod_credits,
             mod_authors         : mod_authors, mod_description: mod_description, mod_display_url: mod_display_url,
             mod_full_version    : "${project.mod_version}.${getBuildNumber()}${getStable()}",
+            jei_version_range   : jei_version_range,
             sc_version          :"[" + sc_version.substring(sc_version.indexOf("-") + 1, sc_version.lastIndexOf(',')) + ".+,)"
     ]
     inputs.properties replaceProperties
@@ -368,6 +370,23 @@ task curseforge(type: net.darkhax.curseforgegradle.TaskPublishCurseForge) {
     mainFile.addOptional('jei')
     mainFile.addOptional('crafting-tweaks')
     onlyIf { !project.ext.changelog.isEmpty() }
+}
+
+tasks.modrinth.dependsOn(tasks.generateChangelog)
+tasks.modrinth.onlyIf { !project.ext.changelog.isEmpty() }
+modrinth {
+    token = System.getenv("MODRINTH_TOKEN")
+    projectId = "${modrinth_project_id}"
+    versionType = "${release_type}"
+    uploadFile = jar
+    gameVersions = "${release_versions}".split(',').collect {e -> e}
+    loaders = ["neoforge"]
+    dependencies {
+        required.project "sophisticated-core"
+        optional.project "jei"
+        optional.project "crafting-tweaks"
+    }
+    changelog = "${ project.ext.changelog }"
 }
 
 task printVersionName {
