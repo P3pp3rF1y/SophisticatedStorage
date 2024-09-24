@@ -10,7 +10,7 @@
   "wood_name.sophisticatedstorage.warped": "Çarpık",
   "wood_name.sophisticatedstorage.cherry": "Kiraz Ağacı",
   "wood_name.sophisticatedstorage.bamboo": "Bambu",
-  "itemGroup.sophisticatedstorage": "Sophisticated Depo",
+  "itemGroup.sophisticatedstorage": "Sophisticated Storage",
   "item.sophisticatedstorage.packing_tape": "Paketleme Bandı",
   "item.sophisticatedstorage.packing_tape.tooltip": "Kalan kullanım: %s",
   "item.sophisticatedstorage.packing_tape.tooltip.disabled": "Devre dışı - yapılandırma tüm depoları paketlenmiş olarak bırakmaya ayarlı",
