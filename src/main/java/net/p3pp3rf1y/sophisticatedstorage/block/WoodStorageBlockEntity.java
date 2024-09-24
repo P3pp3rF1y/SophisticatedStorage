@@ -110,4 +110,9 @@ public abstract class WoodStorageBlockEntity extends StorageBlockEntity {
 	public boolean canBeLinked() {
 		return !packed;
 	}
+
+	@Override
+	protected boolean canRefreshUpgrades() {
+		return super.canRefreshUpgrades() && !packed;
+	}
 }

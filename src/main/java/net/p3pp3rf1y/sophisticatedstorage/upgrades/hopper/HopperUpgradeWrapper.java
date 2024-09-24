@@ -26,10 +26,7 @@ import net.p3pp3rf1y.sophisticatedstorage.upgrades.INeighborChangeListenerUpgrad
 
 import javax.annotation.Nullable;
 import java.lang.ref.WeakReference;
-import java.util.EnumMap;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -38,7 +35,7 @@ public class HopperUpgradeWrapper extends UpgradeWrapperBase<HopperUpgradeWrappe
 
 	private final Set<Direction> pullDirections = new LinkedHashSet<>();
 	private final Set<Direction> pushDirections = new LinkedHashSet<>();
-	private final Map<Direction, BlockCapabilityCache<IItemHandler, Direction>> handlerCache = new EnumMap<>(Direction.class);
+	private final Map<Direction, List<BlockCapabilityCache<IItemHandler, Direction>>> handlerCache = new EnumMap<>(Direction.class);
 
 	private final ContentsFilterLogic inputFilterLogic;
 	private final ContentsFilterLogic outputFilterLogic;
@@ -63,13 +60,13 @@ public class HopperUpgradeWrapper extends UpgradeWrapperBase<HopperUpgradeWrappe
 		}
 
 		for (Direction pushDirection : pushDirections) {
-			if (runOnItemHandler(level, pos, pushDirection, this::pushItems)) {
+			if (runOnItemHandlers(level, pos, pushDirection, this::pushItems)) {
 				break;
 			}
 		}
 
 		for (Direction pullDirection : pullDirections) {
-			if (runOnItemHandler(level, pos, pullDirection, this::pullItems)) {
+			if (runOnItemHandlers(level, pos, pullDirection, this::pullItems)) {
 				break;
 			}
 		}
@@ -91,12 +88,22 @@ public class HopperUpgradeWrapper extends UpgradeWrapperBase<HopperUpgradeWrappe
 		}
 	}
 
-	private boolean pullItems(IItemHandler fromHandler) {
-		return moveItems(fromHandler, storageWrapper.getInventoryForUpgradeProcessing(), inputFilterLogic);
+	private boolean pullItems(List<IItemHandler> fromHandlers) {
+		for (IItemHandler fromHandler : fromHandlers) {
+			if (moveItems(fromHandler, storageWrapper.getInventoryForUpgradeProcessing(), inputFilterLogic)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
-	private boolean pushItems(IItemHandler toHandler) {
-		return moveItems(storageWrapper.getInventoryForUpgradeProcessing(), toHandler, outputFilterLogic);
+	private boolean pushItems(List<IItemHandler> toHandlers) {
+		for (IItemHandler toHandler : toHandlers) {
+			if (moveItems(storageWrapper.getInventoryForUpgradeProcessing(), toHandler, outputFilterLogic)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private boolean moveItems(IItemHandler fromHandler, IItemHandler toHandler, FilterLogic filterLogic) {
@@ -129,16 +136,20 @@ public class HopperUpgradeWrapper extends UpgradeWrapperBase<HopperUpgradeWrappe
 			return;
 		}
 
-		handlerCache.computeIfAbsent(direction, k -> {
-			WeakReference<HopperUpgradeWrapper> existRef = new WeakReference<>(this);
+		WeakReference<HopperUpgradeWrapper> existRef = new WeakReference<>(this);
 
-			BlockState storageState = level.getBlockState(pos);
-			BlockPos offsetPos = storageState.getBlock() instanceof StorageBlockBase storageBlock ? storageBlock.getNeighborPos(storageState, pos, direction) : pos.relative(direction);
-			return BlockCapabilityCache.create(Capabilities.ItemHandler.BLOCK, serverLevel, offsetPos, direction.getOpposite(), () -> existRef.get() != null, () -> updateCacheOnSide(level, pos, direction));
+		BlockState storageState = level.getBlockState(pos);
+		List<BlockPos> offsetPositions = storageState.getBlock() instanceof StorageBlockBase storageBlock ? storageBlock.getNeighborPos(storageState, pos, direction) : List.of(pos.relative(direction));
+
+		List<BlockCapabilityCache<IItemHandler, Direction>> caches = new ArrayList<>();
+
+		offsetPositions.forEach(offsetPos -> {
+			caches.add(BlockCapabilityCache.create(Capabilities.ItemHandler.BLOCK, serverLevel, offsetPos, direction.getOpposite(), () -> existRef.get() != null, () -> updateCacheOnSide(level, pos, direction)));
 		});
+		handlerCache.put(direction, caches);
 	}
 
-	private boolean runOnItemHandler(Level level, BlockPos pos, Direction direction, Predicate<IItemHandler> run) {
+	private boolean runOnItemHandlers(Level level, BlockPos pos, Direction direction, Predicate<List<IItemHandler>> run) {
 		if (!handlerCache.containsKey(direction)) {
 			updateCacheOnSide(level, pos, direction);
 		}
@@ -146,9 +157,9 @@ public class HopperUpgradeWrapper extends UpgradeWrapperBase<HopperUpgradeWrappe
 			return false;
 		}
 
-		@Nullable IItemHandler handler = handlerCache.get(direction).getCapability();
+		List<IItemHandler> handler = handlerCache.get(direction).stream().map(BlockCapabilityCache::getCapability).filter(Objects::nonNull).toList();
 
-		return handler != null && run.test(handler);
+		return run.test(handler);
 	}
 
 	public ContentsFilterLogic getInputFilterLogic() {
