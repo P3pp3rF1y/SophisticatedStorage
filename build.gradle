@@ -351,8 +351,6 @@ task curseforge(type: net.darkhax.curseforgegradle.TaskPublishCurseForge) {
     onlyIf { !project.ext.changelog.isEmpty() }
 }
 
-tasks.modrinth.dependsOn(tasks.generateChangelog)
-tasks.modrinth.onlyIf { !project.ext.changelog.isEmpty() }
 modrinth {
     token = System.getenv("MODRINTH_TOKEN")
     projectId = "${modrinth_project_id}"
@@ -365,7 +363,13 @@ modrinth {
         optional.project "jei"
         optional.project "crafting-tweaks"
     }
-    changelog = "${ project.ext.changelog }"
+    changelog = provider {
+        project.ext.changelog
+    }
+}
+tasks.modrinth {
+    dependsOn(tasks.generateChangelog)
+    onlyIf { !project.ext.changelog.isEmpty() }
 }
 
 task printVersionName {
