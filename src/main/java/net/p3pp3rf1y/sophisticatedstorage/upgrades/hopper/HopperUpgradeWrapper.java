@@ -214,9 +214,25 @@ public class HopperUpgradeWrapper extends UpgradeWrapperBase<HopperUpgradeWrappe
 
 	@Override
 	public void onNeighborChange(Level level, BlockPos pos, Direction direction) {
-		if (pushDirections.contains(direction) || pullDirections.contains(direction)) {
+		if (!level.isClientSide() && (pushDirections.contains(direction) || pullDirections.contains(direction))
+				&& needsCacheUpdate(level, pos, direction)) {
 			updateCacheOnSide(level, pos, direction);
 		}
+	}
+
+	private boolean needsCacheUpdate(Level level, BlockPos pos, Direction direction) {
+		List<LazyOptional<IItemHandler>> handlers = handlerCache.get(direction);
+		if (handlers == null || handlers.isEmpty()) {
+			return !level.getBlockState(pos).isAir();
+		}
+
+		for (LazyOptional<IItemHandler> handler : handlers) {
+			if (!handler.isPresent()) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	public void updateCacheOnSide(Level level, BlockPos pos, Direction direction) {
