@@ -10,6 +10,7 @@ import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryPartRegistry;
 import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryPartitioner;
 import net.p3pp3rf1y.sophisticatedcore.settings.itemdisplay.ItemDisplaySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.settings.memory.MemorySettingsCategory;
+import net.p3pp3rf1y.sophisticatedcore.upgrades.IUpgradeItem;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeItemBase;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeType;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeWrapperBase;
@@ -19,6 +20,7 @@ import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageTranslationHelper;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModDataComponents;
 
+import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -44,7 +46,7 @@ public class CompressionUpgradeItem extends UpgradeItemBase<CompressionUpgradeIt
     }
 
     @Override
-    public UpgradeSlotChangeResult checkExtraInsertConditions(ItemStack upgradeStack, IStorageWrapper storageWrapper, boolean isClientSide) {
+    public UpgradeSlotChangeResult checkExtraInsertConditions(ItemStack upgradeStack, IStorageWrapper storageWrapper, boolean isClientSide, @Nullable IUpgradeItem<?> upgradeInSlot) {
         if (isClientSide) {
             return UpgradeSlotChangeResult.success();
         }
