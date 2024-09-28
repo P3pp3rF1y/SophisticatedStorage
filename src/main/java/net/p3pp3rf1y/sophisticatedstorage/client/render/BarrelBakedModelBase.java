@@ -33,6 +33,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import net.minecraftforge.client.ChunkRenderTypeSet;
+import net.minecraftforge.client.model.BakedModelWrapper;
 import net.minecraftforge.client.model.IDynamicBakedModel;
 import net.minecraftforge.client.model.IQuadTransformer;
 import net.minecraftforge.client.model.QuadTransformers;
@@ -752,6 +753,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 		private final BarrelBakedModelBase barrelBakedModel;
 		@Nullable
 		private final BakedModel flatTopModel;
+		private Cache<Integer, BakedModel> resolvedModels = CacheBuilder.newBuilder().expireAfterAccess(1, TimeUnit.MINUTES).build();
 
 		public BarrelItemOverrides(BarrelBakedModelBase barrelBakedModel, @Nullable BakedModel flatTopModel) {
 			this.barrelBakedModel = barrelBakedModel;
@@ -766,16 +768,83 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 				return flatTopModel.getOverrides().resolve(flatTopModel, stack, level, entity, seed);
 			}
 
-			barrelBakedModel.barrelHasMainColor = StorageBlockItem.getMainColorFromStack(stack).isPresent();
-			barrelBakedModel.barrelHasAccentColor = StorageBlockItem.getAccentColorFromStack(stack).isPresent();
-			barrelBakedModel.barrelWoodName = WoodStorageBlockItem.getWoodType(stack).map(WoodType::name)
+			boolean hasMainColor = StorageBlockItem.getMainColorFromStack(stack).isPresent();
+			boolean hasAccentColor = StorageBlockItem.getAccentColorFromStack(stack).isPresent();
+			String woodName = WoodStorageBlockItem.getWoodType(stack).map(WoodType::name)
 					.orElse(barrelBakedModel.barrelHasAccentColor && barrelBakedModel.barrelHasMainColor ? null : WoodType.ACACIA.name());
-			barrelBakedModel.barrelIsPacked = WoodStorageBlockItem.isPacked(stack);
-			barrelBakedModel.barrelShowsTier = StorageBlockItem.showsTier(stack);
-			barrelBakedModel.barrelItem = stack.getItem();
-			barrelBakedModel.flatTop = flatTop;
-			barrelBakedModel.barrelMaterials = BarrelBlockItem.getMaterials(stack);
-			return barrelBakedModel;
+			boolean packed = WoodStorageBlockItem.isPacked(stack);
+			boolean barrelShowsTier = StorageBlockItem.showsTier(stack);
+			Item item = stack.getItem();
+			Map<BarrelMaterial, ResourceLocation> materials = BarrelBlockItem.getMaterials(stack);
+
+			int hash = Objects.hash(item, woodName, hasMainColor, hasAccentColor, packed, barrelShowsTier, materials);
+
+			BakedModel resolvedModel = resolvedModels.getIfPresent(hash);
+			if (resolvedModel == null) {
+				resolvedModel = new ResolvedModel(hasMainColor, hasAccentColor, woodName, packed, barrelShowsTier, materials, flatTop, item);
+				resolvedModels.put(hash, resolvedModel);
+			}
+
+			return resolvedModel;
+		}
+
+		private class ResolvedModel extends BakedModelWrapper<BarrelBakedModelBase> {
+			private final boolean hasMainColor;
+			private final boolean hasAccentColor;
+			@Nullable
+			private final String woodName;
+			private final boolean packed;
+			private final boolean barrelShowsTier;
+			private final Map<BarrelMaterial, ResourceLocation> materials;
+			private final boolean flatTop;
+			private final Item item;
+
+			public ResolvedModel(boolean hasMainColor, boolean hasAccentColor, @Nullable String woodName, boolean packed, boolean barrelShowsTier, Map<BarrelMaterial, ResourceLocation> materials, boolean flatTop, Item item) {
+				super(BarrelItemOverrides.this.barrelBakedModel);
+				this.hasMainColor = hasMainColor;
+				this.hasAccentColor = hasAccentColor;
+				this.woodName = woodName;
+				this.packed = packed;
+				this.barrelShowsTier = barrelShowsTier;
+				this.materials = materials;
+				this.flatTop = flatTop;
+				this.item = item;
+			}
+
+			@Override
+			public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, RandomSource rand) {
+				setProperties();
+				return super.getQuads(state, side, rand);
+			}
+
+			@Override
+			public List<BakedQuad> getQuads(@org.jetbrains.annotations.Nullable BlockState state, @org.jetbrains.annotations.Nullable Direction side, RandomSource rand, ModelData extraData, @org.jetbrains.annotations.Nullable RenderType renderType) {
+				setProperties();
+				return super.getQuads(state, side, rand, extraData, renderType);
+			}
+
+			@Override
+			public BakedModel applyTransform(ItemDisplayContext cameraTransformType, PoseStack poseStack, boolean applyLeftHandTransform) {
+				super.applyTransform(cameraTransformType, poseStack, applyLeftHandTransform);
+
+				return this;
+			}
+
+			@Override
+			public List<BakedModel> getRenderPasses(ItemStack itemStack, boolean fabulous) {
+				return List.of(this); //this will only work as long as the barrel model has only 1 render pass
+			}
+
+			private void setProperties() {
+				barrelBakedModel.barrelHasMainColor = hasMainColor;
+				barrelBakedModel.barrelHasAccentColor = hasAccentColor;
+				barrelBakedModel.barrelWoodName = woodName;
+				barrelBakedModel.barrelIsPacked = packed;
+				barrelBakedModel.barrelShowsTier = barrelShowsTier;
+				barrelBakedModel.barrelMaterials = materials;
+				barrelBakedModel.flatTop = flatTop;
+				barrelBakedModel.barrelItem = item;
+			}
 		}
 	}
 }
