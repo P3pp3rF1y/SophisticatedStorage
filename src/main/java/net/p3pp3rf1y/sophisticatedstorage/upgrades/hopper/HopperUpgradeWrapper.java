@@ -14,6 +14,7 @@ import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
+import net.minecraftforge.items.wrapper.EmptyHandler;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.inventory.ITrackedContentsItemHandler;
 import net.p3pp3rf1y.sophisticatedcore.settings.memory.MemorySettingsCategory;
@@ -25,6 +26,7 @@ import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockBase;
+import net.p3pp3rf1y.sophisticatedstorage.block.StorageInputBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.block.VerticalFacing;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.BlockSide;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
@@ -32,6 +34,7 @@ import net.p3pp3rf1y.sophisticatedstorage.upgrades.INeighborChangeListenerUpgrad
 
 import javax.annotation.Nullable;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 public class HopperUpgradeWrapper extends UpgradeWrapperBase<HopperUpgradeWrapper, HopperUpgradeItem>
@@ -40,17 +43,17 @@ public class HopperUpgradeWrapper extends UpgradeWrapperBase<HopperUpgradeWrappe
 	private Set<Direction> pullDirections = new LinkedHashSet<>();
 	private Set<Direction> pushDirections = new LinkedHashSet<>();
 	private boolean directionsInitialized = false;
-	private final Map<Direction, List<LazyOptional<IItemHandler>>> handlerCache = new EnumMap<>(Direction.class);
+	private final Map<Direction, ItemHandlerHolder> handlerCache = new EnumMap<>(Direction.class);
 
 	private final ContentsFilterLogic inputFilterLogic;
-	private final ContentsFilterLogic outputFilterLogic;
+	private final TargetContentsFilterLogic outputFilterLogic;
 	private long coolDownTime = 0;
 
 	protected HopperUpgradeWrapper(IStorageWrapper storageWrapper, ItemStack upgrade, Consumer<ItemStack> upgradeSaveHandler) {
 		super(storageWrapper, upgrade, upgradeSaveHandler);
 		inputFilterLogic = new ContentsFilterLogic(upgrade, upgradeSaveHandler, upgradeItem.getInputFilterSlotCount(), storageWrapper::getInventoryHandler,
 				storageWrapper.getSettingsHandler().getTypeCategory(MemorySettingsCategory.class), "inputFilter");
-		outputFilterLogic = new ContentsFilterLogic(upgrade, upgradeSaveHandler, upgradeItem.getOutputFilterSlotCount(), storageWrapper::getInventoryHandler,
+		outputFilterLogic = new TargetContentsFilterLogic(upgrade, upgradeSaveHandler, upgradeItem.getOutputFilterSlotCount(), storageWrapper::getInventoryHandler,
 				storageWrapper.getSettingsHandler().getTypeCategory(MemorySettingsCategory.class), "outputFilter");
 
 		deserialize();
@@ -105,6 +108,7 @@ public class HopperUpgradeWrapper extends UpgradeWrapperBase<HopperUpgradeWrappe
 	private boolean pushItemsToContainer(WorldlyContainer worldlyContainer, Direction face) {
 		ITrackedContentsItemHandler fromHandler = storageWrapper.getInventoryForUpgradeProcessing();
 
+		outputFilterLogic.setInventory(EmptyHandler.INSTANCE);
 		for (int slot = 0; slot < fromHandler.getSlots(); slot++) {
 			ItemStack slotStack = fromHandler.getStackInSlot(slot);
 			if (!slotStack.isEmpty() && outputFilterLogic.matchesFilter(slotStack)) {
@@ -192,6 +196,7 @@ public class HopperUpgradeWrapper extends UpgradeWrapperBase<HopperUpgradeWrappe
 	}
 
 	private boolean pushItems(IItemHandler toHandler) {
+		outputFilterLogic.setInventory(toHandler);
 		return moveItems(storageWrapper.getInventoryForUpgradeProcessing(), toHandler, outputFilterLogic);
 	}
 
@@ -221,12 +226,14 @@ public class HopperUpgradeWrapper extends UpgradeWrapperBase<HopperUpgradeWrappe
 	}
 
 	private boolean needsCacheUpdate(Level level, BlockPos pos, Direction direction) {
-		List<LazyOptional<IItemHandler>> handlers = handlerCache.get(direction);
-		if (handlers == null || handlers.isEmpty()) {
+		ItemHandlerHolder holder = handlerCache.get(direction);
+		if (holder == null || holder.handlers().isEmpty()) {
 			return !level.getBlockState(pos).isAir();
+		} else if (holder.refreshOnEveryNeighborChange()) {
+			return true;
 		}
 
-		for (LazyOptional<IItemHandler> handler : handlers) {
+		for (LazyOptional<IItemHandler> handler : holder.handlers()) {
 			if (!handler.isPresent()) {
 				return true;
 			}
@@ -244,22 +251,28 @@ public class HopperUpgradeWrapper extends UpgradeWrapperBase<HopperUpgradeWrappe
 		BlockState storageState = level.getBlockState(pos);
 		List<BlockPos> offsetPositions = storageState.getBlock() instanceof StorageBlockBase storageBlock ? storageBlock.getNeighborPos(storageState, pos, direction) : List.of(pos.relative(direction));
 		List<LazyOptional<IItemHandler>> caches = new ArrayList<>();
+		AtomicBoolean refreshOnEveryNeighborChange = new AtomicBoolean(false);
 		offsetPositions.forEach(offsetPos ->
 				WorldHelper.getLoadedBlockEntity(level, offsetPos).ifPresent(blockEntity -> {
+					if (blockEntity instanceof StorageInputBlockEntity input) {
+						refreshOnEveryNeighborChange.set(true);
+						blockEntity = input.getControllerPos().map(level::getBlockEntity).orElse(blockEntity);
+					}
+
 					LazyOptional<IItemHandler> lazyOptional = blockEntity.getCapability(ForgeCapabilities.ITEM_HANDLER, direction.getOpposite());
 					if (lazyOptional.isPresent()) {
 						lazyOptional.addListener(l -> updateCacheOnSide(level, pos, direction));
 						caches.add(lazyOptional);
 					}
 				}));
-		handlerCache.put(direction, caches);
+		handlerCache.put(direction, new ItemHandlerHolder(caches, refreshOnEveryNeighborChange.get()));
 	}
 
 	private List<LazyOptional<IItemHandler>> getItemHandlers(Level level, BlockPos pos, Direction direction) {
 		if (!handlerCache.containsKey(direction)) {
 			updateCacheOnSide(level, pos, direction);
 		}
-		return handlerCache.getOrDefault(direction, Collections.emptyList());
+		return handlerCache.containsKey(direction) ? handlerCache.get(direction).handlers() : Collections.emptyList();
 	}
 
 	public ContentsFilterLogic getInputFilterLogic() {
@@ -318,5 +331,8 @@ public class HopperUpgradeWrapper extends UpgradeWrapperBase<HopperUpgradeWrappe
 	public void initDirections(Direction pushDirection, Direction pullDirection) {
 		setPushingTo(pushDirection, true);
 		setPullingFrom(pullDirection, true);
+	}
+
+	private record ItemHandlerHolder(List<LazyOptional<IItemHandler>> handlers, boolean refreshOnEveryNeighborChange) {
 	}
 }
