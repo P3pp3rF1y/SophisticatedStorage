@@ -259,7 +259,7 @@ public class HopperUpgradeWrapper extends UpgradeWrapperBase<HopperUpgradeWrappe
 		if (!handlerCache.containsKey(direction)) {
 			updateCacheOnSide(level, pos, direction);
 		}
-		return handlerCache.get(direction);
+		return handlerCache.getOrDefault(direction, Collections.emptyList());
 	}
 
 	public ContentsFilterLogic getInputFilterLogic() {
