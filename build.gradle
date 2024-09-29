@@ -108,6 +108,16 @@ neoForge {
         "${mod_id}" {
             sourceSet(sourceSets.main)
         }
+        if (findProject(':SophisticatedCore') != null) {
+            "sophisticatedcore" {
+                sourceSet(project(':SophisticatedCore').sourceSets.main)
+            }
+        }
+        if (findProject(':SophisticatedBackpacks') != null) {
+            "sophisticatedbackpacks" {
+                sourceSet(project(':SophisticatedBackpacks').sourceSets.main)
+            }
+        }
     }
 
     unitTest {
