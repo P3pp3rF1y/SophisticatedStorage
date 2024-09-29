@@ -108,6 +108,12 @@ neoForge {
         "${mod_id}" {
             sourceSet(sourceSets.main)
         }
+        "sophisticatedbackpacks" {
+            sourceSet(project(':SophisticatedBackpacks').sourceSets.main)
+        }
+        "sophisticatedcore" {
+            sourceSet(project(':SophisticatedCore').sourceSets.main)
+        }
     }
 
     unitTest {
