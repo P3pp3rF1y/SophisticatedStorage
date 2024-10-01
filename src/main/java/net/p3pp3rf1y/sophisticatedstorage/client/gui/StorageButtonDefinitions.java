@@ -17,7 +17,7 @@ public class StorageButtonDefinitions {
 			Map.of(
 					ContentsFilterType.ALLOW, getButtonStateData(new UV(0, 0), StorageTranslationHelper.INSTANCE.translUpgradeButton("allow"), Dimension.SQUARE_16, new Position(1, 1)),
 					ContentsFilterType.BLOCK, getButtonStateData(new UV(16, 0), StorageTranslationHelper.INSTANCE.translUpgradeButton("block"), Dimension.SQUARE_16, new Position(1, 1)),
-					ContentsFilterType.STORAGE, getButtonStateData(new UV(80, 16), StorageTranslationHelper.INSTANCE.translUpgradeButton("match_storage_contents"), Dimension.SQUARE_16, new Position(1, 1))
+					ContentsFilterType.STORAGE, getButtonStateData(new UV(64, 16), StorageTranslationHelper.INSTANCE.translUpgradeButton("match_storage_contents"), Dimension.SQUARE_16, new Position(1, 1))
 			));
 
 	private StorageButtonDefinitions() {}

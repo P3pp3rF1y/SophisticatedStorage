@@ -196,6 +196,7 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 
 		Direction direction = context.getHorizontalDirection().getOpposite();
 		return chestBeingPlaced.getCapability(CapabilityStorageWrapper.getCapabilityInstance())
+				.filter(wrapper -> wrapper.getContentsUuid().isPresent())
 				.map(wrapper ->
 						getStateForPlacement(context, direction, fluidstate,
 								StorageBlockItem.getMainColorFromStack(chestBeingPlaced).orElse(-1),
