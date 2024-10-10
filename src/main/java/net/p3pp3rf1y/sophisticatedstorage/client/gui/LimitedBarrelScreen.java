@@ -30,7 +30,7 @@ public class LimitedBarrelScreen extends StorageScreen {
 	}
 
 	@Override
-	protected void drawSlotBg(GuiGraphics guiGraphics, int x, int y) {
+	protected void drawSlotBg(GuiGraphics guiGraphics, int x, int y, int visibleSlotsCount) {
 		LimitedBarrelScreen.drawSlotBg(this, guiGraphics, x, y, getMenu().getNumberOfStorageInventorySlots());
 	}
 
