@@ -584,6 +584,10 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 	}
 
 	public void onNeighborChange(BlockPos neighborPos) {
+		if (level != null && level.isClientSide()) {
+			return;
+		}
+
 		Direction direction = Direction.fromNormal(Integer.signum(neighborPos.getX() - worldPosition.getX()), Integer.signum(neighborPos.getY() - worldPosition.getY()), Integer.signum(neighborPos.getZ() - worldPosition.getZ()));
 		if (direction == null) {
 			return;
