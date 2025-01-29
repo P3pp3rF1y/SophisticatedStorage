@@ -169,15 +169,30 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 			return depositFromAllOfPlayersInventory(player, slot, invHandler, stackInSlot, memorySettings);
 		}
 
-		ItemStack result = invHandler.insertItemOnlyToSlot(slot, stackInHand, true);
-		if (result.getCount() != stackInHand.getCount()) {
-			result = invHandler.insertItemOnlyToSlot(slot, stackInHand, false);
-			if (isLocked()) {
-				memorySettings.selectSlot(slot);
+		if (stackInSlot.isEmpty()) {
+			if (invHandler.isItemValid(slot, stackInHand, player)) {
+				int stackLimit = invHandler.getStackLimit(slot, stackInHand);
+				invHandler.setStackInSlot(slot, stackInHand.split(stackLimit));
+				if (isLocked()) {
+					memorySettings.selectSlot(slot);
+				}
+				if (stackInHand.isEmpty()) {
+					player.setItemInHand(hand, ItemStack.EMPTY);
+				}
+				return true;
 			}
-			player.setItemInHand(hand, result);
-			return true;
+		} else {
+			ItemStack result = invHandler.insertItemOnlyToSlot(slot, stackInHand, true);
+			if (result.getCount() != stackInHand.getCount()) {
+				result = invHandler.insertItemOnlyToSlot(slot, stackInHand, false);
+				if (isLocked()) {
+					memorySettings.selectSlot(slot);
+				}
+				player.setItemInHand(hand, result);
+				return true;
+			}
 		}
+
 		return false;
 	}
 

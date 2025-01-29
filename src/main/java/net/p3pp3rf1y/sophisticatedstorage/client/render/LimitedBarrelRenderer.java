@@ -16,12 +16,14 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
 import net.p3pp3rf1y.sophisticatedcore.util.CountAbbreviator;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.*;
 import org.joml.Vector3f;
 
 import java.util.List;
+import java.util.Locale;
 
 import static net.minecraft.client.Minecraft.UNIFORM_FONT;
 
@@ -30,7 +32,8 @@ public class LimitedBarrelRenderer extends BarrelRenderer<LimitedBarrelBlockEnti
 	public static final Material FILL_INDICATORS_TEXTURE = new Material(InventoryMenu.BLOCK_ATLAS, SophisticatedStorage.getRL("block/fill_indicators"));
 	private static final float MULTIPLE_ITEMS_FONT_SCALE = 1 / 96f;
 	private static final float SINGLE_ITEM_FONT_SCALE = 1 / 48f;
-	private static final Style COUNT_DISPLAY_STYLE = Style.EMPTY.withFont(UNIFORM_FONT).withBold(true);
+	public static final Style INFINITE_COUNT_DISPLAY_STYLE = Style.EMPTY.withFont(UNIFORM_FONT);
+	private static final Style COUNT_DISPLAY_STYLE = INFINITE_COUNT_DISPLAY_STYLE.withBold(true);
 	private final DisplayItemRenderer displayItemRenderer = new DisplayItemRenderer(0.5, new Vec3(0, 0, -1 / 16D));
 	private final DisplayItemRenderer flatDisplayItemRenderer = new DisplayItemRenderer(0.5, Vec3.ZERO);
 
@@ -151,7 +154,9 @@ public class LimitedBarrelRenderer extends BarrelRenderer<LimitedBarrelBlockEnti
 		}
 		poseStack.translate(0.5, -0.5, 0.5);
 
-		List<Integer> slotCounts = blockEntity.getStorageWrapper().getRenderInfo().getItemDisplayRenderInfo().getSlotCounts();
+		RenderInfo.ItemDisplayRenderInfo itemDisplayRenderInfo = blockEntity.getStorageWrapper().getRenderInfo().getItemDisplayRenderInfo();
+		List<Integer> slotCounts = itemDisplayRenderInfo.getSlotCounts();
+		List<Integer> infiniteSlots = itemDisplayRenderInfo.getInfiniteSlots();
 		if (slotCounts.isEmpty()) {
 			slotCounts = blockEntity.getSlotCounts();
 		}
@@ -166,13 +171,22 @@ public class LimitedBarrelRenderer extends BarrelRenderer<LimitedBarrelBlockEnti
 			Vector3f frontOffset = DisplayItemRenderer.getDisplayItemIndexFrontOffset(displayItemIndex, slotCounts.size());
 
 			double xTranslation = -frontOffset.x();
-			float yTranslation = frontOffset.y() + countDisplayYOffset;
+			boolean isInfinite = infiniteSlots.contains(displayItemIndex);
+			float yTranslation = frontOffset.y() + (isInfinite ? countDisplayYOffset / 1.8f : countDisplayYOffset);
 			double zTranslation = 0.001 - (flatTop ? 0 : 0.75 / 16D);
 			poseStack.translate(xTranslation, yTranslation, zTranslation);
 
 			float scale = slotCounts.size() == 1 ? SINGLE_ITEM_FONT_SCALE : MULTIPLE_ITEMS_FONT_SCALE;
+			if (isInfinite) {
+				scale *= 2;
+			}
 			poseStack.scale(scale, -scale, scale);
-			MutableComponent countString = Component.literal(CountAbbreviator.abbreviate(count, slotCounts.size() == 1 ? 6 : 5)).withStyle(COUNT_DISPLAY_STYLE);
+			MutableComponent countString;
+			if (isInfinite) {
+				countString = Component.literal("∞").withStyle(INFINITE_COUNT_DISPLAY_STYLE);
+			} else {
+				countString = Component.literal(CountAbbreviator.abbreviate(count, slotCounts.size() == 1 ? 6 : 5)).withStyle(COUNT_DISPLAY_STYLE);
+			}
 			Font font = Minecraft.getInstance().font;
 			float countDisplayXOffset = -font.getSplitter().stringWidth(countString) / 2f;
 			poseStack.translate(countDisplayXOffset, 0, 0);
