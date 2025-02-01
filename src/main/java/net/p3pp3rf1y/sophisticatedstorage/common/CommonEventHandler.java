@@ -50,7 +50,7 @@ public class CommonEventHandler {
 		eventBus.addListener(this::onPlayerChangedDimension);
 		eventBus.addListener(this::onPlayerRespawn);
 		eventBus.addListener(this::handleTooManyDropsBreak);
-		eventBus.addListener(this::handleBreakBackpackWithInfinityUpgrade);
+		eventBus.addListener(this::handleBreakStorageWithInfinityUpgrade);
 		eventBus.addListener(this::onLimitedBarrelLeftClicked);
 		eventBus.addListener(this::onSneakItemBlockInteraction);
 		eventBus.addListener(this::onLevelTick);
@@ -122,15 +122,15 @@ public class CommonEventHandler {
 		}
 	}
 
-	private void handleBreakBackpackWithInfinityUpgrade(BlockEvent.BreakEvent event) {
+	private void handleBreakStorageWithInfinityUpgrade(BlockEvent.BreakEvent event) {
 		Player player = event.getPlayer();
 
-		if (player.hasPermissions(2) || !(event.getState().getBlock() instanceof StorageBlockBase)) {
+		if (!(event.getState().getBlock() instanceof StorageBlockBase)) {
 			return;
 		}
 
 		if (WorldHelper.getBlockEntity(event.getLevel(), event.getPos(), StorageBlockEntity.class)
-				.map(storageBlockEntity -> !storageBlockEntity.getStorageWrapper().getUpgradeHandler().getTypeWrappers(InfinityUpgradeItem.TYPE).isEmpty())
+				.map(storageBlockEntity -> storageBlockEntity.getStorageWrapper().getUpgradeHandler().getTypeWrappers(InfinityUpgradeItem.TYPE).stream().anyMatch(w -> !player.hasPermissions(w.getPermissionLevel())))
 				.orElse(false)) {
 			event.setCanceled(true);
 			player.displayClientMessage(StorageTranslationHelper.INSTANCE.translStatusMessage("infinity_upgrade_only_admin_break").withStyle(ChatFormatting.RED), true);
