@@ -1,12 +1,12 @@
 {
   "parent": "minecraft:recipes/root",
   "criteria": {
-    "has_stack_upgrade_tier_2": {
+    "has_stack_upgrade_tier_5": {
       "conditions": {
         "items": [
           {
             "items": [
-              "sophisticatedstorage:stack_upgrade_tier_2"
+              "sophisticatedstorage:stack_upgrade_tier_5"
             ]
           }
         ]
@@ -15,20 +15,20 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "sophisticatedstorage:stack_upgrade_tier_3"
+        "recipe": "sophisticatedstorage:stack_upgrade_omega_tier"
       },
       "trigger": "minecraft:recipe_unlocked"
     }
   },
   "requirements": [
     [
-      "has_stack_upgrade_tier_2",
+      "has_stack_upgrade_tier_5",
       "has_the_recipe"
     ]
   ],
   "rewards": {
     "recipes": [
-      "sophisticatedstorage:stack_upgrade_tier_3"
+      "sophisticatedstorage:stack_upgrade_omega_tier"
     ]
   },
   "sends_telemetry_event": true

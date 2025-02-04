@@ -1,0 +1,32 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "conditions": [
+    {
+      "type": "forge:mod_loaded",
+      "modid": "sophisticatedbackpacks"
+    },
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedbackpacks:stack_downgrade_tier_1"
+    }
+  ],
+  "key": {
+    "L": {
+      "tag": "forge:leather"
+    },
+    "T": {
+      "tag": "forge:string"
+    },
+    "U": {
+      "item": "sophisticatedstorage:stack_downgrade_tier_1"
+    }
+  },
+  "pattern": [
+    "TUT",
+    " L ",
+    "T T"
+  ],
+  "result": {
+    "item": "sophisticatedbackpacks:stack_downgrade_tier_1"
+  }
+}
