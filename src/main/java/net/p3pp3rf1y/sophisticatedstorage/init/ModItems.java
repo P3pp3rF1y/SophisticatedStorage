@@ -198,7 +198,7 @@ public class ModItems {
 				tooltip.add(Component.translatable(StorageTranslationHelper.INSTANCE.translItemTooltip(PACKING_TAPE_NAME) + ".disabled").withStyle(ChatFormatting.RED));
 			} else {
 				tooltip.add(Component.translatable(StorageTranslationHelper.INSTANCE.translItemTooltip(PACKING_TAPE_NAME),
-								Component.literal(String.valueOf(getMaxDamage(stack) - getDamage(stack))).withStyle(ChatFormatting.GREEN)
+								stack.isDamageableItem() ? Component.literal(String.valueOf(getMaxDamage(stack) - getDamage(stack))).withStyle(ChatFormatting.GREEN) : Component.literal("∞").withStyle(ChatFormatting.LIGHT_PURPLE)
 						).withStyle(ChatFormatting.DARK_GRAY)
 				);
 			}

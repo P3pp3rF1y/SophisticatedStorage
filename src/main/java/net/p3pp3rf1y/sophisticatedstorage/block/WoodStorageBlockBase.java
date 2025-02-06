@@ -39,6 +39,8 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import static net.minecraft.world.entity.LivingEntity.getSlotForHand;
+
 public abstract class WoodStorageBlockBase extends StorageBlockBase implements IAdditionalDropDataBlock {
 	public static final Map<WoodType, BlockFamily> CUSTOM_TEXTURE_WOOD_TYPES = ImmutableMap.<WoodType, BlockFamily>builder()
 			.put(WoodType.ACACIA, BlockFamilies.ACACIA_PLANKS)
@@ -227,10 +229,7 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 
 	protected void packStorage(Player player, InteractionHand hand, WoodStorageBlockEntity b, ItemStack stackInHand) {
 		if (!player.isCreative()) {
-			stackInHand.setDamageValue(stackInHand.getDamageValue() + 1);
-			if (stackInHand.getDamageValue() >= stackInHand.getMaxDamage()) {
-				player.setItemInHand(hand, ItemStack.EMPTY);
-			}
+			stackInHand.hurtAndBreak(1, player, getSlotForHand(hand));
 		}
 
 		BlockState blockState = b.getBlockState();
