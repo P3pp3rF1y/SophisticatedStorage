@@ -1,0 +1,28 @@
+{
+  "type": "sophisticatedstorage:double_chest_tier_upgrade",
+  "conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:iron_chest"
+    }
+  ],
+  "key": {
+    "B": {
+      "tag": "forge:storage_blocks/iron"
+    },
+    "I": {
+      "tag": "forge:ingots/iron"
+    },
+    "S": {
+      "item": "sophisticatedstorage:chest"
+    }
+  },
+  "pattern": [
+    "III",
+    "ISI",
+    "IBI"
+  ],
+  "result": {
+    "item": "sophisticatedstorage:iron_chest"
+  }
+}

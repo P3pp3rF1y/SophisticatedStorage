@@ -1,0 +1,23 @@
+{
+  "type": "sophisticatedstorage:double_chest_tier_upgrade_shapeless",
+  "conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:netherite_chest"
+    }
+  ],
+  "ingredients": [
+    {
+      "item": "sophisticatedstorage:diamond_chest"
+    },
+    {
+      "tag": "forge:ingots/netherite"
+    },
+    {
+      "tag": "forge:ingots/netherite"
+    }
+  ],
+  "result": {
+    "item": "sophisticatedstorage:netherite_chest"
+  }
+}

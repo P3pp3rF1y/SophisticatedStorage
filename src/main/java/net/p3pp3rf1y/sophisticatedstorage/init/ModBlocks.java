@@ -295,7 +295,9 @@ public class ModBlocks {
 	private static final DeferredRegister<RecipeSerializer<?>> RECIPE_SERIALIZERS = DeferredRegister.create(ForgeRegistries.RECIPE_SERIALIZERS, SophisticatedStorage.MOD_ID);
 	public static final RegistryObject<SimpleCraftingRecipeSerializer<?>> STORAGE_DYE_RECIPE_SERIALIZER = RECIPE_SERIALIZERS.register("storage_dye", () -> new SimpleCraftingRecipeSerializer<>(StorageDyeRecipe::new));
 	public static final RegistryObject<RecipeSerializer<?>> STORAGE_TIER_UPGRADE_RECIPE_SERIALIZER = RECIPE_SERIALIZERS.register("storage_tier_upgrade", StorageTierUpgradeRecipe.Serializer::new);
+	public static final RegistryObject<RecipeSerializer<?>> DOUBLE_CHEST_TIER_UPGRADE_RECIPE_SERIALIZER = RECIPE_SERIALIZERS.register("double_chest_tier_upgrade", DoubleChestTierUpgradeRecipe.Serializer::new);
 	public static final RegistryObject<RecipeSerializer<?>> STORAGE_TIER_UPGRADE_SHAPELESS_RECIPE_SERIALIZER = RECIPE_SERIALIZERS.register("storage_tier_upgrade_shapeless", StorageTierUpgradeShapelessRecipe.Serializer::new);
+	public static final RegistryObject<RecipeSerializer<?>> DOUBLE_CHEST_TIER_UPGRADE_SHAPELESS_RECIPE_SERIALIZER = RECIPE_SERIALIZERS.register("double_chest_tier_upgrade_shapeless", DoubleChestTierUpgradeShapelessRecipe.Serializer::new);
 	public static final Supplier<RecipeSerializer<?>> SHULKER_BOX_FROM_VANILLA_SHAPELESS_RECIPE_SERIALIZER = RECIPE_SERIALIZERS.register("shulker_box_from_vanilla_shapeless", ShulkerBoxFromVanillaShapelessRecipe.Serializer::new);
 	public static final RegistryObject<RecipeSerializer<?>> SHULKER_BOX_FROM_CHEST_RECIPE_SERIALIZER = RECIPE_SERIALIZERS.register("shulker_box_from_chest", ShulkerBoxFromChestRecipe.Serializer::new);
 	public static final RegistryObject<SimpleCraftingRecipeSerializer<?>> FLAT_TOP_BARREL_TOGGLE_RECIPE_SERIALIZER = RECIPE_SERIALIZERS.register("flat_top_barrel_toggle", () -> new SimpleCraftingRecipeSerializer<>(FlatTopBarrelToggleRecipe::new));

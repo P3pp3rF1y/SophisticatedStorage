@@ -18,11 +18,11 @@ import java.util.LinkedHashSet;
 import java.util.Optional;
 import java.util.Set;
 
-public class StorageTierUpgradeRecipe extends ShapedRecipe implements IWrapperRecipe<ShapedRecipe> {
+public class DoubleChestTierUpgradeRecipe extends ShapedRecipe implements IWrapperRecipe<ShapedRecipe> {
 	public static final Set<ResourceLocation> REGISTERED_RECIPES = new LinkedHashSet<>();
 	private final ShapedRecipe compose;
 
-	public StorageTierUpgradeRecipe(ShapedRecipe compose) {
+	public DoubleChestTierUpgradeRecipe(ShapedRecipe compose) {
 		super(compose.getId(), compose.getGroup(), compose.category(), compose.getRecipeWidth(), compose.getRecipeHeight(), compose.getIngredients(), compose.result);
 		this.compose = compose;
 		REGISTERED_RECIPES.add(compose.getId());
@@ -34,18 +34,18 @@ public class StorageTierUpgradeRecipe extends ShapedRecipe implements IWrapperRe
 	}
 
 	@Override
-	public boolean matches(CraftingContainer inv, Level level) {
-		return super.matches(inv, level) && getOriginalStorage(inv).isPresent();
+	public boolean matches(CraftingContainer input, Level level) {
+		return super.matches(input, level) && getDoubleChest(input).isPresent();
 	}
 
 	@Override
-	public ItemStack assemble(CraftingContainer inv, RegistryAccess registryAccess) {
-		ItemStack upgradedStorage = super.assemble(inv, registryAccess);
-		getOriginalStorage(inv).ifPresent(originalStorage -> upgradedStorage.setTag(originalStorage.getTag()));
+	public ItemStack assemble(CraftingContainer inv, RegistryAccess registries) {
+		ItemStack upgradedStorage = super.assemble(inv, registries);
+		getDoubleChest(inv).ifPresent(originalStorage -> upgradedStorage.setTag(originalStorage.getTag()));
 		if (StorageBlockItem.getContentsUuid(upgradedStorage).isPresent()) {
 			StackStorageWrapper storageWrapper = new StackStorageWrapper(upgradedStorage);
-			StorageBlockItem.setNumberOfInventorySlots(upgradedStorage, storageWrapper.getDefaultNumberOfInventorySlots());
-			StorageBlockItem.setNumberOfUpgradeSlots(upgradedStorage, storageWrapper.getDefaultNumberOfUpgradeSlots());
+			StorageBlockItem.setNumberOfInventorySlots(upgradedStorage, storageWrapper.getDefaultNumberOfInventorySlots() * 2);
+			StorageBlockItem.setNumberOfUpgradeSlots(upgradedStorage, storageWrapper.getDefaultNumberOfUpgradeSlots() * 2);
 		}
 		return upgradedStorage;
 	}
@@ -55,11 +55,10 @@ public class StorageTierUpgradeRecipe extends ShapedRecipe implements IWrapperRe
 		return true;
 	}
 
-	private Optional<ItemStack> getOriginalStorage(CraftingContainer inv) {
+	private Optional<ItemStack> getDoubleChest(CraftingContainer inv) {
 		for (int slot = 0; slot < inv.getContainerSize(); slot++) {
 			ItemStack slotStack = inv.getItem(slot);
-			if (slotStack.getItem() instanceof StorageBlockItem
-					&& (!(slotStack.getItem() instanceof ChestBlockItem) || !ChestBlockItem.isDoubleChest(slotStack))) {
+			if (slotStack.getItem() instanceof ChestBlockItem && ChestBlockItem.isDoubleChest(slotStack)) {
 				return Optional.of(slotStack);
 			}
 		}
@@ -69,12 +68,12 @@ public class StorageTierUpgradeRecipe extends ShapedRecipe implements IWrapperRe
 
 	@Override
 	public RecipeSerializer<?> getSerializer() {
-		return ModBlocks.STORAGE_TIER_UPGRADE_RECIPE_SERIALIZER.get();
+		return ModBlocks.DOUBLE_CHEST_TIER_UPGRADE_RECIPE_SERIALIZER.get();
 	}
 
-	public static class Serializer extends RecipeWrapperSerializer<ShapedRecipe, StorageTierUpgradeRecipe> {
+	public static class Serializer extends RecipeWrapperSerializer<ShapedRecipe, DoubleChestTierUpgradeRecipe> {
 		public Serializer() {
-			super(StorageTierUpgradeRecipe::new, RecipeSerializer.SHAPED_RECIPE);
+			super(DoubleChestTierUpgradeRecipe::new, RecipeSerializer.SHAPED_RECIPE);
 		}
 	}
 }

@@ -1,0 +1,25 @@
+{
+  "type": "sophisticatedstorage:double_chest_tier_upgrade",
+  "conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:iron_chest"
+    }
+  ],
+  "key": {
+    "I": {
+      "tag": "forge:ingots/iron"
+    },
+    "S": {
+      "item": "sophisticatedstorage:copper_chest"
+    }
+  },
+  "pattern": [
+    "III",
+    "ISI",
+    "III"
+  ],
+  "result": {
+    "item": "sophisticatedstorage:iron_chest"
+  }
+}

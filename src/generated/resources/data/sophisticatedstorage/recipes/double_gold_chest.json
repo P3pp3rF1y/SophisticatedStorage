@@ -1,0 +1,28 @@
+{
+  "type": "sophisticatedstorage:double_chest_tier_upgrade",
+  "conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:gold_chest"
+    }
+  ],
+  "key": {
+    "B": {
+      "tag": "forge:storage_blocks/gold"
+    },
+    "G": {
+      "tag": "forge:ingots/gold"
+    },
+    "S": {
+      "item": "sophisticatedstorage:iron_chest"
+    }
+  },
+  "pattern": [
+    "GGG",
+    "GSG",
+    "GBG"
+  ],
+  "result": {
+    "item": "sophisticatedstorage:gold_chest"
+  }
+}
