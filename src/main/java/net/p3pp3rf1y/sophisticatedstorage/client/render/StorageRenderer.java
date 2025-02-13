@@ -5,10 +5,13 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeItemBase;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.stack.StackUpgradeItem;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
+import net.p3pp3rf1y.sophisticatedcore.util.RegistryHelper;
+import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageTierUpgradeItem;
@@ -93,7 +96,11 @@ public abstract class StorageRenderer<T extends StorageBlockEntity> implements B
 	}
 
 	private boolean isUpgrade(ItemStack stack) {
-		return stack.getItem() instanceof UpgradeItemBase && stack.is(ModItems.STORAGE_UPGRADE_TAG);
+		return stack.getItem() instanceof UpgradeItemBase && isStorageItem(stack.getItem());
+	}
+
+	private static boolean isStorageItem(Item item) {
+		return RegistryHelper.getItemKey(item).getNamespace().equals(SophisticatedStorage.MOD_ID);
 	}
 
 	public boolean shouldShowDisabledUpgradesDisplay(T storageBlockEntity) {
