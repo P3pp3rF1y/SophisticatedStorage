@@ -51,8 +51,8 @@ public class LimitedBarrelBlock extends BarrelBlock {
 	public static final EnumProperty<VerticalFacing> VERTICAL_FACING = EnumProperty.create("vertical_facing", VerticalFacing.class);
 	private final Supplier<Integer> getBaseStackSizeMultiplier;
 
-	public LimitedBarrelBlock(int numberOfInventorySlots, Supplier<Integer> getBaseStackSizeMultiplier, Supplier<Integer> numberOfUpgradeSlotsSupplier, Properties properties) {
-		super(() -> numberOfInventorySlots, numberOfUpgradeSlotsSupplier, properties,
+	public LimitedBarrelBlock(int numberOfInventorySlots, Supplier<Integer> getBaseStackSizeMultiplier, Supplier<Integer> numberOfUpgradeSlotsSupplier, float explosionResistance) {
+		super(() -> numberOfInventorySlots, numberOfUpgradeSlotsSupplier, explosionResistance,
 				stateDef -> stateDef.any().setValue(HORIZONTAL_FACING, Direction.NORTH).setValue(VERTICAL_FACING, VerticalFacing.NO).setValue(TICKING, false).setValue(FLAT_TOP, false)
 		);
 		this.getBaseStackSizeMultiplier = getBaseStackSizeMultiplier;

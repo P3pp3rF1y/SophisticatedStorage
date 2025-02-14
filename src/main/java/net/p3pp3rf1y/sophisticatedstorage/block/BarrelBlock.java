@@ -25,13 +25,16 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.WoodType;
+import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -64,12 +67,12 @@ public class BarrelBlock extends WoodStorageBlockBase {
 	public static final BooleanProperty FLAT_TOP = BooleanProperty.create("flat_top");
 	private static final VoxelShape ITEM_ENTITY_COLLISION_SHAPE = box(0.05, 0.05, 0.05, 15.95, 15.95, 15.95);
 
-	public BarrelBlock(Supplier<Integer> numberOfInventorySlotsSupplier, Supplier<Integer> numberOfUpgradeSlotsSupplier, Properties properties) {
-		this(numberOfInventorySlotsSupplier, numberOfUpgradeSlotsSupplier, properties, stateDef -> stateDef.any().setValue(FACING, Direction.NORTH).setValue(OPEN, false).setValue(TICKING, false).setValue(FLAT_TOP, false));
+	public BarrelBlock(Supplier<Integer> numberOfInventorySlotsSupplier, Supplier<Integer> numberOfUpgradeSlotsSupplier, float explosionResistance) {
+		this(numberOfInventorySlotsSupplier, numberOfUpgradeSlotsSupplier, explosionResistance, stateDef -> stateDef.any().setValue(FACING, Direction.NORTH).setValue(OPEN, false).setValue(TICKING, false).setValue(FLAT_TOP, false));
 	}
 
-	public BarrelBlock(Supplier<Integer> numberOfInventorySlotsSupplier, Supplier<Integer> numberOfUpgradeSlotsSupplier, Properties properties, Function<StateDefinition<Block, BlockState>, BlockState> getDefaultState) {
-		super(properties, numberOfInventorySlotsSupplier, numberOfUpgradeSlotsSupplier);
+	public BarrelBlock(Supplier<Integer> numberOfInventorySlotsSupplier, Supplier<Integer> numberOfUpgradeSlotsSupplier, float explosionResistance, Function<StateDefinition<Block, BlockState>, BlockState> getDefaultState) {
+		super(BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(2.5F).sound(SoundType.WOOD).isRedstoneConductor((state, level, pos) -> isFlatTop(state)).explosionResistance(explosionResistance), numberOfInventorySlotsSupplier, numberOfUpgradeSlotsSupplier);
 		registerDefaultState(getDefaultState.apply(stateDefinition));
 	}
 
@@ -85,7 +88,6 @@ public class BarrelBlock extends WoodStorageBlockBase {
 		itemConsumer.accept(flatBarrel);
 	}
 
-	@SuppressWarnings("deprecation")
 	@Override
 	public boolean isCollisionShapeFullBlock(BlockState state, BlockGetter level, BlockPos pos) {
 		return false;
@@ -205,13 +207,11 @@ public class BarrelBlock extends WoodStorageBlockBase {
 		return defaultBlockState().setValue(FACING, blockPlaceContext.getNearestLookingDirection().getOpposite()).setValue(FLAT_TOP, BarrelBlockItem.isFlatTop(blockPlaceContext.getItemInHand()));
 	}
 
-	@SuppressWarnings("deprecation")
 	@Override
 	public VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
 		return context instanceof EntityCollisionContext entityCollisionContext && entityCollisionContext.getEntity() instanceof ItemEntity || isCalledByCollisionCacheLogic(level, pos) ? ITEM_ENTITY_COLLISION_SHAPE : super.getCollisionShape(state, level, pos, context);
 	}
 
-	@SuppressWarnings("deprecation")
 	@Override
 	public VoxelShape getBlockSupportShape(BlockState pState, BlockGetter pReader, BlockPos pPos) {
 		return Shapes.block();
@@ -250,5 +250,9 @@ public class BarrelBlock extends WoodStorageBlockBase {
 	@Override
 	public boolean isPathfindable(BlockState pState, BlockGetter pLevel, BlockPos pPos, PathComputationType pType) {
 		return false;
+	}
+
+	private static boolean isFlatTop(BlockState state) {
+		return state.getValue(FLAT_TOP);
 	}
 }
