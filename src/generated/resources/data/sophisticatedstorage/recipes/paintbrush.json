@@ -3,7 +3,7 @@
   "category": "misc",
   "key": {
     "S": {
-      "item": "minecraft:stick"
+      "tag": "forge:rods/wooden"
     },
     "W": {
       "tag": "minecraft:wool"
