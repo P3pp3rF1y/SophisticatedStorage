@@ -269,6 +269,7 @@ public class ModBlocks {
 	public static final RegistryObject<RecipeSerializer<?>> SHULKER_BOX_FROM_CHEST_RECIPE_SERIALIZER = RECIPE_SERIALIZERS.register("shulker_box_from_chest", ShulkerBoxFromChestRecipe.Serializer::new);
 	public static final RegistryObject<SimpleCraftingRecipeSerializer<?>> FLAT_TOP_BARREL_TOGGLE_RECIPE_SERIALIZER = RECIPE_SERIALIZERS.register("flat_top_barrel_toggle", () -> new SimpleCraftingRecipeSerializer<>(FlatTopBarrelToggleRecipe::new));
 	public static final RegistryObject<SimpleCraftingRecipeSerializer<?>> BARREL_MATERIAL_RECIPE_SERIALIZER = RECIPE_SERIALIZERS.register("barrel_material", () -> new SimpleCraftingRecipeSerializer<>(BarrelMaterialRecipe::new));
+	public static final RegistryObject<RecipeSerializer<?>> GENERIC_WOOD_STORAGE_RECIPE_SERIALIZER = RECIPE_SERIALIZERS.register("generic_wood_storage", GenericWoodStorageRecipe.Serializer::new);
 
 	public static void registerHandlers(IEventBus modBus) {
 		BLOCKS.register(modBus);

@@ -1,0 +1,29 @@
+{
+  "type": "sophisticatedstorage:generic_wood_storage",
+  "conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:barrel"
+    }
+  ],
+  "key": {
+    "P": {
+      "tag": "minecraft:planks"
+    },
+    "R": {
+      "item": "minecraft:redstone_torch"
+    },
+    "S": {
+      "tag": "minecraft:wooden_slabs"
+    }
+  },
+  "pattern": [
+    "PSP",
+    "PRP",
+    "PSP"
+  ],
+  "result": {
+    "item": "sophisticatedstorage:barrel",
+    "nbt": "{woodType:\"spruce\"}"
+  }
+}

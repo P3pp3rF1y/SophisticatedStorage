@@ -1,0 +1,26 @@
+{
+  "type": "sophisticatedstorage:generic_wood_storage",
+  "conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:chest"
+    }
+  ],
+  "key": {
+    "P": {
+      "tag": "minecraft:planks"
+    },
+    "R": {
+      "item": "minecraft:redstone_torch"
+    }
+  },
+  "pattern": [
+    "PPP",
+    "PRP",
+    "PPP"
+  ],
+  "result": {
+    "item": "sophisticatedstorage:chest",
+    "nbt": "{woodType:\"oak\"}"
+  }
+}
