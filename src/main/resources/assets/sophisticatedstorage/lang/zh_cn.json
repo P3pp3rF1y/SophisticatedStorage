@@ -213,6 +213,8 @@
   "item.sophisticatedstorage.chipped.alchemy_bench_upgrade.tooltip": "在升级标签页中添加一个Chipped模组的炼金术台",
   "item.sophisticatedstorage.chipped.tinkering_table_upgrade": "Chipped：工匠台升级",
   "item.sophisticatedstorage.chipped.tinkering_table_upgrade.tooltip": "在升级标签页中添加一个Chipped模组的工匠台",
+  "item.sophisticatedstorage.sawmill.sawmill_upgrade": "锯木机升级",
+  "item.sophisticatedstorage.sawmill.sawmill_upgrade.tooltip": "在升级标签页中添加一个锯木机",
   "gui.sophisticatedstorage.upgrades.hopper": "漏斗",
   "gui.sophisticatedstorage.upgrades.hopper.tooltip": "漏斗设置",
   "gui.sophisticatedstorage.upgrades.advanced_hopper": "高级漏斗",
