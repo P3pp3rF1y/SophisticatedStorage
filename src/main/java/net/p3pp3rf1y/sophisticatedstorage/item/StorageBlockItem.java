@@ -58,6 +58,18 @@ public class StorageBlockItem extends BlockItemBase implements ITintableBlockIte
 		return storageStack.getOrDefault(ModCoreDataComponents.NUMBER_OF_UPGRADE_SLOTS, 0);
 	}
 
+	public static boolean isLocked(ItemStack stack) {
+		return stack.getOrDefault(ModDataComponents.LOCKED, false);
+	}
+
+	public static void setLocked(ItemStack stack, boolean locked) {
+		if (locked) {
+			stack.set(ModDataComponents.LOCKED, true);
+		} else {
+			stack.remove(ModDataComponents.LOCKED);
+		}
+	}
+
 	@Override
 	public void setMainColor(ItemStack storageStack, int mainColor) {
 		storageStack.set(ModCoreDataComponents.MAIN_COLOR, mainColor);

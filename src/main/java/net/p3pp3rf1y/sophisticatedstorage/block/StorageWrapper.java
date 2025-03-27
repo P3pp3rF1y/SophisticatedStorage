@@ -38,8 +38,8 @@ public abstract class StorageWrapper implements IStorageWrapper {
 	public static final String CONTENTS_TAG = "contents";
 	public static final String NUMBER_OF_INVENTORY_SLOTS_TAG = "numberOfInventorySlots";
 	public static final String NUMBER_OF_UPGRADE_SLOTS_TAG = "numberOfUpgradeSlots";
-	public static final String SETTINGS_TAG = "settings";
 	public static final String RENDER_INFO_TAG = "renderInfo";
+	public static final String SORT_BY_TAG = "sortBy";
 	private final Supplier<Runnable> getSaveHandler;
 
 	@Nullable
@@ -172,7 +172,7 @@ public abstract class StorageWrapper implements IStorageWrapper {
 		if (openTabId >= 0) {
 			tag.putInt(OPEN_TAB_ID_TAG, openTabId);
 		}
-		tag.putString("sortBy", sortBy.getSerializedName());
+		tag.putString(SORT_BY_TAG, sortBy.getSerializedName());
 		if (columnsTaken > 0) {
 			tag.putInt("columnsTaken", columnsTaken);
 		}
@@ -209,7 +209,7 @@ public abstract class StorageWrapper implements IStorageWrapper {
 		renderInfo.deserializeFrom(renderInfoNbt);
 		contentsUuid = NBTHelper.getTagValue(tag, UUID_TAG, CompoundTag::get).map(NbtUtils::loadUUID).orElse(null);
 		openTabId = NBTHelper.getInt(tag, OPEN_TAB_ID_TAG).orElse(-1);
-		sortBy = NBTHelper.getString(tag, "sortBy").map(SortBy::fromName).orElse(SortBy.NAME);
+		sortBy = NBTHelper.getString(tag, SORT_BY_TAG).map(SortBy::fromName).orElse(SortBy.NAME);
 		columnsTaken = NBTHelper.getInt(tag, "columnsTaken").orElse(0);
 		loadSlotNumbers(tag);
 		mainColor = NBTHelper.getInt(tag, MAIN_COLOR_TAG).orElse(-1);

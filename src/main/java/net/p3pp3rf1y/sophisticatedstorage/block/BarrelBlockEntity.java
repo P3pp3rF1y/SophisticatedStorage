@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.Optional;
 
 public class BarrelBlockEntity extends WoodStorageBlockEntity implements IMaterialHolder {
-	private static final String MATERIALS_TAG = "materials";
+	public static final String MATERIALS_TAG = "materials";
 	public static final String STORAGE_TYPE = "barrel";
 	private Map<BarrelMaterial, ResourceLocation> materials = new EnumMap<>(BarrelMaterial.class);
 	private final ContainerOpenersCounter openersCounter = new ContainerOpenersCounter() {
@@ -86,7 +86,7 @@ public class BarrelBlockEntity extends WoodStorageBlockEntity implements IMateri
 	@Override
 	public void setLevel(Level level) {
 		super.setLevel(level);
-		if (level.isClientSide) {
+		if (level.isClientSide && dynamicRenderTracker == IDynamicRenderTracker.NOOP) {
 			dynamicRenderTracker = new DynamicRenderTracker(this);
 		}
 	}

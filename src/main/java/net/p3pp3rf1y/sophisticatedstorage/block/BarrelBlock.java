@@ -105,7 +105,7 @@ public class BarrelBlock extends WoodStorageBlockBase {
 	public ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
 		return WorldHelper.getBlockEntity(level, pos, WoodStorageBlockEntity.class).map(b -> {
 			if (b.isPacked()) {
-				return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+				return ItemInteractionResult.FAIL;
 			}
 			if (level.isClientSide || hand == InteractionHand.OFF_HAND) {
 				return ItemInteractionResult.SUCCESS;
@@ -246,5 +246,10 @@ public class BarrelBlock extends WoodStorageBlockBase {
 
 	private static boolean isFlatTop(BlockState state) {
 		return state.getValue(FLAT_TOP);
+	}
+
+	@Override
+	protected BlockState rotate(BlockState state, Rotation rotation) {
+		return state.setValue(FACING, rotation.rotate(state.getValue(FACING)));
 	}
 }

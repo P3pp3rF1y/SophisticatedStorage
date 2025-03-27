@@ -276,4 +276,9 @@ public class LimitedBarrelBlock extends BarrelBlock {
 	public boolean hasFixedIndexDisplayItems() {
 		return true;
 	}
+
+	@Override
+	protected BlockState rotate(BlockState state, Rotation rotation) {
+		return state.setValue(HORIZONTAL_FACING, rotation.rotate(state.getValue(HORIZONTAL_FACING)));
+	}
 }

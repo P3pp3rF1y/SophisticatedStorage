@@ -9,6 +9,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
@@ -17,6 +18,7 @@ import net.p3pp3rf1y.sophisticatedcore.upgrades.FilterAttributes;
 import net.p3pp3rf1y.sophisticatedcore.util.CodecHelper;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelMaterial;
+import net.p3pp3rf1y.sophisticatedstorage.block.LimitedBarrelBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.item.BarrelBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.PaintbrushItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageToolItem;
@@ -50,16 +52,35 @@ public class ModDataComponents {
     public static final Supplier<DataComponentType<Boolean>> DOUBLE_CHEST = DATA_COMPONENT_TYPES.register("double_chest",
             () -> new DataComponentType.Builder<Boolean>().persistent(Codec.BOOL).networkSynchronized(ByteBufCodecs.BOOL).build());
 
-    public static final Supplier<DataComponentType<Boolean>> SHOWS_TIER = DATA_COMPONENT_TYPES.register("shows_tier",
+    //TODO rename to TIER_VISIBLE in 1.22 for consistency with other components
+	public static final Supplier<DataComponentType<Boolean>> SHOWS_TIER = DATA_COMPONENT_TYPES.register("shows_tier",
             () -> new DataComponentType.Builder<Boolean>().persistent(Codec.BOOL).networkSynchronized(ByteBufCodecs.BOOL).build());
 
-    public static final Supplier<DataComponentType<Boolean>> PACKED = DATA_COMPONENT_TYPES.register("packed",
+	public static final Supplier<DataComponentType<Boolean>> LOCK_VISIBLE = DATA_COMPONENT_TYPES.register("lock_visible",
+			() -> new DataComponentType.Builder<Boolean>().persistent(Codec.BOOL).networkSynchronized(ByteBufCodecs.BOOL).build());
+
+	public static final Supplier<DataComponentType<Boolean>> UPGRADES_VISIBLE = DATA_COMPONENT_TYPES.register("upgrades_visible",
+			() -> new DataComponentType.Builder<Boolean>().persistent(Codec.BOOL).networkSynchronized(ByteBufCodecs.BOOL).build());
+
+	public static final Supplier<DataComponentType<Boolean>> COUNTS_VISIBLE = DATA_COMPONENT_TYPES.register("counts_visible",
+			() -> new DataComponentType.Builder<Boolean>().persistent(Codec.BOOL).networkSynchronized(ByteBufCodecs.BOOL).build());
+
+	public static final Supplier<DataComponentType<Boolean>> FILL_LEVELS_VISIBLE = DATA_COMPONENT_TYPES.register("fill_levels_visible",
+			() -> new DataComponentType.Builder<Boolean>().persistent(Codec.BOOL).networkSynchronized(ByteBufCodecs.BOOL).build());
+
+	public static final Supplier<DataComponentType<Boolean>> PACKED = DATA_COMPONENT_TYPES.register("packed",
             () -> new DataComponentType.Builder<Boolean>().persistent(Codec.BOOL).networkSynchronized(ByteBufCodecs.BOOL).build());
 
     public static final Supplier<DataComponentType<WoodType>> WOOD_TYPE = DATA_COMPONENT_TYPES.register("wood_type",
             () -> new DataComponentType.Builder<WoodType>().persistent(WoodType.CODEC).networkSynchronized(WoodStorageBlockItem.WOOD_TYPE_STREAM_CODEC).build());
 
-    public static final Supplier<DataComponentType<Integer>> FIRST_INVENTORY_SLOT = DATA_COMPONENT_TYPES.register("first_inventory_slot",
+	public static final Supplier<DataComponentType<Boolean>> LOCKED = DATA_COMPONENT_TYPES.register("locked",
+			() -> new DataComponentType.Builder<Boolean>().persistent(Codec.BOOL).networkSynchronized(ByteBufCodecs.BOOL).build());
+
+	public static final Supplier<DataComponentType<Map<Integer, DyeColor>>> SLOT_COLORS = DATA_COMPONENT_TYPES.register("slot_colors",
+			() -> new DataComponentType.Builder<Map<Integer, DyeColor>>().persistent(LimitedBarrelBlockEntity.SLOT_COLORS_CODEC).networkSynchronized(LimitedBarrelBlockEntity.SLOT_COLORS_STREAM_CODEC).build());
+
+	public static final Supplier<DataComponentType<Integer>> FIRST_INVENTORY_SLOT = DATA_COMPONENT_TYPES.register("first_inventory_slot",
             () -> new DataComponentType.Builder<Integer>().persistent(Codec.INT).networkSynchronized(ByteBufCodecs.INT).build());
 
     private static final Codec<Set<Direction>> DIRECTION_SET_CODEC = CodecHelper.setOf(Direction.CODEC);
@@ -85,7 +106,7 @@ public class ModDataComponents {
 	public static final DeferredHolder<DataComponentType<?>, DataComponentType<FilterAttributes>> OUTPUT_FILTER_ATTRIBUTES = DATA_COMPONENT_TYPES.register("output_filter_attributes",
 			() -> new DataComponentType.Builder<FilterAttributes>().persistent(FilterAttributes.CODEC).networkSynchronized(FilterAttributes.STREAM_CODEC).build());
 
-    public static void register(IEventBus modBus) {
+	public static void register(IEventBus modBus) {
         DATA_COMPONENT_TYPES.register(modBus);
     }
 

@@ -1,10 +1,15 @@
 package net.p3pp3rf1y.sophisticatedstorage.block;
 
+import com.mojang.serialization.Codec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.*;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
@@ -24,6 +29,13 @@ import java.util.function.Predicate;
 public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICountDisplay, IFillLevelDisplay {
 	private static final String SLOT_COUNTS_TAG = "slotCounts";
 	private static final String SLOT_FILL_LEVELS_TAG = "slotFillLevels";
+
+	public static final Codec<Map<Integer, DyeColor>> SLOT_COLORS_CODEC =
+			Codec.unboundedMap(ExtraCodecs.POSITIVE_INT, DyeColor.CODEC);
+
+	public static final StreamCodec<FriendlyByteBuf, Map<Integer, DyeColor>> SLOT_COLORS_STREAM_CODEC =
+			StreamCodecHelper.ofMap(ByteBufCodecs.INT, DyeColor.STREAM_CODEC, HashMap::new);
+
 	public static final Consumer<VoidUpgradeWrapper> VOID_UPGRADE_VOIDING_OVERFLOW_OF_EVERYTHING_BY_DEFAULT = voidUpgrade -> {
 		voidUpgrade.getFilterLogic().setAllowByDefault(false);
 		voidUpgrade.setShouldVoidOverflowDefaultOrLoadFromNbt(true);
