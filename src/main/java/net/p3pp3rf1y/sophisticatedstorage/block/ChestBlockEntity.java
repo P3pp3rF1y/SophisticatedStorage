@@ -72,7 +72,7 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 		public void incrementOpeners(Player player, Level level, BlockPos pos, BlockState state) {
 			super.incrementOpeners(player, level, pos, state);
 			if (isMainChest()) {
-				runOnTheOtherPart(level, pos, state, (blockEntity, neighborPos) -> blockEntity.openersCounter.incrementOpeners(player, level, neighborPos, level.getBlockState(neighborPos)));
+				runOnTheOtherPart(level, pos, (blockEntity, neighborPos) -> blockEntity.openersCounter.incrementOpeners(player, level, neighborPos, level.getBlockState(neighborPos)));
 			}
 		}
 
@@ -80,7 +80,7 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 		public void decrementOpeners(Player player, Level level, BlockPos pos, BlockState state) {
 			super.decrementOpeners(player, level, pos, state);
 			if (isMainChest()) {
-				runOnTheOtherPart(level, pos, state, (blockEntity, neighborPos) -> blockEntity.openersCounter.decrementOpeners(player, level, neighborPos, level.getBlockState(neighborPos)));
+				runOnTheOtherPart(level, pos, (blockEntity, neighborPos) -> blockEntity.openersCounter.decrementOpeners(player, level, neighborPos, level.getBlockState(neighborPos)));
 			}
 		}
 	};
@@ -186,7 +186,7 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 	}
 
 	private void moveOtherPartStacksToIt() {
-		runOnTheOtherPart(level, getBlockPos(), getBlockState(), (be, pos) -> {
+		runOnTheOtherPart(level, getBlockPos(), (be, pos) -> {
 			be.removeDoubleMainPos();
 			InventoryHandler mainInventoryHandler = getStorageWrapper().getInventoryHandler();
 			int firstIndex = mainInventoryHandler.getSlots() / 2;
@@ -255,7 +255,7 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 	public void toggleLock() {
 		super.toggleLock();
 		if (level != null) {
-			runOnTheOtherPart(level, worldPosition, level.getBlockState(worldPosition), (be, pos) -> be.toggleJustMyLock());
+			runOnTheOtherPart(level, worldPosition, (be, pos) -> be.toggleJustMyLock());
 		}
 	}
 
@@ -267,7 +267,7 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 	public void toggleLockVisibility() {
 		super.toggleLockVisibility();
 		if (level != null) {
-			runOnTheOtherPart(level, worldPosition, level.getBlockState(worldPosition), (be, pos) -> be.toggleJustMyLockVisibility());
+			runOnTheOtherPart(level, worldPosition, (be, pos) -> be.toggleJustMyLockVisibility());
 		}
 	}
 
@@ -279,7 +279,7 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 	public void toggleTierVisiblity() {
 		super.toggleTierVisiblity();
 		if (level != null) {
-			runOnTheOtherPart(level, worldPosition, level.getBlockState(worldPosition), (be, pos) -> be.toggleJustMyTierVisiblity());
+			runOnTheOtherPart(level, worldPosition, (be, pos) -> be.toggleJustMyTierVisiblity());
 		}
 	}
 
@@ -291,7 +291,7 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 	public void toggleUpgradesVisiblity() {
 		super.toggleUpgradesVisiblity();
 		if (level != null) {
-			runOnTheOtherPart(level, worldPosition, level.getBlockState(worldPosition), (be, pos) -> be.toggleJustMyUpgradesVisiblity());
+			runOnTheOtherPart(level, worldPosition, (be, pos) -> be.toggleJustMyUpgradesVisiblity());
 		}
 	}
 
@@ -299,13 +299,13 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 		super.toggleUpgradesVisiblity();
 	}
 
-	private static void runOnTheOtherPart(Level level, BlockPos pos, BlockState state, BiConsumer<ChestBlockEntity, BlockPos> execute) {
-		ChestType chestType = state.getValue(ChestBlock.TYPE);
+	private void runOnTheOtherPart(Level level, BlockPos pos, BiConsumer<ChestBlockEntity, BlockPos> execute) {
+		ChestType chestType = getBlockState().getValue(ChestBlock.TYPE);
 		if (chestType == ChestType.SINGLE) {
 			return;
 		}
-		Direction facing = state.getValue(ChestBlock.FACING);
-		BlockPos neighborPos = chestType == ChestType.RIGHT ? pos.relative(facing.getCounterClockWise()) : pos.relative(facing.getClockWise());
+		Direction facing = getBlockState().getValue(ChestBlock.FACING);
+		BlockPos neighborPos = isMainChest() ? pos.relative(facing.getCounterClockWise()) : pos.relative(facing.getClockWise());
 		level.getBlockEntity(neighborPos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get())
 				.ifPresent(chestBlockEntity -> execute.accept(chestBlockEntity, neighborPos));
 	}

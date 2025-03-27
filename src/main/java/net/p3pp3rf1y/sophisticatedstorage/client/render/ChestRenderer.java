@@ -3,8 +3,6 @@ package net.p3pp3rf1y.sophisticatedstorage.client.render;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
-import net.minecraft.client.Camera;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
@@ -16,7 +14,6 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.Material;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -131,7 +128,7 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity> {
 			poseStack.scale(1.01f, 1.01f, 1.01f);
 			subRenderer.renderBottomAndLid(poseStack, bufferSource, lidAngle, packedLight, packedOverlay, StorageTextureManager.ChestMaterial.PACKED);
 			poseStack.popPose();
-		} else if (chestEntity.getBlockPos() == BlockPos.ZERO || shouldRenderFrontFace(chestEntity.getBlockPos())) { //special condition for chests that are not in the world
+		} else {
 			poseStack.pushPose();
 			poseStack.translate(0.5, 0.5, 0.5);
 			poseStack.mulPose(Axis.YP.rotationDegrees(180));
@@ -212,11 +209,6 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity> {
 		}
 		LockRenderer.renderLock(chestEntity, poseStack, bufferSource, packedLight, packedOverlay, 13F / 16F, this::holdsToolInToggleLockOrLockDisplay);
 		poseStack.popPose();
-	}
-
-	private boolean shouldRenderFrontFace(BlockPos chestPos) {
-		Camera camera = Minecraft.getInstance().gameRenderer.getMainCamera();
-		return Vec3.atCenterOf(chestPos).closerThan(camera.getPosition(), 32);
 	}
 
 	private static class ChestSubRenderer {

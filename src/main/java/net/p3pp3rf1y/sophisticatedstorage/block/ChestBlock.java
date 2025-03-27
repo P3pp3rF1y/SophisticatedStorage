@@ -500,4 +500,9 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 		point.add(pos.getX() + 0.5f, pos.getY() + 0.5f, pos.getZ() + 0.5f);
 		return point;
 	}
+
+	@Override
+	public BlockState rotate(BlockState state, Rotation rotation) {
+		return state.setValue(FACING, rotation.rotate(state.getValue(FACING)));
+	}
 }

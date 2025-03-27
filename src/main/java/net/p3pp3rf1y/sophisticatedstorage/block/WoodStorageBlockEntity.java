@@ -21,7 +21,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 public abstract class WoodStorageBlockEntity extends StorageBlockEntity {
-	private static final String PACKED_TAG = "packed";
+	public static final String PACKED_TAG = "packed";
 	@Nullable
 	private WoodType woodType = null;
 

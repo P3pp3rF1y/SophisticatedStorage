@@ -6,6 +6,7 @@ import net.minecraft.world.level.block.Block;
 import net.p3pp3rf1y.sophisticatedcore.util.BlockItemBase;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
 import net.p3pp3rf1y.sophisticatedstorage.block.ITintableBlockItem;
+import net.p3pp3rf1y.sophisticatedstorage.entity.StorageHolderBase;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -46,6 +47,18 @@ public class StorageBlockItem extends BlockItemBase implements ITintableBlockIte
 
 	public static int getNumberOfUpgradeSlots(ItemStack storageStack) {
 		return NBTHelper.getInt(storageStack, StackStorageWrapper.NUMBER_OF_UPGRADE_SLOTS_TAG).orElse(0);
+	}
+
+	public static boolean isLocked(ItemStack stack) {
+		return NBTHelper.getBoolean(stack, StorageHolderBase.LOCKED_TAG).orElse(false);
+	}
+
+	public static void setLocked(ItemStack stack, boolean locked) {
+		if (locked) {
+			stack.getOrCreateTag().putBoolean(StorageHolderBase.LOCKED_TAG, true);
+		} else {
+			NBTHelper.removeTag(stack, StorageHolderBase.LOCKED_TAG);
+		}
 	}
 
 	@Override
