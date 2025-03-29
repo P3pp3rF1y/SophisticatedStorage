@@ -143,7 +143,7 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 		}
 
 		ItemStack storageItem = getSyncedStorageStack();
-		NBTHelper.getUniqueId(storageItem, StorageWrapper.UUID_TAG).ifPresent(uuid -> getStorageData(uuid).setDirty());
+		NBTHelper.getUniqueId(storageItem, StorageWrapper.UUID_TAG).ifPresent(uuid -> getStorageData(uuid).markChanged());
 	}
 
 	public void setStorageItem(ItemStack storageItem) {
