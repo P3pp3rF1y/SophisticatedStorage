@@ -145,7 +145,7 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 		if (storageId == null) {
 			return;
 		}
-		getStorageData(storageId).setDirty();
+		getStorageData(storageId).markChanged();
 	}
 
 	public void setStorageItem(ItemStack storageItem) {
@@ -423,7 +423,7 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 			}
 		}
 
-		storageItem.set(ModDataComponents.LOCKED, locked);
+		setLocked(locked);
 		setStorageItem(storageItem);
 	}
 
