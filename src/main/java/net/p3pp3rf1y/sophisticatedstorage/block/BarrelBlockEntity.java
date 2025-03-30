@@ -62,7 +62,7 @@ public class BarrelBlockEntity extends WoodStorageBlockEntity implements IMateri
 
 	protected BarrelBlockEntity(BlockPos pos, BlockState state, BlockEntityType<? extends BarrelBlockEntity> blockEntityType) {
 		super(pos, state, blockEntityType);
-		getStorageWrapper().getRenderInfo().setChangeListener(ri -> {
+		getStorageWrapper().getRenderInfo().setDisplayItemsChangeListener(ri -> {
 			dynamicRenderTracker.onRenderInfoUpdated(ri);
 			WorldHelper.notifyBlockUpdate(this);
 		});
