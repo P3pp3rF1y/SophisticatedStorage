@@ -62,15 +62,15 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 			openersCounter = new MovingStorageOpenersCounter() {
 				@Override
 				protected void onOpen() {
-					if (isBarrel(getSyncedStorageStack())) {
+					if (isBarrel()) {
 						playSound(SoundEvents.BARREL_OPEN);
 						updateBarrelOpenBlockState(true);
-					} else if (isShulkerBox(getSyncedStorageStack())) {
+					} else if (isShulkerBox()) {
 						playSound(SoundEvents.SHULKER_BOX_OPEN);
 						if (getRenderBlockEntity() instanceof ShulkerBoxBlockEntity shulkerBoxBlockEntity) {
 							shulkerBoxBlockEntity.setAnimationStatus(ShulkerBoxBlockEntity.AnimationStatus.OPENING);
 						}
-					} else if (isChest(getSyncedStorageStack())) {
+					} else if (isChest()) {
 						if (isMainStorage) {
 							playSound(SoundEvents.CHEST_OPEN);
 						}
@@ -82,15 +82,15 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 
 				@Override
 				protected void onClose() {
-					if (isBarrel(getSyncedStorageStack())) {
+					if (isBarrel()) {
 						playSound(SoundEvents.BARREL_CLOSE);
 						updateBarrelOpenBlockState(false);
-					} else if (isShulkerBox(getSyncedStorageStack())) {
+					} else if (isShulkerBox()) {
 						playSound(SoundEvents.SHULKER_BOX_CLOSE);
 						if (getRenderBlockEntity() instanceof ShulkerBoxBlockEntity shulkerBoxBlockEntity) {
 							shulkerBoxBlockEntity.setAnimationStatus(ShulkerBoxBlockEntity.AnimationStatus.CLOSING);
 						}
-					} else if (isChest(getSyncedStorageStack())) {
+					} else if (isChest()) {
 						if (isMainStorage) {
 							playSound(SoundEvents.CHEST_CLOSE);
 						}
@@ -164,36 +164,36 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 		return storageWrapper;
 	}
 
-	private boolean isBarrel(ItemStack storageItem) {
-		return storageItem.getItem() instanceof BarrelBlockItem;
+	public boolean isBarrel() {
+		return getSyncedStorageStack().getItem() instanceof BarrelBlockItem;
 	}
 
-	protected boolean isShulkerBox(ItemStack storageItem) {
-		return storageItem.getItem() instanceof ShulkerBoxItem;
+	protected boolean isShulkerBox() {
+		return getSyncedStorageStack().getItem() instanceof ShulkerBoxItem;
 	}
 
-	protected boolean isChest(ItemStack storageItem) {
-		return storageItem.getItem() instanceof ChestBlockItem;
+	protected boolean isChest() {
+		return getSyncedStorageStack().getItem() instanceof ChestBlockItem;
 	}
 
-	public boolean areUpgradesVisible(ItemStack storageItem) {
-		return NBTHelper.getBoolean(storageItem, UPGRADES_VISIBLE_TAG).orElse(false);
+	public boolean areUpgradesVisible() {
+		return NBTHelper.getBoolean(getSyncedStorageStack(), UPGRADES_VISIBLE_TAG).orElse(false);
 	}
 
-	public boolean areCountsVisible(ItemStack storageItem) {
-		return NBTHelper.getBoolean(storageItem, COUNTS_VISIBLE_TAG).orElse(true);
+	public boolean areCountsVisible() {
+		return NBTHelper.getBoolean(getSyncedStorageStack(), COUNTS_VISIBLE_TAG).orElse(true);
 	}
 
-	public boolean areFillLevelsVisible(ItemStack storageItem) {
-		return NBTHelper.getBoolean(storageItem, FILL_LEVELS_VISIBLE_TAG).orElse(false);
+	public boolean areFillLevelsVisible() {
+		return NBTHelper.getBoolean(getSyncedStorageStack(), FILL_LEVELS_VISIBLE_TAG).orElse(false);
 	}
 
-	public boolean isLockVisible(ItemStack storageItem) {
-		return NBTHelper.getBoolean(storageItem, LOCK_VISIBLE_TAG).orElse(true);
+	public boolean isLockVisible() {
+		return NBTHelper.getBoolean(getSyncedStorageStack(), LOCK_VISIBLE_TAG).orElse(true);
 	}
 
 	protected boolean isPacked(ItemStack storageItem) {
-		return WoodStorageBlockItem.isPacked(storageItem);
+		return WoodStorageBlockItem.isPacked(getSyncedStorageStack());
 	}
 
 	public CompoundTag getRenderInfoNbt(ItemStack storageItem) {
@@ -234,14 +234,14 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 			if (renderBlockEntity.isLocked() != isLocked(storageItem)) {
 				renderBlockEntity.toggleLock();
 			}
-			if (renderBlockEntity.shouldShowLock() != isLockVisible(storageItem)) {
+			if (renderBlockEntity.shouldShowLock() != isLockVisible()) {
 				renderBlockEntity.toggleLockVisibility();
 			}
-			if (renderBlockEntity.shouldShowTier() != StorageBlockItem.showsTier(storageItem)) {
+			if (renderBlockEntity.shouldShowTier() != shouldShowCounts()) {
 				renderBlockEntity.toggleTierVisiblity();
 			}
 			renderBlockEntity.getStorageWrapper().getRenderInfo().deserializeFrom(getRenderInfoNbt(storageItem));
-			if (renderBlockEntity.shouldShowUpgrades() != areUpgradesVisible(storageItem)) {
+			if (renderBlockEntity.shouldShowUpgrades() != areUpgradesVisible()) {
 				renderBlockEntity.toggleUpgradesVisiblity();
 			}
 			if (storageItem.getItem() instanceof ITintableBlockItem tintableBlockItem) {
@@ -276,10 +276,10 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 				});
 
 				if (renderBlockEntity instanceof LimitedBarrelBlockEntity limitedBarrelBlockEntity) {
-					if (limitedBarrelBlockEntity.shouldShowFillLevels() != areFillLevelsVisible(storageItem)) {
+					if (limitedBarrelBlockEntity.shouldShowFillLevels() != areFillLevelsVisible()) {
 						limitedBarrelBlockEntity.toggleFillLevelVisibility();
 					}
-					if (limitedBarrelBlockEntity.shouldShowCounts() != areCountsVisible(storageItem)) {
+					if (limitedBarrelBlockEntity.shouldShowCounts() != areCountsVisible()) {
 						limitedBarrelBlockEntity.toggleCountVisibility();
 					}
 				}
@@ -436,25 +436,25 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 
 	@Override
 	public boolean shouldShowLock() {
-		return isLockVisible(getSyncedStorageStack());
+		return isLockVisible();
 	}
 
 	@Override
 	public void toggleLockVisibility() {
 		ItemStack storageItem = getSyncedStorageStack();
-		storageItem.getOrCreateTag().putBoolean(LOCK_VISIBLE_TAG, !isLockVisible(storageItem));
+		storageItem.getOrCreateTag().putBoolean(LOCK_VISIBLE_TAG, !isLockVisible());
 		setStorageItem(storageItem);
 	}
 
 	@Override
 	public boolean shouldShowCounts() {
-		return areCountsVisible(getSyncedStorageStack());
+		return areCountsVisible();
 	}
 
 	@Override
 	public void toggleCountVisibility() {
 		ItemStack storageItem = getSyncedStorageStack();
-		storageItem.getOrCreateTag().putBoolean(COUNTS_VISIBLE_TAG, !areCountsVisible(storageItem));
+		storageItem.getOrCreateTag().putBoolean(COUNTS_VISIBLE_TAG, !areCountsVisible());
 		setStorageItem(storageItem);
 	}
 
@@ -465,13 +465,13 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 
 	@Override
 	public boolean shouldShowFillLevels() {
-		return areFillLevelsVisible(getSyncedStorageStack());
+		return areFillLevelsVisible();
 	}
 
 	@Override
 	public void toggleFillLevelVisibility() {
 		ItemStack storageItem = getSyncedStorageStack();
-		storageItem.getOrCreateTag().putBoolean(FILL_LEVELS_VISIBLE_TAG, !areFillLevelsVisible(storageItem));
+		storageItem.getOrCreateTag().putBoolean(FILL_LEVELS_VISIBLE_TAG, !areFillLevelsVisible());
 		setStorageItem(storageItem);
 	}
 
@@ -494,13 +494,13 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 
 	@Override
 	public boolean shouldShowUpgrades() {
-		return areUpgradesVisible(getSyncedStorageStack());
+		return areUpgradesVisible();
 	}
 
 	@Override
 	public void toggleUpgradesVisiblity() {
 		ItemStack storageItem = getSyncedStorageStack();
-		storageItem.getOrCreateTag().putBoolean(UPGRADES_VISIBLE_TAG, !areUpgradesVisible(storageItem));
+		storageItem.getOrCreateTag().putBoolean(UPGRADES_VISIBLE_TAG, !areUpgradesVisible());
 		setStorageItem(storageItem);
 	}
 
@@ -515,7 +515,7 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 	@Override
 	public void setMaterials(Map<BarrelMaterial, ResourceLocation> materials) {
 		ItemStack storageItem = getSyncedStorageStack();
-		if (isBarrel(storageItem)) {
+		if (isBarrel()) {
 			BarrelBlockItem.setMaterials(storageItem, materials);
 			setStorageItem(storageItem);
 		}
@@ -523,11 +523,11 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 
 	@Override
 	public Map<BarrelMaterial, ResourceLocation> getMaterials() {
-		return isBarrel(getSyncedStorageStack()) ? BarrelBlockItem.getMaterials(getSyncedStorageStack()) : Collections.emptyMap();
+		return isBarrel() ? BarrelBlockItem.getMaterials(getSyncedStorageStack()) : Collections.emptyMap();
 	}
 
 	@Override
 	public boolean canHoldMaterials() {
-		return isBarrel(getSyncedStorageStack());
+		return isBarrel();
 	}
 }
