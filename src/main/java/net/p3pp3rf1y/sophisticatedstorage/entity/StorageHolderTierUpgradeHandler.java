@@ -1,14 +1,17 @@
 package net.p3pp3rf1y.sophisticatedstorage.entity;
 
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.registries.ForgeRegistries;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockBase;
+import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageTranslationHelper;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
+import net.p3pp3rf1y.sophisticatedstorage.item.ChestBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageTierUpgradeItem;
 
 import java.util.HashMap;
@@ -18,19 +21,25 @@ public class StorageHolderTierUpgradeHandler {
 
 	public static final Map<StorageTierUpgradeItem.TierUpgrade, Map<Item, StorageHolderUpgradeDefinition>> STORAGE_HOLDER_TIER_UPGRADE_DEFINITIONS = new HashMap<>();
 
-	public static boolean upgrade(Player player, StorageHolderBase storageHolder, ItemStack itemInHand, StorageTierUpgradeItem tierUpgradeItem) {
+	public static InteractionResult upgrade(Player player, StorageHolderBase storageHolder, ItemStack itemInHand, StorageTierUpgradeItem tierUpgradeItem) {
 		Map<Item, StorageHolderTierUpgradeHandler.StorageHolderUpgradeDefinition> tierDefinitions = STORAGE_HOLDER_TIER_UPGRADE_DEFINITIONS.get(tierUpgradeItem.getTier());
 		if (tierDefinitions == null) {
 			SophisticatedStorage.LOGGER.warn("No tier upgrade definitions found for {}", tierUpgradeItem.getTier());
-			return false;
+			return InteractionResult.PASS;
 		}
 
 		ItemStack storageStack = storageHolder.getSyncedStorageStack();
 		if (!storageHolder.isOpen() && !storageHolder.isPacked()) {
 			StorageHolderUpgradeDefinition upgradeDefinition = tierDefinitions.get(storageStack.getItem());
-			if (upgradeDefinition == null) {
-				SophisticatedStorage.LOGGER.warn("No tier upgrade definition found for {}", () -> ForgeRegistries.ITEMS.getKey(storageStack.getItem()));
-				return false;
+			boolean cannotBeUpgradedWithThisUpgradeItem = upgradeDefinition == null;
+			if (cannotBeUpgradedWithThisUpgradeItem) {
+				return InteractionResult.PASS;
+			}
+
+			int countRequired = upgradeDefinition.getCountRequired(storageStack);
+			if (countRequired > itemInHand.getCount()) {
+				player.displayClientMessage(Component.translatable(StorageTranslationHelper.INSTANCE.translGui("status.too_low_tier_upgrade_count"), countRequired, itemInHand.getHoverName()), true);
+				return InteractionResult.FAIL;
 			}
 
 			if (!player.level().isClientSide()) {
@@ -41,9 +50,9 @@ public class StorageHolderTierUpgradeHandler {
 				}
 			}
 
-			return true;
+			return InteractionResult.SUCCESS;
 		}
-		return false;
+		return InteractionResult.PASS;
 	}
 
 	static {
@@ -196,6 +205,17 @@ public class StorageHolderTierUpgradeHandler {
 		}
 
 		public void upgradeStorageHolder(StorageHolderBase storageHolder, ItemStack storageItem) {
+			if (isDoubleChest(storageItem)) {
+				upgradeIndividualStorageHolder(storageHolder.getMainStorageHolder(), storageItem);
+				storageHolder.getAuxiliaryStorageHolder().ifPresent(auxiliaryStorageHolder -> {
+					upgradeIndividualStorageHolder(auxiliaryStorageHolder, storageItem);
+				});
+			} else {
+				upgradeIndividualStorageHolder(storageHolder, storageItem);
+			}
+		}
+
+		private void upgradeIndividualStorageHolder(StorageHolderBase storageHolder, ItemStack storageItem) {
 			ItemStack newStorageItem = new ItemStack(upgradedItem);
 			newStorageItem.setTag(storageItem.getTag());
 
@@ -209,6 +229,18 @@ public class StorageHolderTierUpgradeHandler {
 					movingStorageWrapper.changeSize(additionalInventorySlots, additionalUpgradeSlots);
 				}
 			}
+		}
+
+		public int getCountRequired(ItemStack storageStack) {
+			if (isDoubleChest(storageStack)) {
+				return 2;
+			}
+
+			return 1;
+		}
+
+		private boolean isDoubleChest(ItemStack storageStack) {
+			return storageStack.getItem() instanceof ChestBlockItem && ChestBlockItem.isDoubleChest(storageStack);
 		}
 	}
 }
