@@ -39,7 +39,6 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.network.NetworkHooks;
-import net.p3pp3rf1y.sophisticatedcore.api.IDisplaySideStorage;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
@@ -52,7 +51,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.Supplier;
 
-public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterloggedBlock, IDisplaySideStorage {
+public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterloggedBlock {
 	public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
 	public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
 	public static final EnumProperty<ChestType> TYPE = BlockStateProperties.CHEST_TYPE;
@@ -445,11 +444,6 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 	@Override
 	public Direction getFacing(BlockState state) {
 		return state.getValue(FACING);
-	}
-
-	@Override
-	public boolean canChangeDisplaySide(BlockState state) {
-		return state.getValue(TYPE) != ChestType.SINGLE;
 	}
 
 	@Override
