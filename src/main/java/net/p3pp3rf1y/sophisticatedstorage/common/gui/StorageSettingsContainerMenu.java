@@ -6,15 +6,19 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.ChestType;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.SettingsContainerMenu;
 import net.p3pp3rf1y.sophisticatedcore.util.NoopStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
+import net.p3pp3rf1y.sophisticatedstorage.block.ChestBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 
 public class StorageSettingsContainerMenu extends SettingsContainerMenu<IStorageWrapper> {
 	private final BlockPos pos;
+	private final boolean doubleChest;
 
 	protected StorageSettingsContainerMenu(int windowId, Player player, BlockPos pos) {
 		this(ModBlocks.SETTINGS_CONTAINER_TYPE.get(), windowId, player, pos);
@@ -22,6 +26,8 @@ public class StorageSettingsContainerMenu extends SettingsContainerMenu<IStorage
 	protected StorageSettingsContainerMenu(MenuType<?> menuType, int windowId, Player player, BlockPos pos) {
 		super(menuType, windowId, player, getWrapper(player.level(), pos));
 		this.pos = pos;
+		BlockState blockState = player.level().getBlockState(pos);
+		doubleChest = blockState.getBlock() instanceof ChestBlock && blockState.getValue(ChestBlock.TYPE) != ChestType.SINGLE;
 	}
 
 	private static IStorageWrapper getWrapper(Level level, BlockPos pos) {
@@ -40,5 +46,10 @@ public class StorageSettingsContainerMenu extends SettingsContainerMenu<IStorage
 	@Override
 	public BlockPos getBlockPosition() {
 		return pos;
+	}
+
+	@Override
+	public boolean supportsItemDisplaySideSelection() {
+		return doubleChest;
 	}
 }
