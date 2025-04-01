@@ -35,10 +35,7 @@ import net.p3pp3rf1y.sophisticatedstorage.init.ModDataComponents;
 import net.p3pp3rf1y.sophisticatedstorage.item.*;
 
 import javax.annotation.Nullable;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITierDisplay, IUpgradeDisplay, IFillLevelDisplay, IMaterialHolder {
 	@Nullable
@@ -531,5 +528,13 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 	@Override
 	public boolean canHoldMaterials() {
 		return isBarrel();
+	}
+
+	public StorageHolderBase getMainStorageHolder() {
+		return this;
+	}
+
+	public Optional<StorageHolderBase> getAuxiliaryStorageHolder() {
+		return Optional.empty();
 	}
 }
