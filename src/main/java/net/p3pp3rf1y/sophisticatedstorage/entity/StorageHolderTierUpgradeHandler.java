@@ -205,29 +205,29 @@ public class StorageHolderTierUpgradeHandler {
 		}
 
 		public void upgradeStorageHolder(StorageHolderBase storageHolder, ItemStack storageItem) {
-			if (isDoubleChest(storageItem)) {
-				upgradeIndividualStorageHolder(storageHolder.getMainStorageHolder(), storageItem);
-				storageHolder.getAuxiliaryStorageHolder().ifPresent(auxiliaryStorageHolder -> {
-					upgradeIndividualStorageHolder(auxiliaryStorageHolder, storageItem);
-				});
-			} else {
-				upgradeIndividualStorageHolder(storageHolder, storageItem);
+			if (upgradedItem.getBlock() instanceof StorageBlockBase storageBlock) {
+				if (isDoubleChest(storageItem)) {
+					upgradeIndividualStorageHolder(storageHolder.getMainStorageHolder(), storageItem, storageBlock.getNumberOfInventorySlots() * 2, storageBlock.getNumberOfUpgradeSlots());
+					storageHolder.getAuxiliaryStorageHolder().ifPresent(auxiliaryStorageHolder -> {
+						upgradeIndividualStorageHolder(auxiliaryStorageHolder, storageItem, storageBlock.getNumberOfInventorySlots() * 2, storageBlock.getNumberOfUpgradeSlots());
+					});
+				} else {
+					upgradeIndividualStorageHolder(storageHolder, storageItem, storageBlock.getNumberOfInventorySlots(), storageBlock.getNumberOfUpgradeSlots());
+				}
 			}
 		}
 
-		private void upgradeIndividualStorageHolder(StorageHolderBase storageHolder, ItemStack storageItem) {
+		private void upgradeIndividualStorageHolder(StorageHolderBase storageHolder, ItemStack storageItem, int newNumberOfInventorySlots, int newNumberOfUpgradeSlots) {
 			ItemStack newStorageItem = new ItemStack(upgradedItem);
 			newStorageItem.setTag(storageItem.getTag());
 
 			storageHolder.setStorageItem(newStorageItem);
 
-			if (upgradedItem.getBlock() instanceof StorageBlockBase storageBlock) {
-				IStorageWrapper storageWrapper = storageHolder.getStorageWrapper();
-				if (storageWrapper instanceof MovingStorageWrapper movingStorageWrapper) {
-					int additionalInventorySlots = storageBlock.getNumberOfInventorySlots() - storageWrapper.getInventoryHandler().getSlots();
-					int additionalUpgradeSlots = storageBlock.getNumberOfUpgradeSlots() - storageWrapper.getUpgradeHandler().getSlots();
-					movingStorageWrapper.changeSize(additionalInventorySlots, additionalUpgradeSlots);
-				}
+			IStorageWrapper storageWrapper = storageHolder.getStorageWrapper();
+			if (storageWrapper instanceof MovingStorageWrapper movingStorageWrapper) {
+				int additionalInventorySlots = newNumberOfInventorySlots - storageWrapper.getInventoryHandler().getSlots();
+				int additionalUpgradeSlots = newNumberOfUpgradeSlots - storageWrapper.getUpgradeHandler().getSlots();
+				movingStorageWrapper.changeSize(additionalInventorySlots, additionalUpgradeSlots);
 			}
 		}
 
