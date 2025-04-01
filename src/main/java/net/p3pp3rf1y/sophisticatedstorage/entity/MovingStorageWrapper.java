@@ -226,6 +226,7 @@ public abstract class MovingStorageWrapper implements IStorageWrapper {
 				}
 				getInventoryHandler().addListener(getSettingsHandler().getTypeCategory(ItemDisplaySettingsCategory.class)::itemChanged);
 				inventoryIOHandler = null;
+				getSettingsHandler().getTypeCategory(ItemDisplaySettingsCategory.class).itemsChanged(); //in case stack upgrade changed need to send updated fill ratios to client
 			}) {
 				@Override
 				public boolean isItemValid(int slot, ItemStack stack) {
