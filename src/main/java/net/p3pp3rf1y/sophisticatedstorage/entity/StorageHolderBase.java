@@ -260,17 +260,6 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 				if (!barrel.getMaterials().equals(materials)) {
 					barrel.setMaterials(materials);
 				}
-				barrel.setDynamicRenderTracker(new IDynamicRenderTracker() {
-					@Override
-					public boolean isDynamicRenderer() {
-						return true;
-					}
-
-					@Override
-					public boolean isFullyDynamicRenderer() {
-						return true;
-					}
-				});
 
 				if (renderBlockEntity instanceof LimitedBarrelBlockEntity limitedBarrelBlockEntity) {
 					if (limitedBarrelBlockEntity.shouldShowFillLevels() != areFillLevelsVisible()) {
