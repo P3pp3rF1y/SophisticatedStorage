@@ -26,6 +26,7 @@ import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
+import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
@@ -149,11 +150,15 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 		WorldHelper.getBlockEntity(level, pos, WoodStorageBlockEntity.class).ifPresent(be -> {
 			NBTHelper.getUniqueId(stack, "uuid").ifPresent(uuid -> {
 				ItemContentsStorage itemContentsStorage = ItemContentsStorage.get();
-				be.setBeingUpgraded(true);
-				be.load(itemContentsStorage.getOrCreateStorageContents(uuid));
-				itemContentsStorage.removeStorageContents(uuid);
+				if (itemContentsStorage.has(uuid)) {
+					be.setBeingUpgraded(true);
+					be.load(itemContentsStorage.getOrCreateStorageContents(uuid));
+					itemContentsStorage.removeStorageContents(uuid);
 
-				setNewSize(stack, be);
+					setNewSize(stack, be);
+				} else {
+					SophisticatedStorage.LOGGER.error("No storage contents found for uuid: " + uuid + " when placing " + stack.getHoverName().getString());
+				}
 			});
 
 			if (stack.hasCustomHoverName()) {
