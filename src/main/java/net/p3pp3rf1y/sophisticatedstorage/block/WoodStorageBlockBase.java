@@ -27,6 +27,7 @@ import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeHandler;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
+import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
@@ -155,11 +156,15 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 			UUID storageUuid = stack.get(ModCoreDataComponents.STORAGE_UUID);
 			if (storageUuid != null) {
 				ItemContentsStorage itemContentsStorage = ItemContentsStorage.get();
-				be.setBeingUpgraded(true);
-				be.loadAdditional(itemContentsStorage.getOrCreateStorageContents(storageUuid), level.registryAccess());
-				itemContentsStorage.removeStorageContents(storageUuid);
+				if (itemContentsStorage.has(storageUuid)) {
+					be.setBeingUpgraded(true);
+					be.loadAdditional(itemContentsStorage.getOrCreateStorageContents(storageUuid), level.registryAccess());
+					itemContentsStorage.removeStorageContents(storageUuid);
 
-				setNewSize(stack, be);
+					setNewSize(stack, be);
+				} else {
+					SophisticatedStorage.LOGGER.error("No storage contents found for uuid: " + storageUuid + " when placing " + stack.getHoverName().getString());
+				}
 			}
 
 			if (stack.has(DataComponents.CUSTOM_NAME)) {

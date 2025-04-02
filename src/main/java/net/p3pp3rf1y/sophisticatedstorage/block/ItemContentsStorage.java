@@ -75,6 +75,10 @@ public class ItemContentsStorage extends SavedData {
 		ret.put("storageContents", storageContentsNbt);
 	}
 
+	public boolean has(UUID storageUuid) {
+		return storageContents.containsKey(storageUuid);
+	}
+
 	public CompoundTag getOrCreateStorageContents(UUID storageUuid) {
 		return storageContents.computeIfAbsent(storageUuid, uuid -> {
 			setDirty();
