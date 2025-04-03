@@ -40,7 +40,13 @@ public class CompressionUpgradeConfig {
 	private static List<String> getDecompressibleItemsDefault() {
 		return List.of(
 				getDecompressibleEntry(Items.GLOWSTONE, 4, Items.GLOWSTONE_DUST),
-				getDecompressibleEntry(Items.QUARTZ_BLOCK, 4, Items.QUARTZ)
+				getDecompressibleEntry(Items.QUARTZ_BLOCK, 4, Items.QUARTZ),
+				getDecompressibleEntry(Items.CLAY_BALL, 4, Items.CLAY),
+				getDecompressibleEntry(Items.SNOW_BLOCK, 4, Items.SNOWBALL),
+				getDecompressibleEntry(Items.BRICKS, 4, Items.BRICK),
+				getDecompressibleEntry(Items.NETHER_BRICKS, 4, Items.NETHER_BRICK),
+				getDecompressibleEntry(Items.NETHER_WART_BLOCK, 9, Items.NETHER_WART),
+				getDecompressibleEntry(Items.MELON, 9, Items.MELON_SLICE)
 		);
 	}
 
