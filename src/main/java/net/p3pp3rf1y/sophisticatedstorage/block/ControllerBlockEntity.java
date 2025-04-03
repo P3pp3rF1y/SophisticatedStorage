@@ -11,6 +11,7 @@ import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.p3pp3rf1y.sophisticatedcore.controller.ControllerBlockEntityBase;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
+import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 
 import java.util.HashSet;
@@ -26,7 +27,7 @@ public class ControllerBlockEntity extends ControllerBlockEntityBase implements 
 
 	@Override
 	public AABB getRenderBoundingBox() {
-		return new AABB(worldPosition).inflate(ControllerBlockEntityBase.SEARCH_RANGE);
+		return new AABB(worldPosition).inflate(getSearchRange());
 	}
 
 	public void depositPlayerItems(Player player, InteractionHand hand) {
@@ -215,5 +216,10 @@ public class ControllerBlockEntity extends ControllerBlockEntityBase implements 
 	@Override
 	public List<Float> getSlotFillLevels() {
 		return List.of();
+	}
+
+	@Override
+	protected int getSearchRange() {
+		return Config.SERVER.controllerRange.get();
 	}
 }

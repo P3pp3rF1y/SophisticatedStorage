@@ -166,6 +166,7 @@ public class Config {
 		public final ForgeConfigSpec.IntValue tooManyItemEntityDrops;
 		public final MaxUgradesPerStorageConfig maxUpgradesPerStorage;
 		public final ForgeConfigSpec.BooleanValue limitedBarrelCountDyeingEnabled;
+		public final ForgeConfigSpec.IntValue controllerRange;
 
 		public void initListeners(IEventBus modBus) {
 			modBus.addListener(this::onConfigReload);
@@ -294,6 +295,7 @@ public class Config {
 
 			tooManyItemEntityDrops = builder.comment("Threshold of number of item entities dropped from chest / barrel above which break is canceled (unless shift key is pressed) and message is displayed explaining to player many drops and packing tape use").defineInRange("tooManyItemEntityDrops", 200, 0, 1000);
 			limitedBarrelCountDyeingEnabled = builder.comment("Determines if limited barrel counts can be dyed to change their color").define("limitedBarrelCountDyeingEnabled", true);
+			controllerRange = builder.comment("Defines the maximum range of the controller at which it connects storage blocks to multiblock").defineInRange("controllerRange", 15, 4, 64);
 			builder.pop();
 		}
 
