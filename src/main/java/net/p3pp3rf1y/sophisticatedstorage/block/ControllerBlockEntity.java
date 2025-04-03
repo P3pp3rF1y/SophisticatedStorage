@@ -13,6 +13,7 @@ import net.p3pp3rf1y.sophisticatedcore.inventory.CachedFailedInsertInventoryHand
 import net.p3pp3rf1y.sophisticatedcore.util.CapabilityHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
+import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 
 import javax.annotation.Nullable;
@@ -226,5 +227,10 @@ public class ControllerBlockEntity extends ControllerBlockEntityBase implements 
 			}
 			return cachedFailedInsertItemHandler;
 		}
+	}
+
+	@Override
+	protected int getSearchRange() {
+		return Config.SERVER.controllerRange.getAsInt();
 	}
 }

@@ -22,8 +22,8 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.p3pp3rf1y.sophisticatedcore.controller.ControllerBlockEntityBase;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
+import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.block.ControllerBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageToolItem;
@@ -157,6 +157,6 @@ public class ControllerRenderer implements BlockEntityRenderer<ControllerBlockEn
 
 	@Override
 	public AABB getRenderBoundingBox(ControllerBlockEntity blockEntity) {
-		return new AABB(blockEntity.getBlockPos()).inflate(ControllerBlockEntityBase.SEARCH_RANGE);
+		return new AABB(blockEntity.getBlockPos()).inflate(Config.SERVER.controllerRange.getAsInt());
 	}
 }
