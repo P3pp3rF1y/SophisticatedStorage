@@ -33,6 +33,7 @@ import net.p3pp3rf1y.sophisticatedcore.settings.itemdisplay.ItemDisplaySettingsC
 import net.p3pp3rf1y.sophisticatedcore.settings.memory.MemorySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.settings.nosort.NoSortSettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
+import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageTranslationHelper;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.LimitedBarrelContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
@@ -138,7 +139,7 @@ public class LimitedBarrelBlock extends BarrelBlock {
 				return false;
 			} else if (limitedBarrelBlockEntity.depositItem(player, hand, stackInHand, slot)) {
 				return true;
-			} else if (stackInHand.getItem() instanceof DyeItem dyeItem && limitedBarrelBlockEntity.applyDye(slot, stackInHand, dyeItem.getDyeColor(), player.isShiftKeyDown())) {
+			} else if (Boolean.TRUE.equals(Config.SERVER.limitedBarrelCountDyeingEnabled.get()) && stackInHand.getItem() instanceof DyeItem dyeItem && limitedBarrelBlockEntity.applyDye(slot, stackInHand, dyeItem.getDyeColor(), player.isShiftKeyDown())) {
 				return true;
 			}
 		}
