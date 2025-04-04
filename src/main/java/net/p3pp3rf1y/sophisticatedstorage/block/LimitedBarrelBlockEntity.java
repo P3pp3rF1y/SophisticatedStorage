@@ -11,8 +11,12 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.items.ItemHandlerHelper;
+import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryHandler;
+import net.p3pp3rf1y.sophisticatedcore.settings.SettingsHandler;
+import net.p3pp3rf1y.sophisticatedcore.settings.itemdisplay.ItemDisplaySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.settings.memory.MemorySettingsCategory;
+import net.p3pp3rf1y.sophisticatedcore.settings.nosort.NoSortSettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.voiding.VoidUpgradeWrapper;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
@@ -44,7 +48,14 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 	public LimitedBarrelBlockEntity(BlockPos pos, BlockState state) {
 		super(pos, state, ModBlocks.LIMITED_BARREL_BLOCK_ENTITY_TYPE.get());
 		registerUpgradeDefaults();
+		setFixedSettings(getStorageWrapper(), getStorageWrapper().getNumberOfInventorySlots());
 		registerClientNotificationOnCountChange();
+	}
+
+	public static void setFixedSettings(IStorageWrapper storageWrapper, int numberOfInventorySlots) {
+		SettingsHandler settingsHandler = storageWrapper.getSettingsHandler();
+		settingsHandler.getTypeCategory(ItemDisplaySettingsCategory.class).selectSlots(0, numberOfInventorySlots);
+		settingsHandler.getTypeCategory(NoSortSettingsCategory.class).selectSlots(0, numberOfInventorySlots);
 	}
 
 	private void registerUpgradeDefaults() {
@@ -286,6 +297,12 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 		showCounts = NBTHelper.getBoolean(tag, "showCounts").orElse(true);
 		showFillLevels = NBTHelper.getBoolean(tag, "showFillLevels").orElse(false);
 		slotColors = NBTHelper.getMap(tag, "slotColors", Integer::valueOf, (tagName, t) -> Optional.of(DyeColor.byId(((IntTag) t).getAsInt()))).orElseGet(HashMap::new);
+	}
+
+	@Override
+	public void load(CompoundTag tag) {
+		super.load(tag);
+		setFixedSettings(getStorageWrapper(), getStorageWrapper().getNumberOfInventorySlots());
 	}
 
 	@Override

@@ -29,9 +29,7 @@ import net.minecraft.world.phys.HitResult;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
 import net.p3pp3rf1y.sophisticatedcore.settings.SettingsHandler;
-import net.p3pp3rf1y.sophisticatedcore.settings.itemdisplay.ItemDisplaySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.settings.memory.MemorySettingsCategory;
-import net.p3pp3rf1y.sophisticatedcore.settings.nosort.NoSortSettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageTranslationHelper;
@@ -259,13 +257,14 @@ public class LimitedBarrelBlock extends BarrelBlock {
 	public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
 		super.setPlacedBy(level, pos, state, placer, stack);
 
-		WorldHelper.getBlockEntity(level, pos, LimitedBarrelBlockEntity.class).ifPresent(be -> setupDefaultSettings(be.getStorageWrapper(), be.getStorageWrapper().getNumberOfInventorySlots()));
+		WorldHelper.getBlockEntity(level, pos, LimitedBarrelBlockEntity.class).ifPresent(be -> {
+			setupDefaultSettings(be.getStorageWrapper());
+			LimitedBarrelBlockEntity.setFixedSettings(be.getStorageWrapper(), be.getStorageWrapper().getNumberOfInventorySlots());
+		});
 	}
 
-	public static void setupDefaultSettings(IStorageWrapper storageWrapper, int numberOfInventorySlots) {
+	public static void setupDefaultSettings(IStorageWrapper storageWrapper) {
 		SettingsHandler settingsHandler = storageWrapper.getSettingsHandler();
-		settingsHandler.getTypeCategory(ItemDisplaySettingsCategory.class).selectSlots(0, numberOfInventorySlots);
-		settingsHandler.getTypeCategory(NoSortSettingsCategory.class).selectSlots(0, numberOfInventorySlots);
 		settingsHandler.getTypeCategory(MemorySettingsCategory.class).setIgnoreNbt(false);
 	}
 
