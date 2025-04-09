@@ -113,7 +113,7 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 	@Nullable
 	protected abstract Entity getEntity();
 
-	private void onStackChanged() {
+	public void onStackChanged() {
 		setSyncedStorageStack(getStorageWrapper().getWrappedStorageStack());
 		updateRenderAttributes = true;
 	}
