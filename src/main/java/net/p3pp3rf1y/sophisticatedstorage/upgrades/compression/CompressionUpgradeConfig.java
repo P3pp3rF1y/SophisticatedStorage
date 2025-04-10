@@ -41,7 +41,7 @@ public class CompressionUpgradeConfig {
 		return List.of(
 				getDecompressibleEntry(Items.GLOWSTONE, 4, Items.GLOWSTONE_DUST),
 				getDecompressibleEntry(Items.QUARTZ_BLOCK, 4, Items.QUARTZ),
-				getDecompressibleEntry(Items.CLAY_BALL, 4, Items.CLAY),
+				getDecompressibleEntry(Items.CLAY, 4, Items.CLAY_BALL),
 				getDecompressibleEntry(Items.SNOW_BLOCK, 4, Items.SNOWBALL),
 				getDecompressibleEntry(Items.BRICKS, 4, Items.BRICK),
 				getDecompressibleEntry(Items.NETHER_BRICKS, 4, Items.NETHER_BRICK),
