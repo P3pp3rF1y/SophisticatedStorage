@@ -1,7 +1,8 @@
 package net.p3pp3rf1y.sophisticatedstorage.block;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.*;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.IntTag;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -24,14 +25,15 @@ import net.p3pp3rf1y.sophisticatedcore.util.RandHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICountDisplay, IFillLevelDisplay {
-	private static final String SLOT_COUNTS_TAG = "slotCounts";
-	private static final String SLOT_FILL_LEVELS_TAG = "slotFillLevels";
 	public static final Consumer<VoidUpgradeWrapper> VOID_UPGRADE_VOIDING_OVERFLOW_OF_EVERYTHING_BY_DEFAULT = voidUpgrade -> {
 		voidUpgrade.getFilterLogic().setAllowByDefault(false);
 		voidUpgrade.setShouldVoidOverflowDefaultOrLoadFromNbt(true);
@@ -39,8 +41,6 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 	public static final String STORAGE_TYPE = "limited_barrel";
 	private long lastDepositTime = -100;
 
-	private final List<Integer> slotCounts = new ArrayList<>();
-	private final List<Float> slotFillLevels = new ArrayList<>();
 	private Map<Integer, DyeColor> slotColors = new HashMap<>();
 	private boolean showCounts = true;
 	private boolean showFillLevels = false;
@@ -96,17 +96,7 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 
 	@Override
 	public List<Integer> getSlotCounts() {
-		return slotCounts;
-	}
-
-	@Override
-	public List<Float> getSlotFillLevels() {
-		return slotFillLevels;
-	}
-
-	@Override
-	public float getSlotFillPercentage(int slot) {
-		return slot > -1 && slot < slotFillLevels.size() ? slotFillLevels.get(slot) : 0;
+		return getStorageWrapper().getRenderInfo().getItemDisplayRenderInfo().getSlotCounts();
 	}
 
 	@Override
@@ -119,6 +109,11 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 		showFillLevels = !showFillLevels;
 		setChanged();
 		WorldHelper.notifyBlockUpdate(this);
+	}
+
+	@Override
+	public List<Float> getSlotFillLevels() {
+		return getStorageWrapper().getRenderInfo().getItemDisplayRenderInfo().getSlotFillRatios();
 	}
 
 	public boolean applyDye(int slot, ItemStack dyeStack, DyeColor dyeColor, boolean applyToAll) {
@@ -253,47 +248,13 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 
 	@Override
 	public CompoundTag getUpdateTag() {
-		CompoundTag updateTag = super.getUpdateTag();
-		List<Integer> sc = new ArrayList<>();
-		ListTag sfl = new ListTag();
-		InventoryHelper.iterate(getStorageWrapper().getInventoryHandler(), (slot, stack) -> {
-			sc.add(slot, stack.getCount());
-			sfl.add(slot, FloatTag.valueOf(stack.getCount() / (float) getStorageWrapper().getInventoryHandler().getStackLimit(slot, stack)));
-		});
-		updateTag.putIntArray(SLOT_COUNTS_TAG, sc);
-		updateTag.put(SLOT_FILL_LEVELS_TAG, sfl);
-		return updateTag;
+		getStorageWrapper().getSettingsHandler().getTypeCategory(ItemDisplaySettingsCategory.class).itemsChanged(); //make sure display item and counts are up to date
+		return super.getUpdateTag();
 	}
 
 	@Override
 	public void loadSynchronizedData(CompoundTag tag) {
 		super.loadSynchronizedData(tag);
-		if (tag.contains(SLOT_COUNTS_TAG)) {
-			int[] countsArray = tag.getIntArray(SLOT_COUNTS_TAG);
-			if (slotCounts.size() != countsArray.length) {
-				slotCounts.clear();
-				for (int i = 0; i < countsArray.length; i++) {
-					slotCounts.add(i, countsArray[i]);
-				}
-			} else {
-				for (int i = 0; i < countsArray.length; i++) {
-					slotCounts.set(i, countsArray[i]);
-				}
-			}
-		}
-		if (tag.contains(SLOT_FILL_LEVELS_TAG)) {
-			ListTag fillLevelsList = tag.getList(SLOT_FILL_LEVELS_TAG, Tag.TAG_FLOAT);
-			if (slotFillLevels.size() != fillLevelsList.size()) {
-				slotFillLevels.clear();
-				for (int i = 0; i < fillLevelsList.size(); i++) {
-					slotFillLevels.add(i, fillLevelsList.getFloat(i));
-				}
-			} else {
-				for (int i = 0; i < fillLevelsList.size(); i++) {
-					slotFillLevels.set(i, fillLevelsList.getFloat(i));
-				}
-			}
-		}
 		showCounts = NBTHelper.getBoolean(tag, "showCounts").orElse(true);
 		showFillLevels = NBTHelper.getBoolean(tag, "showFillLevels").orElse(false);
 		slotColors = NBTHelper.getMap(tag, "slotColors", Integer::valueOf, (tagName, t) -> Optional.of(DyeColor.byId(((IntTag) t).getAsInt()))).orElseGet(HashMap::new);
