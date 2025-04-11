@@ -71,6 +71,10 @@ public class BarrelBlockEntity extends WoodStorageBlockEntity implements IMateri
 		});
 	}
 
+	public void setDynamicRenderTracker(IDynamicRenderTracker dynamicRenderTracker) {
+		this.dynamicRenderTracker = dynamicRenderTracker;
+	}
+
 	public BarrelBlockEntity(BlockPos pos, BlockState state) {
 		this(pos, state, ModBlocks.BARREL_BLOCK_ENTITY_TYPE.get());
 	}
