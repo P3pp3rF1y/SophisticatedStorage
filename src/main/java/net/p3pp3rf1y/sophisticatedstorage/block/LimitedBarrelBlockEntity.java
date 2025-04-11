@@ -253,7 +253,6 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 		super.load(tag);
 		if (level == null || !level.isClientSide()) {
 			setFixedSettings(getStorageWrapper(), getStorageWrapper().getNumberOfInventorySlots());
-			//getStorageWrapper().getSettingsHandler().getTypeCategory(ItemDisplaySettingsCategory.class).itemsChanged(); //make sure display item and counts are up to date
 		}
 	}
 
