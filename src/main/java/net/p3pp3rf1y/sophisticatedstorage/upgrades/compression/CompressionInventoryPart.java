@@ -64,6 +64,8 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 
 		compactInternalSlots();
 		updateCalculatedStacks();
+
+		slotDefinitions.forEach((slot, definition) -> parent.triggerOnChangeListeners(slot));
 	}
 
 	private void setSlotDefinitions(Map<Integer, SlotDefinition> definitions, boolean initial) {
@@ -72,7 +74,6 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 			parent.initFilterItems();
 		} else {
 			parent.onFilterItemsChanged();
-			slotDefinitions.forEach((slot, definition) -> parent.triggerOnChangeListeners(slot));
 		}
 	}
 
@@ -484,6 +485,8 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 			setSlotDefinitions(definitions, false);
 			compactInternalSlots();
 			updateCalculatedStacks();
+
+			slotDefinitions.forEach((s, definition) -> parent.triggerOnChangeListeners(s));
 		}
 
 		if (slotDefinitions.get(slot).isCompressible()) {

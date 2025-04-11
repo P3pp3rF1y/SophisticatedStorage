@@ -197,8 +197,12 @@ public abstract class StorageWrapper implements IStorageWrapper {
 		loadContents(tag);
 		loadData(tag);
 
-		initInventoryHandler();
-		getUpgradeHandler().refreshUpgradeWrappers();
+		if (inventoryHandler != null) {
+			initInventoryHandler();
+		}
+		if (upgradeHandler != null) {
+			getUpgradeHandler().refreshUpgradeWrappers();
+		}
 		if (Thread.currentThread().getThreadGroup() == SidedThreadGroups.SERVER && getRenderInfo().getUpgradeItems().size() != getUpgradeHandler().getSlots()) {
 			getUpgradeHandler().setRenderUpgradeItems();
 		}

@@ -3,6 +3,8 @@ package net.p3pp3rf1y.sophisticatedstorage.block;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.StringTag;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.player.Player;
@@ -64,6 +66,7 @@ public class BarrelBlockEntity extends WoodStorageBlockEntity implements IMateri
 		super(pos, state, blockEntityType);
 		getStorageWrapper().getRenderInfo().setDisplayItemsChangeListener(ri -> {
 			dynamicRenderTracker.onRenderInfoUpdated(ri);
+			setUpdateBlockRender();
 			WorldHelper.notifyBlockUpdate(this);
 		});
 	}
@@ -74,6 +77,15 @@ public class BarrelBlockEntity extends WoodStorageBlockEntity implements IMateri
 
 	public void setDynamicRenderTracker(IDynamicRenderTracker dynamicRenderTracker) {
 		this.dynamicRenderTracker = dynamicRenderTracker;
+	}
+
+	@Override
+	public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt) {
+		super.onDataPacket(net, pkt);
+		CompoundTag tag = pkt.getTag();
+		if (tag != null && tag.getBoolean(UPDATE_BLOCK_RENDER_TAG)) {
+			dynamicRenderTracker.onRenderInfoUpdated(getStorageWrapper().getRenderInfo());
+		}
 	}
 
 	void updateOpenBlockState(BlockState state, boolean open) {
@@ -115,6 +127,14 @@ public class BarrelBlockEntity extends WoodStorageBlockEntity implements IMateri
 	public void loadSynchronizedData(CompoundTag tag) {
 		super.loadSynchronizedData(tag);
 		materials = NBTHelper.getMap(tag, MATERIALS_TAG, BarrelMaterial::fromName, (bm, t) -> Optional.of(new ResourceLocation(t.getAsString()))).orElse(Map.of());
+	}
+
+	@Override
+	public void load(CompoundTag tag) {
+		super.load(tag);
+		if (level != null && level.isClientSide() && tag.getBoolean(UPDATE_BLOCK_RENDER_TAG)) {
+			dynamicRenderTracker.onRenderInfoUpdated(getStorageWrapper().getRenderInfo());
+		}
 	}
 
 	@Override

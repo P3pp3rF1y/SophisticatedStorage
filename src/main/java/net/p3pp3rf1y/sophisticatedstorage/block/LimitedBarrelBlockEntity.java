@@ -48,28 +48,22 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 	public LimitedBarrelBlockEntity(BlockPos pos, BlockState state) {
 		super(pos, state, ModBlocks.LIMITED_BARREL_BLOCK_ENTITY_TYPE.get());
 		registerUpgradeDefaults();
-		setFixedSettings(getStorageWrapper(), getStorageWrapper().getNumberOfInventorySlots());
-		registerClientNotificationOnCountChange();
 	}
 
 	public static void setFixedSettings(IStorageWrapper storageWrapper, int numberOfInventorySlots) {
 		SettingsHandler settingsHandler = storageWrapper.getSettingsHandler();
-		settingsHandler.getTypeCategory(ItemDisplaySettingsCategory.class).selectSlots(0, numberOfInventorySlots);
-		settingsHandler.getTypeCategory(NoSortSettingsCategory.class).selectSlots(0, numberOfInventorySlots);
+		ItemDisplaySettingsCategory itemDisplaySettingsCategory = settingsHandler.getTypeCategory(ItemDisplaySettingsCategory.class);
+		if (itemDisplaySettingsCategory.getSlots().size() != numberOfInventorySlots) {
+			itemDisplaySettingsCategory.selectSlots(0, numberOfInventorySlots);
+		}
+		NoSortSettingsCategory noSortSettingsCategory = settingsHandler.getTypeCategory(NoSortSettingsCategory.class);
+		if (noSortSettingsCategory.getNoSortSlots().size() != numberOfInventorySlots) {
+			noSortSettingsCategory.selectSlots(0, numberOfInventorySlots);
+		}
 	}
 
 	private void registerUpgradeDefaults() {
 		getStorageWrapper().registerUpgradeDefaultsHandler(VoidUpgradeWrapper.class, VOID_UPGRADE_VOIDING_OVERFLOW_OF_EVERYTHING_BY_DEFAULT);
-	}
-
-	private void registerClientNotificationOnCountChange() {
-		getStorageWrapper().getInventoryHandler().addListener(slot -> WorldHelper.notifyBlockUpdate(this));
-	}
-
-	@Override
-	protected void onUpgradeCachesInvalidated() {
-		super.onUpgradeCachesInvalidated();
-		registerClientNotificationOnCountChange();
 	}
 
 	@Override
@@ -247,12 +241,6 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 	}
 
 	@Override
-	public CompoundTag getUpdateTag() {
-		getStorageWrapper().getSettingsHandler().getTypeCategory(ItemDisplaySettingsCategory.class).itemsChanged(); //make sure display item and counts are up to date
-		return super.getUpdateTag();
-	}
-
-	@Override
 	public void loadSynchronizedData(CompoundTag tag) {
 		super.loadSynchronizedData(tag);
 		showCounts = NBTHelper.getBoolean(tag, "showCounts").orElse(true);
@@ -263,7 +251,10 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 	@Override
 	public void load(CompoundTag tag) {
 		super.load(tag);
-		setFixedSettings(getStorageWrapper(), getStorageWrapper().getNumberOfInventorySlots());
+		if (level == null || !level.isClientSide()) {
+			setFixedSettings(getStorageWrapper(), getStorageWrapper().getNumberOfInventorySlots());
+			//getStorageWrapper().getSettingsHandler().getTypeCategory(ItemDisplaySettingsCategory.class).itemsChanged(); //make sure display item and counts are up to date
+		}
 	}
 
 	@Override

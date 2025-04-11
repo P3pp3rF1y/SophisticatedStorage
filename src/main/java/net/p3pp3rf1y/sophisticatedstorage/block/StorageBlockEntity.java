@@ -40,6 +40,7 @@ import java.util.*;
 
 public abstract class StorageBlockEntity extends BlockEntity implements IControllableStorage, ILinkable, ILockable, Nameable, ITierDisplay, IUpgradeDisplay {
 	public static final String STORAGE_WRAPPER_TAG = "storageWrapper";
+	public static final String UPDATE_BLOCK_RENDER_TAG = "updateBlockRender";
 	private final StorageWrapper storageWrapper;
 	@Nullable
 	protected Component displayName = null;
@@ -69,9 +70,15 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 
 	protected StorageBlockEntity(BlockPos pos, BlockState state, BlockEntityType<? extends StorageBlockEntity> blockEntityType) {
 		super(blockEntityType, pos, state);
-		storageWrapper = new StorageWrapper(() -> this::setChanged, () -> WorldHelper.notifyBlockUpdate(this), () -> {
-			setChanged();
-			WorldHelper.notifyBlockUpdate(this);
+		storageWrapper = new StorageWrapper(() -> this::setChanged, () -> {
+			if (level != null && !level.isClientSide) {
+				WorldHelper.notifyBlockUpdate(this);
+			}
+		}, () -> {
+			if (level != null && !level.isClientSide) {
+				setChanged();
+				WorldHelper.notifyBlockUpdate(this);
+			}
 		}, this instanceof BarrelBlockEntity ? 4 : 1, this instanceof ICountDisplay || this instanceof IFillLevelDisplay) {
 
 			@Override
@@ -201,8 +208,9 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 			tag.putString("displayName", Component.Serializer.toJson(displayName));
 		}
 		if (updateBlockRender) {
-			tag.putBoolean("updateBlockRender", true);
+			tag.putBoolean(UPDATE_BLOCK_RENDER_TAG, true);
 		}
+		updateBlockRender = false;
 		if (locked) {
 			tag.putBoolean("locked", locked);
 		}
@@ -275,11 +283,9 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		showTier = NBTHelper.getBoolean(tag, "showTier").orElse(true);
 		showUpgrades = NBTHelper.getBoolean(tag, "showUpgrades").orElse(false);
 		if (level != null && level.isClientSide) {
-			if (tag.getBoolean("updateBlockRender")) {
+			if (tag.getBoolean(UPDATE_BLOCK_RENDER_TAG)) {
 				WorldHelper.notifyBlockUpdate(this);
 			}
-		} else {
-			updateBlockRender = true;
 		}
 	}
 
@@ -322,6 +328,7 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 	@Override
 	public CompoundTag getUpdateTag() {
 		CompoundTag tag = super.getUpdateTag();
+		updateBlockRender = true;
 		saveStorageWrapperClientData(tag);
 		saveSynchronizedData(tag);
 		return tag;
