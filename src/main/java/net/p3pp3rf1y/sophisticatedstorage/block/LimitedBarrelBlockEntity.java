@@ -274,4 +274,9 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 	protected String getStorageType() {
 		return STORAGE_TYPE;
 	}
+
+	@Override
+	public float getSlotFillPercentage(int slot) {
+		return getSlotFillLevels().get(slot);
+	}
 }
