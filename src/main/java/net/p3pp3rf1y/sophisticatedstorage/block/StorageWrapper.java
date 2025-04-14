@@ -303,7 +303,7 @@ public abstract class StorageWrapper implements IStorageWrapper {
 	}
 
 	private int getNumberOfUpgradeSlots() {
-		if (numberOfUpgradeSlots > -1) {
+		if (numberOfUpgradeSlots >= getDefaultNumberOfUpgradeSlots()) {
 			return numberOfUpgradeSlots;
 		}
 		numberOfUpgradeSlots = getDefaultNumberOfUpgradeSlots();
