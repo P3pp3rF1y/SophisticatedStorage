@@ -506,6 +506,7 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 			contentsFilteredItemHandler = null;
 			invalidateCapabilities();
 		}
+		onInventoryInputOutputHandlerRefresh();
 		setChanged();
 		WorldHelper.notifyBlockUpdate(this);
 	}
@@ -526,6 +527,7 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 			contentsFilteredItemHandler = null;
 			invalidateCapabilities();
 		}
+		onInventoryInputOutputHandlerRefresh();
 		setChanged();
 		setUpdateBlockRender();
 		WorldHelper.notifyBlockUpdate(this);
