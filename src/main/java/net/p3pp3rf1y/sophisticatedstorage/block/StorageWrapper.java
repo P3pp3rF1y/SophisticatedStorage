@@ -71,6 +71,8 @@ public abstract class StorageWrapper implements IStorageWrapper {
 	private Runnable upgradeCachesInvalidatedHandler = () -> {};
 
 	private final Map<Class<? extends IUpgradeWrapper>, Consumer<? extends IUpgradeWrapper>> upgradeDefaultsHandlers = new HashMap<>();
+	private Runnable onInventoryForInputOutputHandlerRefresh = () -> {
+	};
 
 	protected StorageWrapper(Supplier<Runnable> getSaveHandler, Runnable onSerializeRenderInfo, Runnable markContentsDirty) {
 		this(getSaveHandler, onSerializeRenderInfo, markContentsDirty, 1, false);
@@ -117,8 +119,7 @@ public abstract class StorageWrapper implements IStorageWrapper {
 					inventoryHandler.setBaseSlotLimit(StackUpgradeItem.getInventorySlotLimit(this));
 				}
 				getInventoryHandler().addListener(getSettingsHandler().getTypeCategory(ItemDisplaySettingsCategory.class)::itemChanged);
-				inventoryIOHandler = null;
-				upgradeCachesInvalidatedHandler.run();
+				refreshInventoryForInputOutput();
 				getSettingsHandler().getTypeCategory(ItemDisplaySettingsCategory.class).itemsChanged(); //in case stack upgrade changed need to send updated fill ratios to client
 			}) {
 				@Override
@@ -402,6 +403,12 @@ public abstract class StorageWrapper implements IStorageWrapper {
 	public void refreshInventoryForInputOutput() {
 		inventoryIOHandler = null;
 		upgradeCachesInvalidatedHandler.run();
+		onInventoryForInputOutputHandlerRefresh.run();
+	}
+
+	@Override
+	public void registerOnInventoryInputOutputHandlerRefreshListener(Runnable onInventoryForInputOutputHandlerRefresh) {
+		this.onInventoryForInputOutputHandlerRefresh = onInventoryForInputOutputHandlerRefresh;
 	}
 
 	@Override

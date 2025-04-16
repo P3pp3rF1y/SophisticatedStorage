@@ -411,11 +411,13 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 			LazyOptional<IItemHandler> tempItemHandlerCap = itemHandlerCap;
 			itemHandlerCap = null;
 			tempItemHandlerCap.invalidate();
+			onInventoryInputOutputHandlerRefresh();
 		}
 		if (noSideItemHandlerCap != null) {
 			LazyOptional<IItemHandler> tempNoSideItemHandlerCap = noSideItemHandlerCap;
 			noSideItemHandlerCap = null;
 			tempNoSideItemHandlerCap.invalidate();
+			onInventoryInputOutputHandlerRefresh();
 		}
 	}
 
@@ -533,6 +535,7 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 			contentsFilteredItemHandler = null;
 			invalidateStorageCap();
 		}
+		onInventoryInputOutputHandlerRefresh();
 		setChanged();
 		WorldHelper.notifyBlockUpdate(this);
 	}
@@ -553,6 +556,7 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 			contentsFilteredItemHandler = null;
 			invalidateStorageCap();
 		}
+		onInventoryInputOutputHandlerRefresh();
 		setChanged();
 		setUpdateBlockRender();
 		WorldHelper.notifyBlockUpdate(this);
