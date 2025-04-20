@@ -11,7 +11,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.entity.ContainerOpenersCounter;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.phys.AABB;
@@ -27,7 +26,7 @@ public class ShulkerBoxBlockEntity extends StorageBlockEntity {
 	private AnimationStatus animationStatus = AnimationStatus.CLOSED;
 	private float progress;
 	private float progressOld;
-	public final ContainerOpenersCounter openersCounter = new ContainerOpenersCounter() {
+	public final SophisticatedOpenersCounter openersCounter = new SophisticatedOpenersCounter() {
 		@Override
 		protected void onOpen(Level level, BlockPos pos, BlockState state) {
 			animationStatus = AnimationStatus.OPENING;
@@ -129,7 +128,7 @@ public class ShulkerBoxBlockEntity extends StorageBlockEntity {
 	}
 
 	@Override
-	protected ContainerOpenersCounter getOpenersCounter() {
+	public SophisticatedOpenersCounter getOpenersCounter() {
 		return openersCounter;
 	}
 
