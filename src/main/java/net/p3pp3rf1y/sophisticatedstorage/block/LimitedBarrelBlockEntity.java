@@ -240,6 +240,12 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 		//noop
 	}
 
+	public void onLoad() {
+		super.onLoad();
+		//TODO remove in the future when this is not needed - updates legacy limited barrel counts and fill levels
+		getStorageWrapper().getSettingsHandler().getTypeCategory(ItemDisplaySettingsCategory.class).itemsChanged();
+	}
+
 	@Override
 	public void loadSynchronizedData(CompoundTag tag) {
 		super.loadSynchronizedData(tag);
