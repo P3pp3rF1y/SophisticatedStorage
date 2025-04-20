@@ -247,10 +247,10 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 	}
 
 	@Override
-	public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
-		getStorageWrapper().getSettingsHandler().getTypeCategory(ItemDisplaySettingsCategory.class).itemsChanged(); //make sure display item and counts are up to date
-		return super.getUpdateTag(registries);
-
+	public void onLoad() {
+		super.onLoad();
+		//TODO remove in the future when this is not needed - updates legacy limited barrel counts and fill levels
+		getStorageWrapper().getSettingsHandler().getTypeCategory(ItemDisplaySettingsCategory.class).itemsChanged();
 	}
 
 	@Override
