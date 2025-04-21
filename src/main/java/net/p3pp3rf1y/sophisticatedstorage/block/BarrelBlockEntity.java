@@ -11,7 +11,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BarrelBlock;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.level.block.entity.ContainerOpenersCounter;
 import net.minecraft.world.level.block.state.BlockState;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
@@ -26,7 +25,7 @@ public class BarrelBlockEntity extends WoodStorageBlockEntity implements IMateri
 	public static final String MATERIALS_TAG = "materials";
 	public static final String STORAGE_TYPE = "barrel";
 	private Map<BarrelMaterial, ResourceLocation> materials = new EnumMap<>(BarrelMaterial.class);
-	private final ContainerOpenersCounter openersCounter = new ContainerOpenersCounter() {
+	private final SophisticatedOpenersCounter openersCounter = new SophisticatedOpenersCounter() {
 		protected void onOpen(Level level, BlockPos pos, BlockState state) {
 			playSound(state, SoundEvents.BARREL_OPEN);
 			updateOpenBlockState(state, true);
@@ -53,7 +52,7 @@ public class BarrelBlockEntity extends WoodStorageBlockEntity implements IMateri
 	private IDynamicRenderTracker dynamicRenderTracker = IDynamicRenderTracker.NOOP;
 
 	@Override
-	protected ContainerOpenersCounter getOpenersCounter() {
+	public SophisticatedOpenersCounter getOpenersCounter() {
 		return openersCounter;
 	}
 

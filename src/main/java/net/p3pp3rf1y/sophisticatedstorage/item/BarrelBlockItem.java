@@ -15,8 +15,8 @@ import java.util.Map;
 import java.util.Optional;
 
 public class BarrelBlockItem extends WoodStorageBlockItem {
-	private static final String FLAT_TOP_TAG = "flatTop";
-	private static final String MATERIALS_TAG = "materials";
+	public static final String FLAT_TOP_TAG = "flatTop";
+	public static final String MATERIALS_TAG = "materials";
 
 	public BarrelBlockItem(Block block) {
 		this(block, new Properties());

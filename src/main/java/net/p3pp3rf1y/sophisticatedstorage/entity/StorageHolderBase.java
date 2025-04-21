@@ -228,13 +228,14 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 	protected void updateRenderBlockEntityAttributes(ItemStack storageItem, StorageBlockEntity renderBlockEntity) {
 		if (updateRenderAttributes) {
 			updateRenderAttributes = false;
+			renderBlockEntity.getOpenersCounter().setForPhysicalBlock(false);
 			if (renderBlockEntity.isLocked() != isLocked(storageItem)) {
 				renderBlockEntity.toggleLock();
 			}
 			if (renderBlockEntity.shouldShowLock() != isLockVisible()) {
 				renderBlockEntity.toggleLockVisibility();
 			}
-			if (renderBlockEntity.shouldShowTier() != shouldShowCounts()) {
+			if (renderBlockEntity.shouldShowTier() != shouldShowTier()) {
 				renderBlockEntity.toggleTierVisiblity();
 			}
 			renderBlockEntity.getStorageWrapper().getRenderInfo().deserializeFrom(getRenderInfoNbt(storageItem));
@@ -344,7 +345,11 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 
 	private <T extends IUpgradeRenderData> void renderUpgrade(IUpgradeRenderer<T> renderer, Level level, RandomSource rand, UpgradeRenderDataType<?> type, IUpgradeRenderData data) {
 		//noinspection unchecked
-		type.cast(data).ifPresent(renderData -> renderer.render(level, rand, vector -> vector.add((float) getPosition().x(), (float) getPosition().y() + 0.8f, (float) getPosition().z()), (T) renderData));
+		type.cast(data).ifPresent(renderData -> renderer.render(level, rand, vector -> vector.add((float) getPosition().x(), (float) getPosition().y() + getUpgradeRenderYOffset(), (float) getPosition().z()), (T) renderData));
+	}
+
+	protected float getUpgradeRenderYOffset() {
+		return 0.8f;
 	}
 
 	private void runPickupOnItemEntities(Level level) {

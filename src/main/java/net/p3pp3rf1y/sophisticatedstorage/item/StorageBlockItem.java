@@ -13,8 +13,8 @@ import java.util.UUID;
 
 public class StorageBlockItem extends BlockItemBase implements ITintableBlockItem {
 
-	private static final String ACCENT_COLOR_TAG = "accentColor";
-	private static final String MAIN_COLOR_TAG = "mainColor";
+	public static final String ACCENT_COLOR_TAG = "accentColor";
+	public static final String MAIN_COLOR_TAG = "mainColor";
 	private static final String SHOWS_TIER_TAG = "showsTier";
 
 	public StorageBlockItem(Block block, Properties properties) {
