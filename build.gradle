@@ -382,6 +382,11 @@ task curseforge(type: net.darkhax.curseforgegradle.TaskPublishCurseForge) {
     mainFile.addRequirement('sophisticated-core')
     mainFile.addOptional('jei')
     mainFile.addOptional('crafting-tweaks')
+    mainFile.addOptional('trashslot')
+    mainFile.addOptional('item-borders')
+    mainFile.addOptional('chipped')
+    mainFile.addOptional('quark')
+    mainFile.addOptional('sawmill')
     onlyIf { !project.ext.changelog.isEmpty() }
 }
 
@@ -396,6 +401,11 @@ modrinth {
         required.project "sophisticated-core"
         optional.project "jei"
         optional.project "crafting-tweaks"
+        optional.project "trashslot"
+        optional.project "item-borders"
+        optional.project "chipped"
+        optional.project "quark"
+        optional.project "universal-sawmill"
     }
     changelog = provider {
         project.ext.changelog

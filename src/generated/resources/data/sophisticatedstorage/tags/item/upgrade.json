@@ -1,76 +1,76 @@
 {
   "values": [
-    "sophisticatedstorage:advanced_hopper_upgrade",
-    "sophisticatedstorage:advanced_feeding_upgrade",
-    "sophisticatedstorage:stack_upgrade_tier_1",
-    "sophisticatedstorage:feeding_upgrade",
-    "sophisticatedstorage:smelting_upgrade",
-    "sophisticatedstorage:magnet_upgrade",
-    "sophisticatedstorage:advanced_pickup_upgrade",
-    "sophisticatedstorage:crafting_upgrade",
-    "sophisticatedstorage:stack_upgrade_tier_2",
+    "sophisticatedstorage:advanced_pump_upgrade",
     "sophisticatedstorage:advanced_compacting_upgrade",
-    {
-      "id": "sophisticatedstorage:sawmill/sawmill_upgrade",
-      "required": false
-    },
-    "sophisticatedstorage:void_upgrade",
+    "sophisticatedstorage:pickup_upgrade",
+    "sophisticatedstorage:xp_pump_upgrade",
+    "sophisticatedstorage:stack_downgrade_tier_1",
+    "sophisticatedstorage:auto_smoking_upgrade",
+    "sophisticatedstorage:advanced_hopper_upgrade",
+    "sophisticatedstorage:jukebox_upgrade",
     {
       "id": "sophisticatedstorage:chipped/alchemy_bench_upgrade",
       "required": false
     },
-    "sophisticatedstorage:xp_pump_upgrade",
-    "sophisticatedstorage:advanced_magnet_upgrade",
+    "sophisticatedstorage:advanced_pickup_upgrade",
+    "sophisticatedstorage:stonecutter_upgrade",
     {
-      "id": "sophisticatedstorage:chipped/glassblower_upgrade",
+      "id": "sophisticatedstorage:sawmill/sawmill_upgrade",
       "required": false
     },
-    "sophisticatedstorage:advanced_void_upgrade",
-    "sophisticatedstorage:auto_blasting_upgrade",
-    "sophisticatedstorage:stack_upgrade_omega_tier",
-    "sophisticatedstorage:advanced_filter_upgrade",
+    "sophisticatedstorage:magnet_upgrade",
+    "sophisticatedstorage:void_upgrade",
+    "sophisticatedstorage:infinity_upgrade",
+    "sophisticatedstorage:advanced_feeding_upgrade",
+    "sophisticatedstorage:stack_downgrade_tier_3",
     {
       "id": "sophisticatedstorage:chipped/mason_table_upgrade",
       "required": false
     },
-    "sophisticatedstorage:stack_downgrade_tier_1",
-    {
-      "id": "sophisticatedstorage:chipped/botanist_workbench_upgrade",
-      "required": false
-    },
-    "sophisticatedstorage:pickup_upgrade",
-    "sophisticatedstorage:survival_infinity_upgrade",
-    "sophisticatedstorage:advanced_pump_upgrade",
-    "sophisticatedstorage:auto_smelting_upgrade",
-    "sophisticatedstorage:auto_smoking_upgrade",
-    "sophisticatedstorage:pump_upgrade",
+    "sophisticatedstorage:stack_downgrade_tier_2",
     {
       "id": "sophisticatedstorage:chipped/loom_table_upgrade",
       "required": false
     },
-    "sophisticatedstorage:filter_upgrade",
-    "sophisticatedstorage:stack_downgrade_tier_3",
-    "sophisticatedstorage:compression_upgrade",
-    "sophisticatedstorage:stonecutter_upgrade",
-    "sophisticatedstorage:stack_upgrade_tier_3",
-    "sophisticatedstorage:advanced_jukebox_upgrade",
-    "sophisticatedstorage:infinity_upgrade",
-    {
-      "id": "sophisticatedstorage:chipped/tinkering_table_upgrade",
-      "required": false
-    },
-    "sophisticatedstorage:hopper_upgrade",
-    "sophisticatedstorage:stack_upgrade_tier_1_plus",
-    "sophisticatedstorage:stack_downgrade_tier_2",
-    "sophisticatedstorage:blasting_upgrade",
+    "sophisticatedstorage:advanced_void_upgrade",
     {
       "id": "sophisticatedstorage:chipped/carpenters_table_upgrade",
       "required": false
     },
-    "sophisticatedstorage:smoking_upgrade",
+    "sophisticatedstorage:feeding_upgrade",
+    "sophisticatedstorage:auto_smelting_upgrade",
+    {
+      "id": "sophisticatedstorage:chipped/glassblower_upgrade",
+      "required": false
+    },
+    "sophisticatedstorage:blasting_upgrade",
+    "sophisticatedstorage:stack_upgrade_tier_3",
     "sophisticatedstorage:stack_upgrade_tier_5",
-    "sophisticatedstorage:jukebox_upgrade",
-    "sophisticatedstorage:compacting_upgrade",
-    "sophisticatedstorage:stack_upgrade_tier_4"
+    "sophisticatedstorage:stack_upgrade_omega_tier",
+    "sophisticatedstorage:filter_upgrade",
+    "sophisticatedstorage:stack_upgrade_tier_1_plus",
+    "sophisticatedstorage:smelting_upgrade",
+    "sophisticatedstorage:stack_upgrade_tier_2",
+    "sophisticatedstorage:hopper_upgrade",
+    "sophisticatedstorage:pump_upgrade",
+    "sophisticatedstorage:advanced_magnet_upgrade",
+    {
+      "id": "sophisticatedstorage:chipped/tinkering_table_upgrade",
+      "required": false
+    },
+    "sophisticatedstorage:crafting_upgrade",
+    "sophisticatedstorage:survival_infinity_upgrade",
+    "sophisticatedstorage:auto_blasting_upgrade",
+    {
+      "id": "sophisticatedstorage:chipped/botanist_workbench_upgrade",
+      "required": false
+    },
+    "sophisticatedstorage:smoking_upgrade",
+    "sophisticatedstorage:compression_upgrade",
+    "sophisticatedstorage:advanced_filter_upgrade",
+    "sophisticatedstorage:stack_upgrade_tier_1",
+    "sophisticatedstorage:stack_upgrade_tier_4",
+    "sophisticatedstorage:advanced_jukebox_upgrade",
+    "sophisticatedstorage:compacting_upgrade"
   ]
 }

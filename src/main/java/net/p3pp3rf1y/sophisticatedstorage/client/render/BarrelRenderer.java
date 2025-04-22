@@ -8,6 +8,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
@@ -30,7 +31,7 @@ public class BarrelRenderer<T extends BarrelBlockEntity> extends StorageRenderer
 			return;
 		}
 
-		if (blockEntity.getLevel() != null) {
+		if (blockEntity.getLevel() != null && blockEntity.getBlockPos() != BlockPos.ZERO) {
 			packedLight = LevelRenderer.getLightColor(blockEntity.getLevel(), blockEntity.getBlockPos().relative(storageBlock.getFacing(blockState)));
 		}
 
