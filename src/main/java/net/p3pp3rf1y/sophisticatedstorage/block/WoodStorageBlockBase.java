@@ -23,6 +23,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.p3pp3rf1y.sophisticatedcore.init.ModCoreDataComponents;
 import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryHandler;
+import net.p3pp3rf1y.sophisticatedcore.upgrades.ITickableUpgrade;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeHandler;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
@@ -160,8 +161,8 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 					be.setBeingUpgraded(true);
 					be.loadAdditional(itemContentsStorage.getOrCreateStorageContents(storageUuid), level.registryAccess());
 					itemContentsStorage.removeStorageContents(storageUuid);
-
 					setNewSize(stack, be);
+					setTicking(level, pos, state, !be.getStorageWrapper().getUpgradeHandler().getWrappersThatImplement(ITickableUpgrade.class).isEmpty());
 				} else {
 					SophisticatedStorage.LOGGER.error("No storage contents found for uuid: " + storageUuid + " when placing " + stack.getHoverName().getString());
 				}

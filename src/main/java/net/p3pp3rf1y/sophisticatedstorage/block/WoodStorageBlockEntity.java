@@ -11,6 +11,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import net.neoforged.neoforge.items.IItemHandler;
+import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
 
@@ -80,6 +81,10 @@ public abstract class WoodStorageBlockEntity extends StorageBlockEntity {
 
 	public void setPacked(boolean packed) {
 		this.packed = packed;
+		if (packed) {
+			RenderInfo renderInfo = getStorageWrapper().getRenderInfo();
+			renderInfo.removeAllUpgradeRenderData();
+		}
 	}
 
 	@Override
