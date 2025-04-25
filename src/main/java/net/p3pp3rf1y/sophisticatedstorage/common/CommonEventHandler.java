@@ -11,6 +11,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
@@ -129,12 +130,14 @@ public class CommonEventHandler {
 			return;
 		}
 
-		if (WorldHelper.getBlockEntity(event.getLevel(), event.getPos(), StorageBlockEntity.class)
-				.map(storageBlockEntity -> storageBlockEntity.getStorageWrapper().getUpgradeHandler().getTypeWrappers(InfinityUpgradeItem.TYPE).stream().anyMatch(w -> !player.hasPermissions(w.getPermissionLevel())))
-				.orElse(false)) {
-			event.setCanceled(true);
-			player.displayClientMessage(StorageTranslationHelper.INSTANCE.translStatusMessage("infinity_upgrade_only_admin_break").withStyle(ChatFormatting.RED), true);
-		}
+		WorldHelper.getBlockEntity(event.getLevel(), event.getPos(), StorageBlockEntity.class)
+				.ifPresent(storageBlockEntity -> {
+					if (storageBlockEntity.getStorageWrapper().getUpgradeHandler().getTypeWrappers(InfinityUpgradeItem.TYPE).stream().anyMatch(w -> !player.hasPermissions(w.getPermissionLevel()))) {
+						event.setCanceled(true);
+						player.displayClientMessage(StorageTranslationHelper.INSTANCE.translStatusMessage("infinity_upgrade_only_admin_break").withStyle(ChatFormatting.RED), true);
+						scheduleRenderUpdate(storageBlockEntity, event.getLevel(), event.getPos(), event.getState());
+					}
+				});
 	}
 
 	private void handleTooManyDropsBreak(BlockEvent.BreakEvent event) {
@@ -179,14 +182,18 @@ public class CommonEventHandler {
 						Component.literal(String.valueOf(droppedItemEntityCount.get())).withStyle(ChatFormatting.RED),
 						packingTapeItemName)
 				);
-				if (level instanceof ServerLevel serverLevel) {
-					level.scheduleTick(pos, state.getBlock(), 2);
-					pendingTickTasks.add(new TickTask(serverLevel.getServer().getTickCount() + 2, () -> {
-						wbe.setUpdateBlockRender();
-						WorldHelper.notifyBlockUpdate(wbe);
-					}));
-				}
+				scheduleRenderUpdate(wbe, level, pos, state);
 			}
 		});
+	}
+
+	private void scheduleRenderUpdate(StorageBlockEntity storageBe, LevelAccessor level, BlockPos pos, BlockState state) {
+		if (level instanceof ServerLevel serverLevel) {
+			serverLevel.scheduleTick(pos, state.getBlock(), 2);
+			pendingTickTasks.add(new TickTask(serverLevel.getServer().getTickCount() + 2, () -> {
+				storageBe.setUpdateBlockRender();
+				WorldHelper.notifyBlockUpdate(storageBe);
+			}));
+		}
 	}
 }
