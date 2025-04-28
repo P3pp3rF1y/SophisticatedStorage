@@ -1,6 +1,7 @@
 package net.p3pp3rf1y.sophisticatedstorage.compat.chipped;
 
 import earth.terrarium.chipped.common.compat.jei.WorkbenchCategory;
+import earth.terrarium.chipped.common.registry.ModBlocks;
 import earth.terrarium.chipped.common.registry.ModRecipeTypes;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.Item;
@@ -18,7 +19,9 @@ import net.p3pp3rf1y.sophisticatedcore.compat.chipped.BlockTransformationUpgrade
 import net.p3pp3rf1y.sophisticatedcore.compat.chipped.BlockTransformationUpgradeItem;
 import net.p3pp3rf1y.sophisticatedcore.compat.chipped.BlockTransformationUpgradeWrapper;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
-import net.p3pp3rf1y.sophisticatedstorage.compat.jei.StoragePlugin;
+import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
+import net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.emi.EmiCompat;
+import net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.jei.StoragePlugin;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 
 import java.util.function.Supplier;
@@ -53,6 +56,18 @@ public class ChippedCompat implements ICompat {
 				registration.addRecipeCatalyst(new ItemStack(MASON_TABLE_UPGRADE.get()), WorkbenchCategory.RECIPE);
 				registration.addRecipeCatalyst(new ItemStack(ALCHEMY_BENCH_UPGRADE.get()), WorkbenchCategory.RECIPE);
 				registration.addRecipeCatalyst(new ItemStack(TINKERING_TABLE_UPGRADE.get()), WorkbenchCategory.RECIPE);
+			})).get().run();
+		}
+
+		if (ModList.get().isLoaded(CompatModIds.EMI)) {
+			((Supplier<Runnable>) () -> () -> EmiCompat.setAdditionalWorkstations(registration -> {
+				registration.addWorkstation(SophisticatedStorage.getRL("botanist_workbench"), ModBlocks.BOTANIST_WORKBENCH.get(), BOTANIST_WORKBENCH_UPGRADE.get());
+				registration.addWorkstation(SophisticatedStorage.getRL("glassblower"), ModBlocks.GLASSBLOWER.get(), GLASSBLOWER_UPGRADE.get());
+				registration.addWorkstation(SophisticatedStorage.getRL("carpenters_table"), ModBlocks.CARPENTERS_TABLE.get(), CARPENTERS_TABLE_UPGRADE.get());
+				registration.addWorkstation(SophisticatedStorage.getRL("loom_table"), ModBlocks.LOOM_TABLE.get(), LOOM_TABLE_UPGRADE.get());
+				registration.addWorkstation(SophisticatedStorage.getRL("mason_table"), ModBlocks.MASON_TABLE.get(), MASON_TABLE_UPGRADE.get());
+				registration.addWorkstation(SophisticatedStorage.getRL("alchemy_bench"), ModBlocks.ALCHEMY_BENCH.get(), ALCHEMY_BENCH_UPGRADE.get());
+				registration.addWorkstation(SophisticatedStorage.getRL("tinkering_table"), ModBlocks.TINKERING_TABLE.get(), TINKERING_TABLE_UPGRADE.get());
 			})).get().run();
 		}
 	}
