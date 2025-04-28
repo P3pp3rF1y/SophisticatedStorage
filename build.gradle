@@ -58,6 +58,13 @@ repositories {
             includeGroup 'top.theillusivec4.curios'
         }
     }
+    maven {
+        name = "TerraformersMC"
+        url = "https://maven.terraformersmc.com/"
+        content {
+            includeGroup "dev.emi"
+        }
+    }
 }
 
 base {
@@ -136,6 +143,8 @@ configurations {
 dependencies {
     compileOnly "mezz.jei:jei-${jei_mc_version}-api:${jei_version}"
     localRuntime "mezz.jei:jei-${jei_mc_version}:${jei_version}"
+    compileOnly "dev.emi:emi-neoforge:${emi_version}:api"
+    localRuntime "dev.emi:emi-neoforge:${emi_version}"
     compileOnly "curse.maven:embeddium-908741:${embeddium_cf_file_id}"
     compileOnly "curse.maven:jade-324717:${jade_cf_file_id}"
     compileOnly "curse.maven:chipped-456956:${chipped_cf_file_id}"
