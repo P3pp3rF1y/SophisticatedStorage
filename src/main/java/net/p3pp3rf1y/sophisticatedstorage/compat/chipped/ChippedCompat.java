@@ -1,7 +1,10 @@
 package net.p3pp3rf1y.sophisticatedstorage.compat.chipped;
 
 import earth.terrarium.chipped.common.compat.jei.ChippedRecipeCategory;
+import earth.terrarium.chipped.common.registry.ModBlocks;
 import earth.terrarium.chipped.common.registry.ModRecipeTypes;
+import me.shedaniel.rei.api.common.category.CategoryIdentifier;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -23,8 +26,11 @@ import net.p3pp3rf1y.sophisticatedcore.compat.chipped.BlockTransformationUpgrade
 import net.p3pp3rf1y.sophisticatedcore.compat.chipped.BlockTransformationUpgradeTab;
 import net.p3pp3rf1y.sophisticatedcore.compat.chipped.BlockTransformationUpgradeWrapper;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
+import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageButtonDefinitions;
-import net.p3pp3rf1y.sophisticatedstorage.compat.jei.StoragePlugin;
+import net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.emi.StorageEmiPlugin;
+import net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.jei.StorageJeiPlugin;
+import net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.rei.StorageReiClientPlugin;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 
 import java.util.function.Supplier;
@@ -52,7 +58,7 @@ public class ChippedCompat implements ICompat {
 		modBus.addListener(this::registerContainers);
 
 		if (ModList.get().isLoaded(CompatModIds.JEI)) {
-			((Supplier<Runnable>) () -> () -> StoragePlugin.setAdditionalCatalystRegistrar(registration -> {
+			((Supplier<Runnable>) () -> () -> StorageJeiPlugin.addAdditionalCatalystRegistrar(registration -> {
 				registration.addRecipeCatalyst(new ItemStack(BOTANIST_WORKBENCH_UPGRADE.get()), ChippedRecipeCategory.BOTANIST_WORKBENCH_RECIPE);
 				registration.addRecipeCatalyst(new ItemStack(GLASSBLOWER_UPGRADE.get()), ChippedRecipeCategory.GLASSBLOWER_RECIPE);
 				registration.addRecipeCatalyst(new ItemStack(CARPENTERS_TABLE_UPGRADE.get()), ChippedRecipeCategory.CARPENTERS_TABLE_RECIPE);
@@ -60,6 +66,28 @@ public class ChippedCompat implements ICompat {
 				registration.addRecipeCatalyst(new ItemStack(MASON_TABLE_UPGRADE.get()), ChippedRecipeCategory.MASON_TABLE_RECIPE);
 				registration.addRecipeCatalyst(new ItemStack(ALCHEMY_BENCH_UPGRADE.get()), ChippedRecipeCategory.ALCHEMY_BENCH_RECIPE);
 				registration.addRecipeCatalyst(new ItemStack(TINKERING_TABLE_UPGRADE.get()), ChippedRecipeCategory.TINKERING_TABLE_RECIPE);
+			})).get().run();
+		}
+		if (ModList.get().isLoaded(CompatModIds.EMI)) {
+			((Supplier<Runnable>) () -> () -> StorageEmiPlugin.addAdditionalWorkstations(registration -> {
+				registration.addWorkstation(SophisticatedStorage.getRL("botanist_workbench"), ModBlocks.BOTANIST_WORKBENCH.get(), BOTANIST_WORKBENCH_UPGRADE.get());
+				registration.addWorkstation(SophisticatedStorage.getRL("glassblower"), ModBlocks.GLASSBLOWER.get(), GLASSBLOWER_UPGRADE.get());
+				registration.addWorkstation(SophisticatedStorage.getRL("carpenters_table"), ModBlocks.CARPENTERS_TABLE.get(), CARPENTERS_TABLE_UPGRADE.get());
+				registration.addWorkstation(SophisticatedStorage.getRL("loom_table"), ModBlocks.LOOM_TABLE.get(), LOOM_TABLE_UPGRADE.get());
+				registration.addWorkstation(SophisticatedStorage.getRL("mason_table"), ModBlocks.MASON_TABLE.get(), MASON_TABLE_UPGRADE.get());
+				registration.addWorkstation(SophisticatedStorage.getRL("alchemy_bench"), ModBlocks.ALCHEMY_BENCH.get(), ALCHEMY_BENCH_UPGRADE.get());
+				registration.addWorkstation(SophisticatedStorage.getRL("tinkering_table"), ModBlocks.TINKERING_TABLE.get(), TINKERING_TABLE_UPGRADE.get());
+			})).get().run();
+		}
+		if (ModList.get().isLoaded(CompatModIds.REI)) {
+			((Supplier<Runnable>) () -> () -> StorageReiClientPlugin.addAdditionalWorkstations(registration -> {
+				registration.addWorkstations(CategoryIdentifier.of(BuiltInRegistries.BLOCK.getKey(ModBlocks.BOTANIST_WORKBENCH.get())), BOTANIST_WORKBENCH_UPGRADE.get());
+				registration.addWorkstations(CategoryIdentifier.of(BuiltInRegistries.BLOCK.getKey(ModBlocks.GLASSBLOWER.get())), GLASSBLOWER_UPGRADE.get());
+				registration.addWorkstations(CategoryIdentifier.of(BuiltInRegistries.BLOCK.getKey(ModBlocks.CARPENTERS_TABLE.get())), CARPENTERS_TABLE_UPGRADE.get());
+				registration.addWorkstations(CategoryIdentifier.of(BuiltInRegistries.BLOCK.getKey(ModBlocks.LOOM_TABLE.get())), LOOM_TABLE_UPGRADE.get());
+				registration.addWorkstations(CategoryIdentifier.of(BuiltInRegistries.BLOCK.getKey(ModBlocks.MASON_TABLE.get())), MASON_TABLE_UPGRADE.get());
+				registration.addWorkstations(CategoryIdentifier.of(BuiltInRegistries.BLOCK.getKey(ModBlocks.ALCHEMY_BENCH.get())), ALCHEMY_BENCH_UPGRADE.get());
+				registration.addWorkstations(CategoryIdentifier.of(BuiltInRegistries.BLOCK.getKey(ModBlocks.TINKERING_TABLE.get())), TINKERING_TABLE_UPGRADE.get());
 			})).get().run();
 		}
 	}

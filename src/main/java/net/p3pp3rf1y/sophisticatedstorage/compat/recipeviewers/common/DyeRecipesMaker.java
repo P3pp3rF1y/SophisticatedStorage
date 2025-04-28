@@ -1,4 +1,4 @@
-package net.p3pp3rf1y.sophisticatedstorage.compat.jei;
+package net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.common;
 
 import net.minecraft.core.NonNullList;
 import net.minecraft.resources.ResourceLocation;
@@ -9,6 +9,7 @@ import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.ShapedRecipe;
+import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.subtypes.PropertyBasedSubtypeInterpreter;
 import net.p3pp3rf1y.sophisticatedcore.util.ColorHelper;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.ITintableBlockItem;
@@ -18,12 +19,17 @@ import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
 
 import java.util.*;
+import java.util.function.Function;
 
 public class DyeRecipesMaker {
 	private DyeRecipesMaker() {}
 
-	public static List<CraftingRecipe> getRecipes() {
-		List<CraftingRecipe> recipes = new ArrayList<>();
+	public static <T extends PropertyBasedSubtypeInterpreter> List<CraftingRecipe> getRecipes(Function<ItemStack, Optional<T>> getSubtypeInterpreter) {
+		return getRecipes(getSubtypeInterpreter, r -> r);
+	}
+
+	public static <R, T extends PropertyBasedSubtypeInterpreter> List<R> getRecipes(Function<ItemStack, Optional<T>> getSubtypeInterpreter, Function<ShapedRecipe, R> transformRecipe) {
+		List<R> recipes = new ArrayList<>();
 
 		Map<Item, ItemStack[]> blocks = new HashMap<>();
 		blocks.put(ModBlocks.BARREL_ITEM.get(), getWoodStorageStacks(ModBlocks.BARREL.get()));
@@ -32,12 +38,14 @@ public class DyeRecipesMaker {
 		blocks.put(ModBlocks.GOLD_BARREL_ITEM.get(), getWoodStorageStacks(ModBlocks.GOLD_BARREL.get()));
 		blocks.put(ModBlocks.DIAMOND_BARREL_ITEM.get(), getWoodStorageStacks(ModBlocks.DIAMOND_BARREL.get()));
 		blocks.put(ModBlocks.NETHERITE_BARREL_ITEM.get(), getWoodStorageStacks(ModBlocks.NETHERITE_BARREL.get()));
+
 		blocks.put(ModBlocks.CHEST_ITEM.get(), getWoodStorageStacks(ModBlocks.CHEST.get()));
 		blocks.put(ModBlocks.COPPER_CHEST_ITEM.get(), getWoodStorageStacks(ModBlocks.COPPER_CHEST.get()));
 		blocks.put(ModBlocks.IRON_CHEST_ITEM.get(), getWoodStorageStacks(ModBlocks.IRON_CHEST.get()));
 		blocks.put(ModBlocks.GOLD_CHEST_ITEM.get(), getWoodStorageStacks(ModBlocks.GOLD_CHEST.get()));
 		blocks.put(ModBlocks.DIAMOND_CHEST_ITEM.get(), getWoodStorageStacks(ModBlocks.DIAMOND_CHEST.get()));
 		blocks.put(ModBlocks.NETHERITE_CHEST_ITEM.get(), getWoodStorageStacks(ModBlocks.NETHERITE_CHEST.get()));
+
 		blocks.put(ModBlocks.SHULKER_BOX_ITEM.get(), new ItemStack[] {new ItemStack(ModBlocks.SHULKER_BOX_ITEM.get())});
 		blocks.put(ModBlocks.COPPER_SHULKER_BOX_ITEM.get(), new ItemStack[]{new ItemStack(ModBlocks.COPPER_SHULKER_BOX_ITEM.get())});
 		blocks.put(ModBlocks.IRON_SHULKER_BOX_ITEM.get(), new ItemStack[] {new ItemStack(ModBlocks.IRON_SHULKER_BOX_ITEM.get())});
@@ -73,8 +81,8 @@ public class DyeRecipesMaker {
 		blocks.put(ModBlocks.LIMITED_DIAMOND_BARREL_4_ITEM.get(), getWoodStorageStacks(ModBlocks.LIMITED_DIAMOND_BARREL_4.get()));
 		blocks.put(ModBlocks.LIMITED_NETHERITE_BARREL_4_ITEM.get(), getWoodStorageStacks(ModBlocks.LIMITED_NETHERITE_BARREL_4.get()));
 
-		addSingleColorRecipes(recipes, blocks);
-		addMultipleColorsRecipe(recipes, blocks);
+		addSingleColorRecipes(recipes, blocks, getSubtypeInterpreter, transformRecipe);
+		addMultipleColorsRecipe(recipes, blocks, getSubtypeInterpreter, transformRecipe);
 
 		return recipes;
 	}
@@ -85,7 +93,7 @@ public class DyeRecipesMaker {
 		return ret.toArray(new ItemStack[0]);
 	}
 
-	private static void addMultipleColorsRecipe(List<CraftingRecipe> recipes, Map<Item, ItemStack[]> items) {
+	private static <R, T extends PropertyBasedSubtypeInterpreter> void addMultipleColorsRecipe(List<R> recipes, Map<Item, ItemStack[]> items, Function<ItemStack, Optional<T>> getSubtypeInterpreter, Function<ShapedRecipe, R> transformRecipe) {
 		items.forEach((block, stacks) -> {
 			NonNullList<Ingredient> ingredients = NonNullList.create();
 			ingredients.add(Ingredient.of(DyeColor.YELLOW.getTag()));
@@ -97,12 +105,12 @@ public class DyeRecipesMaker {
 				tintableBlockItem.setMainColor(result, ColorHelper.getColor(DyeColor.YELLOW.getTextureDiffuseColors()));
 				tintableBlockItem.setAccentColor(result, ColorHelper.getColor(DyeColor.LIME.getTextureDiffuseColors()));
 			}
-			ResourceLocation id = new ResourceLocation(SophisticatedStorage.MOD_ID, "multiple_colors");
-			recipes.add(new ShapedRecipe(id, "", CraftingBookCategory.MISC, 3, 1, ingredients, result));
+			ResourceLocation id = new ResourceLocation(SophisticatedStorage.MOD_ID, getSubtypeInterpreter.apply(result).map(i -> i.getRegistrySanitizedItemString(result)).orElse("multiple_color"));
+			recipes.add(transformRecipe.apply(new ShapedRecipe(id, "", CraftingBookCategory.MISC, 3, 1, ingredients, result)));
 		});
 	}
 
-	private static void addSingleColorRecipes(List<CraftingRecipe> recipes, Map<Item, ItemStack[]> items) {
+	private static <R, T extends PropertyBasedSubtypeInterpreter> void addSingleColorRecipes(List<R> recipes, Map<Item, ItemStack[]> items, Function<ItemStack, Optional<T>> getSubtypeInterpreter, Function<ShapedRecipe, R> transformRecipe) {
 		for (DyeColor color : DyeColor.values()) {
 			items.forEach((block, stacks) -> {
 				NonNullList<Ingredient> ingredients = NonNullList.create();
@@ -113,8 +121,8 @@ public class DyeRecipesMaker {
 					tintableBlockItem.setMainColor(result, ColorHelper.getColor(color.getTextureDiffuseColors()));
 					tintableBlockItem.setAccentColor(result, ColorHelper.getColor(color.getTextureDiffuseColors()));
 				}
-				ResourceLocation id = new ResourceLocation(SophisticatedStorage.MOD_ID, "single_color_" + color.getSerializedName());
-				recipes.add(new ShapedRecipe(id, "", CraftingBookCategory.MISC, 1, 2, ingredients, result));
+				ResourceLocation id = new ResourceLocation(SophisticatedStorage.MOD_ID, getSubtypeInterpreter.apply(result).map(i -> i.getRegistrySanitizedItemString(result)).orElse("single_color_" + color.getSerializedName()));
+				recipes.add(transformRecipe.apply(new ShapedRecipe(id, "", CraftingBookCategory.MISC, 1, 2, ingredients, result)));
 			});
 		}
 	}
