@@ -10,12 +10,15 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.AnvilUpdateEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -55,6 +58,7 @@ public class CommonEventHandler {
 		eventBus.addListener(this::onLimitedBarrelLeftClicked);
 		eventBus.addListener(this::onSneakItemBlockInteraction);
 		eventBus.addListener(this::onLevelTick);
+		eventBus.addListener(this::preventMendingAndUnbreaking);
 	}
 
 	private void onLimitedBarrelLeftClicked(PlayerInteractEvent.LeftClickBlock event) {
@@ -194,6 +198,21 @@ public class CommonEventHandler {
 				storageBe.setUpdateBlockRender();
 				WorldHelper.notifyBlockUpdate(storageBe);
 			}));
+		}
+	}
+
+
+	private void preventMendingAndUnbreaking(AnvilUpdateEvent event) {
+		if (event.getLeft().isEmpty() || event.getRight().isEmpty()) {
+			return;
+		}
+
+		if (event.getLeft().getItem() != ModItems.PACKING_TAPE.get()) {
+			return;
+		}
+
+		if (EnchantmentHelper.getEnchantments(event.getRight()).keySet().stream().anyMatch(e -> e == Enchantments.UNBREAKING || e == Enchantments.MENDING)) {
+			event.setCanceled(true);
 		}
 	}
 }
