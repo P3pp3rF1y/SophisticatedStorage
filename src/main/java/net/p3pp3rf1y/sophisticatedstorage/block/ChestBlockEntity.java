@@ -90,6 +90,7 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 		removeFromController();
 		setNotLinked();
 		tryToAddToController();
+		invalidateCapabilities();
 	}
 
 	public ChestLidController getChestLidController() {
