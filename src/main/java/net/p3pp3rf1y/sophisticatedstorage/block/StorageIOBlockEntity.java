@@ -3,6 +3,9 @@ package net.p3pp3rf1y.sophisticatedstorage.block;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -48,6 +51,7 @@ public class StorageIOBlockEntity extends BlockEntity implements IControllerBoun
 		this.controllerPos = controllerPos;
 		invalidateAllCapabilityCache();
 		setChanged();
+		WorldHelper.notifyBlockUpdate(this);
 	}
 
 	@Override
@@ -85,6 +89,7 @@ public class StorageIOBlockEntity extends BlockEntity implements IControllerBoun
 		invalidateAllCapabilityCache();
 		capabilitySideCache.clear();
 		setChanged();
+		WorldHelper.notifyBlockUpdate(this);
 	}
 
 	@SuppressWarnings("java:S1640") //can't use EnumMap because one of keys is null
@@ -152,6 +157,19 @@ public class StorageIOBlockEntity extends BlockEntity implements IControllerBoun
 		super.load(tag);
 		loadControllerPos(tag);
 		isLinkedToController = NBTHelper.getBoolean(tag, "isLinkedToController").orElse(false);
+	}
+
+	@Override
+	public CompoundTag getUpdateTag() {
+		CompoundTag tag = super.getUpdateTag();
+		saveAdditional(tag);
+		return tag;
+	}
+
+	@Nullable
+	@Override
+	public Packet<ClientGamePacketListener> getUpdatePacket() {
+		return ClientboundBlockEntityDataPacket.create(this);
 	}
 
 	@Override
