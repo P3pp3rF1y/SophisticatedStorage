@@ -4,6 +4,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -56,6 +59,7 @@ public class StorageIOBlockEntity extends BlockEntity implements IControllerBoun
 		this.controllerPos = controllerPos;
 		controllerItemHandlerCache = null;
 		setChanged();
+		WorldHelper.notifyBlockUpdate(this);
 	}
 
 	@Override
@@ -92,6 +96,7 @@ public class StorageIOBlockEntity extends BlockEntity implements IControllerBoun
 		controllerPos = null;
 		controllerItemHandlerCache = null;
 		setChanged();
+		WorldHelper.notifyBlockUpdate(this);
 	}
 
 	@Override
@@ -150,6 +155,19 @@ public class StorageIOBlockEntity extends BlockEntity implements IControllerBoun
 		super.loadAdditional(tag, registries);
 		loadControllerPos(tag);
 		isLinkedToController = NBTHelper.getBoolean(tag, "isLinkedToController").orElse(false);
+	}
+
+	@Override
+	public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+		CompoundTag tag = super.getUpdateTag(registries);
+		saveAdditional(tag, registries);
+		return tag;
+	}
+
+	@Nullable
+	@Override
+	public Packet<ClientGamePacketListener> getUpdatePacket() {
+		return ClientboundBlockEntityDataPacket.create(this);
 	}
 
 	protected void invalidateItemHandlerCache() {
