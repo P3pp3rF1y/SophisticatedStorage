@@ -2,6 +2,7 @@ package net.p3pp3rf1y.sophisticatedstorage.compat.sawmill;
 
 import net.mehvahdjukaar.sawmill.integration.emi.EMIPlugin;
 import net.mehvahdjukaar.sawmill.integration.jei.JEIPlugin;
+import net.mehvahdjukaar.sawmill.integration.rei.REIPlugin;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -19,6 +20,7 @@ import net.p3pp3rf1y.sophisticatedcore.compat.sawmill.SawmillUpgradeItem;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.emi.EmiCompat;
 import net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.jei.StoragePlugin;
+import net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.rei.StorageReiClientPlugin;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 
 import java.util.function.Supplier;
@@ -40,6 +42,11 @@ public class SawmillCompat implements ICompat {
 		if (ModList.get().isLoaded(CompatModIds.EMI)) {
 			((Supplier<Runnable>) () -> () -> EmiCompat.addAdditionalWorkstations(registration -> {
 				registration.addWorkstation(EMIPlugin.WOODCUTTING_CATEGORY, SAWMILL_UPGRADE.get());
+			})).get().run();
+		}
+		if (ModList.get().isLoaded(CompatModIds.REI)) {
+			((Supplier<Runnable>) () -> () -> StorageReiClientPlugin.addAdditionalWorkstations(registration -> {
+				registration.addWorkstations(REIPlugin.WOODCUTTING_DISPLAY, SAWMILL_UPGRADE.get());
 			})).get().run();
 		}
 	}
