@@ -42,11 +42,9 @@ import static net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.common.sub
 @SuppressWarnings("unused")
 @JeiPlugin
 public class StoragePlugin implements IModPlugin {
-	private static Consumer<IRecipeCatalystRegistration> additionalCatalystRegistrar = registration -> {
-	};
-
-	public static void setAdditionalCatalystRegistrar(Consumer<IRecipeCatalystRegistration> additionalCatalystRegistrar) {
-		StoragePlugin.additionalCatalystRegistrar = additionalCatalystRegistrar;
+	private static Consumer<IRecipeCatalystRegistration> additionalCatalystRegistrar = registration -> {};
+	public static void addAdditionalCatalystRegistrar(Consumer<IRecipeCatalystRegistration> additionalCatalystRegistrar) {
+		StoragePlugin.additionalCatalystRegistrar = StoragePlugin.additionalCatalystRegistrar.andThen(additionalCatalystRegistrar);
 	}
 
 	@Override
