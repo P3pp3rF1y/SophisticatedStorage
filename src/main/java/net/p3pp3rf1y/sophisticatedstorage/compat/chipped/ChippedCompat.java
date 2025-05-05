@@ -21,8 +21,8 @@ import net.p3pp3rf1y.sophisticatedcore.compat.chipped.BlockTransformationUpgrade
 import net.p3pp3rf1y.sophisticatedcore.compat.chipped.BlockTransformationUpgradeWrapper;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
-import net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.emi.EmiCompat;
-import net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.jei.StoragePlugin;
+import net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.emi.StorageEmiPlugin;
+import net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.jei.StorageJeiPlugin;
 import net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.rei.StorageReiClientPlugin;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 
@@ -50,7 +50,7 @@ public class ChippedCompat implements ICompat {
 		modBus.addListener(this::registerContainers);
 
 		if (ModList.get().isLoaded(CompatModIds.JEI)) {
-			((Supplier<Runnable>) () -> () -> StoragePlugin.addAdditionalCatalystRegistrar(registration -> {
+			((Supplier<Runnable>) () -> () -> StorageJeiPlugin.addAdditionalCatalystRegistrar(registration -> {
 				registration.addRecipeCatalyst(new ItemStack(BOTANIST_WORKBENCH_UPGRADE.get()), WorkbenchCategory.RECIPE);
 				registration.addRecipeCatalyst(new ItemStack(GLASSBLOWER_UPGRADE.get()), WorkbenchCategory.RECIPE);
 				registration.addRecipeCatalyst(new ItemStack(CARPENTERS_TABLE_UPGRADE.get()), WorkbenchCategory.RECIPE);
@@ -61,7 +61,7 @@ public class ChippedCompat implements ICompat {
 			})).get().run();
 		}
 		if (ModList.get().isLoaded(CompatModIds.EMI)) {
-			((Supplier<Runnable>) () -> () -> EmiCompat.addAdditionalWorkstations(registration -> {
+			((Supplier<Runnable>) () -> () -> StorageEmiPlugin.addAdditionalWorkstations(registration -> {
 				registration.addWorkstation(SophisticatedStorage.getRL("botanist_workbench"), ModBlocks.BOTANIST_WORKBENCH.get(), BOTANIST_WORKBENCH_UPGRADE.get());
 				registration.addWorkstation(SophisticatedStorage.getRL("glassblower"), ModBlocks.GLASSBLOWER.get(), GLASSBLOWER_UPGRADE.get());
 				registration.addWorkstation(SophisticatedStorage.getRL("carpenters_table"), ModBlocks.CARPENTERS_TABLE.get(), CARPENTERS_TABLE_UPGRADE.get());

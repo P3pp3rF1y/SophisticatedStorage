@@ -18,8 +18,8 @@ import net.p3pp3rf1y.sophisticatedcore.compat.ICompat;
 import net.p3pp3rf1y.sophisticatedcore.compat.sawmill.SawmillUpgradeContainer;
 import net.p3pp3rf1y.sophisticatedcore.compat.sawmill.SawmillUpgradeItem;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
-import net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.emi.EmiCompat;
-import net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.jei.StoragePlugin;
+import net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.emi.StorageEmiPlugin;
+import net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.jei.StorageJeiPlugin;
 import net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.rei.StorageReiClientPlugin;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 
@@ -35,12 +35,12 @@ public class SawmillCompat implements ICompat {
 		modBus.addListener(this::registerContainers);
 
 		if (ModList.get().isLoaded(CompatModIds.JEI)) {
-			((Supplier<Runnable>) () -> () -> StoragePlugin.addAdditionalCatalystRegistrar(registration -> {
+			((Supplier<Runnable>) () -> () -> StorageJeiPlugin.addAdditionalCatalystRegistrar(registration -> {
 				registration.addRecipeCatalyst(new ItemStack(SAWMILL_UPGRADE.get()), JEIPlugin.WOODCUTTING_RECIPE_TYPE);
 			})).get().run();
 		}
 		if (ModList.get().isLoaded(CompatModIds.EMI)) {
-			((Supplier<Runnable>) () -> () -> EmiCompat.addAdditionalWorkstations(registration -> {
+			((Supplier<Runnable>) () -> () -> StorageEmiPlugin.addAdditionalWorkstations(registration -> {
 				registration.addWorkstation(EMIPlugin.WOODCUTTING_CATEGORY, SAWMILL_UPGRADE.get());
 			})).get().run();
 		}
