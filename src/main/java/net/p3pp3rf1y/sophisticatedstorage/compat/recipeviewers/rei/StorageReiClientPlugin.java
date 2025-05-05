@@ -17,9 +17,9 @@ import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.subtypes.PropertyBasedSubtypeInterpreter;
-import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.rei.ClientTransferHandler;
-import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.rei.SettingsGhostIngredientHandler;
-import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.rei.StorageGhostIngredientHandler;
+import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.rei.ReiCraftingContainerTransferHandler;
+import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.rei.ReiSettingsGhostIngredientHandler;
+import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.rei.ReiStorageGhostIngredientHandler;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageScreen;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageSettingsScreen;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
@@ -73,8 +73,8 @@ public class StorageReiClientPlugin implements REIClientPlugin {
 
 	@Override
 	public void registerScreens(ScreenRegistry registry) {
-		registry.registerDraggableStackVisitor(new StorageGhostIngredientHandler<>(StorageScreen.class));
-		registry.registerDraggableStackVisitor(new SettingsGhostIngredientHandler<>(StorageSettingsScreen.class));
+		registry.registerDraggableStackVisitor(new ReiStorageGhostIngredientHandler<>(StorageScreen.class));
+		registry.registerDraggableStackVisitor(new ReiSettingsGhostIngredientHandler<>(StorageSettingsScreen.class));
 	}
 
 	@Override
@@ -96,6 +96,6 @@ public class StorageReiClientPlugin implements REIClientPlugin {
 
 	@Override
 	public void registerTransferHandlers(TransferHandlerRegistry registry) {
-		registry.register(ClientTransferHandler.crafting(StorageContainerMenu.class));
+		registry.register(ReiCraftingContainerTransferHandler.crafting(StorageContainerMenu.class));
 	}
 }
