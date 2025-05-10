@@ -344,6 +344,7 @@ task curseforge(type: net.darkhax.curseforgegradle.TaskPublishCurseForge) {
     mainFile.addOptional('trashslot')
     mainFile.addOptional('item-borders')
     mainFile.addOptional('chipped')
+    mainFile.addOptional('quark')
     onlyIf { !project.ext.changelog.isEmpty() }
 }
 
@@ -361,6 +362,7 @@ modrinth {
         optional.project "trashslot"
         optional.project "item-borders"
         optional.project "chipped"
+        optional.project "quark"
     }
     changelog = provider {
         project.ext.changelog

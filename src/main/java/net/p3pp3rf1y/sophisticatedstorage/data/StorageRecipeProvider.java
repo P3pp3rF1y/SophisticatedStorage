@@ -122,6 +122,8 @@ public class StorageRecipeProvider extends RecipeProvider {
 		addStorageUpgradeFromBackpackUpgradeRecipe(consumer, ModItems.STONECUTTER_UPGRADE.get(), net.p3pp3rf1y.sophisticatedbackpacks.init.ModItems.STONECUTTER_UPGRADE.get());
 		addStorageUpgradeFromBackpackUpgradeRecipe(consumer, ModItems.JUKEBOX_UPGRADE.get(), net.p3pp3rf1y.sophisticatedbackpacks.init.ModItems.JUKEBOX_UPGRADE.get());
 		addStorageUpgradeFromBackpackUpgradeRecipe(consumer, ModItems.ADVANCED_JUKEBOX_UPGRADE.get(), net.p3pp3rf1y.sophisticatedbackpacks.init.ModItems.ADVANCED_JUKEBOX_UPGRADE.get());
+		addStorageUpgradeFromBackpackUpgradeRecipe(consumer, ModItems.ADVANCED_ALCHEMY_UPGRADE.get(), net.p3pp3rf1y.sophisticatedbackpacks.init.ModItems.ADVANCED_ALCHEMY_UPGRADE.get());
+		addStorageUpgradeFromBackpackUpgradeRecipe(consumer, ModItems.ALCHEMY_UPGRADE.get(), net.p3pp3rf1y.sophisticatedbackpacks.init.ModItems.ALCHEMY_UPGRADE.get());
 
 		addBackpackStackUpgradeFromStorageStackUpgradeRecipe(consumer, net.p3pp3rf1y.sophisticatedbackpacks.init.ModItems.STACK_UPGRADE_STARTER_TIER.get(), ModItems.STACK_UPGRADE_TIER_1_PLUS.get());
 		addBackpackStackUpgradeFromStorageStackUpgradeRecipe(consumer, net.p3pp3rf1y.sophisticatedbackpacks.init.ModItems.STACK_UPGRADE_TIER_1.get(), ModItems.STACK_UPGRADE_TIER_2.get());
@@ -154,6 +156,8 @@ public class StorageRecipeProvider extends RecipeProvider {
 		addBackpackUpgradeFromStorageUpgradeRecipe(consumer, net.p3pp3rf1y.sophisticatedbackpacks.init.ModItems.STONECUTTER_UPGRADE.get(), ModItems.STONECUTTER_UPGRADE.get());
 		addBackpackUpgradeFromStorageUpgradeRecipe(consumer, net.p3pp3rf1y.sophisticatedbackpacks.init.ModItems.JUKEBOX_UPGRADE.get(), ModItems.JUKEBOX_UPGRADE.get());
 		addBackpackUpgradeFromStorageUpgradeRecipe(consumer, net.p3pp3rf1y.sophisticatedbackpacks.init.ModItems.ADVANCED_JUKEBOX_UPGRADE.get(), ModItems.ADVANCED_JUKEBOX_UPGRADE.get());
+		addBackpackUpgradeFromStorageUpgradeRecipe(consumer, net.p3pp3rf1y.sophisticatedbackpacks.init.ModItems.ADVANCED_ALCHEMY_UPGRADE.get(), ModItems.ADVANCED_ALCHEMY_UPGRADE.get());
+		addBackpackUpgradeFromStorageUpgradeRecipe(consumer, net.p3pp3rf1y.sophisticatedbackpacks.init.ModItems.ALCHEMY_UPGRADE.get(), ModItems.ALCHEMY_UPGRADE.get());
 	}
 
 	private void addBackpackStackUpgradeFromStorageStackUpgradeRecipe(Consumer<FinishedRecipe> consumer, StackUpgradeItem backpackStackUpgrade, StackUpgradeItem storageStackUpgrade) {
@@ -1136,6 +1140,31 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('O', Items.DROPPER)
 				.define('H', ModItems.HOPPER_UPGRADE.get())
 				.unlockedBy("has_feeding_upgrade", has(ModItems.HOPPER_UPGRADE.get()))
+				.save(consumer);
+
+		ShapeBasedRecipeBuilder.shaped(ModItems.ALCHEMY_UPGRADE.get())
+				.pattern("TGF")
+				.pattern("IBI")
+				.pattern("RPR")
+				.define('T', Items.GHAST_TEAR)
+				.define('G', Items.GLASS_BOTTLE)
+				.define('F', Items.FERMENTED_SPIDER_EYE)
+				.define('R', Items.BLAZE_ROD)
+				.define('P', Items.ENDER_PEARL)
+				.define('I', Tags.Items.INGOTS_IRON)
+				.define('B', ModItems.UPGRADE_BASE.get())
+				.unlockedBy("has_upgrade_base", has(ModItems.UPGRADE_BASE.get()))
+				.save(consumer);
+
+		ShapeBasedRecipeBuilder.shaped(ModItems.ADVANCED_ALCHEMY_UPGRADE.get(), ModRecipes.UPGRADE_NEXT_TIER_SERIALIZER.get())
+				.pattern(" D ")
+				.pattern("GAG")
+				.pattern("RRR")
+				.define('D', Tags.Items.GEMS_DIAMOND)
+				.define('G', Tags.Items.INGOTS_GOLD)
+				.define('R', Tags.Items.DUSTS_REDSTONE)
+				.define('A', ModItems.ALCHEMY_UPGRADE.get())
+				.unlockedBy("has_alchemy_upgrade", has(ModItems.ALCHEMY_UPGRADE.get()))
 				.save(consumer);
 
 		addChippedUpgradeRecipes(consumer);

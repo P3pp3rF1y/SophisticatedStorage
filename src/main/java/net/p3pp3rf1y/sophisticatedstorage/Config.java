@@ -9,6 +9,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.FilteredUpgradeConfig;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.IUpgradeCountLimitConfig;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeGroup;
+import net.p3pp3rf1y.sophisticatedcore.upgrades.alchemy.AlchemyUpgradeConfig;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.cooking.AutoCookingUpgradeConfig;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.cooking.CookingUpgradeConfig;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.cooking.ICookingUpgrade;
@@ -162,6 +163,8 @@ public class Config {
 		public final HopperUpgradeConfig hopperUpgrade;
 		public final HopperUpgradeConfig advancedHopperUpgrade;
 		public final JukeboxUpgradeConfig advancedJukeboxUpgrade;
+		public final AlchemyUpgradeConfig alchemyUpgrade;
+		public final AlchemyUpgradeConfig advancedAlchemyUpgrade;
 
 		public final ForgeConfigSpec.IntValue tooManyItemEntityDrops;
 		public final MaxUgradesPerStorageConfig maxUpgradesPerStorage;
@@ -270,6 +273,8 @@ public class Config {
 			hopperUpgrade = new HopperUpgradeConfig(builder, "Hopper Upgrade", "hopperUpgrade", 2, 2, 2, 2, 8, 1);
 			advancedHopperUpgrade = new HopperUpgradeConfig(builder, "Advanced Hopper Upgrade", "advancedHopperUpgrade", 4, 4, 4, 4, 2, 4);
 			advancedJukeboxUpgrade = new JukeboxUpgradeConfig(builder, "Advanced Jukebox Upgrade", "advancedJukeboxUpgrade", 12);
+			alchemyUpgrade = new AlchemyUpgradeConfig(builder, "Alchemy Upgrade", "alchemyUpgrade", 4);
+			advancedAlchemyUpgrade = new AlchemyUpgradeConfig(builder, "Advanced Alchemy Upgrade", "advancedAlchemyUpgrade", 8);
 
 			maxUpgradesPerStorage = new MaxUgradesPerStorageConfig(builder, Map.of(
 					ChestBlockEntity.STORAGE_TYPE, Map.of(
