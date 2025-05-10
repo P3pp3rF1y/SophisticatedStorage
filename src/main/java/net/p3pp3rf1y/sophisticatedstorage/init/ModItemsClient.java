@@ -9,6 +9,7 @@ import net.p3pp3rf1y.sophisticatedcore.client.gui.StorageScreenBase;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.UpgradeGuiManager;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.Position;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.ContentsFilteredUpgradeContainer;
+import net.p3pp3rf1y.sophisticatedcore.upgrades.alchemy.AlchemyUpgradeTab;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.battery.BatteryInventoryPart;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.battery.BatteryUpgradeTab;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.compacting.CompactingUpgradeContainer;
@@ -100,5 +101,7 @@ public class ModItemsClient {
 				new XpPumpUpgradeTab(upgradeContainer, position, screen, Config.SERVER.xpPumpUpgrade.mendingOn.get()));
 		UpgradeGuiManager.registerTab(ModItems.HOPPER_TYPE, HopperUpgradeTab.Basic::new);
 		UpgradeGuiManager.registerTab(ModItems.ADVANCED_HOPPER_TYPE, HopperUpgradeTab.Advanced::new);
+		UpgradeGuiManager.registerTab(ModItems.ALCHEMY_TYPE, AlchemyUpgradeTab.Basic::new);
+		UpgradeGuiManager.registerTab(ModItems.ADVANCED_ALCHEMY_TYPE, AlchemyUpgradeTab.Advanced::new);
 	}
 }
