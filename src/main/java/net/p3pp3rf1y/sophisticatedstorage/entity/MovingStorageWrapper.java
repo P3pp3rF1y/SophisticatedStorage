@@ -257,7 +257,16 @@ public abstract class MovingStorageWrapper implements IStorageWrapper {
 
 	@Override
 	public Optional<UUID> getContentsUuid() {
-		return Optional.ofNullable(storageStack.get(ModCoreDataComponents.STORAGE_UUID));
+		return Optional.ofNullable(getContentsUuid(storageStack));
+	}
+
+	@Nullable
+	private static UUID getContentsUuid(ItemStack storageStack) {
+		return storageStack.get(ModCoreDataComponents.STORAGE_UUID);
+	}
+
+	public static boolean hasContentsUuid(ItemStack storageStack) {
+		return getContentsUuid(storageStack) != null;
 	}
 
 	private CompoundTag getSettingsNbt() {
