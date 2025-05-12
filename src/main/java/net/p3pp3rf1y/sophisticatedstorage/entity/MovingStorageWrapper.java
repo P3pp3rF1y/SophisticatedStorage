@@ -255,6 +255,10 @@ public abstract class MovingStorageWrapper implements IStorageWrapper {
 		return NBTHelper.getUniqueId(storageStack, StorageWrapper.UUID_TAG);
 	}
 
+	public static boolean hasContentsUuid(ItemStack storageStack) {
+		return NBTHelper.hasTag(storageStack, StorageWrapper.UUID_TAG);
+	}
+
 	private CompoundTag getSettingsNbt() {
 		UUID storageId = getContentsUuid().orElseGet(this::getNewUuid);
 		IStorageSavedData storageData = getStorageData.apply(storageId);
