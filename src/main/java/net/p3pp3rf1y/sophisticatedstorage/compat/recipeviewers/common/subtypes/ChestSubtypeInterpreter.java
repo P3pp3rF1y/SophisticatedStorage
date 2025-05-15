@@ -10,7 +10,7 @@ public class ChestSubtypeInterpreter extends PropertyBasedSubtypeInterpreter {
 	public ChestSubtypeInterpreter() {
 		addOptionalProperty(WoodStorageBlockItem::getWoodType, "woodName", WoodType::name);
 		addOptionalProperty(StorageBlockItem::getMainColorFromComponentHolder, "mainColor", String::valueOf);
-		addOptionalProperty(StorageBlockItem::getAccentColorFromComponentHolder, "mainColor", String::valueOf);
+		addOptionalProperty(StorageBlockItem::getAccentColorFromComponentHolder, "accentColor", String::valueOf);
 		addProperty(ChestBlockItem::isDoubleChest, "doubleChest", String::valueOf);
 	}
 }
