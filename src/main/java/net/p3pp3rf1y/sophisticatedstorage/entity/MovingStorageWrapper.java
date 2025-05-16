@@ -36,7 +36,6 @@ import net.p3pp3rf1y.sophisticatedstorage.item.BarrelBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.ShulkerBoxItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.settings.StorageSettingsHandler;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -181,7 +180,7 @@ public abstract class MovingStorageWrapper implements IStorageWrapper {
 		return getInventoryIOHandler();
 	}
 
-	private @NotNull ITrackedContentsItemHandler getInventoryIOHandler() {
+	private ITrackedContentsItemHandler getInventoryIOHandler() {
 		if (inventoryIOHandler == null) {
 			inventoryIOHandler = new InventoryIOHandler(this);
 		}

@@ -9,8 +9,8 @@ import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.items.IItemHandler;
 import net.p3pp3rf1y.sophisticatedcore.inventory.IItemHandlerSimpleInserter;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+
+import javax.annotation.Nullable;
 
 public class StorageOutputBlockEntity extends StorageIOBlockEntity {
 	public StorageOutputBlockEntity(BlockPos pos, BlockState state) {
@@ -51,17 +51,17 @@ public class StorageOutputBlockEntity extends StorageIOBlockEntity {
 		}
 
 		@Override
-		public @NotNull ItemStack getStackInSlot(int slot) {
+		public ItemStack getStackInSlot(int slot) {
 			return itemHandler.getStackInSlot(slot);
 		}
 
 		@Override
-		public @NotNull ItemStack insertItem(int slot, @NotNull ItemStack stack, boolean simulate) {
+		public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
 			return stack;
 		}
 
 		@Override
-		public @NotNull ItemStack extractItem(int slot, int amount, boolean simulate) {
+		public ItemStack extractItem(int slot, int amount, boolean simulate) {
 			return itemHandler.extractItem(slot, amount, simulate);
 		}
 
@@ -71,7 +71,7 @@ public class StorageOutputBlockEntity extends StorageIOBlockEntity {
 		}
 
 		@Override
-		public boolean isItemValid(int slot, @NotNull ItemStack stack) {
+		public boolean isItemValid(int slot, ItemStack stack) {
 			return false;
 		}
 	}

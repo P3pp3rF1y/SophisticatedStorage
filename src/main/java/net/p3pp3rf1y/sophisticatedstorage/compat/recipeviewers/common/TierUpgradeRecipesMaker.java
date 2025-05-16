@@ -18,7 +18,6 @@ import net.p3pp3rf1y.sophisticatedstorage.crafting.StorageTierUpgradeRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.StorageTierUpgradeShapelessRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.item.ChestBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,7 +56,6 @@ public class TierUpgradeRecipesMaker {
 		return craftingRecipes;
 	}
 
-	@NotNull
 	private static <R, T extends CraftingRecipe, U extends PropertyBasedSubtypeInterpreter> List<R> getCraftingRecipes(RecipeConstructor<T> constructRecipe, Class<T> originalRecipeClass,
 																													   Function<CraftingRecipe, List<ItemStack>> getStorageItems,
 																													   Function<ItemStack, Optional<U>> getSubtypeInterpreter,

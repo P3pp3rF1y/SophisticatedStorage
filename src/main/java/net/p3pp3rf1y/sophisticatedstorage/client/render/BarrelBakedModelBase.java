@@ -829,7 +829,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 			}
 
 			@Override
-			public List<BakedQuad> getQuads(@org.jetbrains.annotations.Nullable BlockState state, @org.jetbrains.annotations.Nullable Direction side, RandomSource rand, ModelData extraData, @org.jetbrains.annotations.Nullable RenderType renderType) {
+			public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, RandomSource rand, ModelData extraData, @Nullable RenderType renderType) {
 				setProperties();
 				return super.getQuads(state, side, rand, extraData, renderType);
 			}
