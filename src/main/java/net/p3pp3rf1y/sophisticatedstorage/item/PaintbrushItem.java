@@ -36,7 +36,6 @@ import net.p3pp3rf1y.sophisticatedstorage.block.*;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageTranslationHelper;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModDataComponents;
 import net.p3pp3rf1y.sophisticatedstorage.util.DecorationHelper;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -140,7 +139,7 @@ public class PaintbrushItem extends ItemBase {
 		return getDyeItemRequirements(paintbrush, player, allPartsNeeded);
 	}
 
-	public static @NotNull Optional<ItemRequirements> getDyeItemRequirements(ItemStack paintbrush, Player player, Map<TagKey<Item>, Integer> allPartsNeeded) {
+	public static Optional<ItemRequirements> getDyeItemRequirements(ItemStack paintbrush, Player player, Map<TagKey<Item>, Integer> allPartsNeeded) {
 		Map<ResourceLocation, Integer> remainingParts = getRemainingParts(paintbrush);
 		DecorationHelper.ConsumptionResult result = DecorationHelper.consumeDyePartsNeeded(allPartsNeeded, InventoryHelper.getItemHandlersFromPlayerIncludingContainers(player), remainingParts, true);
 
@@ -160,7 +159,7 @@ public class PaintbrushItem extends ItemBase {
 
 
 
-	private static @NotNull Optional<ItemRequirements> compileDyeItemRequirements(Map<TagKey<Item>, Integer> allPartsNeeded, Map<ResourceLocation, Integer> remainingParts, DecorationHelper.ConsumptionResult result) {
+	private static Optional<ItemRequirements> compileDyeItemRequirements(Map<TagKey<Item>, Integer> allPartsNeeded, Map<ResourceLocation, Integer> remainingParts, DecorationHelper.ConsumptionResult result) {
 		List<ItemStack> itemsPresent = new ArrayList<>();
 		List<ItemStack> itemsMissing = new ArrayList<>();
 
@@ -250,11 +249,11 @@ public class PaintbrushItem extends ItemBase {
 		}
 	}
 
-	public static boolean paint(@NotNull Player player, ItemStack paintbrush, @Nullable IMaterialHolder materialHolder, ITintable tintable, Vec3 successEffectPos, Direction effectOffsetDirection, SoundEvent placeSound) {
+	public static boolean paint(Player player, ItemStack paintbrush, @Nullable IMaterialHolder materialHolder, ITintable tintable, Vec3 successEffectPos, Direction effectOffsetDirection, SoundEvent placeSound) {
 		return paint(player, paintbrush, 1f, materialHolder, tintable, successEffectPos, effectOffsetDirection, placeSound);
 	}
 
-	public static boolean paint(@NotNull Player player, ItemStack paintbrush, float soundVolume, @Nullable IMaterialHolder materialHolder, ITintable tintable, Vec3 successEffectPos, Direction effectOffsetDirection, SoundEvent placeSound) {
+	public static boolean paint(Player player, ItemStack paintbrush, float soundVolume, @Nullable IMaterialHolder materialHolder, ITintable tintable, Vec3 successEffectPos, Direction effectOffsetDirection, SoundEvent placeSound) {
 		if (hasBarrelMaterials(paintbrush)) {
 			if (materialHolder == null || !materialHolder.canHoldMaterials()) {
 				return false;

@@ -132,7 +132,7 @@ public class BarrelBlock extends WoodStorageBlockBase {
 	}
 
 	@Override
-	public void setPlacedBy(Level level, BlockPos pos, BlockState state, @org.jetbrains.annotations.Nullable LivingEntity placer, ItemStack stack) {
+	public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
 		super.setPlacedBy(level, pos, state, placer, stack);
 		WorldHelper.getBlockEntity(level, pos, BarrelBlockEntity.class).ifPresent(barrel -> {
 			Map<BarrelMaterial, ResourceLocation> materials = BarrelBlockItem.getMaterials(stack);

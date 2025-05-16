@@ -313,9 +313,9 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 		doubleMainPos = null;
 	}
 
-	@org.jetbrains.annotations.Nullable
+	@Nullable
 	@Override
-	public IItemHandler getExternalItemHandler(@org.jetbrains.annotations.Nullable Direction side) {
+	public IItemHandler getExternalItemHandler(@Nullable Direction side) {
 		if (level == null) {
 			return null;
 		}

@@ -26,7 +26,6 @@ import net.neoforged.neoforge.client.model.geometry.IGeometryBakingContext;
 import net.neoforged.neoforge.client.model.geometry.IGeometryLoader;
 import net.neoforged.neoforge.client.model.geometry.IUnbakedGeometry;
 import net.neoforged.neoforge.common.util.ConcatenatedListView;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -128,7 +127,6 @@ public class SimpleCompositeModel implements IUnbakedGeometry<SimpleCompositeMod
 			this.itemPasses = itemPasses;
 		}
 
-		@NotNull
 		@Override
 		public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, RandomSource rand, ModelData data, @Nullable RenderType renderType) {
 			List<List<BakedQuad>> quadLists = new ArrayList<>();
