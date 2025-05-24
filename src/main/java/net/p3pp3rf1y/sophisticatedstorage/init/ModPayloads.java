@@ -16,5 +16,6 @@ public class ModPayloads {
 		registrar.playToClient(StorageContentsPayload.TYPE, StorageContentsPayload.STREAM_CODEC, StorageContentsPayload::handlePayload);
 		registrar.playToServer(ScrolledToolPayload.TYPE, ScrolledToolPayload.STREAM_CODEC, ScrolledToolPayload::handlePayload);
 		registrar.playToServer(RequestPlayerSettingsPayload.TYPE, RequestPlayerSettingsPayload.STREAM_CODEC, (payload, context) -> RequestPlayerSettingsPayload.handlePayload(context));
+		registrar.playToClient(StorageOpennessPayload.TYPE, StorageOpennessPayload.STREAM_CODEC, StorageOpennessPayload::handlePayload);
 	}
 }

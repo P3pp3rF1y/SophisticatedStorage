@@ -3,7 +3,9 @@ package net.p3pp3rf1y.sophisticatedstorage.entity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.RandomSource;
@@ -17,6 +19,7 @@ import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.network.PacketDistributor;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageSavedData;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.api.IUpgradeRenderer;
@@ -286,22 +289,43 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 	}
 
 	public void startOpen(Player player, Entity entity) {
+		if (!(player.level() instanceof ServerLevel)) {
+			return;
+		}
+
 		if (!player.isSpectator()) {
 			getOpenersCounter().incrementOpeners(player, entity);
 		}
 		PiglinAi.angerNearbyPiglins(player, true);
+		sendOpenness(entity);
+	}
+
+	private void sendOpenness(Entity entity) {
+		CustomPacketPayload opennessPayload = createOpennessPayload();
+		if (opennessPayload == null) {
+			return;
+		}
+		PacketDistributor.sendToPlayersTrackingEntity(entity, opennessPayload);
+	}
+
+	@Nullable
+	protected abstract CustomPacketPayload createOpennessPayload();
+
+	public void setShouldBeOpen(boolean shouldBeOpen) {
 		if (getRenderBlockEntity() != null) {
-			getRenderBlockEntity().startOpen(player);
+			getRenderBlockEntity().setShouldBeOpen(shouldBeOpen);
 		}
 	}
 
 	public void stopOpen(Player player, Entity entity) {
+		if (!(player.level() instanceof ServerLevel)) {
+			return;
+		}
+
 		if (!player.isSpectator()) {
 			getOpenersCounter().decrementOpeners(player, entity);
 		}
-		if (getRenderBlockEntity() != null) {
-			getRenderBlockEntity().stopOpen(player);
-		}
+		sendOpenness(entity);
 	}
 
 	public void tick(Entity entity) {

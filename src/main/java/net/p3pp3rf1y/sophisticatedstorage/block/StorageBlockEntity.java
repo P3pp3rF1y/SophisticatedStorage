@@ -8,11 +8,13 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Nameable;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -20,6 +22,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.network.PacketDistributor;
 import net.p3pp3rf1y.sophisticatedcore.controller.IControllableStorage;
 import net.p3pp3rf1y.sophisticatedcore.controller.ILinkable;
 import net.p3pp3rf1y.sophisticatedcore.inventory.CachedFailedInsertInventoryHandler;
@@ -30,6 +33,7 @@ import net.p3pp3rf1y.sophisticatedcore.upgrades.ITickableUpgrade;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
+import net.p3pp3rf1y.sophisticatedstorage.network.StorageOpennessPayload;
 import net.p3pp3rf1y.sophisticatedstorage.upgrades.INeighborChangeListenerUpgrade;
 
 import javax.annotation.Nullable;
@@ -221,21 +225,36 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 	}
 
 	public void startOpen(Player player) {
-		if (!remove && !player.isSpectator() && level != null) {
-			getOpenersCounter().incrementOpeners(player, level, getBlockPos(), getBlockState());
+		if (level == null || level.isClientSide() || remove || player.isSpectator()) {
+			return;
 		}
-
+		getOpenersCounter().incrementOpeners(player, level, getBlockPos(), getBlockState());
+		sendOpenness();
 	}
 
 	public void stopOpen(Player player) {
-		if (!remove && !player.isSpectator() && level != null) {
-			getOpenersCounter().decrementOpeners(player, level, getBlockPos(), getBlockState());
+		if (level == null || level.isClientSide() || remove || player.isSpectator()) {
+			return;
 		}
+		getOpenersCounter().decrementOpeners(player, level, getBlockPos(), getBlockState());
+		sendOpenness();
 	}
 
 	public void recheckOpen() {
 		if (!remove && level != null) {
+			int countBeforeCheck = getOpenersCounter().getOpenerCount();
 			getOpenersCounter().recheckOpeners(level, getBlockPos(), getBlockState());
+			int countAfterCheck = getOpenersCounter().getOpenerCount();
+			if (countBeforeCheck != countAfterCheck && (countBeforeCheck == 0 || countAfterCheck == 0)) {
+				sendOpenness();
+			}
+		}
+	}
+
+	private void sendOpenness() {
+		if (level instanceof ServerLevel serverLevel) {
+			ChunkPos chunkPos = level.getChunkAt(getBlockPos()).getPos();
+			PacketDistributor.sendToPlayersTrackingChunk(serverLevel, chunkPos, new StorageOpennessPayload(getBlockPos(), getOpenersCounter().getOpenerCount() > 0));
 		}
 	}
 
@@ -597,5 +616,9 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 	@SuppressWarnings("unused") //parameter used in override
 	public float getSlotFillPercentage(int slot) {
 		return 0; //only used in limited barrels
+	}
+
+	public void setShouldBeOpen(boolean shouldBeOpen) {
+		//noop by default
 	}
 }
