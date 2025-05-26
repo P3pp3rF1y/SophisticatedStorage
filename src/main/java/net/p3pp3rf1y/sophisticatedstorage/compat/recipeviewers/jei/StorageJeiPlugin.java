@@ -17,8 +17,8 @@ import net.minecraft.world.item.crafting.RecipeType;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.SettingsScreen;
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.ClientRecipeHelper;
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.subtypes.PropertyBasedSubtypeInterpreter;
-import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.jei.JeiCraftingContainerRecipeTransferHandlerBase;
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.jei.JeiClientRecipeHelper;
+import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.jei.JeiCraftingContainerRecipeTransferHandlerBase;
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.jei.JeiSettingsGhostIngredientHandler;
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.jei.JeiStorageGhostIngredientHandler;
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.jei.subtypes.JeiSubtypeInterpreter;
@@ -33,7 +33,9 @@ import net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.common.TierUpgrad
 import net.p3pp3rf1y.sophisticatedstorage.crafting.ShulkerBoxFromVanillaShapelessRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 import static net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.common.subtypes.SubtypeInterpreters.getSubtypeInterpreter;
@@ -74,7 +76,7 @@ public class StorageJeiPlugin implements IModPlugin {
 		registration.addGuiContainerHandler(StorageSettingsScreen.class, new IGuiContainerHandler<>() {
 			@Override
 			public List<Rect2i> getGuiExtraAreas(StorageSettingsScreen gui) {
-				return new ArrayList<>(gui.getSettingsTabControl().getTabRectangles());
+				return new ArrayList<>(gui.getExtendedControlsRectangles());
 			}
 		});
 
