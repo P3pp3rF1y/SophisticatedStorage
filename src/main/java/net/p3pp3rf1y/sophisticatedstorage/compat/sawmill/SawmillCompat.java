@@ -44,7 +44,7 @@ public class SawmillCompat implements ICompat {
 				registration.addWorkstation(EMIPlugin.WOODCUTTING_CATEGORY, SAWMILL_UPGRADE.get());
 			})).get().run();
 		}
-		if (ModList.get().isLoaded(CompatModIds.REI)) {
+		if (ModList.get().isLoaded(CompatModIds.REI) && FMLEnvironment.dist.isClient()) {
 			((Supplier<Runnable>) () -> () -> StorageReiClientPlugin.addAdditionalWorkstations(registration -> {
 				registration.addWorkstations(REIPlugin.WOODCUTTING_DISPLAY, SAWMILL_UPGRADE.get());
 			})).get().run();
