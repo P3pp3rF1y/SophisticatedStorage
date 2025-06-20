@@ -2,7 +2,11 @@
     "loader": "sophisticatedstorage:barrel",
     "partitioned_model_parts": {
         "tier": {
-            "model": "sophisticatedstorage:block/barrel_part/flat_partitioned"
+            "model": "sophisticatedstorage:block/barrel_part/flat_partitioned",
+            "textures": {
+                "side_trim": "#side",
+                "bottom_trim": "#bottom"
+            }
         },
         "tintable_main": {
             "model": "sophisticatedstorage:block/barrel_part/barrel_flat_tintable_core"

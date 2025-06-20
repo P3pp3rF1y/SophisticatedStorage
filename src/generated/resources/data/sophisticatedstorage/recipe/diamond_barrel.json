@@ -8,12 +8,8 @@
   "type": "sophisticatedstorage:storage_tier_upgrade",
   "category": "misc",
   "key": {
-    "D": {
-      "tag": "c:gems/diamond"
-    },
-    "S": {
-      "item": "sophisticatedstorage:gold_barrel"
-    }
+    "D": "#c:gems/diamond",
+    "S": "sophisticatedstorage:gold_barrel"
   },
   "pattern": [
     "DDD",

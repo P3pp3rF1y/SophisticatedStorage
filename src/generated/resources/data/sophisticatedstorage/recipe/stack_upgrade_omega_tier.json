@@ -8,9 +8,7 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "S": {
-      "item": "sophisticatedstorage:stack_upgrade_tier_5"
-    }
+    "S": "sophisticatedstorage:stack_upgrade_tier_5"
   },
   "pattern": [
     "SSS",

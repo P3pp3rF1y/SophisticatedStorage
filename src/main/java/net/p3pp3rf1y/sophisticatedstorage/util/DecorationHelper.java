@@ -3,7 +3,7 @@ package net.p3pp3rf1y.sophisticatedstorage.util;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
-import net.minecraft.util.FastColor;
+import net.minecraft.util.ARGB;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -82,9 +82,9 @@ public class DecorationHelper {
 
 	private static int[] calculateRGBPartsNeeded(int color, int totalParts) {
 		float[] ratios = new float[3];
-		ratios[0] = FastColor.ARGB32.red(color) / 255f;
-		ratios[1] = FastColor.ARGB32.green(color) / 255f;
-		ratios[2] = FastColor.ARGB32.blue(color) / 255f;
+		ratios[0] = ARGB.red(color) / 255f;
+		ratios[1] = ARGB.green(color) / 255f;
+		ratios[2] = ARGB.blue(color) / 255f;
 
 		float totalRaios = ratios[0] + ratios[1] + ratios[2];
 		ratios[0] /= totalRaios;

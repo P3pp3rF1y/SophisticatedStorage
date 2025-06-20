@@ -8,18 +8,10 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "E": {
-      "tag": "c:ender_pearls"
-    },
-    "P": {
-      "tag": "minecraft:planks"
-    },
-    "R": {
-      "item": "minecraft:repeater"
-    },
-    "S": {
-      "tag": "c:stones"
-    }
+    "E": "#c:ender_pearls",
+    "P": "#minecraft:planks",
+    "R": "minecraft:repeater",
+    "S": "#c:stones"
   },
   "pattern": [
     "EP",

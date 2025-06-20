@@ -6,6 +6,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.Direction;
@@ -66,7 +67,7 @@ public class RenderHelper {
 			for (RenderType layer : blockModel.getRenderTypes(blockState, rand, ModelData.EMPTY)) {
 				List<BakedQuad> culledQuads = blockModel.getQuads(blockState, direction, rand, ModelData.EMPTY, layer);
 				if (!culledQuads.isEmpty()) {
-					return culledQuads.get(0).getSprite();
+					return culledQuads.getFirst().getSprite();
 				}
 
 				//noinspection deprecation
@@ -120,5 +121,14 @@ public class RenderHelper {
 		pose.transform(pos);
 		int color = ((int)(alpha * 255)) << 24 | 255 << 16 | 255 << 8 | 255;
 		consumer.addVertex(pos.x(), pos.y(), pos.z(), color, u, v, packedOverlay, packedLight, normal.x(), normal.y(), normal.z());
+	}
+
+	public static boolean isSpecialRenderer(ItemStackRenderState renderState) {
+		for (ItemStackRenderState.LayerRenderState layer : renderState.layers) {
+			if (layer.specialRenderer != null) {
+				return true;
+			}
+		}
+		return false;
 	}
 }

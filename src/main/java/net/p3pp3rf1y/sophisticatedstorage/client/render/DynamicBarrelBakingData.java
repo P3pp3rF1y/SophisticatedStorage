@@ -1,13 +1,15 @@
 package net.p3pp3rf1y.sophisticatedstorage.client.render;
 
 import com.google.common.collect.ImmutableMap;
+import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.ModelState;
+import net.minecraft.client.resources.model.UnbakedModel;
 
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
-public record DynamicBarrelBakingData(BarrelDynamicModelBase.BarrelModelPartDefinition modelPartDefinition, ModelState modelState) {
+public record DynamicBarrelBakingData(UnbakedModel baseModel, Map<String, Material> baseTextures, ModelState modelState) {
 
 	public enum DynamicPart {
 		WHOLE,

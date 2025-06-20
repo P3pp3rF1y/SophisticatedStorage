@@ -101,14 +101,14 @@ public class StorageBlockItem extends BlockItemBase implements ITintableBlockIte
 	}
 
 	public static boolean showsTier(ItemStack stack) {
-		return stack.getOrDefault(ModDataComponents.SHOWS_TIER, true);
+		return stack.getOrDefault(ModDataComponents.TIER_VISIBLE, true);
 	}
 
 	public static void setShowsTier(ItemStack stack, boolean showsTier) {
 		if (showsTier) {
-			stack.remove(ModDataComponents.SHOWS_TIER);
+			stack.remove(ModDataComponents.TIER_VISIBLE);
 		} else {
-			stack.set(ModDataComponents.SHOWS_TIER, false);
+			stack.set(ModDataComponents.TIER_VISIBLE, false);
 		}
 	}
 }

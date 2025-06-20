@@ -15,8 +15,8 @@ import net.minecraft.world.level.block.Block;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.SettingsScreen;
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.ClientRecipeHelper;
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.subtypes.PropertyBasedSubtypeInterpreter;
-import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.emi.EmiClientRecipeHelper;
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.emi.EmiGridMenuInfo;
+import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.emi.EmiRecipeDisplayGenerator;
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.emi.EmiSettingsGhostDragDropHandler;
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.emi.EmiStorageGhostDragDropHandler;
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.emi.comparison.EmiSubtypeInterpreter;
@@ -38,7 +38,9 @@ import static net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.common.sub
 
 @EmiEntrypoint
 public class StorageEmiPlugin implements EmiPlugin {
-	private static Consumer<WorkstationRegistration> additionalWorkstations = registrar -> {};
+	private static Consumer<WorkstationRegistration> additionalWorkstations = registrar -> {
+	};
+
 	public static void addAdditionalWorkstations(Consumer<WorkstationRegistration> additionalWorkstations) {
 		StorageEmiPlugin.additionalWorkstations = StorageEmiPlugin.additionalWorkstations.andThen(additionalWorkstations);
 	}
@@ -77,7 +79,7 @@ public class StorageEmiPlugin implements EmiPlugin {
 				.forEach((item, comparator) -> registry.setDefaultComparison(item, EmiSubtypeInterpreter.of(comparator)));
 	}
 
-    private void registerGuiHandlers(EmiRegistry registry) {
+	private void registerGuiHandlers(EmiRegistry registry) {
 		registry.addExclusionArea(StorageScreen.class, (screen, consumer) -> {
 			//noinspection ConstantValue
 			if (screen == null || screen.getUpgradeSettingsControl() == null) {
@@ -100,40 +102,13 @@ public class StorageEmiPlugin implements EmiPlugin {
 
 	private void registerRecipes(EmiRegistry registry) {
 		Map<BlockItem, PropertyBasedSubtypeInterpreter> subtypeInterpreters = getSubtypeInterpreters();
+		EmiRecipeDisplayGenerator generator = new EmiRecipeDisplayGenerator(registry);
 
-		DyeRecipesMaker.getRecipes(
-						stack -> getSubtypeInterpreter(subtypeInterpreters, stack),
-						EmiClientRecipeHelper::wrapSyntheticShapedRecipe
-				)
-				.forEach(registry::addRecipe);
-
-		TierUpgradeRecipesMaker.getShapedCraftingRecipes(
-						stack -> getSubtypeInterpreter(subtypeInterpreters, stack),
-						EmiClientRecipeHelper::wrapSyntheticShapedRecipe
-				)
-				.forEach(registry::addRecipe);
-
-		TierUpgradeRecipesMaker.getShapelessCraftingRecipes(
-						stack -> getSubtypeInterpreter(subtypeInterpreters, stack),
-						EmiClientRecipeHelper::wrapSyntheticShapelessRecipe
-				)
-				.forEach(registry::addRecipe);
-
-		ShulkerBoxFromChestRecipesMaker.getShapedRecipes(
-						stack -> getSubtypeInterpreter(subtypeInterpreters, stack),
-						EmiClientRecipeHelper::wrapSyntheticShapedRecipe
-				)
-				.forEach(registry::addRecipe);
-
-		ClientRecipeHelper.transformAllRecipesOfType(
-						RecipeType.CRAFTING,
-						ShulkerBoxFromVanillaShapelessRecipe.class,
-						EmiClientRecipeHelper::wrapSyntheticShapelessRecipe
-				)
-				.forEach(registry::addRecipe);
-
-		FlatBarrelRecipesMaker.getShapelessRecipes(EmiClientRecipeHelper::wrapSyntheticShapelessRecipe)
-				.forEach(registry::addRecipe);
+		DyeRecipesMaker.addRecipes(generator, stack -> getSubtypeInterpreter(subtypeInterpreters, stack));
+		TierUpgradeRecipesMaker.addRecipes(generator, stack -> getSubtypeInterpreter(subtypeInterpreters, stack));
+		ShulkerBoxFromChestRecipesMaker.addRecipes(generator, stack -> getSubtypeInterpreter(subtypeInterpreters, stack));
+		ClientRecipeHelper.addAllRecipesOfType(generator, RecipeType.CRAFTING, ShulkerBoxFromVanillaShapelessRecipe.class);
+		FlatBarrelRecipesMaker.addRecipes(generator);
 	}
 
 	private void registerWorkstations(EmiRegistry registry) {

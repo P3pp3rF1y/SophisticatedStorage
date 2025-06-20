@@ -8,12 +8,8 @@
   "type": "minecraft:crafting_shapeless",
   "category": "misc",
   "ingredients": [
-    {
-      "item": "minecraft:redstone_torch"
-    },
-    {
-      "tag": "c:ingots/netherite"
-    }
+    "minecraft:redstone_torch",
+    "#c:ingots/netherite"
   ],
   "result": {
     "count": 1,

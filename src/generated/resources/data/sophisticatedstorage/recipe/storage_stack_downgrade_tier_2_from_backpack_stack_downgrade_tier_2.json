@@ -12,12 +12,8 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "P": {
-      "tag": "minecraft:planks"
-    },
-    "U": {
-      "item": "sophisticatedbackpacks:stack_downgrade_tier_2"
-    }
+    "P": "#minecraft:planks",
+    "U": "sophisticatedbackpacks:stack_downgrade_tier_2"
   },
   "pattern": [
     "PUP",

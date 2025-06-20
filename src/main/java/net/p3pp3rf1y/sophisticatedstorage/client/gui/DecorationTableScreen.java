@@ -3,7 +3,6 @@ package net.p3pp3rf1y.sophisticatedstorage.client.gui;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -13,9 +12,8 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.ItemTransform;
-import net.minecraft.client.renderer.entity.ItemRenderer;
+import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -29,7 +27,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec2;
-import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.controls.*;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.*;
 import net.p3pp3rf1y.sophisticatedcore.util.Easing;
@@ -195,7 +192,7 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 
 	@Override
 	protected void renderBg(GuiGraphics guiGraphics, float v, int i, int i1) {
-		guiGraphics.blit(GUI_BACKGROUND, leftPos, topPos, 0, 0, this.imageWidth, this.imageHeight);
+		guiGraphics.blit(RenderType::guiTextured, GUI_BACKGROUND, leftPos, topPos, 0, 0, imageWidth, imageHeight, 256, 256);
 
 		renderDyeSlotsOverlays(guiGraphics);
 
@@ -251,7 +248,7 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 			colorPicker.renderTooltip(this, guiGraphics, mouseX, mouseY);
 			pose.popPose();
 		} else {
-			this.renderTooltip(guiGraphics, mouseX, mouseY);
+			renderTooltip(guiGraphics, mouseX, mouseY);
 		}
 	}
 
@@ -269,12 +266,12 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 		if (slot.getItem().isEmpty() && getMenu().isSlotMaterialInherited(slot.index)) {
 			ItemStack inheritedItem = getMenu().getInheritedItem(slot.index);
 			if (!inheritedItem.isEmpty()) {
-				guiGraphics.renderItem(inheritedItem, slot.x, slot.y, slot.x + slot.y * this.imageWidth);
+				guiGraphics.renderItem(inheritedItem, slot.x, slot.y, slot.x + slot.y * imageWidth);
 				PoseStack pose = guiGraphics.pose();
 				pose.pushPose();
 				RenderSystem.enableBlend();
 				RenderSystem.disableDepthTest();
-				guiGraphics.blit(GuiHelper.GUI_CONTROLS, slot.x, slot.y, 77, 0, 16, 16);
+				guiGraphics.blit(RenderType::guiTextured, GuiHelper.GUI_CONTROLS, slot.x, slot.y, 77, 0, 16, 16, 256, 256);
 				RenderSystem.enableDepthTest();
 				RenderSystem.disableBlend();
 				pose.popPose();
@@ -308,10 +305,10 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 		Map<ItemStack, Tuple<ResourceLocation, Integer>> itemCounts = new LinkedHashMap<>();
 		partCounts.forEach((part, count) -> {
 			if (BuiltInRegistries.ITEM.containsKey(part)) {
-				Item item = BuiltInRegistries.ITEM.get(part);
+				Item item = BuiltInRegistries.ITEM.getValue(part);
 				itemCounts.put(new ItemStack(item), new Tuple<>(part, count));
 			} else {
-				BuiltInRegistries.ITEM.getTag(TagKey.create(Registries.ITEM, part))
+				BuiltInRegistries.ITEM.get(TagKey.create(Registries.ITEM, part))
 						.flatMap(set -> set.stream().findFirst()).ifPresent(dye -> itemCounts.put(new ItemStack(dye), new Tuple<>(part, count)));
 			}
 		});
@@ -532,6 +529,7 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 		private long lastTargetSetTime = 0;
 		private int selectedPreview = 0;
 		private final List<StackButton> previewStackButtons = new ArrayList<>();
+		private final ItemStackRenderState renderState = new ItemStackRenderState();
 
 		protected BlockPreview(Position position, Dimension dimension) {
 			super(position, dimension);
@@ -540,20 +538,20 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 		public void setPreviewStacks(List<ItemStack> previewStacks) {
 			this.previewStacks.clear();
 			this.previewStacks.addAll(previewStacks);
-			this.selectedPreview = 0;
+			selectedPreview = 0;
 			updatePreviewStackButtons();
 			resetToDefaultRotation();
 		}
 
 		private void updatePreviewStackButtons() {
-			previewStackButtons.forEach(this.children::remove);
+			previewStackButtons.forEach(children::remove);
 			previewStackButtons.clear();
 
 			if (previewStacks.size() < 2) {
 				return;
 			}
 
-			int x = this.x + (this.getWidth() - previewStacks.size() * (18 + 2)) / 2;
+			int x = this.x + (getWidth() - previewStacks.size() * (18 + 2)) / 2;
 			for (int i = 0; i < previewStacks.size(); i++) {
 				ItemStack stack = previewStacks.get(i);
 				int finalI = i;
@@ -575,20 +573,29 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 				return;
 			}
 
+			resolveModel(previewStack);
 
-			ItemTransform guiTransform = minecraft.getItemRenderer().getModel(previewStack, null, null, 0).getTransforms().getTransform(ItemDisplayContext.GUI);
-			setTargetRotations((int) guiTransform.rotation.x(), (int) guiTransform.rotation.y());
-		}
-
-		public void setTargetRotations(int xAxisRotation, int yAxisRotation) {
-			if ((this.targetXAxisRotation == xAxisRotation && this.targetYAxisRotation == yAxisRotation)) {
+			if (renderState.layers.length < 1) {
 				return;
 			}
 
-			this.fromXAxisRotation = this.xAxisRotation;
-			this.fromYAxisRotation = this.yAxisRotation;
-			this.targetXAxisRotation = xAxisRotation;
-			this.targetYAxisRotation = yAxisRotation;
+			ItemTransform guiTransform = renderState.layers[0].model.getTransforms().getTransform(ItemDisplayContext.GUI);
+			setTargetRotations((int) guiTransform.rotation.x(), (int) guiTransform.rotation.y());
+		}
+
+		private void resolveModel(ItemStack previewStack) {
+			minecraft.getItemModelResolver().updateForTopItem(renderState, previewStack, ItemDisplayContext.NONE, false, null, null, 0);
+		}
+
+		public void setTargetRotations(int xAxisRotation, int yAxisRotation) {
+			if ((targetXAxisRotation == xAxisRotation && targetYAxisRotation == yAxisRotation)) {
+				return;
+			}
+
+			fromXAxisRotation = this.xAxisRotation;
+			fromYAxisRotation = this.yAxisRotation;
+			targetXAxisRotation = xAxisRotation;
+			targetYAxisRotation = yAxisRotation;
 			lastTargetSetTime = System.currentTimeMillis();
 		}
 
@@ -620,22 +627,9 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 			pose.mulPose(Axis.YP.rotationDegrees(yAxisRotation));
 			int scale = 48;
 			pose.scale(scale, -scale, scale);
-			pose.translate(-0.5, -0.5, -0.5);
-			ItemRenderer itemRenderer = minecraft.getItemRenderer();
-			BakedModel bakedModel = itemRenderer.getModel(previewStack, null, null, 0);
+			resolveModel(previewStack);
 			int combinedLight = 15728880;
-			if (bakedModel.isCustomRenderer()) {
-				IClientItemExtensions.of(previewStack).getCustomRenderer().renderByItem(previewStack, ItemDisplayContext.GUI, pose, guiGraphics.bufferSource(), combinedLight, OverlayTexture.NO_OVERLAY);
-			} else {
-				Iterator<BakedModel> renderPasses = bakedModel.getRenderPasses(previewStack, true).iterator();
-				renderPasses.forEachRemaining(model -> {
-					Iterator<RenderType> renderTypes = model.getRenderTypes(previewStack, true).iterator();
-					renderTypes.forEachRemaining(renderType -> {
-						VertexConsumer vertexconsumer = ItemRenderer.getFoilBufferDirect(guiGraphics.bufferSource(), renderType, true, previewStack.hasFoil());
-						itemRenderer.renderModelLists(model, previewStack, combinedLight, OverlayTexture.NO_OVERLAY, pose, vertexconsumer);
-					});
-				});
-			}
+			guiGraphics.drawSpecial(buffer -> renderState.render(pose, buffer, combinedLight, OverlayTexture.NO_OVERLAY));
 			pose.popPose();
 		}
 
@@ -659,9 +653,9 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 				return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
 			}
 
-			yAxisRotation += 2 * dragX;
+			yAxisRotation += (float) (2 * dragX);
 			yAxisRotation = yAxisRotation % 360;
-			xAxisRotation += 2 * dragY;
+			xAxisRotation += (float) (2 * dragY);
 			xAxisRotation = xAxisRotation % 360;
 			targetXAxisRotation = xAxisRotation;
 			targetYAxisRotation = yAxisRotation;

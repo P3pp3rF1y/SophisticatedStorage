@@ -9,15 +9,14 @@ import net.minecraft.client.MouseHandler;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.client.renderer.ShapeRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.ReloadableResourceManager;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
+import net.minecraft.util.ARGB;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
@@ -34,23 +33,19 @@ import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 import net.neoforged.neoforge.client.settings.IKeyConflictContext;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.util.TriState;
-import net.neoforged.neoforge.event.AddPackFindersEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.StorageScreenBase;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.StorageContainerMenuBase;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
-import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlock;
-import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlockClientExtensions;
-import net.p3pp3rf1y.sophisticatedstorage.block.LimitedBarrelBlock;
-import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockBase;
+import net.p3pp3rf1y.sophisticatedstorage.block.*;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.PaintbrushOverlay;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageScreen;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageTranslationHelper;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.ToolInfoOverlay;
 import net.p3pp3rf1y.sophisticatedstorage.client.init.ModBlockColors;
-import net.p3pp3rf1y.sophisticatedstorage.client.init.ModItemColors;
 import net.p3pp3rf1y.sophisticatedstorage.client.init.ModParticles;
+import net.p3pp3rf1y.sophisticatedstorage.client.init.StorageTintSources;
 import net.p3pp3rf1y.sophisticatedstorage.client.render.*;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
@@ -77,6 +72,7 @@ public class ClientEventHandler {
 			StorageGuiKeyConflictContext.INSTANCE, InputConstants.Type.MOUSE.getOrCreate(MIDDLE_BUTTON), KEYBIND_SOPHISTICATEDSTORAGE_CATEGORY);
 
 	private static Set<Predicate<StorageScreenBase<?>>> SORT_SCREEN_MATCHERS = new HashSet<>();
+
 	static {
 		SORT_SCREEN_MATCHERS.add(screen -> screen instanceof StorageScreen);
 	}
@@ -109,19 +105,22 @@ public class ClientEventHandler {
 	public static final ModelLayerLocation CHEST_RIGHT_LAYER = new ModelLayerLocation(CHEST_RIGHT_RL, "main");
 
 	public static void registerHandlers(IEventBus modBus) {
-		modBus.addListener(ClientEventHandler::onModelRegistry);
+		modBus.addListener(ClientEventHandler::onRegisterModelLoaders);
 		modBus.addListener(ClientEventHandler::registerLayer);
 		modBus.addListener(ClientEventHandler::registerTooltipComponent);
 		modBus.addListener(ClientEventHandler::registerOverlay);
 		modBus.addListener(ClientEventHandler::registerEntityRenderers);
 		modBus.addListener(ModParticles::registerProviders);
 		modBus.addListener(ClientEventHandler::registerKeyMappings);
-		modBus.addListener(ModItemColors::registerItemColorHandlers);
+		modBus.addListener(StorageTintSources::register);
 		modBus.addListener(ModBlockColors::registerBlockColorHandlers);
 		modBus.addListener(ClientEventHandler::registerStorageLayerLoader);
 		modBus.addListener(ClientEventHandler::onRegisterAdditionalModels);
 		modBus.addListener(ClientEventHandler::onRegisterReloadListeners);
 		modBus.addListener(ClientEventHandler::registerStorageClientExtensions);
+		modBus.addListener(ClientEventHandler::registerBarrelItemModel);
+		modBus.addListener(ClientEventHandler::registerSpecialModelRenderers);
+		modBus.addListener(ClientEventHandler::registerSpecialBlockModelRenderers);
 		IEventBus eventBus = NeoForge.EVENT_BUS;
 		eventBus.addListener(ClientStorageContentsTooltip::onWorldLoad);
 		eventBus.addListener(EventPriority.HIGH, ClientEventHandler::handleGuiMouseKeyPress);
@@ -130,6 +129,21 @@ public class ClientEventHandler {
 		eventBus.addListener(ClientEventHandler::onMouseScrolled);
 		eventBus.addListener(ClientEventHandler::onRenderHighlight);
 		eventBus.addListener(ClientEventHandler::onPlayerLoggingIn);
+	}
+
+	private static void registerSpecialModelRenderers(RegisterSpecialModelRendererEvent event) {
+		event.register(ModBlocks.CHEST_ITEM.getId(), ChestItemRenderer.Unbaked.MAP_CODEC);
+		event.register(ModBlocks.SHULKER_BOX_ITEM.getId(), ShulkerBoxItemRenderer.Unbaked.MAP_CODEC);
+	}
+
+	private static void registerSpecialBlockModelRenderers(RegisterSpecialBlockModelRendererEvent event) {
+		ModBlocks.BLOCKS.getEntries().stream()
+				.filter(b -> b.get() instanceof ChestBlock)
+				.forEach(b -> event.register(b.get(), new ChestItemRenderer.Unbaked()));
+
+		ModBlocks.BLOCKS.getEntries().stream()
+				.filter(b -> b.get() instanceof ShulkerBoxBlock)
+				.forEach(b -> event.register(b.get(), new ShulkerBoxItemRenderer.Unbaked()));
 	}
 
 	private static void onPlayerLoggingIn(ClientPlayerNetworkEvent.LoggingIn event) {
@@ -152,8 +166,8 @@ public class ClientEventHandler {
 			if (!blockState.isAir() && level.getWorldBorder().isWithinBounds(otherPos)) {
 				VertexConsumer vertexConsumer = event.getMultiBufferSource().getBuffer(RenderType.lines());
 				Vec3 cameraPos = event.getCamera().getPosition();
-				LevelRenderer.renderShape(event.getPoseStack(), vertexConsumer, blockState.getShape(level, otherPos, CollisionContext.of(event.getCamera().getEntity())),
-						otherPos.getX() - cameraPos.x, otherPos.getY() - cameraPos.y, otherPos.getZ() - cameraPos.z, 0.0F, 0.0F, 0.0F, 0.4F);
+				ShapeRenderer.renderShape(event.getPoseStack(), vertexConsumer, blockState.getShape(level, otherPos, CollisionContext.of(event.getCamera().getEntity())),
+						otherPos.getX() - cameraPos.x, otherPos.getY() - cameraPos.y, otherPos.getZ() - cameraPos.z, ARGB.colorFromFloat(0.4F, 0, 0, 0));
 			}
 		}
 
@@ -170,8 +184,8 @@ public class ClientEventHandler {
 					VertexConsumer vertexConsumer = event.getMultiBufferSource().getBuffer(RenderType.lines());
 					Vec3 cameraPos = event.getCamera().getPosition();
 					PoseStack poseStack = event.getPoseStack();
-					LevelRenderer.renderShape(poseStack, vertexConsumer, blockState.getShape(level, pos, CollisionContext.of(event.getCamera().getEntity())),
-							pos.getX() - cameraPos.x, pos.getY() - cameraPos.y, pos.getZ() - cameraPos.z, red, green, 0.0F, 1);
+					ShapeRenderer.renderShape(poseStack, vertexConsumer, blockState.getShape(level, pos, CollisionContext.of(event.getCamera().getEntity())),
+							pos.getX() - cameraPos.x, pos.getY() - cameraPos.y, pos.getZ() - cameraPos.z, ARGB.colorFromFloat(1, red, green, 0));
 					event.setCanceled(true);
 				});
 			}
@@ -179,14 +193,14 @@ public class ClientEventHandler {
 	}
 
 	private static void onRegisterAdditionalModels(ModelEvent.RegisterAdditional event) {
-		addBarrelPartModelsToBake(event);
+		//addBarrelPartModelsToBake(event);
 	}
 
 	private static void addBarrelPartModelsToBake(ModelEvent.RegisterAdditional event) {
 		Map<ResourceLocation, Resource> models = Minecraft.getInstance().getResourceManager().listResources("models/block/barrel_part", fileName -> fileName.getPath().endsWith(".json"));
 		models.forEach((modelName, resource) -> {
 			if (modelName.getNamespace().equals(SophisticatedStorage.MOD_ID)) {
-				event.register(new ModelResourceLocation(ResourceLocation.fromNamespaceAndPath(modelName.getNamespace(), modelName.getPath().substring("models/".length()).replace(".json", "")), "standalone"));
+				event.register(ResourceLocation.fromNamespaceAndPath(modelName.getNamespace(), modelName.getPath().substring("models/".length()).replace(".json", "")));
 			}
 		});
 	}
@@ -221,7 +235,7 @@ public class ClientEventHandler {
 			if (player.isCreative()) {
 				event.setCanceled(true);
 			} else {
-				if (event.getEntity().getDigSpeed(state, event.getPos()) < 2) {
+				if (event.getEntity().getDestroySpeed(state, event.getPos()) < 2) {
 					event.setUseItem(TriState.FALSE);
 					Minecraft.getInstance().gameMode.destroyDelay = 5;
 				}
@@ -235,11 +249,8 @@ public class ClientEventHandler {
 		}
 	}
 
-	private static void registerStorageLayerLoader(AddPackFindersEvent event) {
-		ResourceManager resourceManager = Minecraft.getInstance().getResourceManager();
-		if (resourceManager instanceof ReloadableResourceManager reloadableResourceManager) {
-			reloadableResourceManager.registerReloadListener(StorageTextureManager.INSTANCE);
-		}
+	private static void registerStorageLayerLoader(AddClientReloadListenersEvent event) {
+		event.addListener(SophisticatedStorage.getRL("chest_texture_manager"), StorageTextureManager.INSTANCE);
 	}
 
 	public static void handleGuiMouseKeyPress(ScreenEvent.MouseButtonPressed.Pre event) {
@@ -255,7 +266,7 @@ public class ClientEventHandler {
 			MouseHandler mh = mc.mouseHandler;
 			double mouseX = mh.xpos() * mc.getWindow().getGuiScaledWidth() / mc.getWindow().getScreenWidth();
 			double mouseY = mh.ypos() * mc.getWindow().getGuiScaledHeight() / mc.getWindow().getScreenHeight();
-			Slot selectedSlot = screen.findSlot(mouseX, mouseY);
+			Slot selectedSlot = screen.getHoveredSlot(mouseX, mouseY);
 			if (selectedSlot == null || container.isNotPlayersInventorySlot(selectedSlot.index)) {
 				container.sort();
 				return true;
@@ -264,7 +275,7 @@ public class ClientEventHandler {
 		return false;
 	}
 
-	private static void onModelRegistry(ModelEvent.RegisterGeometryLoaders event) {
+	private static void onRegisterModelLoaders(ModelEvent.RegisterLoaders event) {
 		event.register(ResourceLocation.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "barrel"), BarrelDynamicModel.Loader.INSTANCE);
 		event.register(ResourceLocation.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "limited_barrel"), LimitedBarrelDynamicModel.Loader.INSTANCE);
 		event.register(ResourceLocation.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "chest"), ChestDynamicModel.Loader.INSTANCE);
@@ -272,11 +283,13 @@ public class ClientEventHandler {
 		event.register(ResourceLocation.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "simple_composite"), SimpleCompositeModel.Loader.INSTANCE);
 	}
 
-	private static void onRegisterReloadListeners(RegisterClientReloadListenersEvent event) {
-		event.registerReloadListener((ResourceManagerReloadListener) resourceManager -> {
-			BarrelDynamicModelBase.invalidateCache();
-			BarrelBakedModelBase.invalidateCache();
-		});
+	private static void onRegisterReloadListeners(AddClientReloadListenersEvent event) {
+		event.addListener(SophisticatedStorage.getRL("barrel_cache_invalidation"), (ResourceManagerReloadListener) ClientEventHandler::invalidateBarrelCache);
+	}
+
+	private static void invalidateBarrelCache(ResourceManager resourceManager) {
+		BarrelDynamicModelBase.invalidateCache();
+		BarrelBakedModelBase.invalidateCache();
 	}
 
 	public static void registerLayer(EntityRenderersEvent.RegisterLayerDefinitions event) {
@@ -315,13 +328,15 @@ public class ClientEventHandler {
 				ModBlocks.LIMITED_BARREL_3.get(), ModBlocks.LIMITED_COPPER_BARREL_3.get(), ModBlocks.LIMITED_IRON_BARREL_3.get(), ModBlocks.LIMITED_GOLD_BARREL_3.get(), ModBlocks.LIMITED_DIAMOND_BARREL_3.get(), ModBlocks.LIMITED_NETHERITE_BARREL_3.get(),
 				ModBlocks.LIMITED_BARREL_4.get(), ModBlocks.LIMITED_COPPER_BARREL_4.get(), ModBlocks.LIMITED_IRON_BARREL_4.get(), ModBlocks.LIMITED_GOLD_BARREL_4.get(), ModBlocks.LIMITED_DIAMOND_BARREL_4.get(), ModBlocks.LIMITED_NETHERITE_BARREL_4.get()
 		);
-		event.registerItem(ChestItemRenderer.getItemRenderProperties(), ModBlocks.CHEST_ITEM.get(), ModBlocks.COPPER_CHEST_ITEM.get(), ModBlocks.IRON_CHEST_ITEM.get(), ModBlocks.GOLD_CHEST_ITEM.get(), ModBlocks.DIAMOND_CHEST_ITEM.get(), ModBlocks.NETHERITE_CHEST_ITEM.get());
-		event.registerItem(ShulkerBoxItemRenderer.getItemRenderProperties(), ModBlocks.SHULKER_BOX_ITEM.get(), ModBlocks.COPPER_SHULKER_BOX_ITEM.get(), ModBlocks.IRON_SHULKER_BOX_ITEM.get(), ModBlocks.GOLD_SHULKER_BOX_ITEM.get(), ModBlocks.DIAMOND_SHULKER_BOX_ITEM.get(), ModBlocks.NETHERITE_SHULKER_BOX_ITEM.get());
 	}
 
 	private static void registerBarrelClientExtensions(RegisterClientExtensionsEvent event, BarrelBlock... barrelBlocks) {
 		for (BarrelBlock barrelBlock : barrelBlocks) {
 			event.registerBlock(new BarrelBlockClientExtensions(barrelBlock), barrelBlock);
 		}
+	}
+
+	private static void registerBarrelItemModel(RegisterItemModelsEvent event) {
+		event.register(SophisticatedStorage.getRL("barrel"), BarrelItemModel.Unbaked.MAP_CODEC);
 	}
 }

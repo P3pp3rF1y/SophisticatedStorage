@@ -8,12 +8,8 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "I": {
-      "tag": "c:ingots/iron"
-    },
-    "R": {
-      "item": "sophisticatedstorage:basic_to_copper_tier_upgrade"
-    }
+    "I": "#c:ingots/iron",
+    "R": "sophisticatedstorage:basic_to_copper_tier_upgrade"
   },
   "pattern": [
     " I ",

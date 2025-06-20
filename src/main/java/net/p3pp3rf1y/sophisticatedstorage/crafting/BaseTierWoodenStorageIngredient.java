@@ -1,7 +1,10 @@
 package net.p3pp3rf1y.sophisticatedstorage.crafting;
 
 import com.mojang.serialization.MapCodec;
+import net.minecraft.core.Holder;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.display.SlotDisplay;
 import net.neoforged.neoforge.common.crafting.ICustomIngredient;
 import net.neoforged.neoforge.common.crafting.IngredientType;
 import net.p3pp3rf1y.sophisticatedcore.util.BlockItemBase;
@@ -22,20 +25,21 @@ public class BaseTierWoodenStorageIngredient implements ICustomIngredient {
 	}
 
 	@Override
-	public Stream<ItemStack> getItems() {
-		Stream<ItemStack> chestsStream = Stream.empty();
+	public Stream<Holder<Item>> items() {
+		return Stream.of(ModBlocks.CHEST_ITEM, ModBlocks.BARREL_ITEM);
+	}
+
+	@Override
+	public SlotDisplay display() {
+		List<ItemStack> items = new ArrayList<>();
 		if (ModBlocks.CHEST_ITEM.get() instanceof BlockItemBase itemBase) {
-			List<ItemStack> chestIngredientValues = new ArrayList<>();
-			itemBase.addCreativeTabItems(chestIngredientValues::add);
-			chestsStream = chestIngredientValues.stream();
+			itemBase.addCreativeTabItems(items::add);
 		}
-		Stream<ItemStack> barrelsStream = Stream.empty();
 		if (ModBlocks.BARREL_ITEM.get() instanceof BlockItemBase itemBase) {
-			List<ItemStack> barrelIngredientValues = new ArrayList<>();
-			itemBase.addCreativeTabItems(barrelIngredientValues::add);
-			barrelsStream = barrelIngredientValues.stream();
+			itemBase.addCreativeTabItems(items::add);
 		}
-		return Stream.concat(chestsStream, barrelsStream);
+
+		return new SlotDisplay.Composite(items.stream().map(SlotDisplay.ItemStackSlotDisplay::new).map(SlotDisplay.class::cast).toList());
 	}
 
 	@Override

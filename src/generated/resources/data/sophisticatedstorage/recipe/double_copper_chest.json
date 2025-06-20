@@ -8,15 +8,9 @@
   "type": "sophisticatedstorage:double_chest_tier_upgrade",
   "category": "misc",
   "key": {
-    "B": {
-      "tag": "c:storage_blocks/copper"
-    },
-    "C": {
-      "tag": "c:ingots/copper"
-    },
-    "S": {
-      "item": "sophisticatedstorage:chest"
-    }
+    "B": "#c:storage_blocks/copper",
+    "C": "#c:ingots/copper",
+    "S": "sophisticatedstorage:chest"
   },
   "pattern": [
     "CCC",

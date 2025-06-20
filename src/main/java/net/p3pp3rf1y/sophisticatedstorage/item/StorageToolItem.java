@@ -8,7 +8,6 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -33,8 +32,8 @@ import java.util.function.Consumer;
 
 public class StorageToolItem extends ItemBase {
 
-	public StorageToolItem() {
-		super(new Properties().stacksTo(1));
+	public StorageToolItem(Properties properties) {
+		super(properties.stacksTo(1));
 	}
 
 	@Override
@@ -127,12 +126,12 @@ public class StorageToolItem extends ItemBase {
 	}
 
 	@Override
-	public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand usedHand) {
+	public InteractionResult use(Level level, Player player, InteractionHand usedHand) {
 		if (player.isShiftKeyDown()) {
 			ItemStack tool = player.getItemInHand(usedHand);
 			if (getControllerLink(tool).isPresent()) {
 				removeControllerLink(tool);
-				return InteractionResultHolder.success(tool);
+				return InteractionResult.SUCCESS.heldItemTransformedTo(tool);
 			}
 		}
 

@@ -21,9 +21,9 @@ public class CopyStorageDataFunction implements LootItemFunction {
 
 	@Override
 	public ItemStack apply(ItemStack stack, LootContext context) {
-		BlockState state = context.getParamOrNull(LootContextParams.BLOCK_STATE);
+		BlockState state = context.getOptionalParameter(LootContextParams.BLOCK_STATE);
 		if (state != null && state.getBlock() instanceof IAdditionalDropDataBlock additionalDropDataBlock) {
-			BlockEntity be = context.getParamOrNull(LootContextParams.BLOCK_ENTITY);
+			BlockEntity be = context.getOptionalParameter(LootContextParams.BLOCK_ENTITY);
 			if (be instanceof StorageBlockEntity storageBlockEntity) {
 				additionalDropDataBlock.addDropData(stack, storageBlockEntity);
 			}

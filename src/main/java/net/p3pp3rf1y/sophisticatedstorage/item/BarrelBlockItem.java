@@ -18,10 +18,6 @@ import java.util.EnumMap;
 import java.util.Map;
 
 public class BarrelBlockItem extends WoodStorageBlockItem {
-	public BarrelBlockItem(Block block) {
-		this(block, new Properties());
-	}
-
 	public BarrelBlockItem(Block block, Properties properties) {
 		super(block, properties);
 	}

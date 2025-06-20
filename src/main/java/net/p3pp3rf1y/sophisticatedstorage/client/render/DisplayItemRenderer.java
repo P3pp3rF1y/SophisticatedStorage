@@ -9,6 +9,7 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.ItemTransform;
+import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -49,6 +50,7 @@ public class DisplayItemRenderer {
 	private static final RandomSource RAND = new ThreadSafeLegacyRandomSource(RandomSupport.generateUniqueSeed());
 	private final double yCenterTranslation;
 	private final Vec3 upgradesOffset;
+	private final ItemStackRenderState itemStackRenderState = new ItemStackRenderState();
 
 	public DisplayItemRenderer(double yCenterTranslation, Vec3 upgradesOffset) {
 		this.yCenterTranslation = yCenterTranslation;
@@ -109,15 +111,15 @@ public class DisplayItemRenderer {
 			poseStack.translate(1f - i * 2 / 16f - 1 / 16f + upgradesOffset.x(), 1 / 16f + upgradesOffset.y(), upgradesOffset.z());
 			poseStack.scale(UPGRADE_ITEM_SCALE, UPGRADE_ITEM_SCALE, UPGRADE_ITEM_SCALE);
 			ItemStack itemToRender = upgradeItem.isEmpty() ? EMPTY_UPGRADE_STACK : upgradeItem;
-			BakedModel itemModel = minecraft.getItemRenderer().getModel(itemToRender, null, minecraft.player, 0);
+			minecraft.getItemModelResolver().updateForTopItem(itemStackRenderState, itemToRender, ItemDisplayContext.FIXED, false, null, null, 0);
 			MultiBufferSource buffer = upgradeItem.isEmpty() ? TranslucentVertexConsumer.wrapBuffer(bufferSource, 128) : bufferSource;
-			minecraft.getItemRenderer().render(itemToRender, ItemDisplayContext.FIXED, false, poseStack, buffer, packedLight, packedOverlay, itemModel);
+			itemStackRenderState.render(poseStack, buffer, packedLight, packedOverlay);
 			if (renderDisabledUpgradeDisplay) {
 				poseStack.pushPose();
 				poseStack.translate(0, 0, -0.001f);
-				itemModel = minecraft.getItemRenderer().getModel(INACCESSIBLE_SLOT_STACK, null, minecraft.player, 0);
+				minecraft.getItemModelResolver().updateForTopItem(itemStackRenderState, INACCESSIBLE_SLOT_STACK, ItemDisplayContext.FIXED, false, null, null, 0);
 				buffer = bufferSource;
-				minecraft.getItemRenderer().render(INACCESSIBLE_SLOT_STACK, ItemDisplayContext.FIXED, false, poseStack, buffer, packedLight, packedOverlay, itemModel);
+				itemStackRenderState.render(poseStack, buffer, packedLight, packedOverlay);
 				poseStack.popPose();
 			}
 			poseStack.popPose();
@@ -131,12 +133,13 @@ public class DisplayItemRenderer {
 		if (stack.isEmpty()) {
 			return;
 		}
-		BakedModel itemModel = minecraft.getItemRenderer().getModel(stack, null, minecraft.player, 0);
-		if (!itemModel.isCustomRenderer() && renderOnlyCustom) {
+		minecraft.getItemModelResolver().updateForTopItem(itemStackRenderState, stack, ItemDisplayContext.FIXED, false, null, null, 0);
+		if (itemStackRenderState.layers.length < 1 || (renderOnlyCustom && !RenderHelper.isSpecialRenderer(itemStackRenderState))) {
 			return;
 		}
 
-		float itemOffset = (float) getDisplayItemOffset(stack, itemModel, displayItemCount == 1 ? 1 : SMALL_3D_ITEM_SCALE);
+		BakedModel itemModel = itemStackRenderState.layers[0].model;
+		float itemOffset = (float) getDisplayItemOffset(stack, itemStackRenderState, itemModel, displayItemCount == 1 ? 1 : SMALL_3D_ITEM_SCALE);
 		poseStack.pushPose();
 
 		Vector3f frontOffset = getDisplayItemIndexFrontOffset(displayItemIndex, displayItemCount, (float) yCenterTranslation);
@@ -151,35 +154,35 @@ public class DisplayItemRenderer {
 		}
 		poseStack.scale(itemScale, itemScale, itemScale);
 
-		minecraft.getItemRenderer().render(stack, ItemDisplayContext.FIXED, false, poseStack, bufferSource, packedLight, packedOverlay, itemModel);
+		itemStackRenderState.render(poseStack, bufferSource, packedLight, packedOverlay);
 		poseStack.popPose();
 	}
 
-	public static double getDisplayItemOffset(ItemStack item, BakedModel itemModel, float additionalScale) {
+	public static double getDisplayItemOffset(ItemStack item, ItemStackRenderState itemStackRenderState, BakedModel itemModel, float additionalScale) {
 		int hash = ItemStack.hashItemAndComponents(item) * 31 + Float.hashCode(additionalScale);
 		Double offset = ITEM_HASHCODE_OFFSETS.getIfPresent(hash);
 		if (offset != null) {
 			return offset;
 		}
-		offset = calculateDisplayItemOffset(item, itemModel, additionalScale);
+		offset = calculateDisplayItemOffset(item, itemStackRenderState, itemModel, additionalScale);
 		ITEM_HASHCODE_OFFSETS.put(hash, offset);
 		return offset;
 	}
 
-	private static double calculateDisplayItemOffset(ItemStack item, BakedModel itemModel, float additionalScale) {
+	private static double calculateDisplayItemOffset(ItemStack item, ItemStackRenderState itemStackRenderState, BakedModel itemModel, float additionalScale) {
 		double itemOffset = 0;
 		if (itemModel.isGui3d() && item.getItem() instanceof BlockItem blockItem) {
 			Block block = blockItem.getBlock();
 			ClientLevel level = Minecraft.getInstance().level;
 			if (level != null) {
-				itemOffset = calculateOffsetFromModelOrShape(itemModel, block, level, additionalScale);
+				itemOffset = calculateOffsetFromModelOrShape(itemStackRenderState, itemModel, block, level, additionalScale);
 			}
 		}
 		return itemOffset;
 	}
 
-	private static double calculateOffsetFromModelOrShape(BakedModel itemModel, Block block, ClientLevel level, float additionalScale) {
-		if (itemModel.isCustomRenderer()) {
+	private static double calculateOffsetFromModelOrShape(ItemStackRenderState itemStackRenderState, BakedModel itemModel, Block block, ClientLevel level, float additionalScale) {
+		if (RenderHelper.isSpecialRenderer(itemStackRenderState)) {
 			return transformBoundsCornersAndCalculateOffset(itemModel, getBoundsCornersFromShape(block, level), additionalScale);
 		} else {
 			return transformBoundsCornersAndCalculateOffset(itemModel, getBoundsCornersFromModel(itemModel), additionalScale);

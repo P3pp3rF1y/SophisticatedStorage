@@ -8,12 +8,8 @@
   "type": "sophisticatedstorage:storage_tier_upgrade",
   "category": "misc",
   "key": {
-    "I": {
-      "tag": "c:ingots/iron"
-    },
-    "S": {
-      "item": "sophisticatedstorage:copper_chest"
-    }
+    "I": "#c:ingots/iron",
+    "S": "sophisticatedstorage:copper_chest"
   },
   "pattern": [
     " I ",

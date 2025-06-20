@@ -8,7 +8,6 @@ import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.items.ItemStackHandler;
@@ -29,10 +28,10 @@ import java.util.function.Consumer;
 
 public class DecorationTableMenu extends AbstractContainerMenu implements ISyncedContainer {
 	private static final String SET_INHERITANCE_ACTION = "setInheritance";
-	private static final ResourceLocation EMPTY_RED_DYE_SLOT_BACKGROUND = SophisticatedStorage.getRL("item/empty_red_dye_slot");
-	private static final ResourceLocation EMPTY_GREEN_DYE_SLOT_BACKGROUND = SophisticatedStorage.getRL("item/empty_green_dye_slot");
-	private static final ResourceLocation EMPTY_BLUE_DYE_SLOT_BACKGROUND = SophisticatedStorage.getRL("item/empty_blue_dye_slot");
-	private static final ResourceLocation EMPTY_MATERIAL_SLOT_BACKGROUND = SophisticatedStorage.getRL("item/empty_material_slot");
+	private static final ResourceLocation EMPTY_RED_DYE_SLOT_BACKGROUND = SophisticatedStorage.getRL("container/slot/red_dye");
+	private static final ResourceLocation EMPTY_GREEN_DYE_SLOT_BACKGROUND = SophisticatedStorage.getRL("container/slot/green_dye");
+	private static final ResourceLocation EMPTY_BLUE_DYE_SLOT_BACKGROUND = SophisticatedStorage.getRL("container/slot/blue_dye");
+	private static final ResourceLocation EMPTY_MATERIAL_SLOT_BACKGROUND = SophisticatedStorage.getRL("container/slot/material");
 	public static final int DECORATION_SLOT_PADDING = 12;
 	private final DecorationTableBlockEntity blockEntity;
 
@@ -145,11 +144,11 @@ public class DecorationTableMenu extends AbstractContainerMenu implements ISynce
 		x += 44;
 
 		ItemStackHandler dyes = blockEntity.getDyes();
-		addSlot(new SlotItemHandler(dyes, 0, x, yOffset).setBackground(InventoryMenu.BLOCK_ATLAS, EMPTY_RED_DYE_SLOT_BACKGROUND));
+		addSlot(new SlotItemHandler(dyes, 0, x, yOffset).setBackground(EMPTY_RED_DYE_SLOT_BACKGROUND));
 		x += 18;
-		addSlot(new SlotItemHandler(dyes, 1, x, yOffset).setBackground(InventoryMenu.BLOCK_ATLAS, EMPTY_GREEN_DYE_SLOT_BACKGROUND));
+		addSlot(new SlotItemHandler(dyes, 1, x, yOffset).setBackground(EMPTY_GREEN_DYE_SLOT_BACKGROUND));
 		x += 18;
-		addSlot(new SlotItemHandler(dyes, 2, x, yOffset).setBackground(InventoryMenu.BLOCK_ATLAS, EMPTY_BLUE_DYE_SLOT_BACKGROUND));
+		addSlot(new SlotItemHandler(dyes, 2, x, yOffset).setBackground(EMPTY_BLUE_DYE_SLOT_BACKGROUND));
 		dyeSlotRange = new SlotRange(decorationSlotRange.firstSlot() + decorationSlotRange.numberOfSlots(), dyes.getSlots());
 
 		return y;
@@ -164,7 +163,7 @@ public class DecorationTableMenu extends AbstractContainerMenu implements ISynce
 					slotChangedListener.run();
 				}
 			}
-		}.setBackground(InventoryMenu.BLOCK_ATLAS, EMPTY_MATERIAL_SLOT_BACKGROUND));
+		}.setBackground(EMPTY_MATERIAL_SLOT_BACKGROUND));
 		y += 18;
 		y += yPadding;
 		return y;

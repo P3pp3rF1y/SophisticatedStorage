@@ -8,12 +8,8 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "B": {
-      "item": "sophisticatedstorage:upgrade_base"
-    },
-    "L": {
-      "tag": "minecraft:logs"
-    }
+    "B": "sophisticatedstorage:upgrade_base",
+    "L": "#minecraft:logs"
   },
   "pattern": [
     "LLL",

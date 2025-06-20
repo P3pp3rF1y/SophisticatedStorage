@@ -12,12 +12,8 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "P": {
-      "tag": "minecraft:planks"
-    },
-    "U": {
-      "item": "sophisticatedbackpacks:jukebox_upgrade"
-    }
+    "P": "#minecraft:planks",
+    "U": "sophisticatedbackpacks:jukebox_upgrade"
   },
   "pattern": [
     "PUP",

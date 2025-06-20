@@ -8,12 +8,8 @@
   "type": "minecraft:crafting_shapeless",
   "category": "misc",
   "ingredients": [
-    {
-      "item": "minecraft:chest"
-    },
-    {
-      "item": "minecraft:redstone_torch"
-    }
+    "minecraft:chest",
+    "minecraft:redstone_torch"
   ],
   "result": {
     "components": {

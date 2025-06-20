@@ -8,12 +8,8 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "I": {
-      "tag": "c:ingots/iron"
-    },
-    "R": {
-      "item": "minecraft:redstone_torch"
-    }
+    "I": "#c:ingots/iron",
+    "R": "minecraft:redstone_torch"
   },
   "pattern": [
     " I ",

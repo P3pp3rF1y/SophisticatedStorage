@@ -19,8 +19,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.p3pp3rf1y.sophisticatedcore.controller.IControllableStorage;
@@ -38,6 +36,7 @@ import net.p3pp3rf1y.sophisticatedstorage.upgrades.INeighborChangeListenerUpgrad
 
 import javax.annotation.Nullable;
 import java.util.*;
+import java.util.function.Supplier;
 
 public abstract class StorageBlockEntity extends BlockEntity implements IControllableStorage, ILinkable, ILockable, Nameable, ITierDisplay, IUpgradeDisplay {
 	public static final String STORAGE_WRAPPER_TAG = "storageWrapper";
@@ -67,6 +66,9 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 	@Nullable
 	private ContentsFilteredItemHandler contentsFilteredItemHandler = null;
 
+	private final Map<DisplayTintKey, Integer> displayItemTints = new HashMap<>();
+	private record DisplayTintKey(int displayIndex, int tintIndex) {}
+
 	protected StorageBlockEntity(BlockPos pos, BlockState state, BlockEntityType<? extends StorageBlockEntity> blockEntityType) {
 		super(blockEntityType, pos, state);
 		storageWrapper = new StorageWrapper(() -> this::setChanged, () -> {
@@ -93,7 +95,7 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 			public ItemStack getWrappedStorageStack() {
 				BlockPos pos = getBlockPos();
 				BlockState state = getBlockState();
-				return addWrappedStorageStackData(state.getBlock().getCloneItemStack(state, new BlockHitResult(new Vec3(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5), Direction.DOWN, pos, true), getLevel(), pos, null), state);
+				return addWrappedStorageStackData(state.getBlock().getCloneItemStack(getLevel(), pos, state, true, null), state);
 			}
 
 			@Override
@@ -262,7 +264,7 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		if (level == null || !(state.getBlock() instanceof StorageBlockBase storageBlock)) {
 			return;
 		}
-		Vec3i vec3i = storageBlock.getFacing(state).getNormal();
+		Vec3i vec3i = storageBlock.getFacing(state).getUnitVec3i();
 		double d0 = worldPosition.getX() + 0.5D + vec3i.getX() / 2.0D;
 		double d1 = worldPosition.getY() + 0.5D + vec3i.getY() / 2.0D;
 		double d2 = worldPosition.getZ() + 0.5D + vec3i.getZ() / 2.0D;
@@ -272,14 +274,14 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 	@Override
 	public void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
 		super.loadAdditional(tag, registries);
-		loadStorageWrapper(tag, registries);
+		loadStorageWrapper(tag);
 		loadSynchronizedData(tag, registries);
 		loadControllerPos(tag);
 
 		isLinkedToController = NBTHelper.getBoolean(tag, "isLinkedToController").orElse(false);
 	}
 
-	private void loadStorageWrapper(CompoundTag tag, HolderLookup.Provider registries) {
+	private void loadStorageWrapper(CompoundTag tag) {
 		NBTHelper.getCompound(tag, STORAGE_WRAPPER_TAG).ifPresent(storageWrapper::load);
 	}
 
@@ -299,6 +301,7 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		if (level != null && level.isClientSide) {
 			if (tag.getBoolean(UPDATE_BLOCK_RENDER_TAG)) {
 				WorldHelper.notifyBlockUpdate(this);
+				displayItemTints.clear();
 			}
 		}
 	}
@@ -331,8 +334,8 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 			return;
 		}
 
-		loadStorageWrapper(tag, registries);
-		loadSynchronizedData(tag,registries);
+		loadStorageWrapper(tag);
+		loadSynchronizedData(tag, registries);
 	}
 
 	public void setUpdateBlockRender() {
@@ -604,7 +607,7 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		int normalY = Integer.signum(neighborPos.getY() - worldPosition.getY());
 		int normalZ = Integer.signum(neighborPos.getZ() - worldPosition.getZ());
 		for (Direction value : Direction.values()) {
-			Vec3i normal = value.getNormal();
+			Vec3i normal = value.getUnitVec3i();
 			if (normal.getX() == normalX && normal.getY() == normalY && normal.getZ() == normalZ) {
 				direction = value;
 				break;
@@ -620,5 +623,9 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 
 	public void setShouldBeOpen(boolean shouldBeOpen) {
 		//noop by default
+	}
+
+	public int getOrComputeDisplayItemTint(int displayItemIndex, int tintIndex, Supplier<Integer> getTint) {
+		return displayItemTints.computeIfAbsent(new DisplayTintKey(displayItemIndex, tintIndex), key -> getTint.get());
 	}
 }

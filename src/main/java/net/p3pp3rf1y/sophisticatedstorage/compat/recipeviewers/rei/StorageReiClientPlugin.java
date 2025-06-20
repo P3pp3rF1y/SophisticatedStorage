@@ -18,6 +18,7 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.subtypes.PropertyBasedSubtypeInterpreter;
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.rei.ReiCraftingContainerTransferHandler;
+import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.rei.ReiRecipeDisplayGenerator;
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.rei.ReiSettingsGhostIngredientHandler;
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.rei.ReiStorageGhostIngredientHandler;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageScreen;
@@ -41,7 +42,9 @@ import static net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.common.sub
 @SuppressWarnings("unused")
 @REIPluginClient
 public class StorageReiClientPlugin implements REIClientPlugin {
-	private static Consumer<WorkstationRegistration> additionalWorkstations = registration -> {};
+	private static Consumer<WorkstationRegistration> additionalWorkstations = registration -> {
+	};
+
 	public static void addAdditionalWorkstations(Consumer<WorkstationRegistration> additionalWorkstations) {
 		StorageReiClientPlugin.additionalWorkstations = StorageReiClientPlugin.additionalWorkstations.andThen(additionalWorkstations);
 	}
@@ -58,18 +61,18 @@ public class StorageReiClientPlugin implements REIClientPlugin {
 		}
 	}
 
-    @Override
-    public void registerExclusionZones(ExclusionZones zones) {
-        zones.register(StorageScreen.class, screen -> {
-            List<Rect2i> ret = new ArrayList<>();
-            screen.getUpgradeSlotsRectangle().ifPresent(ret::add);
-            ret.addAll(screen.getUpgradeSettingsControl().getTabRectangles());
-            screen.getSortButtonsRectangle().ifPresent(ret::add);
-            return ret.stream().map(r -> new Rectangle(r.getX(), r.getY(), r.getWidth(), r.getHeight())).toList();
-        });
+	@Override
+	public void registerExclusionZones(ExclusionZones zones) {
+		zones.register(StorageScreen.class, screen -> {
+			List<Rect2i> ret = new ArrayList<>();
+			screen.getUpgradeSlotsRectangle().ifPresent(ret::add);
+			ret.addAll(screen.getUpgradeSettingsControl().getTabRectangles());
+			screen.getSortButtonsRectangle().ifPresent(ret::add);
+			return ret.stream().map(r -> new Rectangle(r.getX(), r.getY(), r.getWidth(), r.getHeight())).toList();
+		});
 
 		zones.register(StorageSettingsScreen.class, screen -> screen.getExtendedControlsRectangles().stream().map(r -> new Rectangle(r.getX(), r.getY(), r.getWidth(), r.getHeight())).toList());
-    }
+	}
 
 	@Override
 	public void registerScreens(ScreenRegistry registry) {
@@ -80,11 +83,12 @@ public class StorageReiClientPlugin implements REIClientPlugin {
 	@Override
 	public void registerDisplays(DisplayRegistry registry) {
 		Map<BlockItem, PropertyBasedSubtypeInterpreter> subtypeInterpreters = getSubtypeInterpreters();
-		DyeRecipesMaker.getRecipes(stack -> getSubtypeInterpreter(subtypeInterpreters, stack)).forEach(registry::add);
-		TierUpgradeRecipesMaker.getShapedCraftingRecipes(stack -> getSubtypeInterpreter(subtypeInterpreters, stack)).forEach(registry::add);
-		TierUpgradeRecipesMaker.getShapelessCraftingRecipes(stack -> getSubtypeInterpreter(subtypeInterpreters, stack)).forEach(registry::add);
-		ShulkerBoxFromChestRecipesMaker.getShapedRecipes(stack -> getSubtypeInterpreter(subtypeInterpreters, stack)).forEach(registry::add);
-		FlatBarrelRecipesMaker.getShapelessRecipes().forEach(registry::add);
+		ReiRecipeDisplayGenerator generator = new ReiRecipeDisplayGenerator(registry);
+
+		DyeRecipesMaker.addRecipes(generator, stack -> getSubtypeInterpreter(subtypeInterpreters, stack));
+		TierUpgradeRecipesMaker.addRecipes(generator, stack -> getSubtypeInterpreter(subtypeInterpreters, stack));
+		ShulkerBoxFromChestRecipesMaker.addRecipes(generator, stack -> getSubtypeInterpreter(subtypeInterpreters, stack));
+		FlatBarrelRecipesMaker.addRecipes(generator);
 	}
 
 	@Override

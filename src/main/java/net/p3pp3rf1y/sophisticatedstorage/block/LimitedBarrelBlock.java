@@ -6,6 +6,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeItem;
@@ -22,7 +23,6 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -46,13 +46,13 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 public class LimitedBarrelBlock extends BarrelBlock {
-	public static final DirectionProperty HORIZONTAL_FACING = BlockStateProperties.HORIZONTAL_FACING;
+	public static final EnumProperty<Direction> HORIZONTAL_FACING = BlockStateProperties.HORIZONTAL_FACING;
 	public static final EnumProperty<VerticalFacing> VERTICAL_FACING = EnumProperty.create("vertical_facing", VerticalFacing.class);
 	private final Supplier<Integer> getBaseStackSizeMultiplier;
 
-	public LimitedBarrelBlock(int numberOfInventorySlots, Supplier<Integer> getBaseStackSizeMultiplier, Supplier<Integer> numberOfUpgradeSlotsSupplier, float explosionResistance) {
+	public LimitedBarrelBlock(int numberOfInventorySlots, Supplier<Integer> getBaseStackSizeMultiplier, Supplier<Integer> numberOfUpgradeSlotsSupplier, float explosionResistance, Properties properties) {
 		super(() -> numberOfInventorySlots, numberOfUpgradeSlotsSupplier, explosionResistance,
-				stateDef -> stateDef.any().setValue(HORIZONTAL_FACING, Direction.NORTH).setValue(VERTICAL_FACING, VerticalFacing.NO).setValue(TICKING, false).setValue(FLAT_TOP, false)
+				stateDef -> stateDef.any().setValue(HORIZONTAL_FACING, Direction.NORTH).setValue(VERTICAL_FACING, VerticalFacing.NO).setValue(TICKING, false).setValue(FLAT_TOP, false), properties
 		);
 		this.getBaseStackSizeMultiplier = getBaseStackSizeMultiplier;
 	}
@@ -124,24 +124,25 @@ public class LimitedBarrelBlock extends BarrelBlock {
 	}
 
 	@Override
-	protected boolean tryItemInteraction(Player player, InteractionHand hand, WoodStorageBlockEntity b, ItemStack stackInHand, Direction facing, BlockHitResult hitResult) {
-		if (super.tryItemInteraction(player, hand, b, stackInHand, facing, hitResult)) {
-			return true;
+	protected InteractionResult tryItemInteraction(Player player, InteractionHand hand, WoodStorageBlockEntity b, ItemStack stackInHand, Direction facing, BlockHitResult hitResult) {
+		InteractionResult result = super.tryItemInteraction(player, hand, b, stackInHand, facing, hitResult);
+		if (result.consumesAction()) {
+			return result;
 		}
 		if (hitResult.getDirection() != facing || player.isShiftKeyDown()) {
-			return false;
+			return InteractionResult.PASS;
 		}
 		int slot = getInteractionSlot(b.getBlockPos(), b.getBlockState(), hitResult);
 		if (b instanceof LimitedBarrelBlockEntity limitedBarrelBlockEntity) {
 			if (b.isPacked()) {
-				return false;
+				return InteractionResult.PASS;
 			} else if (limitedBarrelBlockEntity.depositItem(player, hand, stackInHand, slot)) {
-				return true;
+				return InteractionResult.SUCCESS;
 			} else if (Config.SERVER.limitedBarrelCountDyeingEnabled.getAsBoolean() && stackInHand.getItem() instanceof DyeItem dyeItem && limitedBarrelBlockEntity.applyDye(slot, stackInHand, dyeItem.getDyeColor(), player.isShiftKeyDown())) {
-				return true;
+				return InteractionResult.SUCCESS;
 			}
 		}
-		return true;
+		return InteractionResult.PASS;
 	}
 
 	@Override

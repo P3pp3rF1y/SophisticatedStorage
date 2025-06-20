@@ -8,12 +8,8 @@
   "type": "sophisticatedstorage:storage_tier_upgrade_shapeless",
   "category": "misc",
   "ingredients": [
-    {
-      "item": "sophisticatedstorage:diamond_chest"
-    },
-    {
-      "tag": "c:ingots/netherite"
-    }
+    "sophisticatedstorage:diamond_chest",
+    "#c:ingots/netherite"
   ],
   "result": {
     "count": 1,

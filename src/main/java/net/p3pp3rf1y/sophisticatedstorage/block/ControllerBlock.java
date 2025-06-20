@@ -5,7 +5,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -30,8 +29,8 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ControllerBlock extends BlockBase implements ISneakItemInteractionBlock, EntityBlock {
-	public ControllerBlock() {
-		super(Properties.of().mapColor(MapColor.STONE).requiresCorrectToolForDrops().strength(3F, 6.0F));
+	public ControllerBlock(Properties properties) {
+		super(properties.mapColor(MapColor.STONE).requiresCorrectToolForDrops().strength(3F, 6.0F));
 	}
 
 	@Override
@@ -61,19 +60,19 @@ public class ControllerBlock extends BlockBase implements ISneakItemInteractionB
 	}
 
 	@Override
-	protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
+	protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
 		if (level.isClientSide()) {
-			return ItemInteractionResult.SUCCESS;
+			return InteractionResult.SUCCESS;
 		}
 
 		WorldHelper.getBlockEntity(level, pos, ControllerBlockEntity.class).ifPresent(controller -> {
 			AtomicBoolean appliedUpgrade = new AtomicBoolean(false);
 			controller.getStoragePositions().forEach(storagePos -> WorldHelper.getBlockEntity(level, storagePos, StorageBlockEntity.class).ifPresent(be -> {
 				if (be.getBlockState().getBlock() instanceof StorageBlockBase storageblock) {
-					if (storageblock.tryAddSingleUpgrade(player, hand, be, stack)) {
+					if (storageblock.tryAddSingleUpgrade(player, be, stack).consumesAction()) {
 						appliedUpgrade.set(true);
 					} else if (stack.getItem() instanceof StorageTierUpgradeItem storageTierUpgradeItem
-							&& storageTierUpgradeItem.tryUpgradeStorage(stack, level, storagePos, be.getBlockState(), player) == InteractionResult.SUCCESS) {
+							&& storageTierUpgradeItem.tryUpgradeStorage(stack, level, storagePos, be.getBlockState(), player).consumesAction()) {
 						appliedUpgrade.set(true);
 					}
 				}
@@ -84,7 +83,7 @@ public class ControllerBlock extends BlockBase implements ISneakItemInteractionB
 			}
 		});
 
-		return ItemInteractionResult.SUCCESS;
+		return InteractionResult.SUCCESS.heldItemTransformedTo(stack.isEmpty() ? ItemStack.EMPTY : stack);
 	}
 
 	@Override

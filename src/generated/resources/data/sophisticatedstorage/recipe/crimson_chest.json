@@ -8,12 +8,8 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "P": {
-      "item": "minecraft:crimson_planks"
-    },
-    "R": {
-      "item": "minecraft:redstone_torch"
-    }
+    "P": "minecraft:crimson_planks",
+    "R": "minecraft:redstone_torch"
   },
   "pattern": [
     "PPP",

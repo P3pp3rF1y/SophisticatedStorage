@@ -12,15 +12,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "L": {
-      "tag": "c:leathers"
-    },
-    "T": {
-      "tag": "c:strings"
-    },
-    "U": {
-      "item": "sophisticatedstorage:advanced_magnet_upgrade"
-    }
+    "L": "#c:leathers",
+    "T": "#c:strings",
+    "U": "sophisticatedstorage:advanced_magnet_upgrade"
   },
   "pattern": [
     "TUT",

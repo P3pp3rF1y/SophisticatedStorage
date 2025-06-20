@@ -22,12 +22,12 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageSavedData;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
-import net.p3pp3rf1y.sophisticatedcore.api.IUpgradeRenderer;
-import net.p3pp3rf1y.sophisticatedcore.client.render.UpgradeRenderRegistry;
+import net.p3pp3rf1y.sophisticatedcore.api.IUpgradeClientTickHandler;
+import net.p3pp3rf1y.sophisticatedcore.client.render.UpgradeClientRegistry;
 import net.p3pp3rf1y.sophisticatedcore.init.ModCoreDataComponents;
-import net.p3pp3rf1y.sophisticatedcore.renderdata.IUpgradeRenderData;
+import net.p3pp3rf1y.sophisticatedcore.renderdata.IUpgradeClientData;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
-import net.p3pp3rf1y.sophisticatedcore.renderdata.UpgradeRenderDataType;
+import net.p3pp3rf1y.sophisticatedcore.renderdata.UpgradeClientDataType;
 import net.p3pp3rf1y.sophisticatedcore.settings.itemdisplay.ItemDisplaySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.settings.memory.MemorySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.ITickableUpgrade;
@@ -133,7 +133,7 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 		return true;
 	}
 
-	protected abstract IStorageSavedData getStorageData(UUID storageId);
+	protected abstract IStorageSavedData getStorageData();
 
 	private void onContentsChanged() {
 		if (getLevel() == null || getLevel().isClientSide()) {
@@ -145,7 +145,7 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 		if (storageId == null) {
 			return;
 		}
-		getStorageData(storageId).markChanged();
+		getStorageData().markChanged();
 	}
 
 	public void setStorageItem(ItemStack storageItem) {
@@ -194,7 +194,7 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 		return getSyncedStorageStack().getOrDefault(ModDataComponents.LOCK_VISIBLE, true);
 	}
 
-	protected boolean isPacked(ItemStack storageItem) {
+	public boolean isPacked() {
 		return WoodStorageBlockItem.isPacked(getSyncedStorageStack());
 	}
 
@@ -256,7 +256,7 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 						woodStorage.setWoodType(woodType);
 					}
 				});
-				boolean isPacked = isPacked(storageItem);
+				boolean isPacked = isPacked();
 				if (woodStorage.isPacked() != isPacked) {
 					woodStorage.setPacked(isPacked);
 				}
@@ -296,7 +296,9 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 		if (!player.isSpectator()) {
 			getOpenersCounter().incrementOpeners(player, entity);
 		}
-		PiglinAi.angerNearbyPiglins(player, true);
+		if (player.level() instanceof ServerLevel serverLevel) {
+			PiglinAi.angerNearbyPiglins(serverLevel, player, true);
+		}
 		sendOpenness(entity);
 	}
 
@@ -365,13 +367,13 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 		if (Minecraft.getInstance().isPaused()) {
 			return;
 		}
-		renderInfo.getUpgradeRenderData().forEach((type, data) -> UpgradeRenderRegistry.getUpgradeRenderer(type)
-				.ifPresent(renderer -> renderUpgrade(renderer, level, rand, type, data)));
+		renderInfo.getUpgradeClientData().forEach((type, data) -> UpgradeClientRegistry.getUpgradeClientTickHandler(type)
+				.ifPresent(renderer -> clientTickUpgrade(renderer, level, rand, type, data)));
 	}
 
-	private <T extends IUpgradeRenderData> void renderUpgrade(IUpgradeRenderer<T> renderer, Level level, RandomSource rand, UpgradeRenderDataType<?> type, IUpgradeRenderData data) {
+	private <T extends IUpgradeClientData> void clientTickUpgrade(IUpgradeClientTickHandler<T> renderer, Level level, RandomSource rand, UpgradeClientDataType<?> type, IUpgradeClientData data) {
 		//noinspection unchecked
-		type.cast(data).ifPresent(renderData -> renderer.render(level, rand, vector -> vector.add((float) getPosition().x(), (float) getPosition().y() + getUpgradeRenderYOffset(), (float) getPosition().z()), (T) renderData));
+		type.cast(data).ifPresent(clientData -> renderer.onClientTick(level, rand, vector -> vector.add((float) getPosition().x(), (float) getPosition().y() + getUpgradeRenderYOffset(), (float) getPosition().z()), (T) clientData));
 	}
 
 	protected float getUpgradeRenderYOffset() {
@@ -415,7 +417,7 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 	protected abstract void refreshRenderBlockEntity();
 
 	public InteractionResult openContainerMenu(Player player) {
-		if (isPacked(getSyncedStorageStack())) {
+		if (isPacked()) {
 			return InteractionResult.PASS;
 		}
 
@@ -529,10 +531,6 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 
 	public boolean isOpen() {
 		return getOpenersCounter().getOpenerCount() > 0;
-	}
-
-	public boolean isPacked() {
-		return isPacked(getSyncedStorageStack());
 	}
 
 	@Override

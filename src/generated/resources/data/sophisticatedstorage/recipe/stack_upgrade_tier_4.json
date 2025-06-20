@@ -8,15 +8,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "B": {
-      "tag": "c:storage_blocks/diamond"
-    },
-    "D": {
-      "tag": "c:gems/diamond"
-    },
-    "S": {
-      "item": "sophisticatedstorage:stack_upgrade_tier_3"
-    }
+    "B": "#c:storage_blocks/diamond",
+    "D": "#c:gems/diamond",
+    "S": "sophisticatedstorage:stack_upgrade_tier_3"
   },
   "pattern": [
     "DDD",

@@ -43,12 +43,12 @@ public class StorageTierUpgradeItem extends ItemBase {
 	private final TierUpgrade tier;
 	private final boolean hasTooltip;
 
-	public StorageTierUpgradeItem(TierUpgrade tier) {
-		this(tier, false);
+	public StorageTierUpgradeItem(TierUpgrade tier, Properties properties) {
+		this(tier, false, properties);
 	}
 
-	public StorageTierUpgradeItem(TierUpgrade tier, boolean hasTooltip) {
-		super(new Properties());
+	public StorageTierUpgradeItem(TierUpgrade tier, boolean hasTooltip, Properties properties) {
+		super(properties);
 		this.tier = tier;
 		this.hasTooltip = hasTooltip;
 	}

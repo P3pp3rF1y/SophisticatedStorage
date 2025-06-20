@@ -11,8 +11,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
-import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.BlockHitResult;
@@ -26,7 +25,7 @@ import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import javax.annotation.Nullable;
 
 public class DecorationTableBlock extends BlockBase implements EntityBlock {
-	public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
+	public static final EnumProperty<Direction> FACING = HorizontalDirectionalBlock.FACING;
 	protected static final VoxelShape SHAPE = Shapes.or(
 			Block.box(0, 12, 0, 16, 16, 16),
 			Block.box(1, 8, 1, 15, 12, 15),
@@ -36,8 +35,8 @@ public class DecorationTableBlock extends BlockBase implements EntityBlock {
 			Block.box(12, 0, 12, 15, 8, 15)
 	);
 
-	public DecorationTableBlock() {
-		super(Properties.of().mapColor(MapColor.WOOD).strength(2.5F, 2.5F).sound(SoundType.WOOD));
+	public DecorationTableBlock(Properties properties) {
+		super(properties.mapColor(MapColor.WOOD).strength(2.5F, 2.5F).sound(SoundType.WOOD));
 		registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH));
 	}
 
@@ -61,12 +60,6 @@ public class DecorationTableBlock extends BlockBase implements EntityBlock {
 		player.openMenu(new SimpleMenuProvider((w, p, pl) -> new DecorationTableMenu(w, pl, pos), getName()), pos);
 
 		return InteractionResult.CONSUME;
-	}
-
-	@Override
-	public boolean onDestroyedByPlayer(BlockState state, Level level, BlockPos pos, Player player, boolean willHarvest, FluidState fluid) {
-		//TODO drop contents either here or in loot table
-		return super.onDestroyedByPlayer(state, level, pos, player, willHarvest, fluid);
 	}
 
 	@Override

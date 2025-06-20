@@ -2,10 +2,12 @@ package net.p3pp3rf1y.sophisticatedstorage.crafting;
 
 import net.minecraft.core.HolderLookup;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.ShapelessRecipe;
 import net.minecraft.world.level.Level;
+import net.p3pp3rf1y.sophisticatedcore.crafting.CustomShapelessRecipe;
 import net.p3pp3rf1y.sophisticatedcore.crafting.IWrapperRecipe;
 import net.p3pp3rf1y.sophisticatedcore.crafting.RecipeWrapperSerializer;
 import net.p3pp3rf1y.sophisticatedcore.init.ModCoreDataComponents;
@@ -16,17 +18,12 @@ import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
 
 import java.util.Optional;
 
-public class StorageTierUpgradeShapelessRecipe extends ShapelessRecipe implements IWrapperRecipe<ShapelessRecipe> {
+public class StorageTierUpgradeShapelessRecipe extends CustomShapelessRecipe implements IWrapperRecipe<ShapelessRecipe> {
 	private final ShapelessRecipe compose;
 
 	public StorageTierUpgradeShapelessRecipe(ShapelessRecipe compose) {
-		super(compose.getGroup(), compose.category(), compose.result, compose.getIngredients());
+		super("", CraftingBookCategory.MISC, compose.result, compose.ingredients);
 		this.compose = compose;
-	}
-
-	@Override
-	public ShapelessRecipe getCompose() {
-		return compose;
 	}
 
 	@Override
@@ -37,18 +34,13 @@ public class StorageTierUpgradeShapelessRecipe extends ShapelessRecipe implement
 	@Override
 	public ItemStack assemble(CraftingInput input, HolderLookup.Provider registries) {
 		ItemStack upgradedStorage = super.assemble(input, registries);
-		getOriginalStorage(input).ifPresent(originalStorage -> upgradedStorage.applyComponents(originalStorage.getComponents()));
+		getOriginalStorage(input).ifPresent(originalStorage -> upgradedStorage.applyComponents(originalStorage.getComponentsPatch()));
 		if (upgradedStorage.has(ModCoreDataComponents.STORAGE_UUID)) {
 			StackStorageWrapper storageWrapper = StackStorageWrapper.fromStack(registries, upgradedStorage);
 			StorageBlockItem.setNumberOfInventorySlots(upgradedStorage, storageWrapper.getDefaultNumberOfInventorySlots());
 			StorageBlockItem.setNumberOfUpgradeSlots(upgradedStorage, storageWrapper.getDefaultNumberOfUpgradeSlots());
 		}
 		return upgradedStorage;
-	}
-
-	@Override
-	public boolean isSpecial() {
-		return true;
 	}
 
 	private Optional<ItemStack> getOriginalStorage(CraftingInput inv) {
@@ -64,8 +56,13 @@ public class StorageTierUpgradeShapelessRecipe extends ShapelessRecipe implement
 	}
 
 	@Override
-	public RecipeSerializer<?> getSerializer() {
+	public RecipeSerializer<StorageTierUpgradeShapelessRecipe> getSerializer() {
 		return ModBlocks.STORAGE_TIER_UPGRADE_SHAPELESS_RECIPE_SERIALIZER.get();
+	}
+
+	@Override
+	public ShapelessRecipe getCompose() {
+		return compose;
 	}
 
 	public static class Serializer extends RecipeWrapperSerializer<ShapelessRecipe, StorageTierUpgradeShapelessRecipe> {

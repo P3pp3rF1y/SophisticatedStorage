@@ -109,13 +109,13 @@ public class ShulkerBoxBlockEntity extends StorageBlockEntity {
 	}
 
 	public AABB getBoundingBox(BlockState state) {
-		return Shulker.getProgressAabb(1.0F, state.getValue(ShulkerBoxBlock.FACING), 0.5F * getProgress(1.0F));
+		return Shulker.getProgressAabb(1.0F, state.getValue(ShulkerBoxBlock.FACING), 0.5F * getProgress(1.0F), new Vec3(0.5, 0.0, 0.5));
 	}
 
 	private void moveCollidedEntities(Level level, BlockPos pos, BlockState state) {
 		if (state.getBlock() instanceof ShulkerBoxBlock) {
 			Direction direction = state.getValue(ShulkerBoxBlock.FACING);
-			AABB aabb = Shulker.getProgressDeltaAabb(1.0F, direction, progressOld, progress).move(pos);
+			AABB aabb = Shulker.getProgressDeltaAabb(1.0F, direction, progressOld, progress, getBlockPos().getBottomCenter()).move(pos);
 			List<Entity> list = level.getEntities(null, aabb);
 			if (!list.isEmpty()) {
 				for (Entity entity : list) {

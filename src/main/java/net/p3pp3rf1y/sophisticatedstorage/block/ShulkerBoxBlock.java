@@ -9,7 +9,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -22,8 +21,12 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.block.*;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.DirectionalBlock;
+import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -61,15 +64,15 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 	public static final EnumProperty<Direction> FACING = DirectionalBlock.FACING;
 	private static final VoxelShape ITEM_ENTITY_COLLISION_SHAPE = box(0.05, 0.05, 0.05, 15.95, 15.95, 15.95);
 
-	public ShulkerBoxBlock(Supplier<Integer> numberOfInventorySlotsSupplier, Supplier<Integer> numberOfUpgradeSlotsSupplier) {
-		this(numberOfInventorySlotsSupplier, numberOfUpgradeSlotsSupplier, 2.0F);
+	public ShulkerBoxBlock(Supplier<Integer> numberOfInventorySlotsSupplier, Supplier<Integer> numberOfUpgradeSlotsSupplier, Properties properties) {
+		this(numberOfInventorySlotsSupplier, numberOfUpgradeSlotsSupplier, 2.0F, properties);
 	}
 
-	public ShulkerBoxBlock(Supplier<Integer> numberOfInventorySlotsSupplier, Supplier<Integer> numberOfUpgradeSlotsSupplier, float explosionResistance) {
-		super(getProperties(explosionResistance), numberOfInventorySlotsSupplier, numberOfUpgradeSlotsSupplier);
+	public ShulkerBoxBlock(Supplier<Integer> numberOfInventorySlotsSupplier, Supplier<Integer> numberOfUpgradeSlotsSupplier, float explosionResistance, Properties properties) {
+		super(setProperties(explosionResistance, properties), numberOfInventorySlotsSupplier, numberOfUpgradeSlotsSupplier);
 	}
 
-	private static Properties getProperties(float explosionResistance) {
+	private static Properties setProperties(float explosionResistance, Properties properties) {
 		StatePredicate statePredicate = (state, blockGetter, pos) -> {
 			BlockEntity blockentity = blockGetter.getBlockEntity(pos);
 			if (!(blockentity instanceof ShulkerBoxBlockEntity shulkerboxblockentity)) {
@@ -78,7 +81,7 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 				return shulkerboxblockentity.isClosed();
 			}
 		};
-		return Properties.of().strength(2.0F, explosionResistance).dynamicShape().noOcclusion().isSuffocating(statePredicate).isViewBlocking(statePredicate).pushReaction(PushReaction.DESTROY).mapColor(DyeColor.PURPLE);
+		return properties.strength(2.0F, explosionResistance).forceSolidOn().dynamicShape().noOcclusion().isSuffocating(statePredicate).isViewBlocking(statePredicate).pushReaction(PushReaction.DESTROY).mapColor(DyeColor.PURPLE);
 	}
 
 	@Override
@@ -93,21 +96,22 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 	}
 
 	@Override
-	protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
+	protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
 		if (level.isClientSide) {
-			return ItemInteractionResult.SUCCESS;
+			return InteractionResult.SUCCESS;
 		} else if (player.isSpectator()) {
-			return ItemInteractionResult.CONSUME;
+			return InteractionResult.CONSUME;
 		} else if (!(level.getBlockEntity(pos) instanceof ShulkerBoxBlockEntity shulkerBoxBlockEntity) || !canOpen(state, level, pos, shulkerBoxBlockEntity)) {
-			return ItemInteractionResult.FAIL;
+			return InteractionResult.FAIL;
 		}
 
 		return WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).map(b -> {
-			if (tryItemInteraction(player, hand, b, player.getItemInHand(hand), getFacing(state), hitResult)) {
-				return ItemInteractionResult.SUCCESS;
+			InteractionResult result = tryItemInteraction(player, hand, b, player.getItemInHand(hand), getFacing(state), hitResult);
+			if (result.consumesAction()) {
+				return result;
 			}
-			return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
-		}).orElse(ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION);
+			return InteractionResult.TRY_WITH_EMPTY_HAND;
+		}).orElse(InteractionResult.TRY_WITH_EMPTY_HAND);
 	}
 
 	@Override
@@ -123,12 +127,14 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 		player.awardStat(Stats.CUSTOM.get(Stats.OPEN_SHULKER_BOX));
 		player.openMenu(new SimpleMenuProvider((w, p, pl) -> new StorageContainerMenu(w, pl, pos),
 				WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).map(StorageBlockEntity::getDisplayName).orElse(Component.empty())), pos);
-		PiglinAi.angerNearbyPiglins(player, true);
+		if (player.level() instanceof ServerLevel serverLevel) {
+			PiglinAi.angerNearbyPiglins(serverLevel, player, true);
+		}
 		return InteractionResult.CONSUME;
 	}
 
-	private boolean tryItemInteraction(Player player, InteractionHand hand, StorageBlockEntity b, ItemStack itemInHand, Direction facing, BlockHitResult hitResult) {
-		return tryAddUpgrade(player, hand, b, itemInHand, facing, hitResult);
+	private InteractionResult tryItemInteraction(Player player, InteractionHand hand, StorageBlockEntity b, ItemStack itemInHand, Direction facing, BlockHitResult hitResult) {
+		return tryAddUpgrade(player, b, itemInHand, facing, hitResult);
 	}
 
 	@Override
@@ -195,7 +201,7 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 		if (blockEntity.getAnimationStatus() != ShulkerBoxBlockEntity.AnimationStatus.CLOSED) {
 			return true;
 		} else {
-			AABB aabb = Shulker.getProgressDeltaAabb(1.0F, state.getValue(FACING), 0.0F, 0.5F).move(pos).deflate(1.0E-6D);
+			AABB aabb = Shulker.getProgressDeltaAabb(1.0F, state.getValue(FACING), 0.0F, 0.5F, pos.getBottomCenter()).move(pos).deflate(1.0E-6D);
 			return level.noCollision(aabb);
 		}
 	}
@@ -257,10 +263,9 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 		return blockentity instanceof ShulkerBoxBlockEntity shulkerBoxBlockEntity ? Shapes.create(shulkerBoxBlockEntity.getBoundingBox(state)) : Shapes.block();
 	}
 
-	@SuppressWarnings("deprecation")
 	@Override
-	public ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state) {
-		ItemStack stack = super.getCloneItemStack(level, pos, state);
+	public ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state, boolean includeData) {
+		ItemStack stack = super.getCloneItemStack(level, pos, state, includeData);
 		WorldHelper.getBlockEntity(level, pos, ShulkerBoxBlockEntity.class).ifPresent(be -> {
 			StorageWrapper storageWrapper = be.getStorageWrapper();
 			addBasicPropertiesToStack(stack, be, storageWrapper);
@@ -268,27 +273,19 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 		return stack;
 	}
 
-	@SuppressWarnings("deprecation")
 	@Override
-	public BlockState rotate(BlockState state, Rotation rotation) {
+	public BlockState rotate(BlockState state, LevelAccessor level, BlockPos pos, Rotation rotation) {
 		return state.setValue(FACING, rotation.rotate(state.getValue(FACING)));
 	}
 
-	@SuppressWarnings("deprecation")
 	@Override
 	public BlockState mirror(BlockState state, Mirror mirror) {
-		return state.rotate(mirror.getRotation(state.getValue(FACING)));
+		return rotate(state, mirror.getRotation(state.getValue(FACING)));
 	}
 
 	@Override
 	public void setTicking(Level level, BlockPos pos, BlockState currentState, boolean ticking) {
 		//noop as shulker box is always ticking due to calculation of animation and related bounding box size on server
-	}
-
-	@SuppressWarnings("deprecation")
-	@Override
-	public RenderShape getRenderShape(BlockState state) {
-		return RenderShape.ENTITYBLOCK_ANIMATED;
 	}
 
 	@Override

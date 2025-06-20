@@ -8,15 +8,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "B": {
-      "item": "sophisticatedstorage:upgrade_base"
-    },
-    "R": {
-      "tag": "c:dusts/redstone"
-    },
-    "S": {
-      "tag": "c:strings"
-    }
+    "B": "sophisticatedstorage:upgrade_base",
+    "R": "#c:dusts/redstone",
+    "S": "#c:strings"
   },
   "pattern": [
     "RSR",

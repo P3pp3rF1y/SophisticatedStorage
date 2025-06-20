@@ -9,6 +9,7 @@ import net.minecraft.data.BlockFamily;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
@@ -20,7 +21,6 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.HitResult;
 import net.p3pp3rf1y.sophisticatedcore.init.ModCoreDataComponents;
 import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryHandler;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.ITickableUpgrade;
@@ -49,6 +49,7 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 			.put(WoodType.DARK_OAK, BlockFamilies.DARK_OAK_PLANKS)
 			.put(WoodType.JUNGLE, BlockFamilies.JUNGLE_PLANKS)
 			.put(WoodType.OAK, BlockFamilies.OAK_PLANKS)
+			.put(WoodType.PALE_OAK, BlockFamilies.PALE_OAK_PLANKS)
 			.put(WoodType.SPRUCE, BlockFamilies.SPRUCE_PLANKS)
 			.put(WoodType.WARPED, BlockFamilies.WARPED_PLANKS)
 			.put(WoodType.MANGROVE, BlockFamilies.MANGROVE_PLANKS)
@@ -141,7 +142,7 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 	}
 
 	@Override
-	public ItemStack getCloneItemStack(BlockState state, HitResult target, LevelReader level, BlockPos pos, Player player) {
+	public ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state, boolean includeData) {
 		ItemStack stack = new ItemStack(this);
 		addNameWoodAndTintData(stack, level, pos);
 		return stack;
@@ -219,24 +220,21 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 	}
 
 	@SuppressWarnings("java:S1172") //parameter is used in override
-	protected boolean tryItemInteraction(Player player, InteractionHand hand, WoodStorageBlockEntity b, ItemStack stackInHand, Direction facing, BlockHitResult hitResult) {
+	protected InteractionResult tryItemInteraction(Player player, InteractionHand hand, WoodStorageBlockEntity b, ItemStack stackInHand, Direction facing, BlockHitResult hitResult) {
 		if (stackInHand.getItem() == ModItems.PACKING_TAPE.get()) {
 			if (Boolean.TRUE.equals(Config.COMMON.dropPacked.get())) {
 				player.displayClientMessage(Component.translatable("gui.sophisticatedstorage.status.packing_tape_disabled"), true);
+				return InteractionResult.FAIL;
 			} else {
-				packStorage(player, hand, b, stackInHand);
+				return packStorage(player, hand, b, stackInHand);
 			}
-			return true;
 		}
-		return tryAddUpgrade(player, hand, b, stackInHand, facing, hitResult);
+		return tryAddUpgrade(player, b, stackInHand, facing, hitResult);
 	}
 
-	protected void packStorage(Player player, InteractionHand hand, WoodStorageBlockEntity b, ItemStack stackInHand) {
+	protected InteractionResult packStorage(Player player, InteractionHand hand, WoodStorageBlockEntity b, ItemStack stackInHand) {
 		if (!player.isCreative()) {
 			stackInHand.setDamageValue(stackInHand.getDamageValue() + 1);
-			if (stackInHand.getDamageValue() >= stackInHand.getMaxDamage()) {
-				player.setItemInHand(hand, ItemStack.EMPTY);
-			}
 		}
 
 		BlockState blockState = b.getBlockState();
@@ -249,5 +247,7 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 		b.removeFromController();
 
 		WorldHelper.notifyBlockUpdate(b);
+
+		return InteractionResult.SUCCESS.heldItemTransformedTo(stackInHand.getDamageValue() >= stackInHand.getMaxDamage() ? ItemStack.EMPTY : stackInHand);
 	}
 }

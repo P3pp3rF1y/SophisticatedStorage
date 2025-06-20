@@ -1,8 +1,0 @@
-{
-    "parent": "minecraft:block/cube_bottom_top",
-    "textures": {
-        "top": "sophisticatedstorage:block/storage_input_top",
-        "bottom": "sophisticatedstorage:block/storage_input_top",
-        "side": "sophisticatedstorage:block/storage_input_side"
-    }
-}

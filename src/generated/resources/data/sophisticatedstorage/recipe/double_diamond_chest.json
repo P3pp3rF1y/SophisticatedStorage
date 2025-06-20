@@ -8,15 +8,9 @@
   "type": "sophisticatedstorage:double_chest_tier_upgrade",
   "category": "misc",
   "key": {
-    "B": {
-      "tag": "c:storage_blocks/diamond"
-    },
-    "D": {
-      "tag": "c:gems/diamond"
-    },
-    "S": {
-      "item": "sophisticatedstorage:gold_chest"
-    }
+    "B": "#c:storage_blocks/diamond",
+    "D": "#c:gems/diamond",
+    "S": "sophisticatedstorage:gold_chest"
   },
   "pattern": [
     "DDD",

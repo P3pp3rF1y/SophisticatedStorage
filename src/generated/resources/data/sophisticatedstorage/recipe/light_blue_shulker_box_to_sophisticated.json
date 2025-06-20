@@ -8,12 +8,8 @@
   "type": "sophisticatedstorage:shulker_box_from_vanilla_shapeless",
   "category": "misc",
   "ingredients": [
-    {
-      "item": "minecraft:light_blue_shulker_box"
-    },
-    {
-      "item": "minecraft:redstone_torch"
-    }
+    "minecraft:light_blue_shulker_box",
+    "minecraft:redstone_torch"
   ],
   "result": {
     "components": {

@@ -184,12 +184,7 @@ public class BarrelMaterialRecipe extends CustomRecipe {
 	}
 
 	@Override
-	public boolean canCraftInDimensions(int width, int height) {
-		return width * height > 1;
-	}
-
-	@Override
-	public RecipeSerializer<?> getSerializer() {
+	public RecipeSerializer<BarrelMaterialRecipe> getSerializer() {
 		return ModBlocks.BARREL_MATERIAL_RECIPE_SERIALIZER.get();
 	}
 }

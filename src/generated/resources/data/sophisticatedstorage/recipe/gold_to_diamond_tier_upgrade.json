@@ -8,12 +8,8 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "D": {
-      "tag": "c:gems/diamond"
-    },
-    "R": {
-      "item": "minecraft:redstone_torch"
-    }
+    "D": "#c:gems/diamond",
+    "R": "minecraft:redstone_torch"
   },
   "pattern": [
     "DDD",

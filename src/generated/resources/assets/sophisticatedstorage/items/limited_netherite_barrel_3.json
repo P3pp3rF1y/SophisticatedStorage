@@ -1,0 +1,17 @@
+{
+  "model": {
+    "type": "sophisticatedstorage:barrel",
+    "flat_top_model": "sophisticatedstorage:block/flat/limited_netherite_barrel_3",
+    "model": "sophisticatedstorage:block/limited_netherite_barrel_3",
+    "tints": [
+      {
+        "type": "sophisticatedstorage:main",
+        "default": -1
+      },
+      {
+        "type": "sophisticatedstorage:accent",
+        "default": -1
+      }
+    ]
+  }
+}

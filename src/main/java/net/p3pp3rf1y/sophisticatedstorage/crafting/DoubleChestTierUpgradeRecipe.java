@@ -20,7 +20,7 @@ public class DoubleChestTierUpgradeRecipe extends ShapedRecipe implements IWrapp
 	private final ShapedRecipe compose;
 
 	public DoubleChestTierUpgradeRecipe(ShapedRecipe compose) {
-		super(compose.getGroup(), compose.category(), compose.pattern, compose.result);
+		super(compose.group(), compose.category(), compose.pattern, compose.result);
 		this.compose = compose;
 	}
 
@@ -38,7 +38,7 @@ public class DoubleChestTierUpgradeRecipe extends ShapedRecipe implements IWrapp
 	public ItemStack assemble(CraftingInput input, HolderLookup.Provider registries) {
 		ItemStack upgradedStorage = super.assemble(input, registries);
 		getDoubleChest(input).ifPresent(originalStorage -> {
-			upgradedStorage.applyComponents(originalStorage.getComponents());
+			upgradedStorage.applyComponents(originalStorage.getComponentsPatch());
 		});
 		if (upgradedStorage.has(ModCoreDataComponents.STORAGE_UUID)) {
 			StackStorageWrapper storageWrapper = StackStorageWrapper.fromStack(registries, upgradedStorage);
@@ -65,7 +65,7 @@ public class DoubleChestTierUpgradeRecipe extends ShapedRecipe implements IWrapp
 	}
 
 	@Override
-	public RecipeSerializer<?> getSerializer() {
+	public RecipeSerializer<DoubleChestTierUpgradeRecipe> getSerializer() {
 		return ModBlocks.DOUBLE_CHEST_TIER_UPGRADE_RECIPE_SERIALIZER.get();
 	}
 

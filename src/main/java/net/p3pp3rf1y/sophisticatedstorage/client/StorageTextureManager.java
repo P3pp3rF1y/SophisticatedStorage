@@ -1,14 +1,14 @@
 package net.p3pp3rf1y.sophisticatedstorage.client;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.resources.model.Material;
+import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.level.block.state.properties.ChestType;
 import net.minecraft.world.level.block.state.properties.WoodType;
@@ -18,9 +18,7 @@ import java.util.*;
 import java.util.function.Supplier;
 
 @SuppressWarnings("java:S6548") //singleton is intended here
-public class StorageTextureManager extends SimpleJsonResourceReloadListener {
-	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
-
+public class StorageTextureManager extends SimpleJsonResourceReloadListener<JsonElement> {
 	public static final StorageTextureManager INSTANCE = new StorageTextureManager();
 	private static final String PARENT_TAG = "parent";
 	private static final String TYPE_TAG = "type";
@@ -36,7 +34,7 @@ public class StorageTextureManager extends SimpleJsonResourceReloadListener {
 	private final Map<WoodType, Map<ChestType, Map<ChestMaterial, Material>>> woodChestMaterials = new HashMap<>();
 
 	private StorageTextureManager() {
-		super(GSON, "storage_texture_definitions");
+		super(ExtraCodecs.JSON, FileToIdConverter.json("storage_texture_definitions"));
 	}
 
 	@Override
@@ -71,7 +69,7 @@ public class StorageTextureManager extends SimpleJsonResourceReloadListener {
 	}
 
 	@Override
-	protected void apply(Map<ResourceLocation, JsonElement> object, ResourceManager resourceManager, ProfilerFiller profiler) {
+	protected void apply(Map<ResourceLocation, JsonElement> entries, ResourceManager resourceManager, ProfilerFiller profilerFiller) {
 		//noop as everything is done in prepare due to the need to have it done before TextureStitchEvent fires
 	}
 

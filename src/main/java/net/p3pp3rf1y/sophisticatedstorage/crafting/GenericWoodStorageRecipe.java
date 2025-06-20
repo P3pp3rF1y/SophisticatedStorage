@@ -21,7 +21,7 @@ public class GenericWoodStorageRecipe extends ShapedRecipe implements IWrapperRe
 	private final ShapedRecipe compose;
 
 	public GenericWoodStorageRecipe(ShapedRecipe compose) {
-		super(compose.getGroup(), compose.category(), compose.pattern, compose.result);
+		super(compose.group(), compose.category(), compose.pattern, compose.result);
 		this.compose = compose;
 	}
 
@@ -64,7 +64,7 @@ public class GenericWoodStorageRecipe extends ShapedRecipe implements IWrapperRe
 			for (int col = topLeftCorner.left; col < topLeftCorner.left + getWidth(); col++) {
 				int slot = col + row * input.width();
 				ItemStack itemStack = input.getItem(slot);
-				if (itemStack.isEmpty() || getIngredients().get(slot).getItems().length < 2) {
+				if (itemStack.isEmpty() || pattern.ingredients().getFirst().map(i -> i.getValues().size() < 2).orElse(true)) {
 					continue;
 				}
 
@@ -95,7 +95,7 @@ public class GenericWoodStorageRecipe extends ShapedRecipe implements IWrapperRe
 	}
 
 	@Override
-	public RecipeSerializer<?> getSerializer() {
+	public RecipeSerializer<GenericWoodStorageRecipe> getSerializer() {
 		return ModBlocks.GENERIC_WOOD_STORAGE_RECIPE_SERIALIZER.get();
 	}
 

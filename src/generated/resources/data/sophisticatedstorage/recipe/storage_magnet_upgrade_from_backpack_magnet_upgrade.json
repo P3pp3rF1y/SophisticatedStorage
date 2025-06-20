@@ -12,12 +12,8 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "P": {
-      "tag": "minecraft:planks"
-    },
-    "U": {
-      "item": "sophisticatedbackpacks:magnet_upgrade"
-    }
+    "P": "#minecraft:planks",
+    "U": "sophisticatedbackpacks:magnet_upgrade"
   },
   "pattern": [
     "PUP",

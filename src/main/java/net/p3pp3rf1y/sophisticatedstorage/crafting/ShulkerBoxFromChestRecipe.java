@@ -21,7 +21,7 @@ public class ShulkerBoxFromChestRecipe extends ShapedRecipe implements IWrapperR
 	private final ShapedRecipe compose;
 
 	public ShulkerBoxFromChestRecipe(ShapedRecipe compose) {
-		super(compose.getGroup(), compose.category(), compose.pattern, compose.result);
+		super(compose.group(), compose.category(), compose.pattern, compose.result);
 		this.compose = compose;
 	}
 
@@ -66,7 +66,7 @@ public class ShulkerBoxFromChestRecipe extends ShapedRecipe implements IWrapperR
 	}
 
 	@Override
-	public RecipeSerializer<?> getSerializer() {
+	public RecipeSerializer<ShulkerBoxFromChestRecipe> getSerializer() {
 		return ModBlocks.SHULKER_BOX_FROM_CHEST_RECIPE_SERIALIZER.get();
 	}
 

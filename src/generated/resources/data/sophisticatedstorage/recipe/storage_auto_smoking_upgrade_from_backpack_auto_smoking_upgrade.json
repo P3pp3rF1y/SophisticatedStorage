@@ -12,12 +12,8 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "P": {
-      "tag": "minecraft:planks"
-    },
-    "U": {
-      "item": "sophisticatedbackpacks:auto_smoking_upgrade"
-    }
+    "P": "#minecraft:planks",
+    "U": "sophisticatedbackpacks:auto_smoking_upgrade"
   },
   "pattern": [
     "PUP",

@@ -38,11 +38,11 @@ public class ShulkerBoxRenderer extends StorageRenderer<ShulkerBoxBlockEntity> {
 	public static final Material TINTABLE_MAIN_MATERIAL = new Material(Sheets.SHULKER_SHEET, SophisticatedStorage.getRL(ENTITY_SHULKER_BOX_FOLDER + "tintable_main"));
 	public static final Material TINTABLE_ACCENT_MATERIAL = new Material(Sheets.SHULKER_SHEET, SophisticatedStorage.getRL(ENTITY_SHULKER_BOX_FOLDER + "tintable_accent"));
 	public static final Material NO_TINT_MATERIAL = new Material(Sheets.SHULKER_SHEET, SophisticatedStorage.getRL(ENTITY_SHULKER_BOX_FOLDER + "no_tint"));
-	private final ShulkerModel<?> model;
+	private final ShulkerModel model;
 	private final DisplayItemRenderer displayItemRenderer = new DisplayItemRenderer(0.5, new Vec3(0, 0, -0.0075));
 
 	public ShulkerBoxRenderer(BlockEntityRendererProvider.Context context) {
-		model = new ShulkerModel<>(context.bakeLayer(ModelLayers.SHULKER));
+		model = new ShulkerModel(context.bakeLayer(ModelLayers.SHULKER));
 	}
 
 	public void render(ShulkerBoxBlockEntity shulkerBoxEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
@@ -62,7 +62,7 @@ public class ShulkerBoxRenderer extends StorageRenderer<ShulkerBoxBlockEntity> {
 		poseStack.mulPose(direction.getRotation());
 		poseStack.scale(1.0F, -1.0F, -1.0F);
 		poseStack.translate(0.0D, -1.0D, 0.0D);
-		ModelPart lidPart = model.getLid();
+		ModelPart lidPart = model.lid;
 		float lidProgress = shulkerBoxEntity.getProgress(partialTick);
 		lidPart.setPos(0.0F, 24.0F - lidProgress * 0.5F * 16.0F, 0.0F);
 		lidPart.yRot = 270.0F * lidProgress * ((float) Math.PI / 180F);

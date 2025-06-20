@@ -12,15 +12,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "L": {
-      "tag": "c:leathers"
-    },
-    "T": {
-      "tag": "c:strings"
-    },
-    "U": {
-      "item": "sophisticatedstorage:filter_upgrade"
-    }
+    "L": "#c:leathers",
+    "T": "#c:strings",
+    "U": "sophisticatedstorage:filter_upgrade"
   },
   "pattern": [
     "TUT",

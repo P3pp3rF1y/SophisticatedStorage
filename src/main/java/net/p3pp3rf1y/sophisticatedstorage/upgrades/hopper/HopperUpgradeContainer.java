@@ -1,11 +1,9 @@
 package net.p3pp3rf1y.sophisticatedstorage.upgrades.hopper;
 
-import com.mojang.datafixers.util.Pair;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.level.block.state.BlockState;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.StorageContainerMenuBase;
@@ -21,8 +19,8 @@ import net.p3pp3rf1y.sophisticatedstorage.upgrades.IOMode;
 import javax.annotation.Nullable;
 
 public class HopperUpgradeContainer extends UpgradeContainerBase<HopperUpgradeWrapper, HopperUpgradeContainer> {
-	public static final Pair<ResourceLocation, ResourceLocation> EMPTY_INPUT_FILTER_SLOT_BACKGROUND = new Pair<>(InventoryMenu.BLOCK_ATLAS, SophisticatedStorage.getRL("item/empty_input_filter_slot"));
-	public static final Pair<ResourceLocation, ResourceLocation> EMPTY_OUTPUT_FILTER_SLOT_BACKGROUND = new Pair<>(InventoryMenu.BLOCK_ATLAS, SophisticatedStorage.getRL("item/empty_output_filter_slot"));
+	public static final ResourceLocation EMPTY_INPUT_FILTER_SLOT_BACKGROUND = SophisticatedStorage.getRL("container/slot/input_filter");
+	public static final ResourceLocation EMPTY_OUTPUT_FILTER_SLOT_BACKGROUND = SophisticatedStorage.getRL("container/slot/output_filter");
 	private final ContentsFilterLogicContainer inputFilterLogicContainer;
 
 	private final ContentsFilterLogicContainer outputFilterLogicContainer;
@@ -43,12 +41,12 @@ public class HopperUpgradeContainer extends UpgradeContainerBase<HopperUpgradeWr
 	}
 
 	private void addInputFilterSlot(Slot slot) {
-		slot.setBackground(EMPTY_INPUT_FILTER_SLOT_BACKGROUND.getFirst(), EMPTY_INPUT_FILTER_SLOT_BACKGROUND.getSecond());
+		slot.setBackground(EMPTY_INPUT_FILTER_SLOT_BACKGROUND);
 		slots.add(slot);
 	}
 
 	private void addOutputFilterSlot(Slot slot) {
-		slot.setBackground(EMPTY_OUTPUT_FILTER_SLOT_BACKGROUND.getFirst(), EMPTY_OUTPUT_FILTER_SLOT_BACKGROUND.getSecond());
+		slot.setBackground(EMPTY_OUTPUT_FILTER_SLOT_BACKGROUND);
 		slots.add(slot);
 	}
 

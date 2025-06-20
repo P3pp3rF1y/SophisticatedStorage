@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/template_shulker_box",
+  "textures": {
+    "particle": "sophisticatedstorage:block/break/shulker_box"
+  }
+}

@@ -9,20 +9,12 @@
   "category": "misc",
   "key": {
     "B": {
-      "type": "sophisticatedstorage:base_tier_wooden_storage"
+      "neoforge:ingredient_type": "sophisticatedstorage:base_tier_wooden_storage"
     },
-    "G": {
-      "tag": "c:ingots/gold"
-    },
-    "P": {
-      "tag": "minecraft:planks"
-    },
-    "R": {
-      "item": "minecraft:repeater"
-    },
-    "S": {
-      "tag": "c:stones"
-    }
+    "G": "#c:ingots/gold",
+    "P": "#minecraft:planks",
+    "R": "minecraft:repeater",
+    "S": "#c:stones"
   },
   "pattern": [
     "SPS",

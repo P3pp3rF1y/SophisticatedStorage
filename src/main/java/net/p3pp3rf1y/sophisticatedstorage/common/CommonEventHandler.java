@@ -3,7 +3,6 @@ package net.p3pp3rf1y.sophisticatedstorage.common;
 import com.google.common.collect.Queues;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.TickTask;
 import net.minecraft.server.level.ServerLevel;
@@ -13,8 +12,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
@@ -173,11 +170,13 @@ public class CommonEventHandler {
 				ItemBase packingTapeItem = ModItems.PACKING_TAPE.get();
 				Component packingTapeItemName = packingTapeItem.getName(new ItemStack(packingTapeItem)).copy().withStyle(ChatFormatting.GREEN);
 				BlockState state = event.getState();
-				player.sendSystemMessage(StorageTranslationHelper.INSTANCE.translStatusMessage("too_many_item_entity_drops",
-						state.getBlock().getCloneItemStack(state, new BlockHitResult(new Vec3(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5), Direction.DOWN, pos, true), level, pos, player).getHoverName().copy().withStyle(ChatFormatting.GREEN),
-						Component.literal(String.valueOf(droppedItemEntityCount.get())).withStyle(ChatFormatting.RED),
-						packingTapeItemName)
-				);
+				if (player instanceof ServerPlayer serverPlayer) {
+					serverPlayer.sendSystemMessage(StorageTranslationHelper.INSTANCE.translStatusMessage("too_many_item_entity_drops",
+							state.getBlock().getCloneItemStack(player.level(), pos, state, true, player).getHoverName().copy().withStyle(ChatFormatting.GREEN),
+							Component.literal(String.valueOf(droppedItemEntityCount.get())).withStyle(ChatFormatting.RED),
+							packingTapeItemName)
+					);
+				}
 				scheduleRenderUpdate(wbe, level, pos, state);
 			}
 		});

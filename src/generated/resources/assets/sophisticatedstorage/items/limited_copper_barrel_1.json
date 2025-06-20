@@ -1,0 +1,17 @@
+{
+  "model": {
+    "type": "sophisticatedstorage:barrel",
+    "flat_top_model": "sophisticatedstorage:block/flat/limited_copper_barrel_1",
+    "model": "sophisticatedstorage:block/limited_copper_barrel_1",
+    "tints": [
+      {
+        "type": "sophisticatedstorage:main",
+        "default": -1
+      },
+      {
+        "type": "sophisticatedstorage:accent",
+        "default": -1
+      }
+    ]
+  }
+}

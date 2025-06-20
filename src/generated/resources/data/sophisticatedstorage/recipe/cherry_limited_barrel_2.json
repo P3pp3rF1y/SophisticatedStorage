@@ -8,15 +8,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "P": {
-      "item": "minecraft:cherry_planks"
-    },
-    "R": {
-      "item": "minecraft:redstone_torch"
-    },
-    "S": {
-      "item": "minecraft:cherry_slab"
-    }
+    "P": "minecraft:cherry_planks",
+    "R": "minecraft:redstone_torch",
+    "S": "minecraft:cherry_slab"
   },
   "pattern": [
     "PPP",

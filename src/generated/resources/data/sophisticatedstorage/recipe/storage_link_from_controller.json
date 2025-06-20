@@ -8,12 +8,8 @@
   "type": "minecraft:crafting_shapeless",
   "category": "misc",
   "ingredients": [
-    {
-      "item": "sophisticatedstorage:controller"
-    },
-    {
-      "tag": "c:ender_pearls"
-    }
+    "sophisticatedstorage:controller",
+    "#c:ender_pearls"
   ],
   "result": {
     "count": 3,

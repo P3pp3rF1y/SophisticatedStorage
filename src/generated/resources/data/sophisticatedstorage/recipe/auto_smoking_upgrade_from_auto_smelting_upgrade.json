@@ -8,12 +8,8 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "L": {
-      "tag": "minecraft:logs"
-    },
-    "S": {
-      "item": "sophisticatedstorage:auto_smelting_upgrade"
-    }
+    "L": "#minecraft:logs",
+    "S": "sophisticatedstorage:auto_smelting_upgrade"
   },
   "pattern": [
     " L ",

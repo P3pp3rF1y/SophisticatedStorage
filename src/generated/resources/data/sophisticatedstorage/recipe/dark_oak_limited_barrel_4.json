@@ -8,15 +8,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "P": {
-      "item": "minecraft:dark_oak_planks"
-    },
-    "R": {
-      "item": "minecraft:redstone_torch"
-    },
-    "S": {
-      "item": "minecraft:dark_oak_slab"
-    }
+    "P": "minecraft:dark_oak_planks",
+    "R": "minecraft:redstone_torch",
+    "S": "minecraft:dark_oak_slab"
   },
   "pattern": [
     "SPS",

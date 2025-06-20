@@ -36,8 +36,8 @@ public class StorageLinkBlock extends BlockBase implements EntityBlock {
 	private static final Map<Direction, VoxelShape> ROTATED_SHAPES = new EnumMap<>(Direction.class);
 	private static final RotatedShapes SHAPE = new RotatedShapes(false, Block.box(1, 14, 1, 15, 16, 15));
 
-	public StorageLinkBlock() {
-		super(Properties.of().mapColor(MapColor.STONE).requiresCorrectToolForDrops().strength(2.5F, 5.0F));
+	public StorageLinkBlock(Properties properties) {
+		super(properties.mapColor(MapColor.STONE).requiresCorrectToolForDrops().strength(2.5F, 5.0F));
 		registerDefaultState(stateDefinition.any().setValue(FACING, Direction.UP));
 	}
 

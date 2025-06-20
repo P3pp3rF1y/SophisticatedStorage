@@ -8,9 +8,7 @@
   "type": "minecraft:crafting_shapeless",
   "category": "misc",
   "ingredients": [
-    {
-      "item": "sophisticatedstorage:storage_output"
-    }
+    "sophisticatedstorage:storage_output"
   ],
   "result": {
     "count": 1,

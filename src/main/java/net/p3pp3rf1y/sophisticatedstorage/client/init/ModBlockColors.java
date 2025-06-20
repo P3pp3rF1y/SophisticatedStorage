@@ -1,7 +1,9 @@
 package net.p3pp3rf1y.sophisticatedstorage.client.init;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
@@ -37,26 +39,41 @@ public class ModBlockColors {
 		}
 		return WorldHelper.getBlockEntity(blockDisplayReader, pos, StorageBlockEntity.class)
 				.map(be -> {
-					if (tintIndex == 1000) {
+					if (tintIndex == 0) {
 						return be.getStorageWrapper().getMainColor();
-					} else if (tintIndex == 1001) {
+					} else if (tintIndex == 1) {
 						return be.getStorageWrapper().getAccentColor();
-					} else {
-						RenderInfo.ItemDisplayRenderInfo itemDisplayRenderInfo = be.getStorageWrapper().getRenderInfo().getItemDisplayRenderInfo();
-						int displayItemIndex = (tintIndex > 1000 ? tintIndex - 1000 : tintIndex) / 10 - 1;
-						List<RenderInfo.DisplayItem> displayItems = itemDisplayRenderInfo.getDisplayItems();
-						if (displayItemIndex >= 0) {
-							int tintOffset = (displayItemIndex + 1) * 10;
-							ItemStack stack = getDisplayItemWithIndex(displayItemIndex, displayItems, state.getBlock() instanceof LimitedBarrelBlock);
-							if (stack.isEmpty()) {
-								return -1;
-							}
-							return Minecraft.getInstance().getItemColors().getColor(stack, tintIndex - tintOffset);
-						}
 					}
+
+					int displayItemIndex = tintIndex / 10 - 1;
+					if (displayItemIndex >= 0) {
+						int tintOffset = (displayItemIndex + 1) * 10;
+						int adjustedTintIndex = tintIndex - tintOffset;
+						return be.getOrComputeDisplayItemTint(displayItemIndex, adjustedTintIndex, () -> getTint(state, displayItemIndex, adjustedTintIndex, be));
+					}
+
 					return -1;
 				})
 				.orElse(-1);
+	}
+
+	private static int getTint(BlockState state, int displayItemIndex, int adjustedTintIndex, StorageBlockEntity be) {
+		RenderInfo.ItemDisplayRenderInfo itemDisplayRenderInfo = be.getStorageWrapper().getRenderInfo().getItemDisplayRenderInfo();
+		List<RenderInfo.DisplayItem> displayItems = itemDisplayRenderInfo.getDisplayItems();
+		ItemStack stack = getDisplayItemWithIndex(displayItemIndex, displayItems, state.getBlock() instanceof LimitedBarrelBlock);
+		if (stack.isEmpty()) {
+			return -1;
+		}
+
+		ItemStackRenderState renderState = new ItemStackRenderState();
+		Minecraft.getInstance().getItemModelResolver().updateForTopItem(renderState, stack, ItemDisplayContext.FIXED, false, null, null, 0);
+		for (ItemStackRenderState.LayerRenderState layer : renderState.layers) {
+			if (layer.tintLayers.length > adjustedTintIndex) {
+				return layer.tintLayers[adjustedTintIndex];
+			}
+		}
+
+		return -1;
 	}
 
 	private static ItemStack getDisplayItemWithIndex(int displayItemIndex, List<RenderInfo.DisplayItem> displayItems, boolean isLimitedBarrel) {

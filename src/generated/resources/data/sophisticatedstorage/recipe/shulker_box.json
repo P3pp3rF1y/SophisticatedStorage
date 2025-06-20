@@ -8,15 +8,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "C": {
-      "tag": "c:chests"
-    },
-    "R": {
-      "item": "minecraft:redstone_torch"
-    },
-    "S": {
-      "item": "minecraft:shulker_shell"
-    }
+    "C": "#c:chests",
+    "R": "minecraft:redstone_torch",
+    "S": "minecraft:shulker_shell"
   },
   "pattern": [
     " S",

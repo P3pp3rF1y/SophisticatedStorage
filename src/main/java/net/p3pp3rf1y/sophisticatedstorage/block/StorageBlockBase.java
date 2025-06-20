@@ -6,6 +6,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
@@ -20,12 +21,12 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
-import net.p3pp3rf1y.sophisticatedcore.api.IUpgradeRenderer;
-import net.p3pp3rf1y.sophisticatedcore.client.render.UpgradeRenderRegistry;
+import net.p3pp3rf1y.sophisticatedcore.api.IUpgradeClientTickHandler;
+import net.p3pp3rf1y.sophisticatedcore.client.render.UpgradeClientRegistry;
 import net.p3pp3rf1y.sophisticatedcore.controller.IControllableStorage;
-import net.p3pp3rf1y.sophisticatedcore.renderdata.IUpgradeRenderData;
+import net.p3pp3rf1y.sophisticatedcore.renderdata.IUpgradeClientData;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
-import net.p3pp3rf1y.sophisticatedcore.renderdata.UpgradeRenderDataType;
+import net.p3pp3rf1y.sophisticatedcore.renderdata.UpgradeClientDataType;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeHandler;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeItemBase;
 import net.p3pp3rf1y.sophisticatedcore.util.BlockBase;
@@ -68,9 +69,9 @@ public abstract class StorageBlockBase extends BlockBase implements IStorageBloc
 		if (Minecraft.getInstance().isPaused()) {
 			return;
 		}
-		renderInfo.getUpgradeRenderData().forEach((type, data) -> UpgradeRenderRegistry.getUpgradeRenderer(type).ifPresent(renderer -> {
+		renderInfo.getUpgradeClientData().forEach((type, data) -> UpgradeClientRegistry.getUpgradeClientTickHandler(type).ifPresent(renderer -> {
 			if (storageBlockState.getBlock() instanceof StorageBlockBase storageBlock) {
-				storageBlock.renderUpgrade(renderer, level, rand, pos, facing, type, data, storageBlockState, storageBlock);
+				storageBlock.clientTickUpgrade(renderer, level, rand, pos, facing, type, data, storageBlockState, storageBlock);
 			}
 
 		}));
@@ -85,9 +86,9 @@ public abstract class StorageBlockBase extends BlockBase implements IStorageBloc
 		return point;
 	}
 
-	private <T extends IUpgradeRenderData> void renderUpgrade(IUpgradeRenderer<T> renderer, Level level, RandomSource rand, BlockPos pos, Direction facing, UpgradeRenderDataType<?> type, IUpgradeRenderData data, BlockState state, StorageBlockBase storageBlock) {
+	private <T extends IUpgradeClientData> void clientTickUpgrade(IUpgradeClientTickHandler<T> renderer, Level level, RandomSource rand, BlockPos pos, Direction facing, UpgradeClientDataType<?> type, IUpgradeClientData data, BlockState state, StorageBlockBase storageBlock) {
 		//noinspection unchecked
-		type.cast(data).ifPresent(renderData -> renderer.render(level, rand, vector -> storageBlock.getMiddleFacePoint(state, pos, facing, vector), (T) renderData));
+		type.cast(data).ifPresent(clientData -> renderer.onClientTick(level, rand, vector -> storageBlock.getMiddleFacePoint(state, pos, facing, vector), (T) clientData));
 	}
 
 	@Override
@@ -209,36 +210,33 @@ public abstract class StorageBlockBase extends BlockBase implements IStorageBloc
 		WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).ifPresent(be -> be.onNeighborChange(neighbor));
 	}
 
-	protected boolean tryAddUpgrade(Player player, InteractionHand hand, StorageBlockEntity b, ItemStack itemInHand, Direction facing, BlockHitResult hitResult) {
-		if (player.level().isClientSide) {
-			return true;
-		}
-
+	protected InteractionResult tryAddUpgrade(Player player, StorageBlockEntity b, ItemStack itemInHand, Direction facing, BlockHitResult hitResult) {
 		if (hitResult.getDirection() != facing) {
-			return false;
+			return InteractionResult.PASS;
 		}
 
-		return tryAddSingleUpgrade(player, hand, b, itemInHand);
+		return tryAddSingleUpgrade(player, b, itemInHand);
 	}
 
-	public boolean tryAddSingleUpgrade(Player player, InteractionHand hand, StorageBlockEntity b, ItemStack itemInHand) {
-		return tryAddSingleUpgrade(player, hand, itemInHand, b.getStorageWrapper());
+	public InteractionResult tryAddSingleUpgrade(Player player, StorageBlockEntity b, ItemStack itemInHand) {
+		return tryAddSingleUpgrade(player, itemInHand, b.getStorageWrapper());
 	}
 
-	public static boolean tryAddSingleUpgrade(Player player, InteractionHand hand, ItemStack itemInHand, IStorageWrapper storageWrapper) {
+	public static InteractionResult tryAddSingleUpgrade(Player player, ItemStack itemInHand, IStorageWrapper storageWrapper) {
 		if (itemInHand.getItem() instanceof UpgradeItemBase<?> upgradeItem && itemInHand.is(ModItems.STORAGE_UPGRADE_TAG)) {
+			if (player.level().isClientSide) {
+				return InteractionResult.PASS;
+			}
+
 			UpgradeHandler upgradeHandler = storageWrapper.getUpgradeHandler();
 			if (upgradeItem.canAddUpgradeTo(storageWrapper, itemInHand, true, player.level().isClientSide()).successful()
 					&& InventoryHelper.insertIntoInventory(itemInHand, upgradeHandler, true).getCount() != itemInHand.getCount()) {
 				InventoryHelper.insertIntoInventory(itemInHand.copyWithCount(1), upgradeHandler, false);
 				itemInHand.shrink(1);
-				if (itemInHand.isEmpty()) {
-					player.setItemInHand(hand, ItemStack.EMPTY);
-				}
-				return true;
+				return InteractionResult.SUCCESS.heldItemTransformedTo(itemInHand.isEmpty() ? ItemStack.EMPTY : itemInHand);
 			}
 		}
-		return false;
+				return InteractionResult.PASS;
 	}
 
 	@Override
@@ -254,7 +252,7 @@ public abstract class StorageBlockBase extends BlockBase implements IStorageBloc
 		return WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).map(b -> {
 			boolean result = false;
 			while (!itemInHand.isEmpty()) {
-				if (tryAddSingleUpgrade(player, hand, b, itemInHand)) {
+				if (tryAddSingleUpgrade(player, b, itemInHand).consumesAction()) {
 					result = true;
 				} else {
 					break;

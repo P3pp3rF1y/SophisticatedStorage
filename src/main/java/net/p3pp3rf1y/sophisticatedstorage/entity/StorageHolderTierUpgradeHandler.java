@@ -219,7 +219,7 @@ public class StorageHolderTierUpgradeHandler {
 
 		private void upgradeIndividualStorageHolder(StorageHolderBase storageHolder, ItemStack storageItem, int newNumberOfInventorySlots, int newNumberOfUpgradeSlots) {
 			ItemStack newStorageItem = new ItemStack(upgradedItem);
-			newStorageItem.applyComponents(storageItem.getComponents());
+			newStorageItem.applyComponents(storageItem.getComponentsPatch());
 
 			storageHolder.setStorageItem(newStorageItem);
 

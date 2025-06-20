@@ -1,7 +1,6 @@
 {
     "loader": "sophisticatedstorage:barrel",
     "parent": "sophisticatedstorage:block/barrel",
-    "flat_top_model": "sophisticatedstorage:block/flat/netherite_barrel",
     "model_parts": {
         "tier": {
             "textures": {

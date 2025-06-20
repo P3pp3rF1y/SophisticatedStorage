@@ -5,11 +5,11 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.geom.EntityModelSet;
-import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
+import net.minecraft.client.renderer.special.SpecialModelRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.BlockItem;
@@ -17,8 +17,6 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.properties.ChestType;
 import net.minecraft.world.level.block.state.properties.WoodType;
-import net.neoforged.jarjar.nio.util.Lazy;
-import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 import net.p3pp3rf1y.sophisticatedstorage.block.ChestBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.ChestBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.block.ITintableBlockItem;
@@ -26,11 +24,10 @@ import net.p3pp3rf1y.sophisticatedstorage.item.ChestBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
 
+import javax.annotation.Nullable;
 import java.util.Optional;
 
-public class ChestItemRenderer extends BlockEntityWithoutLevelRenderer {
-	public static final Lazy<ChestItemRenderer> CHEST_ITEM_RENDERER = Lazy.of(() -> new ChestItemRenderer(Minecraft.getInstance().getBlockEntityRenderDispatcher(), Minecraft.getInstance().getEntityModels()));
-	private final BlockEntityRenderDispatcher blockEntityRenderDispatcher;
+public class ChestItemRenderer implements SpecialModelRenderer<ChestItemRenderer.ChestAttributes> {
 	private final LoadingCache<BlockItem, ChestBlockEntity> chestBlockEntities = CacheBuilder.newBuilder().maximumSize(512L).weakKeys().build(new CacheLoader<>() {
 		@Override
 		public ChestBlockEntity load(BlockItem blockItem) {
@@ -45,59 +42,66 @@ public class ChestItemRenderer extends BlockEntityWithoutLevelRenderer {
 		}
 	});
 
-	public static IClientItemExtensions getItemRenderProperties() {
-		return new IClientItemExtensions() {
-			@Override
-			public BlockEntityWithoutLevelRenderer getCustomRenderer() {
-				return CHEST_ITEM_RENDERER.get();
-			}
-		};
-	}
-
-	public ChestItemRenderer(BlockEntityRenderDispatcher blockEntityRenderDispatcher, EntityModelSet entityModelSet) {
-		super(blockEntityRenderDispatcher, entityModelSet);
-		this.blockEntityRenderDispatcher = blockEntityRenderDispatcher;
+	@Nullable
+	@Override
+	public ChestAttributes extractArgument(ItemStack stack) {
+		if (!(stack.getItem() instanceof BlockItem blockItem)) {
+			return null;
+		}
+		boolean isDoubleChest = ChestBlockItem.isDoubleChest(stack);
+		int mainColor = -1;
+		int accentColor = -1;
+		if (stack.getItem() instanceof ITintableBlockItem tintableBlockItem) {
+			mainColor = tintableBlockItem.getMainColor(stack).orElse(-1);
+			accentColor = tintableBlockItem.getAccentColor(stack).orElse(-1);
+		}
+		Optional<WoodType> woodType = WoodStorageBlockItem.getWoodType(stack);
+		boolean isPacked = WoodStorageBlockItem.isPacked(stack);
+		boolean showsTier = StorageBlockItem.showsTier(stack);
+		return new ChestAttributes(blockItem, isDoubleChest, mainColor, accentColor, woodType, isPacked, showsTier);
 	}
 
 	@Override
-	public void renderByItem(ItemStack stack, ItemDisplayContext transformType, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay) {
-		if (!(stack.getItem() instanceof BlockItem blockItem)) {
+	public void render(@Nullable ChestAttributes chestAttributes, ItemDisplayContext transformType, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay, boolean hasFoil) {
+		if (chestAttributes == null) {
 			return;
 		}
 
-		if (ChestBlockItem.isDoubleChest(stack)) {
-			ChestBlockEntity leftChestBlockEntity = doubleChestBlockEntities.getUnchecked(new DoubleChestBlockEntityKey(blockItem, ChestType.LEFT));
+		if (chestAttributes.isDoubleChest()) {
+			ChestBlockEntity leftChestBlockEntity = doubleChestBlockEntities.getUnchecked(new DoubleChestBlockEntityKey(chestAttributes.blockItem(), ChestType.LEFT));
 			poseStack.pushPose();
 			poseStack.scale(0.8F, 0.8F, 0.8F);
 			poseStack.translate(0.72D, 0.0D, 0.0D);
-			renderBlockEntity(stack, poseStack, buffer, packedLight, packedOverlay, leftChestBlockEntity);
-			ChestBlockEntity rightChestBlockEntity = doubleChestBlockEntities.getUnchecked(new DoubleChestBlockEntityKey(blockItem, ChestType.RIGHT));
+			renderBlockEntity(chestAttributes, poseStack, buffer, packedLight, packedOverlay, leftChestBlockEntity);
+			ChestBlockEntity rightChestBlockEntity = doubleChestBlockEntities.getUnchecked(new DoubleChestBlockEntityKey(chestAttributes.blockItem(), ChestType.RIGHT));
 			poseStack.translate(-1D, 0.0D, 0.0D);
-			renderBlockEntity(stack, poseStack, buffer, packedLight, packedOverlay, rightChestBlockEntity);
+			renderBlockEntity(chestAttributes, poseStack, buffer, packedLight, packedOverlay, rightChestBlockEntity);
 			poseStack.popPose();
 			return;
 		}
 
-		ChestBlockEntity chestBlockEntity = chestBlockEntities.getUnchecked(blockItem);
-		renderBlockEntity(stack, poseStack, buffer, packedLight, packedOverlay, chestBlockEntity);
+		ChestBlockEntity chestBlockEntity = chestBlockEntities.getUnchecked(chestAttributes.blockItem());
+		renderBlockEntity(chestAttributes, poseStack, buffer, packedLight, packedOverlay, chestBlockEntity);
 	}
 
-	private void renderBlockEntity(ItemStack stack, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay, ChestBlockEntity chestBlockEntity) {
-		if (stack.getItem() instanceof ITintableBlockItem tintableBlockItem) {
-			chestBlockEntity.getStorageWrapper().setColors(tintableBlockItem.getMainColor(stack).orElse(-1), tintableBlockItem.getAccentColor(stack).orElse(-1));
-		}
-		Optional<WoodType> woodType = WoodStorageBlockItem.getWoodType(stack);
+	private void renderBlockEntity(ChestAttributes chestAttributes, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay, ChestBlockEntity chestBlockEntity) {
+		chestBlockEntity.getStorageWrapper().setColors(chestAttributes.mainColor(), chestAttributes.accentColor());
+		Optional<WoodType> woodType = chestAttributes.woodType();
 		if (woodType.isPresent() || !(chestBlockEntity.getStorageWrapper().hasAccentColor() && chestBlockEntity.getStorageWrapper().hasMainColor())) {
 			chestBlockEntity.setWoodType(woodType.orElse(WoodType.ACACIA));
 		}
-		chestBlockEntity.setPacked(WoodStorageBlockItem.isPacked(stack));
-		if (StorageBlockItem.showsTier(stack) != chestBlockEntity.shouldShowTier()) {
+		chestBlockEntity.setPacked(chestAttributes.isPacked());
+		if (chestAttributes.showsTier() != chestBlockEntity.shouldShowTier()) {
 			chestBlockEntity.toggleTierVisiblity();
 		}
-		var blockentityrenderer = blockEntityRenderDispatcher.getRenderer(chestBlockEntity);
+		var blockentityrenderer = Minecraft.getInstance().getBlockEntityRenderDispatcher().getRenderer(chestBlockEntity);
 		if (blockentityrenderer != null) {
 			blockentityrenderer.render(chestBlockEntity, 0.0F, poseStack, buffer, packedLight, packedOverlay);
 		}
+	}
+
+	public record ChestAttributes(BlockItem blockItem, boolean isDoubleChest, int mainColor, int accentColor,
+								  Optional<WoodType> woodType, boolean isPacked, boolean showsTier) {
 	}
 
 	private record DoubleChestBlockEntityKey(BlockItem blockItem, ChestType chestType) {
@@ -112,6 +116,21 @@ public class ChestItemRenderer extends BlockEntityWithoutLevelRenderer {
 		@Override
 		public int hashCode() {
 			return Objects.hashCode(blockItem, chestType);
+		}
+	}
+
+	public static class Unbaked implements SpecialModelRenderer.Unbaked {
+		public static final MapCodec<Unbaked> MAP_CODEC = MapCodec.unit(new Unbaked());
+
+		@Nullable
+		@Override
+		public SpecialModelRenderer<?> bake(EntityModelSet entityModelSet) {
+			return new ChestItemRenderer();
+		}
+
+		@Override
+		public MapCodec<? extends SpecialModelRenderer.Unbaked> type() {
+			return MAP_CODEC;
 		}
 	}
 }

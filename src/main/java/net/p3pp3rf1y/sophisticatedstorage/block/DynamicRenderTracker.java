@@ -1,12 +1,13 @@
 package net.p3pp3rf1y.sophisticatedstorage.block;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.entity.ItemRenderer;
-import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.renderer.item.ItemStackRenderState;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
+import net.p3pp3rf1y.sophisticatedstorage.client.render.RenderHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,6 +22,7 @@ public class DynamicRenderTracker implements IDynamicRenderTracker {
 	private boolean fullyDynamic = false;
 	private final List<ItemStack> lastRenderedItems = new ArrayList<>();
 	private final StorageBlockEntity storageBlockEntity;
+	private final ItemStackRenderState itemRenderState = new ItemStackRenderState();
 
 	public DynamicRenderTracker(StorageBlockEntity storageBlockEntity) {
 		this.storageBlockEntity = storageBlockEntity;
@@ -88,9 +90,8 @@ public class DynamicRenderTracker implements IDynamicRenderTracker {
 
 	private boolean hasItemModelCustomRenderer(ItemStack item) {
 		Minecraft minecraft = Minecraft.getInstance();
-		ItemRenderer itemRenderer = minecraft.getItemRenderer();
-		BakedModel model = itemRenderer.getModel(item, null, minecraft.player, 0);
-		return model.isCustomRenderer();
+		minecraft.getItemModelResolver().updateForTopItem(itemRenderState, item, ItemDisplayContext.FIXED, false, null, null, 0);
+		return RenderHelper.isSpecialRenderer(itemRenderState);
 	}
 
 	private boolean updateItemChangeExpirations() {

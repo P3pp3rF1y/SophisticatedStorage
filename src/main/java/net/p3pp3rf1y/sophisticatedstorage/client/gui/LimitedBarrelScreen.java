@@ -3,6 +3,7 @@ package net.p3pp3rf1y.sophisticatedstorage.client.gui;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
@@ -140,7 +141,7 @@ public class LimitedBarrelScreen extends StorageScreen {
 		int barHeight = (int) (barTexture.getHeight() * percentage);
 		int yOffset = barTexture.getHeight() - barHeight;
 
-		guiGraphics.blit(barTexture.getTextureName(), x, y + yOffset, barTexture.getU(), barTexture.getV() + yOffset, barTexture.getWidth(), barHeight, barTexture.getTextureWidth(), barTexture.getTextureHeight());
+		guiGraphics.blit(RenderType::guiTextured, barTexture.getTextureName(), x, y + yOffset, barTexture.getU(), barTexture.getV() + yOffset, barTexture.getWidth(), barHeight, barTexture.getTextureWidth(), barTexture.getTextureHeight());
 
 		String text = (int) (percentage * 100) + "%";
 		int percentageX = x;

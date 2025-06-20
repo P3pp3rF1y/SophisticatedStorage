@@ -8,15 +8,9 @@
   "type": "sophisticatedstorage:double_chest_tier_upgrade",
   "category": "misc",
   "key": {
-    "B": {
-      "tag": "c:storage_blocks/iron"
-    },
-    "I": {
-      "tag": "c:ingots/iron"
-    },
-    "S": {
-      "item": "sophisticatedstorage:chest"
-    }
+    "B": "#c:storage_blocks/iron",
+    "I": "#c:ingots/iron",
+    "S": "sophisticatedstorage:chest"
   },
   "pattern": [
     "III",

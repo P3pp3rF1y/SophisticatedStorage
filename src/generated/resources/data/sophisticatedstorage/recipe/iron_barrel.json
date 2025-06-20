@@ -8,12 +8,8 @@
   "type": "sophisticatedstorage:storage_tier_upgrade",
   "category": "misc",
   "key": {
-    "I": {
-      "tag": "c:ingots/iron"
-    },
-    "S": {
-      "item": "sophisticatedstorage:barrel"
-    }
+    "I": "#c:ingots/iron",
+    "S": "sophisticatedstorage:barrel"
   },
   "pattern": [
     "III",

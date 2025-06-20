@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/template_chest",
+  "textures": {
+    "particle": "sophisticatedstorage:block/break/acacia_chest"
+  }
+}

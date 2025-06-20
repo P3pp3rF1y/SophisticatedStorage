@@ -3,12 +3,14 @@ package net.p3pp3rf1y.sophisticatedstorage.crafting;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.ShapelessRecipe;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.items.IItemHandler;
+import net.p3pp3rf1y.sophisticatedcore.crafting.CustomShapelessRecipe;
 import net.p3pp3rf1y.sophisticatedcore.crafting.IWrapperRecipe;
 import net.p3pp3rf1y.sophisticatedcore.crafting.RecipeWrapperSerializer;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
@@ -19,22 +21,17 @@ import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
 import javax.annotation.Nullable;
 import java.util.Optional;
 
-public class ShulkerBoxFromVanillaShapelessRecipe extends ShapelessRecipe implements IWrapperRecipe<ShapelessRecipe> {
+public class ShulkerBoxFromVanillaShapelessRecipe extends CustomShapelessRecipe implements IWrapperRecipe<ShapelessRecipe> {
 	private final ShapelessRecipe compose;
 
 	public ShulkerBoxFromVanillaShapelessRecipe(ShapelessRecipe compose) {
-		super(compose.getGroup(), compose.category(), compose.result, compose.getIngredients());
+		super("", CraftingBookCategory.MISC, compose.result, compose.ingredients);
 		this.compose = compose;
 	}
 
 	@Override
 	public boolean matches(CraftingInput input, Level level) {
 		return super.matches(input, level) && getVanillaShulkerBox(input).map(storage -> !(storage.getItem() instanceof WoodStorageBlockItem) || !WoodStorageBlockItem.isPacked(storage)).orElse(false);
-	}
-
-	@Override
-	public ShapelessRecipe getCompose() {
-		return compose;
 	}
 
 	@Override
@@ -54,11 +51,6 @@ public class ShulkerBoxFromVanillaShapelessRecipe extends ShapelessRecipe implem
 		return upgradedStorage;
 	}
 
-	@Override
-	public boolean isSpecial() {
-		return true;
-	}
-
 	private Optional<ItemStack> getVanillaShulkerBox(CraftingInput input) {
 		for (int slot = 0; slot < input.size(); slot++) {
 			ItemStack slotStack = input.getItem(slot);
@@ -71,8 +63,13 @@ public class ShulkerBoxFromVanillaShapelessRecipe extends ShapelessRecipe implem
 	}
 
 	@Override
-	public RecipeSerializer<?> getSerializer() {
+	public RecipeSerializer<ShulkerBoxFromVanillaShapelessRecipe> getSerializer() {
 		return ModBlocks.SHULKER_BOX_FROM_VANILLA_SHAPELESS_RECIPE_SERIALIZER.get();
+	}
+
+	@Override
+	public ShapelessRecipe getCompose() {
+		return compose;
 	}
 
 	public static class Serializer extends RecipeWrapperSerializer<ShapelessRecipe, ShulkerBoxFromVanillaShapelessRecipe> {

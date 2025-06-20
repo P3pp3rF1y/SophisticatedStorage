@@ -395,7 +395,7 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 		}
 
 		if (level instanceof ServerLevel serverLevel) {
-			serverLevel.getServer().tell(new TickTask(serverLevel.getServer().getTickCount(), () ->
+			serverLevel.getServer().schedule(new TickTask(serverLevel.getServer().getTickCount(), () ->
 					dropItems.forEach(itemStack -> Containers.dropItemStack(serverLevel, dropPosition.getX(), dropPosition.getY(), dropPosition.getZ(), itemStack)))
 			);
 		}

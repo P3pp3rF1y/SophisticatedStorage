@@ -5,25 +5,25 @@ import com.google.gson.JsonObject;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.BlockModelShaper;
 import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.block.model.ItemOverrides;
+import net.minecraft.client.renderer.block.model.ItemTransforms;
+import net.minecraft.client.renderer.block.model.TextureSlots;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.ModelState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.inventory.InventoryMenu;
+import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.neoforge.client.model.ExtendedUnbakedModel;
+import net.neoforged.neoforge.client.model.UnbakedModelLoader;
 import net.neoforged.neoforge.client.model.data.ModelData;
 import net.neoforged.neoforge.client.model.data.ModelProperty;
-import net.neoforged.neoforge.client.model.geometry.IGeometryBakingContext;
-import net.neoforged.neoforge.client.model.geometry.IGeometryLoader;
-import net.neoforged.neoforge.client.model.geometry.IUnbakedGeometry;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.WoodStorageBlockBase;
@@ -35,9 +35,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 
-public class ChestDynamicModel implements IUnbakedGeometry<ChestDynamicModel> {
+public class ChestDynamicModel implements ExtendedUnbakedModel {
 	private static final String BLOCK_BREAK_FOLDER = "block/break/";
 	private static final Map<String, ResourceLocation> WOOD_BREAK_TEXTURES = new HashMap<>();
 	public static final ResourceLocation TINTABLE_BREAK_TEXTURE = SophisticatedStorage.getRL(BLOCK_BREAK_FOLDER + "tintable_chest");
@@ -47,8 +46,13 @@ public class ChestDynamicModel implements IUnbakedGeometry<ChestDynamicModel> {
 	}
 
 	@Override
-	public BakedModel bake(IGeometryBakingContext context, ModelBaker baker, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelState, ItemOverrides overrides) {
+	public BakedModel bake(TextureSlots textureSlots, ModelBaker modelBaker, ModelState modelState, boolean b, boolean b1, ItemTransforms itemTransforms, ContextMap contextMap) {
 		return new ChestBakedModel();
+	}
+
+	@Override
+	public void resolveDependencies(Resolver resolver) {
+		//noop
 	}
 
 	private static class ChestBakedModel implements BakedModel {
@@ -75,17 +79,17 @@ public class ChestDynamicModel implements IUnbakedGeometry<ChestDynamicModel> {
 			return true;
 		}
 
-		@Override
-		public boolean isCustomRenderer() {
-			return true;
-		}
-
 		@SuppressWarnings("java:S1874")
 		@Override
 		public TextureAtlasSprite getParticleIcon() {
 			BakedModel model = Minecraft.getInstance().getModelManager().getModel(BlockModelShaper.stateToModelLocation(Blocks.OAK_PLANKS.defaultBlockState()));
 			//noinspection deprecation
 			return model.getParticleIcon();
+		}
+
+		@Override
+		public ItemTransforms getTransforms() {
+			return ItemTransforms.NO_TRANSFORMS;
 		}
 
 		@Nonnull
@@ -106,16 +110,11 @@ public class ChestDynamicModel implements IUnbakedGeometry<ChestDynamicModel> {
 			if (Boolean.FALSE.equals(data.get(HAS_MAIN_COLOR)) && data.has(WOOD_NAME) && WOOD_BREAK_TEXTURES.containsKey(data.get(WOOD_NAME))) {
 				texture = WOOD_BREAK_TEXTURES.get(data.get(WOOD_NAME));
 			}
-			return Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(texture);
-		}
-
-		@Override
-		public ItemOverrides getOverrides() {
-			return new ItemOverrides() {};
+			return Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(texture);
 		}
 	}
 
-	public static final class Loader implements IGeometryLoader<ChestDynamicModel> {
+	public static final class Loader implements UnbakedModelLoader<ChestDynamicModel> {
 		public static final Loader INSTANCE = new Loader();
 
 		@Override

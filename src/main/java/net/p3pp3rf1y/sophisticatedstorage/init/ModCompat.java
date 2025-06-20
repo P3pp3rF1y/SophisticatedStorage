@@ -11,7 +11,6 @@ import net.p3pp3rf1y.sophisticatedstorage.compat.sb.SBCompat;
 public class ModCompat {
 	private static final String SB_MOD_ID = "sophisticatedbackpacks";
 	public static final String SAWMILL_MOD_ID = "sawmill";
-	public static final String CREATE_MOD_ID = "create";
 	private ModCompat() {
 	}
 

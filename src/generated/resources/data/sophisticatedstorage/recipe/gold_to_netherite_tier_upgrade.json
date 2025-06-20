@@ -8,12 +8,8 @@
   "type": "minecraft:crafting_shapeless",
   "category": "misc",
   "ingredients": [
-    {
-      "item": "sophisticatedstorage:gold_to_diamond_tier_upgrade"
-    },
-    {
-      "tag": "c:ingots/netherite"
-    }
+    "sophisticatedstorage:gold_to_diamond_tier_upgrade",
+    "#c:ingots/netherite"
   ],
   "result": {
     "count": 1,

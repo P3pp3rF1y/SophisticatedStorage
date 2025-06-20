@@ -7,13 +7,13 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
-import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
@@ -28,7 +28,7 @@ import static net.minecraft.client.Minecraft.UNIFORM_FONT;
 
 public class LimitedBarrelRenderer extends BarrelRenderer<LimitedBarrelBlockEntity> {
 
-	public static final Material FILL_INDICATORS_TEXTURE = new Material(InventoryMenu.BLOCK_ATLAS, SophisticatedStorage.getRL("block/fill_indicators"));
+	public static final Material FILL_INDICATORS_TEXTURE = new Material(TextureAtlas.LOCATION_BLOCKS, SophisticatedStorage.getRL("block/fill_indicators"));
 	private static final float MULTIPLE_ITEMS_FONT_SCALE = 1 / 96f;
 	private static final float SINGLE_ITEM_FONT_SCALE = 1 / 48f;
 	public static final Style INFINITE_COUNT_DISPLAY_STYLE = Style.EMPTY.withFont(UNIFORM_FONT);

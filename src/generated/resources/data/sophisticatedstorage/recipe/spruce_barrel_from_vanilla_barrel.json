@@ -8,12 +8,8 @@
   "type": "minecraft:crafting_shapeless",
   "category": "misc",
   "ingredients": [
-    {
-      "item": "minecraft:barrel"
-    },
-    {
-      "item": "minecraft:redstone_torch"
-    }
+    "minecraft:barrel",
+    "minecraft:redstone_torch"
   ],
   "result": {
     "components": {

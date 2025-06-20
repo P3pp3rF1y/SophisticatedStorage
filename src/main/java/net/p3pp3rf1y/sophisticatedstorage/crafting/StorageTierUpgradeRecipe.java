@@ -20,7 +20,7 @@ public class StorageTierUpgradeRecipe extends ShapedRecipe implements IWrapperRe
 	private final ShapedRecipe compose;
 
 	public StorageTierUpgradeRecipe(ShapedRecipe compose) {
-		super(compose.getGroup(), compose.category(), compose.pattern, compose.result);
+		super(compose.group(), compose.category(), compose.pattern, compose.result);
 		this.compose = compose;
 	}
 
@@ -38,7 +38,7 @@ public class StorageTierUpgradeRecipe extends ShapedRecipe implements IWrapperRe
 	public ItemStack assemble(CraftingInput input, HolderLookup.Provider registries) {
 		ItemStack upgradedStorage = super.assemble(input, registries);
 		getOriginalStorage(input).ifPresent(originalStorage -> {
-			upgradedStorage.applyComponents(originalStorage.getComponents());
+			upgradedStorage.applyComponents(originalStorage.getComponentsPatch());
 		});
 		if (upgradedStorage.has(ModCoreDataComponents.STORAGE_UUID)) {
 			StackStorageWrapper storageWrapper = StackStorageWrapper.fromStack(registries, upgradedStorage);
@@ -66,7 +66,7 @@ public class StorageTierUpgradeRecipe extends ShapedRecipe implements IWrapperRe
 	}
 
 	@Override
-	public RecipeSerializer<?> getSerializer() {
+	public RecipeSerializer<StorageTierUpgradeRecipe> getSerializer() {
 		return ModBlocks.STORAGE_TIER_UPGRADE_RECIPE_SERIALIZER.get();
 	}
 

@@ -8,15 +8,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "B": {
-      "tag": "c:storage_blocks/copper"
-    },
-    "C": {
-      "tag": "c:ingots/copper"
-    },
-    "S": {
-      "item": "sophisticatedstorage:stack_upgrade_tier_1"
-    }
+    "B": "#c:storage_blocks/copper",
+    "C": "#c:ingots/copper",
+    "S": "sophisticatedstorage:stack_upgrade_tier_1"
   },
   "pattern": [
     "CCC",

@@ -1,6 +1,5 @@
 {
     "loader": "sophisticatedstorage:limited_barrel",
-    "flat_top_model": "sophisticatedstorage:block/flat/limited_barrel_1",
     "partitioned_model_parts": {
         "tier": {
             "model": "sophisticatedstorage:block/barrel_part/partitioned",
@@ -211,6 +210,20 @@
                     "bottom": "sophisticatedstorage:block/oak_barrel_bottom",
                     "bottom_trim": "sophisticatedstorage:block/oak_barrel_bottom",
                     "particle": "sophisticatedstorage:block/limited_oak_barrel_1_top"
+                }
+            }
+        },
+        "pale_oak": {
+            "base": {
+                "textures": {
+                    "top": "sophisticatedstorage:block/limited_pale_oak_barrel_1_top",
+                    "top_trim": "sophisticatedstorage:block/limited_pale_oak_barrel_1_top",
+                    "top_inner_trim": "sophisticatedstorage:block/limited_pale_oak_barrel_1_top",
+                    "side": "sophisticatedstorage:block/pale_oak_barrel_side",
+                    "side_trim": "sophisticatedstorage:block/pale_oak_barrel_side",
+                    "bottom": "sophisticatedstorage:block/pale_oak_barrel_bottom",
+                    "bottom_trim": "sophisticatedstorage:block/pale_oak_barrel_bottom",
+                    "particle": "sophisticatedstorage:block/limited_pale_oak_barrel_1_top"
                 }
             }
         },

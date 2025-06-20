@@ -9,10 +9,10 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.ShapeRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -66,9 +66,9 @@ public class ControllerRenderer implements BlockEntityRenderer<ControllerBlockEn
 		for (BlockPos position : controller.getStoragePositions()) {
 			BlockPos controllerPos = controller.getBlockPos();
 
-			double translateX = position.getX() + 0.5 - controllerPos.getX() + 0.501 * (playerLookDirection.getNormal().getX());
-			double translateY = position.getY() + 0.5 - controllerPos.getY() + 0.501 * (playerLookDirection.getNormal().getY());
-			double translateZ = position.getZ() + 0.5 - controllerPos.getZ() + 0.501 * (playerLookDirection.getNormal().getZ());
+			double translateX = position.getX() + 0.5 - controllerPos.getX() + 0.501 * (playerLookDirection.getUnitVec3i().getX());
+			double translateY = position.getY() + 0.5 - controllerPos.getY() + 0.501 * (playerLookDirection.getUnitVec3i().getY());
+			double translateZ = position.getZ() + 0.5 - controllerPos.getZ() + 0.501 * (playerLookDirection.getUnitVec3i().getZ());
 
 			poseStack.pushPose();
 			poseStack.translate(translateX, translateY, translateZ);
@@ -78,9 +78,9 @@ public class ControllerRenderer implements BlockEntityRenderer<ControllerBlockEn
 			poseStack.translate(-0.45f, 0.45f, 0);
 
 			poseStack.scale(scale, -scale, (float) zScale);
-			fontRenderer.drawInBatch("Order: " + storageOrder, 0, 0, DyeColor.WHITE.getTextColor(), false, poseStack.last().pose(), bufferSource, Font.DisplayMode.SEE_THROUGH, 0, 15728880);
+			fontRenderer.drawInBatch("Order: " + storageOrder, 0, 0, DyeColor.WHITE.getTextColor(), false, poseStack.last().pose(), bufferSource, Font.DisplayMode.NORMAL, 0, 15728880);
 			poseStack.translate(0, 10, 0);
-			fontRenderer.drawInBatch("Slots: " + controller.getSlots(storageOrder - 1), 0, 0, DyeColor.WHITE.getTextColor(), false, poseStack.last().pose(), bufferSource, Font.DisplayMode.SEE_THROUGH, 0, 15728880);
+			fontRenderer.drawInBatch("Slots: " + controller.getSlots(storageOrder - 1), 0, 0, DyeColor.WHITE.getTextColor(), false, poseStack.last().pose(), bufferSource, Font.DisplayMode.NORMAL, 0, 15728880);
 			poseStack.popPose();
 
 			storageOrder++;
@@ -128,11 +128,7 @@ public class ControllerRenderer implements BlockEntityRenderer<ControllerBlockEn
 
 	private void renderBlockOutline(BlockPos controllerPos, BlockPos pos, VoxelShape shape, PoseStack poseStack, MultiBufferSource bufferSource, int color) {
 		VertexConsumer vertexConsumer = bufferSource.getBuffer(LineRenderType.LINES);
-		float red = (float) (color >> 16 & 255) / 255.0F;
-		float green = (float) (color >> 8 & 255) / 255.0F;
-		float blue = (float) (color & 255) / 255.0F;
-
-		LevelRenderer.renderShape(poseStack, vertexConsumer, shape, (double) -controllerPos.getX() + pos.getX(), (double) -controllerPos.getY() + pos.getY(), (double) -controllerPos.getZ() + pos.getZ(), red, green, blue, 1);
+		ShapeRenderer.renderShape(poseStack, vertexConsumer, shape, (double) -controllerPos.getX() + pos.getX(), (double) -controllerPos.getY() + pos.getY(), (double) -controllerPos.getZ() + pos.getZ(), color);
 	}
 
 	@Override

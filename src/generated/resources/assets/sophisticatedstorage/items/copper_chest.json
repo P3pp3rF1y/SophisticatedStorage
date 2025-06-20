@@ -1,0 +1,9 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "sophisticatedstorage:item/chest",
+    "model": {
+      "type": "sophisticatedstorage:chest"
+    }
+  }
+}

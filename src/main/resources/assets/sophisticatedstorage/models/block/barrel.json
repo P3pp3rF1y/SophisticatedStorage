@@ -1,6 +1,5 @@
 {
     "loader": "sophisticatedstorage:barrel",
-    "flat_top_model": "sophisticatedstorage:block/flat/barrel",
     "partitioned_model_parts": {
         "tier": {
             "model": "sophisticatedstorage:block/barrel_part/partitioned",
@@ -335,6 +334,32 @@
                     "bottom": "sophisticatedstorage:block/oak_barrel_bottom",
                     "bottom_trim": "sophisticatedstorage:block/oak_barrel_bottom",
                     "particle": "sophisticatedstorage:block/oak_barrel_top"
+                }
+            }
+        },
+        "pale_oak": {
+            "base": {
+                "textures": {
+                    "top": "sophisticatedstorage:block/pale_oak_barrel_top",
+                    "top_trim": "sophisticatedstorage:block/pale_oak_barrel_top",
+                    "top_inner_trim": "sophisticatedstorage:block/pale_oak_barrel_top",
+                    "side": "sophisticatedstorage:block/pale_oak_barrel_side",
+                    "side_trim": "sophisticatedstorage:block/pale_oak_barrel_side",
+                    "bottom": "sophisticatedstorage:block/pale_oak_barrel_bottom",
+                    "bottom_trim": "sophisticatedstorage:block/pale_oak_barrel_bottom",
+                    "particle": "sophisticatedstorage:block/pale_oak_barrel_top"
+                }
+            },
+            "base_open": {
+                "textures": {
+                    "top": "sophisticatedstorage:block/pale_oak_barrel_top_open",
+                    "top_trim": "sophisticatedstorage:block/pale_oak_barrel_top_open",
+                    "top_inner_trim": "sophisticatedstorage:block/pale_oak_barrel_top_open",
+                    "side": "sophisticatedstorage:block/pale_oak_barrel_side",
+                    "side_trim": "sophisticatedstorage:block/pale_oak_barrel_side",
+                    "bottom": "sophisticatedstorage:block/pale_oak_barrel_bottom",
+                    "bottom_trim": "sophisticatedstorage:block/pale_oak_barrel_bottom",
+                    "particle": "sophisticatedstorage:block/pale_oak_barrel_top"
                 }
             }
         },

@@ -83,7 +83,7 @@ public abstract class WoodStorageBlockEntity extends StorageBlockEntity {
 		this.packed = packed;
 		if (packed) {
 			RenderInfo renderInfo = getStorageWrapper().getRenderInfo();
-			renderInfo.removeAllUpgradeRenderData();
+			renderInfo.removeAllUpgradeClientData();
 		}
 	}
 

@@ -8,18 +8,10 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "B": {
-      "item": "sophisticatedstorage:upgrade_base"
-    },
-    "L": {
-      "tag": "minecraft:planks"
-    },
-    "P": {
-      "item": "minecraft:sticky_piston"
-    },
-    "R": {
-      "tag": "c:dusts/redstone"
-    }
+    "B": "sophisticatedstorage:upgrade_base",
+    "L": "#minecraft:planks",
+    "P": "minecraft:sticky_piston",
+    "R": "#c:dusts/redstone"
   },
   "pattern": [
     " P ",

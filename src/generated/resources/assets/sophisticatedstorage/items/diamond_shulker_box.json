@@ -1,0 +1,9 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "sophisticatedstorage:item/shulker_box",
+    "model": {
+      "type": "sophisticatedstorage:shulker_box"
+    }
+  }
+}

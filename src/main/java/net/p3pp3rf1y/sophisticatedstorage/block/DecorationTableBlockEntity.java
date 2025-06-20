@@ -10,7 +10,7 @@ import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
-import net.minecraft.util.FastColor;
+import net.minecraft.util.ARGB;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -153,14 +153,12 @@ public class DecorationTableBlockEntity extends BlockEntity {
 		ItemStack input = storageBlock.getStackInSlot(0);
 		return getItemDecorator(input).map(itemDecorator -> {
 			List<ItemStack> previewStacks = new ArrayList<>();
-			itemDecorator.getPreviewStackInputs(input, hasMaterials()).forEach(stack -> {
-				getItemDecorator(stack).ifPresent(inputItemDecorator -> {
-					TintDecorationResult decorationResult = decorateItem(inputItemDecorator, stack);
-					if (!decorationResult.result().isEmpty()) {
-						previewStacks.add(decorationResult.result());
-					}
-				});
-			});
+			itemDecorator.getPreviewStackInputs(input, hasMaterials()).forEach(stack -> getItemDecorator(stack).ifPresent(inputItemDecorator -> {
+				TintDecorationResult decorationResult = decorateItem(inputItemDecorator, stack);
+				if (!decorationResult.result().isEmpty()) {
+					previewStacks.add(decorationResult.result());
+				}
+			}));
 			return previewStacks;
 		}).orElse(Collections.emptyList());
 	}
@@ -636,7 +634,7 @@ public class DecorationTableBlockEntity extends BlockEntity {
 				}
 
 				ItemStack result = input.copyWithCount(1);
-				result.set(DataComponents.DYED_COLOR, new DyedItemColor(FastColor.ARGB32.color(0, FastColor.ARGB32.red(mainColorToSet), FastColor.ARGB32.green(mainColorToSet), FastColor.ARGB32.blue(mainColorToSet)), true));
+				result.set(DataComponents.DYED_COLOR, new DyedItemColor(ARGB.color(0, ARGB.red(mainColorToSet), ARGB.green(mainColorToSet), ARGB.blue(mainColorToSet)), true));
 
 				return new TintDecorationResult(result, DecorationHelper.getDyePartsNeeded(mainColorToSet, -1, currentColor, -1, 24, 0));
 			}

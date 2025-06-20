@@ -9,17 +9,11 @@
   "category": "misc",
   "key": {
     "B": {
-      "type": "sophisticatedstorage:base_tier_wooden_storage"
+      "neoforge:ingredient_type": "sophisticatedstorage:base_tier_wooden_storage"
     },
-    "C": {
-      "item": "minecraft:comparator"
-    },
-    "P": {
-      "tag": "minecraft:planks"
-    },
-    "S": {
-      "tag": "c:stones"
-    }
+    "C": "minecraft:comparator",
+    "P": "#minecraft:planks",
+    "S": "#c:stones"
   },
   "pattern": [
     "SCS",

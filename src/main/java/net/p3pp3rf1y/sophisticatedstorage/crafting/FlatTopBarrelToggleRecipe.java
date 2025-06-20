@@ -56,12 +56,7 @@ public class FlatTopBarrelToggleRecipe extends CustomRecipe {
 	}
 
 	@Override
-	public boolean canCraftInDimensions(int width, int height) {
-		return width * height >= 1;
-	}
-
-	@Override
-	public RecipeSerializer<?> getSerializer() {
+	public RecipeSerializer<FlatTopBarrelToggleRecipe> getSerializer() {
 		return ModBlocks.FLAT_TOP_BARREL_TOGGLE_RECIPE_SERIALIZER.get();
 	}
 }

@@ -8,18 +8,10 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "E": {
-      "tag": "c:ender_pearls"
-    },
-    "I": {
-      "tag": "c:ingots/iron"
-    },
-    "R": {
-      "item": "minecraft:redstone_torch"
-    },
-    "S": {
-      "tag": "c:rods/wooden"
-    }
+    "E": "#c:ender_pearls",
+    "I": "#c:ingots/iron",
+    "R": "minecraft:redstone_torch",
+    "S": "#c:rods/wooden"
   },
   "pattern": [
     " EI",

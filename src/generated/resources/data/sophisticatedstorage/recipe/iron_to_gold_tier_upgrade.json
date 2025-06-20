@@ -8,12 +8,8 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "G": {
-      "tag": "c:ingots/gold"
-    },
-    "R": {
-      "item": "minecraft:redstone_torch"
-    }
+    "G": "#c:ingots/gold",
+    "R": "minecraft:redstone_torch"
   },
   "pattern": [
     "GGG",

@@ -48,8 +48,8 @@ public class PaintbrushItem extends ItemBase {
 			StreamCodec.of((buf, map) -> buf.writeMap(map, ResourceLocation.STREAM_CODEC, ByteBufCodecs.INT),
 					buf -> buf.readMap(ResourceLocation.STREAM_CODEC, ByteBufCodecs.INT));
 
-	public PaintbrushItem() {
-		super(new Properties().stacksTo(1));
+	public PaintbrushItem(Properties properties) {
+		super(properties.stacksTo(1));
 	}
 
 	public static void setBarrelMaterials(ItemStack paintbrush, Map<BarrelMaterial, ResourceLocation> materials) {

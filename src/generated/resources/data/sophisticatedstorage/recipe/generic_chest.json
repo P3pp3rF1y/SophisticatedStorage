@@ -8,12 +8,8 @@
   "type": "sophisticatedstorage:generic_wood_storage",
   "category": "misc",
   "key": {
-    "P": {
-      "tag": "minecraft:planks"
-    },
-    "R": {
-      "item": "minecraft:redstone_torch"
-    }
+    "P": "#minecraft:planks",
+    "R": "minecraft:redstone_torch"
   },
   "pattern": [
     "PPP",

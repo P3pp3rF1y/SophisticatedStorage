@@ -8,12 +8,8 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "D": {
-      "tag": "c:gems/diamond"
-    },
-    "T": {
-      "item": "sophisticatedstorage:iron_to_gold_tier_upgrade"
-    }
+    "D": "#c:gems/diamond",
+    "T": "sophisticatedstorage:iron_to_gold_tier_upgrade"
   },
   "pattern": [
     "DDD",

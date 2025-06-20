@@ -18,7 +18,7 @@ public class StorageDyeRecipe extends StorageDyeRecipeBase {
 	}
 
 	@Override
-	public RecipeSerializer<?> getSerializer() {
+	public RecipeSerializer<StorageDyeRecipe> getSerializer() {
 		return ModBlocks.STORAGE_DYE_RECIPE_SERIALIZER.get();
 	}
 

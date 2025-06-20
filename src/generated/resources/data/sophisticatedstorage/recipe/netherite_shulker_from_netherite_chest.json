@@ -8,12 +8,8 @@
   "type": "sophisticatedstorage:shulker_box_from_chest",
   "category": "misc",
   "key": {
-    "C": {
-      "item": "sophisticatedstorage:netherite_chest"
-    },
-    "S": {
-      "item": "minecraft:shulker_shell"
-    }
+    "C": "sophisticatedstorage:netherite_chest",
+    "S": "minecraft:shulker_shell"
   },
   "pattern": [
     "S",

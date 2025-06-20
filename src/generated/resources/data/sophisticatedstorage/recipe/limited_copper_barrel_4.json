@@ -8,12 +8,8 @@
   "type": "sophisticatedstorage:storage_tier_upgrade",
   "category": "misc",
   "key": {
-    "C": {
-      "tag": "c:ingots/copper"
-    },
-    "S": {
-      "item": "sophisticatedstorage:limited_barrel_4"
-    }
+    "C": "#c:ingots/copper",
+    "S": "sophisticatedstorage:limited_barrel_4"
   },
   "pattern": [
     "CCC",

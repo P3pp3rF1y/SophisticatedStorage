@@ -12,15 +12,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "L": {
-      "tag": "c:leathers"
-    },
-    "S": {
-      "item": "sophisticatedstorage:stack_upgrade_omega_tier"
-    },
-    "T": {
-      "tag": "c:strings"
-    }
+    "L": "#c:leathers",
+    "S": "sophisticatedstorage:stack_upgrade_omega_tier",
+    "T": "#c:strings"
   },
   "pattern": [
     "TST",

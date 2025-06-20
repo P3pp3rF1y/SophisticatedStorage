@@ -1,0 +1,17 @@
+{
+  "model": {
+    "type": "sophisticatedstorage:barrel",
+    "flat_top_model": "sophisticatedstorage:block/flat/barrel",
+    "model": "sophisticatedstorage:block/barrel",
+    "tints": [
+      {
+        "type": "sophisticatedstorage:main",
+        "default": -1
+      },
+      {
+        "type": "sophisticatedstorage:accent",
+        "default": -1
+      }
+    ]
+  }
+}

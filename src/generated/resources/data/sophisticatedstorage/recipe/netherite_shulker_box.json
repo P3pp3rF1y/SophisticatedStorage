@@ -8,12 +8,8 @@
   "type": "sophisticatedstorage:storage_tier_upgrade_shapeless",
   "category": "misc",
   "ingredients": [
-    {
-      "item": "sophisticatedstorage:diamond_shulker_box"
-    },
-    {
-      "tag": "c:ingots/netherite"
-    }
+    "sophisticatedstorage:diamond_shulker_box",
+    "#c:ingots/netherite"
   ],
   "result": {
     "count": 1,

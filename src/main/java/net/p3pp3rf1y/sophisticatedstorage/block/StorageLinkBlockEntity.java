@@ -77,7 +77,7 @@ public class StorageLinkBlockEntity extends BlockEntity implements ILinkable {
 
 	@Override
 	public Set<BlockPos> getConnectablePositions() {
-		return Collections.singleton(getBlockPos().offset(getBlockState().getValue(BlockStateProperties.FACING).getOpposite().getNormal()));
+		return Collections.singleton(getBlockPos().offset(getBlockState().getValue(BlockStateProperties.FACING).getOpposite().getUnitVec3i()));
 	}
 
 	@Override

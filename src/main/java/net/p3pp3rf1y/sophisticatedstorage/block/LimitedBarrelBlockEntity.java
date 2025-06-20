@@ -247,13 +247,6 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 	}
 
 	@Override
-	public void onLoad() {
-		super.onLoad();
-		//TODO remove in the future when this is not needed - updates legacy limited barrel counts and fill levels
-		getStorageWrapper().getSettingsHandler().getTypeCategory(ItemDisplaySettingsCategory.class).itemsChanged();
-	}
-
-	@Override
 	public void loadSynchronizedData(CompoundTag tag, HolderLookup.Provider registries) {
 		super.loadSynchronizedData(tag, registries);
 		showCounts = NBTHelper.getBoolean(tag, "showCounts").orElse(true);

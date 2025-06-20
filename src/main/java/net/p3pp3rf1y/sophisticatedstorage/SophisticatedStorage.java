@@ -30,12 +30,12 @@ public class SophisticatedStorage {
 		ModCompat.register();
 		if (dist == Dist.CLIENT) {
 			ClientEventHandler.registerHandlers(modBus);
+			modBus.addListener(DataGenerators::gatherData);
 		}
 		ModBlocks.registerHandlers(modBus);
 		ModItems.registerHandlers(modBus);
 		modBus.addListener(ModPayloads::registerPayloads);
 		modBus.addListener(SophisticatedStorage::setup);
-		modBus.addListener(DataGenerators::gatherData);
 		ModParticles.registerParticles(modBus);
 	}
 

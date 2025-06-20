@@ -37,8 +37,8 @@ import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 public abstract class MovingStorageWrapper implements IStorageWrapper {
 	private final Runnable stackChangeHandler;
@@ -58,12 +58,12 @@ public abstract class MovingStorageWrapper implements IStorageWrapper {
 	@Nullable
 	private SettingsHandler settingsHandler;
 	private final RenderInfo renderInfo;
-	private final Function<UUID, IStorageSavedData> getStorageData;
+	private final Supplier<IStorageSavedData> getStorageData;
 
 	private final Map<Class<? extends IUpgradeWrapper>, Consumer<? extends IUpgradeWrapper>> upgradeDefaultsHandlers = new HashMap<>();
 	private final Predicate<ItemStack> isUpgradeRunnable;
 
-	private MovingStorageWrapper(ItemStack storageStack, Runnable onContentsChanged, Runnable onStackChanged, Function<UUID, IStorageSavedData> getStorageData, Predicate<ItemStack> isUpgradeRunnable) {
+	private MovingStorageWrapper(ItemStack storageStack, Runnable onContentsChanged, Runnable onStackChanged, Supplier<IStorageSavedData> getStorageData, Predicate<ItemStack> isUpgradeRunnable) {
 		this.storageStack = storageStack;
 		contentsChangeHandler = onContentsChanged;
 		stackChangeHandler = onStackChanged;
@@ -80,7 +80,7 @@ public abstract class MovingStorageWrapper implements IStorageWrapper {
 		return stack.getItem() instanceof BarrelBlockItem ? 4 : 1;
 	}
 
-	public static MovingStorageWrapper fromStack(ItemStack stack, Runnable onContentsChanged, Runnable onStackChanged, Function<UUID, IStorageSavedData> getStorageData, BooleanSupplier isLocked, Consumer<Boolean> setLocked, Predicate<ItemStack> isUpgradeRunnable) {
+	public static MovingStorageWrapper fromStack(ItemStack stack, Runnable onContentsChanged, Runnable onStackChanged, Supplier<IStorageSavedData> getStorageData, BooleanSupplier isLocked, Consumer<Boolean> setLocked, Predicate<ItemStack> isUpgradeRunnable) {
 		MovingStorageWrapper movingStorageWrapper = StorageWrapperRepository.getStorageWrapper(stack, MovingStorageWrapper.class, s -> new MovingStorageWrapper(s, onContentsChanged, onStackChanged, getStorageData, isUpgradeRunnable) {
 			@Override
 			public boolean isLocked() {
@@ -270,23 +270,23 @@ public abstract class MovingStorageWrapper implements IStorageWrapper {
 
 	private CompoundTag getSettingsNbt() {
 		UUID storageId = getContentsUuid().orElseGet(this::getNewUuid);
-		IStorageSavedData storageData = getStorageData.apply(storageId);
-		CompoundTag baseContentsNbt = storageData.getContents();
+		IStorageSavedData storageData = getStorageData.get();
+		CompoundTag baseContentsNbt = storageData.getContents(storageId);
 		if (!baseContentsNbt.contains(SETTINGS_TAG)) {
 			baseContentsNbt.put(SETTINGS_TAG, new CompoundTag());
-			storageData.setContents(baseContentsNbt);
+			storageData.setContents(storageId, baseContentsNbt);
 		}
 		return baseContentsNbt.getCompound(SETTINGS_TAG);
 	}
 
 	private CompoundTag getContentsNbt() {
 		UUID storageId = getContentsUuid().orElseGet(this::getNewUuid);
-		IStorageSavedData storageData = getStorageData.apply(storageId);
+		IStorageSavedData storageData = getStorageData.get();
 		//MovingStorageData storageData = MovingStorageData.get(storageId);
-		CompoundTag baseContentsNbt = storageData.getContents();
+		CompoundTag baseContentsNbt = storageData.getContents(storageId);
 		if (!baseContentsNbt.contains(StorageWrapper.CONTENTS_TAG)) {
 			baseContentsNbt.put(StorageWrapper.CONTENTS_TAG, new CompoundTag());
-			storageData.setContents(baseContentsNbt);
+			storageData.setContents(storageId, baseContentsNbt);
 		}
 		return baseContentsNbt.getCompound(StorageWrapper.CONTENTS_TAG);
 	}

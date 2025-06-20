@@ -28,12 +28,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageItem {
-	public ShulkerBoxItem(Block block) {
-		this(block, new Properties().stacksTo(1));
-	}
-
 	public ShulkerBoxItem(Block block, Properties properties) {
-		super(block, properties);
+		super(block, properties.stacksTo(1));
 	}
 
 	@Override

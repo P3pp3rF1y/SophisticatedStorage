@@ -1,6 +1,7 @@
 {
 	"parent": "minecraft:block/block",
 	"textures": {
+		"particle": "minecraft:missingno",
 		"top": "sophisticatedstorage:block/lock"
 	},
 	"elements": [

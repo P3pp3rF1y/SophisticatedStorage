@@ -17,8 +17,8 @@ import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import javax.annotation.Nullable;
 
 public class StorageIOBlock extends BlockBase implements EntityBlock {
-	public StorageIOBlock() {
-		super(Properties.of().mapColor(MapColor.STONE).requiresCorrectToolForDrops().strength(3F, 6.0F));
+	public StorageIOBlock(Properties properties) {
+		super(properties.mapColor(MapColor.STONE).requiresCorrectToolForDrops().strength(3F, 6.0F));
 	}
 
 	@Nullable

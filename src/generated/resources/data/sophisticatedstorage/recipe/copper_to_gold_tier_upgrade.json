@@ -8,12 +8,8 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "G": {
-      "tag": "c:ingots/gold"
-    },
-    "T": {
-      "item": "sophisticatedstorage:copper_to_iron_tier_upgrade"
-    }
+    "G": "#c:ingots/gold",
+    "T": "sophisticatedstorage:copper_to_iron_tier_upgrade"
   },
   "pattern": [
     "GGG",
