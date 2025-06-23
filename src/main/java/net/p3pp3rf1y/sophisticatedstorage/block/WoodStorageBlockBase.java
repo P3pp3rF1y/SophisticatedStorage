@@ -197,7 +197,9 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 				.ifPresent(wbe -> {
 					if (Boolean.TRUE.equals(Config.COMMON.dropPacked.get())) {
 						wbe.setPacked(true);
+					}
 
+					if (wbe.isPacked()) {
 						if (player.isCreative() && (
 								!InventoryHelper.isEmpty(wbe.getStorageWrapper().getInventoryHandler()) || !InventoryHelper.isEmpty(wbe.getStorageWrapper().getUpgradeHandler())
 						)) {
