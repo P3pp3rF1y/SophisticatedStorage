@@ -64,7 +64,7 @@ public class GenericWoodStorageRecipe extends ShapedRecipe implements IWrapperRe
 			for (int col = topLeftCorner.left; col < topLeftCorner.left + getWidth(); col++) {
 				int slot = col + row * input.width();
 				ItemStack itemStack = input.getItem(slot);
-				if (itemStack.isEmpty() || pattern.ingredients().getFirst().map(i -> i.getValues().size() < 2).orElse(true)) {
+				if (itemStack.isEmpty() || pattern.ingredients().get(slot).map(i -> i.getValues().size() < 2).orElse(true)) {
 					continue;
 				}
 
