@@ -34,7 +34,7 @@ public class TierUpgradeRecipesMaker {
 
 	public static <R, T extends PropertyBasedSubtypeInterpreter> List<R> getShapedCraftingRecipes(Function<ItemStack, Optional<T>> subtypeInterpreterGetter, Function<CraftingRecipe, R> transformRecipe) {
 		RecipeConstructor<StorageTierUpgradeRecipe> constructRecipe = (originalRecipe, id, ingredients, result) -> {
-			return new ShapedRecipe(id, "", CraftingBookCategory.MISC, originalRecipe.getWidth(), originalRecipe.getHeight(), originalRecipe.getIngredients(), result);
+			return new ShapedRecipe(id, "", CraftingBookCategory.MISC, originalRecipe.getWidth(), originalRecipe.getHeight(), ingredients, result);
 		};
 		List<R> craftingRecipes = getCraftingRecipes(constructRecipe, StorageTierUpgradeRecipe.class, TierUpgradeRecipesMaker::getStorageItems, subtypeInterpreterGetter, transformRecipe);
 		RecipeConstructor<DoubleChestTierUpgradeRecipe> constructDoubleChestRecipe = (originalRecipe, id, ingredients, result) -> {
