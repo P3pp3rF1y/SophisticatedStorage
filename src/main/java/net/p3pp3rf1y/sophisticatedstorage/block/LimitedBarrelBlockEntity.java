@@ -51,10 +51,19 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 	private Map<Integer, DyeColor> slotColors = new HashMap<>();
 	private boolean showCounts = true;
 	private boolean showFillLevels = false;
+	private boolean useLightInFrontForFrontRender = true;
 
 	public LimitedBarrelBlockEntity(BlockPos pos, BlockState state) {
 		super(pos, state, ModBlocks.LIMITED_BARREL_BLOCK_ENTITY_TYPE.get());
 		registerUpgradeDefaults();
+	}
+
+	public void setUseLightInFrontForFrontRender(boolean useLightInFrontForFrontRender) {
+		this.useLightInFrontForFrontRender = useLightInFrontForFrontRender;
+	}
+
+	public boolean shouldUseLightInFrontForFrontRender() {
+		return useLightInFrontForFrontRender;
 	}
 
 	public static void setFixedSettings(IStorageWrapper storageWrapper, int numberOfInventorySlots) {
