@@ -1,7 +1,7 @@
 {
   "variants": {
     "": {
-      "model": "sophisticatedstorage:block/shulker_box"
+      "type": "sophisticatedstorage:shulker_box_model_loader"
     }
   }
 }

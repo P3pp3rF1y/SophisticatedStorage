@@ -5,7 +5,6 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
@@ -319,29 +318,31 @@ public class DecorationTableBlockEntity extends BlockEntity {
 	@Override
 	protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
 		super.loadAdditional(tag, registries);
-		decorativeBlocks.deserializeNBT(registries, tag.getCompound("decorativeBlocks"));
-		dyes.deserializeNBT(registries, tag.getCompound("dyes"));
-		storageBlock.deserializeNBT(registries, tag.getCompound("storageBlock"));
-		result = ItemStack.parse(registries, tag.getCompound("result")).orElse(ItemStack.EMPTY);
+		decorativeBlocks.deserializeNBT(registries, tag.getCompoundOrEmpty("decorativeBlocks"));
+		dyes.deserializeNBT(registries, tag.getCompoundOrEmpty("dyes"));
+		storageBlock.deserializeNBT(registries, tag.getCompoundOrEmpty("storageBlock"));
+		result = tag.getCompound("result").flatMap(resultTag -> ItemStack.parse(registries, resultTag)).orElse(ItemStack.EMPTY);
 		slotMaterialInheritance.clear();
-		ListTag inheritance = tag.getList("slotMaterialInheritance", Tag.TAG_COMPOUND);
+		ListTag inheritance = tag.getListOrEmpty("slotMaterialInheritance");
 		for (int i = 0; i < inheritance.size(); i++) {
-			CompoundTag slotTag = inheritance.getCompound(i);
-			slotMaterialInheritance.put(slotTag.getInt("slot"), slotTag.getBoolean("value"));
+			inheritance.getCompound(i).ifPresent(slotTag -> slotMaterialInheritance.put(slotTag.getIntOr("slot", 0), slotTag.getBooleanOr("value", true)));
 		}
 		remainingParts.clear();
-		ListTag remainingPartsTag = tag.getList("remainingParts", Tag.TAG_COMPOUND);
+		ListTag remainingPartsTag = tag.getListOrEmpty("remainingParts");
 		for (int i = 0; i < remainingPartsTag.size(); i++) {
-			CompoundTag partTag = remainingPartsTag.getCompound(i);
-			ResourceLocation key = ResourceLocation.tryParse(partTag.getString("key"));
-			if (key == null) {
-				continue;
-			}
-			remainingParts.put(key, partTag.getInt("value"));
+			remainingPartsTag.getCompound(i).ifPresent(partTag -> {
+				partTag.getString("key").ifPresent(k -> {
+					ResourceLocation key = ResourceLocation.tryParse(k);
+					if (key == null) {
+						return;
+					}
+					remainingParts.put(key, partTag.getIntOr("value", 0));
+				});
+			});
 		}
 
-		mainColor = tag.getInt("mainColor");
-		accentColor = tag.getInt("accentColor");
+		mainColor = tag.getIntOr("mainColor", -1);
+		accentColor = tag.getIntOr("accentColor", -1);
 	}
 
 	@Override
@@ -445,6 +446,12 @@ public class DecorationTableBlockEntity extends BlockEntity {
 		InventoryHelper.dropItems(decorativeBlocks, level, worldPosition);
 		InventoryHelper.dropItems(dyes, level, worldPosition);
 		InventoryHelper.dropItems(storageBlock, level, worldPosition);
+	}
+
+	@Override
+	public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+		super.preRemoveSideEffects(pos, state);
+		dropContents();
 	}
 
 	public record TintDecorationResult(ItemStack result, Map<TagKey<Item>, Integer> requiredDyeParts) {
@@ -634,7 +641,7 @@ public class DecorationTableBlockEntity extends BlockEntity {
 				}
 
 				ItemStack result = input.copyWithCount(1);
-				result.set(DataComponents.DYED_COLOR, new DyedItemColor(ARGB.color(0, ARGB.red(mainColorToSet), ARGB.green(mainColorToSet), ARGB.blue(mainColorToSet)), true));
+				result.set(DataComponents.DYED_COLOR, new DyedItemColor(ARGB.color(0, ARGB.red(mainColorToSet), ARGB.green(mainColorToSet), ARGB.blue(mainColorToSet))));
 
 				return new TintDecorationResult(result, DecorationHelper.getDyePartsNeeded(mainColorToSet, -1, currentColor, -1, 24, 0));
 			}

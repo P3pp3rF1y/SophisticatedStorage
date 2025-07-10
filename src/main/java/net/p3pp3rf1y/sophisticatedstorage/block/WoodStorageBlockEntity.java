@@ -50,7 +50,7 @@ public abstract class WoodStorageBlockEntity extends StorageBlockEntity {
 		super.loadSynchronizedData(tag, registries);
 		woodType = NBTHelper.getString(tag, "woodType").flatMap(woodTypeName -> WoodType.values().filter(wt -> wt.name().equals(woodTypeName)).findFirst())
 				.orElse(getStorageWrapper().hasMainColor() && getStorageWrapper().hasAccentColor() ? null : WoodType.ACACIA);
-		packed = tag.getBoolean(PACKED_TAG);
+		packed = tag.getBooleanOr(PACKED_TAG, false);
 	}
 
 	public Optional<WoodType> getWoodType() {

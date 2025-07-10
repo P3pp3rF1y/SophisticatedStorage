@@ -1,14 +1,13 @@
 package net.p3pp3rf1y.sophisticatedstorage.block;
 
-import net.minecraft.core.HolderLookup;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.NbtUtils;
-import net.minecraft.nbt.Tag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.level.saveddata.SavedDataType;
 import net.minecraft.world.level.storage.DimensionDataStorage;
 import net.neoforged.fml.util.thread.SidedThreadGroups;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
@@ -16,14 +15,23 @@ import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
 
 public class ItemContentsStorage extends SavedData {
-	private static final String SAVED_DATA_NAME = SophisticatedStorage.MOD_ID;
+	private static final SavedDataType<ItemContentsStorage> TYPE = new SavedDataType<>(SophisticatedStorage.MOD_ID, ItemContentsStorage::new,
+			RecordCodecBuilder.create(
+					builder -> builder.group(
+							Codec.unboundedMap(Codec.STRING.xmap(UUID::fromString, UUID::toString), CompoundTag.CODEC)
+									.fieldOf("storageContents").forGetter(storage -> storage.storageContents)
+					).apply(builder, ItemContentsStorage::new)
+			));
 
 	private final Map<UUID, CompoundTag> storageContents = new HashMap<>();
 	private static final ItemContentsStorage clientStorageCopy = new ItemContentsStorage();
+
+	private ItemContentsStorage(Map<UUID, CompoundTag> storageContents) {
+		this.storageContents.putAll(storageContents);
+	}
 
 	private ItemContentsStorage() {
 	}
@@ -35,44 +43,10 @@ public class ItemContentsStorage extends SavedData {
 				ServerLevel overworld = server.getLevel(Level.OVERWORLD);
 				//noinspection ConstantConditions - by this time overworld is loaded
 				DimensionDataStorage storage = overworld.getDataStorage();
-				return storage.computeIfAbsent(new Factory<>(ItemContentsStorage::new, ItemContentsStorage::load), SAVED_DATA_NAME);
+				return storage.computeIfAbsent(TYPE);
 			}
 		}
 		return clientStorageCopy;
-	}
-
-	public static ItemContentsStorage load(CompoundTag nbt, HolderLookup.Provider registries) {
-		ItemContentsStorage storage = new ItemContentsStorage();
-		readStorageContents(nbt, storage);
-		return storage;
-	}
-
-	private static void readStorageContents(CompoundTag nbt, ItemContentsStorage storage) {
-		ListTag storageContents = nbt.getList(nbt.contains("shulkerBoxContents") ? "shulkerBoxContents" : "storageContents", Tag.TAG_COMPOUND);
-		for (Tag n : storageContents) {
-			CompoundTag uuidContentsPair = (CompoundTag) n;
-			UUID uuid = NbtUtils.loadUUID(Objects.requireNonNull(uuidContentsPair.get("uuid")));
-			CompoundTag contents = uuidContentsPair.getCompound("contents");
-			storage.storageContents.put(uuid, contents);
-		}
-	}
-
-	@Override
-	public CompoundTag save(CompoundTag compound, HolderLookup.Provider registries) {
-		CompoundTag ret = new CompoundTag();
-		writeStorageContents(ret);
-		return ret;
-	}
-
-	private void writeStorageContents(CompoundTag ret) {
-		ListTag storageContentsNbt = new ListTag();
-		for (Map.Entry<UUID, CompoundTag> entry : storageContents.entrySet()) {
-			CompoundTag uuidContentsPair = new CompoundTag();
-			uuidContentsPair.put("uuid", NbtUtils.createUUID(entry.getKey()));
-			uuidContentsPair.put("contents", entry.getValue());
-			storageContentsNbt.add(uuidContentsPair);
-		}
-		ret.put("storageContents", storageContentsNbt);
 	}
 
 	public boolean has(UUID storageUuid) {

@@ -310,14 +310,17 @@ public class DecorationTableMenu extends AbstractContainerMenu implements ISynce
 
 	@Override
 	public void handlePacket(CompoundTag data) {
-		String action = data.getString("action");
-		if (action.equals(SET_INHERITANCE_ACTION)) {
-			setSlotMaterialInheritance(data.getInt("slot"), data.getBoolean("inheritance"));
-		} else if (data.contains("mainColor")) {
-			setMainColor(data.getInt("mainColor"));
-		} else if (data.contains("accentColor")) {
-			setAccentColor(data.getInt("accentColor"));
-		}
+		data.getString("action").ifPresent(action -> {
+			if (action.equals(SET_INHERITANCE_ACTION)) {
+				data.getInt("slot").ifPresent(slot -> {
+					data.getBoolean("inheritance").ifPresent(inheritance -> {
+						setSlotMaterialInheritance(slot, inheritance);
+					});
+				});
+			}
+		});
+		data.getInt("mainColor").ifPresent(this::setMainColor);
+		data.getInt("accentColor").ifPresent(this::setAccentColor);
 	}
 
 	public Map<ResourceLocation, Integer> getPartsStored() {

@@ -214,4 +214,10 @@ public class StorageIOBlockEntity extends BlockEntity implements IControllerBoun
 
 		super.setRemoved();
 	}
+
+	@Override
+	public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+		super.preRemoveSideEffects(pos, state);
+		removeFromController();
+	}
 }

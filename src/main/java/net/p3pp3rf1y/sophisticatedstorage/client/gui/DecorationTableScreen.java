@@ -1,7 +1,6 @@
 
 package net.p3pp3rf1y.sophisticatedstorage.client.gui;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.ChatFormatting;
@@ -219,13 +218,7 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 	}
 
 	private void renderSlotOverlay(GuiGraphics guiGraphics, Slot slot, int slotColor) {
-		RenderSystem.enableBlend();
-		RenderSystem.disableDepthTest();
-		RenderSystem.colorMask(true, true, true, false);
 		guiGraphics.fill(slot.x, slot.y, slot.x + 16, slot.y + 16, 0, slotColor);
-		RenderSystem.colorMask(true, true, true, true);
-		RenderSystem.enableDepthTest();
-		RenderSystem.disableBlend();
 	}
 
 	private void addPartHint(int slotIndex, TextureBlitData texture, String barrelPart) {
@@ -240,7 +233,6 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 
 		if (colorPicker != null) {
 			renderTransparentBackground(guiGraphics);
-			RenderSystem.disableBlend();
 			PoseStack pose = guiGraphics.pose();
 			pose.pushPose();
 			pose.translate(0, 0, 500);
@@ -269,11 +261,7 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 				guiGraphics.renderItem(inheritedItem, slot.x, slot.y, slot.x + slot.y * imageWidth);
 				PoseStack pose = guiGraphics.pose();
 				pose.pushPose();
-				RenderSystem.enableBlend();
-				RenderSystem.disableDepthTest();
 				guiGraphics.blit(RenderType::guiTextured, GuiHelper.GUI_CONTROLS, slot.x, slot.y, 77, 0, 16, 16, 256, 256);
-				RenderSystem.enableDepthTest();
-				RenderSystem.disableBlend();
 				pose.popPose();
 			}
 		}
@@ -573,18 +561,18 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 				return;
 			}
 
-			resolveModel(previewStack);
+			resolveModel(previewStack, ItemDisplayContext.GUI);
 
 			if (renderState.layers.length < 1) {
 				return;
 			}
 
-			ItemTransform guiTransform = renderState.layers[0].model.getTransforms().getTransform(ItemDisplayContext.GUI);
-			setTargetRotations((int) guiTransform.rotation.x(), (int) guiTransform.rotation.y());
+			ItemTransform guiTransform = renderState.layers[0].transform;
+			setTargetRotations((int) guiTransform.rotation().x(), (int) guiTransform.rotation().y());
 		}
 
-		private void resolveModel(ItemStack previewStack) {
-			minecraft.getItemModelResolver().updateForTopItem(renderState, previewStack, ItemDisplayContext.NONE, false, null, null, 0);
+		private void resolveModel(ItemStack previewStack, ItemDisplayContext displayContext) {
+			minecraft.getItemModelResolver().updateForTopItem(renderState, previewStack, displayContext, null,  null, 0);
 		}
 
 		public void setTargetRotations(int xAxisRotation, int yAxisRotation) {
@@ -627,7 +615,7 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 			pose.mulPose(Axis.YP.rotationDegrees(yAxisRotation));
 			int scale = 48;
 			pose.scale(scale, -scale, scale);
-			resolveModel(previewStack);
+			resolveModel(previewStack, ItemDisplayContext.NONE);
 			int combinedLight = 15728880;
 			guiGraphics.drawSpecial(buffer -> renderState.render(pose, buffer, combinedLight, OverlayTexture.NO_OVERLAY));
 			pose.popPose();

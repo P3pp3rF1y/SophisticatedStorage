@@ -28,7 +28,7 @@ public class StackStorageWrapper extends StorageWrapper {
 		StackStorageWrapper stackStorageWrapper = StorageWrapperRepository.getStorageWrapper(stack, StackStorageWrapper.class, StackStorageWrapper::new);
 		UUID uuid = stack.get(ModCoreDataComponents.STORAGE_UUID);
 		if (uuid != null) {
-			CompoundTag compoundtag = ItemContentsStorage.get().getOrCreateStorageContents(uuid).getCompound(StorageBlockEntity.STORAGE_WRAPPER_TAG);
+			CompoundTag compoundtag = ItemContentsStorage.get().getOrCreateStorageContents(uuid).getCompoundOrEmpty(StorageBlockEntity.STORAGE_WRAPPER_TAG);
 			stackStorageWrapper.load(compoundtag);
 			stackStorageWrapper.setContentsUuid(uuid); //setting here because client side the uuid isn't in contentsnbt before this data is synced from server and it would create a new one otherwise
 		}
@@ -70,11 +70,11 @@ public class StackStorageWrapper extends StorageWrapper {
 
 	@Override
 	protected CompoundTag getContentsNbt() {
-		return StorageBlockItem.getEntityWrapperTagFromStack(storageStack).map(wrapperTag -> wrapperTag.getCompound(CONTENTS_TAG)).orElseGet(() -> {
+		return StorageBlockItem.getEntityWrapperTagFromStack(storageStack).map(wrapperTag -> wrapperTag.getCompoundOrEmpty(CONTENTS_TAG)).orElseGet(() -> {
 			if (contentsUuid == null) {
 				contentsUuid = getNewUuid();
 			}
-			return ItemContentsStorage.get().getOrCreateStorageContents(contentsUuid).getCompound(StorageBlockEntity.STORAGE_WRAPPER_TAG).getCompound(CONTENTS_TAG);
+			return ItemContentsStorage.get().getOrCreateStorageContents(contentsUuid).getCompoundOrEmpty(StorageBlockEntity.STORAGE_WRAPPER_TAG).getCompoundOrEmpty(CONTENTS_TAG);
 		});
 	}
 
@@ -91,8 +91,8 @@ public class StackStorageWrapper extends StorageWrapper {
 	@Override
 	protected void loadSlotNumbers(CompoundTag tag) {
 		StorageBlockItem.getEntityWrapperTagFromStack(storageStack).ifPresentOrElse(wrapperTag -> {
-			numberOfInventorySlots = wrapperTag.getInt(StorageWrapper.NUMBER_OF_INVENTORY_SLOTS_TAG);
-			numberOfUpgradeSlots = wrapperTag.getInt(StorageWrapper.NUMBER_OF_UPGRADE_SLOTS_TAG);
+			numberOfInventorySlots = wrapperTag.getIntOr(StorageWrapper.NUMBER_OF_INVENTORY_SLOTS_TAG, 0);
+			numberOfUpgradeSlots = wrapperTag.getIntOr(StorageWrapper.NUMBER_OF_UPGRADE_SLOTS_TAG, 0);
 		}, () -> {
 			numberOfInventorySlots = storageStack.getOrDefault(ModCoreDataComponents.NUMBER_OF_INVENTORY_SLOTS, 0);
 			numberOfUpgradeSlots = storageStack.getOrDefault(ModCoreDataComponents.NUMBER_OF_UPGRADE_SLOTS, 0);

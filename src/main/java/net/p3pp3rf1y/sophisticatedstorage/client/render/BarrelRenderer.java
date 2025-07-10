@@ -5,26 +5,22 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.renderer.block.model.BlockStateModel;
+import net.minecraft.client.resources.model.QuadCollection;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import net.minecraft.world.phys.Vec3;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlockEntity;
 
-import java.util.List;
-
 public class BarrelRenderer<T extends BarrelBlockEntity> extends StorageRenderer<T> {
 	private final DisplayItemRenderer displayItemRenderer = new DisplayItemRenderer(0.5, new Vec3(0, 0, -1 / 16D));
 	private final DisplayItemRenderer flatDisplayItemRenderer = new DisplayItemRenderer(0.5, Vec3.ZERO);
 
 	@Override
-	public void render(T blockEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
+	public void render(T blockEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, Vec3 cameraPos) {
 		BlockState blockState = blockEntity.getBlockState();
 		boolean flatTop = Boolean.TRUE.equals(blockState.getValue(BarrelBlock.FLAT_TOP));
 		if (blockEntity.isPacked() || !(blockState.getBlock() instanceof BarrelBlock storageBlock)) {
@@ -80,35 +76,34 @@ public class BarrelRenderer<T extends BarrelBlockEntity> extends StorageRenderer
 
 	protected void renderHiddenTier(T blockEntity, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
 		if (!blockEntity.shouldShowTier() && holdsItemThatShowsHiddenTiers()) {
-			renderTranslucentQuads(blockEntity, poseStack, bufferSource, packedLight, packedOverlay, BarrelBakedModelBase::getTierQuads);
+			renderTranslucentQuads(blockEntity, poseStack, bufferSource, packedLight, packedOverlay, BarrelBlockStateModelBase::getTierQuads);
 		}
 	}
 
 	protected void renderHiddenLock(T blockEntity, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
 		if (!blockEntity.shouldShowLock() && blockEntity.isLocked() && holdsToolInToggleLockOrLockDisplay()) {
-			renderTranslucentQuads(blockEntity, poseStack, bufferSource, packedLight, packedOverlay, BarrelBakedModelBase::getLockQuads);
+			renderTranslucentQuads(blockEntity, poseStack, bufferSource, packedLight, packedOverlay, BarrelBlockStateModelBase::getLockQuads);
 		}
 	}
 
 	private void renderTranslucentQuads(T blockEntity, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, GetQuadsFunction getQuads) {
 		String woodName = blockEntity.getWoodType().orElse(WoodType.ACACIA).name();
 		BlockState state = blockEntity.getBlockState();
-		BakedModel blockModel = Minecraft.getInstance().getBlockRenderer().getBlockModel(state);
+		BlockStateModel blockModel = Minecraft.getInstance().getBlockRenderer().getBlockModel(state);
 
 		poseStack.pushPose();
 		poseStack.translate(-0.005, -0.005, -0.005);
 		poseStack.scale(1.01f, 1.01f, 1.01f);
 
-		RandomSource random = blockEntity.getLevel() != null ? blockEntity.getLevel().random : Minecraft.getInstance().level.random;
-
-		if (blockModel instanceof BarrelBakedModelBase barrelBakedModel) {
+		if (blockModel instanceof BarrelBlockStateModelBase barrelBlockStateModel) {
 			VertexConsumer vertexConsumer = TranslucentVertexConsumer.getVertexConsumer(bufferSource, 128);
-			getQuads.apply(barrelBakedModel, state, random, woodName, RenderType.cutout()).forEach(quad -> vertexConsumer.putBulkData(poseStack.last(), quad, 1, 1, 1, 1, packedLight, packedOverlay, false));
+			barrelBlockStateModel.setWoodName(woodName);
+			getQuads.apply(barrelBlockStateModel).getAll().forEach(quad -> vertexConsumer.putBulkData(poseStack.last(), quad, 1, 1, 1, 1, packedLight, packedOverlay, false));
 		}
 		poseStack.popPose();
 	}
 	private interface GetQuadsFunction {
-		List<BakedQuad> apply(BarrelBakedModelBase model, BlockState state, RandomSource rand, String woodName, RenderType renderType);
+		QuadCollection apply(BarrelBlockStateModelBase model);
 
 	}
 }

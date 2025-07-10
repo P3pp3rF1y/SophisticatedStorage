@@ -20,7 +20,6 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.p3pp3rf1y.sophisticatedcore.util.BlockBase;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.DecorationTableMenu;
-import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 
 import javax.annotation.Nullable;
 
@@ -60,12 +59,6 @@ public class DecorationTableBlock extends BlockBase implements EntityBlock {
 		player.openMenu(new SimpleMenuProvider((w, p, pl) -> new DecorationTableMenu(w, pl, pos), getName()), pos);
 
 		return InteractionResult.CONSUME;
-	}
-
-	@Override
-	protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
-		level.getBlockEntity(pos, ModBlocks.DECORATION_TABLE_BLOCK_ENTITY_TYPE.get()).ifPresent(DecorationTableBlockEntity::dropContents);
-		super.onRemove(state, level, pos, newState, movedByPiston);
 	}
 
 	@Nullable

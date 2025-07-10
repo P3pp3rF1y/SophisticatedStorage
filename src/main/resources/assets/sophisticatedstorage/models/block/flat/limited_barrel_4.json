@@ -114,6 +114,16 @@
                 }
             }
         },
+        "mangrove": {
+            "base": {
+                "textures": {
+                    "top": "sophisticatedstorage:block/limited_mangrove_barrel_4_top",
+                    "top_trim": "sophisticatedstorage:block/limited_mangrove_barrel_4_top",
+                    "top_inner_trim": "sophisticatedstorage:block/limited_mangrove_barrel_4_top",
+                    "particle": "sophisticatedstorage:block/limited_mangrove_barrel_4_top"
+                }
+            }
+        },
         "oak": {
             "base": {
                 "textures": {
@@ -121,6 +131,16 @@
                     "top_trim": "sophisticatedstorage:block/limited_oak_barrel_4_top",
                     "top_inner_trim": "sophisticatedstorage:block/limited_oak_barrel_4_top",
                     "particle": "sophisticatedstorage:block/limited_oak_barrel_4_top"
+                }
+            }
+        },
+        "pale_oak": {
+            "base": {
+                "textures": {
+                    "top": "sophisticatedstorage:block/limited_pale_oak_barrel_4_top",
+                    "top_trim": "sophisticatedstorage:block/limited_pale_oak_barrel_4_top",
+                    "top_inner_trim": "sophisticatedstorage:block/limited_pale_oak_barrel_4_top",
+                    "particle": "sophisticatedstorage:block/limited_pale_oak_barrel_4_top"
                 }
             }
         },

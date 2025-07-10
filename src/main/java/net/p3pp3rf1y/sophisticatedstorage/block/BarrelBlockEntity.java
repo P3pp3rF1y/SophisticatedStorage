@@ -19,7 +19,6 @@ import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 
 import java.util.EnumMap;
 import java.util.Map;
-import java.util.Optional;
 
 public class BarrelBlockEntity extends WoodStorageBlockEntity implements IMaterialHolder {
 	public static final String MATERIALS_TAG = "materials";
@@ -82,7 +81,7 @@ public class BarrelBlockEntity extends WoodStorageBlockEntity implements IMateri
 	public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider registries) {
 		super.onDataPacket(net, pkt, registries);
 		CompoundTag tag = pkt.getTag();
-		if (tag.getBoolean(UPDATE_BLOCK_RENDER_TAG)) {
+		if (tag.getBooleanOr(UPDATE_BLOCK_RENDER_TAG, false)) {
 			dynamicRenderTracker.onRenderInfoUpdated(getStorageWrapper().getRenderInfo());
 		}
 	}
@@ -125,13 +124,13 @@ public class BarrelBlockEntity extends WoodStorageBlockEntity implements IMateri
 	@Override
 	public void loadSynchronizedData(CompoundTag tag, HolderLookup.Provider registries) {
 		super.loadSynchronizedData(tag, registries);
-		materials = NBTHelper.getMap(tag, MATERIALS_TAG, BarrelMaterial::fromName, (bm, t) -> Optional.of(ResourceLocation.parse(t.getAsString()))).orElse(Map.of());
+		materials = NBTHelper.getMap(tag, MATERIALS_TAG, BarrelMaterial::fromName, (bm, t) -> t.asString().map(ResourceLocation::parse)).orElse(Map.of());
 	}
 
 	@Override
 	public void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
 		super.loadAdditional(tag, registries);
-		if (level != null && level.isClientSide() && tag.getBoolean(UPDATE_BLOCK_RENDER_TAG)) {
+		if (level != null && level.isClientSide() && tag.getBooleanOr(UPDATE_BLOCK_RENDER_TAG, false)) {
 			dynamicRenderTracker.onRenderInfoUpdated(getStorageWrapper().getRenderInfo());
 		}
 	}

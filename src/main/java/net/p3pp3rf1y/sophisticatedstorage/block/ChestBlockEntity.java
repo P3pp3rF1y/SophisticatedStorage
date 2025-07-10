@@ -441,4 +441,12 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 			runOnTheOtherPart(level, worldPosition, (be, pos) -> be.chestLidController.shouldBeOpen(shouldBeOpen));
 		}
 	}
+
+	@Override
+	public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+		super.preRemoveSideEffects(pos, state);
+		if (getBlockState().getValue(ChestBlock.TYPE) != ChestType.SINGLE && isPacked()) {
+			level.removeBlock(pos.relative(ChestBlock.getConnectedDirection(state)), false);
+		}
+	}
 }

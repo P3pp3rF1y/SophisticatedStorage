@@ -1,6 +1,7 @@
 package net.p3pp3rf1y.sophisticatedstorage.item;
 
 import com.mojang.serialization.Codec;
+import net.minecraft.core.component.DataComponentHolder;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.StreamCodec;
@@ -8,7 +9,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
-import net.neoforged.neoforge.common.extensions.IDataComponentHolderExtension;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelMaterial;
 import net.p3pp3rf1y.sophisticatedstorage.block.ITintableBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageTranslationHelper;
@@ -42,7 +42,7 @@ public class BarrelBlockItem extends WoodStorageBlockItem {
 		}
 	}
 
-	public static boolean isFlatTop(IDataComponentHolderExtension componentHolder) {
+	public static boolean isFlatTop(DataComponentHolder componentHolder) {
 		return componentHolder.getOrDefault(ModDataComponents.FLAT_TOP, false);
 	}
 

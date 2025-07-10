@@ -4,11 +4,13 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.block.model.BlockModelPart;
+import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
@@ -16,7 +18,6 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.client.model.data.ModelData;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -50,7 +51,7 @@ public class RenderHelper {
 		TextureAtlasSprite sprite = parseSpriteFromModel(blockState, direction, rand);
 
 		if (sprite == null) {
-			sprite = Minecraft.getInstance().getModelManager().getMissingModel().getParticleIcon(ModelData.EMPTY);
+			sprite = Minecraft.getInstance().getModelManager().getMissingBlockStateModel().particleIcon();
 		}
 
 		return sprite;
@@ -62,22 +63,28 @@ public class RenderHelper {
 	private static TextureAtlasSprite parseSpriteFromModel(BlockState blockState, @Nullable Direction direction, RandomSource rand) {
 		TextureAtlasSprite sprite = null;
 
-		BakedModel blockModel = Minecraft.getInstance().getBlockRenderer().getBlockModel(blockState);
+		BlockStateModel blockModel = Minecraft.getInstance().getBlockRenderer().getBlockModel(blockState);
+		ClientLevel level = Minecraft.getInstance().level;
+		if (level == null) {
+			return null;
+		}
+
 		try {
-			for (RenderType layer : blockModel.getRenderTypes(blockState, rand, ModelData.EMPTY)) {
-				List<BakedQuad> culledQuads = blockModel.getQuads(blockState, direction, rand, ModelData.EMPTY, layer);
-				if (!culledQuads.isEmpty()) {
-					return culledQuads.getFirst().getSprite();
+			List<BlockModelPart> parts = blockModel.collectParts(level, BlockPos.ZERO, blockState, rand);
+
+			for (BlockModelPart part : parts) {
+				List<BakedQuad> quads = part.getQuads(direction);
+				if (!quads.isEmpty()) {
+					return quads.getFirst().sprite();
 				}
 
-				//noinspection deprecation
-				for (BakedQuad bakedQuad : blockModel.getQuads(blockState, null, rand)) {
+				for (BakedQuad quad : part.getQuads(null)) {
 					if (sprite == null) {
-						sprite = bakedQuad.getSprite();
+						sprite = quad.sprite();
 					}
 
-					if (bakedQuad.getDirection() == direction) {
-						return bakedQuad.getSprite();
+					if (quad.direction() == direction) {
+						return quad.sprite();
 					}
 				}
 			}
@@ -87,7 +94,7 @@ public class RenderHelper {
 
 		if (sprite == null) {
 			try {
-				sprite = blockModel.getParticleIcon(ModelData.EMPTY);
+				sprite = blockModel.particleIcon(level, BlockPos.ZERO, blockState);
 			} catch (Exception e) {
 				// NO OP
 			}
@@ -119,7 +126,7 @@ public class RenderHelper {
 	private static void addVertex(Matrix4f pose, Vector3f normal, VertexConsumer consumer, int pY, float pX, int packedOverlay, int packedLight, float u, float v, float alpha) {
 		Vector4f pos = new Vector4f(pX, pY, 0, 1.0F);
 		pose.transform(pos);
-		int color = ((int)(alpha * 255)) << 24 | 255 << 16 | 255 << 8 | 255;
+		int color = ((int) (alpha * 255)) << 24 | 255 << 16 | 255 << 8 | 255;
 		consumer.addVertex(pos.x(), pos.y(), pos.z(), color, u, v, packedOverlay, packedLight, normal.x(), normal.y(), normal.z());
 	}
 

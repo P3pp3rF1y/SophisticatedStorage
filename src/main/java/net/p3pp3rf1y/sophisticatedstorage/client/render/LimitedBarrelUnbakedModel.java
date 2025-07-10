@@ -1,14 +1,13 @@
 package net.p3pp3rf1y.sophisticatedstorage.client.render;
 
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.ModelBaker;
+import net.minecraft.client.resources.model.QuadCollection;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.client.model.data.ModelData;
 import net.p3pp3rf1y.sophisticatedstorage.block.LimitedBarrelBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.VerticalFacing;
 import org.joml.Vector3f;
@@ -19,19 +18,19 @@ import java.util.Map;
 
 import static net.p3pp3rf1y.sophisticatedstorage.client.render.DisplayItemRenderer.getNorthBasedRotation;
 
-public class LimitedBarrelDynamicModel extends BarrelDynamicModelBase {
-	public LimitedBarrelDynamicModel(@Nullable ResourceLocation parentLocation, Map<String, Map<BarrelModelPart, BarrelModelPartDefinition>> woodOverrides, Map<DynamicBarrelBakingData.DynamicPart, ResourceLocation> dynamicPartModels, Map<String, Map<BarrelModelPart, BarrelModelPartDefinition>> woodPartitionedModelPartDefinitions) {
+public class LimitedBarrelUnbakedModel extends BarrelUnbakedModelBase {
+	public LimitedBarrelUnbakedModel(@Nullable ResourceLocation parentLocation, Map<String, Map<BarrelModelPart, BarrelModelPartDefinition>> woodOverrides, Map<DynamicBarrelBakingData.DynamicPart, ResourceLocation> dynamicPartModels, Map<String, Map<BarrelModelPart, BarrelModelPartDefinition>> woodPartitionedModelPartDefinitions) {
 		super(parentLocation, woodOverrides, dynamicPartModels, woodPartitionedModelPartDefinitions);
 	}
 
 	@Override
-	protected BarrelBakedModelBase instantiateBakedModel(ModelBaker baker, Map<String, Map<BarrelModelPart, BakedModel>> woodModelParts, Map<String, Map<DynamicBarrelBakingData.DynamicPart, DynamicBarrelBakingData>> woodDynamicBakingData, Map<String, Map<BarrelModelPart, BakedModel>> woodPartitionedModelParts) {
-		return new LimitedBarrelBakedModel(baker, woodModelParts, woodDynamicBakingData, woodPartitionedModelParts);
+	protected BarrelBlockStateModelBase instantiateBlockStateModel(ModelBaker baker, Map<String, Map<BarrelModelPart, QuadCollection>> woodModelParts, Map<String, Map<BarrelModelPart, TextureAtlasSprite>> particleIcons, Map<String, Map<DynamicBarrelBakingData.DynamicPart, DynamicBarrelBakingData>> woodDynamicBakingData, Map<String, Map<BarrelModelPart, QuadCollection>> woodPartitionedModelParts) {
+		return new LimitedBarrelBlockStateModel(baker, woodModelParts, particleIcons, woodDynamicBakingData, woodPartitionedModelParts);
 	}
 
-	private static class LimitedBarrelBakedModel extends BarrelBakedModelBase {
-		public LimitedBarrelBakedModel(ModelBaker baker, Map<String, Map<BarrelModelPart, BakedModel>> woodModelParts, Map<String, Map<DynamicBarrelBakingData.DynamicPart, DynamicBarrelBakingData>> woodDynamicBakingData, Map<String, Map<BarrelModelPart, BakedModel>> woodPartitionedModelParts) {
-			super(baker, woodModelParts, woodDynamicBakingData, woodPartitionedModelParts);
+	private static class LimitedBarrelBlockStateModel extends BarrelBlockStateModelBase {
+		public LimitedBarrelBlockStateModel(ModelBaker baker, Map<String, Map<BarrelModelPart, QuadCollection>> woodModelParts, Map<String, Map<BarrelModelPart, TextureAtlasSprite>> particleIcons, Map<String, Map<DynamicBarrelBakingData.DynamicPart, DynamicBarrelBakingData>> woodDynamicBakingData, Map<String, Map<BarrelModelPart, QuadCollection>> woodPartitionedModelParts) {
+			super(baker, woodModelParts, particleIcons, woodDynamicBakingData, woodPartitionedModelParts);
 		}
 
 		@Override
@@ -40,10 +39,12 @@ public class LimitedBarrelDynamicModel extends BarrelDynamicModelBase {
 		}
 
 		@Override
-		protected int getInWorldBlockHash(BlockState state, ModelData data, @Nullable RenderType renderType) {
-			int hash = super.getInWorldBlockHash(state, data, renderType);
-			hash = hash * 31 + state.getValue(LimitedBarrelBlock.HORIZONTAL_FACING).get2DDataValue();
-			hash = hash * 31 + state.getValue(LimitedBarrelBlock.VERTICAL_FACING).getIndex();
+		protected int createHash(@Nullable BlockState state) {
+			int hash = super.createHash(state);
+			if (state != null) {
+				hash = hash * 31 + state.getValue(LimitedBarrelBlock.HORIZONTAL_FACING).get2DDataValue();
+				hash = hash * 31 + state.getValue(LimitedBarrelBlock.VERTICAL_FACING).getIndex();
+			}
 			return hash;
 		}
 
@@ -89,12 +90,12 @@ public class LimitedBarrelDynamicModel extends BarrelDynamicModelBase {
 	}
 
 	@SuppressWarnings("java:S6548") //singleton is intended here
-	public static final class Loader extends BarrelDynamicModelBase.Loader<LimitedBarrelDynamicModel> {
+	public static final class Loader extends BarrelUnbakedModelBase.Loader<LimitedBarrelUnbakedModel> {
 		public static final Loader INSTANCE = new Loader();
 
 		@Override
-		protected LimitedBarrelDynamicModel instantiateModel(@Nullable ResourceLocation parentLocation, Map<String, Map<BarrelModelPart, BarrelModelPartDefinition>> woodOverrides, Map<DynamicBarrelBakingData.DynamicPart, ResourceLocation> dynamicPartModels, Map<String, Map<BarrelModelPart, BarrelModelPartDefinition>> woodPartitionedModelPartDefinitions) {
-			return new LimitedBarrelDynamicModel(parentLocation, woodOverrides, dynamicPartModels, woodPartitionedModelPartDefinitions);
+		protected LimitedBarrelUnbakedModel instantiateModel(@Nullable ResourceLocation parentLocation, Map<String, Map<BarrelModelPart, BarrelModelPartDefinition>> woodOverrides, Map<DynamicBarrelBakingData.DynamicPart, ResourceLocation> dynamicPartModels, Map<String, Map<BarrelModelPart, BarrelModelPartDefinition>> woodPartitionedModelPartDefinitions) {
+			return new LimitedBarrelUnbakedModel(parentLocation, woodOverrides, dynamicPartModels, woodPartitionedModelPartDefinitions);
 		}
 	}
 }

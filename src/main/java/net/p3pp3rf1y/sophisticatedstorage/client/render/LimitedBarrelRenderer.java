@@ -37,7 +37,7 @@ public class LimitedBarrelRenderer extends BarrelRenderer<LimitedBarrelBlockEnti
 	private final DisplayItemRenderer flatDisplayItemRenderer = new DisplayItemRenderer(0.5, Vec3.ZERO);
 
 	@Override
-	public void render(LimitedBarrelBlockEntity blockEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
+	public void render(LimitedBarrelBlockEntity blockEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, Vec3 cameraPos) {
 		BlockState blockState = blockEntity.getBlockState();
 		if (blockEntity.isPacked() || !(blockState.getBlock() instanceof StorageBlockBase storageBlock)
 				|| (!blockEntity.hasDynamicRenderer() && !blockEntity.shouldShowCounts() && !holdsItemThatShowsUpgrades() && !blockEntity.shouldShowUpgrades())) {
@@ -48,7 +48,7 @@ public class LimitedBarrelRenderer extends BarrelRenderer<LimitedBarrelBlockEnti
 		Direction horizontalFacing = blockState.getValue(LimitedBarrelBlock.HORIZONTAL_FACING);
 		renderItemCounts(blockEntity, poseStack, bufferSource, flatTop, horizontalFacing, blockState.getValue(LimitedBarrelBlock.VERTICAL_FACING), packedLight);
 
-		if (blockEntity.getLevel() != null) {
+		if (blockEntity.getLevel() != null && blockEntity.shouldUseLightInFrontForFrontRender()) {
 			packedLight = LevelRenderer.getLightColor(blockEntity.getLevel(), blockEntity.getBlockPos().relative(storageBlock.getFacing(blockState)));
 		}
 
@@ -140,7 +140,7 @@ public class LimitedBarrelRenderer extends BarrelRenderer<LimitedBarrelBlockEnti
 			return;
 		}
 
-		if (blockEntity.getLevel() != null) {
+		if (blockEntity.getLevel() != null && blockEntity.shouldUseLightInFrontForFrontRender()) {
 			packedLight = LevelRenderer.getLightColor(blockEntity.getLevel(), blockEntity.getBlockPos().relative(verticalFacing != VerticalFacing.NO ? verticalFacing.getDirection() : horizontalFacing));
 		}
 

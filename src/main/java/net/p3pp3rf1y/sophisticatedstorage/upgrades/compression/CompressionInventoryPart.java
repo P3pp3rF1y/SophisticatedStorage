@@ -562,8 +562,8 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 			}
 
 			if (amountToSet != 0) {
-				if (!slotDefinitions.containsKey(slot + 1)) {
-					SophisticatedStorage.LOGGER.error("Compression inventory is in an invalid state. Slot {} is compressible, there's stack remaining to insert but slot {} is not defined.\nSlot Definitions\n{}", slot, slot + 1, slotDefinitions);
+				if (!slotDefinitions.containsKey(slot + 1) || !slotDefinitions.get(slot + 1).isAccessible()) {
+					SophisticatedStorage.LOGGER.error("Compression inventory is in an invalid state. Slot {} has a prevSlotMultiplier of 0 (likely because it's inaccessible), but there's remaining count of {} to insert.\nSlot Definitions\n{}", slot + 1, amountToSet, slotDefinitions);
 					break;
 				}
 				totalMultiplier /= getPrevSlotMultiplier(slot + 1);

@@ -276,7 +276,7 @@ public abstract class MovingStorageWrapper implements IStorageWrapper {
 			baseContentsNbt.put(SETTINGS_TAG, new CompoundTag());
 			storageData.setContents(storageId, baseContentsNbt);
 		}
-		return baseContentsNbt.getCompound(SETTINGS_TAG);
+		return baseContentsNbt.getCompoundOrEmpty(SETTINGS_TAG);
 	}
 
 	private CompoundTag getContentsNbt() {
@@ -288,7 +288,7 @@ public abstract class MovingStorageWrapper implements IStorageWrapper {
 			baseContentsNbt.put(StorageWrapper.CONTENTS_TAG, new CompoundTag());
 			storageData.setContents(storageId, baseContentsNbt);
 		}
-		return baseContentsNbt.getCompound(StorageWrapper.CONTENTS_TAG);
+		return baseContentsNbt.getCompoundOrEmpty(StorageWrapper.CONTENTS_TAG);
 	}
 
 	@Override

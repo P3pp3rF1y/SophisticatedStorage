@@ -45,7 +45,7 @@ public class ShulkerBoxRenderer extends StorageRenderer<ShulkerBoxBlockEntity> {
 		model = new ShulkerModel(context.bakeLayer(ModelLayers.SHULKER));
 	}
 
-	public void render(ShulkerBoxBlockEntity shulkerBoxEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
+	public void render(ShulkerBoxBlockEntity shulkerBoxEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, Vec3 cameraPos) {
 		BlockState blockState = shulkerBoxEntity.getBlockState();
 		Direction direction = Direction.UP;
 		if (shulkerBoxEntity.hasLevel()) {

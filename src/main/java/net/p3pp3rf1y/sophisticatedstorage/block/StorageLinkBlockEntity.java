@@ -115,4 +115,10 @@ public class StorageLinkBlockEntity extends BlockEntity implements ILinkable {
 
 		super.setRemoved();
 	}
+
+	@Override
+	public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+		super.preRemoveSideEffects(pos, state);
+		unlinkFromController();
+	}
 }

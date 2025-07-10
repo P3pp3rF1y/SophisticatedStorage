@@ -1,18 +1,14 @@
 package net.p3pp3rf1y.sophisticatedstorage.block;
 
 import com.mojang.math.Axis;
-import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeItem;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -32,7 +28,6 @@ import net.p3pp3rf1y.sophisticatedcore.settings.SettingsHandler;
 import net.p3pp3rf1y.sophisticatedcore.settings.memory.MemorySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
-import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageTranslationHelper;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.LimitedBarrelContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
@@ -103,13 +98,6 @@ public class LimitedBarrelBlock extends BarrelBlock {
 	@Override
 	public int getBaseStackSizeMultiplier() {
 		return getBaseStackSizeMultiplier.get();
-	}
-
-	@Override
-	public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltip, TooltipFlag flat) {
-		int numberOfInventorySlots = getNumberOfInventorySlots();
-		String translationKey = numberOfInventorySlots == 1 ? "limited_barrel_singular" : "limited_barrel_plural";
-		tooltip.add(Component.translatable(StorageTranslationHelper.INSTANCE.translBlockTooltipKey(translationKey), String.valueOf(numberOfInventorySlots), String.valueOf(getBaseStackSizeMultiplier())).withStyle(ChatFormatting.DARK_GRAY));
 	}
 
 	@Nullable

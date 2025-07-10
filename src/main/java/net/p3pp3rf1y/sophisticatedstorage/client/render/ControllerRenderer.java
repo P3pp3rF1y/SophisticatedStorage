@@ -1,21 +1,19 @@
 package net.p3pp3rf1y.sophisticatedstorage.client.render;
 
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.platform.DepthTestFunction;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderStateShard;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.ShapeRenderer;
+import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.util.ARGB;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
@@ -24,6 +22,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
+import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.ControllerBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageToolItem;
@@ -33,8 +32,22 @@ import org.joml.Quaternionf;
 import java.util.OptionalDouble;
 
 public class ControllerRenderer implements BlockEntityRenderer<ControllerBlockEntity> {
+	public static final RenderPipeline NO_DEPTH_LINES_PIPELINE = RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)
+			.withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
+			.withDepthWrite(false)
+			.withLocation(SophisticatedStorage.getRL("controller_lines"))
+			.build();
+
+	private static final RenderType LINES = RenderType.create("storage_lines", 1536, NO_DEPTH_LINES_PIPELINE,
+			RenderType.CompositeState.builder()
+					.setLineState(new RenderStateShard.LineStateShard(OptionalDouble.empty()))
+					.setLayeringState(RenderType.VIEW_OFFSET_Z_LAYERING)
+					.setOutputState(RenderType.ITEM_ENTITY_TARGET)
+					.createCompositeState(false)
+	);
+
 	@Override
-	public void render(ControllerBlockEntity controller, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
+	public void render(ControllerBlockEntity controller, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, Vec3 cameraPos) {
 		LocalPlayer player = Minecraft.getInstance().player;
 		if (player == null) {
 			return;
@@ -107,7 +120,7 @@ public class ControllerRenderer implements BlockEntityRenderer<ControllerBlockEn
 
 		Vec3 center = shape.bounds().getCenter();
 
-		VertexConsumer buffer = bufferSource.getBuffer(LineRenderType.LINES);
+		VertexConsumer buffer = bufferSource.getBuffer(LINES);
 
 		PoseStack.Pose pose = poseStack.last();
 		Matrix4f matrix4f = pose.pose();
@@ -127,28 +140,13 @@ public class ControllerRenderer implements BlockEntityRenderer<ControllerBlockEn
 	}
 
 	private void renderBlockOutline(BlockPos controllerPos, BlockPos pos, VoxelShape shape, PoseStack poseStack, MultiBufferSource bufferSource, int color) {
-		VertexConsumer vertexConsumer = bufferSource.getBuffer(LineRenderType.LINES);
-		ShapeRenderer.renderShape(poseStack, vertexConsumer, shape, (double) -controllerPos.getX() + pos.getX(), (double) -controllerPos.getY() + pos.getY(), (double) -controllerPos.getZ() + pos.getZ(), color);
+		VertexConsumer vertexConsumer = bufferSource.getBuffer(LINES);
+		ShapeRenderer.renderShape(poseStack, vertexConsumer, shape, (double) -controllerPos.getX() + pos.getX(), (double) -controllerPos.getY() + pos.getY(), (double) -controllerPos.getZ() + pos.getZ(), ARGB.opaque(color));
 	}
 
 	@Override
 	public boolean shouldRenderOffScreen(ControllerBlockEntity blockEntity) {
 		return true;
-	}
-
-	private static class LineRenderType extends RenderType {
-		public LineRenderType(String name, VertexFormat format, VertexFormat.Mode mode, int bufferSize, boolean affectsCrumbling, boolean sortOnUpload, Runnable setupState, Runnable clearState) {
-			super(name, format, mode, bufferSize, affectsCrumbling, sortOnUpload, setupState, clearState);
-		}
-
-		private static final RenderType LINES = RenderType.create("storage_lines", DefaultVertexFormat.POSITION_COLOR_NORMAL, VertexFormat.Mode.LINES, 256, false, false,
-				CompositeState.builder()
-						.setShaderState(RENDERTYPE_LINES_SHADER)
-						.setDepthTestState(NO_DEPTH_TEST)
-						.setLineState(new LineStateShard(OptionalDouble.empty()))
-						.setLayeringState(VIEW_OFFSET_Z_LAYERING)
-						.setCullState(RenderStateShard.NO_CULL)
-						.createCompositeState(false));
 	}
 
 	@Override

@@ -1,7 +1,8 @@
 package net.p3pp3rf1y.sophisticatedstorage.block;
 
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtUtils;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.fml.util.thread.SidedThreadGroups;
@@ -169,7 +170,7 @@ public abstract class StorageWrapper implements IStorageWrapper {
 			tag.put(RENDER_INFO_TAG, renderInfoNbt);
 		}
 		if (contentsUuid != null) {
-			tag.put(UUID_TAG, NbtUtils.createUUID(contentsUuid));
+			UUIDUtil.CODEC.encodeStart(NbtOps.INSTANCE, contentsUuid).ifSuccess(uuidTag -> tag.put(UUID_TAG, uuidTag));
 		}
 		if (openTabId >= 0) {
 			tag.putInt(OPEN_TAB_ID_TAG, openTabId);
@@ -209,11 +210,11 @@ public abstract class StorageWrapper implements IStorageWrapper {
 	}
 
 	private void loadData(CompoundTag tag) {
-		settingsNbt = tag.getCompound(SETTINGS_TAG);
+		settingsNbt = tag.getCompoundOrEmpty(SETTINGS_TAG);
 		settingsHandler.reloadFrom(settingsNbt);
-		renderInfoNbt = tag.getCompound(RENDER_INFO_TAG);
+		renderInfoNbt = tag.getCompoundOrEmpty(RENDER_INFO_TAG);
 		renderInfo.deserializeFrom(renderInfoNbt);
-		contentsUuid = NBTHelper.getTagValue(tag, UUID_TAG, CompoundTag::get).map(NbtUtils::loadUUID).orElse(null);
+		contentsUuid = NBTHelper.getTagValue(tag, UUID_TAG, (t, k) -> Optional.ofNullable(t.get(k))).flatMap(t -> UUIDUtil.CODEC.parse(NbtOps.INSTANCE, t).result()).orElse(null);
 		openTabId = NBTHelper.getInt(tag, OPEN_TAB_ID_TAG).orElse(-1);
 		sortBy = NBTHelper.getString(tag, SORT_BY_TAG).map(SortBy::fromName).orElse(SortBy.NAME);
 		columnsTaken = NBTHelper.getInt(tag, "columnsTaken").orElse(0);
@@ -229,7 +230,7 @@ public abstract class StorageWrapper implements IStorageWrapper {
 
 	private void loadContents(CompoundTag tag) {
 		if (tag.contains(CONTENTS_TAG)) {
-			contentsNbt = tag.getCompound(CONTENTS_TAG);
+			contentsNbt = tag.getCompoundOrEmpty(CONTENTS_TAG);
 			onContentsNbtUpdated();
 		}
 	}

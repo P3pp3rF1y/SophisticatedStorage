@@ -29,7 +29,6 @@ import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -51,10 +50,19 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 	private Map<Integer, DyeColor> slotColors = new HashMap<>();
 	private boolean showCounts = true;
 	private boolean showFillLevels = false;
+	private boolean useLightInFrontForFrontRender = true;
 
 	public LimitedBarrelBlockEntity(BlockPos pos, BlockState state) {
 		super(pos, state, ModBlocks.LIMITED_BARREL_BLOCK_ENTITY_TYPE.get());
 		registerUpgradeDefaults();
+	}
+
+	public void setUseLightInFrontForFrontRender(boolean useLightInFrontForFrontRender) {
+		this.useLightInFrontForFrontRender = useLightInFrontForFrontRender;
+	}
+
+	public boolean shouldUseLightInFrontForFrontRender() {
+		return useLightInFrontForFrontRender;
 	}
 
 	public static void setFixedSettings(IStorageWrapper storageWrapper, int numberOfInventorySlots) {
@@ -251,7 +259,7 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 		super.loadSynchronizedData(tag, registries);
 		showCounts = NBTHelper.getBoolean(tag, "showCounts").orElse(true);
 		showFillLevels = NBTHelper.getBoolean(tag, "showFillLevels").orElse(false);
-		slotColors = NBTHelper.getMap(tag, "slotColors", Integer::valueOf, (tagName, t) -> Optional.of(DyeColor.byId(((IntTag) t).getAsInt()))).orElseGet(HashMap::new);
+		slotColors = NBTHelper.getMap(tag, "slotColors", Integer::valueOf, (tagName, t) -> t.asInt().map(DyeColor::byId)).orElseGet(HashMap::new);
 	}
 
 	@Override

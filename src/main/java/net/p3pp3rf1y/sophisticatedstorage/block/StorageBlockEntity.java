@@ -299,7 +299,7 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		showTier = NBTHelper.getBoolean(tag, "showTier").orElse(true);
 		showUpgrades = NBTHelper.getBoolean(tag, "showUpgrades").orElse(false);
 		if (level != null && level.isClientSide) {
-			if (tag.getBoolean(UPDATE_BLOCK_RENDER_TAG)) {
+			if (tag.getBooleanOr(UPDATE_BLOCK_RENDER_TAG, false)) {
 				WorldHelper.notifyBlockUpdate(this);
 				displayItemTints.clear();
 			}
@@ -627,5 +627,14 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 
 	public int getOrComputeDisplayItemTint(int displayItemIndex, int tintIndex, Supplier<Integer> getTint) {
 		return displayItemTints.computeIfAbsent(new DisplayTintKey(displayItemIndex, tintIndex), key -> getTint.get());
+	}
+
+	@Override
+	public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+		super.preRemoveSideEffects(pos, state);
+		removeFromController();
+		if (shouldDropContents()) {
+			dropContents();
+		}
 	}
 }

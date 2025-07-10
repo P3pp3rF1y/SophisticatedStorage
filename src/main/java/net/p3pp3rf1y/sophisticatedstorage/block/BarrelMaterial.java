@@ -2,11 +2,13 @@ package net.p3pp3rf1y.sophisticatedstorage.block;
 
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Codec;
+import net.minecraft.core.Direction;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.StringRepresentable;
 import net.neoforged.neoforge.network.codec.NeoForgeStreamCodecs;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 
@@ -50,6 +52,19 @@ public enum BarrelMaterial implements StringRepresentable {
 
 	public BarrelMaterial[] getChildren() {
 		return children.length > 0 ? children : new BarrelMaterial[] {this};
+	}
+
+	@Nullable
+	public Direction getLeafSide() {
+		if (isLeaf()) {
+			return switch (this) {
+				case SIDE, SIDE_TRIM -> Direction.NORTH;
+				case BOTTOM, BOTTOM_TRIM -> Direction.DOWN;
+				case TOP, TOP_TRIM -> Direction.UP;
+				default -> null;
+			};
+		}
+		return null;
 	}
 
 	public boolean isLeaf() {

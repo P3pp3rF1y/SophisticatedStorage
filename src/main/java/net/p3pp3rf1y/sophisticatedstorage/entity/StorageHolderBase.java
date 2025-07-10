@@ -280,6 +280,7 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 					if (limitedBarrelBlockEntity.shouldShowCounts() != areCountsVisible()) {
 						limitedBarrelBlockEntity.toggleCountVisibility();
 					}
+					limitedBarrelBlockEntity.setUseLightInFrontForFrontRender(false);
 				}
 			}
 			if (renderBlockEntity instanceof ChestBlockEntity chestBlockEntity) {

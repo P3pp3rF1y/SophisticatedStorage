@@ -10,6 +10,7 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.crafting.BlastingRecipe;
 import net.minecraft.world.item.crafting.SmeltingRecipe;
 import net.minecraft.world.item.crafting.SmokingRecipe;
@@ -195,12 +196,12 @@ public class ModItems {
 	public static final String PACKING_TAPE_NAME = "packing_tape";
 	public static final Supplier<ItemBase> PACKING_TAPE = ITEMS.registerItem(PACKING_TAPE_NAME, properties -> new ItemBase(properties.stacksTo(1).durability(8)) {
 		@Override
-		public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltip, TooltipFlag isAdvanced) {
-			super.appendHoverText(stack, context, tooltip, isAdvanced);
+		public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay tooltipDisplay, Consumer<Component> tooltipAdder, TooltipFlag flag) {
+			super.appendHoverText(stack, context, tooltipDisplay, tooltipAdder, flag);
 			if (Boolean.TRUE.equals(Config.COMMON.dropPacked.get())) {
-				tooltip.add(Component.translatable(StorageTranslationHelper.INSTANCE.translItemTooltip(PACKING_TAPE_NAME) + ".disabled").withStyle(ChatFormatting.RED));
+				tooltipAdder.accept(Component.translatable(StorageTranslationHelper.INSTANCE.translItemTooltip(PACKING_TAPE_NAME) + ".disabled").withStyle(ChatFormatting.RED));
 			} else {
-				tooltip.add(Component.translatable(StorageTranslationHelper.INSTANCE.translItemTooltip(PACKING_TAPE_NAME),
+				tooltipAdder.accept(Component.translatable(StorageTranslationHelper.INSTANCE.translItemTooltip(PACKING_TAPE_NAME),
 								Component.literal(String.valueOf(getMaxDamage(stack) - getDamage(stack))).withStyle(ChatFormatting.GREEN)
 						).withStyle(ChatFormatting.DARK_GRAY)
 				);

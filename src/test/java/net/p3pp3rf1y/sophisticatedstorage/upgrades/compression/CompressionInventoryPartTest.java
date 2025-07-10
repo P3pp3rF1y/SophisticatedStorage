@@ -562,6 +562,15 @@ public class CompressionInventoryPartTest {
 						Map.of(3, new ItemStack(Items.QUARTZ, 64)),
 						Map.of(0, new ItemStack(Items.DEAD_BUSH, 64), 1, new ItemStack(Items.STICK, 640), 2, new ItemStack(Items.QUARTZ_BLOCK, 5824), 3, new ItemStack(Items.QUARTZ, 23360))
 
+				),
+				new InsertItemUpdatesStacksParams(
+						Map.of(0, new ItemStack(Items.IRON_BLOCK, 8), 1, new ItemStack(Items.IRON_INGOT, 8), 2, new ItemStack(Items.IRON_NUGGET, 6), 3, ItemStack.EMPTY),
+						8,
+						2,
+						new ItemStack(Items.IRON_NUGGET, 33),
+						new ItemStack(Items.IRON_NUGGET, 31),
+						Map.of( 2, new ItemStack(Items.IRON_NUGGET, 8)),
+						Map.of(0, new ItemStack(Items.IRON_BLOCK, 8), 1, new ItemStack(Items.IRON_INGOT, 80), 2, new ItemStack(Items.IRON_NUGGET, 728), 3, ItemStack.EMPTY)
 				)
 		);
 	}

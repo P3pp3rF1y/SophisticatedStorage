@@ -79,7 +79,8 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity> {
 		return LayerDefinition.create(meshDefinition, 64, 64);
 	}
 
-	public void render(ChestBlockEntity chestEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
+	@Override
+	public void render(ChestBlockEntity chestEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, Vec3 cameraPos) {
 		BlockState blockstate = chestEntity.getBlockState();
 		Optional<WoodType> woodType = chestEntity.getWoodType();
 		ChestType chestType = blockstate.getValue(ChestBlock.TYPE);

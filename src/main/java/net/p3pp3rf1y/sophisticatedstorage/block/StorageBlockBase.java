@@ -4,10 +4,12 @@ import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.InsideBlockEffectApplier;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -92,8 +94,8 @@ public abstract class StorageBlockBase extends BlockBase implements IStorageBloc
 	}
 
 	@Override
-	public void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
-		super.entityInside(state, level, pos, entity);
+	public void entityInside(BlockState state, Level level, BlockPos pos, Entity entity, InsideBlockEffectApplier effectApplier) {
+		super.entityInside(state, level, pos, entity, effectApplier);
 		if (!level.isClientSide && entity instanceof ItemEntity itemEntity) {
 			WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).ifPresent(be -> tryToPickup(level, itemEntity, be.getStorageWrapper()));
 		}
@@ -141,18 +143,9 @@ public abstract class StorageBlockBase extends BlockBase implements IStorageBloc
 	}
 
 	@Override
-	public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean isMoving) {
-		if (!state.is(newState.getBlock())) {
-			WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).ifPresent(b -> {
-				b.removeFromController();
-				if (b.shouldDropContents()) {
-					b.dropContents();
-				}
-				level.updateNeighbourForOutputSignal(pos, this);
-			});
-		}
-
-		super.onRemove(state, level, pos, newState, isMoving);
+	protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel level, BlockPos pos, boolean movedByPiston) {
+		super.affectNeighborsAfterRemoval(state, level, pos, movedByPiston);
+		level.updateNeighbourForOutputSignal(pos, this);
 	}
 
 	@Override

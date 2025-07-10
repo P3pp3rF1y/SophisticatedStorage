@@ -13,10 +13,10 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.ShapeRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraft.util.ARGB;
+import net.minecraft.util.TriState;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
@@ -32,7 +32,6 @@ import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsE
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 import net.neoforged.neoforge.client.settings.IKeyConflictContext;
 import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.common.util.TriState;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.StorageScreenBase;
@@ -56,7 +55,6 @@ import net.p3pp3rf1y.sophisticatedstorage.network.RequestPlayerSettingsPayload;
 import net.p3pp3rf1y.sophisticatedstorage.network.ScrolledToolPayload;
 
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 
@@ -71,7 +69,7 @@ public class ClientEventHandler {
 	public static final KeyMapping SORT_KEYBIND = new KeyMapping(StorageTranslationHelper.INSTANCE.translKeybind("sort"),
 			StorageGuiKeyConflictContext.INSTANCE, InputConstants.Type.MOUSE.getOrCreate(MIDDLE_BUTTON), KEYBIND_SOPHISTICATEDSTORAGE_CATEGORY);
 
-	private static Set<Predicate<StorageScreenBase<?>>> SORT_SCREEN_MATCHERS = new HashSet<>();
+	private static final Set<Predicate<StorageScreenBase<?>>> SORT_SCREEN_MATCHERS = new HashSet<>();
 
 	static {
 		SORT_SCREEN_MATCHERS.add(screen -> screen instanceof StorageScreen);
@@ -115,12 +113,13 @@ public class ClientEventHandler {
 		modBus.addListener(StorageTintSources::register);
 		modBus.addListener(ModBlockColors::registerBlockColorHandlers);
 		modBus.addListener(ClientEventHandler::registerStorageLayerLoader);
-		modBus.addListener(ClientEventHandler::onRegisterAdditionalModels);
 		modBus.addListener(ClientEventHandler::onRegisterReloadListeners);
 		modBus.addListener(ClientEventHandler::registerStorageClientExtensions);
 		modBus.addListener(ClientEventHandler::registerBarrelItemModel);
 		modBus.addListener(ClientEventHandler::registerSpecialModelRenderers);
 		modBus.addListener(ClientEventHandler::registerSpecialBlockModelRenderers);
+		modBus.addListener(ClientEventHandler::registerBlockStateModels);
+		modBus.addListener(ClientEventHandler::registerRenderPipelines);
 		IEventBus eventBus = NeoForge.EVENT_BUS;
 		eventBus.addListener(ClientStorageContentsTooltip::onWorldLoad);
 		eventBus.addListener(EventPriority.HIGH, ClientEventHandler::handleGuiMouseKeyPress);
@@ -129,6 +128,16 @@ public class ClientEventHandler {
 		eventBus.addListener(ClientEventHandler::onMouseScrolled);
 		eventBus.addListener(ClientEventHandler::onRenderHighlight);
 		eventBus.addListener(ClientEventHandler::onPlayerLoggingIn);
+	}
+
+	private static void registerRenderPipelines(RegisterRenderPipelinesEvent event) {
+		event.registerPipeline(ControllerRenderer.NO_DEPTH_LINES_PIPELINE);
+	}
+
+	private static void registerBlockStateModels(RegisterBlockStateModels event) {
+		event.registerModel(BarrelUnbakedModelBase.UnbakedBlockStateModel.ID, BarrelUnbakedModelBase.UnbakedBlockStateModel.CODEC);
+		event.registerModel(ChestBlockStateModel.Unbaked.ID, ChestBlockStateModel.Unbaked.CODEC);
+		event.registerModel(ShulkerBoxBlockStateModel.Unbaked.ID, ShulkerBoxBlockStateModel.Unbaked.CODEC);
 	}
 
 	private static void registerSpecialModelRenderers(RegisterSpecialModelRendererEvent event) {
@@ -190,19 +199,6 @@ public class ClientEventHandler {
 				});
 			}
 		}
-	}
-
-	private static void onRegisterAdditionalModels(ModelEvent.RegisterAdditional event) {
-		//addBarrelPartModelsToBake(event);
-	}
-
-	private static void addBarrelPartModelsToBake(ModelEvent.RegisterAdditional event) {
-		Map<ResourceLocation, Resource> models = Minecraft.getInstance().getResourceManager().listResources("models/block/barrel_part", fileName -> fileName.getPath().endsWith(".json"));
-		models.forEach((modelName, resource) -> {
-			if (modelName.getNamespace().equals(SophisticatedStorage.MOD_ID)) {
-				event.register(ResourceLocation.fromNamespaceAndPath(modelName.getNamespace(), modelName.getPath().substring("models/".length()).replace(".json", "")));
-			}
-		});
 	}
 
 	private static void onMouseScrolled(InputEvent.MouseScrollingEvent evt) {
@@ -276,11 +272,9 @@ public class ClientEventHandler {
 	}
 
 	private static void onRegisterModelLoaders(ModelEvent.RegisterLoaders event) {
-		event.register(ResourceLocation.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "barrel"), BarrelDynamicModel.Loader.INSTANCE);
-		event.register(ResourceLocation.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "limited_barrel"), LimitedBarrelDynamicModel.Loader.INSTANCE);
-		event.register(ResourceLocation.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "chest"), ChestDynamicModel.Loader.INSTANCE);
-		event.register(ResourceLocation.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "shulker_box"), ShulkerBoxDynamicModel.Loader.INSTANCE);
-		event.register(ResourceLocation.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "simple_composite"), SimpleCompositeModel.Loader.INSTANCE);
+		event.register(ResourceLocation.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "barrel"), BarrelUnbakedModel.Loader.INSTANCE);
+		event.register(ResourceLocation.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "limited_barrel"), LimitedBarrelUnbakedModel.Loader.INSTANCE);
+		event.register(ResourceLocation.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "simple_composite"), SimpleCompositeUnbakedModel.Loader.INSTANCE);
 	}
 
 	private static void onRegisterReloadListeners(AddClientReloadListenersEvent event) {
@@ -288,8 +282,8 @@ public class ClientEventHandler {
 	}
 
 	private static void invalidateBarrelCache(ResourceManager resourceManager) {
-		BarrelDynamicModelBase.invalidateCache();
-		BarrelBakedModelBase.invalidateCache();
+		BarrelUnbakedModelBase.invalidateCache();
+		BarrelBlockStateModelBase.invalidateCache();
 	}
 
 	public static void registerLayer(EntityRenderersEvent.RegisterLayerDefinitions event) {

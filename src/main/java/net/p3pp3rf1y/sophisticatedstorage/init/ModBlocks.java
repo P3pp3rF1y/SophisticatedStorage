@@ -1,10 +1,12 @@
 package net.p3pp3rf1y.sophisticatedstorage.init;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.cauldron.CauldronInteraction;
 import net.minecraft.core.dispenser.ShulkerBoxDispenseBehavior;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -13,6 +15,8 @@ import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.crafting.CustomRecipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
@@ -31,17 +35,17 @@ import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
+import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.TranslationHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.BlockItemBase;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.*;
+import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageTranslationHelper;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.*;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.*;
-import net.p3pp3rf1y.sophisticatedstorage.item.BarrelBlockItem;
-import net.p3pp3rf1y.sophisticatedstorage.item.ChestBlockItem;
-import net.p3pp3rf1y.sophisticatedstorage.item.ShulkerBoxItem;
-import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
+import net.p3pp3rf1y.sophisticatedstorage.item.*;
 
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class ModBlocks {
@@ -79,12 +83,12 @@ public class ModBlocks {
 	public static final Supplier<BarrelBlock> LIMITED_GOLD_BARREL_1 = BLOCKS.registerBlock("limited_gold_barrel_1", properties -> new LimitedBarrelBlock(1, Config.SERVER.goldLimitedBarrel1.baseSlotLimitMultiplier, Config.SERVER.goldLimitedBarrel1.upgradeSlotCount, 0, properties));
 	public static final Supplier<BarrelBlock> LIMITED_DIAMOND_BARREL_1 = BLOCKS.registerBlock("limited_diamond_barrel_1", properties -> new LimitedBarrelBlock(1, Config.SERVER.diamondLimitedBarrel1.baseSlotLimitMultiplier, Config.SERVER.diamondLimitedBarrel1.upgradeSlotCount, 0, properties));
 	public static final Supplier<BarrelBlock> LIMITED_NETHERITE_BARREL_1 = BLOCKS.registerBlock("limited_netherite_barrel_1", properties -> new LimitedBarrelBlock(1, Config.SERVER.netheriteLimitedBarrel1.baseSlotLimitMultiplier, Config.SERVER.netheriteLimitedBarrel1.upgradeSlotCount, 1200, properties));
-	public static final Supplier<BlockItem> LIMITED_BARREL_1_ITEM = ITEMS.registerItem("limited_barrel_1", properties -> new BarrelBlockItem(LIMITED_BARREL_1.get(), properties.useBlockDescriptionPrefix()));
-	public static final Supplier<BlockItem> LIMITED_IRON_BARREL_1_ITEM = ITEMS.registerItem("limited_iron_barrel_1", properties -> new BarrelBlockItem(LIMITED_IRON_BARREL_1.get(), properties.useBlockDescriptionPrefix()));
-	public static final Supplier<BlockItem> LIMITED_COPPER_BARREL_1_ITEM = ITEMS.registerItem("limited_copper_barrel_1", properties -> new BarrelBlockItem(LIMITED_COPPER_BARREL_1.get(), properties.useBlockDescriptionPrefix()));
-	public static final Supplier<BlockItem> LIMITED_GOLD_BARREL_1_ITEM = ITEMS.registerItem("limited_gold_barrel_1", properties -> new BarrelBlockItem(LIMITED_GOLD_BARREL_1.get(), properties.useBlockDescriptionPrefix()));
-	public static final Supplier<BlockItem> LIMITED_DIAMOND_BARREL_1_ITEM = ITEMS.registerItem("limited_diamond_barrel_1", properties -> new BarrelBlockItem(LIMITED_DIAMOND_BARREL_1.get(), properties.useBlockDescriptionPrefix()));
-	public static final Supplier<BlockItem> LIMITED_NETHERITE_BARREL_1_ITEM = ITEMS.registerItem("limited_netherite_barrel_1", properties -> new BarrelBlockItem(LIMITED_NETHERITE_BARREL_1.get(), properties.useBlockDescriptionPrefix().fireResistant()));
+	public static final Supplier<BlockItem> LIMITED_BARREL_1_ITEM = ITEMS.registerItem("limited_barrel_1", properties -> new LimitedBarrelBlockItem(LIMITED_BARREL_1.get(), properties.useBlockDescriptionPrefix()));
+	public static final Supplier<BlockItem> LIMITED_IRON_BARREL_1_ITEM = ITEMS.registerItem("limited_iron_barrel_1", properties -> new LimitedBarrelBlockItem(LIMITED_IRON_BARREL_1.get(), properties.useBlockDescriptionPrefix()));
+	public static final Supplier<BlockItem> LIMITED_COPPER_BARREL_1_ITEM = ITEMS.registerItem("limited_copper_barrel_1", properties -> new LimitedBarrelBlockItem(LIMITED_COPPER_BARREL_1.get(), properties.useBlockDescriptionPrefix()));
+	public static final Supplier<BlockItem> LIMITED_GOLD_BARREL_1_ITEM = ITEMS.registerItem("limited_gold_barrel_1", properties -> new LimitedBarrelBlockItem(LIMITED_GOLD_BARREL_1.get(), properties.useBlockDescriptionPrefix()));
+	public static final Supplier<BlockItem> LIMITED_DIAMOND_BARREL_1_ITEM = ITEMS.registerItem("limited_diamond_barrel_1", properties -> new LimitedBarrelBlockItem(LIMITED_DIAMOND_BARREL_1.get(), properties.useBlockDescriptionPrefix()));
+	public static final Supplier<BlockItem> LIMITED_NETHERITE_BARREL_1_ITEM = ITEMS.registerItem("limited_netherite_barrel_1", properties -> new LimitedBarrelBlockItem(LIMITED_NETHERITE_BARREL_1.get(), properties.useBlockDescriptionPrefix().fireResistant()));
 
 	public static final Supplier<BarrelBlock> LIMITED_BARREL_2 = BLOCKS.registerBlock("limited_barrel_2", properties -> new LimitedBarrelBlock(2, Config.SERVER.limitedBarrel2.baseSlotLimitMultiplier, Config.SERVER.limitedBarrel2.upgradeSlotCount, 0, properties));
 	public static final Supplier<BarrelBlock> LIMITED_COPPER_BARREL_2 = BLOCKS.registerBlock("limited_copper_barrel_2", properties -> new LimitedBarrelBlock(2, Config.SERVER.copperLimitedBarrel2.baseSlotLimitMultiplier, Config.SERVER.copperLimitedBarrel2.upgradeSlotCount, 0, properties));
@@ -92,12 +96,12 @@ public class ModBlocks {
 	public static final Supplier<BarrelBlock> LIMITED_GOLD_BARREL_2 = BLOCKS.registerBlock("limited_gold_barrel_2", properties -> new LimitedBarrelBlock(2, Config.SERVER.goldLimitedBarrel2.baseSlotLimitMultiplier, Config.SERVER.goldLimitedBarrel2.upgradeSlotCount, 0, properties));
 	public static final Supplier<BarrelBlock> LIMITED_DIAMOND_BARREL_2 = BLOCKS.registerBlock("limited_diamond_barrel_2", properties -> new LimitedBarrelBlock(2, Config.SERVER.diamondLimitedBarrel2.baseSlotLimitMultiplier, Config.SERVER.diamondLimitedBarrel2.upgradeSlotCount, 0, properties));
 	public static final Supplier<BarrelBlock> LIMITED_NETHERITE_BARREL_2 = BLOCKS.registerBlock("limited_netherite_barrel_2", properties -> new LimitedBarrelBlock(2, Config.SERVER.netheriteLimitedBarrel2.baseSlotLimitMultiplier, Config.SERVER.netheriteLimitedBarrel2.upgradeSlotCount, 1200, properties));
-	public static final Supplier<BlockItem> LIMITED_BARREL_2_ITEM = ITEMS.registerItem("limited_barrel_2", properties -> new BarrelBlockItem(LIMITED_BARREL_2.get(), properties.useBlockDescriptionPrefix()));
-	public static final Supplier<BlockItem> LIMITED_COPPER_BARREL_2_ITEM = ITEMS.registerItem("limited_copper_barrel_2", properties -> new BarrelBlockItem(LIMITED_COPPER_BARREL_2.get(), properties.useBlockDescriptionPrefix()));
-	public static final Supplier<BlockItem> LIMITED_IRON_BARREL_2_ITEM = ITEMS.registerItem("limited_iron_barrel_2", properties -> new BarrelBlockItem(LIMITED_IRON_BARREL_2.get(), properties.useBlockDescriptionPrefix()));
-	public static final Supplier<BlockItem> LIMITED_GOLD_BARREL_2_ITEM = ITEMS.registerItem("limited_gold_barrel_2", properties -> new BarrelBlockItem(LIMITED_GOLD_BARREL_2.get(), properties.useBlockDescriptionPrefix()));
-	public static final Supplier<BlockItem> LIMITED_DIAMOND_BARREL_2_ITEM = ITEMS.registerItem("limited_diamond_barrel_2", properties -> new BarrelBlockItem(LIMITED_DIAMOND_BARREL_2.get(), properties.useBlockDescriptionPrefix()));
-	public static final Supplier<BlockItem> LIMITED_NETHERITE_BARREL_2_ITEM = ITEMS.registerItem("limited_netherite_barrel_2", properties -> new BarrelBlockItem(LIMITED_NETHERITE_BARREL_2.get(), properties.useBlockDescriptionPrefix().fireResistant()));
+	public static final Supplier<BlockItem> LIMITED_BARREL_2_ITEM = ITEMS.registerItem("limited_barrel_2", properties -> new LimitedBarrelBlockItem(LIMITED_BARREL_2.get(), properties.useBlockDescriptionPrefix()));
+	public static final Supplier<BlockItem> LIMITED_COPPER_BARREL_2_ITEM = ITEMS.registerItem("limited_copper_barrel_2", properties -> new LimitedBarrelBlockItem(LIMITED_COPPER_BARREL_2.get(), properties.useBlockDescriptionPrefix()));
+	public static final Supplier<BlockItem> LIMITED_IRON_BARREL_2_ITEM = ITEMS.registerItem("limited_iron_barrel_2", properties -> new LimitedBarrelBlockItem(LIMITED_IRON_BARREL_2.get(), properties.useBlockDescriptionPrefix()));
+	public static final Supplier<BlockItem> LIMITED_GOLD_BARREL_2_ITEM = ITEMS.registerItem("limited_gold_barrel_2", properties -> new LimitedBarrelBlockItem(LIMITED_GOLD_BARREL_2.get(), properties.useBlockDescriptionPrefix()));
+	public static final Supplier<BlockItem> LIMITED_DIAMOND_BARREL_2_ITEM = ITEMS.registerItem("limited_diamond_barrel_2", properties -> new LimitedBarrelBlockItem(LIMITED_DIAMOND_BARREL_2.get(), properties.useBlockDescriptionPrefix()));
+	public static final Supplier<BlockItem> LIMITED_NETHERITE_BARREL_2_ITEM = ITEMS.registerItem("limited_netherite_barrel_2", properties -> new LimitedBarrelBlockItem(LIMITED_NETHERITE_BARREL_2.get(), properties.useBlockDescriptionPrefix().fireResistant()));
 
 	public static final Supplier<BarrelBlock> LIMITED_BARREL_3 = BLOCKS.registerBlock("limited_barrel_3", properties -> new LimitedBarrelBlock(3, Config.SERVER.limitedBarrel3.baseSlotLimitMultiplier, Config.SERVER.limitedBarrel3.upgradeSlotCount, 0, properties));
 	public static final Supplier<BarrelBlock> LIMITED_COPPER_BARREL_3 = BLOCKS.registerBlock("limited_copper_barrel_3", properties -> new LimitedBarrelBlock(3, Config.SERVER.copperLimitedBarrel3.baseSlotLimitMultiplier, Config.SERVER.copperLimitedBarrel3.upgradeSlotCount, 0, properties));
@@ -105,12 +109,12 @@ public class ModBlocks {
 	public static final Supplier<BarrelBlock> LIMITED_GOLD_BARREL_3 = BLOCKS.registerBlock("limited_gold_barrel_3", properties -> new LimitedBarrelBlock(3, Config.SERVER.goldLimitedBarrel3.baseSlotLimitMultiplier, Config.SERVER.goldLimitedBarrel3.upgradeSlotCount, 0, properties));
 	public static final Supplier<BarrelBlock> LIMITED_DIAMOND_BARREL_3 = BLOCKS.registerBlock("limited_diamond_barrel_3", properties -> new LimitedBarrelBlock(3, Config.SERVER.diamondLimitedBarrel3.baseSlotLimitMultiplier, Config.SERVER.diamondLimitedBarrel3.upgradeSlotCount, 0, properties));
 	public static final Supplier<BarrelBlock> LIMITED_NETHERITE_BARREL_3 = BLOCKS.registerBlock("limited_netherite_barrel_3", properties -> new LimitedBarrelBlock(3, Config.SERVER.netheriteLimitedBarrel3.baseSlotLimitMultiplier, Config.SERVER.netheriteLimitedBarrel3.upgradeSlotCount, 1200, properties));
-	public static final Supplier<BlockItem> LIMITED_BARREL_3_ITEM = ITEMS.registerItem("limited_barrel_3", properties -> new BarrelBlockItem(LIMITED_BARREL_3.get(), properties.useBlockDescriptionPrefix()));
-	public static final Supplier<BlockItem> LIMITED_COPPER_BARREL_3_ITEM = ITEMS.registerItem("limited_copper_barrel_3", properties -> new BarrelBlockItem(LIMITED_COPPER_BARREL_3.get(), properties.useBlockDescriptionPrefix()));
-	public static final Supplier<BlockItem> LIMITED_IRON_BARREL_3_ITEM = ITEMS.registerItem("limited_iron_barrel_3", properties -> new BarrelBlockItem(LIMITED_IRON_BARREL_3.get(), properties.useBlockDescriptionPrefix()));
-	public static final Supplier<BlockItem> LIMITED_GOLD_BARREL_3_ITEM = ITEMS.registerItem("limited_gold_barrel_3", properties -> new BarrelBlockItem(LIMITED_GOLD_BARREL_3.get(), properties.useBlockDescriptionPrefix()));
-	public static final Supplier<BlockItem> LIMITED_DIAMOND_BARREL_3_ITEM = ITEMS.registerItem("limited_diamond_barrel_3", properties -> new BarrelBlockItem(LIMITED_DIAMOND_BARREL_3.get(), properties.useBlockDescriptionPrefix()));
-	public static final Supplier<BlockItem> LIMITED_NETHERITE_BARREL_3_ITEM = ITEMS.registerItem("limited_netherite_barrel_3", properties -> new BarrelBlockItem(LIMITED_NETHERITE_BARREL_3.get(), properties.useBlockDescriptionPrefix().fireResistant()));
+	public static final Supplier<BlockItem> LIMITED_BARREL_3_ITEM = ITEMS.registerItem("limited_barrel_3", properties -> new LimitedBarrelBlockItem(LIMITED_BARREL_3.get(), properties.useBlockDescriptionPrefix()));
+	public static final Supplier<BlockItem> LIMITED_COPPER_BARREL_3_ITEM = ITEMS.registerItem("limited_copper_barrel_3", properties -> new LimitedBarrelBlockItem(LIMITED_COPPER_BARREL_3.get(), properties.useBlockDescriptionPrefix()));
+	public static final Supplier<BlockItem> LIMITED_IRON_BARREL_3_ITEM = ITEMS.registerItem("limited_iron_barrel_3", properties -> new LimitedBarrelBlockItem(LIMITED_IRON_BARREL_3.get(), properties.useBlockDescriptionPrefix()));
+	public static final Supplier<BlockItem> LIMITED_GOLD_BARREL_3_ITEM = ITEMS.registerItem("limited_gold_barrel_3", properties -> new LimitedBarrelBlockItem(LIMITED_GOLD_BARREL_3.get(), properties.useBlockDescriptionPrefix()));
+	public static final Supplier<BlockItem> LIMITED_DIAMOND_BARREL_3_ITEM = ITEMS.registerItem("limited_diamond_barrel_3", properties -> new LimitedBarrelBlockItem(LIMITED_DIAMOND_BARREL_3.get(), properties.useBlockDescriptionPrefix()));
+	public static final Supplier<BlockItem> LIMITED_NETHERITE_BARREL_3_ITEM = ITEMS.registerItem("limited_netherite_barrel_3", properties -> new LimitedBarrelBlockItem(LIMITED_NETHERITE_BARREL_3.get(), properties.useBlockDescriptionPrefix().fireResistant()));
 
 	public static final Supplier<BarrelBlock> LIMITED_BARREL_4 = BLOCKS.registerBlock("limited_barrel_4", properties -> new LimitedBarrelBlock(4, Config.SERVER.limitedBarrel4.baseSlotLimitMultiplier, Config.SERVER.limitedBarrel4.upgradeSlotCount, 0, properties));
 	public static final Supplier<BarrelBlock> LIMITED_COPPER_BARREL_4 = BLOCKS.registerBlock("limited_copper_barrel_4", properties -> new LimitedBarrelBlock(4, Config.SERVER.copperLimitedBarrel4.baseSlotLimitMultiplier, Config.SERVER.copperLimitedBarrel4.upgradeSlotCount, 0, properties));
@@ -118,12 +122,12 @@ public class ModBlocks {
 	public static final Supplier<BarrelBlock> LIMITED_GOLD_BARREL_4 = BLOCKS.registerBlock("limited_gold_barrel_4", properties -> new LimitedBarrelBlock(4, Config.SERVER.goldLimitedBarrel4.baseSlotLimitMultiplier, Config.SERVER.goldLimitedBarrel4.upgradeSlotCount, 0, properties));
 	public static final Supplier<BarrelBlock> LIMITED_DIAMOND_BARREL_4 = BLOCKS.registerBlock("limited_diamond_barrel_4", properties -> new LimitedBarrelBlock(4, Config.SERVER.diamondLimitedBarrel4.baseSlotLimitMultiplier, Config.SERVER.diamondLimitedBarrel4.upgradeSlotCount, 0, properties));
 	public static final Supplier<BarrelBlock> LIMITED_NETHERITE_BARREL_4 = BLOCKS.registerBlock("limited_netherite_barrel_4", properties -> new LimitedBarrelBlock(4, Config.SERVER.netheriteLimitedBarrel4.baseSlotLimitMultiplier, Config.SERVER.netheriteLimitedBarrel4.upgradeSlotCount, 1200, properties));
-	public static final Supplier<BlockItem> LIMITED_BARREL_4_ITEM = ITEMS.registerItem("limited_barrel_4", properties -> new BarrelBlockItem(LIMITED_BARREL_4.get(), properties.useBlockDescriptionPrefix()));
-	public static final Supplier<BlockItem> LIMITED_COPPER_BARREL_4_ITEM = ITEMS.registerItem("limited_copper_barrel_4", properties -> new BarrelBlockItem(LIMITED_COPPER_BARREL_4.get(), properties.useBlockDescriptionPrefix()));
-	public static final Supplier<BlockItem> LIMITED_IRON_BARREL_4_ITEM = ITEMS.registerItem("limited_iron_barrel_4", properties -> new BarrelBlockItem(LIMITED_IRON_BARREL_4.get(), properties.useBlockDescriptionPrefix()));
-	public static final Supplier<BlockItem> LIMITED_GOLD_BARREL_4_ITEM = ITEMS.registerItem("limited_gold_barrel_4", properties -> new BarrelBlockItem(LIMITED_GOLD_BARREL_4.get(), properties.useBlockDescriptionPrefix()));
-	public static final Supplier<BlockItem> LIMITED_DIAMOND_BARREL_4_ITEM = ITEMS.registerItem("limited_diamond_barrel_4", properties -> new BarrelBlockItem(LIMITED_DIAMOND_BARREL_4.get(), properties.useBlockDescriptionPrefix()));
-	public static final Supplier<BlockItem> LIMITED_NETHERITE_BARREL_4_ITEM = ITEMS.registerItem("limited_netherite_barrel_4", properties -> new BarrelBlockItem(LIMITED_NETHERITE_BARREL_4.get(), properties.useBlockDescriptionPrefix().fireResistant()));
+	public static final Supplier<BlockItem> LIMITED_BARREL_4_ITEM = ITEMS.registerItem("limited_barrel_4", properties -> new LimitedBarrelBlockItem(LIMITED_BARREL_4.get(), properties.useBlockDescriptionPrefix()));
+	public static final Supplier<BlockItem> LIMITED_COPPER_BARREL_4_ITEM = ITEMS.registerItem("limited_copper_barrel_4", properties -> new LimitedBarrelBlockItem(LIMITED_COPPER_BARREL_4.get(), properties.useBlockDescriptionPrefix()));
+	public static final Supplier<BlockItem> LIMITED_IRON_BARREL_4_ITEM = ITEMS.registerItem("limited_iron_barrel_4", properties -> new LimitedBarrelBlockItem(LIMITED_IRON_BARREL_4.get(), properties.useBlockDescriptionPrefix()));
+	public static final Supplier<BlockItem> LIMITED_GOLD_BARREL_4_ITEM = ITEMS.registerItem("limited_gold_barrel_4", properties -> new LimitedBarrelBlockItem(LIMITED_GOLD_BARREL_4.get(), properties.useBlockDescriptionPrefix()));
+	public static final Supplier<BlockItem> LIMITED_DIAMOND_BARREL_4_ITEM = ITEMS.registerItem("limited_diamond_barrel_4", properties -> new LimitedBarrelBlockItem(LIMITED_DIAMOND_BARREL_4.get(), properties.useBlockDescriptionPrefix()));
+	public static final Supplier<BlockItem> LIMITED_NETHERITE_BARREL_4_ITEM = ITEMS.registerItem("limited_netherite_barrel_4", properties -> new LimitedBarrelBlockItem(LIMITED_NETHERITE_BARREL_4.get(), properties.useBlockDescriptionPrefix().fireResistant()));
 
 	private static final String CHEST_REG_NAME = "chest";
 	public static final Supplier<ChestBlock> CHEST = BLOCKS.registerBlock(CHEST_REG_NAME, properties -> new ChestBlock(Config.SERVER.woodChest.inventorySlotCount, Config.SERVER.woodChest.upgradeSlotCount, properties));
@@ -157,8 +161,19 @@ public class ModBlocks {
 	public static final Supplier<ControllerBlock> CONTROLLER = BLOCKS.registerBlock(CONTROLLER_REG_NAME, ControllerBlock::new);
 	private static final String STORAGE_LINK_REG_NAME = "storage_link";
 	public static final Supplier<StorageLinkBlock> STORAGE_LINK = BLOCKS.registerBlock(STORAGE_LINK_REG_NAME, StorageLinkBlock::new);
-	public static final DeferredHolder<Item, BlockItem> CONTROLLER_ITEM = ITEMS.registerItem(CONTROLLER_REG_NAME, properties -> new BlockItemBase(CONTROLLER.get(), properties.useBlockDescriptionPrefix()));
-	public static final Supplier<BlockItem> STORAGE_LINK_ITEM = ITEMS.registerItem(STORAGE_LINK_REG_NAME, properties -> new BlockItemBase(STORAGE_LINK.get(), properties.useBlockDescriptionPrefix()));
+	public static final DeferredHolder<Item, BlockItem> CONTROLLER_ITEM = ITEMS.registerItem(CONTROLLER_REG_NAME, properties -> new BlockItemBase(CONTROLLER.get(), properties.useBlockDescriptionPrefix()) {
+		@Override
+		public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay tooltipDisplay, Consumer<Component> tooltipAdder, TooltipFlag flag) {
+			StorageTranslationHelper.INSTANCE.getTranslatedLines(stack.getItem().getDescriptionId() + TranslationHelper.TOOLTIP_SUFFIX, null, ChatFormatting.DARK_GRAY).forEach(tooltipAdder);
+		}
+	});
+	public static final Supplier<BlockItem> STORAGE_LINK_ITEM = ITEMS.registerItem(STORAGE_LINK_REG_NAME, properties -> new BlockItemBase(STORAGE_LINK.get(), properties.useBlockDescriptionPrefix()){
+		@Override
+		public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay tooltipDisplay, Consumer<Component> tooltipAdder, TooltipFlag flag) {
+			super.appendHoverText(stack, context, tooltipDisplay, tooltipAdder, flag);
+			StorageTranslationHelper.INSTANCE.getTranslatedLines(stack.getItem().getDescriptionId() + TranslationHelper.TOOLTIP_SUFFIX, null, ChatFormatting.DARK_GRAY).forEach(tooltipAdder);
+		}
+	});
 	public static final String STORAGE_IO_REG_NAME = "storage_io";
 	public static final Supplier<StorageIOBlock> STORAGE_IO = BLOCKS.registerBlock(STORAGE_IO_REG_NAME, StorageIOBlock::new);
 	public static final String STORAGE_INPUT_REG_NAME = "storage_input";

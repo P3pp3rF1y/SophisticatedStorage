@@ -18,10 +18,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.*;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Mirror;
-import net.minecraft.world.level.block.Rotation;
-import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -62,7 +59,7 @@ public class BarrelBlock extends WoodStorageBlockBase {
 	}
 
 	public BarrelBlock(Supplier<Integer> numberOfInventorySlotsSupplier, Supplier<Integer> numberOfUpgradeSlotsSupplier, float explosionResistance, Function<StateDefinition<Block, BlockState>, BlockState> getDefaultState, Properties properties) {
-		super(properties.mapColor(MapColor.WOOD).strength(2.5F).sound(SoundType.WOOD).isRedstoneConductor((state, level, pos) -> isFlatTop(state)).explosionResistance(explosionResistance), numberOfInventorySlotsSupplier, numberOfUpgradeSlotsSupplier);
+		super(properties.noOcclusion().mapColor(MapColor.WOOD).strength(2.5F).sound(SoundType.WOOD).isRedstoneConductor((state, level, pos) -> isFlatTop(state)).explosionResistance(explosionResistance), numberOfInventorySlotsSupplier, numberOfUpgradeSlotsSupplier);
 		registerDefaultState(getDefaultState.apply(stateDefinition));
 	}
 
@@ -227,16 +224,6 @@ public class BarrelBlock extends WoodStorageBlockBase {
 	@Override
 	public Direction getFacing(BlockState state) {
 		return state.getValue(FACING);
-	}
-
-	@Override
-	public VoxelShape getOcclusionShape(BlockState state) {
-		return Shapes.block();
-	}
-
-	@Override
-	public boolean useShapeForLightOcclusion(BlockState state) {
-		return true;
 	}
 
 	@Override

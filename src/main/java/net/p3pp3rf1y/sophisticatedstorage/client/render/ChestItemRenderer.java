@@ -17,6 +17,7 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.properties.ChestType;
 import net.minecraft.world.level.block.state.properties.WoodType;
+import net.minecraft.world.phys.Vec3;
 import net.p3pp3rf1y.sophisticatedstorage.block.ChestBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.ChestBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.block.ITintableBlockItem;
@@ -96,7 +97,7 @@ public class ChestItemRenderer implements SpecialModelRenderer<ChestItemRenderer
 		}
 		var blockentityrenderer = Minecraft.getInstance().getBlockEntityRenderDispatcher().getRenderer(chestBlockEntity);
 		if (blockentityrenderer != null) {
-			blockentityrenderer.render(chestBlockEntity, 0.0F, poseStack, buffer, packedLight, packedOverlay);
+			blockentityrenderer.render(chestBlockEntity, 0.0F, poseStack, buffer, packedLight, packedOverlay, Vec3.ZERO);
 		}
 	}
 

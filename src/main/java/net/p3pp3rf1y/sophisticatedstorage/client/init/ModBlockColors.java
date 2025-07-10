@@ -66,7 +66,7 @@ public class ModBlockColors {
 		}
 
 		ItemStackRenderState renderState = new ItemStackRenderState();
-		Minecraft.getInstance().getItemModelResolver().updateForTopItem(renderState, stack, ItemDisplayContext.FIXED, false, null, null, 0);
+		Minecraft.getInstance().getItemModelResolver().updateForTopItem(renderState, stack, ItemDisplayContext.FIXED, null, null, 0);
 		for (ItemStackRenderState.LayerRenderState layer : renderState.layers) {
 			if (layer.tintLayers.length > adjustedTintIndex) {
 				return layer.tintLayers[adjustedTintIndex];

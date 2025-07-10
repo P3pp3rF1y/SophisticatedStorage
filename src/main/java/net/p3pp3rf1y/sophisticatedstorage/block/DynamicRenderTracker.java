@@ -90,7 +90,7 @@ public class DynamicRenderTracker implements IDynamicRenderTracker {
 
 	private boolean hasItemModelCustomRenderer(ItemStack item) {
 		Minecraft minecraft = Minecraft.getInstance();
-		minecraft.getItemModelResolver().updateForTopItem(itemRenderState, item, ItemDisplayContext.FIXED, false, null, null, 0);
+		minecraft.getItemModelResolver().updateForTopItem(itemRenderState, item, ItemDisplayContext.FIXED, null, null, 0);
 		return RenderHelper.isSpecialRenderer(itemRenderState);
 	}
 

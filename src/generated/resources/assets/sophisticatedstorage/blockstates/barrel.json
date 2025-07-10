@@ -1,53 +1,65 @@
 {
   "variants": {
     "facing=down,flat_top=false": {
+      "type": "sophisticatedstorage:barrel_blockstate_model_loader",
       "model": "sophisticatedstorage:block/barrel",
       "x": 180
     },
     "facing=down,flat_top=true": {
+      "type": "sophisticatedstorage:barrel_blockstate_model_loader",
       "model": "sophisticatedstorage:block/flat/barrel",
       "x": 180
     },
     "facing=east,flat_top=false": {
+      "type": "sophisticatedstorage:barrel_blockstate_model_loader",
       "model": "sophisticatedstorage:block/barrel",
       "x": 90,
       "y": 90
     },
     "facing=east,flat_top=true": {
+      "type": "sophisticatedstorage:barrel_blockstate_model_loader",
       "model": "sophisticatedstorage:block/flat/barrel",
       "x": 90,
       "y": 90
     },
     "facing=north,flat_top=false": {
+      "type": "sophisticatedstorage:barrel_blockstate_model_loader",
       "model": "sophisticatedstorage:block/barrel",
       "x": 90
     },
     "facing=north,flat_top=true": {
+      "type": "sophisticatedstorage:barrel_blockstate_model_loader",
       "model": "sophisticatedstorage:block/flat/barrel",
       "x": 90
     },
     "facing=south,flat_top=false": {
+      "type": "sophisticatedstorage:barrel_blockstate_model_loader",
       "model": "sophisticatedstorage:block/barrel",
       "x": 90,
       "y": 180
     },
     "facing=south,flat_top=true": {
+      "type": "sophisticatedstorage:barrel_blockstate_model_loader",
       "model": "sophisticatedstorage:block/flat/barrel",
       "x": 90,
       "y": 180
     },
     "facing=up,flat_top=false": {
+      "type": "sophisticatedstorage:barrel_blockstate_model_loader",
       "model": "sophisticatedstorage:block/barrel"
     },
     "facing=up,flat_top=true": {
+      "type": "sophisticatedstorage:barrel_blockstate_model_loader",
       "model": "sophisticatedstorage:block/flat/barrel"
     },
     "facing=west,flat_top=false": {
+      "type": "sophisticatedstorage:barrel_blockstate_model_loader",
       "model": "sophisticatedstorage:block/barrel",
       "x": 90,
       "y": 270
     },
     "facing=west,flat_top=true": {
+      "type": "sophisticatedstorage:barrel_blockstate_model_loader",
       "model": "sophisticatedstorage:block/flat/barrel",
       "x": 90,
       "y": 270
