@@ -1000,7 +1000,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.unlockedBy(HAS_UPGRADE_BASE_CRITERION_NAME, has(ModItems.UPGRADE_BASE.get()))
 				.save(recipeOutput);
 
-		ShapeBasedRecipeBuilder.shaped(ModItems.ADVANCED_JUKEBOX_UPGRADE.get())
+		ShapeBasedRecipeBuilder.shaped(ModItems.ADVANCED_JUKEBOX_UPGRADE.get(), UpgradeNextTierRecipe::new)
 				.pattern(" D ")
 				.pattern("GJG")
 				.pattern("RRR")
