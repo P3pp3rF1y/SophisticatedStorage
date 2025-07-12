@@ -8,6 +8,7 @@ import net.minecraft.data.BlockFamilies;
 import net.minecraft.data.BlockFamily;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
@@ -16,6 +17,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockState;
@@ -63,6 +65,14 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 
 	public void addNameWoodAndTintData(ItemStack stack, BlockGetter level, BlockPos pos) {
 		WorldHelper.getBlockEntity(level, pos, WoodStorageBlockEntity.class).ifPresent(be -> addNameWoodAndTintData(stack, be));
+	}
+
+	@Override
+	public void onBlockExploded(BlockState state, ServerLevel level, BlockPos pos, Explosion explosion) {
+		if (Boolean.TRUE.equals(Config.COMMON.dropPacked.get())) {
+			WorldHelper.getBlockEntity(level, pos, WoodStorageBlockEntity.class).ifPresent(wbe -> wbe.setPacked(true));
+		}
+		super.onBlockExploded(state, level, pos, explosion);
 	}
 
 	public void addDropData(ItemStack stack, StorageBlockEntity be) {
