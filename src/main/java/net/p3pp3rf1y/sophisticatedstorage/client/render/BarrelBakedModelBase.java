@@ -463,7 +463,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 				}
 
 				BakedModel model = itemRenderer.getModel(item, null, minecraft.player, 0);
-				if (!model.isCustomRenderer() && shouldRenderForRenderType(item, renderType, model)) {
+				if (!model.isCustomRenderer() && shouldRenderForRenderType(item, renderType, model, rand)) {
 					int rotation = displayItem.getRotation();
 					for (Direction face : Direction.values()) {
 						addRenderedItemSide(state, rand, ret, item, model, rotation, face, index, barrelBlock.getDisplayItemsCount(displayItems));
@@ -477,14 +477,14 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 		addInaccessibleSlotsQuads(state, rand, ret, data, barrelBlock, displayItems, minecraft);
 	}
 
-	private static boolean shouldRenderForRenderType(ItemStack item, @Nullable RenderType renderType, BakedModel model) {
+	private static boolean shouldRenderForRenderType(ItemStack item, @Nullable RenderType renderType, BakedModel model, RandomSource rand) {
 		ClientLevel clientLevel = Minecraft.getInstance().level;
 		if (renderType == null || clientLevel == null) {
 			return true;
 		}
 
 		if (item.getItem() instanceof BlockItem blockItem) {
-			ChunkRenderTypeSet renderTypes = model.getRenderTypes(blockItem.getBlock().defaultBlockState(), clientLevel.getRandom(), ModelData.EMPTY);
+			ChunkRenderTypeSet renderTypes = model.getRenderTypes(blockItem.getBlock().defaultBlockState(), rand, ModelData.EMPTY);
 			if (renderTypes.contains(RenderType.translucent())) {
 				return renderType == RenderType.translucent() || renderTypes.asList().size() > 1;
 			}
