@@ -335,6 +335,32 @@
                 }
             }
         },
+        "pale_oak": {
+            "base": {
+                "textures": {
+                    "top": "sophisticatedstorage:block/pale_oak_barrel_top",
+                    "top_trim": "sophisticatedstorage:block/pale_oak_barrel_top",
+                    "top_inner_trim": "sophisticatedstorage:block/pale_oak_barrel_top",
+                    "side": "sophisticatedstorage:block/pale_oak_barrel_side",
+                    "side_trim": "sophisticatedstorage:block/pale_oak_barrel_side",
+                    "bottom": "sophisticatedstorage:block/pale_oak_barrel_bottom",
+                    "bottom_trim": "sophisticatedstorage:block/pale_oak_barrel_bottom",
+                    "particle": "sophisticatedstorage:block/pale_oak_barrel_top"
+                }
+            },
+            "base_open": {
+                "textures": {
+                    "top": "sophisticatedstorage:block/pale_oak_barrel_top_open",
+                    "top_trim": "sophisticatedstorage:block/pale_oak_barrel_top_open",
+                    "top_inner_trim": "sophisticatedstorage:block/pale_oak_barrel_top_open",
+                    "side": "sophisticatedstorage:block/pale_oak_barrel_side",
+                    "side_trim": "sophisticatedstorage:block/pale_oak_barrel_side",
+                    "bottom": "sophisticatedstorage:block/pale_oak_barrel_bottom",
+                    "bottom_trim": "sophisticatedstorage:block/pale_oak_barrel_bottom",
+                    "particle": "sophisticatedstorage:block/pale_oak_barrel_top"
+                }
+            }
+        },
         "spruce": {
             "base": {
                 "textures": {
