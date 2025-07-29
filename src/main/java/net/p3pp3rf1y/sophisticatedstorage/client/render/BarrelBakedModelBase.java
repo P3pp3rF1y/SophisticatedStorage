@@ -9,7 +9,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import com.mojang.math.Transformation;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.*;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
@@ -492,7 +491,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 				ItemStackRenderState renderState = new ItemStackRenderState();
 				Minecraft.getInstance().getItemModelResolver().updateForTopItem(renderState, item, ItemDisplayContext.FIXED, false, null, null, 0);
 				for (ItemStackRenderState.LayerRenderState layer : renderState.layers) {
-					if (layer.specialRenderer == null && layer.model != null && shouldRenderForRenderType(item, renderType, layer.model)) {
+					if (layer.specialRenderer == null && layer.model != null && shouldRenderForRenderType(item, renderType, layer.model, rand)) {
 						int rotation = displayItem.getRotation();
 						for (Direction face : Direction.values()) {
 							addRenderedItemSide(state, rand, ret, item, layer.model, rotation, face, index, barrelBlock.getDisplayItemsCount(displayItems));
@@ -507,14 +506,13 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 		addInaccessibleSlotsQuads(state, rand, ret, data, barrelBlock, displayItems, minecraft);
 	}
 
-	private static boolean shouldRenderForRenderType(ItemStack item, @Nullable RenderType renderType, BakedModel model) {
-		ClientLevel clientLevel = Minecraft.getInstance().level;
-		if (renderType == null || clientLevel == null) {
+	private static boolean shouldRenderForRenderType(ItemStack item, @Nullable RenderType renderType, BakedModel model, RandomSource rand) {
+		if (renderType == null) {
 			return true;
 		}
 
 		if (item.getItem() instanceof BlockItem blockItem) {
-			ChunkRenderTypeSet renderTypes = model.getRenderTypes(blockItem.getBlock().defaultBlockState(), clientLevel.getRandom(), ModelData.EMPTY);
+			ChunkRenderTypeSet renderTypes = model.getRenderTypes(blockItem.getBlock().defaultBlockState(), rand, ModelData.EMPTY);
 			if (renderTypes.contains(RenderType.translucent())) {
 				return renderType == RenderType.translucent() || renderTypes.asList().size() > 1;
 			}
