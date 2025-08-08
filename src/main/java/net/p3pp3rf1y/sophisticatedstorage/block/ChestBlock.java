@@ -36,6 +36,8 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
+import net.p3pp3rf1y.sophisticatedcore.util.RegistryHelper;
+import net.p3pp3rf1y.sophisticatedcore.util.ValueIOHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
@@ -352,14 +354,15 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 					//copy storage wrapper to "not main" chest so that its data can be transferred to stack properly
 					BlockPos otherPartPos = pos.relative(getConnectedDirection(state));
 					level.getBlockEntity(otherPartPos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get())
-							.ifPresent(mainBe -> {
-								be.getStorageWrapper().load(mainBe.getStorageWrapper().save(new CompoundTag()));
+							.ifPresent(mainBe -> RegistryHelper.getRegistryAccess().ifPresent(registries -> {
+								CompoundTag nbt = ValueIOHelper.collectOutputToTag(registries, mainBe.getStorageWrapper()::serialize);
+								be.getStorageWrapper().deserialize(ValueIOHelper.inputFromCompoundTag(registries, nbt));
 
 								//remove main chest contents
 								CompoundTag contentsTag = new CompoundTag();
 								contentsTag.put(StorageWrapper.CONTENTS_TAG, new CompoundTag());
-								mainBe.getStorageWrapper().load(contentsTag);
-							});
+								mainBe.getStorageWrapper().deserialize(ValueIOHelper.inputFromCompoundTag(registries, contentsTag));
+							}));
 				}
 			});
 		}

@@ -2,10 +2,12 @@ package net.p3pp3rf1y.sophisticatedstorage.block;
 
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.fml.util.thread.SidedThreadGroups;
+import net.neoforged.neoforge.common.util.ValueIOSerializable;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.SortBy;
 import net.p3pp3rf1y.sophisticatedcore.inventory.ITrackedContentsItemHandler;
@@ -21,7 +23,6 @@ import net.p3pp3rf1y.sophisticatedcore.upgrades.IUpgradeWrapper;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeHandler;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.stack.StackUpgradeItem;
 import net.p3pp3rf1y.sophisticatedcore.util.InventorySorter;
-import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.settings.StorageSettingsHandler;
@@ -31,16 +32,16 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public abstract class StorageWrapper implements IStorageWrapper {
-	public static final String MAIN_COLOR_TAG = "mainColor";
-	public static final String ACCENT_COLOR_TAG = "accentColor";
-	private static final String UUID_TAG = "uuid";
-	private static final String OPEN_TAB_ID_TAG = "openTabId";
+public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializable {
+	public static final String MAIN_COLOR = "mainColor";
+	public static final String ACCENT_COLOR = "accentColor";
+	private static final String UUID = "uuid";
+	private static final String OPEN_TAB_ID = "openTabId";
 	public static final String CONTENTS_TAG = "contents";
-	public static final String NUMBER_OF_INVENTORY_SLOTS_TAG = "numberOfInventorySlots";
-	public static final String NUMBER_OF_UPGRADE_SLOTS_TAG = "numberOfUpgradeSlots";
+	public static final String NUMBER_OF_INVENTORY_SLOTS = "numberOfInventorySlots";
+	public static final String NUMBER_OF_UPGRADE_SLOTS = "numberOfUpgradeSlots";
 	public static final String RENDER_INFO_TAG = "renderInfo";
-	public static final String SORT_BY_TAG = "sortBy";
+	public static final String SORT_BY = "sortBy";
 	private final Supplier<Runnable> getSaveHandler;
 
 	@Nullable
@@ -152,51 +153,51 @@ public abstract class StorageWrapper implements IStorageWrapper {
 
 	protected abstract void onUpgradeRefresh();
 
-	public CompoundTag save(CompoundTag tag) {
-		saveContents(tag);
-		saveData(tag);
-		return tag;
+	@Override
+	public void serialize(ValueOutput out) {
+		saveContents(out);
+		saveData(out);
 	}
 
-	private void saveContents(CompoundTag tag) {
-		tag.put(CONTENTS_TAG, getContentsNbt().copy());
+	private void saveContents(ValueOutput out) {
+		out.store(CONTENTS_TAG, CompoundTag.CODEC, getContentsNbt().copy());
 	}
 
-	CompoundTag saveData(CompoundTag tag) {
+	void saveData(ValueOutput out) {
 		if (!settingsNbt.isEmpty()) {
-			tag.put(SETTINGS_TAG, settingsNbt);
+			out.store(SETTINGS_TAG, CompoundTag.CODEC, settingsNbt);
 		}
 		if (!renderInfoNbt.isEmpty()) {
-			tag.put(RENDER_INFO_TAG, renderInfoNbt);
+			out.store(RENDER_INFO_TAG, CompoundTag.CODEC, renderInfoNbt);
 		}
 		if (contentsUuid != null) {
-			UUIDUtil.CODEC.encodeStart(NbtOps.INSTANCE, contentsUuid).ifSuccess(uuidTag -> tag.put(UUID_TAG, uuidTag));
+			out.store(UUID, UUIDUtil.CODEC, contentsUuid);
 		}
 		if (openTabId >= 0) {
-			tag.putInt(OPEN_TAB_ID_TAG, openTabId);
+			out.putInt(OPEN_TAB_ID, openTabId);
 		}
-		tag.putString(SORT_BY_TAG, sortBy.getSerializedName());
+		out.putString(SORT_BY, sortBy.getSerializedName());
 		if (columnsTaken > 0) {
-			tag.putInt("columnsTaken", columnsTaken);
+			out.putInt("columnsTaken", columnsTaken);
 		}
 		if (numberOfInventorySlots > 0) {
-			tag.putInt(NUMBER_OF_INVENTORY_SLOTS_TAG, numberOfInventorySlots);
+			out.putInt(NUMBER_OF_INVENTORY_SLOTS, numberOfInventorySlots);
 		}
 		if (numberOfUpgradeSlots > -1) {
-			tag.putInt(NUMBER_OF_UPGRADE_SLOTS_TAG, numberOfUpgradeSlots);
+			out.putInt(NUMBER_OF_UPGRADE_SLOTS, numberOfUpgradeSlots);
 		}
 		if (mainColor != -1) {
-			tag.putInt(MAIN_COLOR_TAG, mainColor);
+			out.putInt(MAIN_COLOR, mainColor);
 		}
 		if (accentColor != -1) {
-			tag.putInt(ACCENT_COLOR_TAG, accentColor);
+			out.putInt(ACCENT_COLOR, accentColor);
 		}
-		return tag;
 	}
 
-	public void load(CompoundTag tag) {
-		loadContents(tag);
-		loadData(tag);
+	@Override
+	public void deserialize(ValueInput in) {
+		loadContents(in);
+		loadData(in);
 
 		if (inventoryHandler != null) {
 			initInventoryHandler();
@@ -207,32 +208,34 @@ public abstract class StorageWrapper implements IStorageWrapper {
 		if (Thread.currentThread().getThreadGroup() == SidedThreadGroups.SERVER && getRenderInfo().getUpgradeItems().size() != getUpgradeHandler().getSlots()) {
 			getUpgradeHandler().setRenderUpgradeItems();
 		}
+
 	}
 
-	private void loadData(CompoundTag tag) {
-		settingsNbt = tag.getCompoundOrEmpty(SETTINGS_TAG);
+	private void loadData(ValueInput in) {
+		settingsNbt = in.read(SETTINGS_TAG, CompoundTag.CODEC).orElse(new CompoundTag());
 		settingsHandler.reloadFrom(settingsNbt);
-		renderInfoNbt = tag.getCompoundOrEmpty(RENDER_INFO_TAG);
+		renderInfoNbt = in.read(RENDER_INFO_TAG, CompoundTag.CODEC).orElse(new CompoundTag());
 		renderInfo.deserializeFrom(renderInfoNbt);
-		contentsUuid = NBTHelper.getTagValue(tag, UUID_TAG, (t, k) -> Optional.ofNullable(t.get(k))).flatMap(t -> UUIDUtil.CODEC.parse(NbtOps.INSTANCE, t).result()).orElse(null);
-		openTabId = NBTHelper.getInt(tag, OPEN_TAB_ID_TAG).orElse(-1);
-		sortBy = NBTHelper.getString(tag, SORT_BY_TAG).map(SortBy::fromName).orElse(SortBy.NAME);
-		columnsTaken = NBTHelper.getInt(tag, "columnsTaken").orElse(0);
-		loadSlotNumbers(tag);
-		mainColor = NBTHelper.getInt(tag, MAIN_COLOR_TAG).orElse(-1);
-		accentColor = NBTHelper.getInt(tag, ACCENT_COLOR_TAG).orElse(-1);
+		contentsUuid = in.read(UUID, UUIDUtil.CODEC).orElse(null);
+		openTabId = in.getIntOr(OPEN_TAB_ID, -1);
+		sortBy = in.read(SORT_BY, SortBy.CODEC).orElse(SortBy.NAME);
+		columnsTaken = in.getIntOr("columnsTaken", 0);
+		loadSlotNumbers(in);
+		mainColor = in.getIntOr(MAIN_COLOR, -1);
+		accentColor = in.getIntOr(ACCENT_COLOR, -1);
 	}
 
-	protected void loadSlotNumbers(CompoundTag tag) {
-		numberOfInventorySlots = NBTHelper.getInt(tag, NUMBER_OF_INVENTORY_SLOTS_TAG).orElse(0);
-		numberOfUpgradeSlots = NBTHelper.getInt(tag, NUMBER_OF_UPGRADE_SLOTS_TAG).orElse(-1);
+	protected void loadSlotNumbers(ValueInput in) {
+		numberOfInventorySlots = in.getIntOr(NUMBER_OF_INVENTORY_SLOTS, 0);
+		numberOfUpgradeSlots = in.getIntOr(NUMBER_OF_UPGRADE_SLOTS, -1);
 	}
 
-	private void loadContents(CompoundTag tag) {
-		if (tag.contains(CONTENTS_TAG)) {
-			contentsNbt = tag.getCompoundOrEmpty(CONTENTS_TAG);
-			onContentsNbtUpdated();
-		}
+	private void loadContents(ValueInput in) {
+		in.read(CONTENTS_TAG, CompoundTag.CODEC)
+				.ifPresent(contents -> {
+					contentsNbt = contents;
+					onContentsNbtUpdated();
+				});
 	}
 
 	@Override

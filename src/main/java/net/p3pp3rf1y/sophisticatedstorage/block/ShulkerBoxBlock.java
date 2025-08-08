@@ -46,6 +46,7 @@ import net.p3pp3rf1y.sophisticatedcore.init.ModCoreDataComponents;
 import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryHandler;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeHandler;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
+import net.p3pp3rf1y.sophisticatedcore.util.ValueIOHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.client.particle.CustomTintTerrainParticleData;
@@ -144,7 +145,7 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 			UUID storageUuid = stack.get(ModCoreDataComponents.STORAGE_UUID);
 			if (storageUuid != null) {
 				ItemContentsStorage itemContentsStorage = ItemContentsStorage.get();
-				be.loadAdditional(itemContentsStorage.getOrCreateStorageContents(storageUuid), level.registryAccess());
+				be.loadAdditional(ValueIOHelper.inputFromCompoundTag(level.registryAccess(), itemContentsStorage.getOrCreateStorageContents(storageUuid)));
 				itemContentsStorage.removeStorageContents(storageUuid);
 			}
 
@@ -235,7 +236,7 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 		StorageWrapper storageWrapper = be.getStorageWrapper();
 		UUID shulkerBoxUuid = storageWrapper.getContentsUuid().orElse(UUID.randomUUID());
 		CompoundTag shulkerContents = be.saveWithoutMetadata(be.getLevel().registryAccess());
-		shulkerContents.remove(IControllerBoundable.CONTROLLER_POS_TAG);
+		shulkerContents.remove(IControllerBoundable.CONTROLLER_POS);
 		if (!shulkerContents.isEmpty()) {
 			ItemContentsStorage.get().setStorageContents(shulkerBoxUuid, shulkerContents);
 			stack.set(ModCoreDataComponents.STORAGE_UUID, shulkerBoxUuid);

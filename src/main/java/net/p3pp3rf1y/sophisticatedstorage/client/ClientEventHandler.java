@@ -6,6 +6,8 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.MouseHandler;
+import net.minecraft.client.gui.render.pip.OversizedItemRenderer;
+import net.minecraft.client.gui.render.state.pip.OversizedItemRenderState;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.player.LocalPlayer;
@@ -30,10 +32,10 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.client.event.*;
 import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
+import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.neoforged.neoforge.client.settings.IKeyConflictContext;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
-import net.neoforged.neoforge.network.PacketDistributor;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.StorageScreenBase;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.StorageContainerMenuBase;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
@@ -120,6 +122,7 @@ public class ClientEventHandler {
 		modBus.addListener(ClientEventHandler::registerSpecialBlockModelRenderers);
 		modBus.addListener(ClientEventHandler::registerBlockStateModels);
 		modBus.addListener(ClientEventHandler::registerRenderPipelines);
+		modBus.addListener(ClientEventHandler::registerPictureInPictuterRenderers);
 		IEventBus eventBus = NeoForge.EVENT_BUS;
 		eventBus.addListener(ClientStorageContentsTooltip::onWorldLoad);
 		eventBus.addListener(EventPriority.HIGH, ClientEventHandler::handleGuiMouseKeyPress);
@@ -128,6 +131,10 @@ public class ClientEventHandler {
 		eventBus.addListener(ClientEventHandler::onMouseScrolled);
 		eventBus.addListener(ClientEventHandler::onRenderHighlight);
 		eventBus.addListener(ClientEventHandler::onPlayerLoggingIn);
+	}
+
+	private static void registerPictureInPictuterRenderers(RegisterPictureInPictureRenderersEvent event) {
+		event.register(OversizedItemRenderState.class, OversizedItemRenderer::new);
 	}
 
 	private static void registerRenderPipelines(RegisterRenderPipelinesEvent event) {
@@ -156,7 +163,7 @@ public class ClientEventHandler {
 	}
 
 	private static void onPlayerLoggingIn(ClientPlayerNetworkEvent.LoggingIn event) {
-		PacketDistributor.sendToServer(new RequestPlayerSettingsPayload());
+		ClientPacketDistributor.sendToServer(new RequestPlayerSettingsPayload());
 	}
 
 	private static void onRenderHighlight(RenderHighlightEvent.Block event) {
@@ -214,7 +221,7 @@ public class ClientEventHandler {
 		if (stack.getItem() != ModItems.STORAGE_TOOL.get()) {
 			return;
 		}
-		PacketDistributor.sendToServer(new ScrolledToolPayload(evt.getScrollDeltaY() > 0));
+		ClientPacketDistributor.sendToServer(new ScrolledToolPayload(evt.getScrollDeltaY() > 0));
 		evt.setCanceled(true);
 	}
 

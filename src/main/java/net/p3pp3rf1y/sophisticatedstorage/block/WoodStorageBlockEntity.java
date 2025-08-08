@@ -3,16 +3,16 @@ package net.p3pp3rf1y.sophisticatedstorage.block;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.WoodType;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
-import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
 
 import javax.annotation.Nullable;
@@ -20,7 +20,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 public abstract class WoodStorageBlockEntity extends StorageBlockEntity {
-	public static final String PACKED_TAG = "packed";
+	public static final String PACKED = "packed";
 	@Nullable
 	private WoodType woodType = null;
 
@@ -31,26 +31,25 @@ public abstract class WoodStorageBlockEntity extends StorageBlockEntity {
 	}
 
 	@Override
-	protected void saveSynchronizedData(CompoundTag tag) {
-		super.saveSynchronizedData(tag);
+	protected void saveSynchronizedData(ValueOutput out) {
+		super.saveSynchronizedData(out);
 		if (woodType != null) {
-			tag.putString("woodType", woodType.name());
+			out.putString("woodType", woodType.name());
 		}
-		tag.putBoolean(PACKED_TAG, packed);
+		out.putBoolean(PACKED, packed);
 	}
 
 	public CompoundTag getStorageContentsTag() {
 		CompoundTag contents = saveWithoutMetadata(level.registryAccess());
-		contents.putBoolean(PACKED_TAG, false);
+		contents.putBoolean(PACKED, false);
 		return contents;
 	}
 
 	@Override
-	public void loadSynchronizedData(CompoundTag tag, HolderLookup.Provider registries) {
-		super.loadSynchronizedData(tag, registries);
-		woodType = NBTHelper.getString(tag, "woodType").flatMap(woodTypeName -> WoodType.values().filter(wt -> wt.name().equals(woodTypeName)).findFirst())
-				.orElse(getStorageWrapper().hasMainColor() && getStorageWrapper().hasAccentColor() ? null : WoodType.ACACIA);
-		packed = tag.getBooleanOr(PACKED_TAG, false);
+	public void loadSynchronizedData(ValueInput in) {
+		super.loadSynchronizedData(in);
+		woodType = in.read("woodType", WoodType.CODEC).orElse(getStorageWrapper().hasMainColor() && getStorageWrapper().hasAccentColor() ? null : WoodType.ACACIA);
+		packed = in.getBooleanOr(PACKED, false);
 	}
 
 	public Optional<WoodType> getWoodType() {

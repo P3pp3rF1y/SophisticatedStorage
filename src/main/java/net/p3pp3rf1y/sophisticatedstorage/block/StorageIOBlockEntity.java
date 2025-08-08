@@ -12,13 +12,15 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.capabilities.BlockCapabilityCache;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.p3pp3rf1y.sophisticatedcore.controller.ControllerBlockEntityBase;
 import net.p3pp3rf1y.sophisticatedcore.controller.IControllerBoundable;
 import net.p3pp3rf1y.sophisticatedcore.controller.ILinkable;
-import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
+import net.p3pp3rf1y.sophisticatedcore.util.ValueIOHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 
@@ -142,26 +144,24 @@ public class StorageIOBlockEntity extends BlockEntity implements IControllerBoun
 	}
 
 	@Override
-	protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-		super.saveAdditional(tag, registries);
-		saveControllerPos(tag);
+	protected void saveAdditional(ValueOutput out) {
+		super.saveAdditional(out);
+		saveControllerPos(out);
 		if (isLinkedToController) {
-			tag.putBoolean("isLinkedToController", isLinkedToController);
+			out.putBoolean("isLinkedToController", isLinkedToController);
 		}
 	}
 
 	@Override
-	public void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-		super.loadAdditional(tag, registries);
-		loadControllerPos(tag);
-		isLinkedToController = NBTHelper.getBoolean(tag, "isLinkedToController").orElse(false);
+	public void loadAdditional(ValueInput in) {
+		super.loadAdditional(in);
+		loadControllerPos(in);
+		isLinkedToController = in.getBooleanOr("isLinkedToController", false);
 	}
 
 	@Override
 	public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
-		CompoundTag tag = super.getUpdateTag(registries);
-		saveAdditional(tag, registries);
-		return tag;
+		return super.getUpdateTag(registries).merge(ValueIOHelper.collectOutputToTag(registries, this::saveAdditional));
 	}
 
 	@Nullable

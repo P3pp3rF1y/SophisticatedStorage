@@ -14,7 +14,7 @@ import net.p3pp3rf1y.sophisticatedstorage.init.ModDataComponents;
 
 import java.util.Optional;
 
-import static net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity.STORAGE_WRAPPER_TAG;
+import static net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity.STORAGE_WRAPPER;
 
 public class StorageBlockItem extends BlockItemBase implements ITintableBlockItem {
 
@@ -27,18 +27,18 @@ public class StorageBlockItem extends BlockItemBase implements ITintableBlockIte
 		if (customData == null) {
 			return Optional.empty();
 		}
-		return customData.copyTag().getCompound(STORAGE_WRAPPER_TAG);
+		return customData.copyTag().getCompound(STORAGE_WRAPPER);
 	}
 
 	public static Optional<Integer> getMainColorFromComponentHolder(DataComponentGetter componentHolder) {
 		return getEntityWrapperTagFromStack(componentHolder)
-				.flatMap(tag -> tag.getInt(StorageWrapper.MAIN_COLOR_TAG))
+				.flatMap(tag -> tag.getInt(StorageWrapper.MAIN_COLOR))
 				.or(() -> Optional.ofNullable(componentHolder.get(ModCoreDataComponents.MAIN_COLOR)));
 	}
 
 	public static Optional<Integer> getAccentColorFromComponentHolder(DataComponentGetter componentHolder) {
 		return getEntityWrapperTagFromStack(componentHolder)
-				.flatMap(tag -> tag.getInt(StorageWrapper.ACCENT_COLOR_TAG))
+				.flatMap(tag -> tag.getInt(StorageWrapper.ACCENT_COLOR))
 				.or(() -> Optional.ofNullable(componentHolder.get(ModCoreDataComponents.ACCENT_COLOR)));
 	}
 

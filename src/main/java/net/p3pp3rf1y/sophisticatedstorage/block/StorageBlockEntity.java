@@ -7,6 +7,7 @@ import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
@@ -19,6 +20,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.p3pp3rf1y.sophisticatedcore.controller.IControllableStorage;
@@ -29,7 +32,7 @@ import net.p3pp3rf1y.sophisticatedcore.settings.itemdisplay.ItemDisplaySettingsC
 import net.p3pp3rf1y.sophisticatedcore.settings.memory.MemorySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.ITickableUpgrade;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
-import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
+import net.p3pp3rf1y.sophisticatedcore.util.ValueIOHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.network.StorageOpennessPayload;
 import net.p3pp3rf1y.sophisticatedstorage.upgrades.INeighborChangeListenerUpgrade;
@@ -39,7 +42,7 @@ import java.util.*;
 import java.util.function.Supplier;
 
 public abstract class StorageBlockEntity extends BlockEntity implements IControllableStorage, ILinkable, ILockable, Nameable, ITierDisplay, IUpgradeDisplay {
-	public static final String STORAGE_WRAPPER_TAG = "storageWrapper";
+	public static final String STORAGE_WRAPPER = "storageWrapper";
 	public static final String UPDATE_BLOCK_RENDER_TAG = "updateBlockRender";
 	private final StorageWrapper storageWrapper;
 	@Nullable
@@ -67,7 +70,9 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 	private ContentsFilteredItemHandler contentsFilteredItemHandler = null;
 
 	private final Map<DisplayTintKey, Integer> displayItemTints = new HashMap<>();
-	private record DisplayTintKey(int displayIndex, int tintIndex) {}
+
+	private record DisplayTintKey(int displayIndex, int tintIndex) {
+	}
 
 	protected StorageBlockEntity(BlockPos pos, BlockState state, BlockEntityType<? extends StorageBlockEntity> blockEntityType) {
 		super(blockEntityType, pos, state);
@@ -186,43 +191,43 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 	}
 
 	@Override
-	public void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-		super.saveAdditional(tag, registries);
-		saveStorageWrapper(tag);
-		saveSynchronizedData(tag);
-		saveControllerPos(tag);
+	public void saveAdditional(ValueOutput out) {
+		super.saveAdditional(out);
+		saveStorageWrapper(out);
+		saveSynchronizedData(out);
+		saveControllerPos(out);
 		if (isLinkedToController) {
-			tag.putBoolean("isLinkedToController", isLinkedToController);
+			out.putBoolean("isLinkedToController", isLinkedToController);
 		}
 	}
 
-	private void saveStorageWrapper(CompoundTag tag) {
-		tag.put(STORAGE_WRAPPER_TAG, storageWrapper.save(new CompoundTag()));
+	private void saveStorageWrapper(ValueOutput out) {
+		out.putChild(STORAGE_WRAPPER, storageWrapper);
 	}
 
-	private void saveStorageWrapperClientData(CompoundTag tag) {
-		tag.put(STORAGE_WRAPPER_TAG, storageWrapper.saveData(new CompoundTag()));
+	private void saveStorageWrapperClientData(ValueOutput out) {
+		storageWrapper.saveData(out.child(STORAGE_WRAPPER));
 	}
 
-	protected void saveSynchronizedData(CompoundTag tag) {
+	protected void saveSynchronizedData(ValueOutput out) {
 		if (displayName != null) {
-			tag.putString("displayName", Component.Serializer.toJson(displayName, level.registryAccess()));
+			out.store("displayName", ComponentSerialization.CODEC, displayName);
 		}
 		if (updateBlockRender) {
-			tag.putBoolean(UPDATE_BLOCK_RENDER_TAG, true);
+			out.putBoolean(UPDATE_BLOCK_RENDER_TAG, true);
 		}
 		updateBlockRender = false;
 		if (locked) {
-			tag.putBoolean("locked", locked);
+			out.putBoolean("locked", locked);
 		}
 		if (!showLock) {
-			tag.putBoolean("showLock", showLock);
+			out.putBoolean("showLock", showLock);
 		}
 		if (!showTier) {
-			tag.putBoolean("showTier", showTier);
+			out.putBoolean("showTier", showTier);
 		}
 		if (showUpgrades) {
-			tag.putBoolean("showUpgrades", showUpgrades);
+			out.putBoolean("showUpgrades", showUpgrades);
 		}
 	}
 
@@ -272,17 +277,17 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 	}
 
 	@Override
-	public void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-		super.loadAdditional(tag, registries);
-		loadStorageWrapper(tag);
-		loadSynchronizedData(tag, registries);
-		loadControllerPos(tag);
+	public void loadAdditional(ValueInput in) {
+		super.loadAdditional(in);
+		loadStorageWrapper(in);
+		loadSynchronizedData(in);
+		loadControllerPos(in);
 
-		isLinkedToController = NBTHelper.getBoolean(tag, "isLinkedToController").orElse(false);
+		isLinkedToController = in.getBooleanOr("isLinkedToController", false);
 	}
 
-	private void loadStorageWrapper(CompoundTag tag) {
-		NBTHelper.getCompound(tag, STORAGE_WRAPPER_TAG).ifPresent(storageWrapper::load);
+	private void loadStorageWrapper(ValueInput in) {
+		in.child(STORAGE_WRAPPER).ifPresent(storageWrapper::deserialize);
 	}
 
 	@Override
@@ -292,14 +297,14 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		registerWithControllerOnLoad();
 	}
 
-	public void loadSynchronizedData(CompoundTag tag, HolderLookup.Provider registries) {
-		displayName = NBTHelper.getComponent(tag, "displayName", registries).orElse(null);
-		locked = NBTHelper.getBoolean(tag, "locked").orElse(false);
-		showLock = NBTHelper.getBoolean(tag, "showLock").orElse(true);
-		showTier = NBTHelper.getBoolean(tag, "showTier").orElse(true);
-		showUpgrades = NBTHelper.getBoolean(tag, "showUpgrades").orElse(false);
+	public void loadSynchronizedData(ValueInput in) {
+		displayName = in.read("displayName", ComponentSerialization.CODEC).orElse(null);
+		locked = in.getBooleanOr("locked", false);
+		showLock = in.getBooleanOr("showLock", true);
+		showTier = in.getBooleanOr("showTier", true);
+		showUpgrades = in.getBooleanOr("showUpgrades", false);
 		if (level != null && level.isClientSide) {
-			if (tag.getBooleanOr(UPDATE_BLOCK_RENDER_TAG, false)) {
+			if (in.getBooleanOr(UPDATE_BLOCK_RENDER_TAG, false)) {
 				WorldHelper.notifyBlockUpdate(this);
 				displayItemTints.clear();
 			}
@@ -328,14 +333,9 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 	}
 
 	@Override
-	public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider registries) {
-		CompoundTag tag = pkt.getTag();
-		if (tag.isEmpty()) {
-			return;
-		}
-
-		loadStorageWrapper(tag);
-		loadSynchronizedData(tag, registries);
+	public void onDataPacket(Connection net, ValueInput in) {
+		loadStorageWrapper(in);
+		loadSynchronizedData(in);
 	}
 
 	public void setUpdateBlockRender() {
@@ -344,11 +344,11 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 
 	@Override
 	public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
-		CompoundTag tag = super.getUpdateTag(registries);
-		updateBlockRender = true;
-		saveStorageWrapperClientData(tag);
-		saveSynchronizedData(tag);
-		return tag;
+		return super.getUpdateTag(registries).merge(ValueIOHelper.collectOutputToTag(registries, out -> {
+			updateBlockRender = true;
+			saveStorageWrapperClientData(out);
+			saveSynchronizedData(out);
+		}));
 	}
 
 	public static void serverTick(Level level, BlockPos blockPos, StorageBlockEntity storageBlockEntity) {

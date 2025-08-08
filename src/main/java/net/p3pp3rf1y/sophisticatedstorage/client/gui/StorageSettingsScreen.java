@@ -2,7 +2,7 @@ package net.p3pp3rf1y.sophisticatedstorage.client.gui;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
-import net.neoforged.neoforge.network.PacketDistributor;
+import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.SettingsScreen;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.Position;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.SettingsContainerMenu;
@@ -21,7 +21,7 @@ public class StorageSettingsScreen extends SettingsScreen {
 
 	@Override
 	protected void sendStorageInventoryScreenOpenMessage() {
-		PacketDistributor.sendToServer(new OpenStorageInventoryPayload(menu.getBlockPosition()));
+		ClientPacketDistributor.sendToServer(new OpenStorageInventoryPayload(menu.getBlockPosition()));
 	}
 
 	public static StorageSettingsScreen constructScreen(SettingsContainerMenu<?> screenContainer, Inventory inventory, Component title) {

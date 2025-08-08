@@ -59,29 +59,48 @@ public record BarrelItemModel(BarrelBlockStateModelBase model, @Nullable BarrelB
 
 	@Override
 	public void update(ItemStackRenderState state, ItemStack stack, ItemModelResolver itemModelResolver, ItemDisplayContext itemDisplayContext, @Nullable ClientLevel clientLevel, @Nullable LivingEntity livingEntity, int i) {
+		state.appendModelIdentityElement(this);
 		boolean flatTop = BarrelBlockItem.isFlatTop(stack);
 		BarrelBlockStateModelBase updatedModel = flatTop && flatTopModel != null ? flatTopModel : model;
+		updatedModel.setFlatTop(flatTop);
+		state.appendModelIdentityElement(flatTop);
 
 		boolean hasMainColor = StorageBlockItem.getMainColorFromComponentHolder(stack).isPresent();
 		updatedModel.setHasMainColor(hasMainColor);
+		state.appendModelIdentityElement(hasMainColor);
+
 		boolean hasAccentColor = StorageBlockItem.getAccentColorFromComponentHolder(stack).isPresent();
 		updatedModel.setHasAccentColor(hasAccentColor);
+		state.appendModelIdentityElement(hasAccentColor);
+
 		Map<BarrelMaterial, ResourceLocation> materials = BarrelBlockItem.getMaterials(stack);
 		updatedModel.setBarrelMaterials(materials);
+		state.appendModelIdentityElement(materials);
+
 		String woodName = WoodStorageBlockItem.getWoodType(stack).map(WoodType::name)
 				.orElse(hasMainColor && hasAccentColor && materials.isEmpty() ? null : WoodType.ACACIA.name());
 		updatedModel.setWoodName(woodName);
+		if (woodName != null) {
+			state.appendModelIdentityElement(woodName);
+		}
+
 		boolean packed = WoodStorageBlockItem.isPacked(stack);
 		updatedModel.setPacked(packed);
-		updatedModel.setFlatTop(flatTop);
-		updatedModel.setShowsTier(StorageBlockItem.showsTier(stack));
+		state.appendModelIdentityElement(packed);
+
+		boolean showsTier = StorageBlockItem.showsTier(stack);
+		updatedModel.setShowsTier(showsTier);
+		state.appendModelIdentityElement(showsTier);
+
 		updatedModel.setBarrelItem(stack.getItem());
+		state.appendModelIdentityElement(stack.getItem());
 
 		ItemStackRenderState.LayerRenderState layerState = state.newLayer();
 		int[] tintArray = new int[tints.size()];
 
 		for(int j = 0; j < tintArray.length; ++j) {
 			tintArray[j] = tints.get(j).calculate(stack, clientLevel, livingEntity);
+			state.appendModelIdentityElement(tintArray[j]);
 		}
 		int[] aint = layerState.prepareTintLayers(tintArray.length);
 		System.arraycopy(tintArray, 0, aint, 0, tintArray.length);

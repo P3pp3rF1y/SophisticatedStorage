@@ -29,6 +29,7 @@ import net.minecraft.world.level.block.state.properties.WoodType;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.TranslationHelper;
 import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryHandler;
 import net.p3pp3rf1y.sophisticatedcore.util.ItemBase;
+import net.p3pp3rf1y.sophisticatedcore.util.ValueIOHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.block.*;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageTranslationHelper;
@@ -131,13 +132,12 @@ public class StorageTierUpgradeItem extends ItemBase {
 		}
 
 		private StorageBlockEntity upgradeStorageBlock(BlockPos pos, Level level, StorageBlockEntity blockEntity, BlockState newBlockState, int newInventorySize, int newUpgradeSize) {
-			CompoundTag beTag = new CompoundTag();
-			blockEntity.saveAdditional(beTag, level.registryAccess());
-
+			CompoundTag beTag = ValueIOHelper.collectOutputToTag(level.registryAccess(), blockEntity::saveAdditional);
 			StorageBlockEntity newBlockEntity = newBlock().newBlockEntity(pos, newBlockState);
 			//noinspection ConstantConditions - all storage blocks create a block entity so no chancde of null here
 			newBlockEntity.setBeingUpgraded(true);
-			newBlockEntity.loadAdditional(beTag, level.registryAccess());
+
+			newBlockEntity.loadAdditional(ValueIOHelper.inputFromCompoundTag(level.registryAccess(), beTag));
 
 			blockEntity.setBeingUpgraded(true);
 			level.removeBlockEntity(pos);

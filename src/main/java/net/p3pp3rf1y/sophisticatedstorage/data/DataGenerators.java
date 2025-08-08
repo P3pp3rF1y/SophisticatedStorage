@@ -6,7 +6,7 @@ public class DataGenerators {
 	private DataGenerators() {}
 
 	public static void gatherData(GatherDataEvent.Client evt) {
-		evt.createBlockAndItemTags(BlockTagProvider::new, ItemTagProvider::new);
+		evt.createBlockAndItemTags(BlockTagProvider::new, (packOutput, registries, blockTagProvider) -> new ItemTagProvider(packOutput, registries));
 		evt.createProvider(StorageBlockLootProvider::new);
 		evt.createProvider(StorageRecipeProvider.Runner::new);
 		evt.createProvider(StorageModelProvider::new);

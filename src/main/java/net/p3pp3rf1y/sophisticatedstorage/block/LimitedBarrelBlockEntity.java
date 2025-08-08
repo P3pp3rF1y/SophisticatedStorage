@@ -2,9 +2,6 @@ package net.p3pp3rf1y.sophisticatedstorage.block;
 
 import com.mojang.serialization.Codec;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.IntTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -16,6 +13,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryHandler;
 import net.p3pp3rf1y.sophisticatedcore.settings.SettingsHandler;
@@ -255,32 +254,32 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 	}
 
 	@Override
-	public void loadSynchronizedData(CompoundTag tag, HolderLookup.Provider registries) {
-		super.loadSynchronizedData(tag, registries);
-		showCounts = NBTHelper.getBoolean(tag, "showCounts").orElse(true);
-		showFillLevels = NBTHelper.getBoolean(tag, "showFillLevels").orElse(false);
-		slotColors = NBTHelper.getMap(tag, "slotColors", Integer::valueOf, (tagName, t) -> t.asInt().map(DyeColor::byId)).orElseGet(HashMap::new);
+	public void loadSynchronizedData(ValueInput in) {
+		super.loadSynchronizedData(in);
+		showCounts = in.getBooleanOr("showCounts", true);
+		showFillLevels = in.getBooleanOr("showFillLevels", false);
+		slotColors = in.read("slotColors", SLOT_COLORS_CODEC).orElseGet(HashMap::new);
 	}
 
 	@Override
-	public void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-		super.loadAdditional(tag, registries);
+	public void loadAdditional(ValueInput out) {
+		super.loadAdditional(out);
 		if (level == null || !level.isClientSide()) {
 			setFixedSettings(getStorageWrapper(), getStorageWrapper().getNumberOfInventorySlots());
 		}
 	}
 
 	@Override
-	protected void saveSynchronizedData(CompoundTag tag) {
-		super.saveSynchronizedData(tag);
+	protected void saveSynchronizedData(ValueOutput out) {
+		super.saveSynchronizedData(out);
 		if (!showCounts) {
-			tag.putBoolean("showCounts", showCounts);
+			out.putBoolean("showCounts", showCounts);
 		}
 		if (showFillLevels) {
-			tag.putBoolean("showFillLevels", showFillLevels);
+			out.putBoolean("showFillLevels", showFillLevels);
 		}
 		if (!slotColors.isEmpty()) {
-			NBTHelper.putMap(tag, "slotColors", slotColors, String::valueOf, color -> IntTag.valueOf(color.getId()));
+			out.store("slotColors", SLOT_COLORS_CODEC, slotColors);
 		}
 	}
 

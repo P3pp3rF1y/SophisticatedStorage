@@ -16,8 +16,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.ShulkerBoxBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.ShulkerBoxBlockEntity;
@@ -25,7 +23,6 @@ import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 
 import static net.p3pp3rf1y.sophisticatedstorage.client.render.DisplayItemRenderer.getNorthBasedRotation;
 
-@OnlyIn(Dist.CLIENT)
 public class ShulkerBoxRenderer extends StorageRenderer<ShulkerBoxBlockEntity> {
 	private static final String ENTITY_SHULKER_BOX_FOLDER = "entity/shulker_box/";
 
@@ -115,6 +112,10 @@ public class ShulkerBoxRenderer extends StorageRenderer<ShulkerBoxBlockEntity> {
 		displayItemRenderer.renderDisplayItem(shulkerBoxEntity, poseStack, bufferSource, packedLight, packedOverlay);
 		LockRenderer.renderLock(shulkerBoxEntity, poseStack, bufferSource, packedLight, packedOverlay, 15F / 16F, this::holdsToolInToggleLockOrLockDisplay);
 		poseStack.popPose();
+	}
+
+	public ModelPart rootModelPart() {
+		return model.root();
 	}
 
 	private Material getTierMaterial(Block block) {

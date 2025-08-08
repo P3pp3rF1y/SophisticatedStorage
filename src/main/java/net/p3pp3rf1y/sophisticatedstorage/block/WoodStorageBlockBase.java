@@ -28,6 +28,7 @@ import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryHandler;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.ITickableUpgrade;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeHandler;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
+import net.p3pp3rf1y.sophisticatedcore.util.ValueIOHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
@@ -170,7 +171,7 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 				ItemContentsStorage itemContentsStorage = ItemContentsStorage.get();
 				if (itemContentsStorage.has(storageUuid)) {
 					be.setBeingUpgraded(true);
-					be.loadAdditional(itemContentsStorage.getOrCreateStorageContents(storageUuid), level.registryAccess());
+					be.loadAdditional(ValueIOHelper.inputFromCompoundTag(level.registryAccess(), itemContentsStorage.getOrCreateStorageContents(storageUuid)));
 					itemContentsStorage.removeStorageContents(storageUuid);
 					setNewSize(stack, be);
 					setTicking(level, pos, state, !be.getStorageWrapper().getUpgradeHandler().getWrappersThatImplement(ITickableUpgrade.class).isEmpty());

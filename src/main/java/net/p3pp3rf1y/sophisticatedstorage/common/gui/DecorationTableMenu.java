@@ -10,9 +10,9 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import net.neoforged.neoforge.items.SlotItemHandler;
-import net.neoforged.neoforge.network.PacketDistributor;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.ISyncedContainer;
 import net.p3pp3rf1y.sophisticatedcore.network.SyncContainerClientDataPayload;
 import net.p3pp3rf1y.sophisticatedcore.util.SlotRange;
@@ -251,11 +251,11 @@ public class DecorationTableMenu extends AbstractContainerMenu implements ISynce
 		return new DecorationTableMenu(containerId, playerInventory.player, buffer.readBlockPos());
 	}
 
-	public void setSlotMaterialInheritance(int slot, boolean inheritance) {
+	public void setSlotMaterialInheritance(DecorationTableBlockEntity.PartSlot slot, boolean inheritance) {
 		blockEntity.setSlotMaterialInheritance(slot, inheritance);
 		sendToServer(tag -> {
 			tag.putString("action", SET_INHERITANCE_ACTION);
-			tag.putInt("slot", slot);
+			tag.putString("slot", slot.getSerializedName());
 			tag.putBoolean("inheritance", inheritance);
 		});
 	}
@@ -270,11 +270,19 @@ public class DecorationTableMenu extends AbstractContainerMenu implements ISynce
 		sendToServer(tag -> tag.putInt("accentColor", color));
 	}
 
-	public boolean isSlotMaterialInherited(int slot) {
+	public boolean isSlotMaterialInherited(int slotIndex) {
+		return isSlotMaterialInherited(DecorationTableBlockEntity.PartSlot.fromSlotIndex(slotIndex));
+	}
+
+	public boolean isSlotMaterialInherited(DecorationTableBlockEntity.PartSlot slot) {
 		return blockEntity.isSlotMaterialInherited(slot);
 	}
 
-	public ItemStack getInheritedItem(int childSlot) {
+	public ItemStack getInheritedItem(int slotIndex) {
+		return getInheritedItem(DecorationTableBlockEntity.PartSlot.fromSlotIndex(slotIndex));
+	}
+
+	public ItemStack getInheritedItem(DecorationTableBlockEntity.PartSlot childSlot) {
 		return blockEntity.getInheritedItem(childSlot);
 	}
 
@@ -297,7 +305,7 @@ public class DecorationTableMenu extends AbstractContainerMenu implements ISynce
 
 		CompoundTag data = new CompoundTag();
 		addData.accept(data);
-		PacketDistributor.sendToServer(new SyncContainerClientDataPayload(data));
+		ClientPacketDistributor.sendToServer(new SyncContainerClientDataPayload(data));
 	}
 
 	public Map<ResourceLocation, Integer> getPartsNeeded() {
@@ -312,9 +320,9 @@ public class DecorationTableMenu extends AbstractContainerMenu implements ISynce
 	public void handlePacket(CompoundTag data) {
 		data.getString("action").ifPresent(action -> {
 			if (action.equals(SET_INHERITANCE_ACTION)) {
-				data.getInt("slot").ifPresent(slot -> {
+				data.getString("slot").ifPresent(slotName -> {
 					data.getBoolean("inheritance").ifPresent(inheritance -> {
-						setSlotMaterialInheritance(slot, inheritance);
+						setSlotMaterialInheritance(DecorationTableBlockEntity.PartSlot.fromName(slotName), inheritance);
 					});
 				});
 			}

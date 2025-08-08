@@ -9,6 +9,7 @@ import com.mojang.serialization.MapCodec;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -21,12 +22,15 @@ import net.minecraft.world.phys.Vec3;
 import net.p3pp3rf1y.sophisticatedstorage.block.ChestBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.ChestBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.block.ITintableBlockItem;
+import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.item.ChestBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
+import org.joml.Vector3f;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
+import java.util.Set;
 
 public class ChestItemRenderer implements SpecialModelRenderer<ChestItemRenderer.ChestAttributes> {
 	private final LoadingCache<BlockItem, ChestBlockEntity> chestBlockEntities = CacheBuilder.newBuilder().maximumSize(512L).weakKeys().build(new CacheLoader<>() {
@@ -83,6 +87,16 @@ public class ChestItemRenderer implements SpecialModelRenderer<ChestItemRenderer
 
 		ChestBlockEntity chestBlockEntity = chestBlockEntities.getUnchecked(chestAttributes.blockItem());
 		renderBlockEntity(chestAttributes, poseStack, buffer, packedLight, packedOverlay, chestBlockEntity);
+	}
+
+	@Override
+	public void getExtents(Set<Vector3f> set) {
+		PoseStack posestack = new PoseStack();
+		ChestBlockEntity chestBlockEntity = chestBlockEntities.getUnchecked(ModBlocks.CHEST_ITEM.get());
+		BlockEntityRenderer<ChestBlockEntity> blockentityrenderer = Minecraft.getInstance().getBlockEntityRenderDispatcher().getRenderer(chestBlockEntity);
+		if (blockentityrenderer instanceof ChestRenderer chestRenderer) {
+			chestRenderer.rootModelPart().getExtentsForGui(posestack, set);
+		}
 	}
 
 	private void renderBlockEntity(ChestAttributes chestAttributes, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay, ChestBlockEntity chestBlockEntity) {

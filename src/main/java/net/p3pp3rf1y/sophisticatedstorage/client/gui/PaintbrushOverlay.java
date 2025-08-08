@@ -2,7 +2,6 @@ package net.p3pp3rf1y.sophisticatedstorage.client.gui;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.LayeredDraw;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -11,6 +10,7 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
+import net.neoforged.neoforge.client.gui.GuiLayer;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockBase;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
@@ -37,7 +37,7 @@ public class PaintbrushOverlay {
 		return ITEM_REQUIREMENTS_CACHE;
 	}
 
-	public static final LayeredDraw.Layer HUD_PAINTBRUSH_INFO = (guiGraphics, deltaTracker) -> {
+	public static final GuiLayer HUD_PAINTBRUSH_INFO = (guiGraphics, deltaTracker) -> {
 		Minecraft mc = Minecraft.getInstance();
 		if (mc.screen != null) {
 			if (!mc.screen.isPauseScreen()) {

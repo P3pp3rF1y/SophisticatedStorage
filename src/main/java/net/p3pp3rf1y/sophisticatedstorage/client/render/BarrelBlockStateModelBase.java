@@ -7,8 +7,9 @@ import com.google.common.cache.LoadingCache;
 import com.mojang.math.Axis;
 import com.mojang.math.Transformation;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.block.model.*;
+import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -305,10 +306,10 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 		}
 
 		List<BlockModelPart> parts = new ArrayList<>();
-		parts.add(new SimpleModelWrapper(cutoutQuadCollectionBuilder.build(), true, particleIcon(), RenderType.cutout()));
+		parts.add(new SimpleModelWrapper(cutoutQuadCollectionBuilder.build(), true, particleIcon(), ChunkSectionLayer.CUTOUT));
 		QuadCollection translucentQuads = translucentQuadCollectionBuilder.build();
 		if (!translucentQuads.getAll().isEmpty()) {
-			parts.add(new SimpleModelWrapper(translucentQuads, true, particleIcon(), RenderType.TRANSLUCENT));
+			parts.add(new SimpleModelWrapper(translucentQuads, true, particleIcon(), ChunkSectionLayer.TRANSLUCENT));
 		}
 
 		return parts;
@@ -452,7 +453,7 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 				for (ItemStackRenderState.LayerRenderState layer : renderState.layers) {
 					if (layer.specialRenderer == null) {
 						int rotation = displayItem.getRotation();
-						QuadCollection.Builder builder = layer.renderType == RenderType.translucent() ? translucentBuilder : cutoutBuilder;
+						QuadCollection.Builder builder = layer.renderType == Sheets.translucentItemSheet() ? translucentBuilder : cutoutBuilder;
 
 						addRenderedItem(builder, state, item, renderState, layer.prepareQuadList(), layer.transform, DisplayItemRenderer.isGui3d(renderState), rotation, index, displayItemsCount);
 					}

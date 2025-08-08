@@ -2,7 +2,7 @@ package net.p3pp3rf1y.sophisticatedstorage.client.gui;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.neoforged.neoforge.network.PacketDistributor;
+import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.Tab;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.controls.ImageButton;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.*;
@@ -20,6 +20,6 @@ public class BackToStorageTab extends Tab {
 
 	@Override
 	protected void onTabIconClicked(int button) {
-		PacketDistributor.sendToServer(new OpenStorageInventoryPayload(pos));
+		ClientPacketDistributor.sendToServer(new OpenStorageInventoryPayload(pos));
 	}
 }

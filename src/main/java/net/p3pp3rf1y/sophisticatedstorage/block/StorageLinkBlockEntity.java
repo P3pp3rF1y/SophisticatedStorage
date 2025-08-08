@@ -1,12 +1,12 @@
 package net.p3pp3rf1y.sophisticatedstorage.block;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.p3pp3rf1y.sophisticatedcore.controller.ControllerBlockEntityBase;
 import net.p3pp3rf1y.sophisticatedcore.controller.ILinkable;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
@@ -28,15 +28,15 @@ public class StorageLinkBlockEntity extends BlockEntity implements ILinkable {
 	}
 
 	@Override
-	protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-		super.saveAdditional(tag, registries);
-		saveControllerPos(tag);
+	protected void saveAdditional(ValueOutput out) {
+		super.saveAdditional(out);
+		saveControllerPos(out);
 	}
 
 	@Override
-	public void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-		super.loadAdditional(tag, registries);
-		loadControllerPos(tag);
+	public void loadAdditional(ValueInput in) {
+		super.loadAdditional(in);
+		loadControllerPos(in);
 	}
 
 	@Override

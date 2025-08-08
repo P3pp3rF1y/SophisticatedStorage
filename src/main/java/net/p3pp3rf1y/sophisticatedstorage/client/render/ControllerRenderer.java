@@ -145,10 +145,10 @@ public class ControllerRenderer implements BlockEntityRenderer<ControllerBlockEn
 	}
 
 	@Override
-	public boolean shouldRenderOffScreen(ControllerBlockEntity blockEntity) {
+	public boolean shouldRenderOffScreen() {
 		return true;
 	}
-
+	
 	@Override
 	public AABB getRenderBoundingBox(ControllerBlockEntity blockEntity) {
 		return new AABB(blockEntity.getBlockPos()).inflate(Config.SERVER.controllerRange.getAsInt());

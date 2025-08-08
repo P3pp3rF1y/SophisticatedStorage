@@ -2,7 +2,6 @@ package net.p3pp3rf1y.sophisticatedstorage.block;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.TickTask;
 import net.minecraft.server.level.ServerLevel;
@@ -14,13 +13,14 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.ChestLidController;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.ChestType;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryHandler;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.DisplaySide;
 import net.p3pp3rf1y.sophisticatedcore.settings.ISettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.settings.SettingsHandler;
 import net.p3pp3rf1y.sophisticatedcore.settings.itemdisplay.ItemDisplaySettingsCategory;
-import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
@@ -34,7 +34,7 @@ import java.util.function.BiConsumer;
 
 public class ChestBlockEntity extends WoodStorageBlockEntity {
 	public static final String STORAGE_TYPE = "chest";
-	public static final String DOUBLE_CHEST_MAIN_POS_TAG = "doubleMainPos";
+	public static final String DOUBLE_CHEST_MAIN_POS = "doubleMainPos";
 
 	private final ChestLidController chestLidController = new ChestLidController();
 
@@ -332,23 +332,23 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 	}
 
 	@Override
-	public void loadSynchronizedData(CompoundTag tag, HolderLookup.Provider registries) {
-		super.loadSynchronizedData(tag, registries);
-		doubleMainPos = NBTHelper.getLong(tag, DOUBLE_CHEST_MAIN_POS_TAG).map(BlockPos::of).orElse(null);
+	public void loadSynchronizedData(ValueInput in) {
+		super.loadSynchronizedData(in);
+		doubleMainPos = in.read(DOUBLE_CHEST_MAIN_POS, BlockPos.CODEC).orElse(null);
 	}
 
 	@Override
-	protected void saveSynchronizedData(CompoundTag tag) {
-		super.saveSynchronizedData(tag);
+	protected void saveSynchronizedData(ValueOutput out) {
+		super.saveSynchronizedData(out);
 		if (doubleMainPos != null) {
-			tag.putLong(DOUBLE_CHEST_MAIN_POS_TAG, doubleMainPos.asLong());
+			out.store(DOUBLE_CHEST_MAIN_POS, BlockPos.CODEC, doubleMainPos);
 		}
 	}
 
 	@Override
 	public CompoundTag getStorageContentsTag() {
 		CompoundTag tag = super.getStorageContentsTag();
-		tag.remove(DOUBLE_CHEST_MAIN_POS_TAG);
+		tag.remove(DOUBLE_CHEST_MAIN_POS);
 		return tag;
 	}
 
@@ -414,8 +414,8 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 	}
 
 	@Override
-	public void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-		super.loadAdditional(tag, registries);
+	public void loadAdditional(ValueInput in) {
+		super.loadAdditional(in);
 		if (!isBeingUpgraded() && getBlockState().getValue(ChestBlock.TYPE) == ChestType.SINGLE) {
 			if (getBlockState().getBlock() instanceof ChestBlock chestBlock
 					&& getStorageWrapper().getInventoryHandler().getSlots() > chestBlock.getNumberOfInventorySlots()) {

@@ -40,8 +40,11 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity> {
 
 	private final Map<ChestType, ChestSubRenderer> chestSubRenderers;
 
+	private final ModelPart root;
+
 	public ChestRenderer(BlockEntityRendererProvider.Context context) {
 		ModelPart modelpart = context.bakeLayer(ClientEventHandler.CHEST_LAYER);
+		root = modelpart;
 		ChestSubRenderer singleChestRenderer = new ChestSubRenderer(ChestType.SINGLE, modelpart.getChild(LID), modelpart.getChild(BOTTOM), modelpart.getChild(LOCK));
 		modelpart = context.bakeLayer(ClientEventHandler.CHEST_RIGHT_LAYER);
 		ChestSubRenderer doubleChestRightRenderer = new ChestSubRenderer(ChestType.RIGHT, modelpart.getChild(LID), modelpart.getChild(BOTTOM), modelpart.getChild(LOCK));
@@ -77,6 +80,10 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity> {
 		partDefinition.addOrReplaceChild(LID, CubeListBuilder.create().texOffs(0, 0).addBox(0.0F, 0.0F, 0.0F, 15.0F, 5.0F, 14.0F), PartPose.offset(0.0F, 9.0F, 1.0F));
 		partDefinition.addOrReplaceChild(LOCK, CubeListBuilder.create().texOffs(0, 0).addBox(0.0F, -2.0F, 14.0F, 1.0F, 4.0F, 1.0F), PartPose.offset(0.0F, 9.0F, 1.0F));
 		return LayerDefinition.create(meshDefinition, 64, 64);
+	}
+
+	public ModelPart rootModelPart() {
+		return root;
 	}
 
 	@Override

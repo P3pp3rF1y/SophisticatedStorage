@@ -2,17 +2,17 @@ package net.p3pp3rf1y.sophisticatedstorage.client.gui;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.LayeredDraw;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.DyeColor;
+import net.neoforged.neoforge.client.gui.GuiLayer;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageToolItem;
 
 public class ToolInfoOverlay {
 
-	public static final LayeredDraw.Layer HUD_TOOL_INFO = (guiGraphics, deltaTracker) -> {
+	public static final GuiLayer HUD_TOOL_INFO = (guiGraphics, deltaTracker) -> {
 		LocalPlayer player = Minecraft.getInstance().player;
 		if (player == null) {
 			return;
