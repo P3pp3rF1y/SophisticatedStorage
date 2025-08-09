@@ -81,6 +81,9 @@ public class ShulkerBoxRenderer extends StorageRenderer<ShulkerBoxBlockEntity> {
 			VertexConsumer vertexconsumer = getTierMaterial(blockState.getBlock()).buffer(bufferSource, RenderType::entityCutoutNoCull);
 			model.renderToBuffer(poseStack, vertexconsumer, packedLight, packedOverlay);
 		} else if (holdsItemThatShowsHiddenTiers()) {
+			if (bufferSource instanceof MultiBufferSource.BufferSource multiBufferSource) {
+				multiBufferSource.endBatch();
+			}
 			TextureAtlasSprite sprite = getTierMaterial(blockState.getBlock()).sprite();
 			VertexConsumer vertexconsumer = sprite.wrap(bufferSource.getBuffer(RenderType.entityTranslucent(sprite.atlasLocation())));
 			poseStack.pushPose();

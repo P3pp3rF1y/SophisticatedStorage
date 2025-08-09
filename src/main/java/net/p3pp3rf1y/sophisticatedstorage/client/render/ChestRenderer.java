@@ -247,6 +247,9 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity> {
 
 		private void renderHiddenTier(PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
 			TextureAtlasSprite sprite = tierMaterial.sprite();
+			if (bufferSource instanceof MultiBufferSource.BufferSource multiBufferSource) {
+				multiBufferSource.endBatch();
+			}
 			VertexConsumer translucentConsumer = sprite.wrap(bufferSource.getBuffer(RenderType.entityTranslucent(sprite.atlasLocation())));
 			poseStack.pushPose();
 			poseStack.translate(-0.005D, -0.005D, -0.005D);
