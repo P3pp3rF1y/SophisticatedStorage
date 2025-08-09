@@ -110,7 +110,15 @@ public class DisplayItemRenderer {
 			poseStack.scale(UPGRADE_ITEM_SCALE, UPGRADE_ITEM_SCALE, UPGRADE_ITEM_SCALE);
 			ItemStack itemToRender = upgradeItem.isEmpty() ? EMPTY_UPGRADE_STACK : upgradeItem;
 			BakedModel itemModel = minecraft.getItemRenderer().getModel(itemToRender, null, minecraft.player, 0);
-			MultiBufferSource buffer = upgradeItem.isEmpty() ? TranslucentVertexConsumer.wrapBuffer(bufferSource, 128) : bufferSource;
+			MultiBufferSource buffer;
+			if (upgradeItem.isEmpty()) {
+				if (bufferSource instanceof MultiBufferSource.BufferSource multiBufferSource) {
+					multiBufferSource.endBatch();
+				}
+				buffer = TranslucentVertexConsumer.wrapBuffer(bufferSource, 128);
+			} else {
+				buffer = bufferSource;
+			}
 			minecraft.getItemRenderer().render(itemToRender, ItemDisplayContext.FIXED, false, poseStack, buffer, packedLight, packedOverlay, itemModel);
 			if (renderDisabledUpgradeDisplay) {
 				poseStack.pushPose();
