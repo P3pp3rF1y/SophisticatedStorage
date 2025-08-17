@@ -68,9 +68,9 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 			return CacheBuilder.newBuilder().expireAfterAccess(10L, TimeUnit.MINUTES).build();
 		}
 	});
-	private static final IQuadTransformer SCALE_BIG_2D_ITEM = QuadTransformers.applying(new Transformation(null, null, new Vector3f(BIG_ITEM_SCALE, BIG_ITEM_SCALE, BIG_ITEM_SCALE), null));
-	private static final IQuadTransformer SCALE_SMALL_3D_ITEM = QuadTransformers.applying(new Transformation(null, null, new Vector3f(SMALL_BLOCK_ITEM_SCALE, SMALL_BLOCK_ITEM_SCALE, SMALL_BLOCK_ITEM_SCALE), null));
-	private static final IQuadTransformer SCALE_SMALL_2D_ITEM = QuadTransformers.applying(new Transformation(null, null, new Vector3f(SMALL_ITEM_SCALE, SMALL_ITEM_SCALE, SMALL_ITEM_SCALE), null));
+	private static final IQuadTransformer SCALE_BIG_ITEM = QuadTransformers.applying(new Transformation(null, null, new Vector3f(BIG_ITEM_SCALE, BIG_ITEM_SCALE, BIG_ITEM_SCALE), null));
+	private static final IQuadTransformer SCALE_SMALL_BLOCK_ITEM = QuadTransformers.applying(new Transformation(null, null, new Vector3f(SMALL_BLOCK_ITEM_SCALE, SMALL_BLOCK_ITEM_SCALE, SMALL_BLOCK_ITEM_SCALE), null));
+	private static final IQuadTransformer SCALE_SMALL_ITEM = QuadTransformers.applying(new Transformation(null, null, new Vector3f(SMALL_ITEM_SCALE, SMALL_ITEM_SCALE, SMALL_ITEM_SCALE), null));
 	private static final Cache<Integer, IQuadTransformer> DIRECTION_MOVE_BACK_TO_SIDE = CacheBuilder.newBuilder().expireAfterAccess(10L, TimeUnit.MINUTES).build();
 	private static final ModelProperty<String> WOOD_NAME = new ModelProperty<>();
 	private static final ModelProperty<Boolean> IS_PACKED = new ModelProperty<>();
@@ -547,14 +547,14 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 		List<BakedQuad> quads = model.getQuads(null, dir, rand);
 		quads = MOVE_TO_CORNER.process(quads);
 		quads = QuadTransformers.applying(toTransformation(model.getTransforms().getTransform(ItemDisplayContext.FIXED))).process(quads);
-		if (!model.isGui3d()) {
+		if (!model.isGui3d() || !(displayItem.getItem() instanceof BlockItem)) {
 			if (displayItemCount == 1) {
-				quads = SCALE_BIG_2D_ITEM.process(quads);
+				quads = SCALE_BIG_ITEM.process(quads);
 			} else {
-				quads = SCALE_SMALL_2D_ITEM.process(quads);
+				quads = SCALE_SMALL_ITEM.process(quads);
 			}
 		} else if (displayItemCount > 1) {
-			quads = SCALE_SMALL_3D_ITEM.process(quads);
+			quads = SCALE_SMALL_BLOCK_ITEM.process(quads);
 		}
 
 		if (rotation != 0) {
