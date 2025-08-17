@@ -157,9 +157,9 @@ public class DisplayItemRenderer {
 
 		float itemScale;
 		if (displayItemCount == 1) {
-			itemScale = stack.getItem() instanceof BlockItem ? 1.0f : BIG_ITEM_SCALE;
+			itemScale = stack.getItem() instanceof BlockItem && isGui3d(itemStackRenderState) ? 1.0f : BIG_ITEM_SCALE;
 		} else {
-			itemScale = stack.getItem() instanceof BlockItem ? SMALL_BLOCK_ITEM_SCALE : SMALL_ITEM_SCALE;
+			itemScale = stack.getItem() instanceof BlockItem && isGui3d(itemStackRenderState) ? SMALL_BLOCK_ITEM_SCALE : SMALL_ITEM_SCALE;
 		}
 		poseStack.scale(itemScale, itemScale, itemScale);
 

@@ -23,10 +23,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.context.ContextMap;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemDisplayContext;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
+import net.minecraft.world.item.*;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.WoodType;
@@ -67,9 +64,9 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 			return CacheBuilder.newBuilder().expireAfterAccess(10L, TimeUnit.MINUTES).build();
 		}
 	});
-	private static final IQuadTransformer SCALE_BIG_2D_ITEM = QuadTransformers.applying(new Transformation(null, null, new Vector3f(BIG_ITEM_SCALE, BIG_ITEM_SCALE, BIG_ITEM_SCALE), null));
-	private static final IQuadTransformer SCALE_SMALL_3D_ITEM = QuadTransformers.applying(new Transformation(null, null, new Vector3f(SMALL_BLOCK_ITEM_SCALE, SMALL_BLOCK_ITEM_SCALE, SMALL_BLOCK_ITEM_SCALE), null));
-	private static final IQuadTransformer SCALE_SMALL_2D_ITEM = QuadTransformers.applying(new Transformation(null, null, new Vector3f(SMALL_ITEM_SCALE, SMALL_ITEM_SCALE, SMALL_ITEM_SCALE), null));
+	private static final IQuadTransformer SCALE_BIG_ITEM = QuadTransformers.applying(new Transformation(null, null, new Vector3f(BIG_ITEM_SCALE, BIG_ITEM_SCALE, BIG_ITEM_SCALE), null));
+	private static final IQuadTransformer SCALE_SMALL_BLOCK_ITEM = QuadTransformers.applying(new Transformation(null, null, new Vector3f(SMALL_BLOCK_ITEM_SCALE, SMALL_BLOCK_ITEM_SCALE, SMALL_BLOCK_ITEM_SCALE), null));
+	private static final IQuadTransformer SCALE_SMALL_ITEM = QuadTransformers.applying(new Transformation(null, null, new Vector3f(SMALL_ITEM_SCALE, SMALL_ITEM_SCALE, SMALL_ITEM_SCALE), null));
 	private static final Cache<Integer, IQuadTransformer> DIRECTION_MOVE_BACK_TO_SIDE = CacheBuilder.newBuilder().expireAfterAccess(10L, TimeUnit.MINUTES).build();
 	public static final Cache<Integer, List<BlockModelPart>> BAKED_PARTS_CACHE = CacheBuilder.newBuilder().expireAfterAccess(15L, TimeUnit.MINUTES).build();
 	public static final Cache<Integer, List<BakedQuad>> BAKED_QUADS_CACHE = CacheBuilder.newBuilder().expireAfterAccess(15L, TimeUnit.MINUTES).build();
@@ -483,15 +480,15 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 		List<BakedQuad> originalQuads = quads;
 		quads = MOVE_TO_CORNER.process(quads);
 		quads = QuadTransformers.applying(toTransformation(transform)).process(quads);
-		if (gui3d) {
+		if (gui3d && displayItem.getItem() instanceof BlockItem) {
 			if (displayItemCount > 1) {
-				quads = SCALE_SMALL_3D_ITEM.process(quads);
+				quads = SCALE_SMALL_BLOCK_ITEM.process(quads);
 			}
 		} else {
 			if (displayItemCount == 1) {
-				quads = SCALE_BIG_2D_ITEM.process(quads);
+				quads = SCALE_BIG_ITEM.process(quads);
 			} else {
-				quads = SCALE_SMALL_2D_ITEM.process(quads);
+				quads = SCALE_SMALL_ITEM.process(quads);
 			}
 		}
 
