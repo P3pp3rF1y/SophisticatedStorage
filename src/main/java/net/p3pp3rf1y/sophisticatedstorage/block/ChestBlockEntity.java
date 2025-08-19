@@ -60,7 +60,7 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 
 		protected boolean isOwnContainer(Player player) {
 			if (player.containerMenu instanceof StorageContainerMenu storageContainerMenu) {
-				return storageContainerMenu.getStorageBlockEntity() == ChestBlockEntity.this;
+				return storageContainerMenu.getStorageBlockEntity() == getMainChestBlockEntity();
 			} else {
 				return false;
 			}
@@ -313,9 +313,9 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 		doubleMainPos = null;
 	}
 
-	@org.jetbrains.annotations.Nullable
+	@Nullable
 	@Override
-	public IItemHandler getExternalItemHandler(@org.jetbrains.annotations.Nullable Direction side) {
+	public IItemHandler getExternalItemHandler(@Nullable Direction side) {
 		if (level == null) {
 			return null;
 		}
@@ -431,6 +431,14 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 	public void changeSlots(int newSlots) {
 		if (hasStorageData()) {
 			super.changeSlots(newSlots);
+		}
+	}
+
+	@Override
+	public void setShouldBeOpen(boolean shouldBeOpen) {
+		chestLidController.shouldBeOpen(shouldBeOpen);
+		if (level != null) {
+			runOnTheOtherPart(level, worldPosition, (be, pos) -> be.chestLidController.shouldBeOpen(shouldBeOpen));
 		}
 	}
 }

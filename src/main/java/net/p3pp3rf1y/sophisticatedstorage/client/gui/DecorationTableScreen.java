@@ -256,7 +256,7 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 	}
 
 	@Override
-	protected void renderSlotContents(GuiGraphics guiGraphics, ItemStack itemstack, Slot slot, @org.jetbrains.annotations.Nullable String countString) {
+	protected void renderSlotContents(GuiGraphics guiGraphics, ItemStack itemstack, Slot slot, @Nullable String countString) {
 		if (colorPicker != null) {
 			return;
 		}

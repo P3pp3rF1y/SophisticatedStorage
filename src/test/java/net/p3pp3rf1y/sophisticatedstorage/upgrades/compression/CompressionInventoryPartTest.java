@@ -562,6 +562,15 @@ public class CompressionInventoryPartTest {
 						Map.of(3, new ItemStack(Items.QUARTZ, 64)),
 						Map.of(0, new ItemStack(Items.DEAD_BUSH, 64), 1, new ItemStack(Items.STICK, 640), 2, new ItemStack(Items.QUARTZ_BLOCK, 5824), 3, new ItemStack(Items.QUARTZ, 23360))
 
+				),
+				new InsertItemUpdatesStacksParams(
+						Map.of(0, new ItemStack(Items.IRON_BLOCK, 8), 1, new ItemStack(Items.IRON_INGOT, 8), 2, new ItemStack(Items.IRON_NUGGET, 6), 3, ItemStack.EMPTY),
+						8,
+						2,
+						new ItemStack(Items.IRON_NUGGET, 33),
+						new ItemStack(Items.IRON_NUGGET, 31),
+						Map.of( 2, new ItemStack(Items.IRON_NUGGET, 8)),
+						Map.of(0, new ItemStack(Items.IRON_BLOCK, 8), 1, new ItemStack(Items.IRON_INGOT, 80), 2, new ItemStack(Items.IRON_NUGGET, 728), 3, ItemStack.EMPTY)
 				)
 		);
 	}
@@ -905,6 +914,95 @@ public class CompressionInventoryPartTest {
 						Map.of(0, new ItemStack(Items.IRON_INGOT, 4), 1, new ItemStack(Items.IRON_NUGGET, 3), 2, ItemStack.EMPTY, 3, new ItemStack(Items.IRON_AXE)),
 						256,
 						Map.of(0, new ItemStack(Items.IRON_INGOT, 4), 1, new ItemStack(Items.IRON_NUGGET, 3), 2, ItemStack.EMPTY, 3, new ItemStack(Items.IRON_AXE))
+				)
+		);
+	}
+
+	@ParameterizedTest
+	@MethodSource("updatingStackDirectlyAndCallingContentsChangedUpdatesCalculatedStacksProperly")
+	void updatingStackDirectlyAndCallingContentsChangedUpdatesCalculatedStacksProperly(UpdatingStackDirectlyAndCallingContentsChangedUpdatesCalculatedStacksProperlyParams params) {
+		InventoryHandler invHandler = getFilledInventoryHandler(params.stacks(), params.baseLimit());
+		int minSlot = 0;
+
+		CompressionInventoryPart part = initCompressionInventoryPart(invHandler, new SlotRange(minSlot, minSlot + params.stacks().size()), () -> getMemorySettings(invHandler, Map.of()));
+
+		part.getStackInSlot(params.shrunkBy.getLeft(), invHandler::getStackInSlot).shrink(params.shrunkBy.getRight());
+		part.onContentsChanged(params.shrunkBy.getLeft(), invHandler::setStackInSlot);
+
+		assertCalculatedStacks(params.expectedCalculatedStacks(), minSlot, part);
+	}
+
+	private record UpdatingStackDirectlyAndCallingContentsChangedUpdatesCalculatedStacksProperlyParams(
+			Map<Integer, ItemStack> stacks,
+			int baseLimit,
+			Pair<Integer, Integer> shrunkBy,
+			Map<Integer, ItemStack> expectedCalculatedStacks) {
+	}
+
+	private static List<UpdatingStackDirectlyAndCallingContentsChangedUpdatesCalculatedStacksProperlyParams> updatingStackDirectlyAndCallingContentsChangedUpdatesCalculatedStacksProperly() {
+		return List.of(
+				new UpdatingStackDirectlyAndCallingContentsChangedUpdatesCalculatedStacksProperlyParams(
+						Map.of(0, new ItemStack(Items.IRON_BLOCK, 1), 1, new ItemStack(Items.IRON_INGOT, 2), 2, new ItemStack(Items.IRON_NUGGET, 1)),
+						64,
+						ImmutablePair.of(2, 20),
+						Map.of(0, new ItemStack(Items.IRON_BLOCK, 0), 1, new ItemStack(Items.IRON_INGOT, 8), 2, new ItemStack(Items.IRON_NUGGET, 80))
+				)
+		);
+	}
+
+	@ParameterizedTest
+	@MethodSource("settingStackMultipleTimesResultsInCorrectCalculatedStacks")
+	void settingStackMultipleTimesResultsInCorrectCalculatedStacks(SettingStackMultipleTimesResultsInCorrectCalculatedStacksParams params) {
+		InventoryHandler invHandler = getFilledInventoryHandler(params.stacks(), params.baseLimit());
+		int minSlot = 0;
+
+		CompressionInventoryPart part = initCompressionInventoryPart(invHandler, new SlotRange(minSlot, minSlot + params.stacks().size()), () -> getMemorySettings(invHandler, Map.of()));
+
+		for (ItemStack stack : params.stacksToSet) {
+			part.setStackInSlot(params.slot, stack, (slot, stack1) -> {
+				invHandler.setStackInSlot(slot, stack1);
+				part.onContentsChanged(slot, invHandler::setStackInSlot); //simulates what real implementation of InventoryHandler does when slot changes (the mock used here doesn't trigger the onchange)
+			});
+		}
+
+		assertCalculatedStacks(params.expectedCalculatedStacks, minSlot, part);
+	}
+
+	private record SettingStackMultipleTimesResultsInCorrectCalculatedStacksParams(
+			Map<Integer, ItemStack> stacks,
+			int baseLimit,
+			Map<Integer, ItemStack> expectedCalculatedStacks, int slot, ItemStack... stacksToSet) {
+	}
+
+	private static List<SettingStackMultipleTimesResultsInCorrectCalculatedStacksParams> settingStackMultipleTimesResultsInCorrectCalculatedStacks() {
+		return List.of(
+				new SettingStackMultipleTimesResultsInCorrectCalculatedStacksParams(
+						Map.of(0, ItemStack.EMPTY, 1, ItemStack.EMPTY, 2, ItemStack.EMPTY),
+						64,
+						Map.of(0, new ItemStack(Items.IRON_BLOCK, 1), 1, new ItemStack(Items.IRON_INGOT, 11), 2, new ItemStack(Items.IRON_NUGGET, 100)),
+						2,
+						new ItemStack(Items.IRON_NUGGET, 100)
+				),
+				new SettingStackMultipleTimesResultsInCorrectCalculatedStacksParams(
+						Map.of(0, ItemStack.EMPTY, 1, ItemStack.EMPTY, 2, ItemStack.EMPTY),
+						64,
+						Map.of(0, new ItemStack(Items.IRON_BLOCK, 2), 1, new ItemStack(Items.IRON_INGOT, 22), 2, new ItemStack(Items.IRON_NUGGET, 200)),
+						2,
+						new ItemStack(Items.IRON_NUGGET, 100), new ItemStack(Items.IRON_NUGGET, 200)
+				),
+				new SettingStackMultipleTimesResultsInCorrectCalculatedStacksParams(
+						Map.of(0, ItemStack.EMPTY, 1, new ItemStack(Items.IRON_INGOT, 2), 2, ItemStack.EMPTY),
+						64,
+						Map.of(0, new ItemStack(Items.IRON_BLOCK, 2), 1, new ItemStack(Items.IRON_INGOT, 18), 2, new ItemStack(Items.IRON_NUGGET, 162)),
+						1,
+						new ItemStack(Items.IRON_INGOT, 2), new ItemStack(Items.IRON_INGOT, 18)
+				),
+				new SettingStackMultipleTimesResultsInCorrectCalculatedStacksParams(
+						Map.of(0, ItemStack.EMPTY, 1, new ItemStack(Items.IRON_INGOT, 2), 2, ItemStack.EMPTY),
+						64,
+						Map.of(0, new ItemStack(Items.IRON_BLOCK, 2), 1, new ItemStack(Items.IRON_INGOT, 18), 2, new ItemStack(Items.IRON_NUGGET, 162)),
+						1,
+						new ItemStack(Items.IRON_INGOT, 2), new ItemStack(Items.IRON_INGOT, 18), new ItemStack(Items.IRON_INGOT, 36), new ItemStack(Items.IRON_INGOT, 54), new ItemStack(Items.IRON_INGOT, 18)
 				)
 		);
 	}

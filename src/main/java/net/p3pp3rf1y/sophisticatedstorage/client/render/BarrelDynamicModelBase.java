@@ -191,12 +191,20 @@ public abstract class BarrelDynamicModelBase<T extends BarrelDynamicModelBase<T>
 		Transformation rotation = modelTransform.getRotation();
 		hash = 31 * hash + rotation.getMatrix().hashCode();
 		hash = 31 * hash + rotation.getTranslation().hashCode();
-		Quaternionf leftRotation = rotation.getLeftRotation();
-		hash = 31 * hash + leftRotation.hashCode();
-		hash = 31 * hash + Objects.hash(leftRotation.x(), leftRotation.y(), leftRotation.z());
+		hash = 31 * hash + robustHash(rotation.getRightRotation());
+		hash = 31 * hash + robustHash(rotation.getLeftRotation());
 		hash = 31 * hash + rotation.getScale().hashCode();
 
 		return hash;
+	}
+
+	public static int robustHash(Quaternionf q) {
+		long h = 1;
+		h = 31 * h + Float.floatToIntBits(q.w());
+		h = 31 * h + Float.floatToIntBits(q.x());
+		h = 31 * h + Float.floatToIntBits(q.y());
+		h = 31 * h + Float.floatToIntBits(q.z());
+		return Long.hashCode(h);
 	}
 
 	protected abstract BarrelBakedModelBase instantiateBakedModel(ModelBaker baker, Map<String, Map<BarrelModelPart, BakedModel>> woodModelParts, @Nullable BakedModel flatTopModel,

@@ -15,8 +15,8 @@ import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.item.StackStorageWrapper;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
-import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.Nullable;
 import java.util.Optional;
 
 public class ShulkerBoxFromVanillaShapelessRecipe extends ShapelessRecipe implements IWrapperRecipe<ShapelessRecipe> {

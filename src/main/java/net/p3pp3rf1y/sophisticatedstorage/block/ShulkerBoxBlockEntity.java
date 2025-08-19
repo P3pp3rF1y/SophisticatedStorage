@@ -154,6 +154,19 @@ public class ShulkerBoxBlockEntity extends StorageBlockEntity {
 		return false;
 	}
 
+	@Override
+	public void setShouldBeOpen(boolean shouldBeOpen) {
+		if (shouldBeOpen) {
+			if (animationStatus == AnimationStatus.CLOSED) {
+				animationStatus = AnimationStatus.OPENING;
+			}
+		} else {
+			if (animationStatus == AnimationStatus.OPENED || animationStatus == AnimationStatus.OPENING) {
+				animationStatus = AnimationStatus.CLOSING;
+			}
+		}
+	}
+
 	public enum AnimationStatus {
 		CLOSED,
 		OPENING,
