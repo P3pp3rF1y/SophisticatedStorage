@@ -498,4 +498,14 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 	protected BlockState rotate(BlockState state, Rotation rotation) {
 		return state.setValue(FACING, rotation.rotate(state.getValue(FACING)));
 	}
+
+	@Override
+	public boolean tryFillUpgrades(Player player, InteractionHand hand, Level level, BlockPos pos, ItemStack itemInHand) {
+		return super.tryFillUpgrades(player, hand, level, WorldHelper.getBlockEntity(level, pos, ChestBlockEntity.class).map(ChestBlockEntity::getMainPos).orElse(pos), itemInHand);
+	}
+
+	@Override
+	public int getAnalogOutputSignal(BlockState blockState, Level level, BlockPos pos) {
+		return WorldHelper.getBlockEntity(level, pos, ChestBlockEntity.class).map(be -> InventoryHelper.getAnalogOutputSignal(be.getMainStorageWrapper().getInventoryForInputOutput())).orElse(0);
+	}
 }
