@@ -1,4 +1,4 @@
-package net.p3pp3rf1y.sophisticatedstorage.compat.jei;
+package net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.common;
 
 import net.minecraft.core.NonNullList;
 import net.minecraft.resources.ResourceLocation;
@@ -9,8 +9,8 @@ import net.minecraft.world.inventory.TransientCraftingContainer;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.*;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.p3pp3rf1y.sophisticatedcore.compat.jei.ClientRecipeHelper;
+import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.ClientRecipeHelper;
+import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.subtypes.PropertyBasedSubtypeInterpreter;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.DoubleChestTierUpgradeRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.DoubleChestTierUpgradeShapelessRecipe;
@@ -18,38 +18,50 @@ import net.p3pp3rf1y.sophisticatedstorage.crafting.StorageTierUpgradeRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.StorageTierUpgradeShapelessRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.item.ChestBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
-import java.util.Set;
+import java.util.Optional;
 import java.util.function.Function;
 
 public class TierUpgradeRecipesMaker {
 	private TierUpgradeRecipesMaker() {
 	}
 
-	public static List<CraftingRecipe> getShapedCraftingRecipes() {
-		RecipeConstructor<StorageTierUpgradeRecipe> constructRecipe = (originalRecipe, id, ingredients, result) -> new ShapedRecipe(id, "", CraftingBookCategory.MISC, originalRecipe.getRecipeWidth(), originalRecipe.getRecipeHeight(), ingredients, result);
-		List<CraftingRecipe> craftingRecipes = getCraftingRecipes(constructRecipe, StorageTierUpgradeRecipe.REGISTERED_RECIPES, StorageTierUpgradeRecipe.class, TierUpgradeRecipesMaker::getStorageItems);
-		RecipeConstructor<DoubleChestTierUpgradeRecipe> constructDoubleChestRecipe = (originalRecipe, id, ingredients, result) -> new ShapedRecipe(id, "", CraftingBookCategory.MISC, originalRecipe.getRecipeWidth(), originalRecipe.getRecipeHeight(), ingredients, result);
-		craftingRecipes.addAll(getCraftingRecipes(constructDoubleChestRecipe, DoubleChestTierUpgradeRecipe.REGISTERED_RECIPES, DoubleChestTierUpgradeRecipe.class, TierUpgradeRecipesMaker::getDoubleChestItems));
+	public static <T extends PropertyBasedSubtypeInterpreter> List<CraftingRecipe> getShapedCraftingRecipes(Function<ItemStack, Optional<T>> subtypeInterpreterGetter) {
+		return getShapedCraftingRecipes(subtypeInterpreterGetter, r -> r);
+	}
+
+	public static <R, T extends PropertyBasedSubtypeInterpreter> List<R> getShapedCraftingRecipes(Function<ItemStack, Optional<T>> subtypeInterpreterGetter, Function<CraftingRecipe, R> transformRecipe) {
+		RecipeConstructor<StorageTierUpgradeRecipe> constructRecipe = (originalRecipe, id, ingredients, result) -> {
+			return new ShapedRecipe(id, "", CraftingBookCategory.MISC, originalRecipe.getWidth(), originalRecipe.getHeight(), ingredients, result);
+		};
+		List<R> craftingRecipes = getCraftingRecipes(constructRecipe, StorageTierUpgradeRecipe.class, TierUpgradeRecipesMaker::getStorageItems, subtypeInterpreterGetter, transformRecipe);
+		RecipeConstructor<DoubleChestTierUpgradeRecipe> constructDoubleChestRecipe = (originalRecipe, id, ingredients, result) -> {
+			return new ShapedRecipe(id, "", CraftingBookCategory.MISC, originalRecipe.getWidth(), originalRecipe.getHeight(), originalRecipe.getIngredients(), result);
+		};
+		craftingRecipes.addAll(getCraftingRecipes(constructDoubleChestRecipe, DoubleChestTierUpgradeRecipe.class, TierUpgradeRecipesMaker::getDoubleChestItems, subtypeInterpreterGetter, transformRecipe));
 		return craftingRecipes;
 	}
 
-	public static List<CraftingRecipe> getShapelessCraftingRecipes() {
+	public static <T extends PropertyBasedSubtypeInterpreter> List<CraftingRecipe> getShapelessCraftingRecipes(Function<ItemStack, Optional<T>> getSubtypeInterpreter) {
+		return getShapelessCraftingRecipes(getSubtypeInterpreter, r -> r);
+	}
+
+	public static <R, T extends PropertyBasedSubtypeInterpreter> List<R> getShapelessCraftingRecipes(Function<ItemStack, Optional<T>> getSubtypeInterpreter, Function<CraftingRecipe, R> transformRecipe) {
 		RecipeConstructor<StorageTierUpgradeShapelessRecipe> constructRecipe = (originalRecipe, id, ingredients, result) -> new ShapelessRecipe(id, "", CraftingBookCategory.MISC, result, ingredients);
-		List<CraftingRecipe> craftingRecipes = getCraftingRecipes(constructRecipe, StorageTierUpgradeShapelessRecipe.REGISTERED_RECIPES, StorageTierUpgradeShapelessRecipe.class, TierUpgradeRecipesMaker::getStorageItems);
+		List<R> craftingRecipes = getCraftingRecipes(constructRecipe, StorageTierUpgradeShapelessRecipe.class, TierUpgradeRecipesMaker::getStorageItems, getSubtypeInterpreter, transformRecipe);
 		RecipeConstructor<DoubleChestTierUpgradeShapelessRecipe> constructDoubleChestRecipe = (originalRecipe, id, ingredients, result) -> new ShapelessRecipe(id, "", CraftingBookCategory.MISC, result, ingredients);
-		craftingRecipes.addAll(getCraftingRecipes(constructDoubleChestRecipe, DoubleChestTierUpgradeShapelessRecipe.REGISTERED_RECIPES, DoubleChestTierUpgradeShapelessRecipe.class, TierUpgradeRecipesMaker::getDoubleChestItems));
+		craftingRecipes.addAll(getCraftingRecipes(constructDoubleChestRecipe, DoubleChestTierUpgradeShapelessRecipe.class, TierUpgradeRecipesMaker::getDoubleChestItems, getSubtypeInterpreter, transformRecipe));
 		return craftingRecipes;
 	}
 
-	@NotNull
-	private static <T extends CraftingRecipe> List<CraftingRecipe> getCraftingRecipes(RecipeConstructor<T> constructRecipe, Set<ResourceLocation> registeredRecipes, Class<T> originalRecipeClass, Function<CraftingRecipe, List<ItemStack>> getStorageItems) {
-		return ClientRecipeHelper.getAndTransformAvailableItemGroupRecipes(registeredRecipes, originalRecipeClass, recipe -> {
-			List<CraftingRecipe> itemGroupRecipes = new ArrayList<>();
+	private static <R, T extends CraftingRecipe, U extends PropertyBasedSubtypeInterpreter> List<R> getCraftingRecipes(RecipeConstructor<T> constructRecipe, Class<T> originalRecipeClass,
+																													   Function<CraftingRecipe, List<ItemStack>> getStorageItems,
+																													   Function<ItemStack, Optional<U>> getSubtypeInterpreter,
+																													   Function<CraftingRecipe, R> transformRecipe) {
+		return ClientRecipeHelper.transformAllRecipesOfTypeIntoMultiple(RecipeType.CRAFTING, originalRecipeClass, recipe -> {
+			List<R> itemGroupRecipes = new ArrayList<>();
 			getStorageItems.apply(recipe).forEach(storageItem -> {
 				NonNullList<Ingredient> ingredients = recipe.getIngredients();
 				CraftingContainer craftinginventory = new TransientCraftingContainer(new AbstractContainerMenu(null, -1) {
@@ -78,9 +90,13 @@ public class TierUpgradeRecipesMaker {
 					i++;
 				}
 				ItemStack result = ClientRecipeHelper.assemble(recipe, craftinginventory);
-				//noinspection ConstantConditions
-				ResourceLocation id = new ResourceLocation(SophisticatedStorage.MOD_ID, "tier_upgrade_" + ForgeRegistries.ITEMS.getKey(storageItem.getItem()).getPath() + result.getOrCreateTag().toString().toLowerCase(Locale.ROOT).replaceAll("[{\",}:\s]", "_"));
-				itemGroupRecipes.add(constructRecipe.construct(recipe, id, ingredientsCopy, result));
+				ResourceLocation id = new ResourceLocation(SophisticatedStorage.MOD_ID,
+						"tier_upgrade_"
+								+ getSubtypeInterpreter.apply(storageItem).map(interpreter -> interpreter.getRegistrySanitizedItemString(storageItem)).orElse("")
+								+ "_to_"
+								+ getSubtypeInterpreter.apply(result).map(interpreter -> interpreter.getRegistrySanitizedItemString(result)).orElse("")
+				);
+				itemGroupRecipes.add(transformRecipe.apply(constructRecipe.construct(recipe, id, ingredientsCopy, result)));
 			});
 			return itemGroupRecipes;
 		});

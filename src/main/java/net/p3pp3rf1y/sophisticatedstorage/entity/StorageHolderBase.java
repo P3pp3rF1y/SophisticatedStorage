@@ -4,6 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.RandomSource;
@@ -284,22 +285,34 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 	}
 
 	public void startOpen(Player player, Entity entity) {
+		if (!(player.level() instanceof ServerLevel)) {
+			return;
+		}
+
 		if (!player.isSpectator()) {
 			getOpenersCounter().incrementOpeners(player, entity);
 		}
 		PiglinAi.angerNearbyPiglins(player, true);
+		sendOpenness(entity);
+	}
+
+	protected abstract void sendOpenness(Entity entity);
+
+	public void setShouldBeOpen(boolean shouldBeOpen) {
 		if (getRenderBlockEntity() != null) {
-			getRenderBlockEntity().startOpen(player);
+			getRenderBlockEntity().setShouldBeOpen(shouldBeOpen);
 		}
 	}
 
 	public void stopOpen(Player player, Entity entity) {
+		if (!(player.level() instanceof ServerLevel)) {
+			return;
+		}
+
 		if (!player.isSpectator()) {
 			getOpenersCounter().decrementOpeners(player, entity);
 		}
-		if (getRenderBlockEntity() != null) {
-			getRenderBlockEntity().stopOpen(player);
-		}
+		sendOpenness(entity);
 	}
 
 	public void tick(Entity entity) {

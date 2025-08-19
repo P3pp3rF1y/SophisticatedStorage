@@ -80,9 +80,9 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 			return CacheBuilder.newBuilder().expireAfterAccess(10L, TimeUnit.MINUTES).build();
 		}
 	});
-	private static final IQuadTransformer SCALE_BIG_2D_ITEM = QuadTransformers.applying(new Transformation(null, null, new Vector3f(BIG_2D_ITEM_SCALE, BIG_2D_ITEM_SCALE, BIG_2D_ITEM_SCALE), null));
-	private static final IQuadTransformer SCALE_SMALL_3D_ITEM = QuadTransformers.applying(new Transformation(null, null, new Vector3f(SMALL_3D_ITEM_SCALE, SMALL_3D_ITEM_SCALE, SMALL_3D_ITEM_SCALE), null));
-	private static final IQuadTransformer SCALE_SMALL_2D_ITEM = QuadTransformers.applying(new Transformation(null, null, new Vector3f(SMALL_2D_ITEM_SCALE, SMALL_2D_ITEM_SCALE, SMALL_2D_ITEM_SCALE), null));
+	private static final IQuadTransformer SCALE_BIG_ITEM = QuadTransformers.applying(new Transformation(null, null, new Vector3f(BIG_ITEM_SCALE, BIG_ITEM_SCALE, BIG_ITEM_SCALE), null));
+	private static final IQuadTransformer SCALE_SMALL_BLOCK_ITEM = QuadTransformers.applying(new Transformation(null, null, new Vector3f(SMALL_BLOCK_ITEM_SCALE, SMALL_BLOCK_ITEM_SCALE, SMALL_BLOCK_ITEM_SCALE), null));
+	private static final IQuadTransformer SCALE_SMALL_ITEM = QuadTransformers.applying(new Transformation(null, null, new Vector3f(SMALL_ITEM_SCALE, SMALL_ITEM_SCALE, SMALL_ITEM_SCALE), null));
 	private static final Cache<Integer, IQuadTransformer> DIRECTION_MOVE_BACK_TO_SIDE = CacheBuilder.newBuilder().expireAfterAccess(10L, TimeUnit.MINUTES).build();
 	private static final ModelProperty<String> WOOD_NAME = new ModelProperty<>();
 	private static final ModelProperty<Boolean> IS_PACKED = new ModelProperty<>();
@@ -463,7 +463,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 				}
 
 				BakedModel model = itemRenderer.getModel(item, null, minecraft.player, 0);
-				if (!model.isCustomRenderer() && shouldRenderForRenderType(item, renderType, model)) {
+				if (!model.isCustomRenderer() && shouldRenderForRenderType(item, renderType, model, rand)) {
 					int rotation = displayItem.getRotation();
 					for (Direction face : Direction.values()) {
 						addRenderedItemSide(state, rand, ret, item, model, rotation, face, index, barrelBlock.getDisplayItemsCount(displayItems));
@@ -477,14 +477,14 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 		addInaccessibleSlotsQuads(state, rand, ret, data, barrelBlock, displayItems, minecraft);
 	}
 
-	private static boolean shouldRenderForRenderType(ItemStack item, @Nullable RenderType renderType, BakedModel model) {
+	private static boolean shouldRenderForRenderType(ItemStack item, @Nullable RenderType renderType, BakedModel model, RandomSource rand) {
 		ClientLevel clientLevel = Minecraft.getInstance().level;
 		if (renderType == null || clientLevel == null) {
 			return true;
 		}
 
 		if (item.getItem() instanceof BlockItem blockItem) {
-			ChunkRenderTypeSet renderTypes = model.getRenderTypes(blockItem.getBlock().defaultBlockState(), clientLevel.getRandom(), ModelData.EMPTY);
+			ChunkRenderTypeSet renderTypes = model.getRenderTypes(blockItem.getBlock().defaultBlockState(), rand, ModelData.EMPTY);
 			if (renderTypes.contains(RenderType.translucent())) {
 				return renderType == RenderType.translucent() || renderTypes.asList().size() > 1;
 			}
@@ -516,14 +516,14 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 		List<BakedQuad> quads = model.getQuads(null, dir, rand);
 		quads = MOVE_TO_CORNER.process(quads);
 		quads = QuadTransformers.applying(toTransformation(model.getTransforms().getTransform(ItemDisplayContext.FIXED))).process(quads);
-		if (!model.isGui3d()) {
+		if (!model.isGui3d() || !(displayItem.getItem() instanceof BlockItem)) {
 			if (displayItemCount == 1) {
-				quads = SCALE_BIG_2D_ITEM.process(quads);
+				quads = SCALE_BIG_ITEM.process(quads);
 			} else {
-				quads = SCALE_SMALL_2D_ITEM.process(quads);
+				quads = SCALE_SMALL_ITEM.process(quads);
 			}
 		} else if (displayItemCount > 1) {
-			quads = SCALE_SMALL_3D_ITEM.process(quads);
+			quads = SCALE_SMALL_BLOCK_ITEM.process(quads);
 		}
 
 		if (rotation != 0) {
@@ -534,7 +534,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 		quads = rotateDisplayItemQuads(quads, state);
 
 		if (model.isGui3d()) {
-			IQuadTransformer transformer = getDirectionMove(displayItem, model, state, facing, displayItemIndex, displayItemCount, displayItemCount == 1 ? 1 : SMALL_3D_ITEM_SCALE);
+			IQuadTransformer transformer = getDirectionMove(displayItem, model, state, facing, displayItemIndex, displayItemCount, displayItemCount == 1 ? 1 : SMALL_BLOCK_ITEM_SCALE);
 			quads = transformer.process(quads);
 			recalculateDirections(quads);
 		} else {
@@ -829,7 +829,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 			}
 
 			@Override
-			public List<BakedQuad> getQuads(@org.jetbrains.annotations.Nullable BlockState state, @org.jetbrains.annotations.Nullable Direction side, RandomSource rand, ModelData extraData, @org.jetbrains.annotations.Nullable RenderType renderType) {
+			public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, RandomSource rand, ModelData extraData, @Nullable RenderType renderType) {
 				setProperties();
 				return super.getQuads(state, side, rand, extraData, renderType);
 			}

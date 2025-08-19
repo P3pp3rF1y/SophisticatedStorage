@@ -42,6 +42,7 @@ import net.p3pp3rf1y.sophisticatedcore.controller.IControllerBoundable;
 import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryHandler;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeHandler;
 import net.p3pp3rf1y.sophisticatedcore.util.ColorHelper;
+import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
@@ -79,7 +80,7 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 				return shulkerboxblockentity.isClosed();
 			}
 		};
-		return BlockBehaviour.Properties.of().strength(2.0F, explosionResistance).dynamicShape().noOcclusion().isSuffocating(statePredicate).isViewBlocking(statePredicate).pushReaction(PushReaction.DESTROY).mapColor(DyeColor.PURPLE);
+		return BlockBehaviour.Properties.of().strength(2.0F, explosionResistance).forceSolidOn().dynamicShape().noOcclusion().isSuffocating(statePredicate).isViewBlocking(statePredicate).pushReaction(PushReaction.DESTROY).mapColor(DyeColor.PURPLE);
 	}
 
 	@Override
@@ -194,7 +195,7 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 	@Override
 	public void playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
 		BlockEntity blockentity = level.getBlockEntity(pos);
-		if (blockentity instanceof ShulkerBoxBlockEntity shulkerBoxBlockEntity && !level.isClientSide && player.isCreative()) {
+		if (blockentity instanceof ShulkerBoxBlockEntity shulkerBoxBlockEntity && !level.isClientSide && player.isCreative() && hasAnyItems(shulkerBoxBlockEntity)) {
 			ItemStack shulkerBoxDrop = new ItemStack(this);
 			addShulkerContentsToStack(shulkerBoxDrop, shulkerBoxBlockEntity);
 
@@ -204,6 +205,10 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 		}
 
 		super.playerWillDestroy(level, pos, state, player);
+	}
+
+	private boolean hasAnyItems(ShulkerBoxBlockEntity shulkerBoxBlockEntity) {
+		return !InventoryHelper.isEmpty(shulkerBoxBlockEntity.getStorageWrapper().getInventoryHandler()) || !InventoryHelper.isEmpty(shulkerBoxBlockEntity.getStorageWrapper().getUpgradeHandler());
 	}
 
 	@Override

@@ -26,7 +26,6 @@ import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.item.ChestBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.upgrades.INeighborChangeListenerUpgrade;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -61,7 +60,7 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 
 		protected boolean isOwnContainer(Player player) {
 			if (player.containerMenu instanceof StorageContainerMenu storageContainerMenu) {
-				return storageContainerMenu.getStorageBlockEntity() == ChestBlockEntity.this;
+				return storageContainerMenu.getStorageBlockEntity() == getMainChestBlockEntity();
 			} else {
 				return false;
 			}
@@ -314,9 +313,8 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 		doubleMainPos = null;
 	}
 
-	@NotNull
 	@Override
-	public <T> LazyOptional<T> getCapability(Capability<T> cap, @org.jetbrains.annotations.Nullable Direction side) {
+	public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) {
 		if (level == null) {
 			return LazyOptional.empty();
 		}
@@ -432,6 +430,14 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 	public void changeSlots(int newSlots) {
 		if (hasStorageData()) {
 			super.changeSlots(newSlots);
+		}
+	}
+
+	@Override
+	public void setShouldBeOpen(boolean shouldBeOpen) {
+		chestLidController.shouldBeOpen(shouldBeOpen);
+		if (level != null) {
+			runOnTheOtherPart(level, worldPosition, (be, pos) -> be.chestLidController.shouldBeOpen(shouldBeOpen));
 		}
 	}
 }

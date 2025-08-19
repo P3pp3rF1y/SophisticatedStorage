@@ -42,9 +42,9 @@ import java.util.function.UnaryOperator;
 
 public class DisplayItemRenderer {
 	private static final ItemStack EMPTY_UPGRADE_STACK = new ItemStack(ModItems.UPGRADE_BASE.get());
-	public static final float SMALL_3D_ITEM_SCALE = 0.5f;
-	static final float BIG_2D_ITEM_SCALE = 0.5f;
-	static final float SMALL_2D_ITEM_SCALE = 0.25f;
+	public static final float SMALL_BLOCK_ITEM_SCALE = 0.5f;
+	static final float BIG_ITEM_SCALE = 0.5f;
+	static final float SMALL_ITEM_SCALE = 0.25f;
 	static final float UPGRADE_ITEM_SCALE = 0.125f;
 	private static final ItemStack INACCESSIBLE_SLOT_STACK = new ItemStack(ModItems.INACCESSIBLE_SLOT.get());
 	private static final RandomSource RAND = new ThreadSafeLegacyRandomSource(RandomSupport.generateUniqueSeed());
@@ -111,7 +111,15 @@ public class DisplayItemRenderer {
 			poseStack.scale(UPGRADE_ITEM_SCALE, UPGRADE_ITEM_SCALE, UPGRADE_ITEM_SCALE);
 			ItemStack itemToRender = upgradeItem.isEmpty() ? EMPTY_UPGRADE_STACK : upgradeItem;
 			BakedModel itemModel = minecraft.getItemRenderer().getModel(itemToRender, null, minecraft.player, 0);
-			MultiBufferSource buffer = upgradeItem.isEmpty() ? TranslucentVertexConsumer.wrapBuffer(bufferSource, 128) : bufferSource;
+			MultiBufferSource buffer;
+			if (upgradeItem.isEmpty()) {
+				if (bufferSource instanceof MultiBufferSource.BufferSource multiBufferSource) {
+					multiBufferSource.endBatch();
+				}
+				buffer = TranslucentVertexConsumer.wrapBuffer(bufferSource, 128);
+			} else {
+				buffer = bufferSource;
+			}
 			minecraft.getItemRenderer().render(itemToRender, ItemDisplayContext.FIXED, false, poseStack, buffer, packedLight, packedOverlay, itemModel);
 			if (renderDisabledUpgradeDisplay) {
 				poseStack.pushPose();
@@ -137,7 +145,7 @@ public class DisplayItemRenderer {
 			return;
 		}
 
-		float itemOffset = (float) getDisplayItemOffset(stack, itemModel, displayItemCount == 1 ? 1 : SMALL_3D_ITEM_SCALE);
+		float itemOffset = (float) getDisplayItemOffset(stack, itemModel, displayItemCount == 1 ? 1 : SMALL_BLOCK_ITEM_SCALE);
 		poseStack.pushPose();
 
 		Vector3f frontOffset = getDisplayItemIndexFrontOffset(displayItemIndex, displayItemCount, (float) yCenterTranslation);
@@ -146,9 +154,9 @@ public class DisplayItemRenderer {
 
 		float itemScale;
 		if (displayItemCount == 1) {
-			itemScale = itemModel.isGui3d() ? 1.0f : BIG_2D_ITEM_SCALE;
+			itemScale = stack.getItem() instanceof BlockItem && itemModel.isGui3d() ? 1.0f : BIG_ITEM_SCALE;
 		} else {
-			itemScale = itemModel.isGui3d() ? SMALL_3D_ITEM_SCALE : SMALL_2D_ITEM_SCALE;
+			itemScale = stack.getItem() instanceof BlockItem && itemModel.isGui3d() ? SMALL_BLOCK_ITEM_SCALE : SMALL_ITEM_SCALE;
 		}
 		poseStack.scale(itemScale, itemScale, itemScale);
 

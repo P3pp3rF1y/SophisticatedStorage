@@ -36,7 +36,9 @@ public class StorageContainerMenu extends StorageContainerMenuBase<IStorageWrapp
 	public StorageContainerMenu(MenuType<?> menuType, int containerId, Player player, BlockPos pos) {
 		super(menuType, containerId, player, getWrapper(player.level(), pos), NoopStorageWrapper.INSTANCE, -1, false);
 		storageBlockEntity = WorldHelper.getBlockEntity(player.level(), pos, StorageBlockEntity.class).orElseThrow(() -> new IllegalArgumentException("Incorrect block entity at " + pos + " exptected to find StorageBlockEntity"));
-		storageBlockEntity.startOpen(player);
+		if (!player.level().isClientSide()) {
+			storageBlockEntity.startOpen(player);
+		}
 	}
 
 	public StorageBlockEntity getStorageBlockEntity() {
@@ -46,7 +48,9 @@ public class StorageContainerMenu extends StorageContainerMenuBase<IStorageWrapp
 	@Override
 	public void removed(Player player) {
 		super.removed(player);
-		storageBlockEntity.stopOpen(player);
+		if (!player.level().isClientSide()) {
+			storageBlockEntity.stopOpen(player);
+		}
 	}
 
 	private static IStorageWrapper getWrapper(Level level, BlockPos pos) {
