@@ -71,7 +71,11 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 	@Override
 	public void onBlockExploded(BlockState state, ServerLevel level, BlockPos pos, Explosion explosion) {
 		if (Boolean.TRUE.equals(Config.COMMON.dropPacked.get())) {
-			WorldHelper.getBlockEntity(level, pos, WoodStorageBlockEntity.class).ifPresent(wbe -> wbe.setPacked(true));
+			WorldHelper.getBlockEntity(level, pos, WoodStorageBlockEntity.class).ifPresent(wbe -> {
+				if (isNonEmpty(wbe)) {
+					wbe.setPacked(true);
+				}
+			});
 		}
 		super.onBlockExploded(state, level, pos, explosion);
 	}
@@ -80,6 +84,7 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 		if (be instanceof WoodStorageBlockEntity wbe) {
 			addNameWoodAndTintData(stack, wbe);
 			if (wbe.isPacked() || shouldNonEmptyDropPacked(wbe)) {
+				wbe.setPacked(true);
 				StorageWrapper storageWrapper = be.getStorageWrapper();
 				UUID storageUuid = storageWrapper.getContentsUuid().orElse(UUID.randomUUID());
 				CompoundTag storageContents = wbe.getStorageContentsTag();
@@ -100,6 +105,10 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 			return false;
 		}
 
+		return isNonEmpty(wbe);
+	}
+
+	private static boolean isNonEmpty(WoodStorageBlockEntity wbe) {
 		return !InventoryHelper.isEmpty(wbe.getStorageWrapper().getInventoryHandler()) || !InventoryHelper.isEmpty(wbe.getStorageWrapper().getUpgradeHandler());
 	}
 
@@ -213,7 +222,7 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 		BlockState ret = super.playerWillDestroy(level, pos, state, player);
 		WorldHelper.getBlockEntity(level, pos, WoodStorageBlockEntity.class)
 				.ifPresent(wbe -> {
-					if (Boolean.TRUE.equals(Config.COMMON.dropPacked.get())) {
+					if (Boolean.TRUE.equals(Config.COMMON.dropPacked.get()) && isNonEmpty(wbe)) {
 						wbe.setPacked(true);
 					}
 
