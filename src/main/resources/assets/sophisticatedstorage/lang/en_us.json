@@ -163,6 +163,7 @@
   "item.sophisticatedstorage.jukebox_upgrade.tooltip": "Portable Jukebox",
   "item.sophisticatedstorage.advanced_jukebox_upgrade": "Advanced Jukebox Upgrade",
   "item.sophisticatedstorage.advanced_jukebox_upgrade.tooltip": "Portable Jukebox with support for more music discs\nAlso more playback options",
+  "item.sophisticatedstorage.inaccessible_slot":"Inaccessible Slot",
   "item.sophisticatedstorage.stack_upgrade_tier_1": "Stack Upgrade Tier 1",
   "item.sophisticatedstorage.stack_upgrade_tier_1.tooltip": "Multiplies the number of stacks that can fit in a slot by 2",
   "item.sophisticatedstorage.stack_upgrade_tier_1_plus": "Stack Upgrade Tier 1 Plus",
