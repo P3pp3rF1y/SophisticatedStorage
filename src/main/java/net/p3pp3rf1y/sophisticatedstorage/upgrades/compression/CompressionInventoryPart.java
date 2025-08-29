@@ -1,7 +1,5 @@
 package net.p3pp3rf1y.sophisticatedstorage.upgrades.compression;
 
-import com.mojang.datafixers.util.Pair;
-import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -27,7 +25,7 @@ import static net.p3pp3rf1y.sophisticatedcore.util.MathHelper.intMaxCappedMultip
 
 public class CompressionInventoryPart implements IInventoryPartHandler {
 	public static final String NAME = "compression";
-	public static final Pair<ResourceLocation, ResourceLocation> EMPTY_COMPRESSION_SLOT = new Pair<>(TextureAtlas.LOCATION_BLOCKS, SophisticatedStorage.getRL("container/slot/compression"));
+	public static final ResourceLocation EMPTY_COMPRESSION_SLOT = SophisticatedStorage.getRL("container/slot/compression");
 	private final InventoryHandler parent;
 	private final SlotRange slotRange;
 	private final Supplier<MemorySettingsCategory> getMemorySettings;
@@ -682,7 +680,7 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 
 	@Nullable
 	@Override
-	public Pair<ResourceLocation, ResourceLocation> getNoItemIcon(int slot) {
+	public ResourceLocation getNoItemIcon(int slot) {
 		return EMPTY_COMPRESSION_SLOT;
 	}
 
