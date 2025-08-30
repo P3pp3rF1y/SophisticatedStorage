@@ -1,5 +1,6 @@
 package net.p3pp3rf1y.sophisticatedstorage.init;
 
+import com.google.common.collect.ImmutableMap;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.cauldron.CauldronInteraction;
@@ -20,6 +21,7 @@ import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.crafting.CustomRecipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.level.block.LayeredCauldronBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -45,6 +47,8 @@ import net.p3pp3rf1y.sophisticatedstorage.common.gui.*;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.*;
 import net.p3pp3rf1y.sophisticatedstorage.item.*;
 
+import java.util.Locale;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -190,10 +194,41 @@ public class ModBlocks {
 			return new StorageOutputBlockEntity(pos, state);
 		}
 	});
+	public static final Map<WoodType, Supplier<StorageConnectorBlock>> STORAGE_CONNECTOR_BLOCKS;
 
-	public static final Supplier<BlockItem> STORAGE_IO_ITEM = ITEMS.registerItem(STORAGE_IO_REG_NAME, properties -> new BlockItemBase(STORAGE_IO.get(), properties.useBlockDescriptionPrefix()));
-	public static final Supplier<BlockItem> STORAGE_INPUT_ITEM = ITEMS.registerItem(STORAGE_INPUT_REG_NAME, properties -> new BlockItemBase(STORAGE_INPUT.get(), properties.useBlockDescriptionPrefix()));
-	public static final Supplier<BlockItem> STORAGE_OUTPUT_ITEM = ITEMS.registerItem(STORAGE_OUTPUT_REG_NAME, properties -> new BlockItemBase(STORAGE_OUTPUT.get(), properties.useBlockDescriptionPrefix()));
+	public static final Supplier<BlockItem> STORAGE_IO_ITEM = ITEMS.registerItem(STORAGE_IO_REG_NAME, properties -> new BlockItemBase(STORAGE_IO.get(), properties.useBlockDescriptionPrefix()) {
+		@Override
+		public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay tooltipDisplay, Consumer<Component> tooltipAdder, TooltipFlag flag) {
+			StorageTranslationHelper.INSTANCE.getTranslatedLines(stack.getItem().getDescriptionId() + TranslationHelper.TOOLTIP_SUFFIX, null, ChatFormatting.DARK_GRAY).forEach(tooltipAdder);
+		}
+	});
+	public static final Supplier<BlockItem> STORAGE_INPUT_ITEM = ITEMS.registerItem(STORAGE_INPUT_REG_NAME, properties -> new BlockItemBase(STORAGE_INPUT.get(), properties.useBlockDescriptionPrefix()) {
+		@Override
+		public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay tooltipDisplay, Consumer<Component> tooltipAdder, TooltipFlag flag) {
+			StorageTranslationHelper.INSTANCE.getTranslatedLines(stack.getItem().getDescriptionId() + TranslationHelper.TOOLTIP_SUFFIX, null, ChatFormatting.DARK_GRAY).forEach(tooltipAdder);
+		}
+	});
+	public static final Supplier<BlockItem> STORAGE_OUTPUT_ITEM = ITEMS.registerItem(STORAGE_OUTPUT_REG_NAME, properties -> new BlockItemBase(STORAGE_OUTPUT.get(), properties.useBlockDescriptionPrefix()) {
+		@Override
+		public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay tooltipDisplay, Consumer<Component> tooltipAdder, TooltipFlag flag) {
+			StorageTranslationHelper.INSTANCE.getTranslatedLines(stack.getItem().getDescriptionId() + TranslationHelper.TOOLTIP_SUFFIX, null, ChatFormatting.DARK_GRAY).forEach(tooltipAdder);
+		}
+	});
+	public static final Map<WoodType, Supplier<BlockItem>> STORAGE_CONNECTOR_ITEMS;
+
+	static {
+		ImmutableMap.Builder<WoodType, Supplier<StorageConnectorBlock>> blockBuilder = ImmutableMap.builder();
+		ImmutableMap.Builder<WoodType, Supplier<BlockItem>> itemBuilder = ImmutableMap.builder();
+		WoodStorageBlockBase.CUSTOM_TEXTURE_WOOD_TYPES.keySet().forEach(woodType -> {
+			String registryName = woodType.name().toLowerCase(Locale.ROOT) + "_storage_connector";
+			DeferredHolder<Block, StorageConnectorBlock> blockHolder = BLOCKS.registerBlock(registryName, StorageConnectorBlock::new);
+			blockBuilder.put(woodType, blockHolder);
+			itemBuilder.put(woodType, ITEMS.registerItem(registryName, properties -> new StorageConnectorBlockItem(blockHolder.get(), properties.useBlockDescriptionPrefix())));
+		});
+
+		STORAGE_CONNECTOR_BLOCKS = blockBuilder.build();
+		STORAGE_CONNECTOR_ITEMS = itemBuilder.build();
+	}
 
 	public static final Supplier<DecorationTableBlock> DECORATION_TABLE = BLOCKS.registerBlock("decoration_table", DecorationTableBlock::new);
 
@@ -239,6 +274,10 @@ public class ModBlocks {
 	@SuppressWarnings("ConstantConditions") //no datafixer type needed
 	public static final Supplier<BlockEntityType<StorageOutputBlockEntity>> STORAGE_OUTPUT_BLOCK_ENTITY_TYPE = BLOCK_ENTITY_TYPES.register(STORAGE_OUTPUT_REG_NAME, () ->
 			new BlockEntityType<>(StorageOutputBlockEntity::new, STORAGE_OUTPUT.get()));
+
+	@SuppressWarnings("ConstantConditions") //no datafixer type needed
+	public static final Supplier<BlockEntityType<StorageConnectorBlockEntity>> STORAGE_CONNECTOR_BLOCK_ENTITY_TYPE = BLOCK_ENTITY_TYPES.register("storage_connector", () ->
+			new BlockEntityType<>(StorageConnectorBlockEntity::new, STORAGE_CONNECTOR_BLOCKS.values().stream().map(Supplier::get).toArray(StorageConnectorBlock[]::new)));
 
 	public static final Supplier<BlockEntityType<DecorationTableBlockEntity>> DECORATION_TABLE_BLOCK_ENTITY_TYPE = BLOCK_ENTITY_TYPES.register("decoration_table", () ->
 			new BlockEntityType<>(DecorationTableBlockEntity::new, DECORATION_TABLE.get()));

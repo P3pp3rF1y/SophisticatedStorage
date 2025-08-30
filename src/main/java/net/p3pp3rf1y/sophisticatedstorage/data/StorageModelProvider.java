@@ -64,6 +64,7 @@ public class StorageModelProvider extends SophisticatedModelProvider {
 		generateCubeBottomTopReuseTopOnBottom(blockModels, ModBlocks.STORAGE_IO.get());
 		generateCubeBottomTopReuseTopOnBottom(blockModels, ModBlocks.STORAGE_INPUT.get());
 		generateCubeBottomTopReuseTopOnBottom(blockModels, ModBlocks.STORAGE_OUTPUT.get());
+		ModBlocks.STORAGE_CONNECTOR_BLOCKS.values().stream().map(Supplier::get).forEach(blockModels::createTrivialCube);
 
 		generateCustomModelBlock(blockModels, ModBlocks.DECORATION_TABLE.get(), BlockModelGenerators.ROTATION_HORIZONTAL_FACING);
 		generateCustomModelBlock(blockModels, ModBlocks.STORAGE_LINK.get(), BlockModelGenerators.ROTATIONS_COLUMN_WITH_FACING);
