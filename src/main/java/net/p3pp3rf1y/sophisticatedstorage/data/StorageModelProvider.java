@@ -31,6 +31,7 @@ import net.p3pp3rf1y.sophisticatedstorage.item.StorageTierUpgradeItem;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 public class StorageModelProvider extends SophisticatedModelProvider {
 	private static final ModelTemplate EMPTY_MODEL_TEMPLATE = ModelTemplates.create();
@@ -59,6 +60,7 @@ public class StorageModelProvider extends SophisticatedModelProvider {
 		generateCubeBottomTopReuseTopOnBottom(blockModels, ModBlocks.STORAGE_IO.get());
 		generateCubeBottomTopReuseTopOnBottom(blockModels, ModBlocks.STORAGE_INPUT.get());
 		generateCubeBottomTopReuseTopOnBottom(blockModels, ModBlocks.STORAGE_OUTPUT.get());
+		ModBlocks.STORAGE_CONNECTOR_BLOCKS.values().stream().map(Supplier::get).forEach(blockModels::createTrivialCube);
 
 		generateCustomModelBlock(blockModels, ModBlocks.DECORATION_TABLE.get(), BlockModelGenerators.createHorizontalFacingDispatch());
 		generateCustomModelBlock(blockModels, ModBlocks.STORAGE_LINK.get(), blockModels.createColumnWithFacing());
@@ -66,7 +68,8 @@ public class StorageModelProvider extends SophisticatedModelProvider {
 
 	private void generateBlockWithCustomLoader(BlockModelGenerators blockModels, String loaderName, Block baseBlock, ModelTemplate itemModelTemplate, ResourceLocation baseParticle, Class<? extends Block> blockClass, SpecialModelRenderer.Unbaked unbakedSpecialRenderer) {
 		TexturedModel.Provider provider = TexturedModel.createDefault(b -> new TextureMapping(),
-				ExtendedModelTemplateBuilder.builder().customLoader(() -> createSimpleCustomLoaderBuilder(loaderName), loader -> {}).build()
+				ExtendedModelTemplateBuilder.builder().customLoader(() -> createSimpleCustomLoaderBuilder(loaderName), loader -> {
+				}).build()
 		);
 		ResourceLocation blockModel = provider.create(baseBlock, blockModels.modelOutput);
 		ResourceLocation itemModel = itemModelTemplate.create(baseBlock.asItem(), TextureMapping.particle(baseParticle), blockModels.modelOutput);
