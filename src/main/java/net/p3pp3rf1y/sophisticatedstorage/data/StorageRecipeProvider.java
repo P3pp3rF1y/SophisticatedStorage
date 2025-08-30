@@ -462,6 +462,20 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.requires(ModBlocks.STORAGE_OUTPUT_ITEM.get())
 				.unlockedBy("has_storage_output", has(ModBlocks.STORAGE_OUTPUT_ITEM.get()))
 				.save(recipeOutput, "storage_io_from_output");
+
+		WoodStorageBlockBase.CUSTOM_TEXTURE_WOOD_TYPES.entrySet().forEach(entry -> {
+			WoodType woodType = entry.getKey();
+			Block plankBlock = entry.getValue().getBaseBlock();
+			BlockFamily blockFamily = entry.getValue();
+			ShapeBasedRecipeBuilder.shaped(new ItemStack(ModBlocks.STORAGE_CONNECTOR_BLOCKS.get(woodType).get(), 4))
+					.pattern("SPS")
+					.pattern("PSP")
+					.pattern("SPS")
+					.define('S', Items.STICK)
+					.define('P', plankBlock)
+					.unlockedBy("has_" + RegistryHelper.getBlockKey(plankBlock).getPath(), has(plankBlock))
+					.save(recipeOutput);
+		});
 	}
 
 	private void addShulkerBoxRecipes(RecipeOutput recipeOutput) {

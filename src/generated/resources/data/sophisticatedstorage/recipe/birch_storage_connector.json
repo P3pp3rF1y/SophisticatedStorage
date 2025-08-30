@@ -1,0 +1,27 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:birch_storage_connector"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": {
+      "item": "minecraft:birch_planks"
+    },
+    "S": {
+      "item": "minecraft:stick"
+    }
+  },
+  "pattern": [
+    "SPS",
+    "PSP",
+    "SPS"
+  ],
+  "result": {
+    "count": 4,
+    "id": "sophisticatedstorage:birch_storage_connector"
+  }
+}

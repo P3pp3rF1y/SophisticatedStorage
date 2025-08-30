@@ -1,6 +1,7 @@
 package net.p3pp3rf1y.sophisticatedstorage.block;
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.LivingEntity;
@@ -10,51 +11,55 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.MapColor;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.TranslationHelper;
-import net.p3pp3rf1y.sophisticatedcore.controller.IControllableStorage;
 import net.p3pp3rf1y.sophisticatedcore.controller.IControllerBoundable;
 import net.p3pp3rf1y.sophisticatedcore.util.BlockBase;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
+import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageTranslationHelper;
 
 import javax.annotation.Nullable;
 import java.util.List;
 
-public class StorageIOBlock extends BlockBase implements EntityBlock {
-	public StorageIOBlock() {
-		super(Properties.of().mapColor(MapColor.STONE).requiresCorrectToolForDrops().strength(3F, 6.0F));
-	}
+public class StorageConnectorBlock extends BlockBase implements EntityBlock {
+	public static final String TOOLTIP_TRANSLATION_KEY = Util.makeDescriptionId("block", SophisticatedStorage.getRL("storage_connector")) + TranslationHelper.TOOLTIP_SUFFIX;
 
-	@Nullable
-	@Override
-	public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-		return new StorageIOBlockEntity(pos, state);
+	public StorageConnectorBlock() {
+		super(BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(2.5F).sound(SoundType.WOOD));
 	}
 
 	@Override
 	public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltipComponents, TooltipFlag flag) {
-		tooltipComponents.addAll(StorageTranslationHelper.INSTANCE.getTranslatedLines(stack.getItem().getDescriptionId() + TranslationHelper.TOOLTIP_SUFFIX, null, ChatFormatting.DARK_GRAY));
+		tooltipComponents.addAll(StorageTranslationHelper.INSTANCE.getTranslatedLines(TOOLTIP_TRANSLATION_KEY, null, ChatFormatting.DARK_GRAY));
 	}
 
+	@Nullable
 	@Override
-	public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean isMoving) {
-		super.onRemove(state, level, pos, newState, isMoving);
-		WorldHelper.getBlockEntity(level, pos, StorageIOBlockEntity.class).ifPresent(StorageIOBlockEntity::removeFromController);
+	public BlockEntity newBlockEntity(BlockPos blockPos, BlockState blockState) {
+		return new StorageConnectorBlockEntity(blockPos, blockState);
 	}
 
 	@Override
 	public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
 		super.setPlacedBy(level, pos, state, placer, stack);
-		WorldHelper.getBlockEntity(level, pos, StorageIOBlockEntity.class).ifPresent(IControllerBoundable::addToAdjacentController);
+		WorldHelper.getBlockEntity(level, pos, StorageConnectorBlockEntity.class).ifPresent(IControllerBoundable::addToAdjacentController);
+	}
+
+	@Override
+	public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean isMoving) {
+		super.onRemove(state, level, pos, newState, isMoving);
+		WorldHelper.getBlockEntity(level, pos, StorageConnectorBlockEntity.class).ifPresent(StorageConnectorBlockEntity::removeFromController);
 	}
 
 	@Override
 	public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
 		BlockState ret = super.playerWillDestroy(level, pos, state, player);
-		WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).ifPresent(IControllableStorage::removeFromController);
+		WorldHelper.getBlockEntity(level, pos, StorageConnectorBlockEntity.class).ifPresent(StorageConnectorBlockEntity::removeFromController);
 		return ret;
 	}
 }
