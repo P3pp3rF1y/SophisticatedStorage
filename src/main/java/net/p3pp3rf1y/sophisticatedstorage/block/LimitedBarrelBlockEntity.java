@@ -256,6 +256,15 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 	}
 
 	@Override
+	public void onLoad() {
+		super.onLoad();
+
+		SettingsHandler settingsHandler = getStorageWrapper().getSettingsHandler();
+		settingsHandler.getTypeCategory(MemorySettingsCategory.class).setIgnoreNbt(false);
+		setFixedSettings(getStorageWrapper(), getStorageWrapper().getNumberOfInventorySlots());
+	}
+
+	@Override
 	public void loadSynchronizedData(CompoundTag tag, HolderLookup.Provider registries) {
 		super.loadSynchronizedData(tag, registries);
 		showCounts = NBTHelper.getBoolean(tag, "showCounts").orElse(true);
@@ -292,6 +301,6 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 
 	@Override
 	public float getSlotFillPercentage(int slot) {
-		return getSlotFillLevels().get(slot);
+		return slot < getSlotFillLevels().size() ? getSlotFillLevels().get(slot) : 0;
 	}
 }
