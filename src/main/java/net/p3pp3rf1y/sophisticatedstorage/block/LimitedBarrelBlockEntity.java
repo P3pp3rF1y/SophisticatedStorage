@@ -254,6 +254,15 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 	}
 
 	@Override
+	public void onLoad() {
+		super.onLoad();
+
+		SettingsHandler settingsHandler = getStorageWrapper().getSettingsHandler();
+		settingsHandler.getTypeCategory(MemorySettingsCategory.class).setIgnoreNbt(false);
+		setFixedSettings(getStorageWrapper(), getStorageWrapper().getNumberOfInventorySlots());
+	}
+
+	@Override
 	public void loadSynchronizedData(ValueInput in) {
 		super.loadSynchronizedData(in);
 		showCounts = in.getBooleanOr("showCounts", true);
@@ -290,6 +299,6 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 
 	@Override
 	public float getSlotFillPercentage(int slot) {
-		return getSlotFillLevels().get(slot);
+		return slot < getSlotFillLevels().size() ? getSlotFillLevels().get(slot) : 0;
 	}
 }
