@@ -349,7 +349,7 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 	}
 
 	@Override
-	public boolean onDestroyedByPlayer(BlockState state, Level level, BlockPos pos, Player player, boolean willHarvest, FluidState fluid) {
+	public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
 		if (state.getValue(TYPE) != ChestType.SINGLE) {
 			level.getBlockEntity(pos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get()).ifPresent(be -> {
 				be.setDestroyedByPlayer();
@@ -368,8 +368,7 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 				}
 			});
 		}
-
-		return super.onDestroyedByPlayer(state, level, pos, player, willHarvest, fluid);
+		return super.playerWillDestroy(level, pos, state, player);
 	}
 
 	@Override
