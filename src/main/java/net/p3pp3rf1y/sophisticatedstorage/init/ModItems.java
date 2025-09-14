@@ -1,6 +1,5 @@
 package net.p3pp3rf1y.sophisticatedstorage.init;
 
-import net.minecraft.ChatFormatting;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -8,11 +7,9 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.crafting.BlastingRecipe;
 import net.minecraft.world.item.crafting.SmeltingRecipe;
 import net.minecraft.world.item.crafting.SmokingRecipe;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunctionType;
 import net.minecraftforge.api.distmarker.Dist;
@@ -95,19 +92,14 @@ import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageButtonDefinitions;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageTranslationHelper;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.DropPackedDisabledCondition;
 import net.p3pp3rf1y.sophisticatedstorage.data.CopyStorageDataFunction;
-import net.p3pp3rf1y.sophisticatedstorage.item.PaintbrushItem;
-import net.p3pp3rf1y.sophisticatedstorage.item.StorageTierUpgradeItem;
-import net.p3pp3rf1y.sophisticatedstorage.item.StorageToolItem;
-import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
+import net.p3pp3rf1y.sophisticatedstorage.item.*;
 import net.p3pp3rf1y.sophisticatedstorage.upgrades.compression.CompressionUpgradeItem;
 import net.p3pp3rf1y.sophisticatedstorage.upgrades.hopper.HopperUpgradeContainer;
 import net.p3pp3rf1y.sophisticatedstorage.upgrades.hopper.HopperUpgradeItem;
 import net.p3pp3rf1y.sophisticatedstorage.upgrades.hopper.HopperUpgradeTab;
 import net.p3pp3rf1y.sophisticatedstorage.upgrades.hopper.HopperUpgradeWrapper;
 
-import javax.annotation.Nullable;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.function.IntSupplier;
 
 public class ModItems {
@@ -214,28 +206,8 @@ public class ModItems {
 
 	public static final RegistryObject<ItemBase> UPGRADE_BASE = ITEMS.register("upgrade_base", () -> new ItemBase(new Item.Properties().stacksTo(16)));
 
-	public static final String PACKING_TAPE_NAME = "packing_tape";
-	public static final RegistryObject<ItemBase> PACKING_TAPE = ITEMS.register(PACKING_TAPE_NAME, () -> new ItemBase(new Item.Properties().stacksTo(1).durability(8)) {
-		@Override
-		public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag isAdvanced) {
-			super.appendHoverText(stack, level, tooltip, isAdvanced);
-			if (Boolean.TRUE.equals(Config.COMMON.dropPacked.get())) {
-				tooltip.add(Component.translatable(StorageTranslationHelper.INSTANCE.translItemTooltip(PACKING_TAPE_NAME) + ".disabled").withStyle(ChatFormatting.RED));
-			} else {
-				tooltip.add(Component.translatable(StorageTranslationHelper.INSTANCE.translItemTooltip(PACKING_TAPE_NAME),
-								Component.literal(String.valueOf(getMaxDamage(stack) - getDamage(stack))).withStyle(ChatFormatting.GREEN)
-						).withStyle(ChatFormatting.DARK_GRAY)
-				);
-			}
-		}
-
-		@Override
-		public void addCreativeTabItems(Consumer<ItemStack> itemConsumer) {
-			if (!Boolean.TRUE.equals(Config.COMMON.dropPacked.get())) {
-				super.addCreativeTabItems(itemConsumer);
-			}
-		}
-	});
+	public static final RegistryObject<ItemBase> PACKING_TAPE = ITEMS.register("packing_tape", () -> new PackingTapeItem(8, false));
+	public static final RegistryObject<ItemBase> SUPER_PACKING_TAPE = ITEMS.register("super_packing_tape", () -> new PackingTapeItem(32, true));
 	public static final RegistryObject<ItemBase> STORAGE_TOOL = ITEMS.register("storage_tool", StorageToolItem::new);
 	public static final RegistryObject<ItemBase> DEBUG_TOOL = ITEMS.register("debug_tool", () -> new ItemBase(new Item.Properties().stacksTo(1)));
 	public static final RegistryObject<ItemBase> PAINTBRUSH = ITEMS.register("paintbrush", PaintbrushItem::new);

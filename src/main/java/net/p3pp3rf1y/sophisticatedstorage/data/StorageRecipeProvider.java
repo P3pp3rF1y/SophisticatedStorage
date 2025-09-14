@@ -70,6 +70,15 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.condition(new DropPackedDisabledCondition())
 				.save(consumer);
 
+		ShapelessBasedRecipeBuilder.shapeless(ModItems.SUPER_PACKING_TAPE.get())
+				.requires(ModItems.PACKING_TAPE.get())
+				.requires(ModItems.PACKING_TAPE.get())
+				.requires(ModItems.PACKING_TAPE.get())
+				.requires(ModItems.PACKING_TAPE.get())
+				.unlockedBy("has_packing_tape", has(ModItems.PACKING_TAPE.get()))
+				.condition(new DropPackedDisabledCondition())
+				.save(consumer);
+
 		ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModBlocks.DECORATION_TABLE_ITEM.get())
 				.pattern("LLL")
 				.pattern("PBP")

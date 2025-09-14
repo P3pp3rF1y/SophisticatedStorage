@@ -101,6 +101,11 @@ minecraft {
         data {
             property 'fml.earlyprogresswindow', 'false'
             mods {
+                if (findProject(':Reliquary') != null) {
+                    Reliquary {
+                        source project(':Reliquary').sourceSets.main
+                    }
+                }
                 if (findProject(':SophisticatedCore') != null) {
                     SophisticatedCore {
                         source project(':SophisticatedCore').sourceSets.main
