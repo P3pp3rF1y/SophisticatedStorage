@@ -1,7 +1,6 @@
 package net.p3pp3rf1y.sophisticatedstorage.init;
 
 import com.mojang.serialization.MapCodec;
-import net.minecraft.ChatFormatting;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -9,8 +8,6 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.crafting.BlastingRecipe;
 import net.minecraft.world.item.crafting.SmeltingRecipe;
 import net.minecraft.world.item.crafting.SmokingRecipe;
@@ -75,17 +72,13 @@ import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageTranslationHelper;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.DropPackedDisabledCondition;
 import net.p3pp3rf1y.sophisticatedstorage.data.CopyStorageDataFunction;
-import net.p3pp3rf1y.sophisticatedstorage.item.PaintbrushItem;
-import net.p3pp3rf1y.sophisticatedstorage.item.StorageTierUpgradeItem;
-import net.p3pp3rf1y.sophisticatedstorage.item.StorageToolItem;
-import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
+import net.p3pp3rf1y.sophisticatedstorage.item.*;
 import net.p3pp3rf1y.sophisticatedstorage.upgrades.compression.CompressionUpgradeItem;
 import net.p3pp3rf1y.sophisticatedstorage.upgrades.hopper.HopperUpgradeContainer;
 import net.p3pp3rf1y.sophisticatedstorage.upgrades.hopper.HopperUpgradeItem;
 import net.p3pp3rf1y.sophisticatedstorage.upgrades.hopper.HopperUpgradeWrapper;
 
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 
@@ -193,28 +186,8 @@ public class ModItems {
 
 	public static final Supplier<ItemBase> UPGRADE_BASE = ITEMS.registerItem("upgrade_base", properties -> new ItemBase(properties.stacksTo(16)));
 
-	public static final String PACKING_TAPE_NAME = "packing_tape";
-	public static final Supplier<ItemBase> PACKING_TAPE = ITEMS.registerItem(PACKING_TAPE_NAME, properties -> new ItemBase(properties.stacksTo(1).durability(8)) {
-		@Override
-		public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay tooltipDisplay, Consumer<Component> tooltipAdder, TooltipFlag flag) {
-			super.appendHoverText(stack, context, tooltipDisplay, tooltipAdder, flag);
-			if (Boolean.TRUE.equals(Config.COMMON.dropPacked.get())) {
-				tooltipAdder.accept(Component.translatable(StorageTranslationHelper.INSTANCE.translItemTooltip(PACKING_TAPE_NAME) + ".disabled").withStyle(ChatFormatting.RED));
-			} else {
-				tooltipAdder.accept(Component.translatable(StorageTranslationHelper.INSTANCE.translItemTooltip(PACKING_TAPE_NAME),
-								Component.literal(String.valueOf(getMaxDamage(stack) - getDamage(stack))).withStyle(ChatFormatting.GREEN)
-						).withStyle(ChatFormatting.DARK_GRAY)
-				);
-			}
-		}
-
-		@Override
-		public void addCreativeTabItems(Consumer<ItemStack> itemConsumer) {
-			if (!Boolean.TRUE.equals(Config.COMMON.dropPacked.get())) {
-				super.addCreativeTabItems(itemConsumer);
-			}
-		}
-	});
+	public static final Supplier<ItemBase> PACKING_TAPE = ITEMS.registerItem("packing_tape", properties -> new PackingTapeItem(properties, 8, false));
+	public static final Supplier<ItemBase> SUPER_PACKING_TAPE = ITEMS.registerItem("super_packing_tape", properties -> new PackingTapeItem(properties, 32, true));
 	public static final Supplier<ItemBase> STORAGE_TOOL = ITEMS.registerItem("storage_tool", StorageToolItem::new);
 	public static final Supplier<ItemBase> DEBUG_TOOL = ITEMS.registerItem("debug_tool", properties -> new ItemBase(properties.stacksTo(1)));
 	public static final Supplier<ItemBase> PAINTBRUSH = ITEMS.registerItem("paintbrush", PaintbrushItem::new);

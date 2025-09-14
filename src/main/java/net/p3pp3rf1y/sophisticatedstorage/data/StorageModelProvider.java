@@ -149,6 +149,7 @@ public class StorageModelProvider extends SophisticatedModelProvider {
 		addItemClasses(flatItems, List.of(UpgradeItemBase.class, StorageTierUpgradeItem.class));
 		flatItems.add(ModItems.DEBUG_TOOL.get());
 		flatItems.add(ModItems.PACKING_TAPE.get());
+		flatItems.add(ModItems.SUPER_PACKING_TAPE.get());
 		flatItems.add(ModItems.UPGRADE_BASE.get());
 		flatItems.add(ModItems.INACCESSIBLE_SLOT.get());
 
