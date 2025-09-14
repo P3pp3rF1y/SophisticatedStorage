@@ -121,6 +121,11 @@ neoForge {
         "${mod_id}" {
             sourceSet(sourceSets.main)
         }
+        if (findProject(':Reliquary') != null) {
+            "reliquary" {
+                sourceSet(project(':Reliquary').sourceSets.main)
+            }
+        }
         if (findProject(':SophisticatedCore') != null) {
             "sophisticatedcore" {
                 sourceSet(project(':SophisticatedCore').sourceSets.main)

@@ -76,6 +76,14 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.unlockedBy("has_slime", has(Tags.Items.SLIME_BALLS))
 				.save(output.withConditions(new DropPackedDisabledCondition()));
 
+		ShapelessRecipeBuilder.shapeless(items, RecipeCategory.MISC, ModItems.SUPER_PACKING_TAPE.get())
+				.requires(ModItems.PACKING_TAPE.get())
+				.requires(ModItems.PACKING_TAPE.get())
+				.requires(ModItems.PACKING_TAPE.get())
+				.requires(ModItems.PACKING_TAPE.get())
+				.unlockedBy("has_packing_tape", has(ModItems.PACKING_TAPE.get()))
+				.save(output.withConditions(new DropPackedDisabledCondition()));
+
 		ShapedRecipeBuilder.shaped(items, RecipeCategory.MISC, ModBlocks.DECORATION_TABLE_ITEM.get())
 				.pattern("LLL")
 				.pattern("PBP")
