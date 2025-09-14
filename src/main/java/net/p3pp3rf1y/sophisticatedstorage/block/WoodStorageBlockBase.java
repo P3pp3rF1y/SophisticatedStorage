@@ -32,6 +32,7 @@ import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
+import net.p3pp3rf1y.sophisticatedstorage.item.PackingTapeItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageToolItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
@@ -240,7 +241,7 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 
 	@SuppressWarnings("java:S1172") //parameter is used in override
 	protected boolean tryItemInteraction(Player player, InteractionHand hand, WoodStorageBlockEntity b, ItemStack stackInHand, Direction facing, BlockHitResult hitResult) {
-		if (stackInHand.getItem() == ModItems.PACKING_TAPE.get()) {
+		if (stackInHand.getItem() instanceof PackingTapeItem) {
 			if (Boolean.TRUE.equals(Config.COMMON.dropPacked.get())) {
 				player.displayClientMessage(Component.translatable("gui.sophisticatedstorage.status.packing_tape_disabled"), true);
 			} else {

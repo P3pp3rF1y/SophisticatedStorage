@@ -1,0 +1,27 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedstorage:drop_packed_disabled"
+    }
+  ],
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "sophisticatedstorage:packing_tape"
+    },
+    {
+      "item": "sophisticatedstorage:packing_tape"
+    },
+    {
+      "item": "sophisticatedstorage:packing_tape"
+    },
+    {
+      "item": "sophisticatedstorage:packing_tape"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "sophisticatedstorage:super_packing_tape"
+  }
+}
