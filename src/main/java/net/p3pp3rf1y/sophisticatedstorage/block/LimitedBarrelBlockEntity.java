@@ -249,8 +249,13 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 	@Override
 	public void onLoad() {
 		super.onLoad();
+
+		SettingsHandler settingsHandler = getStorageWrapper().getSettingsHandler();
+		settingsHandler.getTypeCategory(MemorySettingsCategory.class).setIgnoreNbt(false);
+		setFixedSettings(getStorageWrapper(), getStorageWrapper().getNumberOfInventorySlots());
+
 		//TODO remove in the future when this is not needed - updates legacy limited barrel counts and fill levels
-		getStorageWrapper().getSettingsHandler().getTypeCategory(ItemDisplaySettingsCategory.class).itemsChanged();
+		settingsHandler.getTypeCategory(ItemDisplaySettingsCategory.class).itemsChanged();
 	}
 
 	@Override
@@ -290,6 +295,6 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 
 	@Override
 	public float getSlotFillPercentage(int slot) {
-		return getSlotFillLevels().get(slot);
+		return slot < getSlotFillLevels().size() ? getSlotFillLevels().get(slot) : 0;
 	}
 }

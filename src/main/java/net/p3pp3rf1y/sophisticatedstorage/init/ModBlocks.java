@@ -1,5 +1,6 @@
 package net.p3pp3rf1y.sophisticatedstorage.init;
 
+import com.google.common.collect.ImmutableMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.cauldron.CauldronInteraction;
 import net.minecraft.core.dispenser.ShulkerBoxDispenseBehavior;
@@ -39,11 +40,10 @@ import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.*;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.*;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.*;
-import net.p3pp3rf1y.sophisticatedstorage.item.BarrelBlockItem;
-import net.p3pp3rf1y.sophisticatedstorage.item.ChestBlockItem;
-import net.p3pp3rf1y.sophisticatedstorage.item.ShulkerBoxItem;
-import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
+import net.p3pp3rf1y.sophisticatedstorage.item.*;
 
+import java.util.Locale;
+import java.util.Map;
 import java.util.function.Supplier;
 
 public class ModBlocks {
@@ -177,10 +177,27 @@ public class ModBlocks {
 			return new StorageOutputBlockEntity(pos, state);
 		}
 	});
+	public static final Map<WoodType, Supplier<StorageConnectorBlock>> STORAGE_CONNECTOR_BLOCKS;
 
 	public static final Supplier<BlockItem> STORAGE_IO_ITEM = ITEMS.register(STORAGE_IO_REG_NAME, () -> new BlockItemBase(STORAGE_IO.get(), new Properties()));
 	public static final Supplier<BlockItem> STORAGE_INPUT_ITEM = ITEMS.register(STORAGE_INPUT_REG_NAME, () -> new BlockItemBase(STORAGE_INPUT.get(), new Properties()));
 	public static final Supplier<BlockItem> STORAGE_OUTPUT_ITEM = ITEMS.register(STORAGE_OUTPUT_REG_NAME, () -> new BlockItemBase(STORAGE_OUTPUT.get(), new Properties()));
+	public static final Map<WoodType, Supplier<BlockItem>> STORAGE_CONNECTOR_ITEMS;
+
+	static {
+		ImmutableMap.Builder<WoodType, Supplier<StorageConnectorBlock>> blockBuilder = ImmutableMap.builder();
+		ImmutableMap.Builder<WoodType, Supplier<BlockItem>> itemBuilder = ImmutableMap.builder();
+		WoodStorageBlockBase.CUSTOM_TEXTURE_WOOD_TYPES.keySet().forEach(woodType -> {
+			String registryName = woodType.name().toLowerCase(Locale.ROOT) + "_storage_connector";
+			DeferredHolder<Block, StorageConnectorBlock> blockHolder = BLOCKS.register(registryName, StorageConnectorBlock::new);
+			blockBuilder.put(woodType, blockHolder);
+			itemBuilder.put(woodType, ITEMS.register(registryName, () -> new StorageConnectorBlockItem(blockHolder.get(), new Properties())));
+		});
+
+		STORAGE_CONNECTOR_BLOCKS = blockBuilder.build();
+		STORAGE_CONNECTOR_ITEMS = itemBuilder.build();
+	}
+
 
 	public static final Supplier<DecorationTableBlock> DECORATION_TABLE = BLOCKS.register("decoration_table", DecorationTableBlock::new);
 
@@ -235,6 +252,11 @@ public class ModBlocks {
 	public static final Supplier<BlockEntityType<StorageOutputBlockEntity>> STORAGE_OUTPUT_BLOCK_ENTITY_TYPE = BLOCK_ENTITY_TYPES.register(STORAGE_OUTPUT_REG_NAME, () ->
 			BlockEntityType.Builder.of(StorageOutputBlockEntity::new, STORAGE_OUTPUT.get())
 					.build(null));
+
+	@SuppressWarnings("ConstantConditions") //no datafixer type needed
+	public static final Supplier<BlockEntityType<StorageConnectorBlockEntity>> STORAGE_CONNECTOR_BLOCK_ENTITY_TYPE = BLOCK_ENTITY_TYPES.register("storage_connector",
+			() -> BlockEntityType.Builder.of(StorageConnectorBlockEntity::new, STORAGE_CONNECTOR_BLOCKS.values().stream().map(Supplier::get).toArray(StorageConnectorBlock[]::new))
+			.build(null));
 
 	public static final Supplier<BlockEntityType<DecorationTableBlockEntity>> DECORATION_TABLE_BLOCK_ENTITY_TYPE = BLOCK_ENTITY_TYPES.register("decoration_table", () ->
 			BlockEntityType.Builder.of(DecorationTableBlockEntity::new, DECORATION_TABLE.get())

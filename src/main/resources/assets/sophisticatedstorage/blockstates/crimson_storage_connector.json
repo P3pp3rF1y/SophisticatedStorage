@@ -1,0 +1,7 @@
+{
+    "variants": {
+        "": {
+            "model": "sophisticatedstorage:block/crimson_storage_connector"
+        }
+    }
+}

@@ -89,6 +89,10 @@ public class StorageBlockLootProvider extends LootTableProvider {
 			add(ModBlocks.STORAGE_INPUT.get(), dropBlock(ModBlocks.STORAGE_INPUT_ITEM.get()));
 			add(ModBlocks.STORAGE_OUTPUT.get(), dropBlock(ModBlocks.STORAGE_OUTPUT_ITEM.get()));
 
+			ModBlocks.STORAGE_CONNECTOR_BLOCKS.forEach((woodType, blockSupplier) ->
+					add(blockSupplier.get(), dropBlock(ModBlocks.STORAGE_CONNECTOR_ITEMS.get(woodType).get()))
+			);
+
 			add(ModBlocks.DECORATION_TABLE.get(), dropBlock(ModBlocks.DECORATION_TABLE_ITEM.get()));
 		}
 
