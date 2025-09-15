@@ -1,0 +1,7 @@
+{
+    "variants": {
+        "": {
+            "model": "sophisticatedstorage:block/spruce_storage_connector"
+        }
+    }
+}

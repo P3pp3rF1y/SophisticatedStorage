@@ -1,5 +1,6 @@
 package net.p3pp3rf1y.sophisticatedstorage.init;
 
+import com.google.common.collect.ImmutableMap;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.cauldron.CauldronInteraction;
@@ -44,11 +45,10 @@ import net.p3pp3rf1y.sophisticatedstorage.block.*;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.*;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.*;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.*;
-import net.p3pp3rf1y.sophisticatedstorage.item.BarrelBlockItem;
-import net.p3pp3rf1y.sophisticatedstorage.item.ChestBlockItem;
-import net.p3pp3rf1y.sophisticatedstorage.item.ShulkerBoxItem;
-import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
+import net.p3pp3rf1y.sophisticatedstorage.item.*;
 
+import java.util.Locale;
+import java.util.Map;
 import java.util.function.Supplier;
 
 public class ModBlocks {
@@ -182,10 +182,26 @@ public class ModBlocks {
 			return new StorageOutputBlockEntity(pos, state);
 		}
 	});
+	public static final Map<WoodType, RegistryObject<StorageConnectorBlock>> STORAGE_CONNECTOR_BLOCKS;
 
 	public static final RegistryObject<BlockItem> STORAGE_IO_ITEM = ITEMS.register(STORAGE_IO_REG_NAME, () -> new BlockItemBase(STORAGE_IO.get(), new Item.Properties()));
 	public static final RegistryObject<BlockItem> STORAGE_INPUT_ITEM = ITEMS.register(STORAGE_INPUT_REG_NAME, () -> new BlockItemBase(STORAGE_INPUT.get(), new Item.Properties()));
 	public static final RegistryObject<BlockItem> STORAGE_OUTPUT_ITEM = ITEMS.register(STORAGE_OUTPUT_REG_NAME, () -> new BlockItemBase(STORAGE_OUTPUT.get(), new Item.Properties()));
+	public static final Map<WoodType, RegistryObject<BlockItem>> STORAGE_CONNECTOR_ITEMS;
+
+	static {
+		ImmutableMap.Builder<WoodType, RegistryObject<StorageConnectorBlock>> blockBuilder = ImmutableMap.builder();
+		ImmutableMap.Builder<WoodType, RegistryObject<BlockItem>> itemBuilder = ImmutableMap.builder();
+		WoodStorageBlockBase.CUSTOM_TEXTURE_WOOD_TYPES.keySet().forEach(woodType -> {
+			String registryName = woodType.name().toLowerCase(Locale.ROOT) + "_storage_connector";
+			RegistryObject<StorageConnectorBlock> blockHolder = BLOCKS.register(registryName, StorageConnectorBlock::new);
+			blockBuilder.put(woodType, blockHolder);
+			itemBuilder.put(woodType, ITEMS.register(registryName, () -> new StorageConnectorBlockItem(blockHolder.get(), new Properties())));
+		});
+
+		STORAGE_CONNECTOR_BLOCKS = blockBuilder.build();
+		STORAGE_CONNECTOR_ITEMS = itemBuilder.build();
+	}
 
 	public static final Supplier<DecorationTableBlock> DECORATION_TABLE = BLOCKS.register("decoration_table", DecorationTableBlock::new);
 
@@ -239,6 +255,11 @@ public class ModBlocks {
 	@SuppressWarnings("ConstantConditions") //no datafixer type needed
 	public static final RegistryObject<BlockEntityType<StorageOutputBlockEntity>> STORAGE_OUTPUT_BLOCK_ENTITY_TYPE = BLOCK_ENTITY_TYPES.register(STORAGE_OUTPUT_REG_NAME, () ->
 			BlockEntityType.Builder.of(StorageOutputBlockEntity::new, STORAGE_OUTPUT.get())
+					.build(null));
+
+	@SuppressWarnings("ConstantConditions") //no datafixer type needed
+	public static final Supplier<BlockEntityType<StorageConnectorBlockEntity>> STORAGE_CONNECTOR_BLOCK_ENTITY_TYPE = BLOCK_ENTITY_TYPES.register("storage_connector",
+			() -> BlockEntityType.Builder.of(StorageConnectorBlockEntity::new, STORAGE_CONNECTOR_BLOCKS.values().stream().map(Supplier::get).toArray(StorageConnectorBlock[]::new))
 					.build(null));
 
 	public static final RegistryObject<BlockEntityType<DecorationTableBlockEntity>> DECORATION_TABLE_BLOCK_ENTITY_TYPE = BLOCK_ENTITY_TYPES.register("decoration_table", () ->

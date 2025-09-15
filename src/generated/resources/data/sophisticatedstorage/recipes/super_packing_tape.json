@@ -1,0 +1,29 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "conditions": [
+    {
+      "type": "sophisticatedstorage:drop_packed_disabled"
+    },
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:super_packing_tape"
+    }
+  ],
+  "ingredients": [
+    {
+      "item": "sophisticatedstorage:packing_tape"
+    },
+    {
+      "item": "sophisticatedstorage:packing_tape"
+    },
+    {
+      "item": "sophisticatedstorage:packing_tape"
+    },
+    {
+      "item": "sophisticatedstorage:packing_tape"
+    }
+  ],
+  "result": {
+    "item": "sophisticatedstorage:super_packing_tape"
+  }
+}

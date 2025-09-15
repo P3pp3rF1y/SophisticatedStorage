@@ -1,0 +1,7 @@
+{
+    "variants": {
+        "": {
+            "model": "sophisticatedstorage:block/jungle_storage_connector"
+        }
+    }
+}

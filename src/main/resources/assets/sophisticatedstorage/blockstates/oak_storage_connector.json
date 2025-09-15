@@ -1,0 +1,7 @@
+{
+    "variants": {
+        "": {
+            "model": "sophisticatedstorage:block/oak_storage_connector"
+        }
+    }
+}

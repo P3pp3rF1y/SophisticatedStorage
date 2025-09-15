@@ -440,4 +440,17 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 			runOnTheOtherPart(level, worldPosition, (be, pos) -> be.chestLidController.shouldBeOpen(shouldBeOpen));
 		}
 	}
+
+	public BlockPos getMainPos() {
+		return doubleMainPos != null ? doubleMainPos : worldPosition;
+	}
+
+	@Override
+	public void setChanged() {
+		super.setChanged();
+		if (level != null && getBlockState().getValue(ChestBlock.TYPE) != ChestType.SINGLE && isMainChest()) {
+			// need to update neighbors of the other half as well for comparators to pickup inventory changes
+			runOnTheOtherPart(level, worldPosition, (be, pos) -> level.updateNeighbourForOutputSignal(pos, be.getBlockState().getBlock()));
+		}
+	}
 }
