@@ -182,7 +182,7 @@
   "item.sophisticatedstorage.stack_upgrade_tier_5": "Stack Upgrade Tier 5",
   "item.sophisticatedstorage.stack_upgrade_tier_5.tooltip": "Multiplies the number of stacks that can fit in a slot by 32",
   "item.sophisticatedstorage.stack_upgrade_omega_tier": "Stack Upgrade Omega Tier",
-  "item.sophisticatedstorage.stack_upgrade_omega_tier.tooltip": "Raises the stack size limit to 2,147,483,647",
+  "item.sophisticatedstorage.stack_upgrade_omega_tier.tooltip": "Multiplies stacks per slot by the maximum value (×33,554,431)",
   "item.sophisticatedstorage.stack_downgrade_tier_1": "Stack Downgrade Tier 1",
   "item.sophisticatedstorage.stack_downgrade_tier_1.tooltip": "Divides the number of stacks that can fit in a slot by 8",
   "item.sophisticatedstorage.stack_downgrade_tier_2": "Stack Downgrade Tier 2",
