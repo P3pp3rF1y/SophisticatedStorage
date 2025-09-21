@@ -132,6 +132,7 @@ public class ClientEventHandler {
 
 	private static void registerRenderPipelines(RegisterRenderPipelinesEvent event) {
 		event.registerPipeline(ControllerRenderer.NO_DEPTH_LINES_PIPELINE);
+		event.registerPipeline(ControllerRenderer.THICK_HIGHLIGHT_PIPELINE);
 	}
 
 	private static void registerBlockStateModels(RegisterBlockStateModels event) {
