@@ -2,6 +2,8 @@ package net.p3pp3rf1y.sophisticatedstorage.block;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -15,8 +17,10 @@ import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
+import net.p3pp3rf1y.sophisticatedstorage.util.VoxelOutliner;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -26,6 +30,9 @@ public class ControllerBlockEntity extends ControllerBlockEntityBase implements 
 
 	@Nullable
 	private IItemHandler cachedFailedInsertItemHandler;
+	private List<VoxelOutliner.Edge> cachedStorageEdges = null;
+	private List<VoxelOutliner.Edge> cachedLinkedBlockEdges = null;
+	private List<VoxelOutliner.Edge> cachedControllerEdges = null;
 
 	public ControllerBlockEntity(BlockPos pos, BlockState state) {
 		super(ModBlocks.CONTROLLER_BLOCK_ENTITY_TYPE.get(), pos, state);
@@ -232,5 +239,44 @@ public class ControllerBlockEntity extends ControllerBlockEntityBase implements 
 	@Override
 	protected int getSearchRange() {
 		return Config.SERVER.controllerRange.getAsInt();
+	}
+
+	@Override
+	public void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+		super.loadAdditional(tag, registries);
+		cachedStorageEdges = null;
+		cachedLinkedBlockEdges = null;
+	}
+
+	public List<VoxelOutliner.Edge> getStorageBlockEdges() {
+		if (cachedStorageEdges == null) {
+			Set<BlockPos> positions = new HashSet<>(getStoragePositions());
+			positions.removeIf(getLinkedBlocks()::contains);
+			List<BlockPos> extraPositions = new ArrayList<>();
+			positions.forEach(pos -> {
+						BlockState state = level.getBlockState(pos);
+						if (state.getBlock() instanceof StorageBlockBase storageBlock) {
+							storageBlock.getExtraPosition(state, pos).ifPresent(extraPositions::add);
+						}
+					});
+			positions.addAll(extraPositions);
+			cachedStorageEdges = VoxelOutliner.computeRenderableEdges(positions);
+		}
+		return cachedStorageEdges;
+	}
+
+	public List<VoxelOutliner.Edge> getLinkedBlockEdges() {
+		if (cachedLinkedBlockEdges == null) {
+			cachedLinkedBlockEdges = new ArrayList<>();
+			getLinkedBlocks().forEach(linkedPos -> cachedLinkedBlockEdges.addAll(VoxelOutliner.computeShapeRenderableEdges(level, List.of(linkedPos))));
+		}
+		return cachedLinkedBlockEdges;
+	}
+
+	public List<VoxelOutliner.Edge> getControllerEdges() {
+		if (cachedControllerEdges == null) {
+			cachedControllerEdges = VoxelOutliner.computeRenderableEdges(List.of(worldPosition));
+		}
+		return cachedControllerEdges;
 	}
 }

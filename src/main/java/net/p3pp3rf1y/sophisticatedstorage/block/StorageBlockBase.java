@@ -37,6 +37,7 @@ import org.joml.Vector3f;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -265,5 +266,9 @@ public abstract class StorageBlockBase extends BlockBase implements IStorageBloc
 	@SuppressWarnings("java:S1172") // Parameter used in overrides
 	public List<BlockPos> getNeighborPos(BlockState state, BlockPos origin, Direction facing) {
 		return List.of(origin.relative(facing));
+	}
+
+	public Optional<BlockPos> getExtraPosition(BlockState state, BlockPos pos) {
+		return Optional.empty();
 	}
 }
