@@ -5,6 +5,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.level.GameType;
 import net.neoforged.neoforge.client.gui.GuiLayer;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
@@ -13,13 +14,14 @@ import net.p3pp3rf1y.sophisticatedstorage.item.StorageToolItem;
 public class ToolInfoOverlay {
 
 	public static final GuiLayer HUD_TOOL_INFO = (guiGraphics, deltaTracker) -> {
-		LocalPlayer player = Minecraft.getInstance().player;
-		if (player == null) {
+		Minecraft mc = Minecraft.getInstance();
+		LocalPlayer player = mc.player;
+		if (player == null || mc.options.hideGui || !mc.options.getCameraType().isFirstPerson() || mc.gameMode.getPlayerMode() == GameType.SPECTATOR) {
 			return;
 		}
 		InventoryHelper.getItemFromEitherHand(player, ModItems.STORAGE_TOOL.get()).ifPresent(storageTool -> {
 			Component overlayMessage = StorageToolItem.getOverlayMessage(storageTool);
-			Font font = Minecraft.getInstance().font;
+			Font font = mc.font;
 			int i = font.width(overlayMessage);
 			int x = (guiGraphics.guiWidth() - i) / 2;
 			int y = guiGraphics.guiHeight() - 75;

@@ -50,6 +50,7 @@ import org.joml.Vector3f;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterloggedBlock {
@@ -448,6 +449,11 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 			}
 			return List.of(origin.relative(facing), origin.relative(connectedDirection).relative(facing));
 		}
+	}
+
+	@Override
+	public Optional<BlockPos> getExtraPosition(BlockState state, BlockPos pos) {
+		return state.getValue(TYPE) == ChestType.SINGLE ? Optional.empty() : Optional.of(pos.relative(getConnectedDirection(state)));
 	}
 
 	@Override
