@@ -12,12 +12,9 @@ import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.p3pp3rf1y.sophisticatedcore.controller.ControllerBlockEntityBase;
 import net.p3pp3rf1y.sophisticatedcore.inventory.CachedFailedInsertInventoryHandler;
-import net.p3pp3rf1y.sophisticatedcore.util.CapabilityHelper;
-import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
-import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
+import net.p3pp3rf1y.sophisticatedcore.util.*;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
-import net.p3pp3rf1y.sophisticatedstorage.util.VoxelOutliner;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -255,8 +252,8 @@ public class ControllerBlockEntity extends ControllerBlockEntityBase implements 
 			List<BlockPos> extraPositions = new ArrayList<>();
 			positions.forEach(pos -> {
 						BlockState state = level.getBlockState(pos);
-						if (state.getBlock() instanceof StorageBlockBase storageBlock) {
-							storageBlock.getExtraPosition(state, pos).ifPresent(extraPositions::add);
+						if (state.getBlock() instanceof IDoubleBlock doubleBlock) {
+							doubleBlock.getOtherPosition(state, pos).ifPresent(extraPositions::add);
 						}
 					});
 			positions.addAll(extraPositions);
