@@ -10,11 +10,12 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.p3pp3rf1y.sophisticatedcore.controller.ControllerBlockEntityBase;
+import net.p3pp3rf1y.sophisticatedcore.util.IDoubleBlock;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
+import net.p3pp3rf1y.sophisticatedcore.util.VoxelOutliner;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
-import net.p3pp3rf1y.sophisticatedstorage.util.VoxelOutliner;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -244,8 +245,8 @@ public class ControllerBlockEntity extends ControllerBlockEntityBase implements 
 			List<BlockPos> extraPositions = new ArrayList<>();
 			positions.forEach(pos -> {
 						BlockState state = level.getBlockState(pos);
-						if (state.getBlock() instanceof StorageBlockBase storageBlock) {
-							storageBlock.getExtraPosition(state, pos).ifPresent(extraPositions::add);
+						if (state.getBlock() instanceof IDoubleBlock doubleBlock) {
+							doubleBlock.getOtherPosition(state, pos).ifPresent(extraPositions::add);
 						}
 					});
 			positions.addAll(extraPositions);
