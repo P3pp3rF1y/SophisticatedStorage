@@ -27,12 +27,13 @@ public class BarrelRenderer<T extends BarrelBlockEntity> extends StorageRenderer
 	public void render(T blockEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
 		BlockState blockState = blockEntity.getBlockState();
 		boolean flatTop = Boolean.TRUE.equals(blockState.getValue(BarrelBlock.FLAT_TOP));
-		if (blockEntity.isPacked() || !(blockState.getBlock() instanceof BarrelBlock storageBlock)) {
+		if (blockEntity.isPacked() || !(blockState.getBlock() instanceof BarrelBlock storageBlock) || Minecraft.getInstance().player == null) {
 			return;
 		}
+		BlockPos pos = blockEntity.getBlockPos();
 
-		if (blockEntity.getLevel() != null && blockEntity.getBlockPos() != BlockPos.ZERO) {
-			packedLight = LevelRenderer.getLightColor(blockEntity.getLevel(), blockEntity.getBlockPos().relative(storageBlock.getFacing(blockState)));
+		if (blockEntity.getLevel() != null && pos != BlockPos.ZERO) {
+			packedLight = LevelRenderer.getLightColor(blockEntity.getLevel(), pos.relative(storageBlock.getFacing(blockState)));
 		}
 
 		renderFrontFace(blockEntity, poseStack, bufferSource, packedLight, packedOverlay, flatTop, blockState);
