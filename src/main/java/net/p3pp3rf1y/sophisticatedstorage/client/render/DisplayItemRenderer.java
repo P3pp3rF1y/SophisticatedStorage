@@ -111,22 +111,12 @@ public class DisplayItemRenderer {
 			poseStack.scale(UPGRADE_ITEM_SCALE, UPGRADE_ITEM_SCALE, UPGRADE_ITEM_SCALE);
 			ItemStack itemToRender = upgradeItem.isEmpty() ? EMPTY_UPGRADE_STACK : upgradeItem;
 			BakedModel itemModel = minecraft.getItemRenderer().getModel(itemToRender, null, minecraft.player, 0);
-			MultiBufferSource buffer;
-			if (upgradeItem.isEmpty()) {
-				if (bufferSource instanceof MultiBufferSource.BufferSource multiBufferSource) {
-					multiBufferSource.endBatch();
-				}
-				buffer = TranslucentVertexConsumer.wrapBuffer(bufferSource, 128);
-			} else {
-				buffer = bufferSource;
-			}
-			minecraft.getItemRenderer().render(itemToRender, ItemDisplayContext.FIXED, false, poseStack, buffer, packedLight, packedOverlay, itemModel);
+			minecraft.getItemRenderer().render(itemToRender, ItemDisplayContext.FIXED, false, poseStack, bufferSource, packedLight, packedOverlay, itemModel);
 			if (renderDisabledUpgradeDisplay) {
 				poseStack.pushPose();
 				poseStack.translate(0, 0, -0.001f);
 				itemModel = minecraft.getItemRenderer().getModel(INACCESSIBLE_SLOT_STACK, null, minecraft.player, 0);
-				buffer = bufferSource;
-				minecraft.getItemRenderer().render(INACCESSIBLE_SLOT_STACK, ItemDisplayContext.FIXED, false, poseStack, buffer, packedLight, packedOverlay, itemModel);
+				minecraft.getItemRenderer().render(INACCESSIBLE_SLOT_STACK, ItemDisplayContext.FIXED, false, poseStack, bufferSource, packedLight, packedOverlay, itemModel);
 				poseStack.popPose();
 			}
 			poseStack.popPose();
