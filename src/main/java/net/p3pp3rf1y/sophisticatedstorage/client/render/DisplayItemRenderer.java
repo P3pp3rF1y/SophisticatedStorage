@@ -113,22 +113,12 @@ public class DisplayItemRenderer {
 			poseStack.scale(UPGRADE_ITEM_SCALE, UPGRADE_ITEM_SCALE, UPGRADE_ITEM_SCALE);
 			ItemStack itemToRender = upgradeItem.isEmpty() ? EMPTY_UPGRADE_STACK : upgradeItem;
 			minecraft.getItemModelResolver().updateForTopItem(itemStackRenderState, itemToRender, ItemDisplayContext.FIXED, null, null, 0);
-			MultiBufferSource buffer;
-			if (upgradeItem.isEmpty()) {
-				if (bufferSource instanceof MultiBufferSource.BufferSource multiBufferSource) {
-					multiBufferSource.endBatch();
-				}
-				buffer = TranslucentVertexConsumer.wrapBuffer(bufferSource, 128);
-			} else {
-				buffer = bufferSource;
-			}
-			itemStackRenderState.render(poseStack, buffer, packedLight, packedOverlay);
+			itemStackRenderState.render(poseStack, bufferSource, packedLight, packedOverlay);
 			if (renderDisabledUpgradeDisplay) {
 				poseStack.pushPose();
 				poseStack.translate(0, 0, -0.001f);
 				minecraft.getItemModelResolver().updateForTopItem(itemStackRenderState, INACCESSIBLE_SLOT_STACK, ItemDisplayContext.FIXED, null, null, 0);
-				buffer = bufferSource;
-				itemStackRenderState.render(poseStack, buffer, packedLight, packedOverlay);
+				itemStackRenderState.render(poseStack, bufferSource, packedLight, packedOverlay);
 				poseStack.popPose();
 			}
 			poseStack.popPose();
