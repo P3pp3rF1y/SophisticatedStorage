@@ -1,12 +1,8 @@
 package net.p3pp3rf1y.sophisticatedstorage.client;
 
-import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.MouseHandler;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.RenderType;
@@ -18,29 +14,22 @@ import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.TriState;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
-import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.client.event.*;
 import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
-import net.neoforged.neoforge.client.settings.IKeyConflictContext;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
-import net.p3pp3rf1y.sophisticatedcore.client.gui.StorageScreenBase;
-import net.p3pp3rf1y.sophisticatedcore.common.gui.StorageContainerMenuBase;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.*;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.PaintbrushOverlay;
-import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageScreen;
-import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageTranslationHelper;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.ToolInfoOverlay;
 import net.p3pp3rf1y.sophisticatedstorage.client.init.ModBlockColors;
 import net.p3pp3rf1y.sophisticatedstorage.client.init.ModParticles;
@@ -54,45 +43,8 @@ import net.p3pp3rf1y.sophisticatedstorage.item.StorageContentsTooltip;
 import net.p3pp3rf1y.sophisticatedstorage.network.RequestPlayerSettingsPayload;
 import net.p3pp3rf1y.sophisticatedstorage.network.ScrolledToolPayload;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.function.Predicate;
-
-import static net.neoforged.neoforge.client.settings.KeyConflictContext.GUI;
-
 public class ClientEventHandler {
 	private ClientEventHandler() {
-	}
-
-	private static final String KEYBIND_SOPHISTICATEDSTORAGE_CATEGORY = "keybind.sophisticatedstorage.category";
-	private static final int MIDDLE_BUTTON = 2;
-	public static final KeyMapping SORT_KEYBIND = new KeyMapping(StorageTranslationHelper.INSTANCE.translKeybind("sort"),
-			StorageGuiKeyConflictContext.INSTANCE, InputConstants.Type.MOUSE.getOrCreate(MIDDLE_BUTTON), KEYBIND_SOPHISTICATEDSTORAGE_CATEGORY);
-
-	private static final Set<Predicate<StorageScreenBase<?>>> SORT_SCREEN_MATCHERS = new HashSet<>();
-
-	static {
-		SORT_SCREEN_MATCHERS.add(screen -> screen instanceof StorageScreen);
-	}
-
-	public static void addSortScreenMatcher(Predicate<StorageScreenBase<?>> matcher) {
-		SORT_SCREEN_MATCHERS.add(matcher);
-	}
-
-	@SuppressWarnings("java:S6548") //singleton is intended here
-	private static class StorageGuiKeyConflictContext implements IKeyConflictContext {
-		public static final StorageGuiKeyConflictContext INSTANCE = new StorageGuiKeyConflictContext();
-
-		@Override
-		public boolean isActive() {
-			return GUI.isActive() && Minecraft.getInstance().screen instanceof StorageScreenBase<?> storageScreen
-					&& SORT_SCREEN_MATCHERS.stream().anyMatch(matcher -> matcher.test(storageScreen));
-		}
-
-		@Override
-		public boolean conflicts(IKeyConflictContext other) {
-			return this == other;
-		}
 	}
 
 	private static final ResourceLocation CHEST_RL = ResourceLocation.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "chest");
@@ -109,7 +61,6 @@ public class ClientEventHandler {
 		modBus.addListener(ClientEventHandler::registerOverlay);
 		modBus.addListener(ClientEventHandler::registerEntityRenderers);
 		modBus.addListener(ModParticles::registerProviders);
-		modBus.addListener(ClientEventHandler::registerKeyMappings);
 		modBus.addListener(StorageTintSources::register);
 		modBus.addListener(ModBlockColors::registerBlockColorHandlers);
 		modBus.addListener(ClientEventHandler::registerStorageLayerLoader);
@@ -122,8 +73,6 @@ public class ClientEventHandler {
 		modBus.addListener(ClientEventHandler::registerRenderPipelines);
 		IEventBus eventBus = NeoForge.EVENT_BUS;
 		eventBus.addListener(ClientStorageContentsTooltip::onWorldLoad);
-		eventBus.addListener(EventPriority.HIGH, ClientEventHandler::handleGuiMouseKeyPress);
-		eventBus.addListener(EventPriority.HIGH, ClientEventHandler::handleGuiKeyPress);
 		eventBus.addListener(ClientEventHandler::onLimitedBarrelClicked);
 		eventBus.addListener(ClientEventHandler::onMouseScrolled);
 		eventBus.addListener(ClientEventHandler::onRenderHighlight);
@@ -239,36 +188,8 @@ public class ClientEventHandler {
 		}
 	}
 
-	public static void handleGuiKeyPress(ScreenEvent.KeyPressed.Pre event) {
-		if (SORT_KEYBIND.isActiveAndMatches(InputConstants.getKey(event.getKeyCode(), event.getScanCode())) && tryCallSort(event.getScreen())) {
-			event.setCanceled(true);
-		}
-	}
-
 	private static void registerStorageLayerLoader(AddClientReloadListenersEvent event) {
 		event.addListener(SophisticatedStorage.getRL("chest_texture_manager"), StorageTextureManager.INSTANCE);
-	}
-
-	public static void handleGuiMouseKeyPress(ScreenEvent.MouseButtonPressed.Pre event) {
-		InputConstants.Key input = InputConstants.Type.MOUSE.getOrCreate(event.getButton());
-		if (SORT_KEYBIND.isActiveAndMatches(input) && tryCallSort(event.getScreen())) {
-			event.setCanceled(true);
-		}
-	}
-
-	private static boolean tryCallSort(Screen gui) {
-		Minecraft mc = Minecraft.getInstance();
-		if (mc.player != null && mc.player.containerMenu instanceof StorageContainerMenuBase<?> container && gui instanceof StorageScreenBase<?> screen) {
-			MouseHandler mh = mc.mouseHandler;
-			double mouseX = mh.xpos() * mc.getWindow().getGuiScaledWidth() / mc.getWindow().getScreenWidth();
-			double mouseY = mh.ypos() * mc.getWindow().getGuiScaledHeight() / mc.getWindow().getScreenHeight();
-			Slot selectedSlot = screen.getHoveredSlot(mouseX, mouseY);
-			if (selectedSlot == null || container.isNotPlayersInventorySlot(selectedSlot.index)) {
-				container.sort();
-				return true;
-			}
-		}
-		return false;
 	}
 
 	private static void onRegisterModelLoaders(ModelEvent.RegisterLoaders event) {
@@ -290,10 +211,6 @@ public class ClientEventHandler {
 		event.registerLayerDefinition(CHEST_LAYER, () -> ChestRenderer.createSingleBodyLayer(true));
 		event.registerLayerDefinition(CHEST_LEFT_LAYER, ChestRenderer::createDoubleBodyLeftLayer);
 		event.registerLayerDefinition(CHEST_RIGHT_LAYER, ChestRenderer::createDoubleBodyRightLayer);
-	}
-
-	private static void registerKeyMappings(RegisterKeyMappingsEvent event) {
-		event.register(SORT_KEYBIND);
 	}
 
 	private static void registerTooltipComponent(RegisterClientTooltipComponentFactoriesEvent event) {
