@@ -24,6 +24,7 @@ import net.minecraftforge.client.event.*;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AddPackFindersEvent;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -75,6 +76,14 @@ public class ClientEventHandler {
 		eventBus.addListener(ClientEventHandler::onLimitedBarrelClicked);
 		eventBus.addListener(ClientEventHandler::onMouseScrolled);
 		eventBus.addListener(ClientEventHandler::onRenderHighlight);
+		eventBus.addListener(ClientEventHandler::onTick);
+	}
+
+	private static void onTick(TickEvent.ClientTickEvent event) {
+		if (event.phase != TickEvent.Phase.START) {
+			return;
+		}
+		ControllerTargetHighlighter.highlightTargets();
 	}
 
 	private static void onRenderHighlight(RenderHighlightEvent.Block event) {
