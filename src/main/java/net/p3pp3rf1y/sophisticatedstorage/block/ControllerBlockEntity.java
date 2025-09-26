@@ -6,21 +6,20 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.p3pp3rf1y.sophisticatedcore.controller.ControllerBlockEntityBase;
 import net.p3pp3rf1y.sophisticatedcore.inventory.CachedFailedInsertInventoryHandler;
+import net.p3pp3rf1y.sophisticatedcore.inventory.ItemStackKey;
 import net.p3pp3rf1y.sophisticatedcore.util.*;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class ControllerBlockEntity extends ControllerBlockEntityBase implements ILockable, ICountDisplay, ITierDisplay, IUpgradeDisplay, IFillLevelDisplay {
 	private long lastDepositTime = -100;
@@ -251,11 +250,11 @@ public class ControllerBlockEntity extends ControllerBlockEntityBase implements 
 			positions.removeIf(getLinkedBlocks()::contains);
 			List<BlockPos> extraPositions = new ArrayList<>();
 			positions.forEach(pos -> {
-						BlockState state = level.getBlockState(pos);
-						if (state.getBlock() instanceof IDoubleBlock doubleBlock) {
-							doubleBlock.getOtherPosition(state, pos).ifPresent(extraPositions::add);
-						}
-					});
+				BlockState state = level.getBlockState(pos);
+				if (state.getBlock() instanceof IDoubleBlock doubleBlock) {
+					doubleBlock.getOtherPosition(state, pos).ifPresent(extraPositions::add);
+				}
+			});
 			positions.addAll(extraPositions);
 			cachedStorageEdges = VoxelOutliner.computeRenderableEdges(positions);
 		}
@@ -275,5 +274,40 @@ public class ControllerBlockEntity extends ControllerBlockEntityBase implements 
 			cachedControllerEdges = VoxelOutliner.computeRenderableEdges(List.of(worldPosition));
 		}
 		return cachedControllerEdges;
+	}
+
+	public List<BlockPos> getStackStorages(ItemStackKey stackKey) {
+		List<BlockPos> result = new ArrayList<>();
+		result.addAll(stackStorages.getOrDefault(stackKey, Collections.emptySet()));
+		result.addAll(memorizedStackStorages.getOrDefault(stackKey.hashCode(), Collections.emptySet()));
+		return result;
+	}
+
+	public List<BlockPos> getItemStorages(ItemStackKey stackKey) {
+		Set<BlockPos> positions = new HashSet<>();
+		Item item = stackKey.getStack().getItem();
+		if (itemStackKeys.containsKey(item)) {
+			itemStackKeys.get(item).forEach(sk -> {
+				if (sk.equals(stackKey)) {
+					return;
+				}
+				if (stackStorages.containsKey(sk)) {
+					positions.addAll(stackStorages.get(sk));
+				}
+			});
+		}
+		positions.addAll(memorizedItemStorages.getOrDefault(item, Collections.emptySet()));
+		positions.addAll(filterItemStorages.getOrDefault(item, Collections.emptySet()));
+		getStackStorages(stackKey).forEach(positions::remove);
+		return new ArrayList<>(positions);
+	}
+
+	public List<BlockPos> getEmptyTargetSlotStorages(ItemStackKey stackKey) {
+		Set<BlockPos> positions = new HashSet<>(emptySlotsStorages);
+		getStackStorages(stackKey).forEach(positions::remove);
+		getItemStorages(stackKey).forEach(positions::remove);
+		ItemStack copy = stackKey.getStack().copyWithCount(1);
+		positions.removeIf(p -> !insertIntoStorage(p, copy, true).isEmpty());
+		return new ArrayList<>(positions);
 	}
 }
