@@ -80,6 +80,11 @@ public class ClientEventHandler {
 		eventBus.addListener(ClientEventHandler::onMouseScrolled);
 		eventBus.addListener(ClientEventHandler::onRenderHighlight);
 		eventBus.addListener(ClientEventHandler::onPlayerLoggingIn);
+		eventBus.addListener(ClientEventHandler::onTick);
+	}
+
+	private static void onTick(ClientTickEvent.Pre event) {
+		ControllerTargetHighlighter.highlightTargets();
 	}
 
 	private static void registerPictureInPictuterRenderers(RegisterPictureInPictureRenderersEvent event) {
