@@ -9,7 +9,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
@@ -22,6 +21,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.p3pp3rf1y.sophisticatedcore.client.render.BlockHighlightRenderHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.block.ControllerBlockEntity;
@@ -52,9 +52,10 @@ public class ControllerRenderer implements BlockEntityRenderer<ControllerBlockEn
 			}
 
 			if (StorageToolItem.getControllerLink(storageTool).map(controllerPos -> controllerPos.equals(controller.getBlockPos())).orElse(false)) {
-				renderBlockOutline(controller.getBlockPos(), controller.getBlockPos(), level, poseStack, bufferSource, DyeColor.LIGHT_BLUE.getTextColor());
+				renderControllerOutline(controller, poseStack, bufferSource);
 			}
-			renderLinkedBlocksOutline(controller, level, poseStack, bufferSource);
+			renderLinkedBlocks(controller, level, poseStack, bufferSource);
+			renderStorageBlocksOutline(controller, poseStack, bufferSource);
 		});
 	}
 
@@ -87,13 +88,17 @@ public class ControllerRenderer implements BlockEntityRenderer<ControllerBlockEn
 		}
 	}
 
-	private void renderLinkedBlocksOutline(ControllerBlockEntity controller, ClientLevel level, PoseStack poseStack, MultiBufferSource bufferSource) {
+	private void renderLinkedBlocks(ControllerBlockEntity controller, ClientLevel level, PoseStack poseStack, MultiBufferSource bufferSource) {
 		controller.getLinkedBlocks().forEach(pos -> {
 			BlockState state = level.getBlockState(pos);
 			VoxelShape shape = state.getShape(level, pos, CollisionContext.empty());
 			renderLineBetweenBlocks(controller.getBlockPos(), pos, shape, poseStack, bufferSource, DyeColor.LIME.getTextColor());
-			renderBlockOutline(controller.getBlockPos(), pos, shape, poseStack, bufferSource, DyeColor.LIME.getTextColor());
 		});
+		BlockHighlightRenderHelper.renderThickEdges(poseStack, bufferSource, DyeColor.LIME.getTextColor(), controller.getLinkedBlockEdges(), controller.getBlockPos());
+	}
+
+	private void renderStorageBlocksOutline(ControllerBlockEntity controller, PoseStack poseStack, MultiBufferSource bufferSource) {
+		BlockHighlightRenderHelper.renderThickEdges(poseStack, bufferSource, 0x69c53b, controller.getStorageBlockEdges(), controller.getBlockPos());
 	}
 
 	private void renderLineBetweenBlocks(BlockPos initialPos, BlockPos pos, VoxelShape shape, PoseStack poseStack, MultiBufferSource bufferSource, int color) {
@@ -107,7 +112,7 @@ public class ControllerRenderer implements BlockEntityRenderer<ControllerBlockEn
 
 		Vec3 center = shape.bounds().getCenter();
 
-		VertexConsumer buffer = bufferSource.getBuffer(LineRenderType.LINES);
+		VertexConsumer buffer = bufferSource.getBuffer(LINES);
 
 		PoseStack.Pose pose = poseStack.last();
 		Matrix4f matrix4f = pose.pose();
@@ -120,19 +125,8 @@ public class ControllerRenderer implements BlockEntityRenderer<ControllerBlockEn
 				.setNormal(pose, normalX, normalY, normalZ);
 	}
 
-	private void renderBlockOutline(BlockPos controllerPos, BlockPos pos, ClientLevel level, PoseStack poseStack, MultiBufferSource bufferSource, int color) {
-		BlockState state = level.getBlockState(pos);
-		VoxelShape shape = state.getShape(level, pos, CollisionContext.empty());
-		renderBlockOutline(controllerPos, pos, shape, poseStack, bufferSource, color);
-	}
-
-	private void renderBlockOutline(BlockPos controllerPos, BlockPos pos, VoxelShape shape, PoseStack poseStack, MultiBufferSource bufferSource, int color) {
-		VertexConsumer vertexConsumer = bufferSource.getBuffer(LineRenderType.LINES);
-		float red = (float) (color >> 16 & 255) / 255.0F;
-		float green = (float) (color >> 8 & 255) / 255.0F;
-		float blue = (float) (color & 255) / 255.0F;
-
-		LevelRenderer.renderShape(poseStack, vertexConsumer, shape, (double) -controllerPos.getX() + pos.getX(), (double) -controllerPos.getY() + pos.getY(), (double) -controllerPos.getZ() + pos.getZ(), red, green, blue, 1);
+	private void renderControllerOutline(ControllerBlockEntity controller, PoseStack poseStack, MultiBufferSource bufferSource) {
+		BlockHighlightRenderHelper.renderThickEdges(poseStack, bufferSource, 0x2ebbff, controller.getControllerEdges(), controller.getBlockPos());
 	}
 
 	@Override
@@ -140,20 +134,20 @@ public class ControllerRenderer implements BlockEntityRenderer<ControllerBlockEn
 		return true;
 	}
 
-	private static class LineRenderType extends RenderType {
-		public LineRenderType(String name, VertexFormat format, VertexFormat.Mode mode, int bufferSize, boolean affectsCrumbling, boolean sortOnUpload, Runnable setupState, Runnable clearState) {
-			super(name, format, mode, bufferSize, affectsCrumbling, sortOnUpload, setupState, clearState);
-		}
-
-		private static final RenderType LINES = RenderType.create("storage_lines", DefaultVertexFormat.POSITION_COLOR_NORMAL, VertexFormat.Mode.LINES, 256, false, false,
-				CompositeState.builder()
-						.setShaderState(RENDERTYPE_LINES_SHADER)
-						.setDepthTestState(NO_DEPTH_TEST)
-						.setLineState(new LineStateShard(OptionalDouble.empty()))
-						.setLayeringState(VIEW_OFFSET_Z_LAYERING)
-						.setCullState(RenderStateShard.NO_CULL)
-						.createCompositeState(false));
-	}
+	private static final RenderType LINES = RenderType.create(
+			"storage_lines",
+			DefaultVertexFormat.POSITION_COLOR_NORMAL,
+			VertexFormat.Mode.LINES,
+			256,
+			false,
+			false,
+			RenderType.CompositeState.builder()
+					.setShaderState(RenderStateShard.RENDERTYPE_LINES_SHADER)
+					.setDepthTestState(RenderStateShard.NO_DEPTH_TEST)
+					.setLineState(new RenderStateShard.LineStateShard(OptionalDouble.empty()))
+					.setLayeringState(RenderStateShard.VIEW_OFFSET_Z_LAYERING)
+					.setCullState(RenderStateShard.NO_CULL)
+					.createCompositeState(false));
 
 	@Override
 	public AABB getRenderBoundingBox(ControllerBlockEntity blockEntity) {
