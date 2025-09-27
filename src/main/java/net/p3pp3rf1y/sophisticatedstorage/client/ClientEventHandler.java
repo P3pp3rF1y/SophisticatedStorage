@@ -1,12 +1,8 @@
 package net.p3pp3rf1y.sophisticatedstorage.client;
 
-import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.MouseHandler;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.LevelRenderer;
@@ -18,7 +14,6 @@ import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -27,22 +22,17 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraftforge.client.event.*;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
-import net.minecraftforge.client.settings.IKeyConflictContext;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AddPackFindersEvent;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.Event;
-import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.p3pp3rf1y.sophisticatedcore.client.gui.StorageScreenBase;
-import net.p3pp3rf1y.sophisticatedcore.common.gui.StorageContainerMenuBase;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.LimitedBarrelBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockBase;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.PaintbrushOverlay;
-import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageScreen;
-import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageTranslationHelper;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.ToolInfoOverlay;
 import net.p3pp3rf1y.sophisticatedstorage.client.init.ModBlockColors;
 import net.p3pp3rf1y.sophisticatedstorage.client.init.ModItemColors;
@@ -56,45 +46,10 @@ import net.p3pp3rf1y.sophisticatedstorage.item.StorageContentsTooltip;
 import net.p3pp3rf1y.sophisticatedstorage.network.ScrolledToolMessage;
 import net.p3pp3rf1y.sophisticatedstorage.network.StoragePacketHandler;
 
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
-import java.util.function.Predicate;
-
-import static net.minecraftforge.client.settings.KeyConflictContext.GUI;
 
 public class ClientEventHandler {
 	private ClientEventHandler() {}
-
-	private static final String KEYBIND_SOPHISTICATEDSTORAGE_CATEGORY = "keybind.sophisticatedstorage.category";
-	private static final int MIDDLE_BUTTON = 2;
-	public static final KeyMapping SORT_KEYBIND = new KeyMapping(StorageTranslationHelper.INSTANCE.translKeybind("sort"),
-			StorageGuiKeyConflictContext.INSTANCE, InputConstants.Type.MOUSE.getOrCreate(MIDDLE_BUTTON), KEYBIND_SOPHISTICATEDSTORAGE_CATEGORY);
-
-	private static Set<Predicate<StorageScreenBase<?>>> SORT_SCREEN_MATCHERS = new HashSet<>();
-	static {
-		SORT_SCREEN_MATCHERS.add(screen -> screen instanceof StorageScreen);
-	}
-
-	public static void addSortScreenMatcher(Predicate<StorageScreenBase<?>> matcher) {
-		SORT_SCREEN_MATCHERS.add(matcher);
-	}
-
-	@SuppressWarnings("java:S6548") //singleton is intended here
-	private static class StorageGuiKeyConflictContext implements IKeyConflictContext {
-		public static final StorageGuiKeyConflictContext INSTANCE = new StorageGuiKeyConflictContext();
-
-		@Override
-		public boolean isActive() {
-			return GUI.isActive() && Minecraft.getInstance().screen instanceof StorageScreenBase<?> storageScreen
-					&& SORT_SCREEN_MATCHERS.stream().anyMatch(matcher -> matcher.test(storageScreen));
-		}
-
-		@Override
-		public boolean conflicts(IKeyConflictContext other) {
-			return this == other;
-		}
-	}
 
 	private static final ResourceLocation CHEST_RL = new ResourceLocation(SophisticatedStorage.MOD_ID, "chest");
 	private static final ResourceLocation CHEST_LEFT_RL = new ResourceLocation(SophisticatedStorage.MOD_ID, "chest_left");
@@ -111,7 +66,6 @@ public class ClientEventHandler {
 		modBus.addListener(ClientEventHandler::registerOverlay);
 		modBus.addListener(ClientEventHandler::registerEntityRenderers);
 		modBus.addListener(ModParticles::registerProviders);
-		modBus.addListener(ClientEventHandler::registerKeyMappings);
 		modBus.addListener(ModItemColors::registerItemColorHandlers);
 		modBus.addListener(ModBlockColors::registerBlockColorHandlers);
 		modBus.addListener(ClientEventHandler::registerStorageLayerLoader);
@@ -119,11 +73,17 @@ public class ClientEventHandler {
 		modBus.addListener(ClientEventHandler::onRegisterReloadListeners);
 		IEventBus eventBus = MinecraftForge.EVENT_BUS;
 		eventBus.addListener(ClientStorageContentsTooltip::onWorldLoad);
-		eventBus.addListener(EventPriority.HIGH, ClientEventHandler::handleGuiMouseKeyPress);
-		eventBus.addListener(EventPriority.HIGH, ClientEventHandler::handleGuiKeyPress);
 		eventBus.addListener(ClientEventHandler::onLimitedBarrelClicked);
 		eventBus.addListener(ClientEventHandler::onMouseScrolled);
 		eventBus.addListener(ClientEventHandler::onRenderHighlight);
+		eventBus.addListener(ClientEventHandler::onTick);
+	}
+
+	private static void onTick(TickEvent.ClientTickEvent event) {
+		if (event.phase != TickEvent.Phase.START) {
+			return;
+		}
+		ControllerTargetHighlighter.highlightTargets();
 	}
 
 	private static void onRenderHighlight(RenderHighlightEvent.Block event) {
@@ -219,39 +179,11 @@ public class ClientEventHandler {
 		}
 	}
 
-	public static void handleGuiKeyPress(ScreenEvent.KeyPressed.Pre event) {
-		if (SORT_KEYBIND.isActiveAndMatches(InputConstants.getKey(event.getKeyCode(), event.getScanCode())) && tryCallSort(event.getScreen())) {
-			event.setCanceled(true);
-		}
-	}
-
 	private static void registerStorageLayerLoader(AddPackFindersEvent event) {
 		ResourceManager resourceManager = Minecraft.getInstance().getResourceManager();
 		if (resourceManager instanceof ReloadableResourceManager reloadableResourceManager) {
 			reloadableResourceManager.registerReloadListener(StorageTextureManager.INSTANCE);
 		}
-	}
-
-	public static void handleGuiMouseKeyPress(ScreenEvent.MouseButtonPressed.Pre event) {
-		InputConstants.Key input = InputConstants.Type.MOUSE.getOrCreate(event.getButton());
-		if (SORT_KEYBIND.isActiveAndMatches(input) && tryCallSort(event.getScreen())) {
-			event.setCanceled(true);
-		}
-	}
-
-	private static boolean tryCallSort(Screen gui) {
-		Minecraft mc = Minecraft.getInstance();
-		if (mc.player != null && mc.player.containerMenu instanceof StorageContainerMenuBase<?> container && gui instanceof StorageScreenBase<?> screen) {
-			MouseHandler mh = mc.mouseHandler;
-			double mouseX = mh.xpos() * mc.getWindow().getGuiScaledWidth() / mc.getWindow().getScreenWidth();
-			double mouseY = mh.ypos() * mc.getWindow().getGuiScaledHeight() / mc.getWindow().getScreenHeight();
-			Slot selectedSlot = screen.findSlot(mouseX, mouseY);
-			if (selectedSlot == null || container.isNotPlayersInventorySlot(selectedSlot.index)) {
-				container.sort();
-				return true;
-			}
-		}
-		return false;
 	}
 
 	private static void onModelRegistry(ModelEvent.RegisterGeometryLoaders event) {
@@ -273,10 +205,6 @@ public class ClientEventHandler {
 		event.registerLayerDefinition(CHEST_LAYER, () -> ChestRenderer.createSingleBodyLayer(true));
 		event.registerLayerDefinition(CHEST_LEFT_LAYER, ChestRenderer::createDoubleBodyLeftLayer);
 		event.registerLayerDefinition(CHEST_RIGHT_LAYER, ChestRenderer::createDoubleBodyRightLayer);
-	}
-
-	private static void registerKeyMappings(RegisterKeyMappingsEvent event) {
-		event.register(SORT_KEYBIND);
 	}
 
 	private static void registerTooltipComponent(RegisterClientTooltipComponentFactoriesEvent event) {
