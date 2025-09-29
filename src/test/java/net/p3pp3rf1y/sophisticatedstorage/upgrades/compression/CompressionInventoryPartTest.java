@@ -1006,4 +1006,27 @@ public class CompressionInventoryPartTest {
 				)
 		);
 	}
+
+	@Test
+	public void extractFromIncorrectSlotReturnsEmpty() {
+		InventoryHandler invHandler = getFilledInventoryHandler(Map.of(0, new ItemStack(Items.IRON_BLOCK, 1), 1, new ItemStack(Items.IRON_INGOT, 2), 2, new ItemStack(Items.IRON_NUGGET, 3)), 64);
+		int minSlot = 0;
+
+		CompressionInventoryPart part = initCompressionInventoryPart(invHandler, new SlotRange(minSlot, minSlot + 3), () -> getMemorySettings(invHandler, Map.of()));
+
+		assertStackEquals(ItemStack.EMPTY, part.extractItem(3, 1, false), "Extracted item doesn't match");
+	}
+
+	@Test
+	public void extractFromSlotAfterLastExtractedReturnsEmpty() {
+		InventoryHandler invHandler = getFilledInventoryHandler(Map.of(0, new ItemStack(Items.IRON_BLOCK, 1), 1, new ItemStack(Items.IRON_INGOT, 2), 2, new ItemStack(Items.IRON_NUGGET, 3)), 64);
+		int minSlot = 0;
+
+		CompressionInventoryPart part = initCompressionInventoryPart(invHandler, new SlotRange(minSlot, minSlot + 3), () -> getMemorySettings(invHandler, Map.of()));
+
+		part.extractItem(0, 1, false);
+		part.extractItem(1, 2, false);
+		part.extractItem(2, 3, false);
+		assertStackEquals(ItemStack.EMPTY, part.extractItem(2, 1, false), "Extracted item doesn't match");
+	}
 }
