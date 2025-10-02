@@ -195,7 +195,6 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		super.saveAdditional(out);
 		saveStorageWrapper(out);
 		saveSynchronizedData(out);
-		saveControllerPos(out);
 		if (isLinkedToController) {
 			out.putBoolean("isLinkedToController", isLinkedToController);
 		}
@@ -229,6 +228,7 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		if (showUpgrades) {
 			out.putBoolean("showUpgrades", showUpgrades);
 		}
+		saveControllerPos(out);
 	}
 
 	public void startOpen(Player player) {
@@ -281,7 +281,6 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		super.loadAdditional(in);
 		loadStorageWrapper(in);
 		loadSynchronizedData(in);
-		loadControllerPos(in);
 
 		isLinkedToController = in.getBooleanOr("isLinkedToController", false);
 	}
@@ -309,6 +308,7 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 				displayItemTints.clear();
 			}
 		}
+		loadControllerPos(in);
 	}
 
 	@Override
