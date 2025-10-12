@@ -52,6 +52,7 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 	}
 
 	private void calculateStacks(boolean initial) {
+		reconcilingStacks = true;
 		clearCollections();
 		Map<Integer, ItemStack> existingStacks = getExistingStacks();
 
@@ -66,6 +67,7 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 		updateCalculatedStacks();
 
 		slotDefinitions.forEach((slot, definition) -> parent.triggerOnChangeListeners(slot));
+		reconcilingStacks = false;
 	}
 
 	private void setSlotDefinitions(Map<Integer, SlotDefinition> definitions, boolean initial) {
@@ -294,7 +296,7 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 	}
 
 	private ItemStack extractItem(int slot, int amount, boolean simulate, ToIntFunction<ItemStack> getLimit) {
-		if (!slotDefinitions.containsKey(slot) || !slotDefinitions.get(slot).isAccessible()) {
+		if (!slotDefinitions.containsKey(slot) || !slotDefinitions.get(slot).isAccessible() || !calculatedStacks.containsKey(slot)) {
 			return ItemStack.EMPTY;
 		}
 		int toExtract = Math.min(calculatedStacks.get(slot).getCount(), amount);
