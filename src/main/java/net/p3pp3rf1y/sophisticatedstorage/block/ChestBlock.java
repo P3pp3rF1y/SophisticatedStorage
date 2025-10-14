@@ -148,7 +148,12 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 										currentBE.isPacked() == facingBE.isPacked()
 												&& currentBE.getStorageWrapper().getMainColor() == facingBE.getStorageWrapper().getMainColor()
 												&& currentBE.getStorageWrapper().getAccentColor() == facingBE.getStorageWrapper().getAccentColor()
-												&& currentBE.getWoodType().orElse(WoodType.ACACIA) == facingBE.getWoodType().orElse(WoodType.ACACIA)
+												&& (
+												(currentBE.getWoodType().isEmpty() && facingBE.getWoodType().isEmpty())
+														||
+														(currentBE.getWoodType().isPresent() && facingBE.getWoodType().isPresent()
+																&& currentBE.getWoodType().get() == facingBE.getWoodType().get())
+										)
 								)
 				).orElse(false);
 	}
