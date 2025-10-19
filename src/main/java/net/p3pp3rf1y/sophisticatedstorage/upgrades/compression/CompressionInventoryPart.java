@@ -436,7 +436,7 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 		SlotDefinition prevSlotDefinition = slotDefinitions.get(prevSlot);
 		boolean hasPrevious = prevSlotDefinition != null && prevSlotDefinition.isAccessible();
 		if (countCalculated > 0 && Integer.MAX_VALUE - countCalculated < calculatedStack.getMaxStackSize() && hasPrevious) {
-			boolean prevSlotFull = getSlotLimit(prevSlot) == calculatedStacks.get(prevSlot).getCount();
+			boolean prevSlotFull = calculatedStacks.containsKey(prevSlot) && getSlotLimit(prevSlot) == calculatedStacks.get(prevSlot).getCount();
 			int buffer = prevSlotFull ? getStackLimit(slotCalculated, calculatedStack) - countCalculated : calculatedStack.getMaxStackSize();
 			toSet = Integer.MAX_VALUE - buffer;
 		}
@@ -444,7 +444,7 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 	}
 
 	private void extractFromCalculatedThisAndStacksAfter(int extractCount, int slot) {
-		while (slot < slotRange.firstSlot() + slotRange.numberOfSlots() && slotDefinitions.get(slot).isAccessible()) {
+		while (slot < slotRange.firstSlot() + slotRange.numberOfSlots() && slotDefinitions.get(slot).isAccessible() && calculatedStacks.containsKey(slot)) {
 			ItemStack calculatedStack = calculatedStacks.get(slot);
 			int multiplier = getPrevSlotMultiplier(slot);
 			extractCount *= multiplier;
