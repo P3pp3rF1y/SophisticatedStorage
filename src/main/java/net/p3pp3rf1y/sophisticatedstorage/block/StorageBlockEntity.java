@@ -22,6 +22,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import net.neoforged.fml.util.thread.SidedThreadGroups;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.p3pp3rf1y.sophisticatedcore.controller.IControllableStorage;
@@ -635,6 +636,13 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		removeFromController();
 		if (shouldDropContents()) {
 			dropContents();
+		}
+	}
+
+	@Override
+	public void setChanged() {
+		if (Thread.currentThread().getThreadGroup() == SidedThreadGroups.SERVER) {
+			super.setChanged();
 		}
 	}
 }
