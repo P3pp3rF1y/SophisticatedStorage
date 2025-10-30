@@ -21,6 +21,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.fml.util.thread.SidedThreadGroups;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.p3pp3rf1y.sophisticatedcore.controller.IControllableStorage;
@@ -69,7 +70,9 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 
 	protected StorageBlockEntity(BlockPos pos, BlockState state, BlockEntityType<? extends StorageBlockEntity> blockEntityType) {
 		super(blockEntityType, pos, state);
-		storageWrapper = new StorageWrapper(() -> this::setChanged, () -> {
+		storageWrapper = new StorageWrapper(() -> () -> {
+			setChanged();
+		}, () -> {
 			if (level != null && !level.isClientSide) {
 				WorldHelper.notifyBlockUpdate(this);
 			}
@@ -620,5 +623,12 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 
 	public void setShouldBeOpen(boolean shouldBeOpen) {
 		//noop by default
+	}
+
+	@Override
+	public void setChanged() {
+		if (Thread.currentThread().getThreadGroup() == SidedThreadGroups.SERVER) {
+			super.setChanged();
+		}
 	}
 }
