@@ -11,6 +11,7 @@ import net.minecraft.world.level.block.state.properties.WoodType;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.fml.util.thread.SidedThreadGroups;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
@@ -61,7 +62,9 @@ public abstract class WoodStorageBlockEntity extends StorageBlockEntity {
 
 	public void setWoodType(WoodType woodType) {
 		this.woodType = woodType;
-		setChanged();
+		if (Thread.currentThread().getThreadGroup() == SidedThreadGroups.SERVER) {
+			setChanged();
+		}
 	}
 
 	@Override

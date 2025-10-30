@@ -22,6 +22,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.fml.util.thread.SidedThreadGroups;
 import net.minecraftforge.items.IItemHandler;
 import net.p3pp3rf1y.sophisticatedcore.controller.IControllableStorage;
 import net.p3pp3rf1y.sophisticatedcore.controller.ILinkable;
@@ -647,5 +648,12 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 
 	public void setShouldBeOpen(boolean shouldBeOpen) {
 		//noop by default
+	}
+
+	@Override
+	public void setChanged() {
+		if (Thread.currentThread().getThreadGroup() == SidedThreadGroups.SERVER) {
+			super.setChanged();
+		}
 	}
 }
