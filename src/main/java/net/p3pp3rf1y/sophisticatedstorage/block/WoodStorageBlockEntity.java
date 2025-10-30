@@ -10,6 +10,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.WoodType;
+import net.neoforged.fml.util.thread.SidedThreadGroups;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
@@ -59,7 +60,9 @@ public abstract class WoodStorageBlockEntity extends StorageBlockEntity {
 
 	public void setWoodType(WoodType woodType) {
 		this.woodType = woodType;
-		setChanged();
+		if (Thread.currentThread().getThreadGroup() == SidedThreadGroups.SERVER) {
+			setChanged();
+		}
 	}
 
 	@Override

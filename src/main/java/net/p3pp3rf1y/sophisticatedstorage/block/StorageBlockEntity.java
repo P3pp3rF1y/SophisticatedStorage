@@ -19,6 +19,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.fml.util.thread.SidedThreadGroups;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.p3pp3rf1y.sophisticatedcore.controller.IControllableStorage;
@@ -627,5 +628,12 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 
 	public int getOrComputeDisplayItemTint(int displayItemIndex, int tintIndex, Supplier<Integer> getTint) {
 		return displayItemTints.computeIfAbsent(new DisplayTintKey(displayItemIndex, tintIndex), key -> getTint.get());
+	}
+
+	@Override
+	public void setChanged() {
+		if (Thread.currentThread().getThreadGroup() == SidedThreadGroups.SERVER) {
+			super.setChanged();
+		}
 	}
 }
