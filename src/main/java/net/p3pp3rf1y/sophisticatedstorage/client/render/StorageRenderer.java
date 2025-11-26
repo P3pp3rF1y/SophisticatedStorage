@@ -54,10 +54,10 @@ public abstract class StorageRenderer<T extends StorageBlockEntity> implements B
 					.map(item -> StorageToolItem.getMode(item) == StorageToolItem.Mode.UPGRADES_DISPLAY).orElse(false);
 
 			holdsItemThatShowsUpgrades = holdsStorageTool || holdsItem(player, this::isUpgrade);
-			holdsItemThatShowsFillLevels = holdsStorageTool || holdsItem(player, StorageTierUpgradeItem.class::isInstance) || holdsItem(player, stack -> isUpgrade(stack) && stack.getItem() instanceof StackUpgradeItem);
+			holdsItemThatShowsFillLevels = holdsStorageTool || holdsItem(player, this::isStorageTierUpgrade) || holdsItem(player, stack -> isUpgrade(stack) && stack.getItem() instanceof StackUpgradeItem);
 			holdsItemThatShowsHiddenTiers = (holdsStorageTool && InventoryHelper.getItemFromEitherHand(player, ModItems.STORAGE_TOOL.get())
 					.map(item -> StorageToolItem.getMode(item) == StorageToolItem.Mode.TIER_DISPLAY).orElse(false))
-					|| holdsItem(player, StorageTierUpgradeItem.class::isInstance);
+					|| holdsItem(player, this::isStorageTierUpgrade);
 			holdsToolInToggleLockOrLockDisplay = holdsStorageTool && InventoryHelper.getItemFromEitherHand(player, ModItems.STORAGE_TOOL.get())
 					.map(item -> {
 						StorageToolItem.Mode mode = StorageToolItem.getMode(item);
@@ -94,6 +94,10 @@ public abstract class StorageRenderer<T extends StorageBlockEntity> implements B
 
 	private boolean isUpgrade(ItemStack stack) {
 		return stack.getItem() instanceof UpgradeItemBase && stack.is(ModItems.STORAGE_UPGRADE_TAG);
+	}
+
+	private boolean isStorageTierUpgrade(ItemStack stack) {
+		return stack.getItem() instanceof StorageTierUpgradeItem;
 	}
 
 	public boolean shouldShowDisabledUpgradesDisplay(T storageBlockEntity) {
