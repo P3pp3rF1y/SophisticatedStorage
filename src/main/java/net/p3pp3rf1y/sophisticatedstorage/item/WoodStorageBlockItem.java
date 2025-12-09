@@ -1,7 +1,7 @@
 package net.p3pp3rf1y.sophisticatedstorage.item;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponentHolder;
 import net.minecraft.network.chat.Component;
@@ -44,7 +44,7 @@ public class WoodStorageBlockItem extends StorageBlockItem {
 					StackStorageWrapper.fromStack(registries, stack).getContentsUuid().ifPresent(uuid -> tooltipAdder.accept(Component.literal("UUID: " + uuid).withStyle(ChatFormatting.DARK_GRAY)));
 				}
 			}
-			if (!Screen.hasShiftDown()) {
+			if (!Minecraft.getInstance().hasShiftDown()) {
 				tooltipAdder.accept(Component.translatable(
 						TranslationHelper.INSTANCE.translItemTooltip("storage") + ".press_for_contents",
 						Component.translatable(TranslationHelper.INSTANCE.translItemTooltip("storage") + ".shift").withStyle(ChatFormatting.AQUA)
@@ -59,7 +59,7 @@ public class WoodStorageBlockItem extends StorageBlockItem {
 			return Optional.empty();
 		}
 
-		if (FMLEnvironment.dist.isClient()) {
+		if (FMLEnvironment.getDist().isClient()) {
 			return Optional.ofNullable(StorageItemClient.getTooltipImage(stack));
 		}
 		return Optional.empty();

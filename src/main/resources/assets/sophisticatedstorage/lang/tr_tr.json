@@ -232,8 +232,8 @@
   "gui.sophisticatedstorage.settings.buttons.context_storage": "Depo",
   "gui.sophisticatedstorage.settings.buttons.context_storage.tooltip": "Bu Depo'nun ayarları",
   "gui.sophisticatedstorage.settings.buttons.context_storage.tooltip_detail": "Bu depolama alanı için oyuncudan devralınır veya geçersiz kılınır",
-  "keybind.sophisticatedstorage.category": "Sophisticated Storage",
-  "keybind.sophisticatedstorage.sort": "Depoyu Sırala",
+  "key.category.sophisticatedstorage.main": "Sophisticated Storage",
+  "key.sophisticatedstorage.sort": "Depoyu Sırala",
   "gui.sophisticatedstorage.status.too_many_item_entity_drops": "%s kıramazsın çünkü çok fazla (%s) eşya varlığının düşmesine neden olur\nBu kontrolü atlamak için %s kullanmayı veya eğilirken kırmayı deneyin",
   "gui.sophisticatedstorage.status.too_low_tier_upgrade_count": "Yükseltme %s %ss gerektirir",
   "gui.sophisticatedstorage.status.packing_tape_disabled": "Paketleme bandına gerek kalmadan tüm depoları paketlenmiş olarak bırakmak için yapılandırma ayarı"

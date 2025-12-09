@@ -16,7 +16,8 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.capabilities.BlockCapabilityCache;
 import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.p3pp3rf1y.sophisticatedcore.controller.ControllerBlockEntityBase;
 import net.p3pp3rf1y.sophisticatedcore.controller.IControllerBoundable;
 import net.p3pp3rf1y.sophisticatedcore.controller.ILinkable;
@@ -36,7 +37,7 @@ public class StorageIOBlockEntity extends BlockEntity implements IControllerBoun
 	private boolean chunkBeingUnloaded = false;
 
 	@Nullable
-	private BlockCapabilityCache<IItemHandler, Direction> controllerItemHandlerCache;
+	private BlockCapabilityCache<ResourceHandler<ItemResource>, Direction> controllerItemHandlerCache;
 
 	protected StorageIOBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
 		super(type, pos, state);
@@ -177,14 +178,14 @@ public class StorageIOBlockEntity extends BlockEntity implements IControllerBoun
 
 	@Nullable
 	@SuppressWarnings("java:S1640") //can't use EnumMap because one of keys is null
-	public IItemHandler getExternalItemHandler(@Nullable Direction side) {
+	public ResourceHandler<ItemResource> getExternalItemResourceHandler(@Nullable Direction side) {
 		if (getControllerPos().isEmpty()) {
 			return null;
 		}
 
 		if (controllerItemHandlerCache == null && level instanceof ServerLevel serverLevel) {
 			controllerItemHandlerCache = BlockCapabilityCache.create(
-					Capabilities.ItemHandler.BLOCK,
+					Capabilities.Item.BLOCK,
 					serverLevel,
 					getControllerPos().get(),
 					side,
@@ -196,7 +197,7 @@ public class StorageIOBlockEntity extends BlockEntity implements IControllerBoun
 		if (controllerItemHandlerCache != null) {
 			return controllerItemHandlerCache.getCapability();
 		} else {
-			return WorldHelper.getBlockEntity(getLevel(), getControllerPos().get(), ControllerBlockEntity.class).map(c -> c.getExternalItemHandler(side)).orElse(null);
+			return WorldHelper.getBlockEntity(getLevel(), getControllerPos().get(), ControllerBlockEntity.class).map(c -> c.getExternalItemResourceHandler()).orElse(null);
 		}
 	}
 

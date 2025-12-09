@@ -6,6 +6,7 @@ import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.particle.TerrainParticle;
 import net.minecraft.core.BlockPos;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlock;
 
@@ -29,7 +30,7 @@ public class CustomTintTerrainParticle extends TerrainParticle {
 	public static class Factory implements ParticleProvider<CustomTintTerrainParticleData> {
 		@Nullable
 		@Override
-		public Particle createParticle(CustomTintTerrainParticleData type, ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed) {
+		public Particle createParticle(CustomTintTerrainParticleData type, ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed, RandomSource randomSource) {
 			BlockPos pos = type.getPos();
 			BlockState state = type.getState();
 			CustomTintTerrainParticle particle = new CustomTintTerrainParticle(level, x, y, z, xSpeed, ySpeed, zSpeed, state, pos);

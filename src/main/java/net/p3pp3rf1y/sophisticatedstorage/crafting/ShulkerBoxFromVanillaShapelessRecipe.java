@@ -9,7 +9,10 @@ import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.ShapelessRecipe;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.access.ItemAccess;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
 import net.p3pp3rf1y.sophisticatedcore.crafting.CustomShapelessRecipe;
 import net.p3pp3rf1y.sophisticatedcore.crafting.IWrapperRecipe;
 import net.p3pp3rf1y.sophisticatedcore.crafting.RecipeWrapperSerializer;
@@ -38,14 +41,17 @@ public class ShulkerBoxFromVanillaShapelessRecipe extends CustomShapelessRecipe 
 	public ItemStack assemble(CraftingInput input, HolderLookup.Provider registries) {
 		ItemStack upgradedStorage = super.assemble(input, registries);
 		getVanillaShulkerBox(input).ifPresent(vanillaShulkerBox -> {
-			@Nullable IItemHandler itemCap = vanillaShulkerBox.getCapability(Capabilities.ItemHandler.ITEM);
+			@Nullable ResourceHandler<ItemResource> itemCap = vanillaShulkerBox.getCapability(Capabilities.Item.ITEM, ItemAccess.forStack(vanillaShulkerBox));
 			if (itemCap != null) {
 				StackStorageWrapper wrapper = StackStorageWrapper.fromStack(registries, upgradedStorage);
-				InventoryHelper.iterate(itemCap, (slot, stack) -> {
-					if (!stack.isEmpty()) {
-						wrapper.getInventoryHandler().insertItem(stack, false);
-					}
-				});
+				try (Transaction tx = Transaction.openRoot()) {
+					InventoryHelper.iterate(itemCap, (slot, resource, amount) -> {
+						if (!resource.isEmpty()) {
+							wrapper.getInventoryHandler().insert(resource, amount, tx);
+						}
+					});
+					tx.commit();
+				}
 			}
 		});
 		return upgradedStorage;

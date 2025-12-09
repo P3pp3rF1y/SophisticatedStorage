@@ -5,7 +5,8 @@ import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
+import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderData;
+import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderDataHandler;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.client.render.RenderHelper;
 
@@ -29,10 +30,10 @@ public class DynamicRenderTracker implements IDynamicRenderTracker {
 	}
 
 	@Override
-	public void onRenderInfoUpdated(RenderInfo ri) {
-		if (getLevel().isClientSide) {
-			RenderInfo.ItemDisplayRenderInfo itemDisplayRenderInfo = ri.getItemDisplayRenderInfo();
-			List<RenderInfo.DisplayItem> displayItems = itemDisplayRenderInfo.getDisplayItems();
+	public void onRenderDataUpdated(RenderDataHandler ri) {
+		if (getLevel().isClientSide()) {
+			RenderData.DisplayData displayData = ri.getDisplayData();
+			List<RenderData.DisplayItemData> displayItems = displayData.displayItems();
 			if (displayItems.isEmpty()) {
 				lastRenderedItems.clear();
 				dynamicRenderer = false;
@@ -49,9 +50,9 @@ public class DynamicRenderTracker implements IDynamicRenderTracker {
 		}
 	}
 
-	private void updateDynamicFlags(List<RenderInfo.DisplayItem> displayItems) {
+	private void updateDynamicFlags(List<RenderData.DisplayItemData> displayItems) {
 		lastRenderedItems.clear();
-		displayItems.forEach(displayItem -> lastRenderedItems.add(displayItem.getItem()));
+		displayItems.forEach(displayItem -> lastRenderedItems.add(displayItem.item()));
 
 		boolean wasDynamic = dynamicRenderer;
 		boolean wasFullyDynamic = fullyDynamic;
@@ -59,7 +60,7 @@ public class DynamicRenderTracker implements IDynamicRenderTracker {
 		fullyDynamic = !displayItems.isEmpty();
 		dynamicRenderer = false;
 		for (var displayItem : displayItems) {
-			if (hasItemModelCustomRenderer(displayItem.getItem())) {
+			if (hasItemModelCustomRenderer(displayItem.item())) {
 				dynamicRenderer = true;
 			} else {
 				fullyDynamic = false;
@@ -76,12 +77,12 @@ public class DynamicRenderTracker implements IDynamicRenderTracker {
 		}
 	}
 
-	private boolean renderedItemsHaventChanged(List<RenderInfo.DisplayItem> displayItems) {
+	private boolean renderedItemsHaventChanged(List<RenderData.DisplayItemData> displayItems) {
 		if (lastRenderedItems.size() != displayItems.size()) {
 			return false;
 		}
 		for (int i = 0; i < lastRenderedItems.size(); i++) {
-			if (!ItemStack.isSameItemSameComponents(lastRenderedItems.get(i), displayItems.get(i).getItem())) {
+			if (!ItemStack.isSameItemSameComponents(lastRenderedItems.get(i), displayItems.get(i).item())) {
 				return false;
 			}
 		}

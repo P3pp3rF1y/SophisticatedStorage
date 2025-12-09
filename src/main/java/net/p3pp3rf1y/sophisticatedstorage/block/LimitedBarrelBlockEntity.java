@@ -15,6 +15,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryHandler;
 import net.p3pp3rf1y.sophisticatedcore.settings.SettingsHandler;
@@ -22,7 +24,10 @@ import net.p3pp3rf1y.sophisticatedcore.settings.itemdisplay.ItemDisplaySettingsC
 import net.p3pp3rf1y.sophisticatedcore.settings.memory.MemorySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.settings.nosort.NoSortSettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.voiding.VoidUpgradeWrapper;
-import net.p3pp3rf1y.sophisticatedcore.util.*;
+import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
+import net.p3pp3rf1y.sophisticatedcore.util.RandHelper;
+import net.p3pp3rf1y.sophisticatedcore.util.StreamCodecHelper;
+import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 
 import java.util.HashMap;
@@ -104,7 +109,7 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 
 	@Override
 	public List<Integer> getSlotCounts() {
-		return getStorageWrapper().getRenderInfo().getItemDisplayRenderInfo().getSlotCounts();
+		return getStorageWrapper().getRenderDataHandler().getDisplayData().slotCounts();
 	}
 
 	@Override
@@ -121,11 +126,11 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 
 	@Override
 	public List<Float> getSlotFillLevels() {
-		return getStorageWrapper().getRenderInfo().getItemDisplayRenderInfo().getSlotFillRatios();
+		return getStorageWrapper().getRenderDataHandler().getDisplayData().slotFillRatios();
 	}
 
 	public boolean applyDye(int slot, ItemStack dyeStack, DyeColor dyeColor, boolean applyToAll) {
-		if (slot < 0 || slot >= getStorageWrapper().getInventoryHandler().getSlots()) {
+		if (slot < 0 || slot >= getStorageWrapper().getInventoryHandler().size()) {
 			return false;
 		}
 
@@ -133,7 +138,7 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 		InventoryHandler invHandler = storageWrapper.getInventoryHandler();
 		if (applyToAll) {
 			boolean success = false;
-			for (int i = 0; i < invHandler.getSlots(); i++) {
+			for (int i = 0; i < invHandler.size(); i++) {
 				success |= applyDye(i, dyeColor, invHandler);
 			}
 			if (!success) {
@@ -154,8 +159,7 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 	}
 
 	private boolean applyDye(int slot, DyeColor dyeColor, InventoryHandler invHandler) {
-		ItemStack stackInSlot = invHandler.getStackInSlot(slot);
-		if (stackInSlot.isEmpty() || dyeColor.equals(slotColors.get(slot))) {
+		if (invHandler.getResource(slot).isEmpty() || dyeColor.equals(slotColors.get(slot))) {
 			return false;
 		}
 
@@ -175,17 +179,17 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 
 		StorageWrapper storageWrapper = getStorageWrapper();
 		InventoryHandler invHandler = storageWrapper.getInventoryHandler();
-		ItemStack stackInSlot = invHandler.getStackInSlot(slot);
+		ItemResource resourceInSlot = invHandler.getResource(slot);
 
 		MemorySettingsCategory memorySettings = getStorageWrapper().getSettingsHandler().getTypeCategory(MemorySettingsCategory.class);
 
 		if (doubleClick) {
-			return depositFromAllOfPlayersInventory(player, slot, invHandler, stackInSlot, memorySettings);
+			return depositFromAllOfPlayersInventory(player, slot, invHandler, resourceInSlot, memorySettings);
 		}
 
-		if (stackInSlot.isEmpty()) {
+		if (resourceInSlot.isEmpty()) {
 			if (invHandler.isItemValid(slot, stackInHand, player)) {
-				int stackLimit = invHandler.getStackLimit(slot, stackInHand);
+				int stackLimit = invHandler.getCapacityAsInt(slot, ItemResource.of(stackInHand));
 				invHandler.setStackInSlot(slot, stackInHand.split(stackLimit));
 				if (isLocked()) {
 					memorySettings.selectSlot(slot);
@@ -196,9 +200,8 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 				return true;
 			}
 		} else {
-			ItemStack result = invHandler.insertItemOnlyToSlot(slot, stackInHand, true);
+			ItemStack result = invHandler.insertItemOnlyToSlot(slot, stackInHand);
 			if (result.getCount() != stackInHand.getCount()) {
-				result = invHandler.insertItemOnlyToSlot(slot, stackInHand, false);
 				if (isLocked()) {
 					memorySettings.selectSlot(slot);
 				}
@@ -210,42 +213,42 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 		return false;
 	}
 
-	private boolean depositFromAllOfPlayersInventory(Player player, int slot, InventoryHandler invHandler, ItemStack stackInSlot, MemorySettingsCategory memorySettings) {
+	private boolean depositFromAllOfPlayersInventory(Player player, int slot, InventoryHandler invHandler, ItemResource itemResource, MemorySettingsCategory memorySettings) {
 		AtomicBoolean success = new AtomicBoolean(false);
 		Predicate<ItemStack> memoryItemMatches = itemStack -> memorySettings.isSlotSelected(slot) && memorySettings.matchesFilter(slot, itemStack);
-		CapabilityHelper.runOnItemHandler(player, playerInventory -> InventoryHelper.iterate(playerInventory, (playerSlot, playerStack) -> {
-			if ((stackInSlot.isEmpty() && (memoryItemMatches.test(playerStack) || invHandler.isFilterItem(playerStack.getItem())) || (!playerStack.isEmpty() && ItemStack.isSameItemSameComponents(stackInSlot, playerStack)))) {
+		InventoryHelper.iteratePlayerInventory(player, (playerSlot, playerStack) -> {
+			if ((itemResource.isEmpty() && (memoryItemMatches.test(playerStack) || invHandler.isFilterItem(playerStack.getItem())) || (!playerStack.isEmpty() && itemResource.matches(playerStack)))) {
 
-				ItemStack result = invHandler.insertItemOnlyToSlot(slot, playerStack, true);
+				ItemStack result = invHandler.insertItemOnlyToSlot(slot, playerStack);
 				if (result.getCount() < playerStack.getCount()) {
-					ItemStack extracted = playerInventory.extractItem(playerSlot, playerStack.getCount() - result.getCount(), true);
-					if (!extracted.isEmpty()) {
-						invHandler.insertItemOnlyToSlot(slot, playerInventory.extractItem(playerSlot, extracted.getCount(), false), false);
-						success.set(true);
-					}
+					int toExtract = playerStack.getCount() - result.getCount();
+					player.getInventory().removeItem(playerSlot, toExtract);
+					success.set(true);
 				}
 			}
-		}));
+		});
 		return success.get();
 	}
 
 	boolean tryToTakeItem(Player player, int slot) {
 		InventoryHandler inventoryHandler = getStorageWrapper().getInventoryHandler();
-		ItemStack stackInSlot = inventoryHandler.getStackInSlot(slot);
-		if (stackInSlot.isEmpty()) {
+		ItemResource resourceInSlot = inventoryHandler.getResource(slot);
+		if (resourceInSlot.isEmpty()) {
 			return false;
 		}
 
-		int countToTake = player.isShiftKeyDown() ? Math.min(stackInSlot.getMaxStackSize(), stackInSlot.getCount()) : 1;
-		ItemStack stackTaken = inventoryHandler.extractItem(slot, countToTake, false);
-
-		if (player.getInventory().add(stackTaken)) {
-			//noinspection ConstantConditions
-			getLevel().playSound(null, getBlockPos(), SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, .2f, (RandHelper.getRandomMinusOneToOne(getLevel().random) * .7f + 1) * 2);
-		} else {
-			player.drop(stackTaken, false);
+		int countToTake = player.isShiftKeyDown() ? Math.min(resourceInSlot.getMaxStackSize(), inventoryHandler.getAmountAsInt(slot)) : 1;
+		try (Transaction tx = Transaction.openRoot()) {
+			ItemStack stackTaken = resourceInSlot.toStack(inventoryHandler.extract(slot, resourceInSlot, countToTake, tx));
+			if (player.getInventory().add(stackTaken)) {
+				//noinspection ConstantConditions
+				getLevel().playSound(null, getBlockPos(), SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, .2f, (RandHelper.getRandomMinusOneToOne(getLevel().random) * .7f + 1) * 2);
+			} else {
+				player.drop(stackTaken, false);
+			}
+			tx.commit();
+			return true;
 		}
-		return true;
 	}
 
 	@Override

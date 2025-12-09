@@ -4,7 +4,6 @@ import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -12,8 +11,9 @@ import net.minecraft.world.level.block.state.properties.WoodType;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.fml.util.thread.SidedThreadGroups;
-import net.neoforged.neoforge.items.IItemHandler;
-import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderDataHandler;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
 
 import javax.annotation.Nullable;
@@ -38,12 +38,6 @@ public abstract class WoodStorageBlockEntity extends StorageBlockEntity {
 			out.putString("woodType", woodType.name());
 		}
 		out.putBoolean(PACKED, packed);
-	}
-
-	public CompoundTag getStorageContentsTag() {
-		CompoundTag contents = saveWithoutMetadata(level.registryAccess());
-		contents.putBoolean(PACKED, false);
-		return contents;
 	}
 
 	@Override
@@ -84,8 +78,8 @@ public abstract class WoodStorageBlockEntity extends StorageBlockEntity {
 	public void setPacked(boolean packed) {
 		this.packed = packed;
 		if (packed) {
-			RenderInfo renderInfo = getStorageWrapper().getRenderInfo();
-			renderInfo.removeAllUpgradeClientData();
+			RenderDataHandler renderDataHandler = getStorageWrapper().getRenderDataHandler();
+			renderDataHandler.removeAllUpgradeClientData();
 		}
 	}
 
@@ -96,7 +90,7 @@ public abstract class WoodStorageBlockEntity extends StorageBlockEntity {
 
 	@Nullable
 	@Override
-	public IItemHandler getExternalItemHandler(@Nullable Direction side) {
+	public ResourceHandler<ItemResource> getExternalItemHandler(@Nullable Direction side) {
 		if (isPacked()) {
 			return null;
 		}

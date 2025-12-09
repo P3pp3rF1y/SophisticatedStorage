@@ -13,6 +13,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Nameable;
+import net.minecraft.world.entity.ContainerUser;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ChunkPos;
@@ -23,12 +24,12 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.fml.util.thread.SidedThreadGroups;
-import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.network.PacketDistributor;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.p3pp3rf1y.sophisticatedcore.controller.IControllableStorage;
 import net.p3pp3rf1y.sophisticatedcore.controller.ILinkable;
-import net.p3pp3rf1y.sophisticatedcore.inventory.CachedFailedInsertInventoryHandler;
-import net.p3pp3rf1y.sophisticatedcore.inventory.ITrackedContentsItemHandler;
+import net.p3pp3rf1y.sophisticatedcore.inventory.ITrackedContentsItemResourceHandler;
 import net.p3pp3rf1y.sophisticatedcore.settings.itemdisplay.ItemDisplaySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.settings.memory.MemorySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.ITickableUpgrade;
@@ -61,8 +62,6 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 
 	private boolean chunkBeingUnloaded = false;
 
-	@Nullable
-	private IItemHandler cachedFailedInsertItemHandler;
 	private boolean locked = false;
 	private boolean showLock = true;
 	private boolean showTier = true;
@@ -78,11 +77,11 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 	protected StorageBlockEntity(BlockPos pos, BlockState state, BlockEntityType<? extends StorageBlockEntity> blockEntityType) {
 		super(blockEntityType, pos, state);
 		storageWrapper = new StorageWrapper(() -> this::setChanged, () -> {
-			if (level != null && !level.isClientSide) {
+			if (level != null && !level.isClientSide()) {
 				WorldHelper.notifyBlockUpdate(this);
 			}
 		}, () -> {
-			if (level != null && !level.isClientSide) {
+			if (level != null && !level.isClientSide()) {
 				setChanged();
 				WorldHelper.notifyBlockUpdate(this);
 			}
@@ -120,8 +119,8 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 			}
 
 			@Override
-			protected boolean isAllowedInStorage(ItemStack stack) {
-				return StorageBlockEntity.this.isAllowedInStorage(stack);
+			protected boolean isAllowedInStorage(ItemResource resource) {
+				return StorageBlockEntity.this.isAllowedInStorage(resource);
 			}
 
 			@Override
@@ -153,7 +152,7 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 			}
 
 			@Override
-			public ITrackedContentsItemHandler getInventoryForInputOutput() {
+			public ITrackedContentsItemResourceHandler getInventoryForInputOutput() {
 				if (locked && allowsEmptySlotsMatchingItemInsertsWhenLocked()) {
 					if (contentsFilteredItemHandler == null) {
 						contentsFilteredItemHandler = new ContentsFilteredItemHandler(super::getInventoryForInputOutput, () -> getStorageWrapper().getInventoryHandler().getSlotTracker(), () -> getStorageWrapper().getSettingsHandler().getTypeCategory(MemorySettingsCategory.class));
@@ -168,7 +167,7 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 	}
 
 	protected boolean canRefreshUpgrades() {
-		return !isDroppingContents && level != null && !level.isClientSide;
+		return !isDroppingContents && level != null && !level.isClientSide();
 	}
 
 	@SuppressWarnings("java:S1172") //parameter used in override
@@ -206,7 +205,7 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 	}
 
 	private void saveStorageWrapperClientData(ValueOutput out) {
-		storageWrapper.saveData(out.child(STORAGE_WRAPPER));
+		storageWrapper.saveClientData(out.child(STORAGE_WRAPPER));
 	}
 
 	protected void saveSynchronizedData(ValueOutput out) {
@@ -232,11 +231,11 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		saveControllerPos(out);
 	}
 
-	public void startOpen(Player player) {
-		if (level == null || level.isClientSide() || remove || player.isSpectator()) {
+	public void startOpen(ContainerUser containerUser) {
+		if (level == null || level.isClientSide() || remove || containerUser.getLivingEntity().isSpectator()) {
 			return;
 		}
-		getOpenersCounter().incrementOpeners(player, level, getBlockPos(), getBlockState());
+		getOpenersCounter().incrementOpeners(containerUser.getLivingEntity(), level, getBlockPos(), getBlockState(), containerUser.getContainerInteractionRange());
 		sendOpenness();
 	}
 
@@ -303,7 +302,7 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		showLock = in.getBooleanOr("showLock", true);
 		showTier = in.getBooleanOr("showTier", true);
 		showUpgrades = in.getBooleanOr("showUpgrades", false);
-		if (level != null && level.isClientSide) {
+		if (level != null && level.isClientSide()) {
 			if (in.getBooleanOr(UPDATE_BLOCK_RENDER_TAG, false)) {
 				WorldHelper.notifyBlockUpdate(this);
 				displayItemTints.clear();
@@ -335,7 +334,7 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 
 	@Override
 	public void onDataPacket(Connection net, ValueInput in) {
-		loadStorageWrapper(in);
+		loadStorageWrapperClient(in);
 		loadSynchronizedData(in);
 	}
 
@@ -350,6 +349,16 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 			saveStorageWrapperClientData(out);
 			saveSynchronizedData(out);
 		}));
+	}
+
+	@Override
+	public void handleUpdateTag(ValueInput input) {
+		loadStorageWrapperClient(input);
+		loadSynchronizedData(input);
+	}
+
+	private void loadStorageWrapperClient(ValueInput in) {
+		storageWrapper.loadClientData(in.childOrEmpty(STORAGE_WRAPPER));
 	}
 
 	public static void serverTick(Level level, BlockPos blockPos, StorageBlockEntity storageBlockEntity) {
@@ -374,25 +383,25 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		return getBlockState().getBlock().getName();
 	}
 
-	@SuppressWarnings("unused") //stack param used in override
-	protected boolean isAllowedInStorage(ItemStack stack) {
+	@SuppressWarnings("unused") //resource param used in override
+	protected boolean isAllowedInStorage(ItemResource resource) {
 		return true;
 	}
 
 	public void changeStorageSize(int additionalInventorySlots, int additionalUpgradeSlots) {
-		int currentInventorySlots = getStorageWrapper().getInventoryHandler().getSlots();
+		int currentInventorySlots = getStorageWrapper().getInventoryHandler().size();
 		getStorageWrapper().changeSize(additionalInventorySlots, additionalUpgradeSlots);
 		changeSlots(currentInventorySlots + additionalInventorySlots);
 	}
 
 	public void dropContents() {
-		if (level == null || level.isClientSide) {
+		if (level == null || level.isClientSide()) {
 			return;
 		}
 		isDroppingContents = true;
-		InventoryHelper.dropItems(storageWrapper.getInventoryHandler(), level, worldPosition);
+		InventoryHelper.dropResources(storageWrapper.getInventoryHandler(), level, worldPosition);
 
-		InventoryHelper.dropItems(storageWrapper.getUpgradeHandler(), level, worldPosition);
+		InventoryHelper.dropResources(storageWrapper.getUpgradeHandler(), level, worldPosition);
 		isDroppingContents = false;
 	}
 
@@ -402,14 +411,8 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 	}
 
 	@Nullable
-	public IItemHandler getExternalItemHandler(@Nullable Direction side) {
-		if (side == null) {
-			return getStorageWrapper().getInventoryForInputOutput();
-		}
-		if (cachedFailedInsertItemHandler == null) {
-			cachedFailedInsertItemHandler = new CachedFailedInsertInventoryHandler(() -> getStorageWrapper().getInventoryForInputOutput(), () -> level != null ? level.getGameTime() : 0);
-		}
-		return cachedFailedInsertItemHandler;
+	public ResourceHandler<ItemResource> getExternalItemHandler(@Nullable Direction side) {
+		return getStorageWrapper().getInventoryForInputOutput();
 	}
 
 	public boolean shouldDropContents() {
@@ -521,7 +524,7 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 	private void lock() {
 		locked = true;
 		if (memorizesItemsWhenLocked()) {
-			getStorageWrapper().getSettingsHandler().getTypeCategory(MemorySettingsCategory.class).selectSlots(0, getStorageWrapper().getInventoryHandler().getSlots());
+			getStorageWrapper().getSettingsHandler().getTypeCategory(MemorySettingsCategory.class).selectSlots(0, getStorageWrapper().getInventoryHandler().size());
 		}
 		updateEmptySlots();
 		if (allowsEmptySlotsMatchingItemInsertsWhenLocked()) {

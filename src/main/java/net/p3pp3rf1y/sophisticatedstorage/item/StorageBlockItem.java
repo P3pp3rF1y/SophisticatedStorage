@@ -1,20 +1,14 @@
 package net.p3pp3rf1y.sophisticatedstorage.item;
 
 import net.minecraft.core.component.DataComponentGetter;
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.block.Block;
 import net.p3pp3rf1y.sophisticatedcore.init.ModCoreDataComponents;
 import net.p3pp3rf1y.sophisticatedcore.util.BlockItemBase;
 import net.p3pp3rf1y.sophisticatedstorage.block.ITintableBlockItem;
-import net.p3pp3rf1y.sophisticatedstorage.block.StorageWrapper;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModDataComponents;
 
 import java.util.Optional;
-
-import static net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity.STORAGE_WRAPPER;
 
 public class StorageBlockItem extends BlockItemBase implements ITintableBlockItem {
 
@@ -22,31 +16,19 @@ public class StorageBlockItem extends BlockItemBase implements ITintableBlockIte
 		super(block, properties);
 	}
 
-	public static Optional<CompoundTag> getEntityWrapperTagFromStack(DataComponentGetter componentHolder) {
-		CustomData customData = componentHolder.get(() -> DataComponents.BLOCK_ENTITY_DATA);
-		if (customData == null) {
-			return Optional.empty();
-		}
-		return customData.copyTag().getCompound(STORAGE_WRAPPER);
-	}
-
 	public static Optional<Integer> getMainColorFromComponentHolder(DataComponentGetter componentHolder) {
-		return getEntityWrapperTagFromStack(componentHolder)
-				.flatMap(tag -> tag.getInt(StorageWrapper.MAIN_COLOR))
-				.or(() -> Optional.ofNullable(componentHolder.get(ModCoreDataComponents.MAIN_COLOR)));
+		return Optional.ofNullable(componentHolder.get(ModCoreDataComponents.MAIN_COLOR));
 	}
 
 	public static Optional<Integer> getAccentColorFromComponentHolder(DataComponentGetter componentHolder) {
-		return getEntityWrapperTagFromStack(componentHolder)
-				.flatMap(tag -> tag.getInt(StorageWrapper.ACCENT_COLOR))
-				.or(() -> Optional.ofNullable(componentHolder.get(ModCoreDataComponents.ACCENT_COLOR)));
+		return Optional.ofNullable(componentHolder.get(ModCoreDataComponents.ACCENT_COLOR));
 	}
 
 	public static void setNumberOfInventorySlots(ItemStack storageStack, int numberOfInventorySlots) {
 		storageStack.set(ModCoreDataComponents.NUMBER_OF_INVENTORY_SLOTS, numberOfInventorySlots);
 	}
 
-	public static  void setNumberOfUpgradeSlots(ItemStack storageStack, int numberOfUpgradeSlots) {
+	public static void setNumberOfUpgradeSlots(ItemStack storageStack, int numberOfUpgradeSlots) {
 		storageStack.set(ModCoreDataComponents.NUMBER_OF_UPGRADE_SLOTS, numberOfUpgradeSlots);
 	}
 

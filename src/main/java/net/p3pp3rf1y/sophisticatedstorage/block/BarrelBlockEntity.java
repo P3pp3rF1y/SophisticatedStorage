@@ -37,7 +37,7 @@ public class BarrelBlockEntity extends WoodStorageBlockEntity implements IMateri
 			//noop
 		}
 
-		protected boolean isOwnContainer(Player player) {
+		public boolean isOwnContainer(Player player) {
 			if (player.containerMenu instanceof StorageContainerMenu storageContainerMenu) {
 				return storageContainerMenu.getStorageBlockEntity() == BarrelBlockEntity.this;
 			} else {
@@ -60,8 +60,8 @@ public class BarrelBlockEntity extends WoodStorageBlockEntity implements IMateri
 
 	protected BarrelBlockEntity(BlockPos pos, BlockState state, BlockEntityType<? extends BarrelBlockEntity> blockEntityType) {
 		super(pos, state, blockEntityType);
-		getStorageWrapper().getRenderInfo().setDisplayItemsChangeListener(ri -> {
-			dynamicRenderTracker.onRenderInfoUpdated(ri);
+		getStorageWrapper().getRenderDataHandler().setDisplayItemsChangeListener(ri -> {
+			dynamicRenderTracker.onRenderDataUpdated(ri);
 			setUpdateBlockRender();
 			WorldHelper.notifyBlockUpdate(this);
 		});
@@ -79,7 +79,7 @@ public class BarrelBlockEntity extends WoodStorageBlockEntity implements IMateri
 	public void onDataPacket(Connection net, ValueInput in) {
 		super.onDataPacket(net, in);
 		if (in.getBooleanOr(UPDATE_BLOCK_RENDER_TAG, false)) {
-			dynamicRenderTracker.onRenderInfoUpdated(getStorageWrapper().getRenderInfo());
+			dynamicRenderTracker.onRenderDataUpdated(getStorageWrapper().getRenderDataHandler());
 		}
 	}
 
@@ -93,7 +93,7 @@ public class BarrelBlockEntity extends WoodStorageBlockEntity implements IMateri
 	@Override
 	public void setLevel(Level level) {
 		super.setLevel(level);
-		if (level.isClientSide && dynamicRenderTracker == IDynamicRenderTracker.NOOP) {
+		if (level.isClientSide() && dynamicRenderTracker == IDynamicRenderTracker.NOOP) {
 			dynamicRenderTracker = new DynamicRenderTracker(this);
 		}
 	}
@@ -128,7 +128,7 @@ public class BarrelBlockEntity extends WoodStorageBlockEntity implements IMateri
 	public void loadAdditional(ValueInput in) {
 		super.loadAdditional(in);
 		if (level != null && level.isClientSide() && in.getBooleanOr(UPDATE_BLOCK_RENDER_TAG, false)) {
-			dynamicRenderTracker.onRenderInfoUpdated(getStorageWrapper().getRenderInfo());
+			dynamicRenderTracker.onRenderDataUpdated(getStorageWrapper().getRenderDataHandler());
 		}
 	}
 

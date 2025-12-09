@@ -8,7 +8,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
-import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
+import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderData;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.block.LimitedBarrelBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
@@ -58,8 +58,8 @@ public class ModBlockColors {
 	}
 
 	private static int getTint(BlockState state, int displayItemIndex, int adjustedTintIndex, StorageBlockEntity be) {
-		RenderInfo.ItemDisplayRenderInfo itemDisplayRenderInfo = be.getStorageWrapper().getRenderInfo().getItemDisplayRenderInfo();
-		List<RenderInfo.DisplayItem> displayItems = itemDisplayRenderInfo.getDisplayItems();
+		RenderData.DisplayData displayData = be.getStorageWrapper().getRenderDataHandler().getDisplayData();
+		List<RenderData.DisplayItemData> displayItems = displayData.displayItems();
 		ItemStack stack = getDisplayItemWithIndex(displayItemIndex, displayItems, state.getBlock() instanceof LimitedBarrelBlock);
 		if (stack.isEmpty()) {
 			return -1;
@@ -76,15 +76,15 @@ public class ModBlockColors {
 		return -1;
 	}
 
-	private static ItemStack getDisplayItemWithIndex(int displayItemIndex, List<RenderInfo.DisplayItem> displayItems, boolean isLimitedBarrel) {
+	private static ItemStack getDisplayItemWithIndex(int displayItemIndex, List<RenderData.DisplayItemData> displayItems, boolean isLimitedBarrel) {
 		if (isLimitedBarrel) {
-			for (RenderInfo.DisplayItem displayItem : displayItems) {
-				if (displayItem.getSlotIndex() == displayItemIndex) {
-					return displayItem.getItem();
+			for (RenderData.DisplayItemData displayItem : displayItems) {
+				if (displayItem.slotIndex() == displayItemIndex) {
+					return displayItem.item();
 				}
 			}
 		}
-		return displayItems.size() > displayItemIndex ? displayItems.get(displayItemIndex).getItem() : ItemStack.EMPTY;
+		return displayItems.size() > displayItemIndex ? displayItems.get(displayItemIndex).item() : ItemStack.EMPTY;
 	}
 
 	private static int getChestShulkerBoxColor(BlockState state, @Nullable BlockAndTintGetter blockDisplayReader, @Nullable BlockPos pos, int tintIndex) {

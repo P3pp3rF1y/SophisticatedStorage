@@ -4,10 +4,10 @@ import com.mojang.serialization.MapCodec;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.BlockModelPart;
 import net.minecraft.client.renderer.block.model.BlockStateModel;
-import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.core.BlockPos;
+import net.minecraft.data.AtlasIds;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockAndTintGetter;
@@ -32,13 +32,13 @@ public class ShulkerBoxBlockStateModel implements DynamicBlockStateModel {
 
 	@Override
 	public TextureAtlasSprite particleIcon() {
-		return Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(MAIN_BREAK_TEXTURE);
+		return Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS).getSprite(MAIN_BREAK_TEXTURE);
 	}
 
 	@Override
 	public TextureAtlasSprite particleIcon(BlockAndTintGetter level, BlockPos pos, BlockState state) {
-		return Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(WorldHelper.getBlockEntity(level, pos, ShulkerBoxBlockEntity.class)
-				.map(be -> be.getStorageWrapper().hasMainColor() ? TINTABLE_BREAK_TEXTURE :MAIN_BREAK_TEXTURE).orElse(MAIN_BREAK_TEXTURE));
+		return Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS).getSprite(WorldHelper.getBlockEntity(level, pos, ShulkerBoxBlockEntity.class)
+				.map(be -> be.getStorageWrapper().hasMainColor() ? TINTABLE_BREAK_TEXTURE : MAIN_BREAK_TEXTURE).orElse(MAIN_BREAK_TEXTURE));
 	}
 
 	public static class Unbaked implements CustomUnbakedBlockStateModel {

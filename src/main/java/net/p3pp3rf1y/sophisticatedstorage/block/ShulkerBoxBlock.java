@@ -4,7 +4,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
@@ -41,11 +44,12 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.EntityCollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.neoforged.neoforge.transfer.ResourceHandlerUtil;
 import net.p3pp3rf1y.sophisticatedcore.controller.IControllerBoundable;
 import net.p3pp3rf1y.sophisticatedcore.init.ModCoreDataComponents;
+import net.p3pp3rf1y.sophisticatedcore.inventory.ContainerContents;
 import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryHandler;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeHandler;
-import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.ValueIOHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
@@ -60,18 +64,17 @@ import net.p3pp3rf1y.sophisticatedstorage.item.StorageToolItem;
 import javax.annotation.Nullable;
 import java.util.UUID;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDropDataBlock {
 	public static final EnumProperty<Direction> FACING = DirectionalBlock.FACING;
 	private static final VoxelShape ITEM_ENTITY_COLLISION_SHAPE = box(0.05, 0.05, 0.05, 15.95, 15.95, 15.95);
 
-	public ShulkerBoxBlock(Supplier<Integer> numberOfInventorySlotsSupplier, Supplier<Integer> numberOfUpgradeSlotsSupplier, Properties properties) {
-		this(numberOfInventorySlotsSupplier, numberOfUpgradeSlotsSupplier, 2.0F, properties);
+	public ShulkerBoxBlock(Config.Server.StorageConfig config, Properties properties) {
+		this(config, 2.0F, properties);
 	}
 
-	public ShulkerBoxBlock(Supplier<Integer> numberOfInventorySlotsSupplier, Supplier<Integer> numberOfUpgradeSlotsSupplier, float explosionResistance, Properties properties) {
-		super(setProperties(explosionResistance, properties), numberOfInventorySlotsSupplier, numberOfUpgradeSlotsSupplier);
+	public ShulkerBoxBlock(Config.Server.StorageConfig config, float explosionResistance, Properties properties) {
+		super(setProperties(explosionResistance, properties), config::numberOfInventorySlots, config::numberOfUpgradeSlots);
 	}
 
 	private static Properties setProperties(float explosionResistance, Properties properties) {
@@ -91,7 +94,7 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 	public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> blockEntityType) {
 		return createTickerHelper(blockEntityType, ModBlocks.SHULKER_BOX_BLOCK_ENTITY_TYPE.get(), (l, pos, s, blockEntity) -> {
 			ShulkerBoxBlockEntity.tick(l, pos, s, blockEntity);
-			if (!l.isClientSide) {
+			if (!l.isClientSide()) {
 				StorageBlockEntity.serverTick(l, pos, blockEntity);
 			}
 		});
@@ -99,7 +102,7 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 
 	@Override
 	protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
-		if (level.isClientSide) {
+		if (level.isClientSide()) {
 			return InteractionResult.SUCCESS;
 		} else if (player.isSpectator()) {
 			return InteractionResult.CONSUME;
@@ -108,7 +111,7 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 		}
 
 		return WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).map(b -> {
-			InteractionResult result = tryItemInteraction(player, hand, b, player.getItemInHand(hand), getFacing(state), hitResult);
+			InteractionResult result = tryItemInteraction(player, b, player.getItemInHand(hand), getFacing(state), hitResult);
 			if (result.consumesAction()) {
 				return result;
 			}
@@ -118,7 +121,7 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 
 	@Override
 	public InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
-		if (level.isClientSide) {
+		if (level.isClientSide()) {
 			return InteractionResult.SUCCESS;
 		} else if (player.isSpectator()) {
 			return InteractionResult.CONSUME;
@@ -135,7 +138,7 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 		return InteractionResult.CONSUME;
 	}
 
-	private InteractionResult tryItemInteraction(Player player, InteractionHand hand, StorageBlockEntity b, ItemStack itemInHand, Direction facing, BlockHitResult hitResult) {
+	private InteractionResult tryItemInteraction(Player player, StorageBlockEntity b, ItemStack itemInHand, Direction facing, BlockHitResult hitResult) {
 		return tryAddUpgrade(player, b, itemInHand, facing, hitResult);
 	}
 
@@ -145,8 +148,13 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 			UUID storageUuid = stack.get(ModCoreDataComponents.STORAGE_UUID);
 			if (storageUuid != null) {
 				ItemContentsStorage itemContentsStorage = ItemContentsStorage.get();
-				be.loadAdditional(ValueIOHelper.inputFromCompoundTag(level.registryAccess(), itemContentsStorage.getOrCreateStorageContents(storageUuid)));
-				itemContentsStorage.removeStorageContents(storageUuid);
+				CompoundTag beTag = itemContentsStorage.getOrCreateAddtionalBeData(storageUuid);
+				ContainerContents contents = itemContentsStorage.getOrCreateContents(storageUuid);
+				Tag contentsTag = ContainerContents.CODEC.encodeStart(RegistryOps.create(NbtOps.INSTANCE, be.getLevel().registryAccess()), contents).getOrThrow();
+				beTag.getCompound(StorageBlockEntity.STORAGE_WRAPPER).ifPresent(tag -> tag.put(StorageWrapper.CONTENTS, contentsTag));
+				be.loadAdditional(ValueIOHelper.inputFromCompoundTag(level.registryAccess(), beTag));
+				itemContentsStorage.removeContents(storageUuid);
+				itemContentsStorage.removeAddtionalBeData(storageUuid);
 			}
 
 			if (stack.has(DataComponents.CUSTOM_NAME)) {
@@ -157,8 +165,8 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 				storageWrapper.setColors(shulkerBoxItem.getMainColor(stack).orElse(-1), shulkerBoxItem.getAccentColor(stack).orElse(-1));
 				InventoryHandler inventoryHandler = storageWrapper.getInventoryHandler();
 				UpgradeHandler upgradeHandler = storageWrapper.getUpgradeHandler();
-				storageWrapper.changeSize(shulkerBoxItem.getNumberOfInventorySlots(level.registryAccess(), stack) - inventoryHandler.getSlots(),
-						shulkerBoxItem.getNumberOfUpgradeSlots(level.registryAccess(), stack) - upgradeHandler.getSlots());
+				storageWrapper.changeSize(shulkerBoxItem.getNumberOfInventorySlots(level.registryAccess(), stack) - inventoryHandler.size(),
+						shulkerBoxItem.getNumberOfUpgradeSlots(level.registryAccess(), stack) - upgradeHandler.size());
 			}
 
 			be.getStorageWrapper().onInit();
@@ -176,7 +184,7 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 	public void addCreativeTabItems(Consumer<ItemStack> itemConsumer) {
 		itemConsumer.accept(new ItemStack(this));
 
-		if (this == ModBlocks.SHULKER_BOX.get() || Boolean.TRUE.equals(!Config.CLIENT_SPEC.isLoaded() || Config.CLIENT.showHigherTierTintedVariants.get())) {
+		if (this == ModBlocks.SHULKER_BOX.get() || !Config.CLIENT_SPEC.isLoaded() || Config.CLIENT.showHigherTierTintedVariants.get()) {
 			for (DyeColor color : DyeColor.values()) {
 				ItemStack storageStack = getTintedStack(color);
 				itemConsumer.accept(storageStack);
@@ -211,7 +219,7 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 	@Override
 	public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
 		BlockEntity blockentity = level.getBlockEntity(pos);
-		if (blockentity instanceof ShulkerBoxBlockEntity shulkerBoxBlockEntity && !level.isClientSide && player.isCreative() && hasAnyItems(shulkerBoxBlockEntity)) {
+		if (blockentity instanceof ShulkerBoxBlockEntity shulkerBoxBlockEntity && !level.isClientSide() && player.isCreative() && hasAnyItems(shulkerBoxBlockEntity)) {
 			ItemStack shulkerBoxDrop = new ItemStack(this);
 			addShulkerContentsToStack(shulkerBoxDrop, shulkerBoxBlockEntity);
 
@@ -224,7 +232,8 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 	}
 
 	private boolean hasAnyItems(ShulkerBoxBlockEntity shulkerBoxBlockEntity) {
-		return !InventoryHelper.isEmpty(shulkerBoxBlockEntity.getStorageWrapper().getInventoryHandler()) || !InventoryHelper.isEmpty(shulkerBoxBlockEntity.getStorageWrapper().getUpgradeHandler());
+		if (!ResourceHandlerUtil.isEmpty(shulkerBoxBlockEntity.getStorageWrapper().getInventoryHandler())) return true;
+		return !ResourceHandlerUtil.isEmpty(shulkerBoxBlockEntity.getStorageWrapper().getUpgradeHandler());
 	}
 
 	@Override
@@ -235,10 +244,14 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 	private void addShulkerContentsToStack(ItemStack stack, StorageBlockEntity be) {
 		StorageWrapper storageWrapper = be.getStorageWrapper();
 		UUID shulkerBoxUuid = storageWrapper.getContentsUuid().orElse(UUID.randomUUID());
-		CompoundTag shulkerContents = be.saveWithoutMetadata(be.getLevel().registryAccess());
-		shulkerContents.remove(IControllerBoundable.CONTROLLER_POS);
-		if (!shulkerContents.isEmpty()) {
-			ItemContentsStorage.get().setStorageContents(shulkerBoxUuid, shulkerContents);
+		CompoundTag additionalBeData = be.saveWithoutMetadata(be.getLevel().registryAccess());
+		ContainerContents contents = be.getStorageWrapper().getContents().copy();
+		additionalBeData.getCompound(StorageBlockEntity.STORAGE_WRAPPER).ifPresent(tag -> tag.remove(StorageWrapper.CONTENTS));
+		additionalBeData.remove(IControllerBoundable.CONTROLLER_POS);
+		ItemContentsStorage itemContentsStorage = ItemContentsStorage.get();
+		itemContentsStorage.setContents(shulkerBoxUuid, contents);
+		if (!additionalBeData.isEmpty()) {
+			itemContentsStorage.setAdditionalBeData(shulkerBoxUuid, additionalBeData);
 			stack.set(ModCoreDataComponents.STORAGE_UUID, shulkerBoxUuid);
 		}
 		addBasicPropertiesToStack(stack, be, storageWrapper);
@@ -258,8 +271,8 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 			if (accentColor != -1) {
 				shulkerBoxItem.setAccentColor(stack, accentColor);
 			}
-			StorageBlockItem.setNumberOfInventorySlots(stack, storageWrapper.getInventoryHandler().getSlots());
-			StorageBlockItem.setNumberOfUpgradeSlots(stack, storageWrapper.getUpgradeHandler().getSlots());
+			StorageBlockItem.setNumberOfInventorySlots(stack, storageWrapper.getInventoryHandler().size());
+			StorageBlockItem.setNumberOfUpgradeSlots(stack, storageWrapper.getUpgradeHandler().size());
 		}
 	}
 
@@ -273,8 +286,13 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 	public ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state, boolean includeData) {
 		ItemStack stack = super.getCloneItemStack(level, pos, state, includeData);
 		WorldHelper.getBlockEntity(level, pos, ShulkerBoxBlockEntity.class).ifPresent(be -> {
-			StorageWrapper storageWrapper = be.getStorageWrapper();
-			addBasicPropertiesToStack(stack, be, storageWrapper);
+			if (includeData) {
+				addShulkerContentsToStack(stack, be);
+			} else {
+				StorageWrapper storageWrapper = be.getStorageWrapper();
+				addBasicPropertiesToStack(stack, be, storageWrapper);
+			}
+
 		});
 		return stack;
 	}

@@ -1,9 +1,9 @@
 package net.p3pp3rf1y.sophisticatedstorage.block;
 
-import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
+import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderDataHandler;
 
 public interface IDynamicRenderTracker {
-	default void onRenderInfoUpdated(RenderInfo ri) {}
+	default void onRenderDataUpdated(RenderDataHandler ri) {}
 
 	default boolean isDynamicRenderer() {
 		return false;

@@ -225,8 +225,8 @@ public class StorageHolderTierUpgradeHandler {
 
 			IStorageWrapper storageWrapper = storageHolder.getStorageWrapper();
 			if (storageWrapper instanceof MovingStorageWrapper movingStorageWrapper) {
-				int additionalInventorySlots = newNumberOfInventorySlots - storageWrapper.getInventoryHandler().getSlots();
-				int additionalUpgradeSlots = newNumberOfUpgradeSlots - storageWrapper.getUpgradeHandler().getSlots();
+				int additionalInventorySlots = newNumberOfInventorySlots - storageWrapper.getInventoryHandler().size();
+				int additionalUpgradeSlots = newNumberOfUpgradeSlots - storageWrapper.getUpgradeHandler().size();
 				movingStorageWrapper.changeSize(additionalInventorySlots, additionalUpgradeSlots);
 			}
 		}

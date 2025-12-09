@@ -1,6 +1,5 @@
 package net.p3pp3rf1y.sophisticatedstorage.client;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.render.pip.OversizedItemRenderer;
@@ -55,6 +54,9 @@ public class ClientEventHandler {
 	public static final ModelLayerLocation CHEST_LAYER = new ModelLayerLocation(CHEST_RL, "main");
 	public static final ModelLayerLocation CHEST_LEFT_LAYER = new ModelLayerLocation(CHEST_LEFT_RL, "main");
 	public static final ModelLayerLocation CHEST_RIGHT_LAYER = new ModelLayerLocation(CHEST_RIGHT_RL, "main");
+	public static final ModelLayerLocation CHEST_LOCK_LAYER = new ModelLayerLocation(CHEST_RL, "lock");
+	public static final ModelLayerLocation CHEST_LOCK_LEFT_LAYER = new ModelLayerLocation(CHEST_LEFT_RL, "lock");
+	public static final ModelLayerLocation CHEST_LOCK_RIGHT_LAYER = new ModelLayerLocation(CHEST_RIGHT_RL, "lock");
 
 	public static void registerHandlers(IEventBus modBus) {
 		modBus.addListener(ClientEventHandler::onRegisterModelLoaders);
@@ -78,7 +80,7 @@ public class ClientEventHandler {
 		eventBus.addListener(ClientStorageContentsTooltip::onWorldLoad);
 		eventBus.addListener(ClientEventHandler::onLimitedBarrelClicked);
 		eventBus.addListener(ClientEventHandler::onMouseScrolled);
-		eventBus.addListener(ClientEventHandler::onRenderHighlight);
+		eventBus.addListener(ClientEventHandler::onExtractBlockOutline);
 		eventBus.addListener(ClientEventHandler::onPlayerLoggingIn);
 		eventBus.addListener(ClientEventHandler::onTick);
 	}
@@ -120,7 +122,7 @@ public class ClientEventHandler {
 		ClientPacketDistributor.sendToServer(new RequestPlayerSettingsPayload());
 	}
 
-	private static void onRenderHighlight(RenderHighlightEvent.Block event) {
+	private static void onExtractBlockOutline(ExtractBlockOutlineRenderStateEvent event) {
 		Minecraft minecraft = Minecraft.getInstance();
 		LocalPlayer player = minecraft.player;
 		if (player == null || minecraft.screen != null) {
@@ -128,34 +130,40 @@ public class ClientEventHandler {
 		}
 
 		ItemStack stack = player.getMainHandItem();
+		CollisionContext collisionContext = CollisionContext.of(event.getCamera().getEntity());
 		if (stack.getItem() instanceof ChestBlockItem && ChestBlockItem.isDoubleChest(stack)) {
-			BlockHitResult hitresult = event.getTarget();
+			BlockHitResult hitresult = event.getHitResult();
 			BlockPos otherPos = hitresult.getBlockPos().relative(player.getDirection().getClockWise());
 			Level level = player.level();
 			BlockState blockState = level.getBlockState(otherPos);
 			if (!blockState.isAir() && level.getWorldBorder().isWithinBounds(otherPos)) {
-				VertexConsumer vertexConsumer = event.getMultiBufferSource().getBuffer(RenderType.lines());
-				Vec3 cameraPos = event.getCamera().getPosition();
-				ShapeRenderer.renderShape(event.getPoseStack(), vertexConsumer, blockState.getShape(level, otherPos, CollisionContext.of(event.getCamera().getEntity())),
-						otherPos.getX() - cameraPos.x, otherPos.getY() - cameraPos.y, otherPos.getZ() - cameraPos.z, ARGB.colorFromFloat(0.4F, 0, 0, 0));
+				event.addCustomRenderer((blockOutlineRenderState, bufferSource, poseStack, b, levelRenderState) -> {
+					VertexConsumer vertexConsumer = bufferSource.getBuffer(RenderType.lines());
+					Vec3 cameraPos = levelRenderState.cameraRenderState.pos;
+					ShapeRenderer.renderShape(poseStack, vertexConsumer, blockState.getShape(level, otherPos, collisionContext),
+							otherPos.getX() - cameraPos.x, otherPos.getY() - cameraPos.y, otherPos.getZ() - cameraPos.z, ARGB.colorFromFloat(0.4F, 0, 0, 0));
+					return false;
+				});
 			}
 		}
 
 		if (stack.getItem() instanceof PaintbrushItem) {
-			BlockHitResult hitresult = event.getTarget();
+			BlockHitResult hitresult = event.getHitResult();
 			Level level = player.level();
 			BlockPos pos = hitresult.getBlockPos();
 			BlockState blockState = level.getBlockState(pos);
 
 			if (blockState.getBlock() instanceof StorageBlockBase || blockState.getBlock() == ModBlocks.CONTROLLER.get()) {
 				PaintbrushOverlay.getItemRequirementsFor(stack, player, level, pos).ifPresent(itemRequirements -> {
-					float red = !itemRequirements.itemsMissing().isEmpty() ? 1 : 0;
-					float green = itemRequirements.itemsMissing().isEmpty() ? 1 : 0;
-					VertexConsumer vertexConsumer = event.getMultiBufferSource().getBuffer(RenderType.lines());
-					Vec3 cameraPos = event.getCamera().getPosition();
-					PoseStack poseStack = event.getPoseStack();
-					ShapeRenderer.renderShape(poseStack, vertexConsumer, blockState.getShape(level, pos, CollisionContext.of(event.getCamera().getEntity())),
-							pos.getX() - cameraPos.x, pos.getY() - cameraPos.y, pos.getZ() - cameraPos.z, ARGB.colorFromFloat(1, red, green, 0));
+					event.addCustomRenderer((blockOutlineRenderState, bufferSource, poseStack, b, levelRenderState) -> {
+						float red = !itemRequirements.itemsMissing().isEmpty() ? 1 : 0;
+						float green = itemRequirements.itemsMissing().isEmpty() ? 1 : 0;
+						VertexConsumer vertexConsumer = bufferSource.getBuffer(RenderType.lines());
+						Vec3 cameraPos = levelRenderState.cameraRenderState.pos;
+						ShapeRenderer.renderShape(poseStack, vertexConsumer, blockState.getShape(level, pos, collisionContext),
+								pos.getX() - cameraPos.x, pos.getY() - cameraPos.y, pos.getZ() - cameraPos.z, ARGB.colorFromFloat(1, red, green, 0));
+						return true;
+					});
 					event.setCanceled(true);
 				});
 			}
@@ -220,9 +228,12 @@ public class ClientEventHandler {
 	}
 
 	public static void registerLayer(EntityRenderersEvent.RegisterLayerDefinitions event) {
-		event.registerLayerDefinition(CHEST_LAYER, () -> ChestRenderer.createSingleBodyLayer(true));
+		event.registerLayerDefinition(CHEST_LAYER, ChestRenderer::createSingleBodyLayer);
 		event.registerLayerDefinition(CHEST_LEFT_LAYER, ChestRenderer::createDoubleBodyLeftLayer);
 		event.registerLayerDefinition(CHEST_RIGHT_LAYER, ChestRenderer::createDoubleBodyRightLayer);
+		event.registerLayerDefinition(CHEST_LOCK_LAYER, ChestRenderer::createSingleLockLayer);
+		event.registerLayerDefinition(CHEST_LOCK_LEFT_LAYER, ChestRenderer::createDoubleLockLeftLayer);
+		event.registerLayerDefinition(CHEST_LOCK_RIGHT_LAYER, ChestRenderer::createDoubleLockRightLayer);
 	}
 
 	private static void registerTooltipComponent(RegisterClientTooltipComponentFactoriesEvent event) {
@@ -235,8 +246,8 @@ public class ClientEventHandler {
 	}
 
 	private static void registerEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {
-		event.registerBlockEntityRenderer(ModBlocks.BARREL_BLOCK_ENTITY_TYPE.get(), context -> new BarrelRenderer<>());
-		event.registerBlockEntityRenderer(ModBlocks.LIMITED_BARREL_BLOCK_ENTITY_TYPE.get(), context -> new LimitedBarrelRenderer());
+		event.registerBlockEntityRenderer(ModBlocks.BARREL_BLOCK_ENTITY_TYPE.get(), BarrelRenderer::new);
+		event.registerBlockEntityRenderer(ModBlocks.LIMITED_BARREL_BLOCK_ENTITY_TYPE.get(), LimitedBarrelRenderer::new);
 		event.registerBlockEntityRenderer(ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get(), ChestRenderer::new);
 		event.registerBlockEntityRenderer(ModBlocks.SHULKER_BOX_BLOCK_ENTITY_TYPE.get(), ShulkerBoxRenderer::new);
 		event.registerBlockEntityRenderer(ModBlocks.CONTROLLER_BLOCK_ENTITY_TYPE.get(), context -> new ControllerRenderer());

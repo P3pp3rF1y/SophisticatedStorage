@@ -15,7 +15,6 @@ import net.p3pp3rf1y.sophisticatedcore.common.gui.SophisticatedMenuProvider;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.StorageContainerMenuBase;
 import net.p3pp3rf1y.sophisticatedcore.settings.itemdisplay.ItemDisplaySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.settings.memory.MemorySettingsCategory;
-import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeHandler;
 import net.p3pp3rf1y.sophisticatedcore.util.NoopStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
@@ -71,16 +70,11 @@ public class StorageContainerMenu extends StorageContainerMenuBase<IStorageWrapp
 	}
 
 	@Override
-	protected StorageContainerMenuBase<IStorageWrapper>.StorageUpgradeSlot instantiateUpgradeSlot(UpgradeHandler upgradeHandler, int slotIndex) {
-		return new StorageUpgradeSlot(upgradeHandler, slotIndex) {
-			@Override
-			protected void onUpgradeChanged() {
-				if (player.level().isClientSide()) {
-					return;
-				}
-				storageWrapper.getSettingsHandler().getTypeCategory(ItemDisplaySettingsCategory.class).itemsChanged();
-			}
-		};
+	protected void onUpgradeChanged() {
+		if (player.level().isClientSide()) {
+			return;
+		}
+		storageWrapper.getSettingsHandler().getTypeCategory(ItemDisplaySettingsCategory.class).itemsChanged();
 	}
 
 	@Override

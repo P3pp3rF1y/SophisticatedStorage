@@ -7,9 +7,10 @@ import com.google.common.cache.LoadingCache;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.model.geom.EntityModelSet;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
+import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -67,7 +68,7 @@ public class ChestItemRenderer implements SpecialModelRenderer<ChestItemRenderer
 	}
 
 	@Override
-	public void render(@Nullable ChestAttributes chestAttributes, ItemDisplayContext transformType, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay, boolean hasFoil) {
+	public void submit(@Nullable ChestAttributes chestAttributes, ItemDisplayContext itemDisplayContext, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, int packedLight, int packedOverlay, boolean hasFoil, int color) {
 		if (chestAttributes == null) {
 			return;
 		}
@@ -77,29 +78,29 @@ public class ChestItemRenderer implements SpecialModelRenderer<ChestItemRenderer
 			poseStack.pushPose();
 			poseStack.scale(0.8F, 0.8F, 0.8F);
 			poseStack.translate(0.72D, 0.0D, 0.0D);
-			renderBlockEntity(chestAttributes, poseStack, buffer, packedLight, packedOverlay, leftChestBlockEntity);
+			renderBlockEntity(chestAttributes, poseStack, submitNodeCollector, packedLight, packedOverlay, leftChestBlockEntity);
 			ChestBlockEntity rightChestBlockEntity = doubleChestBlockEntities.getUnchecked(new DoubleChestBlockEntityKey(chestAttributes.blockItem(), ChestType.RIGHT));
 			poseStack.translate(-1D, 0.0D, 0.0D);
-			renderBlockEntity(chestAttributes, poseStack, buffer, packedLight, packedOverlay, rightChestBlockEntity);
+			renderBlockEntity(chestAttributes, poseStack, submitNodeCollector, packedLight, packedOverlay, rightChestBlockEntity);
 			poseStack.popPose();
 			return;
 		}
 
 		ChestBlockEntity chestBlockEntity = chestBlockEntities.getUnchecked(chestAttributes.blockItem());
-		renderBlockEntity(chestAttributes, poseStack, buffer, packedLight, packedOverlay, chestBlockEntity);
+		renderBlockEntity(chestAttributes, poseStack, submitNodeCollector, packedLight, packedOverlay, chestBlockEntity);
 	}
 
 	@Override
 	public void getExtents(Set<Vector3f> set) {
 		PoseStack posestack = new PoseStack();
 		ChestBlockEntity chestBlockEntity = chestBlockEntities.getUnchecked(ModBlocks.CHEST_ITEM.get());
-		BlockEntityRenderer<ChestBlockEntity> blockentityrenderer = Minecraft.getInstance().getBlockEntityRenderDispatcher().getRenderer(chestBlockEntity);
+		BlockEntityRenderer<ChestBlockEntity, ChestRenderer.ChestRenderState> blockentityrenderer = Minecraft.getInstance().getBlockEntityRenderDispatcher().getRenderer(chestBlockEntity);
 		if (blockentityrenderer instanceof ChestRenderer chestRenderer) {
 			chestRenderer.rootModelPart().getExtentsForGui(posestack, set);
 		}
 	}
 
-	private void renderBlockEntity(ChestAttributes chestAttributes, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay, ChestBlockEntity chestBlockEntity) {
+	private void renderBlockEntity(ChestAttributes chestAttributes, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, int packedLight, int packedOverlay, ChestBlockEntity chestBlockEntity) {
 		chestBlockEntity.getStorageWrapper().setColors(chestAttributes.mainColor(), chestAttributes.accentColor());
 		Optional<WoodType> woodType = chestAttributes.woodType();
 		if (woodType.isPresent() || !(chestBlockEntity.getStorageWrapper().hasAccentColor() && chestBlockEntity.getStorageWrapper().hasMainColor())) {
@@ -109,9 +110,12 @@ public class ChestItemRenderer implements SpecialModelRenderer<ChestItemRenderer
 		if (chestAttributes.showsTier() != chestBlockEntity.shouldShowTier()) {
 			chestBlockEntity.toggleTierVisiblity();
 		}
-		var blockentityrenderer = Minecraft.getInstance().getBlockEntityRenderDispatcher().getRenderer(chestBlockEntity);
+		BlockEntityRenderDispatcher blockEntityRenderDispatcher = Minecraft.getInstance().getBlockEntityRenderDispatcher();
+		var blockentityrenderer = blockEntityRenderDispatcher.getRenderer(chestBlockEntity);
 		if (blockentityrenderer != null) {
-			blockentityrenderer.render(chestBlockEntity, 0.0F, poseStack, buffer, packedLight, packedOverlay, Vec3.ZERO);
+			BlockEntityRenderState renderState = blockentityrenderer.createRenderState();
+			blockentityrenderer.extractRenderState(chestBlockEntity, renderState, 0, Vec3.ZERO, null);
+			blockentityrenderer.submit(renderState, poseStack, submitNodeCollector, RenderHelper.ZERO_POS_CAMERA_RENDER_STATE);
 		}
 	}
 
@@ -139,7 +143,7 @@ public class ChestItemRenderer implements SpecialModelRenderer<ChestItemRenderer
 
 		@Nullable
 		@Override
-		public SpecialModelRenderer<?> bake(EntityModelSet entityModelSet) {
+		public SpecialModelRenderer<?> bake(BakingContext bakingContext) {
 			return new ChestItemRenderer();
 		}
 

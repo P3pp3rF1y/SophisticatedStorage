@@ -18,7 +18,10 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.*;
-import net.minecraft.world.level.block.*;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -35,6 +38,7 @@ import net.minecraft.world.phys.shapes.EntityCollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
+import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.client.particle.CustomTintTerrainParticleData;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
@@ -54,8 +58,8 @@ public class BarrelBlock extends WoodStorageBlockBase {
 	public static final BooleanProperty FLAT_TOP = BooleanProperty.create("flat_top");
 	private static final VoxelShape ITEM_ENTITY_COLLISION_SHAPE = box(0.05, 0.05, 0.05, 15.95, 15.95, 15.95);
 
-	public BarrelBlock(Supplier<Integer> numberOfInventorySlotsSupplier, Supplier<Integer> numberOfUpgradeSlotsSupplier, float explosionResistance, Properties properties) {
-		this(numberOfInventorySlotsSupplier, numberOfUpgradeSlotsSupplier, explosionResistance, stateDef -> stateDef.any().setValue(FACING, Direction.NORTH).setValue(OPEN, false).setValue(TICKING, false).setValue(FLAT_TOP, false), properties);
+	public BarrelBlock(Config.Server.StorageConfig config, float explosionResistance, Properties properties) {
+		this(config::numberOfInventorySlots, config::numberOfUpgradeSlots, explosionResistance, stateDef -> stateDef.any().setValue(FACING, Direction.NORTH).setValue(OPEN, false).setValue(TICKING, false).setValue(FLAT_TOP, false), properties);
 	}
 
 	public BarrelBlock(Supplier<Integer> numberOfInventorySlotsSupplier, Supplier<Integer> numberOfUpgradeSlotsSupplier, float explosionResistance, Function<StateDefinition<Block, BlockState>, BlockState> getDefaultState, Properties properties) {
@@ -101,7 +105,7 @@ public class BarrelBlock extends WoodStorageBlockBase {
 			if (b.isPacked()) {
 				return InteractionResult.FAIL;
 			}
-			if (level.isClientSide || hand == InteractionHand.OFF_HAND) {
+			if (level.isClientSide() || hand == InteractionHand.OFF_HAND) {
 				return InteractionResult.SUCCESS;
 			}
 

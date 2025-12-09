@@ -22,12 +22,15 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.phys.BlockHitResult;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.api.IUpgradeClientTickHandler;
 import net.p3pp3rf1y.sophisticatedcore.client.render.UpgradeClientRegistry;
 import net.p3pp3rf1y.sophisticatedcore.controller.IControllableStorage;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.IUpgradeClientData;
-import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
+import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderData;
+import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderDataHandler;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.UpgradeClientDataType;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeHandler;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeItemBase;
@@ -67,11 +70,11 @@ public abstract class StorageBlockBase extends BlockBase implements IStorageBloc
 		return typeExpected == typePassedIn ? (BlockEntityTicker<A>) blockEntityTicker : null;
 	}
 
-	protected void renderUpgrades(Level level, RandomSource rand, BlockPos pos, Direction facing, RenderInfo renderInfo, BlockState storageBlockState) {
+	protected void renderUpgrades(Level level, RandomSource rand, BlockPos pos, Direction facing, RenderDataHandler renderDataHandler, BlockState storageBlockState) {
 		if (Minecraft.getInstance().isPaused()) {
 			return;
 		}
-		renderInfo.getUpgradeClientData().forEach((type, data) -> UpgradeClientRegistry.getUpgradeClientTickHandler(type).ifPresent(renderer -> {
+		renderDataHandler.getUpgradeClientData().forEach((type, data) -> UpgradeClientRegistry.getUpgradeClientTickHandler(type).ifPresent(renderer -> {
 			if (storageBlockState.getBlock() instanceof StorageBlockBase storageBlock) {
 				storageBlock.clientTickUpgrade(renderer, level, rand, pos, facing, type, data, storageBlockState, storageBlock);
 			}
@@ -94,25 +97,29 @@ public abstract class StorageBlockBase extends BlockBase implements IStorageBloc
 	}
 
 	@Override
-	public void entityInside(BlockState state, Level level, BlockPos pos, Entity entity, InsideBlockEffectApplier effectApplier) {
-		super.entityInside(state, level, pos, entity, effectApplier);
-		if (!level.isClientSide && entity instanceof ItemEntity itemEntity) {
+	public void entityInside(BlockState state, Level level, BlockPos pos, Entity entity, InsideBlockEffectApplier effectApplier, boolean flag) {
+		super.entityInside(state, level, pos, entity, effectApplier, flag);
+		if (!level.isClientSide() && entity instanceof ItemEntity itemEntity) {
 			WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).ifPresent(be -> tryToPickup(level, itemEntity, be.getStorageWrapper()));
 		}
 	}
 
 	protected void tryToPickup(Level level, ItemEntity itemEntity, IStorageWrapper w) {
-		ItemStack remainingStack = itemEntity.getItem().copy();
-		remainingStack = InventoryHelper.runPickupOnPickupResponseUpgrades(level, w.getUpgradeHandler(), remainingStack, false);
-		if (remainingStack.getCount() < itemEntity.getItem().getCount()) {
-			itemEntity.setItem(remainingStack);
+		ItemStack stack = itemEntity.getItem();
+		try (Transaction tx = Transaction.openRoot()) {
+			ItemResource resource = ItemResource.of(stack);
+			int pickedUp = InventoryHelper.runPickupOnPickupResponseUpgrades(level, w.getUpgradeHandler(), resource, stack.getCount(), tx);
+			if (pickedUp > 0) {
+				tx.commit();
+				itemEntity.setItem(resource.toStack(stack.getCount() - pickedUp));
+			}
 		}
 	}
 
 	@Nullable
 	@Override
 	public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> blockEntityType) {
-		return !level.isClientSide && Boolean.TRUE.equals(state.getValue(StorageBlockBase.TICKING)) ? StorageBlockBase.createTickerHelper(blockEntityType, getBlockEntityType(), (l, blockPos, blockState, storageBlockEntity) -> StorageBlockEntity.serverTick(l, blockPos, storageBlockEntity)) : null;
+		return !level.isClientSide() && state.getValue(StorageBlockBase.TICKING) ? StorageBlockBase.createTickerHelper(blockEntityType, getBlockEntityType(), (l, blockPos, blockState, storageBlockEntity) -> StorageBlockEntity.serverTick(l, blockPos, storageBlockEntity)) : null;
 	}
 
 	protected abstract BlockEntityType<? extends StorageBlockEntity> getBlockEntityType();
@@ -138,8 +145,8 @@ public abstract class StorageBlockBase extends BlockBase implements IStorageBloc
 	}
 
 	@Override
-	public int getAnalogOutputSignal(BlockState blockState, Level level, BlockPos pos) {
-		return WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).map(be -> InventoryHelper.getAnalogOutputSignal(be.getStorageWrapper().getInventoryForInputOutput())).orElse(0);
+	public int getAnalogOutputSignal(BlockState blockState, Level level, BlockPos pos, Direction direction) {
+		return WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).map(be -> InventoryHelper.getAnalogOutputSignal(be.getStorageWrapper().getInventoryHandler())).orElse(0);
 	}
 
 	@Override
@@ -158,8 +165,8 @@ public abstract class StorageBlockBase extends BlockBase implements IStorageBloc
 	@Override
 	public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource rand) {
 		WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).ifPresent(be -> {
-			RenderInfo renderInfo = be.getStorageWrapper().getRenderInfo();
-			renderUpgrades(level, rand, pos, getFacing(state), renderInfo, state);
+			RenderDataHandler renderDataHandler = be.getStorageWrapper().getRenderDataHandler();
+			renderUpgrades(level, rand, pos, getFacing(state), renderDataHandler, state);
 		});
 
 	}
@@ -190,7 +197,7 @@ public abstract class StorageBlockBase extends BlockBase implements IStorageBloc
 
 	public abstract Direction getFacing(BlockState state);
 
-	public int getDisplayItemsCount(List<RenderInfo.DisplayItem> displayItems) {
+	public int getDisplayItemsCount(List<RenderData.DisplayItemData> displayItems) {
 		return displayItems.size();
 	}
 
@@ -217,19 +224,22 @@ public abstract class StorageBlockBase extends BlockBase implements IStorageBloc
 
 	public static InteractionResult tryAddSingleUpgrade(Player player, ItemStack itemInHand, IStorageWrapper storageWrapper) {
 		if (itemInHand.getItem() instanceof UpgradeItemBase<?> upgradeItem && itemInHand.is(ModItems.STORAGE_UPGRADE_TAG)) {
-			if (player.level().isClientSide) {
+			if (player.level().isClientSide()) {
 				return InteractionResult.PASS;
 			}
 
 			UpgradeHandler upgradeHandler = storageWrapper.getUpgradeHandler();
-			if (upgradeItem.canAddUpgradeTo(storageWrapper, itemInHand, true, player.level().isClientSide()).successful()
-					&& InventoryHelper.insertIntoInventory(itemInHand, upgradeHandler, true).getCount() != itemInHand.getCount()) {
-				InventoryHelper.insertIntoInventory(itemInHand.copyWithCount(1), upgradeHandler, false);
-				itemInHand.shrink(1);
-				return InteractionResult.SUCCESS.heldItemTransformedTo(itemInHand.isEmpty() ? ItemStack.EMPTY : itemInHand);
+			if (upgradeItem.canAddUpgradeTo(storageWrapper, itemInHand, true, player.level().isClientSide()).successful()) {
+				try (Transaction tx = Transaction.openRoot()) {
+					if (InventoryHelper.insertIntoInventory(List.of(itemInHand.copyWithCount(1)), upgradeHandler, tx).isEmpty()) {
+						itemInHand.shrink(1);
+						tx.commit();
+						return InteractionResult.SUCCESS.heldItemTransformedTo(itemInHand.isEmpty() ? ItemStack.EMPTY : itemInHand);
+					}
+				}
 			}
 		}
-				return InteractionResult.PASS;
+		return InteractionResult.PASS;
 	}
 
 	@Override

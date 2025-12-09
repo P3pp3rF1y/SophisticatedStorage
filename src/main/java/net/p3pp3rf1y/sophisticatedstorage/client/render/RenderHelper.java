@@ -9,6 +9,7 @@ import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.BlockModelPart;
 import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -27,6 +28,8 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class RenderHelper {
+	public static final CameraRenderState ZERO_POS_CAMERA_RENDER_STATE = new CameraRenderState();
+
 	private RenderHelper() {
 	}
 
@@ -107,20 +110,21 @@ public class RenderHelper {
 		return BuiltInRegistries.BLOCK.getOptional(blockName).map(Block::defaultBlockState).orElse(Blocks.AIR.defaultBlockState());
 	}
 
-	static void renderQuad(VertexConsumer consumer, Matrix4f pose, Vector3f normal, int packedOverlay, int packedLight, float alpha) {
-		renderQuad(consumer, pose, normal, packedOverlay, packedLight, alpha, 0, 0, 1, 1);
+	static void renderQuad(VertexConsumer consumer, Matrix4f pose, Vector3f normal, int packedOverlay, int packedLight, float alpha, TextureAtlasSprite sprite) {
+		renderQuad(consumer, pose, normal, packedOverlay, packedLight, alpha, 0, 0, 1, 1, sprite);
 	}
 
-	static void renderQuad(VertexConsumer consumer, Matrix4f pose, Vector3f normal, int packedOverlay, int packedLight, float alpha, float minU, float minV, float maxU, float maxV) {
+	static void renderQuad(VertexConsumer consumer, Matrix4f pose, Vector3f normal, int packedOverlay, int packedLight, float alpha, float minU, float minV, float maxU, float maxV, TextureAtlasSprite sprite) {
+		VertexConsumer spriteConsumer = sprite.wrap(consumer);
 		int minX = 0;
 		int minY = 0;
 		int maxY = 1;
 		int maxX = 1;
 
-		addVertex(pose, normal, consumer, maxY, minX, packedOverlay, packedLight, maxU, minV, alpha);
-		addVertex(pose, normal, consumer, minY, minX, packedOverlay, packedLight, maxU, maxV, alpha);
-		addVertex(pose, normal, consumer, minY, maxX, packedOverlay, packedLight, minU, maxV, alpha);
-		addVertex(pose, normal, consumer, maxY, maxX, packedOverlay, packedLight, minU, minV, alpha);
+		addVertex(pose, normal, spriteConsumer, maxY, minX, packedOverlay, packedLight, maxU, minV, alpha);
+		addVertex(pose, normal, spriteConsumer, minY, minX, packedOverlay, packedLight, maxU, maxV, alpha);
+		addVertex(pose, normal, spriteConsumer, minY, maxX, packedOverlay, packedLight, minU, maxV, alpha);
+		addVertex(pose, normal, spriteConsumer, maxY, maxX, packedOverlay, packedLight, minU, minV, alpha);
 	}
 
 	private static void addVertex(Matrix4f pose, Vector3f normal, VertexConsumer consumer, int pY, float pX, int packedOverlay, int packedLight, float u, float v, float alpha) {

@@ -2,7 +2,7 @@ plugins {
     id 'java-library'
     id 'idea'
     id 'maven-publish'
-    id 'net.neoforged.moddev' version '2.0.103'
+    id 'net.neoforged.moddev' version '2.0.110'
     id "org.sonarqube" version "5.0.0.4638"
     id "net.darkhax.curseforgegradle" version "1.1.15"
     id "com.modrinth.minotaur" version "2.+"
@@ -204,10 +204,11 @@ dependencies {
     implementation files('/libs/sophisticatedbackpacks-1.20.4-3.20.5.-SNAPSHOT.jar')
 */
 
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.11.+'
-    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.11.+'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.11.+'
-    testImplementation "org.mockito:mockito-core:5.12.+"
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.13.4'
+    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.13.4'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.13.4'
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    testImplementation "org.mockito:mockito-core:5.20.+"
 }
 
 var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {

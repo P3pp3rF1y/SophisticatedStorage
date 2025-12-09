@@ -193,6 +193,10 @@ public class Config {
 			compressionUpgrade.clearCache();
 		}
 
+		private static <T> T getIfLoadedOrDefault(ModConfigSpec.ConfigValue<T> configValue) {
+			return SERVER_SPEC.isLoaded() ? configValue.get() : configValue.getDefault();
+		}
+
 		public Server(ModConfigSpec.Builder builder) {
 			builder.comment("Server Settings").push("server");
 
@@ -312,6 +316,14 @@ public class Config {
 				upgradeSlotCount = builder.comment("Number of upgrade slots in the storage").defineInRange("upgradeSlotCount", upgradeSlotCountDefault, 0, 10);
 				builder.pop();
 			}
+
+			public int numberOfInventorySlots() {
+				return getIfLoadedOrDefault(inventorySlotCount);
+			}
+
+			public int numberOfUpgradeSlots() {
+				return getIfLoadedOrDefault(upgradeSlotCount);
+			}
 		}
 
 		public static class LimitedBarrelConfig {
@@ -323,6 +335,14 @@ public class Config {
 				baseSlotLimitMultiplier = builder.comment("Multiplier that's used to calculate base slot limit").defineInRange("baseSlotLimitMultiplier", baseSlotLimitMultiplierDefault, 1, 8192);
 				upgradeSlotCount = builder.comment("Number of upgrade slots in the storage").defineInRange("upgradeSlotCount", upgradeSlotCountDefault, 0, 10);
 				builder.pop();
+			}
+
+			public int baseSlotLimitMultiplier() {
+				return getIfLoadedOrDefault(baseSlotLimitMultiplier);
+			}
+
+			public int upgradeSlotCount() {
+				return getIfLoadedOrDefault(upgradeSlotCount);
 			}
 		}
 

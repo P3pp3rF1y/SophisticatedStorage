@@ -1,181 +1,161 @@
 package net.p3pp3rf1y.sophisticatedstorage.client.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.LevelRenderer;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.state.CameraRenderState;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.MaterialSet;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FontDescription;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
+import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderData;
 import net.p3pp3rf1y.sophisticatedcore.util.CountAbbreviator;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
-import net.p3pp3rf1y.sophisticatedstorage.block.*;
+import net.p3pp3rf1y.sophisticatedstorage.block.LimitedBarrelBlock;
+import net.p3pp3rf1y.sophisticatedstorage.block.LimitedBarrelBlockEntity;
+import net.p3pp3rf1y.sophisticatedstorage.block.VerticalFacing;
 import org.joml.Vector3f;
 
+import javax.annotation.Nullable;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.IntStream;
 
 import static net.minecraft.client.Minecraft.UNIFORM_FONT;
 
-public class LimitedBarrelRenderer extends BarrelRenderer<LimitedBarrelBlockEntity> {
-
+public class LimitedBarrelRenderer extends BarrelRendererBase<LimitedBarrelBlockEntity, LimitedBarrelRenderer.LimitedBarrelRenderState> {
 	public static final Material FILL_INDICATORS_TEXTURE = new Material(TextureAtlas.LOCATION_BLOCKS, SophisticatedStorage.getRL("block/fill_indicators"));
 	private static final float MULTIPLE_ITEMS_FONT_SCALE = 1 / 96f;
 	private static final float SINGLE_ITEM_FONT_SCALE = 1 / 48f;
-	public static final Style INFINITE_COUNT_DISPLAY_STYLE = Style.EMPTY.withFont(UNIFORM_FONT);
+	public static final Style INFINITE_COUNT_DISPLAY_STYLE = Style.EMPTY.withFont(new FontDescription.Resource(UNIFORM_FONT));
 	private static final Style COUNT_DISPLAY_STYLE = INFINITE_COUNT_DISPLAY_STYLE.withBold(true);
 	private final DisplayItemRenderer displayItemRenderer = new DisplayItemRenderer(0.5, new Vec3(0, 0, -1 / 16D));
 	private final DisplayItemRenderer flatDisplayItemRenderer = new DisplayItemRenderer(0.5, Vec3.ZERO);
+	private final MaterialSet materialSet;
 
-	@Override
-	public void render(LimitedBarrelBlockEntity blockEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, Vec3 cameraPos) {
-		BlockState blockState = blockEntity.getBlockState();
-		if (blockEntity.isPacked() || !(blockState.getBlock() instanceof StorageBlockBase storageBlock)
-				|| (!blockEntity.hasDynamicRenderer() && !blockEntity.shouldShowCounts() && !holdsItemThatShowsUpgrades() && !blockEntity.shouldShowUpgrades())) {
-			return;
-		}
-		boolean flatTop = blockState.getValue(BarrelBlock.FLAT_TOP);
-
-		Direction horizontalFacing = blockState.getValue(LimitedBarrelBlock.HORIZONTAL_FACING);
-		renderItemCounts(blockEntity, poseStack, bufferSource, flatTop, horizontalFacing, blockState.getValue(LimitedBarrelBlock.VERTICAL_FACING), packedLight);
-
-		if (blockEntity.getLevel() != null && blockEntity.shouldUseLightInFrontForFrontRender()) {
-			packedLight = LevelRenderer.getLightColor(blockEntity.getLevel(), blockEntity.getBlockPos().relative(storageBlock.getFacing(blockState)));
-		}
-
-		renderFrontFace(blockEntity, poseStack, bufferSource, packedLight, packedOverlay, blockState, flatTop, horizontalFacing);
-		renderHiddenTier(blockEntity, poseStack, bufferSource, packedLight, packedOverlay);
-		renderHiddenLock(blockEntity, poseStack, bufferSource, packedLight, packedOverlay);
+	public LimitedBarrelRenderer(BlockEntityRendererProvider.Context context) {
+		super(context);
+		materialSet = context.materials();
 	}
 
-	private void renderFrontFace(LimitedBarrelBlockEntity blockEntity, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, BlockState blockState, boolean flatTop, Direction horizontalFacing) {
-		if (blockEntity.hasDynamicRenderer() || holdsItemThatShowsUpgrades() || blockEntity.shouldShowUpgrades() || blockEntity.shouldShowFillLevels() || holdsItemThatShowsFillLevels()) {
+	private void submitFrontFace(SubmitNodeCollector submitNodeCollector, LimitedBarrelRenderState renderState, PoseStack poseStack) {
+		if (renderState.hasDynamicRenderer || holdsItemThatShowsUpgrades() || renderState.showsUpgrades || renderState.showsFillLevels || holdsItemThatShowsFillLevels()) {
 			poseStack.pushPose();
 
 			poseStack.translate(0.5, 0.5, 0.5);
-			poseStack.mulPose(DisplayItemRenderer.getNorthBasedRotation(horizontalFacing));
-			VerticalFacing verticalFacing = blockState.getValue(LimitedBarrelBlock.VERTICAL_FACING);
-			if (verticalFacing != VerticalFacing.NO) {
-				poseStack.mulPose(DisplayItemRenderer.getNorthBasedRotation(verticalFacing.getDirection()));
+			poseStack.mulPose(DisplayItemRenderer.getNorthBasedRotation(renderState.horizontalFacing));
+			if (renderState.verticalFacing != VerticalFacing.NO) {
+				poseStack.mulPose(DisplayItemRenderer.getNorthBasedRotation(renderState.verticalFacing.getDirection()));
 			}
-			poseStack.translate(-0.5, -0.5, -(0.5 - (flatTop ? 0 : 1 / 16f)));
+			poseStack.translate(-0.5, -0.5, -(0.5 - (renderState.flatTop ? 0 : 1 / 16f)));
 
-			if (blockEntity.hasDynamicRenderer()) {
-				renderDisplayItems(blockEntity, poseStack, bufferSource, packedLight, packedOverlay, flatTop);
+			if (renderState.hasDynamicRenderer) {
+				submitDisplayItems(submitNodeCollector, renderState, poseStack);
 			}
 
 			boolean holdsItemThatShowsUpgrades = holdsItemThatShowsUpgrades();
-			if (blockEntity.shouldShowUpgrades() || holdsItemThatShowsUpgrades) {
-				renderUpgrades(blockEntity, poseStack, bufferSource, packedLight, packedOverlay, flatTop, holdsItemThatShowsUpgrades);
+			if (renderState.showsUpgrades || holdsItemThatShowsUpgrades) {
+				submitUpgrades(submitNodeCollector, renderState, poseStack, holdsItemThatShowsUpgrades);
 			}
 
-			if (blockEntity.shouldShowFillLevels() || holdsItemThatShowsFillLevels()) {
-				renderFillLevels(blockEntity, poseStack, bufferSource, packedLight, packedOverlay);
+			if (renderState.showsFillLevels || holdsItemThatShowsFillLevels()) {
+				submitFillLevels(submitNodeCollector, renderState, poseStack);
 			}
 
 			poseStack.popPose();
 		}
 	}
 
-	private void renderUpgrades(LimitedBarrelBlockEntity blockEntity, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, boolean flatTop, boolean holdsItemThatShowsUpgrades) {
-		if (flatTop) {
-			flatDisplayItemRenderer.renderUpgradeItems(blockEntity, poseStack, bufferSource, packedLight, packedOverlay, holdsItemThatShowsUpgrades, shouldShowDisabledUpgradesDisplay(blockEntity));
+	private void submitUpgrades(SubmitNodeCollector submitNodeCollector, LimitedBarrelRenderState renderState, PoseStack poseStack, boolean holdsItemThatShowsUpgrades) {
+		if (renderState.flatTop) {
+			flatDisplayItemRenderer.submitUpgradeItems(submitNodeCollector, renderState, poseStack, OverlayTexture.NO_OVERLAY, renderState.showsDisabledUpgradeDisplay);
 		} else {
-			displayItemRenderer.renderUpgradeItems(blockEntity, poseStack, bufferSource, packedLight, packedOverlay, holdsItemThatShowsUpgrades, shouldShowDisabledUpgradesDisplay(blockEntity));
+			displayItemRenderer.submitUpgradeItems(submitNodeCollector, renderState, poseStack, OverlayTexture.NO_OVERLAY, renderState.showsDisabledUpgradeDisplay);
 		}
 	}
 
-	private void renderFillLevels(LimitedBarrelBlockEntity blockEntity, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
+	private void submitFillLevels(SubmitNodeCollector submitNodeCollector, LimitedBarrelRenderState renderState, PoseStack poseStack) {
 		poseStack.pushPose();
 		poseStack.translate(0, 0, -0.001);
+		int slots = renderState.fillLevels.size();
 
-		List<Float> slotFillLevels = blockEntity.getStorageWrapper().getRenderInfo().getItemDisplayRenderInfo().getSlotFillRatios();
-		if (slotFillLevels.isEmpty()) {
-			slotFillLevels = blockEntity.getSlotFillLevels();
-		}
-		int slots = slotFillLevels.size();
-
-		boolean translucentRender = !blockEntity.shouldShowFillLevels() && holdsToolInToggleFillLevelDisplay();
+		boolean translucentRender = !renderState.showsFillLevels && holdsToolInToggleFillLevelDisplay();
 
 		switch (slots) {
-			case 1 -> renderFillLevel(poseStack, bufferSource, packedLight, packedOverlay, slotFillLevels.get(0), 1 / 16F, 1 / 16F, true, translucentRender);
+			case 1 ->
+					submitFillLevel(submitNodeCollector, poseStack, renderState.lightCoords, renderState.fillLevels.get(0), 1 / 16F, 1 / 16F, true, translucentRender);
 			case 2 -> {
-				renderFillLevel(poseStack, bufferSource, packedLight, packedOverlay, slotFillLevels.get(0), 1 / 16F, 9 / 16F, false, translucentRender);
-				renderFillLevel(poseStack, bufferSource, packedLight, packedOverlay, slotFillLevels.get(1), 1 / 16F, 1 / 16F, false, translucentRender);
+				submitFillLevel(submitNodeCollector, poseStack, renderState.lightCoords, renderState.fillLevels.get(0), 1 / 16F, 9 / 16F, false, translucentRender);
+				submitFillLevel(submitNodeCollector, poseStack, renderState.lightCoords, renderState.fillLevels.get(1), 1 / 16F, 1 / 16F, false, translucentRender);
 			}
 			case 3 -> {
-				renderFillLevel(poseStack, bufferSource, packedLight, packedOverlay, slotFillLevels.get(0), 1 / 16F, 9 / 16F, false, translucentRender);
-				renderFillLevel(poseStack, bufferSource, packedLight, packedOverlay, slotFillLevels.get(1), 14 / 16F, 1 / 16F, false, translucentRender);
-				renderFillLevel(poseStack, bufferSource, packedLight, packedOverlay, slotFillLevels.get(2), 1 / 16F, 1 / 16F, false, translucentRender);
+				submitFillLevel(submitNodeCollector, poseStack, renderState.lightCoords, renderState.fillLevels.get(0), 1 / 16F, 9 / 16F, false, translucentRender);
+				submitFillLevel(submitNodeCollector, poseStack, renderState.lightCoords, renderState.fillLevels.get(1), 14 / 16F, 1 / 16F, false, translucentRender);
+				submitFillLevel(submitNodeCollector, poseStack, renderState.lightCoords, renderState.fillLevels.get(2), 1 / 16F, 1 / 16F, false, translucentRender);
 			}
 			case 4 -> {
-				renderFillLevel(poseStack, bufferSource, packedLight, packedOverlay, slotFillLevels.get(0), 14 / 16F, 9 / 16F, false, translucentRender);
-				renderFillLevel(poseStack, bufferSource, packedLight, packedOverlay, slotFillLevels.get(1), 1 / 16F, 9 / 16F, false, translucentRender);
-				renderFillLevel(poseStack, bufferSource, packedLight, packedOverlay, slotFillLevels.get(2), 14 / 16F, 1 / 16F, false, translucentRender);
-				renderFillLevel(poseStack, bufferSource, packedLight, packedOverlay, slotFillLevels.get(3), 1 / 16F, 1 / 16F, false, translucentRender);
+				submitFillLevel(submitNodeCollector, poseStack, renderState.lightCoords, renderState.fillLevels.get(0), 14 / 16F, 9 / 16F, false, translucentRender);
+				submitFillLevel(submitNodeCollector, poseStack, renderState.lightCoords, renderState.fillLevels.get(1), 1 / 16F, 9 / 16F, false, translucentRender);
+				submitFillLevel(submitNodeCollector, poseStack, renderState.lightCoords, renderState.fillLevels.get(2), 14 / 16F, 1 / 16F, false, translucentRender);
+				submitFillLevel(submitNodeCollector, poseStack, renderState.lightCoords, renderState.fillLevels.get(3), 1 / 16F, 1 / 16F, false, translucentRender);
 			}
 		}
 		poseStack.popPose();
 	}
 
-	private void renderDisplayItems(LimitedBarrelBlockEntity blockEntity, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, boolean flatTop) {
-		if (flatTop) {
-			flatDisplayItemRenderer.renderDisplayItems(blockEntity, poseStack, bufferSource, packedLight, packedOverlay, !blockEntity.hasFullyDynamicRenderer());
+	private void submitDisplayItems(SubmitNodeCollector submitNodeCollector, LimitedBarrelRenderState renderState, PoseStack poseStack) {
+		if (renderState.flatTop) {
+			flatDisplayItemRenderer.submitDisplayItems(submitNodeCollector, renderState, poseStack, OverlayTexture.NO_OVERLAY, !renderState.hasFullyDynamicRenderer);
 		} else {
-			displayItemRenderer.renderDisplayItems(blockEntity, poseStack, bufferSource, packedLight, packedOverlay, !blockEntity.hasFullyDynamicRenderer());
+			displayItemRenderer.submitDisplayItems(submitNodeCollector, renderState, poseStack, OverlayTexture.NO_OVERLAY, !renderState.hasFullyDynamicRenderer);
 		}
 	}
 
-	private void renderItemCounts(LimitedBarrelBlockEntity blockEntity, PoseStack poseStack, MultiBufferSource bufferSource, boolean flatTop, Direction horizontalFacing, VerticalFacing verticalFacing, int packedLight) {
-		if (!blockEntity.shouldShowCounts()) {
+	private void submitItemCounts(SubmitNodeCollector submitNodeCollector, LimitedBarrelRenderState renderState, PoseStack poseStack) {
+		if (!renderState.showsCounts) {
 			return;
-		}
-
-		if (blockEntity.getLevel() != null && blockEntity.shouldUseLightInFrontForFrontRender()) {
-			packedLight = LevelRenderer.getLightColor(blockEntity.getLevel(), blockEntity.getBlockPos().relative(verticalFacing != VerticalFacing.NO ? verticalFacing.getDirection() : horizontalFacing));
 		}
 
 		poseStack.pushPose();
 
 		poseStack.translate(0.5, 0.5, 0.5);
-		poseStack.mulPose(DisplayItemRenderer.getNorthBasedRotation(horizontalFacing.getOpposite()));// because of the font flipping
-		if (verticalFacing != VerticalFacing.NO) {
-			poseStack.mulPose(DisplayItemRenderer.getNorthBasedRotation(verticalFacing.getDirection().getOpposite()));// because of the font flipping
+		poseStack.mulPose(DisplayItemRenderer.getNorthBasedRotation(renderState.horizontalFacing.getOpposite()));// because of the font flipping
+		if (renderState.verticalFacing != VerticalFacing.NO) {
+			poseStack.mulPose(DisplayItemRenderer.getNorthBasedRotation(renderState.verticalFacing.getDirection().getOpposite()));// because of the font flipping
 		}
 		poseStack.translate(0.5, -0.5, 0.5);
 
-		RenderInfo.ItemDisplayRenderInfo itemDisplayRenderInfo = blockEntity.getStorageWrapper().getRenderInfo().getItemDisplayRenderInfo();
-		List<Integer> slotCounts = itemDisplayRenderInfo.getSlotCounts();
-		List<Integer> infiniteSlots = itemDisplayRenderInfo.getInfiniteSlots();
-		if (slotCounts.isEmpty()) {
-			slotCounts = blockEntity.getSlotCounts();
-		}
-		float countDisplayYOffset = -(slotCounts.size() == 1 ? 0.25f : 0.11f);
-		for (int displayItemIndex = 0; displayItemIndex < slotCounts.size(); displayItemIndex++) {
-			int count = slotCounts.get(displayItemIndex);
+		float countDisplayYOffset = -(renderState.slotCounts.size() == 1 ? 0.25f : 0.11f);
+		for (int displayItemIndex = 0; displayItemIndex < renderState.slotCounts.size(); displayItemIndex++) {
+			int count = renderState.slotCounts.get(displayItemIndex);
 			if (count <= 0) {
 				continue;
 			}
 
 			poseStack.pushPose();
-			Vector3f frontOffset = DisplayItemRenderer.getDisplayItemIndexFrontOffset(displayItemIndex, slotCounts.size());
+			Vector3f frontOffset = DisplayItemRenderer.getDisplayItemIndexFrontOffset(displayItemIndex, renderState.slotCounts.size());
 
 			double xTranslation = -frontOffset.x();
-			boolean isInfinite = infiniteSlots.contains(displayItemIndex);
+			boolean isInfinite = renderState.infiniteSlots.contains(displayItemIndex);
 			float yTranslation = frontOffset.y() + (isInfinite ? countDisplayYOffset / 1.8f : countDisplayYOffset);
-			double zTranslation = 0.001 - (flatTop ? 0 : 0.75 / 16D);
+			double zTranslation = 0.001 - (renderState.flatTop ? 0 : 0.75 / 16D);
 			poseStack.translate(xTranslation, yTranslation, zTranslation);
 
-			float scale = slotCounts.size() == 1 ? SINGLE_ITEM_FONT_SCALE : MULTIPLE_ITEMS_FONT_SCALE;
+			float scale = renderState.slotCounts.size() == 1 ? SINGLE_ITEM_FONT_SCALE : MULTIPLE_ITEMS_FONT_SCALE;
 			if (isInfinite) {
 				scale *= 2;
 			}
@@ -184,39 +164,95 @@ public class LimitedBarrelRenderer extends BarrelRenderer<LimitedBarrelBlockEnti
 			if (isInfinite) {
 				countString = Component.literal("∞").withStyle(INFINITE_COUNT_DISPLAY_STYLE);
 			} else {
-				countString = Component.literal(CountAbbreviator.abbreviate(count, slotCounts.size() == 1 ? 6 : 5)).withStyle(COUNT_DISPLAY_STYLE);
+				countString = Component.literal(CountAbbreviator.abbreviate(count, renderState.slotCounts.size() == 1 ? 6 : 5)).withStyle(COUNT_DISPLAY_STYLE);
 			}
 			Font font = Minecraft.getInstance().font;
 			float countDisplayXOffset = -font.getSplitter().stringWidth(countString) / 2f;
 			poseStack.translate(countDisplayXOffset, 0, 0);
-			font.drawInBatch(countString, 0, 0, blockEntity.getSlotColor(displayItemIndex), false, poseStack.last().pose(), bufferSource, Font.DisplayMode.NORMAL, 0, packedLight);
-
+			submitNodeCollector.submitText(poseStack, 0, 0, countString.getVisualOrderText(), false, Font.DisplayMode.NORMAL, renderState.lightCoords, renderState.slotColors.get(displayItemIndex), 0, 0);
 			poseStack.popPose();
 		}
 		poseStack.popPose();
 	}
 
-	private void renderFillLevel(PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, float fillLevel, float x, float y, boolean large, boolean translucentRender) {
+	private void submitFillLevel(SubmitNodeCollector submitNodeCollector, PoseStack poseStack, int packedLight, float fillLevel, float x, float y, boolean large, boolean translucentRender) {
 		poseStack.pushPose();
-		poseStack.translate(x + 1/16F/5F, y + 1/16F/5F, 0);
+		poseStack.translate(x + 1 / 16F / 5F, y + 1 / 16F / 5F, 0);
 		int barHeight = large ? 14 : 6;
 		poseStack.scale(1 / 16F / 5F * 3, fillLevel * 1 / 16F / 5F * (barHeight * 5 - 2), 1);
 		poseStack.pushPose();
-		VertexConsumer vertexConsumer;
+		RenderType renderType;
 		if (translucentRender) {
-			TextureAtlasSprite sprite = FILL_INDICATORS_TEXTURE.sprite();
-			vertexConsumer = sprite.wrap(bufferSource.getBuffer(RenderType.entityTranslucent(sprite.atlasLocation())));
+			renderType = FILL_INDICATORS_TEXTURE.renderType(RenderType::entityTranslucent);
 		} else {
-			vertexConsumer = FILL_INDICATORS_TEXTURE.buffer(bufferSource, RenderType::entityCutoutNoCull);
+			renderType = FILL_INDICATORS_TEXTURE.renderType(RenderType::entitySmoothCutout);
 		}
-		PoseStack.Pose pose = poseStack.last();
-		Vector3f normal = new Vector3f(0, 1, 0);
-		pose.normal().transform(normal);
-		float minU = large ? 0 : 3 / 128F;
-		float maxV = large ? 68 / 128F : 28 / 128F;
-		RenderHelper.renderQuad(vertexConsumer, pose.pose(), normal, packedOverlay, packedLight, translucentRender ? 0.5F : 1, minU, (1 - fillLevel) * maxV, minU + 3 / 128F, maxV);
 
+		TextureAtlasSprite sprite = materialSet.get(FILL_INDICATORS_TEXTURE);
+
+		submitNodeCollector.submitCustomGeometry(poseStack, renderType, (pose, vertexConsumer) -> {
+			Vector3f normal = new Vector3f(0, 1, 0);
+			pose.normal().transform(normal);
+			float minU = large ? 0 : 3 / 128F;
+			float maxV = large ? 68 / 128F : 28 / 128F;
+			RenderHelper.renderQuad(vertexConsumer, pose.pose(), normal, OverlayTexture.NO_OVERLAY, packedLight, translucentRender ? 0.5F : 1, minU, (1 - fillLevel) * maxV, minU + 3 / 128F, maxV, sprite);
+
+		});
 		poseStack.popPose();
 		poseStack.popPose();
+	}
+
+	@Override
+	public LimitedBarrelRenderState createRenderState() {
+		return new LimitedBarrelRenderState();
+	}
+
+	@Override
+	public void extractRenderState(LimitedBarrelBlockEntity blockEntity, LimitedBarrelRenderState renderState, float partialTick, Vec3 cameraPos, @Nullable ModelFeatureRenderer.CrumblingOverlay crumblingOverlay) {
+		super.extractRenderState(blockEntity, renderState, partialTick, cameraPos, crumblingOverlay);
+
+		if (renderState.packed) {
+			return;
+		}
+
+		renderState.showsCounts = blockEntity.shouldShowCounts();
+		renderState.showsFillLevels = blockEntity.shouldShowFillLevels();
+		BlockState blockState = blockEntity.getBlockState();
+		renderState.horizontalFacing = blockState.getValue(LimitedBarrelBlock.HORIZONTAL_FACING);
+		renderState.verticalFacing = blockState.getValue(LimitedBarrelBlock.VERTICAL_FACING);
+
+		if (blockEntity.getLevel() != null && blockEntity.shouldUseLightInFrontForFrontRender()) {
+			renderState.lightCoords = LevelRenderer.getLightColor(blockEntity.getLevel(), blockEntity.getBlockPos().relative(renderState.verticalFacing != VerticalFacing.NO ? renderState.verticalFacing.getDirection() : renderState.horizontalFacing));
+		}
+
+		RenderData.DisplayData displayData = blockEntity.getStorageWrapper().getRenderDataHandler().getDisplayData();
+		renderState.slotCounts = displayData.slotCounts();
+		renderState.infiniteSlots = new HashSet<>(displayData.infiniteSlots());
+		renderState.slotColors = IntStream.range(0, renderState.slotCounts.size()).map(blockEntity::getSlotColor).boxed().toList();
+		renderState.fillLevels = blockEntity.getSlotFillLevels();
+	}
+
+	@Override
+	public void submit(LimitedBarrelRenderState renderState, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState cameraRenderState) {
+		if (renderState.packed
+				|| (!renderState.hasDynamicRenderer && !renderState.showsCounts && !holdsItemThatShowsUpgrades() && !renderState.showsUpgrades)) {
+			return;
+		}
+
+		submitItemCounts(submitNodeCollector, renderState, poseStack);
+		submitFrontFace(submitNodeCollector, renderState, poseStack);
+		submitHiddenTier(submitNodeCollector, renderState, poseStack);
+		submitHiddenLock(submitNodeCollector, renderState, poseStack);
+	}
+
+	public static class LimitedBarrelRenderState extends BarrelRenderStateBase {
+		public boolean showsCounts;
+		public boolean showsFillLevels;
+		public Direction horizontalFacing;
+		public VerticalFacing verticalFacing;
+		public List<Integer> slotCounts;
+		public Set<Integer> infiniteSlots;
+		public List<Integer> slotColors;
+		public List<Float> fillLevels;
 	}
 }

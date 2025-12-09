@@ -2,11 +2,11 @@ package net.p3pp3rf1y.sophisticatedstorage.block;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.TickTask;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.Containers;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -15,7 +15,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.ChestType;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
-import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryHandler;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.DisplaySide;
 import net.p3pp3rf1y.sophisticatedcore.settings.ISettingsCategory;
@@ -58,7 +59,8 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 			chestLidController.shouldBeOpen(openCount > 0);
 		}
 
-		protected boolean isOwnContainer(Player player) {
+		@Override
+		public boolean isOwnContainer(Player player) {
 			if (player.containerMenu instanceof StorageContainerMenu storageContainerMenu) {
 				return storageContainerMenu.getStorageBlockEntity() == getMainChestBlockEntity();
 			} else {
@@ -67,23 +69,24 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 		}
 
 		@Override
-		public void incrementOpeners(Player player, Level level, BlockPos pos, BlockState state) {
-			super.incrementOpeners(player, level, pos, state);
+		public void incrementOpeners(LivingEntity livingEntity, Level level, BlockPos pos, BlockState state, double containerInteractionRange) {
+			super.incrementOpeners(livingEntity, level, pos, state, containerInteractionRange);
 			if (isMainChest()) {
-				runOnTheOtherPart(level, pos, (blockEntity, neighborPos) -> blockEntity.openersCounter.incrementOpeners(player, level, neighborPos, level.getBlockState(neighborPos)));
+				runOnTheOtherPart(level, pos, (blockEntity, neighborPos) -> blockEntity.openersCounter.incrementOpeners(livingEntity, level, neighborPos, level.getBlockState(neighborPos), containerInteractionRange));
 			}
 		}
 
 		@Override
-		public void decrementOpeners(Player player, Level level, BlockPos pos, BlockState state) {
-			super.decrementOpeners(player, level, pos, state);
+		public void decrementOpeners(LivingEntity livingEntity, Level level, BlockPos pos, BlockState state) {
+			super.decrementOpeners(livingEntity, level, pos, state);
 			if (isMainChest()) {
-				runOnTheOtherPart(level, pos, (blockEntity, neighborPos) -> blockEntity.openersCounter.decrementOpeners(player, level, neighborPos, level.getBlockState(neighborPos)));
+				runOnTheOtherPart(level, pos, (blockEntity, neighborPos) -> blockEntity.openersCounter.decrementOpeners(livingEntity, level, neighborPos, level.getBlockState(neighborPos)));
 			}
 		}
 	};
 
 	private boolean isDestroyedByPlayer = false;
+
 	public void joinWithChest(ChestBlockEntity mainBE) {
 		setMainPos(mainBE.getBlockPos());
 		expandAndMoveItemsAndSettings(mainBE);
@@ -104,9 +107,9 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 
 	private void expandAndMoveItemsAndSettings(ChestBlockEntity mainBE) {
 		InventoryHandler mainInventoryHandler = mainBE.getStorageWrapper().getInventoryHandler();
-		int originalNumberOfSlots = mainInventoryHandler.getSlots();
+		int originalNumberOfSlots = mainInventoryHandler.size();
 		InventoryHandler thisInventoryHandler = getStorageWrapper().getInventoryHandler();
-		int inventorySlotDiff = 2 * (mainBE.getBlockState().getBlock() instanceof StorageBlockBase storageBlock ? storageBlock.getNumberOfInventorySlots() : 0) - mainInventoryHandler.getSlots();
+		int inventorySlotDiff = 2 * (mainBE.getBlockState().getBlock() instanceof StorageBlockBase storageBlock ? storageBlock.getNumberOfInventorySlots() : 0) - mainInventoryHandler.size();
 		mainBE.changeStorageSize(inventorySlotDiff, 0);
 
 		moveStacksToMain(thisInventoryHandler, mainInventoryHandler, originalNumberOfSlots);
@@ -129,15 +132,15 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 		);
 	}
 
-	private <T extends ISettingsCategory<?>> void copyCategorySettings(ISettingsCategory<T> category, ISettingsCategory<?> mainCategory, int startFromSlot, int slotOffset) {
+	private <T extends ISettingsCategory<T, ?>> void copyCategorySettings(ISettingsCategory<T, ?> category, ISettingsCategory<?, ?> mainCategory, int startFromSlot, int slotOffset) {
 		category.copyTo((T) mainCategory, startFromSlot, slotOffset);
 	}
 
 	private static void moveStacksToMain(InventoryHandler thisInventoryHandler, InventoryHandler mainInventoryHandler, int originalNumberOfSlots) {
-		int thisSlots = thisInventoryHandler.getSlots();
-		int mainSlots = mainInventoryHandler.getSlots();
+		int thisSlots = thisInventoryHandler.size();
+		int mainSlots = mainInventoryHandler.size();
 		for (int slot = 0; slot < thisSlots && slot + originalNumberOfSlots < mainSlots; slot++) {
-			ItemStack slotStack = thisInventoryHandler.getSlotStack(slot);
+			ItemStack slotStack = thisInventoryHandler.getInternalStack(slot);
 			if (!slotStack.isEmpty()) {
 				mainInventoryHandler.setStackInSlot(slot + originalNumberOfSlots, slotStack);
 			}
@@ -188,11 +191,11 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 		runOnTheOtherPart(level, getBlockPos(), (be, pos) -> {
 			be.removeDoubleMainPos();
 			InventoryHandler mainInventoryHandler = getStorageWrapper().getInventoryHandler();
-			int firstIndex = mainInventoryHandler.getSlots() / 2;
+			int firstIndex = mainInventoryHandler.size() / 2;
 
-			for (int slot = firstIndex; slot < mainInventoryHandler.getSlots(); slot++) {
-				ItemStack slotStack = mainInventoryHandler.getSlotStack(slot);
-				be.getStorageWrapper().getInventoryHandler().setSlotStack(slot - firstIndex, slotStack.split(slotStack.getMaxStackSize()));
+			for (int slot = firstIndex; slot < mainInventoryHandler.size(); slot++) {
+				ItemStack slotStack = mainInventoryHandler.getInternalStack(slot);
+				be.getStorageWrapper().getInventoryHandler().setStackInSlot(slot - firstIndex, slotStack.split(slotStack.getMaxStackSize()));
 			}
 
 			copySettings(this, be, firstIndex, -firstIndex);
@@ -207,13 +210,13 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 		level.getBlockEntity(doubleMainPos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get()).ifPresent(mainBE -> {
 			StorageWrapper mainStorageWrapper = mainBE.getStorageWrapper();
 			InventoryHandler mainInventoryHandler = mainStorageWrapper.getInventoryHandler();
-			int firstIndex = mainInventoryHandler.getSlots() / 2;
+			int firstIndex = mainInventoryHandler.size() / 2;
 
-			for (int slot = firstIndex; slot < mainInventoryHandler.getSlots(); slot++) {
-				getStorageWrapper().getInventoryHandler().setSlotStack(slot - firstIndex, mainInventoryHandler.getSlotStack(slot));
-				mainInventoryHandler.setSlotStack(slot, ItemStack.EMPTY);
+			for (int slot = firstIndex; slot < mainInventoryHandler.size(); slot++) {
+				getStorageWrapper().getInventoryHandler().setStackInSlot(slot - firstIndex, mainInventoryHandler.getInternalStack(slot));
+				mainInventoryHandler.setStackInSlot(slot, ItemStack.EMPTY);
 			}
-			int inventorySlotDiff = (mainBE.getBlockState().getBlock() instanceof StorageBlockBase storageBlock ? storageBlock.getNumberOfInventorySlots() : 0) - mainInventoryHandler.getSlots();
+			int inventorySlotDiff = (mainBE.getBlockState().getBlock() instanceof StorageBlockBase storageBlock ? storageBlock.getNumberOfInventorySlots() : 0) - mainInventoryHandler.size();
 
 			mainBE.changeStorageSize(inventorySlotDiff, 0);
 			deleteSettingsFromSlot(mainBE, firstIndex);
@@ -315,7 +318,7 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 
 	@Nullable
 	@Override
-	public IItemHandler getExternalItemHandler(@Nullable Direction side) {
+	public ResourceHandler<ItemResource> getExternalItemHandler(@Nullable Direction side) {
 		if (level == null) {
 			return null;
 		}
@@ -343,13 +346,6 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 		if (doubleMainPos != null) {
 			out.store(DOUBLE_CHEST_MAIN_POS, BlockPos.CODEC, doubleMainPos);
 		}
-	}
-
-	@Override
-	public CompoundTag getStorageContentsTag() {
-		CompoundTag tag = super.getStorageContentsTag();
-		tag.remove(DOUBLE_CHEST_MAIN_POS);
-		return tag;
 	}
 
 	@Override
@@ -386,8 +382,8 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 
 		List<ItemStack> dropItems = new ArrayList<>();
 
-		for (int slot = chestBlock.getNumberOfInventorySlots(); slot < invHandler.getSlots(); slot++) {
-			ItemStack slotStack = invHandler.getSlotStack(slot);
+		for (int slot = chestBlock.getNumberOfInventorySlots(); slot < invHandler.size(); slot++) {
+			ItemStack slotStack = invHandler.getInternalStack(slot);
 
 			if (!slotStack.isEmpty()) {
 				dropItems.add(slotStack.copy());
@@ -400,7 +396,7 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 			);
 		}
 
-		int inventorySlotDiff = chestBlock.getNumberOfInventorySlots() - invHandler.getSlots();
+		int inventorySlotDiff = chestBlock.getNumberOfInventorySlots() - invHandler.size();
 
 		changeStorageSize(inventorySlotDiff, 0);
 		deleteSettingsFromSlot(this, chestBlock.getNumberOfInventorySlots());
@@ -418,7 +414,7 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 		super.loadAdditional(in);
 		if (!isBeingUpgraded() && getBlockState().getValue(ChestBlock.TYPE) == ChestType.SINGLE) {
 			if (getBlockState().getBlock() instanceof ChestBlock chestBlock
-					&& getStorageWrapper().getInventoryHandler().getSlots() > chestBlock.getNumberOfInventorySlots()) {
+					&& getStorageWrapper().getInventoryHandler().size() > chestBlock.getNumberOfInventorySlots()) {
 				dropSecondPartContents(chestBlock, worldPosition);
 			}
 			if (!isMainChest()) {

@@ -2,7 +2,6 @@ package net.p3pp3rf1y.sophisticatedstorage.entity;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -15,18 +14,20 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.piglin.PiglinAi;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.network.PacketDistributor;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageSavedData;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.api.IUpgradeClientTickHandler;
 import net.p3pp3rf1y.sophisticatedcore.client.render.UpgradeClientRegistry;
 import net.p3pp3rf1y.sophisticatedcore.init.ModCoreDataComponents;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.IUpgradeClientData;
-import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
+import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderData;
+import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderDataHandler;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.UpgradeClientDataType;
 import net.p3pp3rf1y.sophisticatedcore.settings.itemdisplay.ItemDisplaySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.settings.memory.MemorySettingsCategory;
@@ -198,8 +199,8 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 		return WoodStorageBlockItem.isPacked(getSyncedStorageStack());
 	}
 
-	public CompoundTag getRenderInfoNbt(ItemStack storageItem) {
-		return storageItem.getOrDefault(ModCoreDataComponents.RENDER_INFO_TAG, CustomData.EMPTY).copyTag();
+	public RenderData getRenderData(ItemStack storageItem) {
+		return storageItem.getOrDefault(ModCoreDataComponents.RENDER_DATA, RenderData.EMPTY).copy();
 	}
 
 	protected abstract void setSyncedStorageStack(ItemStack storageStack);
@@ -243,7 +244,7 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 			if (renderBlockEntity.shouldShowTier() != shouldShowTier()) {
 				renderBlockEntity.toggleTierVisiblity();
 			}
-			renderBlockEntity.getStorageWrapper().getRenderInfo().deserializeFrom(getRenderInfoNbt(storageItem));
+			renderBlockEntity.getStorageWrapper().getRenderDataHandler().reloadFrom(getRenderData(storageItem));
 			if (renderBlockEntity.shouldShowUpgrades() != areUpgradesVisible()) {
 				renderBlockEntity.toggleUpgradesVisiblity();
 			}
@@ -354,8 +355,8 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 			updateRenderBlockEntityAttributes(getSyncedStorageStack(), getRenderBlockEntity());
 		}
 		if (level.random.nextInt(10) == 0) {
-			RenderInfo renderInfo = getStorageWrapper().getRenderInfo();
-			renderUpgrades(level, level.random, renderInfo);
+			RenderDataHandler renderDataHandler = getStorageWrapper().getRenderDataHandler();
+			renderUpgrades(level, level.random, renderDataHandler);
 		}
 		if (getRenderBlockEntity() instanceof ChestBlockEntity chestBlockEntity) {
 			ChestBlockEntity.lidAnimateTick(chestBlockEntity);
@@ -364,11 +365,11 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 		}
 	}
 
-	protected void renderUpgrades(Level level, RandomSource rand, RenderInfo renderInfo) {
+	protected void renderUpgrades(Level level, RandomSource rand, RenderDataHandler renderDataHandler) {
 		if (Minecraft.getInstance().isPaused()) {
 			return;
 		}
-		renderInfo.getUpgradeClientData().forEach((type, data) -> UpgradeClientRegistry.getUpgradeClientTickHandler(type)
+		renderDataHandler.getUpgradeClientData().forEach((type, data) -> UpgradeClientRegistry.getUpgradeClientTickHandler(type)
 				.ifPresent(renderer -> clientTickUpgrade(renderer, level, rand, type, data)));
 	}
 
@@ -392,10 +393,14 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 	}
 
 	protected void tryToPickup(Level level, ItemEntity itemEntity) {
-		ItemStack remainingStack = itemEntity.getItem().copy();
-		remainingStack = InventoryHelper.runPickupOnPickupResponseUpgrades(level, getStorageWrapper().getUpgradeHandler(), remainingStack, false);
-		if (remainingStack.getCount() < itemEntity.getItem().getCount()) {
-			itemEntity.setItem(remainingStack);
+		ItemStack stack = itemEntity.getItem();
+		try (Transaction tx = Transaction.openRoot()) {
+			ItemResource resource = ItemResource.of(stack);
+			int pickedUp = InventoryHelper.runPickupOnPickupResponseUpgrades(level, getStorageWrapper().getUpgradeHandler(), resource, stack.getCount(), tx);
+			if (pickedUp > 0) {
+				tx.commit();
+				itemEntity.setItem(resource.toStack(stack.getCount() - pickedUp));
+			}
 		}
 	}
 
@@ -423,7 +428,7 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 		}
 
 		openMenu(player);
-		return player.level().isClientSide ? InteractionResult.SUCCESS : InteractionResult.CONSUME;
+		return player.level().isClientSide() ? InteractionResult.SUCCESS : InteractionResult.CONSUME;
 	}
 
 	protected abstract void openMenu(Player player);
@@ -435,7 +440,7 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 
 		if (memorizesItemsWhenLocked()) {
 			if (locked) {
-				getStorageWrapper().getSettingsHandler().getTypeCategory(MemorySettingsCategory.class).selectSlots(0, getStorageWrapper().getInventoryHandler().getSlots());
+				getStorageWrapper().getSettingsHandler().getTypeCategory(MemorySettingsCategory.class).selectSlots(0, getStorageWrapper().getInventoryHandler().size());
 			} else {
 				getStorageWrapper().getSettingsHandler().getTypeCategory(MemorySettingsCategory.class).unselectAllSlots();
 				ItemDisplaySettingsCategory itemDisplaySettings = getStorageWrapper().getSettingsHandler().getTypeCategory(ItemDisplaySettingsCategory.class);
@@ -486,7 +491,7 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 
 	@Override
 	public List<Integer> getSlotCounts() {
-		return MovingStorageWrapper.isLimitedBarrel(getSyncedStorageStack()) ? getStorageWrapper().getRenderInfo().getItemDisplayRenderInfo().getSlotCounts() : List.of();
+		return MovingStorageWrapper.isLimitedBarrel(getSyncedStorageStack()) ? getStorageWrapper().getRenderDataHandler().getDisplayData().slotCounts() : List.of();
 	}
 
 	@Override
@@ -503,7 +508,7 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 
 	@Override
 	public List<Float> getSlotFillLevels() {
-		return MovingStorageWrapper.isLimitedBarrel(getSyncedStorageStack()) ? getStorageWrapper().getRenderInfo().getItemDisplayRenderInfo().getSlotFillRatios() : List.of();
+		return MovingStorageWrapper.isLimitedBarrel(getSyncedStorageStack()) ? getStorageWrapper().getRenderDataHandler().getDisplayData().slotFillRatios() : List.of();
 	}
 
 	@Override

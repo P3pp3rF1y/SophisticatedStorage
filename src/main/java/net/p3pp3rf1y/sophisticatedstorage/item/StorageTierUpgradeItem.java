@@ -70,7 +70,7 @@ public class StorageTierUpgradeItem extends ItemBase {
 	@Override
 	public InteractionResult onItemUseFirst(ItemStack stack, UseOnContext context) {
 		Level level = context.getLevel();
-		if (level.isClientSide) {
+		if (level.isClientSide()) {
 			return InteractionResult.PASS;
 		}
 
@@ -145,7 +145,7 @@ public class StorageTierUpgradeItem extends ItemBase {
 
 			level.setBlock(pos, newBlockState, 3);
 			level.setBlockEntity(newBlockEntity);
-			newBlockEntity.changeStorageSize(newInventorySize - newBlockEntity.getStorageWrapper().getInventoryHandler().getSlots(), newUpgradeSize - newBlockEntity.getStorageWrapper().getUpgradeHandler().getSlots());
+			newBlockEntity.changeStorageSize(newInventorySize - newBlockEntity.getStorageWrapper().getInventoryHandler().size(), newUpgradeSize - newBlockEntity.getStorageWrapper().getUpgradeHandler().size());
 			WorldHelper.notifyBlockUpdate(newBlockEntity);
 			return newBlockEntity;
 		}
@@ -298,10 +298,6 @@ public class StorageTierUpgradeItem extends ItemBase {
 			}
 			StorageWrapper storageWrapper = newBe.getStorageWrapper();
 			InventoryHandler inventoryHandler = storageWrapper.getInventoryHandler();
-			if (inventoryHandler.getSlots() < items.size()) {
-				inventoryHandler.setSize(items.size());
-			}
-
 			for (int slot = 0; slot < items.size(); slot++) {
 				inventoryHandler.setStackInSlot(slot, items.get(slot));
 			}

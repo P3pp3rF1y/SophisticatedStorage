@@ -21,7 +21,12 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.common.Tags;
-import net.neoforged.neoforge.items.ItemStackHandler;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.ResourceHandlerUtil;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.item.ItemStacksResourceHandler;
+import net.neoforged.neoforge.transfer.transaction.SnapshotJournal;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.ValueIOHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
@@ -56,40 +61,40 @@ public class DecorationTableBlockEntity extends BlockEntity {
 	public static final Set<Item> STORAGES_WIHOUT_TOP_INNER_TRIM = Set.of(ModBlocks.BARREL_ITEM.get(), ModBlocks.COPPER_BARREL_ITEM.get(), ModBlocks.IRON_BARREL_ITEM.get(), ModBlocks.GOLD_BARREL_ITEM.get(), ModBlocks.DIAMOND_BARREL_ITEM.get(), ModBlocks.NETHERITE_BARREL_ITEM.get(),
 			ModBlocks.LIMITED_BARREL_1_ITEM.get(), ModBlocks.LIMITED_COPPER_BARREL_1_ITEM.get(), ModBlocks.LIMITED_IRON_BARREL_1_ITEM.get(), ModBlocks.LIMITED_GOLD_BARREL_1_ITEM.get(), ModBlocks.LIMITED_DIAMOND_BARREL_1_ITEM.get(), ModBlocks.LIMITED_NETHERITE_BARREL_1_ITEM.get());
 
-	private static final Map<Predicate<ItemStack>, IItemDecorator> ITEM_DECORATORS = new LinkedHashMap<>();
+	private static final Map<Predicate<Item>, IItemDecorator> ITEM_DECORATORS = new LinkedHashMap<>();
 
-	public static void registerItemDecorator(Predicate<ItemStack> itemMatcher, IItemDecorator itemDecorator) {
+	public static void registerItemDecorator(Predicate<Item> itemMatcher, IItemDecorator itemDecorator) {
 		ITEM_DECORATORS.put(itemMatcher, itemDecorator);
 	}
 
 	private final Map<ResourceLocation, Integer> remainingParts = new HashMap<>();
 
-	private final ItemStackHandler decorativeBlocks = new ItemStackHandler(7) {
+	private final ItemStacksResourceHandler decorativeBlocks = new ItemStacksResourceHandler(7) {
 		@Override
-		protected void onContentsChanged(int slot) {
-			super.onContentsChanged(slot);
+		protected void onContentsChanged(int slot, ItemStack previousContents) {
+			super.onContentsChanged(slot, previousContents);
 			updateResultAndSetChanged();
 		}
 
 		@Override
-		public boolean isItemValid(int slot, ItemStack stack) {
-			return stack.getItem() instanceof BlockItem blockItem && !(stack.getItem() instanceof StorageBlockItem) && Block.isShapeFullBlock(blockItem.getBlock().defaultBlockState().getShape(level, BlockPos.ZERO));
+		public boolean isValid(int index, ItemResource resource) {
+			return resource.getItem() instanceof BlockItem blockItem && !(resource.getItem() instanceof StorageBlockItem) && Block.isShapeFullBlock(blockItem.getBlock().defaultBlockState().getShape(level, BlockPos.ZERO));
 		}
 	};
 
-	private final ItemStackHandler dyes = new ItemStackHandler(3) {
+	private final ItemStacksResourceHandler dyes = new ItemStacksResourceHandler(3) {
 		@Override
-		protected void onContentsChanged(int slot) {
-			super.onContentsChanged(slot);
+		protected void onContentsChanged(int slot, ItemStack previousContents) {
+			super.onContentsChanged(slot, previousContents);
 			updateResultAndSetChanged();
 		}
 
 		@Override
-		public boolean isItemValid(int slot, ItemStack stack) {
-			return switch (slot) {
-				case RED_DYE_SLOT -> stack.is(Tags.Items.DYES_RED);
-				case GREEN_DYE_SLOT -> stack.is(Tags.Items.DYES_GREEN);
-				case BLUE_DYE_SLOT -> stack.is(Tags.Items.DYES_BLUE);
+		public boolean isValid(int index, ItemResource resource) {
+			return switch (index) {
+				case RED_DYE_SLOT -> resource.is(Tags.Items.DYES_RED);
+				case GREEN_DYE_SLOT -> resource.is(Tags.Items.DYES_GREEN);
+				case BLUE_DYE_SLOT -> resource.is(Tags.Items.DYES_BLUE);
 				default -> false;
 			};
 		}
@@ -108,16 +113,16 @@ public class DecorationTableBlockEntity extends BlockEntity {
 		setChanged();
 	}
 
-	private final ItemStackHandler storageBlock = new ItemStackHandler(1) {
+	private final ItemStacksResourceHandler storageBlock = new ItemStacksResourceHandler(1) {
 		@Override
-		protected void onContentsChanged(int slot) {
-			super.onContentsChanged(slot);
+		protected void onContentsChanged(int slot, ItemStack previousContents) {
+			super.onContentsChanged(slot, previousContents);
 			updateResultAndSetChanged();
 		}
 
 		@Override
-		public boolean isItemValid(int slot, ItemStack stack) {
-			return ITEM_DECORATORS.keySet().stream().anyMatch(predicate -> predicate.test(stack));
+		public boolean isValid(int index, ItemResource resource) {
+			return ITEM_DECORATORS.keySet().stream().anyMatch(predicate -> predicate.test(resource.getItem()));
 		}
 	};
 
@@ -125,7 +130,7 @@ public class DecorationTableBlockEntity extends BlockEntity {
 		missingDyes.clear();
 		result = ItemStack.EMPTY;
 
-		ItemStack input = storageBlock.getStackInSlot(0);
+		ItemResource input = storageBlock.getResource(0);
 		if (input.isEmpty()) {
 			return;
 		}
@@ -137,37 +142,40 @@ public class DecorationTableBlockEntity extends BlockEntity {
 		});
 	}
 
-	private static Optional<IItemDecorator> getItemDecorator(ItemStack input) {
-		return ITEM_DECORATORS.entrySet().stream().filter(e -> e.getKey().test(input)).findFirst().map(Map.Entry::getValue);
+	private static Optional<IItemDecorator> getItemDecorator(ItemResource input) {
+		return ITEM_DECORATORS.entrySet().stream().filter(e -> e.getKey().test(input.getItem())).findFirst().map(Map.Entry::getValue);
 	}
 
-	private TintDecorationResult decorateItem(IItemDecorator itemDecorator, ItemStack input) {
+	private TintDecorationResult decorateItem(IItemDecorator itemDecorator, ItemResource input) {
 		if (itemDecorator.supportsMaterials(input)) {
 			Map<BarrelMaterial, ResourceLocation> materialsToApply = getMaterialsToApply(itemDecorator.supportsTopInnerTrim(input));
 			if (!materialsToApply.isEmpty()) {
-				return new TintDecorationResult(itemDecorator.decorateWithMaterials(input, materialsToApply), Collections.emptyMap());
+				return new TintDecorationResult(itemDecorator.decorateWithMaterials(input.toStack(), materialsToApply), Collections.emptyMap());
 			}
 		}
 		if (itemDecorator.supportsTints(input)) {
-			return itemDecorator.decorateWithTints(input, mainColor, accentColor);
+			return itemDecorator.decorateWithTints(input.toStack(), mainColor, accentColor);
 		}
 		return TintDecorationResult.EMPTY;
 	}
 
 	public boolean hasMaterials() {
-		return !InventoryHelper.isEmpty(decorativeBlocks);
+		return !ResourceHandlerUtil.isEmpty((ResourceHandler<ItemResource>) decorativeBlocks);
 	}
 
 	public List<ItemStack> getDecoratedPreviewStacks() {
-		ItemStack input = storageBlock.getStackInSlot(0);
+		ItemResource input = storageBlock.getResource(0);
 		return getItemDecorator(input).map(itemDecorator -> {
 			List<ItemStack> previewStacks = new ArrayList<>();
-			itemDecorator.getPreviewStackInputs(input, hasMaterials()).forEach(stack -> getItemDecorator(stack).ifPresent(inputItemDecorator -> {
-				TintDecorationResult decorationResult = decorateItem(inputItemDecorator, stack);
-				if (!decorationResult.result().isEmpty()) {
-					previewStacks.add(decorationResult.result());
-				}
-			}));
+			itemDecorator.getPreviewStackInputs(input.toStack(), hasMaterials()).forEach(stack -> {
+				ItemResource resource = ItemResource.of(stack);
+				getItemDecorator(resource).ifPresent(inputItemDecorator -> {
+					TintDecorationResult decorationResult = decorateItem(inputItemDecorator, resource);
+					if (!decorationResult.result().isEmpty()) {
+						previewStacks.add(decorationResult.result());
+					}
+				});
+			});
 			return previewStacks;
 		}).orElse(Collections.emptyList());
 	}
@@ -188,7 +196,7 @@ public class DecorationTableBlockEntity extends BlockEntity {
 
 	private Set<ResourceLocation> calculateMissingDyes(Map<TagKey<Item>, Integer> requiredDyeParts) {
 		Set<ResourceLocation> missingDyes = new HashSet<>();
-		if (!dyes.getStackInSlot(RED_DYE_SLOT).isEmpty() && !dyes.getStackInSlot(GREEN_DYE_SLOT).isEmpty() && !dyes.getStackInSlot(BLUE_DYE_SLOT).isEmpty()) {
+		if (!dyes.getResource(RED_DYE_SLOT).isEmpty() && !dyes.getResource(GREEN_DYE_SLOT).isEmpty() && !dyes.getResource(BLUE_DYE_SLOT).isEmpty()) {
 			return missingDyes;
 		}
 
@@ -196,11 +204,11 @@ public class DecorationTableBlockEntity extends BlockEntity {
 				requiredDyeParts.entrySet().stream().map(entry -> Map.entry(entry.getKey().location(), entry.getValue())).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
 		for (Map.Entry<ResourceLocation, Integer> entry : partsNeeded.entrySet()) {
-			if (entry.getKey().equals(Tags.Items.DYES_RED.location()) && dyes.getStackInSlot(RED_DYE_SLOT).isEmpty()) {
+			if (entry.getKey().equals(Tags.Items.DYES_RED.location()) && dyes.getResource(RED_DYE_SLOT).isEmpty()) {
 				missingDyes.add(entry.getKey());
-			} else if (entry.getKey().equals(Tags.Items.DYES_GREEN.location()) && dyes.getStackInSlot(GREEN_DYE_SLOT).isEmpty()) {
+			} else if (entry.getKey().equals(Tags.Items.DYES_GREEN.location()) && dyes.getResource(GREEN_DYE_SLOT).isEmpty()) {
 				missingDyes.add(entry.getKey());
-			} else if (entry.getKey().equals(Tags.Items.DYES_BLUE.location()) && dyes.getStackInSlot(BLUE_DYE_SLOT).isEmpty()) {
+			} else if (entry.getKey().equals(Tags.Items.DYES_BLUE.location()) && dyes.getResource(BLUE_DYE_SLOT).isEmpty()) {
 				missingDyes.add(entry.getKey());
 			}
 		}
@@ -227,8 +235,8 @@ public class DecorationTableBlockEntity extends BlockEntity {
 
 	@Nullable
 	private ResourceLocation setMaterialFromBlock(PartSlot slot, @Nullable ResourceLocation defaultMaterialLocation, Map<BarrelMaterial, ResourceLocation> materials, BarrelMaterial material, boolean addToMaterials) {
-		ItemStack decorativeBlock = decorativeBlocks.getStackInSlot(slot.getSlotIndex());
-		ResourceLocation materialLocation = DecorationHelper.getMaterialLocation(decorativeBlock).orElse(isSlotMaterialInherited(slot) ? defaultMaterialLocation : null);
+		ItemResource decorativeBlock = decorativeBlocks.getResource(slot.getSlotIndex());
+		ResourceLocation materialLocation = DecorationHelper.getMaterialLocation(decorativeBlock.getItem()).orElse(isSlotMaterialInherited(slot) ? defaultMaterialLocation : null);
 		if (materialLocation != null) {
 			if (addToMaterials) {
 				materials.put(material, materialLocation);
@@ -242,15 +250,15 @@ public class DecorationTableBlockEntity extends BlockEntity {
 		super(ModBlocks.DECORATION_TABLE_BLOCK_ENTITY_TYPE.get(), pos, blockState);
 	}
 
-	public ItemStackHandler getDecorativeBlocks() {
+	public ItemStacksResourceHandler getDecorativeBlocks() {
 		return decorativeBlocks;
 	}
 
-	public ItemStackHandler getDyes() {
+	public ItemStacksResourceHandler getDyes() {
 		return dyes;
 	}
 
-	public ItemStackHandler getStorageBlock() {
+	public ItemStacksResourceHandler getStorageBlock() {
 		return storageBlock;
 	}
 
@@ -278,18 +286,18 @@ public class DecorationTableBlockEntity extends BlockEntity {
 		return slotMaterialInheritance.getOrDefault(slot, true);
 	}
 
-	public ItemStack getInheritedItem(PartSlot childSlot) {
+	public ItemResource getInheritedItem(PartSlot childSlot) {
 		while (isSlotMaterialInherited(childSlot)) {
 			PartSlot parentSlot = getSlotInheritedFrom(childSlot);
 			if (parentSlot == null) {
-				return ItemStack.EMPTY;
+				return ItemResource.EMPTY;
 			}
-			if (!decorativeBlocks.getStackInSlot(parentSlot.getSlotIndex()).isEmpty()) {
-				return decorativeBlocks.getStackInSlot(parentSlot.getSlotIndex());
+			if (!decorativeBlocks.getResource(parentSlot.getSlotIndex()).isEmpty()) {
+				return decorativeBlocks.getResource(parentSlot.getSlotIndex());
 			}
 			childSlot = parentSlot;
 		}
-		return ItemStack.EMPTY;
+		return ItemResource.EMPTY;
 	}
 
 	@Nullable
@@ -362,35 +370,53 @@ public class DecorationTableBlockEntity extends BlockEntity {
 	}
 
 	public void consumeIngredientsOnCraft() {
-		ItemStack input = storageBlock.getStackInSlot(0);
+		ItemResource input = storageBlock.getResource(0);
 
 		getItemDecorator(input).ifPresent(itemDecorator -> {
 			if (!itemDecorator.consumesIngredientsOnCraft()) {
 				return;
 			}
 
-			boolean emptyDecorativeBlocks = InventoryHelper.isEmpty(decorativeBlocks);
-			if ((emptyDecorativeBlocks || !itemDecorator.supportsMaterials(input)) && itemDecorator.supportsTints(input)) {
-				DecorationHelper.consumeDyes(mainColor, accentColor, remainingParts, List.of(dyes), StorageBlockItem.getMainColorFromComponentHolder(input).orElse(-1), StorageBlockItem.getAccentColorFromComponentHolder(input).orElse(-1), false);
-			} else if (!emptyDecorativeBlocks && itemDecorator.supportsMaterials(input)) {
-				Map<BarrelMaterial, ResourceLocation> originalMaterials = BarrelBlockItem.getUncompactedMaterials(input);
-				DecorationHelper.consumeMaterials(remainingParts, List.of(decorativeBlocks), originalMaterials, getMaterialsToApply(!STORAGES_WIHOUT_TOP_INNER_TRIM.contains(input.getItem())), false);
+			boolean emptyDecorativeBlocks = ResourceHandlerUtil.isEmpty(decorativeBlocks);
+			try (Transaction tx = Transaction.openRoot()) {
+				SnapshotJournal<Map<ResourceLocation, Integer>> remainingPartsJournal = createRemainingPartsJournal();
+				if ((emptyDecorativeBlocks || !itemDecorator.supportsMaterials(input)) && itemDecorator.supportsTints(input)) {
+					DecorationHelper.consumeDyes(mainColor, accentColor, remainingParts, remainingPartsJournal, List.of(dyes), StorageBlockItem.getMainColorFromComponentHolder(input).orElse(-1), StorageBlockItem.getAccentColorFromComponentHolder(input).orElse(-1), tx);
+				} else if (!emptyDecorativeBlocks && itemDecorator.supportsMaterials(input)) {
+					Map<BarrelMaterial, ResourceLocation> originalMaterials = BarrelBlockItem.getUncompactedMaterials(input.toStack());
+					DecorationHelper.consumeMaterials(remainingParts, remainingPartsJournal, List.of(decorativeBlocks), originalMaterials, getMaterialsToApply(!STORAGES_WIHOUT_TOP_INNER_TRIM.contains(input.getItem())), tx);
+				}
+				tx.commit();
 			}
 
 			setChanged();
 			WorldHelper.notifyBlockUpdate(this);
 		});
+	}
 
+	private SnapshotJournal<Map<ResourceLocation, Integer>> createRemainingPartsJournal() {
+		return new SnapshotJournal<>() {
+			@Override
+			protected Map<ResourceLocation, Integer> createSnapshot() {
+				return new HashMap<>(remainingParts);
+			}
+
+			@Override
+			protected void revertToSnapshot(Map<ResourceLocation, Integer> snapshot) {
+				remainingParts.clear();
+				remainingParts.putAll(snapshot);
+			}
+		};
 	}
 
 	public Map<ResourceLocation, Integer> getPartsNeeded() {
 		Map<ResourceLocation, Integer> partsNeeded = new HashMap<>();
-		ItemStack storageStack = storageBlock.getStackInSlot(0);
-		if (InventoryHelper.isEmpty(decorativeBlocks) || !(storageStack.getItem() instanceof BarrelBlockItem)) {
+		ItemResource storageStack = storageBlock.getResource(0);
+		if (ResourceHandlerUtil.isEmpty((ResourceHandler<ItemResource>) decorativeBlocks) || !(storageStack.getItem() instanceof BarrelBlockItem)) {
 			DecorationHelper.getDyePartsNeeded(mainColor, accentColor, StorageBlockItem.getMainColorFromComponentHolder(storageStack).orElse(-1), StorageBlockItem.getAccentColorFromComponentHolder(storageStack).orElse(-1))
 					.forEach((tag, parts) -> partsNeeded.put(tag.location(), parts));
 		} else {
-			partsNeeded.putAll(DecorationHelper.getMaterialPartsNeeded(BarrelBlockItem.getUncompactedMaterials(storageStack), getMaterialsToApply(!STORAGES_WIHOUT_TOP_INNER_TRIM.contains(storageStack.getItem()))));
+			partsNeeded.putAll(DecorationHelper.getMaterialPartsNeeded(BarrelBlockItem.getUncompactedMaterials(storageStack.toStack()), getMaterialsToApply(!STORAGES_WIHOUT_TOP_INNER_TRIM.contains(storageStack.getItem()))));
 		}
 
 		return partsNeeded;
@@ -425,9 +451,9 @@ public class DecorationTableBlockEntity extends BlockEntity {
 	}
 
 	public void dropContents() {
-		InventoryHelper.dropItems(decorativeBlocks, level, worldPosition);
-		InventoryHelper.dropItems(dyes, level, worldPosition);
-		InventoryHelper.dropItems(storageBlock, level, worldPosition);
+		InventoryHelper.dropResources(decorativeBlocks, level, worldPosition);
+		InventoryHelper.dropResources(dyes, level, worldPosition);
+		InventoryHelper.dropResources(storageBlock, level, worldPosition);
 	}
 
 	@Override
@@ -445,11 +471,11 @@ public class DecorationTableBlockEntity extends BlockEntity {
 			return true;
 		}
 
-		boolean supportsMaterials(ItemStack input);
+		boolean supportsMaterials(ItemResource input);
 
-		boolean supportsTints(ItemStack input);
+		boolean supportsTints(ItemResource input);
 
-		boolean supportsTopInnerTrim(ItemStack input);
+		boolean supportsTopInnerTrim(ItemResource input);
 
 		ItemStack decorateWithMaterials(ItemStack input, Map<BarrelMaterial, ResourceLocation> materialsToApply);
 
@@ -460,7 +486,7 @@ public class DecorationTableBlockEntity extends BlockEntity {
 		}
 	}
 
-	private static boolean isTintedStorage(ItemStack storage) {
+	private static boolean isTintedStorage(ItemResource storage) {
 		return StorageBlockItem.getMainColorFromComponentHolder(storage).isPresent() || StorageBlockItem.getAccentColorFromComponentHolder(storage).isPresent();
 	}
 
@@ -470,17 +496,17 @@ public class DecorationTableBlockEntity extends BlockEntity {
 
 	public static final IItemDecorator STORAGE_DECORATOR = new IItemDecorator() {
 		@Override
-		public boolean supportsMaterials(ItemStack input) {
+		public boolean supportsMaterials(ItemResource input) {
 			return input.getItem() instanceof BarrelBlockItem && !isTintedStorage(input);
 		}
 
 		@Override
-		public boolean supportsTints(ItemStack input) {
+		public boolean supportsTints(ItemResource input) {
 			return !(input.getItem() instanceof BarrelBlockItem) || BarrelBlockItem.getMaterials(input).isEmpty();
 		}
 
 		@Override
-		public boolean supportsTopInnerTrim(ItemStack input) {
+		public boolean supportsTopInnerTrim(ItemResource input) {
 			return !STORAGES_WIHOUT_TOP_INNER_TRIM.contains(input.getItem());
 		}
 
@@ -533,25 +559,25 @@ public class DecorationTableBlockEntity extends BlockEntity {
 	};
 
 	static {
-		ITEM_DECORATORS.put(stack -> stack.getItem() instanceof StorageBlockItem, STORAGE_DECORATOR);
-		ITEM_DECORATORS.put(stack -> stack.getItem() instanceof PaintbrushItem, new IItemDecorator() {
+		ITEM_DECORATORS.put(item -> item instanceof StorageBlockItem, STORAGE_DECORATOR);
+		ITEM_DECORATORS.put(item -> item instanceof PaintbrushItem, new IItemDecorator() {
 			@Override
 			public boolean consumesIngredientsOnCraft() {
 				return false;
 			}
 
 			@Override
-			public boolean supportsMaterials(ItemStack input) {
+			public boolean supportsMaterials(ItemResource input) {
 				return true;
 			}
 
 			@Override
-			public boolean supportsTints(ItemStack input) {
+			public boolean supportsTints(ItemResource input) {
 				return true;
 			}
 
 			@Override
-			public boolean supportsTopInnerTrim(ItemStack input) {
+			public boolean supportsTopInnerTrim(ItemResource input) {
 				return true;
 			}
 
@@ -594,19 +620,19 @@ public class DecorationTableBlockEntity extends BlockEntity {
 				return List.of(new ItemStack(ModBlocks.LIMITED_BARREL_3_ITEM.get()), new ItemStack(ModBlocks.CHEST_ITEM.get()), new ItemStack(ModBlocks.SHULKER_BOX_ITEM.get()));
 			}
 		});
-		ITEM_DECORATORS.put(stack -> stack.is(ItemTags.DYEABLE), new IItemDecorator() {
+		ITEM_DECORATORS.put(item -> item.builtInRegistryHolder().is(ItemTags.DYEABLE), new IItemDecorator() {
 			@Override
-			public boolean supportsMaterials(ItemStack input) {
+			public boolean supportsMaterials(ItemResource input) {
 				return false;
 			}
 
 			@Override
-			public boolean supportsTints(ItemStack input) {
+			public boolean supportsTints(ItemResource input) {
 				return true;
 			}
 
 			@Override
-			public boolean supportsTopInnerTrim(ItemStack input) {
+			public boolean supportsTopInnerTrim(ItemResource input) {
 				return false;
 			}
 

@@ -64,9 +64,9 @@ public class CompressionUpgradeItem extends UpgradeItemBase<CompressionUpgradeIt
 		Set<Integer> errorSlots = new LinkedHashSet<>();
 		InventoryHandler inventoryHandler = storageWrapper.getInventoryHandler();
 		MemorySettingsCategory memorySettingsCategory = storageWrapper.getSettingsHandler().getTypeCategory(MemorySettingsCategory.class);
-		for (int slot = slotRange.firstSlot() + slotRange.numberOfSlots() - 1; slot >= slotRange.firstSlot(); slot--) {
+		for (int slot = slotRange.firstSlot() + slotRange.size() - 1; slot >= slotRange.firstSlot(); slot--) {
 			ItemStack stackToMatch;
-			ItemStack slotStack = inventoryHandler.getSlotStack(slot);
+			ItemStack slotStack = inventoryHandler.getInternalStack(slot);
 			if (!slotStack.isEmpty()) {
 				stackToMatch = slotStack;
 			} else {
@@ -111,7 +111,7 @@ public class CompressionUpgradeItem extends UpgradeItemBase<CompressionUpgradeIt
 			InventoryPartitioner inventoryPartitioner = storageWrapper.getInventoryHandler().getInventoryPartitioner();
 			inventoryPartitioner.getFirstSpace(Config.SERVER.compressionUpgrade.maxNumberOfSlots.get()).ifPresent(slotRange -> {
 				setFirstInventorySlot(slotRange.firstSlot());
-				inventoryPartitioner.addInventoryPart(slotRange.firstSlot(), slotRange.numberOfSlots(), new CompressionInventoryPart(storageWrapper.getInventoryHandler(), slotRange, () -> storageWrapper.getSettingsHandler().getTypeCategory(MemorySettingsCategory.class)));
+				inventoryPartitioner.addInventoryPart(slotRange.firstSlot(), slotRange.size(), new CompressionInventoryPart(storageWrapper.getInventoryHandler(), slotRange, () -> storageWrapper.getSettingsHandler().getTypeCategory(MemorySettingsCategory.class)));
 			});
 			storageWrapper.getSettingsHandler().getTypeCategory(ItemDisplaySettingsCategory.class).itemsChanged();
 		}

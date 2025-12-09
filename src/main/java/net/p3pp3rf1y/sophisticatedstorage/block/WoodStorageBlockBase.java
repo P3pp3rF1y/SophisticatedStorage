@@ -7,7 +7,10 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.data.BlockFamilies;
 import net.minecraft.data.BlockFamily;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -16,18 +19,19 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import net.minecraft.world.phys.BlockHitResult;
+import net.neoforged.neoforge.transfer.ResourceHandlerUtil;
+import net.p3pp3rf1y.sophisticatedcore.controller.IControllerBoundable;
 import net.p3pp3rf1y.sophisticatedcore.init.ModCoreDataComponents;
+import net.p3pp3rf1y.sophisticatedcore.inventory.ContainerContents;
 import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryHandler;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.ITickableUpgrade;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeHandler;
-import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.ValueIOHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
@@ -65,13 +69,9 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 		super(properties, numberOfInventorySlotsSupplier, numberOfUpgradeSlotsSupplier);
 	}
 
-	public void addNameWoodAndTintData(ItemStack stack, BlockGetter level, BlockPos pos) {
-		WorldHelper.getBlockEntity(level, pos, WoodStorageBlockEntity.class).ifPresent(be -> addNameWoodAndTintData(stack, be));
-	}
-
 	@Override
 	public void onBlockExploded(BlockState state, ServerLevel level, BlockPos pos, Explosion explosion) {
-		if (Boolean.TRUE.equals(Config.COMMON.dropPacked.get())) {
+		if (Config.COMMON.dropPacked.get()) {
 			WorldHelper.getBlockEntity(level, pos, WoodStorageBlockEntity.class).ifPresent(wbe -> {
 				if (isNonEmpty(wbe)) {
 					wbe.setPacked(true);
@@ -88,21 +88,32 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 				wbe.setPacked(true);
 				StorageWrapper storageWrapper = be.getStorageWrapper();
 				UUID storageUuid = storageWrapper.getContentsUuid().orElse(UUID.randomUUID());
-				CompoundTag storageContents = wbe.getStorageContentsTag();
-				if (!storageContents.isEmpty()) {
-					ItemContentsStorage.get().setStorageContents(storageUuid, storageContents);
+				CompoundTag additionalBeData = getStorageAdditionalData(be);
+				ContainerContents contents = storageWrapper.getContents().copy();
+				ItemContentsStorage itemContentsStorage = ItemContentsStorage.get();
+				itemContentsStorage.setContents(storageUuid, contents);
+				if (!additionalBeData.isEmpty()) {
+					itemContentsStorage.setAdditionalBeData(storageUuid, additionalBeData);
 					stack.set(ModCoreDataComponents.STORAGE_UUID, storageUuid);
 				}
 				WoodStorageBlockItem.setPacked(stack, true);
 				StorageBlockItem.setShowsTier(stack, be.shouldShowTier());
-				StorageBlockItem.setNumberOfInventorySlots(stack, storageWrapper.getInventoryHandler().getSlots());
-				StorageBlockItem.setNumberOfUpgradeSlots(stack, storageWrapper.getUpgradeHandler().getSlots());
+				StorageBlockItem.setNumberOfInventorySlots(stack, storageWrapper.getInventoryHandler().size());
+				StorageBlockItem.setNumberOfUpgradeSlots(stack, storageWrapper.getUpgradeHandler().size());
 			}
 		}
 	}
 
+	protected CompoundTag getStorageAdditionalData(StorageBlockEntity be) {
+		CompoundTag additionalBeData = be.saveWithoutMetadata(be.getLevel().registryAccess());
+		additionalBeData.getCompound(StorageBlockEntity.STORAGE_WRAPPER).ifPresent(tag -> tag.remove(StorageWrapper.CONTENTS));
+		additionalBeData.remove(IControllerBoundable.CONTROLLER_POS);
+		additionalBeData.remove(WoodStorageBlockEntity.PACKED);
+		return additionalBeData;
+	}
+
 	private static boolean shouldNonEmptyDropPacked(WoodStorageBlockEntity wbe) {
-		if (Boolean.FALSE.equals(Config.COMMON.dropPacked.get())) {
+		if (!Config.COMMON.dropPacked.get()) {
 			return false;
 		}
 
@@ -110,7 +121,8 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 	}
 
 	private static boolean isNonEmpty(WoodStorageBlockEntity wbe) {
-		return !InventoryHelper.isEmpty(wbe.getStorageWrapper().getInventoryHandler()) || !InventoryHelper.isEmpty(wbe.getStorageWrapper().getUpgradeHandler());
+		if (!ResourceHandlerUtil.isEmpty(wbe.getStorageWrapper().getInventoryHandler())) return true;
+		return !ResourceHandlerUtil.isEmpty(wbe.getStorageWrapper().getUpgradeHandler());
 	}
 
 	private void addNameWoodAndTintData(ItemStack stack, WoodStorageBlockEntity wbe) {
@@ -132,13 +144,13 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 
 	@Override
 	public void addCreativeTabItems(Consumer<ItemStack> itemConsumer) {
-		if (!Config.CLIENT_SPEC.isLoaded() || Boolean.TRUE.equals(Config.CLIENT.showSingleWoodVariantOnly.get())) {
+		if (!Config.CLIENT_SPEC.isLoaded() || Config.CLIENT.showSingleWoodVariantOnly.get()) {
 			itemConsumer.accept(WoodStorageBlockItem.setWoodType(new ItemStack(this), WoodType.ACACIA));
 		} else {
 			CUSTOM_TEXTURE_WOOD_TYPES.keySet().forEach(woodType -> itemConsumer.accept(WoodStorageBlockItem.setWoodType(new ItemStack(this), woodType)));
 		}
 
-		if (isBasicTier() || Boolean.TRUE.equals(!Config.CLIENT_SPEC.isLoaded() || Config.CLIENT.showHigherTierTintedVariants.get())) {
+		if (isBasicTier() || !Config.CLIENT_SPEC.isLoaded() || Config.CLIENT.showHigherTierTintedVariants.get()) {
 			for (DyeColor color : DyeColor.values()) {
 				ItemStack storageStack = new ItemStack(this);
 				if (storageStack.getItem() instanceof ITintableBlockItem tintableBlockItem) {
@@ -165,7 +177,13 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 	@Override
 	public ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state, boolean includeData) {
 		ItemStack stack = new ItemStack(this);
-		addNameWoodAndTintData(stack, level, pos);
+		WorldHelper.getBlockEntity(level, pos, WoodStorageBlockEntity.class).ifPresent(be -> {
+			if (includeData) {
+				addDropData(stack, be);
+			} else {
+				addNameWoodAndTintData(stack, be);
+			}
+		});
 		return stack;
 	}
 
@@ -181,8 +199,15 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 				ItemContentsStorage itemContentsStorage = ItemContentsStorage.get();
 				if (itemContentsStorage.has(storageUuid)) {
 					be.setBeingUpgraded(true);
-					be.loadAdditional(ValueIOHelper.inputFromCompoundTag(level.registryAccess(), itemContentsStorage.getOrCreateStorageContents(storageUuid)));
-					itemContentsStorage.removeStorageContents(storageUuid);
+
+					CompoundTag beTag = itemContentsStorage.getOrCreateAddtionalBeData(storageUuid);
+					ContainerContents contents = itemContentsStorage.getOrCreateContents(storageUuid);
+					Tag contentsTag = ContainerContents.CODEC.encodeStart(RegistryOps.create(NbtOps.INSTANCE, be.getLevel().registryAccess()), contents).getOrThrow();
+					beTag.getCompound(StorageBlockEntity.STORAGE_WRAPPER).ifPresent(tag -> tag.put(StorageWrapper.CONTENTS, contentsTag));
+					be.loadAdditional(ValueIOHelper.inputFromCompoundTag(level.registryAccess(), beTag));
+					itemContentsStorage.removeContents(storageUuid);
+					itemContentsStorage.removeAddtionalBeData(storageUuid);
+
 					setNewSize(stack, be);
 					setTicking(level, pos, state, !be.getStorageWrapper().getUpgradeHandler().getWrappersThatImplement(ITickableUpgrade.class).isEmpty());
 				} else {
@@ -209,8 +234,8 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 		StorageWrapper storageWrapper = be.getStorageWrapper();
 		InventoryHandler inventoryHandler = storageWrapper.getInventoryHandler();
 		UpgradeHandler upgradeHandler = storageWrapper.getUpgradeHandler();
-		storageWrapper.changeSize(StorageBlockItem.getNumberOfInventorySlots(stack) - inventoryHandler.getSlots(),
-				StorageBlockItem.getNumberOfUpgradeSlots(stack) - upgradeHandler.getSlots());
+		storageWrapper.changeSize(StorageBlockItem.getNumberOfInventorySlots(stack) - inventoryHandler.size(),
+				StorageBlockItem.getNumberOfUpgradeSlots(stack) - upgradeHandler.size());
 	}
 
 	protected void setRenderBlockRenderProperties(ItemStack stack, WoodStorageBlockEntity be) {
@@ -223,19 +248,19 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 		BlockState ret = super.playerWillDestroy(level, pos, state, player);
 		WorldHelper.getBlockEntity(level, pos, WoodStorageBlockEntity.class)
 				.ifPresent(wbe -> {
-					if (Boolean.TRUE.equals(Config.COMMON.dropPacked.get()) && isNonEmpty(wbe)) {
+					if (Config.COMMON.dropPacked.get() && isNonEmpty(wbe)) {
 						wbe.setPacked(true);
 					}
 
 					if (wbe.isPacked()) {
-						if (player.isCreative() && (
-								!InventoryHelper.isEmpty(wbe.getStorageWrapper().getInventoryHandler()) || !InventoryHelper.isEmpty(wbe.getStorageWrapper().getUpgradeHandler())
-						)) {
-							ItemStack drop = new ItemStack(this);
-							addDropData(drop, wbe);
-							ItemEntity itementity = new ItemEntity(level, pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, drop);
-							itementity.setDefaultPickUpDelay();
-							level.addFreshEntity(itementity);
+						if (player.isCreative()) {
+							if (!ResourceHandlerUtil.isEmpty(wbe.getStorageWrapper().getInventoryHandler()) || !ResourceHandlerUtil.isEmpty(wbe.getStorageWrapper().getUpgradeHandler())) {
+								ItemStack drop = new ItemStack(this);
+								addDropData(drop, wbe);
+								ItemEntity itementity = new ItemEntity(level, pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, drop);
+								itementity.setDefaultPickUpDelay();
+								level.addFreshEntity(itementity);
+							}
 						}
 					}
 				});
@@ -245,7 +270,7 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 	@SuppressWarnings("java:S1172") //parameter is used in override
 	protected InteractionResult tryItemInteraction(Player player, InteractionHand hand, WoodStorageBlockEntity b, ItemStack stackInHand, Direction facing, BlockHitResult hitResult) {
 		if (stackInHand.getItem() instanceof PackingTapeItem) {
-			if (Boolean.TRUE.equals(Config.COMMON.dropPacked.get())) {
+			if (Config.COMMON.dropPacked.get()) {
 				player.displayClientMessage(Component.translatable("gui.sophisticatedstorage.status.packing_tape_disabled"), true);
 				return InteractionResult.FAIL;
 			} else {

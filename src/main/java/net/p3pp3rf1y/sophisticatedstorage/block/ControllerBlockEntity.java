@@ -1,30 +1,28 @@
 package net.p3pp3rf1y.sophisticatedstorage.block;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
-import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
 import net.p3pp3rf1y.sophisticatedcore.controller.ControllerBlockEntityBase;
-import net.p3pp3rf1y.sophisticatedcore.inventory.CachedFailedInsertInventoryHandler;
 import net.p3pp3rf1y.sophisticatedcore.inventory.ItemStackKey;
-import net.p3pp3rf1y.sophisticatedcore.util.*;
+import net.p3pp3rf1y.sophisticatedcore.util.IDoubleBlock;
+import net.p3pp3rf1y.sophisticatedcore.util.VoxelOutliner;
+import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 
-import javax.annotation.Nullable;
 import java.util.*;
 
 public class ControllerBlockEntity extends ControllerBlockEntityBase implements ILockable, ICountDisplay, ITierDisplay, IUpgradeDisplay, IFillLevelDisplay {
 	private long lastDepositTime = -100;
 
-	@Nullable
-	private IItemHandler cachedFailedInsertItemHandler;
 	private List<VoxelOutliner.Edge> cachedStorageEdges = null;
 	private List<VoxelOutliner.Edge> cachedLinkedBlockEdges = null;
 	private List<VoxelOutliner.Edge> cachedControllerEdges = null;
@@ -41,22 +39,34 @@ public class ControllerBlockEntity extends ControllerBlockEntityBase implements 
 		boolean doubleClick = gameTime - lastDepositTime < 10;
 		lastDepositTime = gameTime;
 		if (doubleClick) {
-			CapabilityHelper.runOnCapability(player, Capabilities.ItemHandler.ENTITY, null,
-					playerInventory -> InventoryHelper.iterate(playerInventory, (slot, stack) -> {
-						if (canDepositStack(stack)) {
-							ItemStack resultStack = insertItem(stack, true, false);
-							int countToExtract = stack.getCount() - resultStack.getCount();
-							if (countToExtract > 0 && playerInventory.extractItem(slot, countToExtract, true).getCount() == countToExtract) {
-								insertItem(playerInventory.extractItem(slot, countToExtract, false), false, false);
-							}
+			boolean insertedAny = false;
+			try(Transaction tx = Transaction.openRoot()) {
+				for (int slot = 0; slot < player.getInventory().getContainerSize(); slot++) {
+					ItemStack stack = player.getInventory().getItem(slot);
+					if (canDepositStack(stack)) {
+						int inserted = insertItem(stack, tx, false);
+						if (inserted > 0) {
+							player.getInventory().removeItem(slot, inserted);
+							insertedAny = true;
 						}
-					}));
+					}
+				}
+				if (insertedAny) {
+					tx.commit();
+				}
+			}
 			return;
 		}
 
 		ItemStack itemInHand = player.getItemInHand(hand);
 		if (!itemInHand.isEmpty() && canDepositStack(itemInHand)) {
-			player.setItemInHand(hand, insertItem(itemInHand, false, false));
+			try (Transaction tx = Transaction.openRoot()) {
+				int inserted = insertItem(itemInHand, tx, false);
+				if (inserted > 0) {
+					player.setItemInHand(hand, inserted == itemInHand.getCount() ? ItemStack.EMPTY : itemInHand.copyWithCount(itemInHand.getCount() - inserted));
+					tx.commit();
+				}
+			}
 		}
 	}
 
@@ -220,15 +230,8 @@ public class ControllerBlockEntity extends ControllerBlockEntityBase implements 
 		return List.of();
 	}
 
-	public IItemHandler getExternalItemHandler(@Nullable Direction side) {
-		if (side == null) {
-			return this;
-		} else {
-			if (cachedFailedInsertItemHandler == null) {
-				cachedFailedInsertItemHandler = new CachedFailedInsertInventoryHandler(() -> this, () -> level != null ? level.getGameTime() : 0);
-			}
-			return cachedFailedInsertItemHandler;
-		}
+	public ResourceHandler<ItemResource> getExternalItemResourceHandler() {
+		return this;
 	}
 
 	@Override
@@ -284,7 +287,7 @@ public class ControllerBlockEntity extends ControllerBlockEntityBase implements 
 
 	public List<BlockPos> getItemStorages(ItemStackKey stackKey) {
 		Set<BlockPos> positions = new HashSet<>();
-		Item item = stackKey.getStack().getItem();
+		Item item = stackKey.stack().getItem();
 		if (itemStackKeys.containsKey(item)) {
 			itemStackKeys.get(item).forEach(sk -> {
 				if (sk.equals(stackKey)) {
@@ -305,8 +308,12 @@ public class ControllerBlockEntity extends ControllerBlockEntityBase implements 
 		Set<BlockPos> positions = new HashSet<>(emptySlotsStorages);
 		getStackStorages(stackKey).forEach(positions::remove);
 		getItemStorages(stackKey).forEach(positions::remove);
-		ItemStack copy = stackKey.getStack().copyWithCount(1);
-		positions.removeIf(p -> !insertIntoStorage(p, copy, true).isEmpty());
+		ItemResource copy = stackKey.toResource();
+		positions.removeIf(p -> {
+			try (Transaction tx = Transaction.openRoot()) {
+				return insertIntoStorage(p, copy, 1, tx) > 0;
+			}
+		});
 		return new ArrayList<>(positions);
 	}
 }

@@ -231,8 +231,8 @@
   "gui.sophisticatedstorage.settings.buttons.context_storage": "個別に適用",
   "gui.sophisticatedstorage.settings.buttons.context_storage.tooltip": "チェストごとに設定",
   "gui.sophisticatedstorage.settings.buttons.context_storage.tooltip_detail": "プレイヤ単位の設定を引き継ぐか、個別に設定したものが適用されます。",
-  "keybind.sophisticatedstorage.category": "Sophisticated Storage",
-  "keybind.sophisticatedstorage.sort": "並び替え",
+  "key.category.sophisticatedstorage.main": "Sophisticated Storage",
+  "key.sophisticatedstorage.sort": "並び替え",
   "gui.sophisticatedstorage.status.too_many_item_entity_drops": "その %s を壊すと%s個のアイテムをドロップするため壊せません。\n%sを使用するか、SHIFTを押しながら壊してください。",
   "gui.sophisticatedstorage.status.too_low_tier_upgrade_count": "アップグレードには%s個の %s が必要です。",
   "_eol": "for excel flag"

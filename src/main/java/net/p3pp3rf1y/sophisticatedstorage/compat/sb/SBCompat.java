@@ -2,6 +2,7 @@ package net.p3pp3rf1y.sophisticatedstorage.compat.sb;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
+import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.p3pp3rf1y.sophisticatedbackpacks.backpack.BackpackItem;
 import net.p3pp3rf1y.sophisticatedbackpacks.backpack.wrapper.BackpackWrapper;
 import net.p3pp3rf1y.sophisticatedbackpacks.backpack.wrapper.IBackpackWrapper;
@@ -15,19 +16,19 @@ import java.util.Map;
 public class SBCompat implements ICompat {
 	@Override
 	public void setup() {
-		DecorationTableBlockEntity.registerItemDecorator(stack -> stack.getItem() instanceof BackpackItem, new DecorationTableBlockEntity.IItemDecorator() {
+		DecorationTableBlockEntity.registerItemDecorator(item -> item instanceof BackpackItem, new DecorationTableBlockEntity.IItemDecorator() {
 			@Override
-			public boolean supportsMaterials(ItemStack input) {
+			public boolean supportsMaterials(ItemResource input) {
 				return false;
 			}
 
 			@Override
-			public boolean supportsTints(ItemStack input) {
+			public boolean supportsTints(ItemResource input) {
 				return true;
 			}
 
 			@Override
-			public boolean supportsTopInnerTrim(ItemStack input) {
+			public boolean supportsTopInnerTrim(ItemResource input) {
 				return false;
 			}
 

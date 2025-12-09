@@ -1,7 +1,7 @@
 package net.p3pp3rf1y.sophisticatedstorage.item;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.network.chat.Component;
@@ -17,6 +17,9 @@ import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.neoforged.fml.loading.FMLEnvironment;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
+import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 import net.p3pp3rf1y.sophisticatedcore.api.IStashStorageItem;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.TranslationHelper;
 import net.p3pp3rf1y.sophisticatedcore.init.ModCoreDataComponents;
@@ -41,7 +44,7 @@ public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageIte
 				StackStorageWrapper.fromStack(registries, stack).getContentsUuid().ifPresent(uuid -> tooltipAdder.accept(Component.literal("UUID: " + uuid).withStyle(ChatFormatting.DARK_GRAY)));
 			}
 		}
-		if (!Screen.hasShiftDown()) {
+		if (!Minecraft.getInstance().hasShiftDown()) {
 			tooltipAdder.accept(Component.translatable(
 					TranslationHelper.INSTANCE.translItemTooltip("storage") + ".press_for_contents",
 					Component.translatable(TranslationHelper.INSTANCE.translItemTooltip("storage") + ".shift").withStyle(ChatFormatting.AQUA)
@@ -51,7 +54,7 @@ public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageIte
 
 	@Override
 	public Optional<TooltipComponent> getTooltipImage(ItemStack stack) {
-		if (FMLEnvironment.dist.isClient()) {
+		if (FMLEnvironment.getDist().isClient()) {
 			return Optional.ofNullable(StorageItemClient.getTooltipImage(stack));
 		}
 		return Optional.empty();
@@ -65,7 +68,7 @@ public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageIte
 	@Override
 	public void onDestroyed(ItemEntity itemEntity) {
 		Level level = itemEntity.level();
-		if (level.isClientSide) {
+		if (level.isClientSide()) {
 			return;
 		}
 		ItemStack stack = itemEntity.getItem();
@@ -79,20 +82,22 @@ public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageIte
 		return Optional.of(new StorageContentsTooltip(stack));
 	}
 
-	public ItemStack stash(HolderLookup.Provider registries, ItemStack storageStack, ItemStack stack, boolean simulate) {
+	public int stash(HolderLookup.Provider registries, ItemStack storageStack, ItemResource resource, int amount, TransactionContext tx) {
 		StackStorageWrapper wrapper = StackStorageWrapper.fromStack(registries, storageStack);
 		if (wrapper.getContentsUuid().isEmpty()) {
 			wrapper.setContentsUuid(UUID.randomUUID());
 		}
-		return wrapper.getInventoryForUpgradeProcessing().insertItem(stack, simulate);
+		return wrapper.getInventoryForUpgradeProcessing().insert(resource, amount, tx);
 	}
 
 	@Override
 	public StashResult getItemStashable(HolderLookup.Provider registries, ItemStack storageStack, ItemStack stack) {
 		StackStorageWrapper wrapper = StackStorageWrapper.fromStack(registries, storageStack);
 
-		if (wrapper.getInventoryForUpgradeProcessing().insertItem(stack, true).getCount() == stack.getCount()) {
-			return StashResult.NO_SPACE;
+		try (Transaction tx = Transaction.openRoot()) {
+			if (wrapper.getInventoryForUpgradeProcessing().insert(ItemResource.of(stack), stack.getCount(), tx) == 0) {
+				return StashResult.NO_SPACE;
+			}
 		}
 		if (wrapper.getInventoryHandler().getSlotTracker().getItems().contains(stack.getItem()) || wrapper.getSettingsHandler().getTypeCategory(MemorySettingsCategory.class).matchesFilter(stack)) {
 			return StashResult.MATCH_AND_SPACE;
@@ -118,14 +123,14 @@ public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageIte
 		}
 
 		ItemStack stackToStash = slot.getItem();
-		ItemStack stashResult = stash(player.level().registryAccess(), storageStack, stackToStash, true);
-		if (stashResult.getCount() != stackToStash.getCount()) {
-			int countToTake = stackToStash.getCount() - stashResult.getCount();
-			ItemStack takeResult = slot.safeTake(countToTake, countToTake, player);
-			stash(player.level().registryAccess(), storageStack, takeResult, false);
-			return true;
+		try (Transaction tx = Transaction.openRoot()) {
+			int stashed = stash(player.level().registryAccess(), storageStack, ItemResource.of(stackToStash), stackToStash.getCount(), tx);
+			if (stashed > 0) {
+				tx.commit();
+				slot.safeTake(stashed, stashed, player);
+				return true;
+			}
 		}
-
 		return super.overrideStackedOnOther(storageStack, slot, action, player);
 	}
 
@@ -135,11 +140,14 @@ public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageIte
 			return super.overrideOtherStackedOnMe(storageStack, otherStack, slot, action, player, carriedAccess);
 		}
 
-		ItemStack result = stash(player.level().registryAccess(), storageStack, otherStack, false);
-		if (result.getCount() != otherStack.getCount()) {
-			carriedAccess.set(result);
-			slot.set(storageStack);
-			return true;
+		try (Transaction tx = Transaction.openRoot()) {
+			int stashed = stash(player.level().registryAccess(), storageStack, ItemResource.of(otherStack), otherStack.getCount(), tx);
+			if (stashed > 0) {
+				tx.commit();
+				carriedAccess.set(otherStack.copyWithCount(otherStack.getCount() - stashed));
+				slot.set(storageStack);
+				return true;
+			}
 		}
 
 		return super.overrideOtherStackedOnMe(storageStack, otherStack, slot, action, player, carriedAccess);

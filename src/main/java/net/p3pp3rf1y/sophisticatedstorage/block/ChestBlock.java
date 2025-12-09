@@ -35,6 +35,9 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.ResourceHandlerUtil;
+import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.p3pp3rf1y.sophisticatedcore.util.*;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
@@ -48,7 +51,6 @@ import org.joml.Vector3f;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Supplier;
 
 public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterloggedBlock, IDoubleBlock {
 	public static final EnumProperty<Direction> FACING = HorizontalDirectionalBlock.FACING;
@@ -60,12 +62,12 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 	protected static final VoxelShape WEST_AABB = Block.box(0.0D, 0.0D, 1.0D, 15.0D, 14.0D, 15.0D);
 	protected static final VoxelShape EAST_AABB = Block.box(1.0D, 0.0D, 1.0D, 16.0D, 14.0D, 15.0D);
 
-	public ChestBlock(Supplier<Integer> numberOfInventorySlotsSupplier, Supplier<Integer> numberOfUpgradeSlotsSupplier, Properties properties) {
-		this(numberOfInventorySlotsSupplier, numberOfUpgradeSlotsSupplier, 2.5F, properties);
+	public ChestBlock(Config.Server.StorageConfig config, Properties properties) {
+		this(config, 2.5F, properties);
 	}
 
-	public ChestBlock(Supplier<Integer> numberOfInventorySlotsSupplier, Supplier<Integer> numberOfUpgradeSlotsSupplier, float explosionResistance, Properties properties) {
-		super(properties.mapColor(MapColor.WOOD).strength(2.5F, explosionResistance).sound(SoundType.WOOD), numberOfInventorySlotsSupplier, numberOfUpgradeSlotsSupplier);
+	public ChestBlock(Config.Server.StorageConfig config, float explosionResistance, Properties properties) {
+		super(properties.mapColor(MapColor.WOOD).strength(2.5F, explosionResistance).sound(SoundType.WOOD), config::numberOfInventorySlots, config::numberOfUpgradeSlots);
 		registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(WATERLOGGED, false).setValue(TICKING, false).setValue(TYPE, ChestType.SINGLE));
 	}
 
@@ -110,7 +112,7 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 			ChestType chesttype = neighborState.getValue(TYPE);
 			if (state.getValue(TYPE) == ChestType.SINGLE && chesttype != ChestType.SINGLE && state.getValue(FACING) == neighborState.getValue(FACING) && getConnectedDirection(neighborState) == direction.getOpposite()) {
 				level.getBlockEntity(pos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get()).ifPresent(be -> {
-					if (state.getBlock() instanceof ChestBlock chestBlock && be.getStorageWrapper().getInventoryHandler().getSlots() <= chestBlock.getNumberOfInventorySlots()) {
+					if (state.getBlock() instanceof ChestBlock chestBlock && be.getStorageWrapper().getInventoryHandler().size() <= chestBlock.getNumberOfInventorySlots()) {
 						joinWithChest(level, neighborPos, chesttype.getOpposite(), be);
 					}
 					if (be.isMainChest()) {
@@ -192,7 +194,7 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 				StorageBlockItem.getMainColorFromComponentHolder(chestBeingPlaced).orElse(-1),
 				StorageBlockItem.getAccentColorFromComponentHolder(chestBeingPlaced).orElse(-1),
 				WoodStorageBlockItem.getWoodType(chestBeingPlaced).orElse(WoodType.ACACIA),
-				wrapper.hasContents() && InventoryHelper.isEmpty(wrapper.getUpgradeHandler()));
+				wrapper.hasContents() && ResourceHandlerUtil.isEmpty((ResourceHandler<ItemResource>) wrapper.getUpgradeHandler()));
 	}
 
 	private BlockState getStateForPlacement(BlockPlaceContext context, Direction direction, FluidState fluidstate, int mainColor, int accentColor, WoodType woodType, boolean itemHasNoUpgrades) {
@@ -226,9 +228,12 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 		}
 
 		if (context.getLevel().getBlockEntity(neighborChestPos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get())
-				.map(be -> mainColor == be.getStorageWrapper().getMainColor() && accentColor == be.getStorageWrapper().getAccentColor()
-						&& woodType == be.getWoodType().orElse(WoodType.ACACIA)
-						&& (itemHasNoUpgrades || InventoryHelper.isEmpty(be.getStorageWrapper().getUpgradeHandler()))).orElse(false)) {
+				.map(be -> {
+					if (mainColor != be.getStorageWrapper().getMainColor() || accentColor != be.getStorageWrapper().getAccentColor()
+							|| woodType != be.getWoodType().orElse(WoodType.ACACIA)) return false;
+					if (itemHasNoUpgrades) return true;
+					return ResourceHandlerUtil.isEmpty((ResourceHandler<ItemResource>) be.getStorageWrapper().getUpgradeHandler());
+				}).orElse(false)) {
 			return blockstate.getValue(FACING);
 		}
 		return null;
@@ -237,7 +242,7 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 	@Nullable
 	@Override
 	public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> blockEntityType) {
-		return level.isClientSide ? createTickerHelper(blockEntityType, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get(), (l, p, s, be) -> ChestBlockEntity.lidAnimateTick(be)) : super.getTicker(level, state, blockEntityType);
+		return level.isClientSide() ? createTickerHelper(blockEntityType, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get(), (l, p, s, be) -> ChestBlockEntity.lidAnimateTick(be)) : super.getTicker(level, state, blockEntityType);
 	}
 
 	@Override
@@ -257,7 +262,7 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 			if (b.isPacked()) {
 				return InteractionResult.FAIL;
 			}
-			if (level.isClientSide || hand == InteractionHand.OFF_HAND) {
+			if (level.isClientSide() || hand == InteractionHand.OFF_HAND) {
 				return InteractionResult.SUCCESS;
 			}
 
@@ -288,7 +293,7 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 				return InteractionResult.PASS;
 			}
 
-			if (level.isClientSide) {
+			if (level.isClientSide()) {
 				return InteractionResult.SUCCESS;
 			}
 
@@ -337,8 +342,8 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 	private static void joinWithChest(LevelReader level, BlockPos otherPos, ChestType currentChestType, ChestBlockEntity currentBE) {
 		level.getBlockEntity(otherPos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get())
 				.ifPresent(otherBE -> {
-					if (InventoryHelper.isEmpty(currentBE.getStorageWrapper().getUpgradeHandler())
-							&& (currentChestType == ChestType.LEFT || !InventoryHelper.isEmpty(otherBE.getStorageWrapper().getUpgradeHandler()))) {
+					if (ResourceHandlerUtil.isEmpty((ResourceHandler<ItemResource>) currentBE.getStorageWrapper().getUpgradeHandler())
+							&& (currentChestType == ChestType.LEFT || !ResourceHandlerUtil.isEmpty((ResourceHandler<ItemResource>) otherBE.getStorageWrapper().getUpgradeHandler()))) {
 						currentBE.joinWithChest(otherBE);
 						currentBE.syncTogglesFrom(otherBE);
 					} else {
@@ -363,7 +368,7 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 
 								//remove main chest contents
 								CompoundTag contentsTag = new CompoundTag();
-								contentsTag.put(StorageWrapper.CONTENTS_TAG, new CompoundTag());
+								contentsTag.put(StorageWrapper.CONTENTS, new CompoundTag());
 								mainBe.getStorageWrapper().deserialize(ValueIOHelper.inputFromCompoundTag(registries, contentsTag));
 							}));
 				}
@@ -380,6 +385,13 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 		} else {
 			super.addDropData(stack, be);
 		}
+	}
+
+	@Override
+	protected CompoundTag getStorageAdditionalData(StorageBlockEntity be) {
+		CompoundTag additionalData = super.getStorageAdditionalData(be);
+		additionalData.remove(ChestBlockEntity.DOUBLE_CHEST_MAIN_POS);
+		return additionalData;
 	}
 
 	@Override
@@ -467,9 +479,9 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 	}
 
 	@Override
-	public void entityInside(BlockState state, Level level, BlockPos pos, Entity entity, InsideBlockEffectApplier effectApplier) {
-		super.entityInside(state, level, pos, entity, effectApplier);
-		if (!level.isClientSide && entity instanceof ItemEntity itemEntity) {
+	public void entityInside(BlockState state, Level level, BlockPos pos, Entity entity, InsideBlockEffectApplier effectApplier, boolean flag) {
+		super.entityInside(state, level, pos, entity, effectApplier, flag);
+		if (!level.isClientSide() && entity instanceof ItemEntity itemEntity) {
 			WorldHelper.getBlockEntity(level, pos, ChestBlockEntity.class).ifPresent(be -> tryToPickup(level, itemEntity, be.getMainStorageWrapper()));
 		}
 	}
@@ -503,7 +515,7 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 	}
 
 	@Override
-	public int getAnalogOutputSignal(BlockState blockState, Level level, BlockPos pos) {
-		return WorldHelper.getBlockEntity(level, pos, ChestBlockEntity.class).map(be -> InventoryHelper.getAnalogOutputSignal(be.getMainStorageWrapper().getInventoryForInputOutput())).orElse(0);
+	public int getAnalogOutputSignal(BlockState blockState, Level level, BlockPos pos, Direction direction) {
+		return WorldHelper.getBlockEntity(level, pos, ChestBlockEntity.class).map(be -> InventoryHelper.getAnalogOutputSignal(be.getMainStorageWrapper().getInventoryHandler())).orElse(0);
 	}
 }

@@ -199,7 +199,7 @@
     "gui.sophisticatedstorage.settings.buttons.context_storage": "Lager",
     "gui.sophisticatedstorage.settings.buttons.context_storage.tooltip": "Lager-Einstellungen",
     "gui.sophisticatedstorage.settings.buttons.context_storage.tooltip_detail": "Vom Spieler geerbt oder für dieses Lager überschrieben",
-    "keybind.sophisticatedstorage.category": "Sophisticated Storage",
-    "keybind.sophisticatedstorage.sort": "Lager sortieren",
+    "key.category.sophisticatedstorage.main": "Sophisticated Storage",
+    "key.sophisticatedstorage.sort": "Lager sortieren",
     "gui.sophisticatedstorage.status.too_many_item_entity_drops": "%s kann nicht abgebaut werden, da sonst zuviele (%s) Gegenstände erzeugt würden.\nBenutze %s oder baue es ab während du schleichst um diese Prüfung zu umgehen."
 }

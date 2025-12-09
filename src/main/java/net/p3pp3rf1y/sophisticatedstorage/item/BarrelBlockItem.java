@@ -50,7 +50,7 @@ public class BarrelBlockItem extends WoodStorageBlockItem {
 		barrel.set(ModDataComponents.BARREL_MATERIALS, Map.copyOf(materials));
 	}
 
-	public static Map<BarrelMaterial, ResourceLocation> getMaterials(ItemStack barrel) {
+	public static Map<BarrelMaterial, ResourceLocation> getMaterials(DataComponentHolder barrel) {
 		return barrel.getOrDefault(ModDataComponents.BARREL_MATERIALS, Map.of());
 	}
 

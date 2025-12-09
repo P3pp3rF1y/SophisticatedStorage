@@ -18,7 +18,7 @@ import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.resources.model.BlockModelRotation;
 import net.minecraft.client.resources.model.ResolvedModel;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.properties.WoodType;
@@ -34,7 +34,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-public record BarrelItemModel(BarrelBlockStateModelBase model, @Nullable BarrelBlockStateModelBase flatTopModel, List<ItemTintSource> tints, Supplier<Vector3f[]> extents) implements ItemModel {
+public record BarrelItemModel(BarrelBlockStateModelBase model, @Nullable BarrelBlockStateModelBase flatTopModel,
+							  List<ItemTintSource> tints, Supplier<Vector3f[]> extents) implements ItemModel {
 	private static final Vector3f DEFAULT_ROTATION = new Vector3f(0.0F, 0.0F, 0.0F);
 	private static final ItemTransforms ITEM_TRANSFORMS = createItemTransforms();
 
@@ -49,7 +50,8 @@ public record BarrelItemModel(BarrelBlockStateModelBase model, @Nullable BarrelB
 				new ItemTransform(new Vector3f(0, 0, 0), new Vector3f(0, 14.25f / 16f, 0), new Vector3f(1, 1, 1), DEFAULT_ROTATION),
 				new ItemTransform(new Vector3f(30, 225, 0), new Vector3f(0, 0, 0), new Vector3f(0.625f, 0.625f, 0.625f), DEFAULT_ROTATION),
 				new ItemTransform(new Vector3f(0, 0, 0), new Vector3f(0, 3 / 16f, 0), new Vector3f(0.25f, 0.25f, 0.25f), DEFAULT_ROTATION),
-				new ItemTransform(new Vector3f(0, 0, 0), new Vector3f(0, 0, 0), new Vector3f(0.5f, 0.5f, 0.5f), DEFAULT_ROTATION)
+				new ItemTransform(new Vector3f(0, 0, 0), new Vector3f(0, 0, 0), new Vector3f(0.5f, 0.5f, 0.5f), DEFAULT_ROTATION),
+				new ItemTransform(new Vector3f(0, 0, 0), new Vector3f(0, 0, 0), new Vector3f(1f, 1f, 1f), DEFAULT_ROTATION)
 				, ImmutableMap.of());
 	}
 
@@ -58,7 +60,7 @@ public record BarrelItemModel(BarrelBlockStateModelBase model, @Nullable BarrelB
 	}
 
 	@Override
-	public void update(ItemStackRenderState state, ItemStack stack, ItemModelResolver itemModelResolver, ItemDisplayContext itemDisplayContext, @Nullable ClientLevel clientLevel, @Nullable LivingEntity livingEntity, int i) {
+	public void update(ItemStackRenderState state, ItemStack stack, ItemModelResolver itemModelResolver, ItemDisplayContext itemDisplayContext, @Nullable ClientLevel clientLevel, @Nullable ItemOwner itemOwner, int i) {
 		state.appendModelIdentityElement(this);
 		boolean flatTop = BarrelBlockItem.isFlatTop(stack);
 		BarrelBlockStateModelBase updatedModel = flatTop && flatTopModel != null ? flatTopModel : model;
@@ -98,8 +100,8 @@ public record BarrelItemModel(BarrelBlockStateModelBase model, @Nullable BarrelB
 		ItemStackRenderState.LayerRenderState layerState = state.newLayer();
 		int[] tintArray = new int[tints.size()];
 
-		for(int j = 0; j < tintArray.length; ++j) {
-			tintArray[j] = tints.get(j).calculate(stack, clientLevel, livingEntity);
+		for (int j = 0; j < tintArray.length; ++j) {
+			tintArray[j] = tints.get(j).calculate(stack, clientLevel, itemOwner == null ? null : itemOwner.asLivingEntity());
 			state.appendModelIdentityElement(tintArray[j]);
 		}
 		int[] aint = layerState.prepareTintLayers(tintArray.length);
@@ -113,7 +115,8 @@ public record BarrelItemModel(BarrelBlockStateModelBase model, @Nullable BarrelB
 		layerState.prepareQuadList().addAll(updatedModel.getQuads(clientLevel != null ? clientLevel.random : Minecraft.getInstance().level.random));
 	}
 
-	public record Unbaked(ResourceLocation model, @Nullable ResourceLocation flatTopModel, List<ItemTintSource> tints) implements ItemModel.Unbaked {
+	public record Unbaked(ResourceLocation model, @Nullable ResourceLocation flatTopModel,
+						  List<ItemTintSource> tints) implements ItemModel.Unbaked {
 		public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec(instance ->
 				instance.group(
 								ResourceLocation.CODEC.fieldOf("model").forGetter(Unbaked::model),
@@ -122,6 +125,7 @@ public record BarrelItemModel(BarrelBlockStateModelBase model, @Nullable BarrelB
 						)
 						.apply(instance, (model, flatTopModel, tints) -> new Unbaked(model, flatTopModel.orElse(null), tints))
 		);
+
 		@Override
 		public MapCodec<? extends ItemModel.Unbaked> type() {
 			return MAP_CODEC;

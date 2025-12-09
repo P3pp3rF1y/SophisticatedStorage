@@ -23,7 +23,7 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
-import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
+import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderData;
 import net.p3pp3rf1y.sophisticatedcore.settings.SettingsHandler;
 import net.p3pp3rf1y.sophisticatedcore.settings.memory.MemorySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
@@ -45,11 +45,11 @@ public class LimitedBarrelBlock extends BarrelBlock {
 	public static final EnumProperty<VerticalFacing> VERTICAL_FACING = EnumProperty.create("vertical_facing", VerticalFacing.class);
 	private final Supplier<Integer> getBaseStackSizeMultiplier;
 
-	public LimitedBarrelBlock(int numberOfInventorySlots, Supplier<Integer> getBaseStackSizeMultiplier, Supplier<Integer> numberOfUpgradeSlotsSupplier, float explosionResistance, Properties properties) {
-		super(() -> numberOfInventorySlots, numberOfUpgradeSlotsSupplier, explosionResistance,
+	public LimitedBarrelBlock(int numberOfInventorySlots, Config.Server.LimitedBarrelConfig config, float explosionResistance, Properties properties) {
+		super(() -> numberOfInventorySlots, config::upgradeSlotCount, explosionResistance,
 				stateDef -> stateDef.any().setValue(HORIZONTAL_FACING, Direction.NORTH).setValue(VERTICAL_FACING, VerticalFacing.NO).setValue(TICKING, false).setValue(FLAT_TOP, false), properties
 		);
-		this.getBaseStackSizeMultiplier = getBaseStackSizeMultiplier;
+		this.getBaseStackSizeMultiplier = config::baseSlotLimitMultiplier;
 	}
 
 	@Override
@@ -130,7 +130,7 @@ public class LimitedBarrelBlock extends BarrelBlock {
 				return InteractionResult.SUCCESS;
 			}
 		}
-		return InteractionResult.PASS;
+		return InteractionResult.CONSUME;
 	}
 
 	@Override
@@ -257,7 +257,7 @@ public class LimitedBarrelBlock extends BarrelBlock {
 	}
 
 	@Override
-	public int getDisplayItemsCount(List<RenderInfo.DisplayItem> displayItems) {
+	public int getDisplayItemsCount(List<RenderData.DisplayItemData> displayItems) {
 		return getNumberOfInventorySlots();
 	}
 

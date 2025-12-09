@@ -1,71 +1,26 @@
 package net.p3pp3rf1y.sophisticatedstorage.settings;
 
-import net.minecraft.nbt.CompoundTag;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.p3pp3rf1y.sophisticatedcore.inventory.ContainerContents;
 import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryHandler;
-import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
-import net.p3pp3rf1y.sophisticatedcore.settings.ISettingsCategory;
+import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderDataHandler;
 import net.p3pp3rf1y.sophisticatedcore.settings.SettingsHandler;
 import net.p3pp3rf1y.sophisticatedcore.settings.itemdisplay.ItemDisplaySettingsCategory;
-import net.p3pp3rf1y.sophisticatedcore.settings.main.MainSettingsCategory;
+import net.p3pp3rf1y.sophisticatedcore.settings.itemdisplay.ItemDisplaySettingsCategoryData;
 import net.p3pp3rf1y.sophisticatedcore.settings.memory.MemorySettingsCategory;
+import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public abstract class StorageSettingsHandler extends SettingsHandler {
-	public static final String SOPHISTICATED_STORAGE_SETTINGS_PLAYER_TAG = "sophisticatedStorageSettings";
-
-	static {
-		NeoForge.EVENT_BUS.addListener(StorageSettingsHandler::onPlayerClone);
-	}
-
-	private static void onPlayerClone(PlayerEvent.Clone event) {
-		CompoundTag oldData = event.getOriginal().getPersistentData();
-		CompoundTag newData = event.getEntity().getPersistentData();
-
-		if (oldData.contains(SOPHISTICATED_STORAGE_SETTINGS_PLAYER_TAG)) {
-			//noinspection ConstantConditions
-			newData.put(SOPHISTICATED_STORAGE_SETTINGS_PLAYER_TAG, oldData.get(SOPHISTICATED_STORAGE_SETTINGS_PLAYER_TAG));
-		}
-	}
-
-	protected StorageSettingsHandler(CompoundTag contentsNbt, Runnable markContentsDirty, Supplier<InventoryHandler> inventoryHandlerSupplier, Supplier<RenderInfo> renderInfoSupplier) {
-		super(contentsNbt, markContentsDirty, inventoryHandlerSupplier, renderInfoSupplier);
+	protected StorageSettingsHandler(ContainerContents.SettingsData settingsData, Runnable markContentsDirty, Supplier<InventoryHandler> inventoryHandlerSupplier, Supplier<RenderDataHandler> renderDataHandlerSupplier) {
+		super(settingsData, markContentsDirty, inventoryHandlerSupplier, renderDataHandlerSupplier, SophisticatedStorage.MOD_ID);
 	}
 
 	protected abstract int getNumberOfDisplayItems();
 
 	@Override
-	protected CompoundTag getSettingsNbtFromContentsNbt(CompoundTag contentsNbt) {
-		return contentsNbt;
-	}
-
-	@Override
-	protected void addItemDisplayCategory(Supplier<InventoryHandler> inventoryHandlerSupplier, Supplier<RenderInfo> renderInfoSupplier, CompoundTag settingsNbt) {
-		addSettingsCategory(settingsNbt, ItemDisplaySettingsCategory.NAME, markContentsDirty, (categoryNbt, saveNbt) ->
-				new ItemDisplaySettingsCategory(inventoryHandlerSupplier, renderInfoSupplier, categoryNbt, saveNbt, getNumberOfDisplayItems(), () -> getTypeCategory(MemorySettingsCategory.class)));
-	}
-
-	@Override
-	public String getGlobalSettingsCategoryName() {
-		return MainSettingsCategory.NAME;
-	}
-
-	@Override
-	public ISettingsCategory<?> instantiateGlobalSettingsCategory(CompoundTag categoryNbt, Consumer<CompoundTag> saveNbt) {
-		return new MainSettingsCategory<>(categoryNbt, saveNbt, SOPHISTICATED_STORAGE_SETTINGS_PLAYER_TAG);
-	}
-
-	@Override
-	protected void saveCategoryNbt(CompoundTag settingsNbt, String categoryName, CompoundTag tag) {
-		contentsNbt.put(categoryName, tag);
-	}
-
-	@Override
-	public void reloadFrom(CompoundTag contentsNbt) {
-		this.contentsNbt = contentsNbt;
-		super.reloadFrom(contentsNbt);
+	protected void addItemDisplayCategory(Supplier<InventoryHandler> inventoryHandlerSupplier, Supplier<RenderDataHandler> renderDataHandlerSupplier, ContainerContents.SettingsData settingsData) {
+		this.<ItemDisplaySettingsCategoryData, ItemDisplaySettingsCategory>addSettingsCategory(settingsData, ItemDisplaySettingsCategory.NAME, markContentsDirty, (data, save) ->
+				new ItemDisplaySettingsCategory(inventoryHandlerSupplier, renderDataHandlerSupplier, data, save, getNumberOfDisplayItems(), () -> getTypeCategory(MemorySettingsCategory.class)), ItemDisplaySettingsCategoryData::new);
 	}
 }

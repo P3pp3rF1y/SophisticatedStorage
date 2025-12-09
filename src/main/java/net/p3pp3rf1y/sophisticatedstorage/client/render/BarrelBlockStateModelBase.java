@@ -32,7 +32,7 @@ import net.neoforged.neoforge.client.model.DynamicBlockStateModel;
 import net.neoforged.neoforge.client.model.IQuadTransformer;
 import net.neoforged.neoforge.client.model.QuadTransformers;
 import net.neoforged.neoforge.common.util.TransformationHelper;
-import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
+import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderData;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlockEntity;
@@ -73,7 +73,7 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 	public static final Cache<Integer, List<BakedQuad>> BAKED_QUADS_CACHE = CacheBuilder.newBuilder().expireAfterAccess(15L, TimeUnit.MINUTES).build();
 	private static final Map<Integer, IQuadTransformer> DISPLAY_ROTATIONS = new HashMap<>();
 	private static final List<BarrelMaterial> PARTICLE_ICON_MATERIAL_PRIORITY = List.of(BarrelMaterial.ALL, BarrelMaterial.ALL_BUT_TRIM, BarrelMaterial.TOP_ALL, BarrelMaterial.TOP);
-	private List<RenderInfo.DisplayItem> displayItems;
+	private List<RenderData.DisplayItemData> displayItems;
 	private List<Integer> inaccessibleSlots;
 	private boolean showsLock;
 
@@ -240,8 +240,8 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 			hasMainColor = be.getStorageWrapper().hasMainColor();
 			hasAccentColor = be.getStorageWrapper().hasAccentColor();
 			if (!be.hasFullyDynamicRenderer()) {
-				displayItems = be.getStorageWrapper().getRenderInfo().getItemDisplayRenderInfo().getDisplayItems();
-				inaccessibleSlots = be.getStorageWrapper().getRenderInfo().getItemDisplayRenderInfo().getInaccessibleSlots();
+				displayItems = be.getStorageWrapper().getRenderDataHandler().getDisplayData().displayItems();
+				inaccessibleSlots = be.getStorageWrapper().getRenderDataHandler().getDisplayData().inaccessibleSlots();
 			}
 			isPacked = be.isPacked();
 			showsTier = be.shouldShowTier();
@@ -410,8 +410,8 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 		return hash;
 	}
 
-	private int getDisplayItemsHash(List<RenderInfo.DisplayItem> displayItems, List<Integer> inaccessibleSlots, int hash) {
-		for (RenderInfo.DisplayItem displayItem : displayItems) {
+	private int getDisplayItemsHash(List<RenderData.DisplayItemData> displayItems, List<Integer> inaccessibleSlots, int hash) {
+		for (RenderData.DisplayItemData displayItem : displayItems) {
 			hash = hash * 31 + getDisplayItemHash(displayItem);
 		}
 		for (Integer inaccessibleSlot : inaccessibleSlots) {
@@ -420,11 +420,11 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 		return hash;
 	}
 
-	private int getDisplayItemHash(RenderInfo.DisplayItem displayItem) {
-		int hash = displayItem.getRotation();
-		ItemStack stack = displayItem.getItem();
+	private int getDisplayItemHash(RenderData.DisplayItemData displayItem) {
+		int hash = displayItem.rotation();
+		ItemStack stack = displayItem.item();
 		hash = hash * 31 + ItemStack.hashItemAndComponents(stack);
-		hash = hash * 31 + displayItem.getSlotIndex();
+		hash = hash * 31 + displayItem.slotIndex();
 		return hash;
 	}
 
@@ -436,10 +436,10 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 		int displayItemsCount = barrelBlock.getDisplayItemsCount(displayItems);
 		if (!displayItems.isEmpty()) {
 			int index = 0;
-			for (RenderInfo.DisplayItem displayItem : displayItems) {
-				ItemStack item = displayItem.getItem();
+			for (RenderData.DisplayItemData displayItem : displayItems) {
+				ItemStack item = displayItem.item();
 				if (barrelBlock.hasFixedIndexDisplayItems()) {
-					index = displayItem.getSlotIndex();
+					index = displayItem.slotIndex();
 				}
 				if (item.isEmpty()) {
 					continue;
@@ -449,7 +449,7 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 				Minecraft.getInstance().getItemModelResolver().updateForTopItem(renderState, item, ItemDisplayContext.FIXED, null, null, 0);
 				for (ItemStackRenderState.LayerRenderState layer : renderState.layers) {
 					if (layer.specialRenderer == null) {
-						int rotation = displayItem.getRotation();
+						int rotation = displayItem.rotation();
 						QuadCollection.Builder builder = layer.renderType == Sheets.translucentItemSheet() ? translucentBuilder : cutoutBuilder;
 
 						addRenderedItem(builder, state, item, renderState, layer.prepareQuadList(), layer.transform, DisplayItemRenderer.isGui3d(renderState), rotation, index, displayItemsCount);
@@ -501,10 +501,10 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 		quads = rotateDisplayItemQuads(quads, state);
 
 		if (gui3d) {
-			IQuadTransformer transformer = getDirectionMove(displayItem, renderState, transform, originalQuads, gui3d, state, facing, displayItemIndex, displayItemCount, displayItemCount == 1 ? 1 : SMALL_BLOCK_ITEM_SCALE);
+			IQuadTransformer transformer = getDirectionMove(displayItem, renderState, gui3d, state, facing, displayItemIndex, displayItemCount, displayItemCount == 1 ? 1 : SMALL_BLOCK_ITEM_SCALE);
 			quads = transformer.process(quads);
 		} else {
-			quads = getDirectionMove(displayItem, renderState, transform, originalQuads, gui3d, state, facing, displayItemIndex, displayItemCount, 1).process(quads);
+			quads = getDirectionMove(displayItem, renderState, gui3d, state, facing, displayItemIndex, displayItemCount, 1).process(quads);
 		}
 		quads = recalculateDirections(quads);
 
@@ -556,14 +556,14 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 		return ret;
 	}
 
-	private IQuadTransformer getDirectionMove(ItemStack displayItem, ItemStackRenderState renderState, ItemTransform transform, List<BakedQuad> quads, boolean isGui3d, BlockState state, Direction direction, int displayItemIndex, int displayItemCount, float itemScale) {
+	private IQuadTransformer getDirectionMove(ItemStack displayItem, ItemStackRenderState renderState, boolean isGui3d, BlockState state, Direction direction, int displayItemIndex, int displayItemCount, float itemScale) {
 		boolean isFlatTop = state.getValue(BarrelBlock.FLAT_TOP);
 		int hash = calculateDirectionMoveHash(state, displayItem, displayItemIndex, displayItemCount, isFlatTop);
 		Cache<Integer, IQuadTransformer> directionCache = DIRECTION_MOVES_3D_ITEMS.getUnchecked(direction);
 		IQuadTransformer transformer = directionCache.getIfPresent(hash);
 
 		if (transformer == null) {
-			double offset = DisplayItemRenderer.getDisplayItemOffset(displayItem, renderState, transform, quads, isGui3d, itemScale);
+			double offset = DisplayItemRenderer.getDisplayItemOffset(displayItem, renderState, isGui3d, itemScale);
 			if (!isFlatTop) {
 				offset -= 1 / 16D;
 			}
@@ -628,8 +628,8 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 		hasMainColor = be.getStorageWrapper().hasMainColor();
 		hasAccentColor = be.getStorageWrapper().hasAccentColor();
 		if (!be.hasFullyDynamicRenderer()) {
-			displayItems = be.getStorageWrapper().getRenderInfo().getItemDisplayRenderInfo().getDisplayItems();
-			inaccessibleSlots = be.getStorageWrapper().getRenderInfo().getItemDisplayRenderInfo().getInaccessibleSlots();
+			displayItems = be.getStorageWrapper().getRenderDataHandler().getDisplayData().displayItems();
+			inaccessibleSlots = be.getStorageWrapper().getRenderDataHandler().getDisplayData().inaccessibleSlots();
 		} else {
 			displayItems = Collections.emptyList();
 			inaccessibleSlots = Collections.emptyList();

@@ -218,8 +218,8 @@
     "gui.sophisticatedstorage.settings.buttons.context_storage": "Сховище",
     "gui.sophisticatedstorage.settings.buttons.context_storage.tooltip": "Параметри цього сховища",
     "gui.sophisticatedstorage.settings.buttons.context_storage.tooltip_detail": "Отримаються від гравця або окремо перепризначаються",
-    "keybind.sophisticatedstorage.category": "Вишукані сховища",
-    "keybind.sophisticatedstorage.sort": "Сортувати сховище",
+    "key.category.sophisticatedstorage.main": "Вишукані сховища",
+    "key.sophisticatedstorage.sort": "Сортувати сховище",
     "gui.sophisticatedstorage.status.too_many_item_entity_drops": "Не можна зламати це сховище, оскільки випаде забагато предметів (%s)\nКраще скористайтеся _пакувальною стрічкою_, або зламайте його, утримуючи Shift, щоби пропустити цю перевірку",
     "gui.sophisticatedstorage.status.too_low_tier_upgrade_count": "Поліпшення вимагає %s %ss"
   }

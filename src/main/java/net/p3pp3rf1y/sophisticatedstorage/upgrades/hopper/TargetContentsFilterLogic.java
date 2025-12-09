@@ -3,10 +3,14 @@ package net.p3pp3rf1y.sophisticatedstorage.upgrades.hopper;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponentType;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryHandler;
 import net.p3pp3rf1y.sophisticatedcore.inventory.ItemStackKey;
 import net.p3pp3rf1y.sophisticatedcore.settings.memory.MemorySettingsCategory;
@@ -19,12 +23,13 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 public class TargetContentsFilterLogic extends ContentsFilterLogic {
 	private Set<ItemStackKey> inventoryFilterStacks = new HashSet<>();
-	private final LoadingCache<IItemHandler, Set<ItemStackKey>> inventoryCache = CacheBuilder.newBuilder().expireAfterWrite(5, TimeUnit.SECONDS).build(new CacheLoader<>() {
+	private final LoadingCache<ResourceHandler<ItemResource>, Set<ItemStackKey>> inventoryCache = CacheBuilder.newBuilder().expireAfterWrite(5, TimeUnit.SECONDS).build(new CacheLoader<>() {
 		@Override
-		public Set<ItemStackKey> load(IItemHandler inventory) {
+		public Set<ItemStackKey> load(ResourceHandler<ItemResource> inventory) {
 			return InventoryHelper.getUniqueStacks(inventory);
 		}
 	});
@@ -33,18 +38,18 @@ public class TargetContentsFilterLogic extends ContentsFilterLogic {
 		super(upgrade, saveHandler, filterSlotCount, getInventoryHandler, memorySettings, filterAttributesComponent);
 	}
 
-	public void setInventory(IItemHandler inventory) {
+	public void setInventory(ResourceHandler<ItemResource> inventory) {
 		inventoryFilterStacks = inventoryCache.getUnchecked(inventory);
 	}
 
 	@Override
-	public boolean matchesFilter(ItemStack stack) {
+	protected boolean matchesFilter(Stream<TagKey<Item>> tags, Item item, int damageValue, boolean empty, DataComponentMap components) {
 		if (!shouldFilterByStorage()) {
-			return super.matchesFilter(stack);
+			return super.matchesFilter(tags, item, damageValue, empty, components);
 		}
 
 		for (ItemStackKey filterStack : inventoryFilterStacks) {
-			if (stackMatchesFilter(stack, filterStack.getStack())) {
+			if (stackMatchesFilter(filterStack.stack(), item, damageValue, empty, components)) {
 				return true;
 			}
 		}

@@ -11,10 +11,12 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
-import net.neoforged.neoforge.items.ItemStackHandler;
-import net.neoforged.neoforge.items.SlotItemHandler;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.item.ItemStacksResourceHandler;
+import net.neoforged.neoforge.transfer.item.ResourceHandlerSlot;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.ISyncedContainer;
 import net.p3pp3rf1y.sophisticatedcore.network.SyncContainerClientDataPayload;
+import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.SlotRange;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.DecorationTableBlockEntity;
@@ -43,7 +45,7 @@ public class DecorationTableMenu extends AbstractContainerMenu implements ISynce
 	private SlotRange playerSlotRange;
 	@Nullable
 	private Runnable slotChangedListener = null;
-	private SlotItemHandler storageSlot;
+	private ResourceHandlerSlot storageSlot;
 
 	public DecorationTableMenu(int containerId, Player player, BlockPos pos) {
 		super(ModBlocks.DECORATION_TABLE_CONTAINER_TYPE.get(), containerId);
@@ -71,19 +73,17 @@ public class DecorationTableMenu extends AbstractContainerMenu implements ISynce
 	}
 
 	private void addStorageSlots() {
-		ItemStackHandler storageBlock = blockEntity.getStorageBlock();
-		storageSlot = new SlotItemHandler(storageBlock, 0, getSlot(dyeSlotRange.firstSlot()).x, getSlot(DecorationTableBlockEntity.BOTTOM_TRIM_SLOT).y) {
-			@Override
-			public void setChanged() {
-				super.setChanged();
-				if (slotChangedListener != null) {
-					slotChangedListener.run();
-				}
-			}
-		};
+		ItemStacksResourceHandler storageBlock = blockEntity.getStorageBlock();
+		storageSlot = new ResourceHandlerSlot(storageBlock,
+				(index, resource, amount) -> {
+					storageBlock.set(index, resource, amount);
+					if (slotChangedListener != null) {
+						slotChangedListener.run();
+					}
+				}, 0, getSlot(dyeSlotRange.firstSlot()).x, getSlot(DecorationTableBlockEntity.BOTTOM_TRIM_SLOT).y);
 		addSlot(storageSlot);
 
-		storageSlotRange = new SlotRange(dyeSlotRange.firstSlot() + dyeSlotRange.numberOfSlots(), 1);
+		storageSlotRange = new SlotRange(dyeSlotRange.firstSlot() + dyeSlotRange.size(), 1);
 
 		resultSlot = new Slot(new SimpleContainer(1) {
 			@Override
@@ -118,7 +118,7 @@ public class DecorationTableMenu extends AbstractContainerMenu implements ISynce
 					return;
 				}
 				blockEntity.consumeIngredientsOnCraft();
-				blockEntity.getStorageBlock().extractItem(0, 1, false);
+				InventoryHelper.extract(blockEntity.getStorageBlock(), 0, ItemResource.of(stack), 1);
 			}
 		};
 		addSlot(resultSlot);
@@ -127,7 +127,7 @@ public class DecorationTableMenu extends AbstractContainerMenu implements ISynce
 	private int addDecorationSlots() {
 		int xOffset = 8;
 		int yOffset = 17;
-		ItemStackHandler decorativeBlocks = blockEntity.getDecorativeBlocks();
+		ItemStacksResourceHandler decorativeBlocks = blockEntity.getDecorativeBlocks();
 		int x = xOffset;
 		int y = yOffset;
 		int slotIndex = 0;
@@ -140,30 +140,28 @@ public class DecorationTableMenu extends AbstractContainerMenu implements ISynce
 		y = addDecorationSlot(decorativeBlocks, 4, x, y, DECORATION_SLOT_PADDING);
 		y = addDecorationSlot(decorativeBlocks, 5, x, y, DECORATION_SLOT_PADDING);
 		y = addDecorationSlot(decorativeBlocks, 6, x, y, 0);
-		decorationSlotRange = new SlotRange(0, decorativeBlocks.getSlots());
+		decorationSlotRange = new SlotRange(0, decorativeBlocks.size());
 		x += 44;
 
-		ItemStackHandler dyes = blockEntity.getDyes();
-		addSlot(new SlotItemHandler(dyes, 0, x, yOffset).setBackground(EMPTY_RED_DYE_SLOT_BACKGROUND));
+		ItemStacksResourceHandler dyes = blockEntity.getDyes();
+		addSlot(new ResourceHandlerSlot(dyes, dyes::set, 0, x, yOffset).setBackground(EMPTY_RED_DYE_SLOT_BACKGROUND));
 		x += 18;
-		addSlot(new SlotItemHandler(dyes, 1, x, yOffset).setBackground(EMPTY_GREEN_DYE_SLOT_BACKGROUND));
+		addSlot(new ResourceHandlerSlot(dyes, dyes::set, 1, x, yOffset).setBackground(EMPTY_GREEN_DYE_SLOT_BACKGROUND));
 		x += 18;
-		addSlot(new SlotItemHandler(dyes, 2, x, yOffset).setBackground(EMPTY_BLUE_DYE_SLOT_BACKGROUND));
-		dyeSlotRange = new SlotRange(decorationSlotRange.firstSlot() + decorationSlotRange.numberOfSlots(), dyes.getSlots());
+		addSlot(new ResourceHandlerSlot(dyes, dyes::set, 2, x, yOffset).setBackground(EMPTY_BLUE_DYE_SLOT_BACKGROUND));
+		dyeSlotRange = new SlotRange(decorationSlotRange.firstSlot() + decorationSlotRange.size(), dyes.size());
 
 		return y;
 	}
 
-	private int addDecorationSlot(ItemStackHandler itemHandler, int slotIndex, int xOffset, int y, int yPadding) {
-		addSlot(new SlotItemHandler(itemHandler, slotIndex, xOffset, y) {
-			@Override
-			public void setChanged() {
-				super.setChanged();
-				if (slotChangedListener != null) {
-					slotChangedListener.run();
-				}
-			}
-		}.setBackground(EMPTY_MATERIAL_SLOT_BACKGROUND));
+	private int addDecorationSlot(ItemStacksResourceHandler itemHandler, int slotIndex, int xOffset, int y, int yPadding) {
+		addSlot(new ResourceHandlerSlot(itemHandler,
+				(index, resource, amount) -> {
+					itemHandler.set(index, resource, amount);
+					if (slotChangedListener != null) {
+						slotChangedListener.run();
+					}
+				}, slotIndex, xOffset, y).setBackground(EMPTY_MATERIAL_SLOT_BACKGROUND));
 		y += 18;
 		y += yPadding;
 		return y;
@@ -184,7 +182,7 @@ public class DecorationTableMenu extends AbstractContainerMenu implements ISynce
 			addSlot(slot);
 		}
 
-		playerSlotRange = new SlotRange(storageSlotRange.firstSlot() + storageSlotRange.numberOfSlots() + 1, 36);
+		playerSlotRange = new SlotRange(storageSlotRange.firstSlot() + storageSlotRange.size() + 1, 36);
 	}
 
 	@Override
@@ -193,13 +191,14 @@ public class DecorationTableMenu extends AbstractContainerMenu implements ISynce
 		ItemStack slotStack = slot.getItem();
 		ItemStack slotStackCopy = slotStack.copy();
 		if (isPlayerSlot(slotIndex)) {
-			if (blockEntity.getDecorativeBlocks().isItemValid(decorationSlotRange.firstSlot(), slotStack)
+			ItemResource resource = ItemResource.of(slotStack);
+			if (blockEntity.getDecorativeBlocks().isValid(decorationSlotRange.firstSlot(), resource)
 					&& !moveItemStackTo(slotStack, decorationSlotRange, false)) {
 				return ItemStack.EMPTY;
 			} else if (isValidDye(slotStack)
 					&& !moveItemStackTo(slotStack, dyeSlotRange, false)) {
 				return ItemStack.EMPTY;
-			} else if (blockEntity.getStorageBlock().isItemValid(0, slotStack)
+			} else if (blockEntity.getStorageBlock().isValid(0, resource)
 					&& !moveItemStackTo(slotStack, storageSlotRange, false)) {
 				return ItemStack.EMPTY;
 			}
@@ -219,10 +218,11 @@ public class DecorationTableMenu extends AbstractContainerMenu implements ISynce
 	}
 
 	private boolean isValidDye(ItemStack stack) {
-		ItemStackHandler dyes = blockEntity.getDyes();
+		ItemStacksResourceHandler dyes = blockEntity.getDyes();
 
-		for (int slot = 0; slot < dyes.getSlots(); slot++) {
-			if (dyes.isItemValid(slot, stack)) {
+		ItemResource resource = ItemResource.of(stack);
+		for (int slot = 0; slot < dyes.size(); slot++) {
+			if (dyes.isValid(slot, resource)) {
 				return true;
 			}
 		}
@@ -231,7 +231,7 @@ public class DecorationTableMenu extends AbstractContainerMenu implements ISynce
 	}
 
 	private boolean moveItemStackTo(ItemStack stack, SlotRange slotRange, boolean reverse) {
-		return moveItemStackTo(stack, slotRange.firstSlot(), slotRange.firstSlot() + slotRange.numberOfSlots(), reverse);
+		return moveItemStackTo(stack, slotRange.firstSlot(), slotRange.firstSlot() + slotRange.size(), reverse);
 	}
 
 	private boolean isPlayerSlot(int slotIndex) {
@@ -278,11 +278,11 @@ public class DecorationTableMenu extends AbstractContainerMenu implements ISynce
 		return blockEntity.isSlotMaterialInherited(slot);
 	}
 
-	public ItemStack getInheritedItem(int slotIndex) {
-		return getInheritedItem(DecorationTableBlockEntity.PartSlot.fromSlotIndex(slotIndex));
+	public ItemResource getInheritedResource(int slotIndex) {
+		return getInheritedResource(DecorationTableBlockEntity.PartSlot.fromSlotIndex(slotIndex));
 	}
 
-	public ItemStack getInheritedItem(DecorationTableBlockEntity.PartSlot childSlot) {
+	public ItemResource getInheritedResource(DecorationTableBlockEntity.PartSlot childSlot) {
 		return blockEntity.getInheritedItem(childSlot);
 	}
 
@@ -299,7 +299,7 @@ public class DecorationTableMenu extends AbstractContainerMenu implements ISynce
 	}
 
 	protected void sendToServer(Consumer<CompoundTag> addData) {
-		if (blockEntity.getLevel() == null || !blockEntity.getLevel().isClientSide) {
+		if (blockEntity.getLevel() == null || !blockEntity.getLevel().isClientSide()) {
 			return;
 		}
 

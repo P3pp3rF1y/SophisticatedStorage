@@ -2,17 +2,17 @@ package net.p3pp3rf1y.sophisticatedstorage.block;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.items.IItemHandler;
-import net.p3pp3rf1y.sophisticatedcore.inventory.IItemHandlerSimpleInserter;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 
 import javax.annotation.Nullable;
 
 public class StorageInputBlockEntity extends StorageIOBlockEntity {
 	@Nullable
-	private IItemHandler itemHandler;
+	private ResourceHandler<ItemResource> itemResourceHandler;
 
 	public StorageInputBlockEntity(BlockPos pos, BlockState state) {
 		super(ModBlocks.STORAGE_INPUT_BLOCK_ENTITY_TYPE.get(), pos, state);
@@ -20,62 +20,73 @@ public class StorageInputBlockEntity extends StorageIOBlockEntity {
 
 	@Nullable
 	@Override
-	public IItemHandler getExternalItemHandler(@Nullable Direction side) {
+	public ResourceHandler<ItemResource> getExternalItemResourceHandler(@Nullable Direction side) {
 		if (getControllerPos().isEmpty()) {
 			return null;
 		}
 
-		if (itemHandler == null) {
-			itemHandler = super.getExternalItemHandler(null);
-			if (itemHandler instanceof IItemHandlerSimpleInserter simpleInserter) {
-				itemHandler = new SingleSlotInputItemHandlerWrapper(simpleInserter);
+		if (itemResourceHandler == null) {
+			ResourceHandler<ItemResource> handler = super.getExternalItemResourceHandler(null);
+			if (handler == null) {
+				return null;
 			}
+			itemResourceHandler = new SingleSlotInputItemResourceHandlerWrapper(handler);
 		}
 
-		return itemHandler;
+		return itemResourceHandler;
 	}
 
 	@Override
 	protected void invalidateItemHandlerCache() {
 		super.invalidateItemHandlerCache();
-		itemHandler = null;
+		itemResourceHandler = null;
 	}
 
-	private static class SingleSlotInputItemHandlerWrapper implements IItemHandler {
-		private final IItemHandlerSimpleInserter itemHandler;
+	private static class SingleSlotInputItemResourceHandlerWrapper implements ResourceHandler<ItemResource> {
+		private final ResourceHandler<ItemResource> itemResourceHandler;
 
-		public SingleSlotInputItemHandlerWrapper(IItemHandlerSimpleInserter itemHandler) {
-			this.itemHandler = itemHandler;
+		public SingleSlotInputItemResourceHandlerWrapper(ResourceHandler<ItemResource> itemResourceHandler) {
+			this.itemResourceHandler = itemResourceHandler;
 		}
 
 		@Override
-		public int getSlots() {
+		public int size() {
 			return 1;
 		}
 
 		@Override
-		public ItemStack getStackInSlot(int slot) {
-			return ItemStack.EMPTY;
+		public ItemResource getResource(int slot) {
+			return ItemResource.EMPTY;
 		}
 
 		@Override
-		public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
-			return itemHandler.insertItem(stack, simulate);
+		public long getAmountAsLong(int slot) {
+			return 0;
 		}
 
 		@Override
-		public ItemStack extractItem(int slot, int amount, boolean simulate) {
-			return ItemStack.EMPTY;
-		}
-
-		@Override
-		public int getSlotLimit(int slot) {
+		public long getCapacityAsLong(int slot, ItemResource itemResource) {
 			return 99;
 		}
 
 		@Override
-		public boolean isItemValid(int slot, ItemStack stack) {
+		public boolean isValid(int slot, ItemResource itemResource) {
 			return true;
+		}
+
+		@Override
+		public int insert(int slot, ItemResource itemResource, int amount, TransactionContext transaction) {
+			return 0;
+		}
+
+		@Override
+		public int insert(ItemResource itemResource, int amount, TransactionContext transaction) {
+			return itemResourceHandler.insert(itemResource, amount, transaction);
+		}
+
+		@Override
+		public int extract(int slot, ItemResource itemResource, int amount, TransactionContext transaction) {
+			return itemResourceHandler.insert(slot, itemResource, amount, transaction);
 		}
 	}
 }

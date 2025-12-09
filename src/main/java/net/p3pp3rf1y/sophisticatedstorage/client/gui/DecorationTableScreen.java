@@ -9,6 +9,8 @@ import net.minecraft.client.gui.render.state.GuiItemRenderState;
 import net.minecraft.client.gui.render.state.pip.OversizedItemRenderState;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.block.model.ItemTransform;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
@@ -105,7 +107,7 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 	protected void init() {
 		super.init();
 		inventoryLabelY = getMenu().getSlot(DecorationTableBlockEntity.BOTTOM_TRIM_SLOT).y + 18 + 2;
-		int lastDyeSlotIndex = getMenu().getDyeSlotRange().firstSlot() + getMenu().getDyeSlotRange().numberOfSlots() - 1;
+		int lastDyeSlotIndex = getMenu().getDyeSlotRange().firstSlot() + getMenu().getDyeSlotRange().size() - 1;
 		Slot lastDyeSlot = getMenu().getSlot(lastDyeSlotIndex);
 		Slot resultSlot = menu.getResultSlot();
 		blockPreview = new BlockPreview(new Position(leftPos + lastDyeSlot.x + 16 + 1 + 8 + 1, topPos + lastDyeSlot.y), new Dimension(80, resultSlot.y - lastDyeSlot.y + 16 + 4));
@@ -251,7 +253,7 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 	protected void renderSlot(GuiGraphics guiGraphics, Slot slot) {
 		super.renderSlot(guiGraphics, slot);
 		if (slot.getItem().isEmpty() && getMenu().isSlotMaterialInherited(slot.index)) {
-			ItemStack inheritedItem = getMenu().getInheritedItem(slot.index);
+			ItemStack inheritedItem = getMenu().getInheritedResource(slot.index).toStack();
 			if (!inheritedItem.isEmpty()) {
 				guiGraphics.renderItem(inheritedItem, slot.x, slot.y, slot.x + slot.y * imageWidth);
 				guiGraphics.blit(RenderPipelines.GUI_TEXTURED, GuiHelper.GUI_CONTROLS, slot.x, slot.y, 77, 0, 16, 16, 256, 256);
@@ -336,13 +338,13 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 	}
 
 	@Override
-	public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
+	public boolean mouseDragged(MouseButtonEvent event, double dragX, double dragY) {
 		if (colorPicker != null) {
-			return colorPicker.mouseDragged(mouseX, mouseY, button, dragX, dragY);
+			return colorPicker.mouseDragged(event, dragX, dragY);
 		}
 
 		for (GuiEventListener child : children()) {
-			if (child.isMouseOver(mouseX, mouseY) && child.mouseDragged(mouseX, mouseY, button, dragX, dragY)) {
+			if (child.isMouseOver(event.x(), event.y()) && child.mouseDragged(event, dragX, dragY)) {
 				if (child instanceof BlockPreview) {
 					lastRotationSetTime = System.currentTimeMillis() + 100_000;
 				}
@@ -350,7 +352,7 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 				return true;
 			}
 		}
-		return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
+		return super.mouseDragged(event, dragX, dragY);
 	}
 
 	@Override
@@ -365,28 +367,28 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 	}
 
 	@Override
-	public boolean mouseClicked(double mouseX, double mouseY, int button) {
+	public boolean mouseClicked(MouseButtonEvent event, boolean doubleClicked) {
 		if (colorPicker != null) {
-			return colorPicker.mouseClicked(mouseX, mouseY, button);
+			return colorPicker.mouseClicked(event, doubleClicked);
 		}
 		GuiEventListener focused = getFocused();
-		if (focused != null && !focused.isMouseOver(mouseX, mouseY) && (focused instanceof WidgetBase widgetBase)) {
+		if (focused != null && !focused.isMouseOver(event.x(), event.y()) && (focused instanceof WidgetBase widgetBase)) {
 			widgetBase.setFocused(false);
 		}
 
-		return super.mouseClicked(mouseX, mouseY, button);
+		return super.mouseClicked(event, doubleClicked);
 	}
 
 	@Override
-	public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-		if (keyCode == 256 && colorPicker != null) {
+	public boolean keyPressed(KeyEvent event) {
+		if (event.key() == 256 && colorPicker != null) {
 			colorPicker = null;
 			blockPreview.setVisible(true);
 			updatePreviewStacks();
 			return true;
 		}
 
-		return super.keyPressed(keyCode, scanCode, modifiers);
+		return super.keyPressed(event);
 	}
 
 	private static class PartIcon extends WidgetBase {
@@ -628,9 +630,9 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 		}
 
 		@Override
-		public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
-			if (!previewStackButtons.isEmpty() && mouseY > y + getHeight() - 20) {
-				return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
+		public boolean mouseDragged(MouseButtonEvent event, double dragX, double dragY) {
+			if (!previewStackButtons.isEmpty() && event.y() > y + getHeight() - 20) {
+				return super.mouseDragged(event, dragX, dragY);
 			}
 
 			yAxisRotation += (float) (2 * dragX);

@@ -213,7 +213,7 @@ public class ModItems {
 		CONDITION_CODECS.register(modBus);
 		ModDataComponents.register(modBus);
 		modBus.addListener(ModItems::registerContainers);
-		if (FMLEnvironment.dist.isClient()) {
+		if (FMLEnvironment.getDist().isClient()) {
 			ModItemsClient.init(modBus);
 		}
 	}

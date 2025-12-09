@@ -3,8 +3,8 @@
     {
       "type": "neoforge:namespaced_directory",
       "namespace": "sophisticatedstorage",
-      "source": "entity/shulker_box",
-      "prefix": "entity/shulker_box/"
+      "source": "entity/chest",
+      "prefix": "entity/chest/"
     }
   ]
 }

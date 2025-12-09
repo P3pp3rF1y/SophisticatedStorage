@@ -8,13 +8,13 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.monster.Shulker;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 
@@ -49,7 +49,7 @@ public class ShulkerBoxBlockEntity extends StorageBlockEntity {
 		}
 
 		@Override
-		protected boolean isOwnContainer(Player player) {
+		public boolean isOwnContainer(Player player) {
 			return false;
 		}
 	};
@@ -95,9 +95,9 @@ public class ShulkerBoxBlockEntity extends StorageBlockEntity {
 	}
 
 	@Override
-	protected boolean isAllowedInStorage(ItemStack stack) {
-		Block block = Block.byItem(stack.getItem());
-		return !(block instanceof ShulkerBoxBlock) && !(block instanceof net.minecraft.world.level.block.ShulkerBoxBlock) && !Config.SERVER.shulkerBoxDisallowedItems.isItemDisallowed(stack.getItem());
+	protected boolean isAllowedInStorage(ItemResource resource) {
+		Block block = Block.byItem(resource.getItem());
+		return !(block instanceof ShulkerBoxBlock) && !(block instanceof net.minecraft.world.level.block.ShulkerBoxBlock) && !Config.SERVER.shulkerBoxDisallowedItems.isItemDisallowed(resource.getItem());
 	}
 
 	private static void doNeighborUpdates(Level level, BlockPos pos, BlockState state) {

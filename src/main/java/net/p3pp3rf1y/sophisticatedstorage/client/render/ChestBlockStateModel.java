@@ -4,10 +4,10 @@ import com.mojang.serialization.MapCodec;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.BlockModelPart;
 import net.minecraft.client.renderer.block.model.BlockStateModel;
-import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.core.BlockPos;
+import net.minecraft.data.AtlasIds;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockAndTintGetter;
@@ -40,12 +40,12 @@ public class ChestBlockStateModel implements DynamicBlockStateModel {
 
 	@Override
 	public TextureAtlasSprite particleIcon() {
-		return Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(TINTABLE_BREAK_TEXTURE);
+		return Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(AtlasIds.CHESTS).getSprite(TINTABLE_BREAK_TEXTURE);
 	}
 
 	@Override
 	public TextureAtlasSprite particleIcon(BlockAndTintGetter level, BlockPos pos, BlockState state) {
-		return Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(WorldHelper.getBlockEntity(level, pos, WoodStorageBlockEntity.class)
+		return Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(AtlasIds.CHESTS).getSprite(WorldHelper.getBlockEntity(level, pos, WoodStorageBlockEntity.class)
 				.map(be -> {
 					boolean hasMainColor = be.getStorageWrapper().hasMainColor();
 					String woodName = be.getWoodType().map(WoodType::name).orElse("");

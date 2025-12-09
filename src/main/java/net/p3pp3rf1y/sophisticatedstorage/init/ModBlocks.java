@@ -67,12 +67,12 @@ public class ModBlocks {
 	private static final DeferredRegister<MenuType<?>> MENU_TYPES = DeferredRegister.create(BuiltInRegistries.MENU, SophisticatedStorage.MOD_ID);
 
 	private static final String BARREL_REG_NAME = "barrel";
-	public static final Supplier<BarrelBlock> BARREL = BLOCKS.registerBlock(BARREL_REG_NAME, properties -> new BarrelBlock(Config.SERVER.woodBarrel.inventorySlotCount, Config.SERVER.woodBarrel.upgradeSlotCount, 0, properties));
-	public static final Supplier<BarrelBlock> COPPER_BARREL = BLOCKS.registerBlock("copper_barrel", properties -> new BarrelBlock(Config.SERVER.copperBarrel.inventorySlotCount, Config.SERVER.copperBarrel.upgradeSlotCount, 0, properties));
-	public static final Supplier<BarrelBlock> IRON_BARREL = BLOCKS.registerBlock("iron_barrel", properties -> new BarrelBlock(Config.SERVER.ironBarrel.inventorySlotCount, Config.SERVER.ironBarrel.upgradeSlotCount, 0, properties));
-	public static final Supplier<BarrelBlock> GOLD_BARREL = BLOCKS.registerBlock("gold_barrel", properties -> new BarrelBlock(Config.SERVER.goldBarrel.inventorySlotCount, Config.SERVER.goldBarrel.upgradeSlotCount, 0, properties));
-	public static final Supplier<BarrelBlock> DIAMOND_BARREL = BLOCKS.registerBlock("diamond_barrel", properties -> new BarrelBlock(Config.SERVER.diamondBarrel.inventorySlotCount, Config.SERVER.diamondBarrel.upgradeSlotCount, 0, properties));
-	public static final Supplier<BarrelBlock> NETHERITE_BARREL = BLOCKS.registerBlock("netherite_barrel", properties -> new BarrelBlock(Config.SERVER.netheriteBarrel.inventorySlotCount, Config.SERVER.netheriteBarrel.upgradeSlotCount, 1200, properties));
+	public static final Supplier<BarrelBlock> BARREL = BLOCKS.registerBlock(BARREL_REG_NAME, properties -> new BarrelBlock(Config.SERVER.woodBarrel, 0, properties));
+	public static final Supplier<BarrelBlock> COPPER_BARREL = BLOCKS.registerBlock("copper_barrel", properties -> new BarrelBlock(Config.SERVER.copperBarrel, 0, properties));
+	public static final Supplier<BarrelBlock> IRON_BARREL = BLOCKS.registerBlock("iron_barrel", properties -> new BarrelBlock(Config.SERVER.ironBarrel, 0, properties));
+	public static final Supplier<BarrelBlock> GOLD_BARREL = BLOCKS.registerBlock("gold_barrel", properties -> new BarrelBlock(Config.SERVER.goldBarrel, 0, properties));
+	public static final Supplier<BarrelBlock> DIAMOND_BARREL = BLOCKS.registerBlock("diamond_barrel", properties -> new BarrelBlock(Config.SERVER.diamondBarrel, 0, properties));
+	public static final Supplier<BarrelBlock> NETHERITE_BARREL = BLOCKS.registerBlock("netherite_barrel", properties -> new BarrelBlock(Config.SERVER.netheriteBarrel, 1200, properties));
 	public static final DeferredHolder<Item, BlockItem> BARREL_ITEM = ITEMS.registerItem(BARREL_REG_NAME, properties -> new BarrelBlockItem(BARREL.get(), properties.useBlockDescriptionPrefix()));
 	public static final Supplier<BlockItem> COPPER_BARREL_ITEM = ITEMS.registerItem("copper_barrel", properties -> new BarrelBlockItem(COPPER_BARREL.get(), properties.useBlockDescriptionPrefix()));
 	public static final Supplier<BlockItem> IRON_BARREL_ITEM = ITEMS.registerItem("iron_barrel", properties -> new BarrelBlockItem(IRON_BARREL.get(), properties.useBlockDescriptionPrefix()));
@@ -81,12 +81,12 @@ public class ModBlocks {
 	public static final Supplier<BlockItem> NETHERITE_BARREL_ITEM = ITEMS.registerItem("netherite_barrel", properties -> new BarrelBlockItem(NETHERITE_BARREL.get(), properties.useBlockDescriptionPrefix().fireResistant()));
 
 	private static final String LIMITED_BARREL_REG_NAME = LIMITED_BARREL_NAME;
-	public static final Supplier<BarrelBlock> LIMITED_BARREL_1 = BLOCKS.registerBlock("limited_barrel_1", properties -> new LimitedBarrelBlock(1, Config.SERVER.limitedBarrel1.baseSlotLimitMultiplier, Config.SERVER.limitedBarrel1.upgradeSlotCount, 0, properties));
-	public static final Supplier<BarrelBlock> LIMITED_COPPER_BARREL_1 = BLOCKS.registerBlock("limited_copper_barrel_1", properties -> new LimitedBarrelBlock(1, Config.SERVER.copperLimitedBarrel1.baseSlotLimitMultiplier, Config.SERVER.copperLimitedBarrel1.upgradeSlotCount, 0, properties));
-	public static final Supplier<BarrelBlock> LIMITED_IRON_BARREL_1 = BLOCKS.registerBlock("limited_iron_barrel_1", properties -> new LimitedBarrelBlock(1, Config.SERVER.ironLimitedBarrel1.baseSlotLimitMultiplier, Config.SERVER.ironLimitedBarrel1.upgradeSlotCount, 0, properties));
-	public static final Supplier<BarrelBlock> LIMITED_GOLD_BARREL_1 = BLOCKS.registerBlock("limited_gold_barrel_1", properties -> new LimitedBarrelBlock(1, Config.SERVER.goldLimitedBarrel1.baseSlotLimitMultiplier, Config.SERVER.goldLimitedBarrel1.upgradeSlotCount, 0, properties));
-	public static final Supplier<BarrelBlock> LIMITED_DIAMOND_BARREL_1 = BLOCKS.registerBlock("limited_diamond_barrel_1", properties -> new LimitedBarrelBlock(1, Config.SERVER.diamondLimitedBarrel1.baseSlotLimitMultiplier, Config.SERVER.diamondLimitedBarrel1.upgradeSlotCount, 0, properties));
-	public static final Supplier<BarrelBlock> LIMITED_NETHERITE_BARREL_1 = BLOCKS.registerBlock("limited_netherite_barrel_1", properties -> new LimitedBarrelBlock(1, Config.SERVER.netheriteLimitedBarrel1.baseSlotLimitMultiplier, Config.SERVER.netheriteLimitedBarrel1.upgradeSlotCount, 1200, properties));
+	public static final Supplier<BarrelBlock> LIMITED_BARREL_1 = BLOCKS.registerBlock("limited_barrel_1", properties -> new LimitedBarrelBlock(1, Config.SERVER.limitedBarrel1, 0, properties));
+	public static final Supplier<BarrelBlock> LIMITED_COPPER_BARREL_1 = BLOCKS.registerBlock("limited_copper_barrel_1", properties -> new LimitedBarrelBlock(1, Config.SERVER.copperLimitedBarrel1, 0, properties));
+	public static final Supplier<BarrelBlock> LIMITED_IRON_BARREL_1 = BLOCKS.registerBlock("limited_iron_barrel_1", properties -> new LimitedBarrelBlock(1, Config.SERVER.ironLimitedBarrel1, 0, properties));
+	public static final Supplier<BarrelBlock> LIMITED_GOLD_BARREL_1 = BLOCKS.registerBlock("limited_gold_barrel_1", properties -> new LimitedBarrelBlock(1, Config.SERVER.goldLimitedBarrel1, 0, properties));
+	public static final Supplier<BarrelBlock> LIMITED_DIAMOND_BARREL_1 = BLOCKS.registerBlock("limited_diamond_barrel_1", properties -> new LimitedBarrelBlock(1, Config.SERVER.diamondLimitedBarrel1, 0, properties));
+	public static final Supplier<BarrelBlock> LIMITED_NETHERITE_BARREL_1 = BLOCKS.registerBlock("limited_netherite_barrel_1", properties -> new LimitedBarrelBlock(1, Config.SERVER.netheriteLimitedBarrel1, 1200, properties));
 	public static final Supplier<BlockItem> LIMITED_BARREL_1_ITEM = ITEMS.registerItem("limited_barrel_1", properties -> new LimitedBarrelBlockItem(LIMITED_BARREL_1.get(), properties.useBlockDescriptionPrefix()));
 	public static final Supplier<BlockItem> LIMITED_IRON_BARREL_1_ITEM = ITEMS.registerItem("limited_iron_barrel_1", properties -> new LimitedBarrelBlockItem(LIMITED_IRON_BARREL_1.get(), properties.useBlockDescriptionPrefix()));
 	public static final Supplier<BlockItem> LIMITED_COPPER_BARREL_1_ITEM = ITEMS.registerItem("limited_copper_barrel_1", properties -> new LimitedBarrelBlockItem(LIMITED_COPPER_BARREL_1.get(), properties.useBlockDescriptionPrefix()));
@@ -94,12 +94,12 @@ public class ModBlocks {
 	public static final Supplier<BlockItem> LIMITED_DIAMOND_BARREL_1_ITEM = ITEMS.registerItem("limited_diamond_barrel_1", properties -> new LimitedBarrelBlockItem(LIMITED_DIAMOND_BARREL_1.get(), properties.useBlockDescriptionPrefix()));
 	public static final Supplier<BlockItem> LIMITED_NETHERITE_BARREL_1_ITEM = ITEMS.registerItem("limited_netherite_barrel_1", properties -> new LimitedBarrelBlockItem(LIMITED_NETHERITE_BARREL_1.get(), properties.useBlockDescriptionPrefix().fireResistant()));
 
-	public static final Supplier<BarrelBlock> LIMITED_BARREL_2 = BLOCKS.registerBlock("limited_barrel_2", properties -> new LimitedBarrelBlock(2, Config.SERVER.limitedBarrel2.baseSlotLimitMultiplier, Config.SERVER.limitedBarrel2.upgradeSlotCount, 0, properties));
-	public static final Supplier<BarrelBlock> LIMITED_COPPER_BARREL_2 = BLOCKS.registerBlock("limited_copper_barrel_2", properties -> new LimitedBarrelBlock(2, Config.SERVER.copperLimitedBarrel2.baseSlotLimitMultiplier, Config.SERVER.copperLimitedBarrel2.upgradeSlotCount, 0, properties));
-	public static final Supplier<BarrelBlock> LIMITED_IRON_BARREL_2 = BLOCKS.registerBlock("limited_iron_barrel_2", properties -> new LimitedBarrelBlock(2, Config.SERVER.ironLimitedBarrel2.baseSlotLimitMultiplier, Config.SERVER.ironLimitedBarrel2.upgradeSlotCount, 0, properties));
-	public static final Supplier<BarrelBlock> LIMITED_GOLD_BARREL_2 = BLOCKS.registerBlock("limited_gold_barrel_2", properties -> new LimitedBarrelBlock(2, Config.SERVER.goldLimitedBarrel2.baseSlotLimitMultiplier, Config.SERVER.goldLimitedBarrel2.upgradeSlotCount, 0, properties));
-	public static final Supplier<BarrelBlock> LIMITED_DIAMOND_BARREL_2 = BLOCKS.registerBlock("limited_diamond_barrel_2", properties -> new LimitedBarrelBlock(2, Config.SERVER.diamondLimitedBarrel2.baseSlotLimitMultiplier, Config.SERVER.diamondLimitedBarrel2.upgradeSlotCount, 0, properties));
-	public static final Supplier<BarrelBlock> LIMITED_NETHERITE_BARREL_2 = BLOCKS.registerBlock("limited_netherite_barrel_2", properties -> new LimitedBarrelBlock(2, Config.SERVER.netheriteLimitedBarrel2.baseSlotLimitMultiplier, Config.SERVER.netheriteLimitedBarrel2.upgradeSlotCount, 1200, properties));
+	public static final Supplier<BarrelBlock> LIMITED_BARREL_2 = BLOCKS.registerBlock("limited_barrel_2", properties -> new LimitedBarrelBlock(2, Config.SERVER.limitedBarrel2, 0, properties));
+	public static final Supplier<BarrelBlock> LIMITED_COPPER_BARREL_2 = BLOCKS.registerBlock("limited_copper_barrel_2", properties -> new LimitedBarrelBlock(2, Config.SERVER.copperLimitedBarrel2, 0, properties));
+	public static final Supplier<BarrelBlock> LIMITED_IRON_BARREL_2 = BLOCKS.registerBlock("limited_iron_barrel_2", properties -> new LimitedBarrelBlock(2, Config.SERVER.ironLimitedBarrel2, 0, properties));
+	public static final Supplier<BarrelBlock> LIMITED_GOLD_BARREL_2 = BLOCKS.registerBlock("limited_gold_barrel_2", properties -> new LimitedBarrelBlock(2, Config.SERVER.goldLimitedBarrel2, 0, properties));
+	public static final Supplier<BarrelBlock> LIMITED_DIAMOND_BARREL_2 = BLOCKS.registerBlock("limited_diamond_barrel_2", properties -> new LimitedBarrelBlock(2, Config.SERVER.diamondLimitedBarrel2, 0, properties));
+	public static final Supplier<BarrelBlock> LIMITED_NETHERITE_BARREL_2 = BLOCKS.registerBlock("limited_netherite_barrel_2", properties -> new LimitedBarrelBlock(2, Config.SERVER.netheriteLimitedBarrel2, 1200, properties));
 	public static final Supplier<BlockItem> LIMITED_BARREL_2_ITEM = ITEMS.registerItem("limited_barrel_2", properties -> new LimitedBarrelBlockItem(LIMITED_BARREL_2.get(), properties.useBlockDescriptionPrefix()));
 	public static final Supplier<BlockItem> LIMITED_COPPER_BARREL_2_ITEM = ITEMS.registerItem("limited_copper_barrel_2", properties -> new LimitedBarrelBlockItem(LIMITED_COPPER_BARREL_2.get(), properties.useBlockDescriptionPrefix()));
 	public static final Supplier<BlockItem> LIMITED_IRON_BARREL_2_ITEM = ITEMS.registerItem("limited_iron_barrel_2", properties -> new LimitedBarrelBlockItem(LIMITED_IRON_BARREL_2.get(), properties.useBlockDescriptionPrefix()));
@@ -107,12 +107,12 @@ public class ModBlocks {
 	public static final Supplier<BlockItem> LIMITED_DIAMOND_BARREL_2_ITEM = ITEMS.registerItem("limited_diamond_barrel_2", properties -> new LimitedBarrelBlockItem(LIMITED_DIAMOND_BARREL_2.get(), properties.useBlockDescriptionPrefix()));
 	public static final Supplier<BlockItem> LIMITED_NETHERITE_BARREL_2_ITEM = ITEMS.registerItem("limited_netherite_barrel_2", properties -> new LimitedBarrelBlockItem(LIMITED_NETHERITE_BARREL_2.get(), properties.useBlockDescriptionPrefix().fireResistant()));
 
-	public static final Supplier<BarrelBlock> LIMITED_BARREL_3 = BLOCKS.registerBlock("limited_barrel_3", properties -> new LimitedBarrelBlock(3, Config.SERVER.limitedBarrel3.baseSlotLimitMultiplier, Config.SERVER.limitedBarrel3.upgradeSlotCount, 0, properties));
-	public static final Supplier<BarrelBlock> LIMITED_COPPER_BARREL_3 = BLOCKS.registerBlock("limited_copper_barrel_3", properties -> new LimitedBarrelBlock(3, Config.SERVER.copperLimitedBarrel3.baseSlotLimitMultiplier, Config.SERVER.copperLimitedBarrel3.upgradeSlotCount, 0, properties));
-	public static final Supplier<BarrelBlock> LIMITED_IRON_BARREL_3 = BLOCKS.registerBlock("limited_iron_barrel_3", properties -> new LimitedBarrelBlock(3, Config.SERVER.ironLimitedBarrel3.baseSlotLimitMultiplier, Config.SERVER.ironLimitedBarrel3.upgradeSlotCount, 0, properties));
-	public static final Supplier<BarrelBlock> LIMITED_GOLD_BARREL_3 = BLOCKS.registerBlock("limited_gold_barrel_3", properties -> new LimitedBarrelBlock(3, Config.SERVER.goldLimitedBarrel3.baseSlotLimitMultiplier, Config.SERVER.goldLimitedBarrel3.upgradeSlotCount, 0, properties));
-	public static final Supplier<BarrelBlock> LIMITED_DIAMOND_BARREL_3 = BLOCKS.registerBlock("limited_diamond_barrel_3", properties -> new LimitedBarrelBlock(3, Config.SERVER.diamondLimitedBarrel3.baseSlotLimitMultiplier, Config.SERVER.diamondLimitedBarrel3.upgradeSlotCount, 0, properties));
-	public static final Supplier<BarrelBlock> LIMITED_NETHERITE_BARREL_3 = BLOCKS.registerBlock("limited_netherite_barrel_3", properties -> new LimitedBarrelBlock(3, Config.SERVER.netheriteLimitedBarrel3.baseSlotLimitMultiplier, Config.SERVER.netheriteLimitedBarrel3.upgradeSlotCount, 1200, properties));
+	public static final Supplier<BarrelBlock> LIMITED_BARREL_3 = BLOCKS.registerBlock("limited_barrel_3", properties -> new LimitedBarrelBlock(3, Config.SERVER.limitedBarrel3, 0, properties));
+	public static final Supplier<BarrelBlock> LIMITED_COPPER_BARREL_3 = BLOCKS.registerBlock("limited_copper_barrel_3", properties -> new LimitedBarrelBlock(3, Config.SERVER.copperLimitedBarrel3, 0, properties));
+	public static final Supplier<BarrelBlock> LIMITED_IRON_BARREL_3 = BLOCKS.registerBlock("limited_iron_barrel_3", properties -> new LimitedBarrelBlock(3, Config.SERVER.ironLimitedBarrel3, 0, properties));
+	public static final Supplier<BarrelBlock> LIMITED_GOLD_BARREL_3 = BLOCKS.registerBlock("limited_gold_barrel_3", properties -> new LimitedBarrelBlock(3, Config.SERVER.goldLimitedBarrel3, 0, properties));
+	public static final Supplier<BarrelBlock> LIMITED_DIAMOND_BARREL_3 = BLOCKS.registerBlock("limited_diamond_barrel_3", properties -> new LimitedBarrelBlock(3, Config.SERVER.diamondLimitedBarrel3, 0, properties));
+	public static final Supplier<BarrelBlock> LIMITED_NETHERITE_BARREL_3 = BLOCKS.registerBlock("limited_netherite_barrel_3", properties -> new LimitedBarrelBlock(3, Config.SERVER.netheriteLimitedBarrel3, 1200, properties));
 	public static final Supplier<BlockItem> LIMITED_BARREL_3_ITEM = ITEMS.registerItem("limited_barrel_3", properties -> new LimitedBarrelBlockItem(LIMITED_BARREL_3.get(), properties.useBlockDescriptionPrefix()));
 	public static final Supplier<BlockItem> LIMITED_COPPER_BARREL_3_ITEM = ITEMS.registerItem("limited_copper_barrel_3", properties -> new LimitedBarrelBlockItem(LIMITED_COPPER_BARREL_3.get(), properties.useBlockDescriptionPrefix()));
 	public static final Supplier<BlockItem> LIMITED_IRON_BARREL_3_ITEM = ITEMS.registerItem("limited_iron_barrel_3", properties -> new LimitedBarrelBlockItem(LIMITED_IRON_BARREL_3.get(), properties.useBlockDescriptionPrefix()));
@@ -120,12 +120,12 @@ public class ModBlocks {
 	public static final Supplier<BlockItem> LIMITED_DIAMOND_BARREL_3_ITEM = ITEMS.registerItem("limited_diamond_barrel_3", properties -> new LimitedBarrelBlockItem(LIMITED_DIAMOND_BARREL_3.get(), properties.useBlockDescriptionPrefix()));
 	public static final Supplier<BlockItem> LIMITED_NETHERITE_BARREL_3_ITEM = ITEMS.registerItem("limited_netherite_barrel_3", properties -> new LimitedBarrelBlockItem(LIMITED_NETHERITE_BARREL_3.get(), properties.useBlockDescriptionPrefix().fireResistant()));
 
-	public static final Supplier<BarrelBlock> LIMITED_BARREL_4 = BLOCKS.registerBlock("limited_barrel_4", properties -> new LimitedBarrelBlock(4, Config.SERVER.limitedBarrel4.baseSlotLimitMultiplier, Config.SERVER.limitedBarrel4.upgradeSlotCount, 0, properties));
-	public static final Supplier<BarrelBlock> LIMITED_COPPER_BARREL_4 = BLOCKS.registerBlock("limited_copper_barrel_4", properties -> new LimitedBarrelBlock(4, Config.SERVER.copperLimitedBarrel4.baseSlotLimitMultiplier, Config.SERVER.copperLimitedBarrel4.upgradeSlotCount, 0, properties));
-	public static final Supplier<BarrelBlock> LIMITED_IRON_BARREL_4 = BLOCKS.registerBlock("limited_iron_barrel_4", properties -> new LimitedBarrelBlock(4, Config.SERVER.ironLimitedBarrel4.baseSlotLimitMultiplier, Config.SERVER.ironLimitedBarrel4.upgradeSlotCount, 0, properties));
-	public static final Supplier<BarrelBlock> LIMITED_GOLD_BARREL_4 = BLOCKS.registerBlock("limited_gold_barrel_4", properties -> new LimitedBarrelBlock(4, Config.SERVER.goldLimitedBarrel4.baseSlotLimitMultiplier, Config.SERVER.goldLimitedBarrel4.upgradeSlotCount, 0, properties));
-	public static final Supplier<BarrelBlock> LIMITED_DIAMOND_BARREL_4 = BLOCKS.registerBlock("limited_diamond_barrel_4", properties -> new LimitedBarrelBlock(4, Config.SERVER.diamondLimitedBarrel4.baseSlotLimitMultiplier, Config.SERVER.diamondLimitedBarrel4.upgradeSlotCount, 0, properties));
-	public static final Supplier<BarrelBlock> LIMITED_NETHERITE_BARREL_4 = BLOCKS.registerBlock("limited_netherite_barrel_4", properties -> new LimitedBarrelBlock(4, Config.SERVER.netheriteLimitedBarrel4.baseSlotLimitMultiplier, Config.SERVER.netheriteLimitedBarrel4.upgradeSlotCount, 1200, properties));
+	public static final Supplier<BarrelBlock> LIMITED_BARREL_4 = BLOCKS.registerBlock("limited_barrel_4", properties -> new LimitedBarrelBlock(4, Config.SERVER.limitedBarrel4, 0, properties));
+	public static final Supplier<BarrelBlock> LIMITED_COPPER_BARREL_4 = BLOCKS.registerBlock("limited_copper_barrel_4", properties -> new LimitedBarrelBlock(4, Config.SERVER.copperLimitedBarrel4, 0, properties));
+	public static final Supplier<BarrelBlock> LIMITED_IRON_BARREL_4 = BLOCKS.registerBlock("limited_iron_barrel_4", properties -> new LimitedBarrelBlock(4, Config.SERVER.ironLimitedBarrel4, 0, properties));
+	public static final Supplier<BarrelBlock> LIMITED_GOLD_BARREL_4 = BLOCKS.registerBlock("limited_gold_barrel_4", properties -> new LimitedBarrelBlock(4, Config.SERVER.goldLimitedBarrel4, 0, properties));
+	public static final Supplier<BarrelBlock> LIMITED_DIAMOND_BARREL_4 = BLOCKS.registerBlock("limited_diamond_barrel_4", properties -> new LimitedBarrelBlock(4, Config.SERVER.diamondLimitedBarrel4, 0, properties));
+	public static final Supplier<BarrelBlock> LIMITED_NETHERITE_BARREL_4 = BLOCKS.registerBlock("limited_netherite_barrel_4", properties -> new LimitedBarrelBlock(4, Config.SERVER.netheriteLimitedBarrel4, 1200, properties));
 	public static final Supplier<BlockItem> LIMITED_BARREL_4_ITEM = ITEMS.registerItem("limited_barrel_4", properties -> new LimitedBarrelBlockItem(LIMITED_BARREL_4.get(), properties.useBlockDescriptionPrefix()));
 	public static final Supplier<BlockItem> LIMITED_COPPER_BARREL_4_ITEM = ITEMS.registerItem("limited_copper_barrel_4", properties -> new LimitedBarrelBlockItem(LIMITED_COPPER_BARREL_4.get(), properties.useBlockDescriptionPrefix()));
 	public static final Supplier<BlockItem> LIMITED_IRON_BARREL_4_ITEM = ITEMS.registerItem("limited_iron_barrel_4", properties -> new LimitedBarrelBlockItem(LIMITED_IRON_BARREL_4.get(), properties.useBlockDescriptionPrefix()));
@@ -134,12 +134,12 @@ public class ModBlocks {
 	public static final Supplier<BlockItem> LIMITED_NETHERITE_BARREL_4_ITEM = ITEMS.registerItem("limited_netherite_barrel_4", properties -> new LimitedBarrelBlockItem(LIMITED_NETHERITE_BARREL_4.get(), properties.useBlockDescriptionPrefix().fireResistant()));
 
 	private static final String CHEST_REG_NAME = "chest";
-	public static final Supplier<ChestBlock> CHEST = BLOCKS.registerBlock(CHEST_REG_NAME, properties -> new ChestBlock(Config.SERVER.woodChest.inventorySlotCount, Config.SERVER.woodChest.upgradeSlotCount, properties));
-	public static final Supplier<ChestBlock> COPPER_CHEST = BLOCKS.registerBlock("copper_chest", properties -> new ChestBlock(Config.SERVER.copperChest.inventorySlotCount, Config.SERVER.copperChest.upgradeSlotCount, properties));
-	public static final Supplier<ChestBlock> IRON_CHEST = BLOCKS.registerBlock("iron_chest", properties -> new ChestBlock(Config.SERVER.ironChest.inventorySlotCount, Config.SERVER.ironChest.upgradeSlotCount, properties));
-	public static final Supplier<ChestBlock> GOLD_CHEST = BLOCKS.registerBlock("gold_chest", properties -> new ChestBlock(Config.SERVER.goldChest.inventorySlotCount, Config.SERVER.goldChest.upgradeSlotCount, properties));
-	public static final Supplier<ChestBlock> DIAMOND_CHEST = BLOCKS.registerBlock("diamond_chest", properties -> new ChestBlock(Config.SERVER.diamondChest.inventorySlotCount, Config.SERVER.diamondChest.upgradeSlotCount, properties));
-	public static final Supplier<ChestBlock> NETHERITE_CHEST = BLOCKS.registerBlock("netherite_chest", properties -> new ChestBlock(Config.SERVER.netheriteChest.inventorySlotCount, Config.SERVER.netheriteChest.upgradeSlotCount, 1200, properties));
+	public static final Supplier<ChestBlock> CHEST = BLOCKS.registerBlock(CHEST_REG_NAME, properties -> new ChestBlock(Config.SERVER.woodChest, properties));
+	public static final Supplier<ChestBlock> COPPER_CHEST = BLOCKS.registerBlock("copper_chest", properties -> new ChestBlock(Config.SERVER.copperChest, properties));
+	public static final Supplier<ChestBlock> IRON_CHEST = BLOCKS.registerBlock("iron_chest", properties -> new ChestBlock(Config.SERVER.ironChest, properties));
+	public static final Supplier<ChestBlock> GOLD_CHEST = BLOCKS.registerBlock("gold_chest", properties -> new ChestBlock(Config.SERVER.goldChest, properties));
+	public static final Supplier<ChestBlock> DIAMOND_CHEST = BLOCKS.registerBlock("diamond_chest", properties -> new ChestBlock(Config.SERVER.diamondChest, properties));
+	public static final Supplier<ChestBlock> NETHERITE_CHEST = BLOCKS.registerBlock("netherite_chest", properties -> new ChestBlock(Config.SERVER.netheriteChest, 1200, properties));
 	public static final DeferredHolder<Item, BlockItem> CHEST_ITEM = ITEMS.registerItem(CHEST_REG_NAME, properties -> new ChestBlockItem(CHEST.get(), properties.useBlockDescriptionPrefix()));
 	public static final Supplier<BlockItem> COPPER_CHEST_ITEM = ITEMS.registerItem("copper_chest", properties -> new ChestBlockItem(COPPER_CHEST.get(), properties.useBlockDescriptionPrefix()));
 	public static final Supplier<BlockItem> IRON_CHEST_ITEM = ITEMS.registerItem("iron_chest", properties -> new ChestBlockItem(IRON_CHEST.get(), properties.useBlockDescriptionPrefix()));
@@ -148,12 +148,12 @@ public class ModBlocks {
 	public static final Supplier<BlockItem> NETHERITE_CHEST_ITEM = ITEMS.registerItem("netherite_chest", properties -> new ChestBlockItem(NETHERITE_CHEST.get(), properties.useBlockDescriptionPrefix().fireResistant()));
 
 	private static final String SHULKER_BOX_REG_NAME = "shulker_box";
-	public static final Supplier<ShulkerBoxBlock> SHULKER_BOX = BLOCKS.registerBlock(SHULKER_BOX_REG_NAME, properties -> new ShulkerBoxBlock(Config.SERVER.shulkerBox.inventorySlotCount, Config.SERVER.shulkerBox.upgradeSlotCount, properties));
-	public static final Supplier<ShulkerBoxBlock> COPPER_SHULKER_BOX = BLOCKS.registerBlock("copper_shulker_box", properties -> new ShulkerBoxBlock(Config.SERVER.copperShulkerBox.inventorySlotCount, Config.SERVER.copperShulkerBox.upgradeSlotCount, properties));
-	public static final Supplier<ShulkerBoxBlock> IRON_SHULKER_BOX = BLOCKS.registerBlock("iron_shulker_box", properties -> new ShulkerBoxBlock(Config.SERVER.ironShulkerBox.inventorySlotCount, Config.SERVER.ironShulkerBox.upgradeSlotCount, properties));
-	public static final Supplier<ShulkerBoxBlock> GOLD_SHULKER_BOX = BLOCKS.registerBlock("gold_shulker_box", properties -> new ShulkerBoxBlock(Config.SERVER.goldShulkerBox.inventorySlotCount, Config.SERVER.goldShulkerBox.upgradeSlotCount, properties));
-	public static final Supplier<ShulkerBoxBlock> DIAMOND_SHULKER_BOX = BLOCKS.registerBlock("diamond_shulker_box", properties -> new ShulkerBoxBlock(Config.SERVER.diamondShulkerBox.inventorySlotCount, Config.SERVER.diamondShulkerBox.upgradeSlotCount, properties));
-	public static final Supplier<ShulkerBoxBlock> NETHERITE_SHULKER_BOX = BLOCKS.registerBlock("netherite_shulker_box", properties -> new ShulkerBoxBlock(Config.SERVER.netheriteShulkerBox.inventorySlotCount, Config.SERVER.netheriteShulkerBox.upgradeSlotCount, 1200, properties));
+	public static final Supplier<ShulkerBoxBlock> SHULKER_BOX = BLOCKS.registerBlock(SHULKER_BOX_REG_NAME, properties -> new ShulkerBoxBlock(Config.SERVER.shulkerBox, properties));
+	public static final Supplier<ShulkerBoxBlock> COPPER_SHULKER_BOX = BLOCKS.registerBlock("copper_shulker_box", properties -> new ShulkerBoxBlock(Config.SERVER.copperShulkerBox, properties));
+	public static final Supplier<ShulkerBoxBlock> IRON_SHULKER_BOX = BLOCKS.registerBlock("iron_shulker_box", properties -> new ShulkerBoxBlock(Config.SERVER.ironShulkerBox, properties));
+	public static final Supplier<ShulkerBoxBlock> GOLD_SHULKER_BOX = BLOCKS.registerBlock("gold_shulker_box", properties -> new ShulkerBoxBlock(Config.SERVER.goldShulkerBox, properties));
+	public static final Supplier<ShulkerBoxBlock> DIAMOND_SHULKER_BOX = BLOCKS.registerBlock("diamond_shulker_box", properties -> new ShulkerBoxBlock(Config.SERVER.diamondShulkerBox, properties));
+	public static final Supplier<ShulkerBoxBlock> NETHERITE_SHULKER_BOX = BLOCKS.registerBlock("netherite_shulker_box", properties -> new ShulkerBoxBlock(Config.SERVER.netheriteShulkerBox, 1200, properties));
 	public static final DeferredHolder<Item, BlockItem> SHULKER_BOX_ITEM = ITEMS.registerItem(SHULKER_BOX_REG_NAME, properties -> new ShulkerBoxItem(SHULKER_BOX.get(), properties.useBlockDescriptionPrefix()));
 	public static final Supplier<BlockItem> COPPER_SHULKER_BOX_ITEM = ITEMS.registerItem("copper_shulker_box", properties -> new ShulkerBoxItem(COPPER_SHULKER_BOX.get(), properties.useBlockDescriptionPrefix()));
 	public static final Supplier<BlockItem> IRON_SHULKER_BOX_ITEM = ITEMS.registerItem("iron_shulker_box", properties -> new ShulkerBoxItem(IRON_SHULKER_BOX.get(), properties.useBlockDescriptionPrefix()));
@@ -171,7 +171,7 @@ public class ModBlocks {
 			StorageTranslationHelper.INSTANCE.getTranslatedLines(stack.getItem().getDescriptionId() + TranslationHelper.TOOLTIP_SUFFIX, null, ChatFormatting.DARK_GRAY).forEach(tooltipAdder);
 		}
 	});
-	public static final Supplier<BlockItem> STORAGE_LINK_ITEM = ITEMS.registerItem(STORAGE_LINK_REG_NAME, properties -> new BlockItemBase(STORAGE_LINK.get(), properties.useBlockDescriptionPrefix()){
+	public static final Supplier<BlockItem> STORAGE_LINK_ITEM = ITEMS.registerItem(STORAGE_LINK_REG_NAME, properties -> new BlockItemBase(STORAGE_LINK.get(), properties.useBlockDescriptionPrefix()) {
 		@Override
 		public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay tooltipDisplay, Consumer<Component> tooltipAdder, TooltipFlag flag) {
 			super.appendHoverText(stack, context, tooltipDisplay, tooltipAdder, flag);
@@ -319,20 +319,20 @@ public class ModBlocks {
 		RECIPE_SERIALIZERS.register(modBus);
 		INGREDIENT_TYPES.register(modBus);
 		modBus.addListener(ModBlocks::registerCapabilities);
-		if (FMLEnvironment.dist.isClient()) {
+		if (FMLEnvironment.getDist().isClient()) {
 			ModBlocksClient.init(modBus);
 		}
 	}
 
 	private static void registerCapabilities(RegisterCapabilitiesEvent event) {
-		event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, CONTROLLER_BLOCK_ENTITY_TYPE.get(), ControllerBlockEntity::getExternalItemHandler);
-		event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, CHEST_BLOCK_ENTITY_TYPE.get(), ChestBlockEntity::getExternalItemHandler);
-		event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, SHULKER_BOX_BLOCK_ENTITY_TYPE.get(), ShulkerBoxBlockEntity::getExternalItemHandler);
-		event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, LIMITED_BARREL_BLOCK_ENTITY_TYPE.get(), LimitedBarrelBlockEntity::getExternalItemHandler);
-		event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, BARREL_BLOCK_ENTITY_TYPE.get(), BarrelBlockEntity::getExternalItemHandler);
-		event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, STORAGE_IO_BLOCK_ENTITY_TYPE.get(), StorageIOBlockEntity::getExternalItemHandler);
-		event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, STORAGE_INPUT_BLOCK_ENTITY_TYPE.get(), StorageInputBlockEntity::getExternalItemHandler);
-		event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, STORAGE_OUTPUT_BLOCK_ENTITY_TYPE.get(), StorageOutputBlockEntity::getExternalItemHandler);
+		event.registerBlockEntity(Capabilities.Item.BLOCK, CONTROLLER_BLOCK_ENTITY_TYPE.get(), (controllerBlockEntity, side) -> controllerBlockEntity.getExternalItemResourceHandler());
+		event.registerBlockEntity(Capabilities.Item.BLOCK, CHEST_BLOCK_ENTITY_TYPE.get(), ChestBlockEntity::getExternalItemHandler);
+		event.registerBlockEntity(Capabilities.Item.BLOCK, SHULKER_BOX_BLOCK_ENTITY_TYPE.get(), ShulkerBoxBlockEntity::getExternalItemHandler);
+		event.registerBlockEntity(Capabilities.Item.BLOCK, LIMITED_BARREL_BLOCK_ENTITY_TYPE.get(), LimitedBarrelBlockEntity::getExternalItemHandler);
+		event.registerBlockEntity(Capabilities.Item.BLOCK, BARREL_BLOCK_ENTITY_TYPE.get(), BarrelBlockEntity::getExternalItemHandler);
+		event.registerBlockEntity(Capabilities.Item.BLOCK, STORAGE_IO_BLOCK_ENTITY_TYPE.get(), StorageIOBlockEntity::getExternalItemResourceHandler);
+		event.registerBlockEntity(Capabilities.Item.BLOCK, STORAGE_INPUT_BLOCK_ENTITY_TYPE.get(), StorageInputBlockEntity::getExternalItemResourceHandler);
+		event.registerBlockEntity(Capabilities.Item.BLOCK, STORAGE_OUTPUT_BLOCK_ENTITY_TYPE.get(), StorageOutputBlockEntity::getExternalItemResourceHandler);
 	}
 
 	public static void registerDispenseBehavior() {

@@ -1,69 +1,49 @@
 package net.p3pp3rf1y.sophisticatedstorage.client.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.LevelRenderer;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.block.model.BlockStateModel;
-import net.minecraft.client.resources.model.QuadCollection;
-import net.minecraft.core.BlockPos;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.state.CameraRenderState;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.WoodType;
 import net.minecraft.world.phys.Vec3;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlockEntity;
 
-public class BarrelRenderer<T extends BarrelBlockEntity> extends StorageRenderer<T> {
-	private final DisplayItemRenderer displayItemRenderer = new DisplayItemRenderer(0.5, new Vec3(0, 0, -1 / 16D));
-	private final DisplayItemRenderer flatDisplayItemRenderer = new DisplayItemRenderer(0.5, Vec3.ZERO);
+import javax.annotation.Nullable;
 
-	@Override
-	public void render(T blockEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, Vec3 cameraPos) {
-		BlockState blockState = blockEntity.getBlockState();
-		boolean flatTop = Boolean.TRUE.equals(blockState.getValue(BarrelBlock.FLAT_TOP));
-		if (blockEntity.isPacked() || !(blockState.getBlock() instanceof BarrelBlock storageBlock) || Minecraft.getInstance().player == null) {
-			return;
-		}
-		BlockPos pos = blockEntity.getBlockPos();
-
-		if (blockEntity.getLevel() != null && pos != BlockPos.ZERO) {
-			packedLight = LevelRenderer.getLightColor(blockEntity.getLevel(), pos.relative(storageBlock.getFacing(blockState)));
-		}
-
-		renderFrontFace(blockEntity, poseStack, bufferSource, packedLight, packedOverlay, flatTop, blockState);
-		renderHiddenTier(blockEntity, poseStack, bufferSource, packedLight, packedOverlay);
-		renderHiddenLock(blockEntity, poseStack, bufferSource, packedLight, packedOverlay);
+public class BarrelRenderer<T extends BarrelBlockEntity> extends BarrelRendererBase<T, BarrelRenderer.BarrelRenderState> {
+	public BarrelRenderer(BlockEntityRendererProvider.Context context) {
+		super(context);
 	}
 
-	private void renderFrontFace(T blockEntity, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, boolean flatTop, BlockState blockState) {
-		if ((!blockEntity.hasDynamicRenderer() && !holdsItemThatShowsUpgrades() && !blockEntity.shouldShowUpgrades())) {
+	private void submitFrontFace(SubmitNodeCollector submitNodeCollector, BarrelRenderState renderState, PoseStack poseStack) {
+		if ((!renderState.hasDynamicRenderer && !holdsItemThatShowsUpgrades() && !renderState.showsUpgrades)) {
 			return;
 		}
 
 		poseStack.pushPose();
-
-		Direction facing = blockState.getValue(BarrelBlock.FACING);
 
 		poseStack.translate(0.5, 0.5, 0.5);
-		poseStack.mulPose(DisplayItemRenderer.getNorthBasedRotation(facing));
-		poseStack.translate(-0.5, -0.5, -(0.5 - (flatTop ? 0 : 1 / 16f)));
+		poseStack.mulPose(DisplayItemRenderer.getNorthBasedRotation(renderState.facing));
+		poseStack.translate(-0.5, -0.5, -(0.5 - (renderState.flatTop ? 0 : 1 / 16f)));
 
 		boolean holdsItemThatShowsUpgrades = holdsItemThatShowsUpgrades();
-		if (blockEntity.shouldShowUpgrades() || holdsItemThatShowsUpgrades) {
-			if (flatTop) {
-				flatDisplayItemRenderer.renderUpgradeItems(blockEntity, poseStack, bufferSource, packedLight, packedOverlay, holdsItemThatShowsUpgrades, shouldShowDisabledUpgradesDisplay(blockEntity));
+		if (renderState.showsUpgrades || holdsItemThatShowsUpgrades) {
+			if (renderState.flatTop) {
+				flatDisplayItemRenderer.submitUpgradeItems(submitNodeCollector, renderState, poseStack, OverlayTexture.NO_OVERLAY, holdsItemThatShowsUpgrades);
 			} else {
-				displayItemRenderer.renderUpgradeItems(blockEntity, poseStack, bufferSource, packedLight, packedOverlay, holdsItemThatShowsUpgrades(), shouldShowDisabledUpgradesDisplay(blockEntity));
+				displayItemRenderer.submitUpgradeItems(submitNodeCollector, renderState, poseStack, OverlayTexture.NO_OVERLAY, holdsItemThatShowsUpgrades());
 			}
 		}
 
-		if (blockEntity.hasDynamicRenderer()) {
-			if (flatTop) {
-				flatDisplayItemRenderer.renderDisplayItems(blockEntity, poseStack, bufferSource, packedLight, packedOverlay, !blockEntity.hasFullyDynamicRenderer());
+		if (renderState.hasDynamicRenderer) {
+			if (renderState.flatTop) {
+				flatDisplayItemRenderer.submitDisplayItems(submitNodeCollector, renderState, poseStack, OverlayTexture.NO_OVERLAY, !renderState.hasFullyDynamicRenderer);
 			} else {
-				displayItemRenderer.renderDisplayItems(blockEntity, poseStack, bufferSource, packedLight, packedOverlay, !blockEntity.hasFullyDynamicRenderer());
+				displayItemRenderer.submitDisplayItems(submitNodeCollector, renderState, poseStack, OverlayTexture.NO_OVERLAY, !renderState.hasFullyDynamicRenderer);
 			}
 		}
 
@@ -71,40 +51,33 @@ public class BarrelRenderer<T extends BarrelBlockEntity> extends StorageRenderer
 	}
 
 	@Override
-	public int getViewDistance() {
-		return 32;
+	public BarrelRenderState createRenderState() {
+		return new BarrelRenderState();
 	}
 
-	protected void renderHiddenTier(T blockEntity, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
-		if (!blockEntity.shouldShowTier() && holdsItemThatShowsHiddenTiers()) {
-			renderTranslucentQuads(blockEntity, poseStack, bufferSource, packedLight, packedOverlay, BarrelBlockStateModelBase::getTierQuads);
+	@Override
+	public void extractRenderState(T blockEntity, BarrelRenderState renderState, float partialTick, Vec3 cameraPos, @Nullable ModelFeatureRenderer.CrumblingOverlay crumblingOverlay) {
+		super.extractRenderState(blockEntity, renderState, partialTick, cameraPos, crumblingOverlay);
+
+		if (renderState.packed) {
+			return;
 		}
+
+		BlockState blockState = blockEntity.getBlockState();
+		renderState.facing = blockState.getValue(BarrelBlock.FACING);
 	}
 
-	protected void renderHiddenLock(T blockEntity, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
-		if (!blockEntity.shouldShowLock() && blockEntity.isLocked() && holdsToolInToggleLockOrLockDisplay()) {
-			renderTranslucentQuads(blockEntity, poseStack, bufferSource, packedLight, packedOverlay, BarrelBlockStateModelBase::getLockQuads);
+	@Override
+	public void submit(BarrelRenderState barrelRenderState, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState cameraRenderState) {
+		if (barrelRenderState.packed) {
+			return;
 		}
+		submitFrontFace(submitNodeCollector, barrelRenderState, poseStack);
+		submitHiddenTier(submitNodeCollector, barrelRenderState, poseStack);
+		submitHiddenLock(submitNodeCollector, barrelRenderState, poseStack);
 	}
 
-	private void renderTranslucentQuads(T blockEntity, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, GetQuadsFunction getQuads) {
-		String woodName = blockEntity.getWoodType().orElse(WoodType.ACACIA).name();
-		BlockState state = blockEntity.getBlockState();
-		BlockStateModel blockModel = Minecraft.getInstance().getBlockRenderer().getBlockModel(state);
-
-		poseStack.pushPose();
-		poseStack.translate(-0.005, -0.005, -0.005);
-		poseStack.scale(1.01f, 1.01f, 1.01f);
-
-		if (blockModel instanceof BarrelBlockStateModelBase barrelBlockStateModel) {
-			VertexConsumer vertexConsumer = TranslucentVertexConsumer.getVertexConsumer(bufferSource, 128);
-			barrelBlockStateModel.setWoodName(woodName);
-			getQuads.apply(barrelBlockStateModel).getAll().forEach(quad -> vertexConsumer.putBulkData(poseStack.last(), quad, 1, 1, 1, 1, packedLight, packedOverlay, false));
-		}
-		poseStack.popPose();
-	}
-	private interface GetQuadsFunction {
-		QuadCollection apply(BarrelBlockStateModelBase model);
-
+	public static class BarrelRenderState extends BarrelRenderStateBase {
+		public Direction facing;
 	}
 }

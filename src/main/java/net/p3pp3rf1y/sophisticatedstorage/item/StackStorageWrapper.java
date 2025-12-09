@@ -2,11 +2,16 @@ package net.p3pp3rf1y.sophisticatedstorage.item;
 
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.storage.ValueInput;
+import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.p3pp3rf1y.sophisticatedcore.init.ModCoreDataComponents;
+import net.p3pp3rf1y.sophisticatedcore.inventory.ContainerContents;
 import net.p3pp3rf1y.sophisticatedcore.inventory.StorageWrapperRepository;
 import net.p3pp3rf1y.sophisticatedcore.util.BlockItemBase;
 import net.p3pp3rf1y.sophisticatedcore.util.ValueIOHelper;
@@ -33,8 +38,12 @@ public class StackStorageWrapper extends StorageWrapper {
 		StackStorageWrapper stackStorageWrapper = StorageWrapperRepository.getStorageWrapper(stack, StackStorageWrapper.class, StackStorageWrapper::new);
 		UUID uuid = stack.get(ModCoreDataComponents.STORAGE_UUID);
 		if (uuid != null) {
-			CompoundTag compoundtag = ItemContentsStorage.get().getOrCreateStorageContents(uuid).getCompoundOrEmpty(StorageBlockEntity.STORAGE_WRAPPER);
-			stackStorageWrapper.deserialize(ValueIOHelper.inputFromCompoundTag(registries, compoundtag));
+			ItemContentsStorage itemContentsStorage = ItemContentsStorage.get();
+			CompoundTag storageWrappertag = itemContentsStorage.getOrCreateAddtionalBeData(uuid).getCompoundOrEmpty(StorageBlockEntity.STORAGE_WRAPPER);
+			ContainerContents contents = itemContentsStorage.getOrCreateContents(uuid);
+			Tag contentsTag = ContainerContents.CODEC.encodeStart(RegistryOps.create(NbtOps.INSTANCE, registries), contents).getOrThrow();
+			storageWrappertag.put(StorageWrapper.CONTENTS, contentsTag);
+			stackStorageWrapper.deserialize(ValueIOHelper.inputFromCompoundTag(registries, storageWrappertag));
 			stackStorageWrapper.setContentsUuid(uuid); //setting here because client side the uuid isn't in contentsnbt before this data is synced from server and it would create a new one otherwise
 		}
 
@@ -53,7 +62,7 @@ public class StackStorageWrapper extends StorageWrapper {
 	}
 
 	public boolean hasContents() {
-		return StorageBlockItem.getEntityWrapperTagFromStack(storageStack).isPresent() || contentsUuid != null;
+		return contentsUuid != null;
 	}
 
 	@Override
@@ -61,26 +70,17 @@ public class StackStorageWrapper extends StorageWrapper {
 		super.setContentsUuid(contentsUuid);
 		if (contentsUuid != null) {
 			storageStack.set(ModCoreDataComponents.STORAGE_UUID, contentsUuid);
-			ItemContentsStorage itemContentsStorage = ItemContentsStorage.get();
-			CompoundTag storageContents = itemContentsStorage.getOrCreateStorageContents(contentsUuid);
-			if (!storageContents.contains(StorageBlockEntity.STORAGE_WRAPPER)) {
-				CompoundTag storageWrapperTag = new CompoundTag();
-				storageWrapperTag.put(CONTENTS_TAG, new CompoundTag());
-				storageContents.put(StorageBlockEntity.STORAGE_WRAPPER, storageWrapperTag);
-			}
-
-			onContentsNbtUpdated();
+			onContentsUpdated();
 		}
 	}
 
 	@Override
-	protected CompoundTag getContentsNbt() {
-		return StorageBlockItem.getEntityWrapperTagFromStack(storageStack).map(wrapperTag -> wrapperTag.getCompoundOrEmpty(CONTENTS_TAG)).orElseGet(() -> {
-			if (contentsUuid == null) {
-				contentsUuid = getNewUuid();
-			}
-			return ItemContentsStorage.get().getOrCreateStorageContents(contentsUuid).getCompoundOrEmpty(StorageBlockEntity.STORAGE_WRAPPER).getCompoundOrEmpty(CONTENTS_TAG);
-		});
+	public ContainerContents getContents() {
+		if (contentsUuid == null) {
+			contentsUuid = getNewUuid();
+			setContentsUuid(contentsUuid);
+		}
+		return ItemContentsStorage.get().getOrCreateContents(contentsUuid);
 	}
 
 	@Override
@@ -95,13 +95,8 @@ public class StackStorageWrapper extends StorageWrapper {
 
 	@Override
 	protected void loadSlotNumbers(ValueInput in) {
-		StorageBlockItem.getEntityWrapperTagFromStack(storageStack).ifPresentOrElse(wrapperTag -> {
-			numberOfInventorySlots = wrapperTag.getIntOr(StorageWrapper.NUMBER_OF_INVENTORY_SLOTS, 0);
-			numberOfUpgradeSlots = wrapperTag.getIntOr(StorageWrapper.NUMBER_OF_UPGRADE_SLOTS, 0);
-		}, () -> {
-			numberOfInventorySlots = storageStack.getOrDefault(ModCoreDataComponents.NUMBER_OF_INVENTORY_SLOTS, 0);
-			numberOfUpgradeSlots = storageStack.getOrDefault(ModCoreDataComponents.NUMBER_OF_UPGRADE_SLOTS, 0);
-		});
+		numberOfInventorySlots = storageStack.getOrDefault(ModCoreDataComponents.NUMBER_OF_INVENTORY_SLOTS, 0);
+		numberOfUpgradeSlots = storageStack.getOrDefault(ModCoreDataComponents.NUMBER_OF_UPGRADE_SLOTS, 0);
 	}
 
 	@Override
@@ -114,13 +109,13 @@ public class StackStorageWrapper extends StorageWrapper {
 	}
 
 	@Override
-	protected boolean isAllowedInStorage(ItemStack stack) {
+	protected boolean isAllowedInStorage(ItemResource resource) {
 		if (!(storageStack.getItem() instanceof ShulkerBoxItem)) {
 			return false;
 		}
 
-		Block block = Block.byItem(stack.getItem());
-		return !(block instanceof ShulkerBoxBlock) && !(block instanceof net.minecraft.world.level.block.ShulkerBoxBlock) && !Config.SERVER.shulkerBoxDisallowedItems.isItemDisallowed(stack.getItem());
+		Block block = Block.byItem(resource.getItem());
+		return !(block instanceof ShulkerBoxBlock) && !(block instanceof net.minecraft.world.level.block.ShulkerBoxBlock) && !Config.SERVER.shulkerBoxDisallowedItems.isItemDisallowed(resource.getItem());
 	}
 
 	@Override

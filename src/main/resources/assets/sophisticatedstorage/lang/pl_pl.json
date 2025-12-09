@@ -232,8 +232,8 @@
   "gui.sophisticatedstorage.settings.buttons.context_storage": "Magazyn",
   "gui.sophisticatedstorage.settings.buttons.context_storage.tooltip": "Ustawienia tego magazynu",
   "gui.sophisticatedstorage.settings.buttons.context_storage.tooltip_detail": "Odziedziczone od gracza lub nadpisane dla tego magazynu",
-  "keybind.sophisticatedstorage.category": "Sophisticated Storage",
-  "keybind.sophisticatedstorage.sort": "Sortuj",
+  "key.category.sophisticatedstorage.main": "Sophisticated Storage",
+  "key.sophisticatedstorage.sort": "Sortuj",
   "gui.sophisticatedstorage.status.too_many_item_entity_drops": "Nie można zniszczyć%s, ponieważ spowodowałoby to wypadnięcie zbyt wiele (%s).\nRozważ użycie %s lub zniszczenie tego podczas skradania się, aby to pominąć.",
   "gui.sophisticatedstorage.status.too_low_tier_upgrade_count": "Ulepszenie wymaga %s %ss",
   "gui.sophisticatedstorage.status.packing_tape_disabled": "Konfiguracja ustawiona na upuszczanie wszystkich magazynów jako zapakowane bez konieczności użycia taśmy pakującej."

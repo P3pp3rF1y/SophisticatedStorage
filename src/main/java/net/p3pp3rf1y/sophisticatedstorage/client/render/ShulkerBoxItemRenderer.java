@@ -6,9 +6,10 @@ import com.google.common.cache.LoadingCache;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.model.geom.EntityModelSet;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
+import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -16,7 +17,6 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
-import net.p3pp3rf1y.sophisticatedstorage.block.ChestBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.block.ITintableBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.block.ShulkerBoxBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.ShulkerBoxBlockEntity;
@@ -52,7 +52,7 @@ public class ShulkerBoxItemRenderer implements SpecialModelRenderer<ShulkerBoxIt
 	}
 
 	@Override
-	public void render(@Nullable ShulkerBoxAttributes shulkerBoxAttributes, ItemDisplayContext itemDisplayContext, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay, boolean hasFoil) {
+	public void submit(@Nullable ShulkerBoxAttributes shulkerBoxAttributes, ItemDisplayContext itemDisplayContext, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, int i, int i1, boolean b, int i2) {
 		if (shulkerBoxAttributes == null) {
 			return;
 		}
@@ -62,9 +62,13 @@ public class ShulkerBoxItemRenderer implements SpecialModelRenderer<ShulkerBoxIt
 		if (shulkerBoxAttributes.showsTier() != shulkerBoxBlockEntity.shouldShowTier()) {
 			shulkerBoxBlockEntity.toggleTierVisiblity();
 		}
-		var blockentityrenderer = Minecraft.getInstance().getBlockEntityRenderDispatcher().getRenderer(shulkerBoxBlockEntity);
+		BlockEntityRenderDispatcher blockEntityRenderDispatcher = Minecraft.getInstance().getBlockEntityRenderDispatcher();
+		var blockentityrenderer = blockEntityRenderDispatcher.getRenderer(shulkerBoxBlockEntity);
+
 		if (blockentityrenderer != null) {
-			blockentityrenderer.render(shulkerBoxBlockEntity, 0.0F, poseStack, buffer, packedLight, packedOverlay, Vec3.ZERO);
+			BlockEntityRenderState renderState = blockentityrenderer.createRenderState();
+			blockentityrenderer.extractRenderState(shulkerBoxBlockEntity, renderState, 0, Vec3.ZERO, null);
+			blockentityrenderer.submit(renderState, poseStack, submitNodeCollector, RenderHelper.ZERO_POS_CAMERA_RENDER_STATE);
 		}
 	}
 
@@ -72,7 +76,7 @@ public class ShulkerBoxItemRenderer implements SpecialModelRenderer<ShulkerBoxIt
 	public void getExtents(Set<Vector3f> set) {
 		PoseStack posestack = new PoseStack();
 		ShulkerBoxBlockEntity shulkerBoxItem = shulkerBoxBlockEntities.getUnchecked(ModBlocks.SHULKER_BOX_ITEM.get());
-		BlockEntityRenderer<ShulkerBoxBlockEntity> blockentityrenderer = Minecraft.getInstance().getBlockEntityRenderDispatcher().getRenderer(shulkerBoxItem);
+		BlockEntityRenderer<ShulkerBoxBlockEntity, ShulkerBoxRenderer.ShulkerBoxRenderState> blockentityrenderer = Minecraft.getInstance().getBlockEntityRenderDispatcher().getRenderer(shulkerBoxItem);
 		if (blockentityrenderer instanceof ShulkerBoxRenderer shulkerBoxRenderer) {
 			shulkerBoxRenderer.rootModelPart().getExtentsForGui(posestack, set);
 		}
@@ -85,7 +89,7 @@ public class ShulkerBoxItemRenderer implements SpecialModelRenderer<ShulkerBoxIt
 
 		@Nullable
 		@Override
-		public SpecialModelRenderer<?> bake(EntityModelSet entityModelSet) {
+		public SpecialModelRenderer<?> bake(BakingContext bakingContext) {
 			return new ShulkerBoxItemRenderer();
 		}
 
