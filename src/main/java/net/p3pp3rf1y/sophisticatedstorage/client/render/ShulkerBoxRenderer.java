@@ -14,6 +14,7 @@ import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.MaterialSet;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -78,7 +79,7 @@ public class ShulkerBoxRenderer extends StorageRenderer<ShulkerBoxBlockEntity, S
 		super.extractRenderState(blockEntity, renderState, partialTick, cameraPos, crumblingOverlay);
 
 		BlockState blockState = blockEntity.getBlockState();
-		renderState.facing = blockState.getValue(ShulkerBoxBlock.FACING);
+		renderState.facing = !blockEntity.getBlockPos().equals(BlockPos.ZERO) || (blockEntity.hasLevel() && blockEntity.getLevel().getBlockState(BlockPos.ZERO).getBlock() instanceof ShulkerBoxBlock) ? blockState.getValue(ShulkerBoxBlock.FACING) : Direction.UP;
 		renderState.lidProgress = blockEntity.getProgress(partialTick);
 		renderState.mainColor = blockEntity.getStorageWrapper().getMainColor();
 		renderState.accentColor = blockEntity.getStorageWrapper().getAccentColor();
