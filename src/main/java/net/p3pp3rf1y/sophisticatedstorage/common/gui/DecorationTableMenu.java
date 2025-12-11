@@ -118,7 +118,7 @@ public class DecorationTableMenu extends AbstractContainerMenu implements ISynce
 					return;
 				}
 				blockEntity.consumeIngredientsOnCraft();
-				InventoryHelper.extract(blockEntity.getStorageBlock(), 0, ItemResource.of(stack), 1);
+				InventoryHelper.extract(blockEntity.getStorageBlock(), 0, blockEntity.getStorageBlock().getResource(0), 1);
 			}
 		};
 		addSlot(resultSlot);

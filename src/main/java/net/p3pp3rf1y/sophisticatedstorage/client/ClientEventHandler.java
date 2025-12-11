@@ -164,7 +164,6 @@ public class ClientEventHandler {
 								pos.getX() - cameraPos.x, pos.getY() - cameraPos.y, pos.getZ() - cameraPos.z, ARGB.colorFromFloat(1, red, green, 0));
 						return true;
 					});
-					event.setCanceled(true);
 				});
 			}
 		}

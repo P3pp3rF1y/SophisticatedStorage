@@ -61,7 +61,7 @@ public class DecorationTableRenderer implements BlockEntityRenderer<DecorationTa
 	}
 
 	public static class DecorationTableRenderState extends BlockEntityRenderState {
-		public ItemStackRenderState result;
+		public ItemStackRenderState result = new ItemStackRenderState();
 		public Direction facing;
 	}
 }
