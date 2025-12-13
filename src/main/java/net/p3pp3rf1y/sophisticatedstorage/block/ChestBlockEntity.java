@@ -112,6 +112,8 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 		int inventorySlotDiff = 2 * (mainBE.getBlockState().getBlock() instanceof StorageBlockBase storageBlock ? storageBlock.getNumberOfInventorySlots() : 0) - mainInventoryHandler.size();
 		mainBE.changeStorageSize(inventorySlotDiff, 0);
 
+		mainInventoryHandler = mainBE.getStorageWrapper().getInventoryHandler();
+
 		moveStacksToMain(thisInventoryHandler, mainInventoryHandler, originalNumberOfSlots);
 
 		copySettings(this, mainBE, 0, originalNumberOfSlots);
