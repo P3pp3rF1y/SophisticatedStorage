@@ -40,7 +40,7 @@ public class LimitedBarrelRenderer extends BarrelRenderer<LimitedBarrelBlockEnti
 	public void render(LimitedBarrelBlockEntity blockEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, Vec3 cameraPos) {
 		BlockState blockState = blockEntity.getBlockState();
 		if (blockEntity.isPacked() || !(blockState.getBlock() instanceof StorageBlockBase storageBlock)
-				|| (!blockEntity.hasDynamicRenderer() && !blockEntity.shouldShowCounts() && !holdsItemThatShowsUpgrades() && !blockEntity.shouldShowUpgrades())) {
+				|| (hasNoDisplayItems(blockEntity) && !blockEntity.shouldShowCounts() && !holdsItemThatShowsUpgrades() && !blockEntity.shouldShowUpgrades())) {
 			return;
 		}
 		boolean flatTop = blockState.getValue(BarrelBlock.FLAT_TOP);
@@ -58,7 +58,7 @@ public class LimitedBarrelRenderer extends BarrelRenderer<LimitedBarrelBlockEnti
 	}
 
 	private void renderFrontFace(LimitedBarrelBlockEntity blockEntity, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, BlockState blockState, boolean flatTop, Direction horizontalFacing) {
-		if (blockEntity.hasDynamicRenderer() || holdsItemThatShowsUpgrades() || blockEntity.shouldShowUpgrades() || blockEntity.shouldShowFillLevels() || holdsItemThatShowsFillLevels()) {
+		if (!hasNoDisplayItems(blockEntity) || holdsItemThatShowsUpgrades() || blockEntity.shouldShowUpgrades() || blockEntity.shouldShowFillLevels() || holdsItemThatShowsFillLevels()) {
 			poseStack.pushPose();
 
 			poseStack.translate(0.5, 0.5, 0.5);
@@ -69,7 +69,7 @@ public class LimitedBarrelRenderer extends BarrelRenderer<LimitedBarrelBlockEnti
 			}
 			poseStack.translate(-0.5, -0.5, -(0.5 - (flatTop ? 0 : 1 / 16f)));
 
-			if (blockEntity.hasDynamicRenderer()) {
+			if (!hasNoDisplayItems(blockEntity)) {
 				renderDisplayItems(blockEntity, poseStack, bufferSource, packedLight, packedOverlay, flatTop);
 			}
 
@@ -129,9 +129,9 @@ public class LimitedBarrelRenderer extends BarrelRenderer<LimitedBarrelBlockEnti
 
 	private void renderDisplayItems(LimitedBarrelBlockEntity blockEntity, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, boolean flatTop) {
 		if (flatTop) {
-			flatDisplayItemRenderer.renderDisplayItems(blockEntity, poseStack, bufferSource, packedLight, packedOverlay, !blockEntity.hasFullyDynamicRenderer());
+			flatDisplayItemRenderer.renderDisplayItems(blockEntity, poseStack, bufferSource, packedLight, packedOverlay);
 		} else {
-			displayItemRenderer.renderDisplayItems(blockEntity, poseStack, bufferSource, packedLight, packedOverlay, !blockEntity.hasFullyDynamicRenderer());
+			displayItemRenderer.renderDisplayItems(blockEntity, poseStack, bufferSource, packedLight, packedOverlay);
 		}
 	}
 
