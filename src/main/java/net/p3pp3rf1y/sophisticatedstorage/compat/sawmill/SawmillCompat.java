@@ -1,29 +1,18 @@
 package net.p3pp3rf1y.sophisticatedstorage.compat.sawmill;
 
-import net.mehvahdjukaar.sawmill.integration.emi.EMIPlugin;
-import net.mehvahdjukaar.sawmill.integration.jei.JEIPlugin;
-import net.mehvahdjukaar.sawmill.integration.rei.REIPlugin;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.ModList;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.RegisterEvent;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.UpgradeContainerRegistry;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.UpgradeContainerType;
-import net.p3pp3rf1y.sophisticatedcore.compat.CompatModIds;
 import net.p3pp3rf1y.sophisticatedcore.compat.ICompat;
 import net.p3pp3rf1y.sophisticatedcore.compat.sawmill.SawmillUpgradeContainer;
 import net.p3pp3rf1y.sophisticatedcore.compat.sawmill.SawmillUpgradeItem;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
-import net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.emi.StorageEmiPlugin;
-import net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.jei.StorageJeiPlugin;
-import net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.rei.StorageReiClientPlugin;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
-
-import java.util.function.Supplier;
 
 public class SawmillCompat implements ICompat {
 
@@ -34,6 +23,7 @@ public class SawmillCompat implements ICompat {
 	public void init(IEventBus modBus) {
 		modBus.addListener(this::registerContainers);
 
+/*
 		if (ModList.get().isLoaded(CompatModIds.JEI)) {
 			((Supplier<Runnable>) () -> () -> StorageJeiPlugin.addAdditionalCatalystRegistrar(registration -> {
 				registration.addCraftingStation(JEIPlugin.WOODCUTTING_RECIPE_TYPE, new ItemStack(SAWMILL_UPGRADE.get()));
@@ -49,6 +39,7 @@ public class SawmillCompat implements ICompat {
 				registration.addWorkstations(REIPlugin.WOODCUTTING_DISPLAY, SAWMILL_UPGRADE.get());
 			})).get().run();
 		}
+*/
 	}
 
 	public void registerContainers(RegisterEvent event) {

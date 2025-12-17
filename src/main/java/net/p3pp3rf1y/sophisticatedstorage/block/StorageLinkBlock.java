@@ -14,8 +14,8 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.p3pp3rf1y.sophisticatedcore.util.BlockBase;
 import net.p3pp3rf1y.sophisticatedcore.util.RotatedShapes;
+import org.jspecify.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.EnumMap;
 import java.util.Map;
 

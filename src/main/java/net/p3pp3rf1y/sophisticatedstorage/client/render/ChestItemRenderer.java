@@ -27,11 +27,11 @@ import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.item.ChestBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
-import org.joml.Vector3f;
+import org.joml.Vector3fc;
+import org.jspecify.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.Optional;
-import java.util.Set;
+import java.util.function.Consumer;
 
 public class ChestItemRenderer implements SpecialModelRenderer<ChestItemRenderer.ChestAttributes> {
 	private final LoadingCache<BlockItem, ChestBlockEntity> chestBlockEntities = CacheBuilder.newBuilder().maximumSize(512L).weakKeys().build(new CacheLoader<>() {
@@ -91,12 +91,12 @@ public class ChestItemRenderer implements SpecialModelRenderer<ChestItemRenderer
 	}
 
 	@Override
-	public void getExtents(Set<Vector3f> set) {
+	public void getExtents(Consumer<Vector3fc> consumer) {
 		PoseStack posestack = new PoseStack();
 		ChestBlockEntity chestBlockEntity = chestBlockEntities.getUnchecked(ModBlocks.CHEST_ITEM.get());
 		BlockEntityRenderer<ChestBlockEntity, ChestRenderer.ChestRenderState> blockentityrenderer = Minecraft.getInstance().getBlockEntityRenderDispatcher().getRenderer(chestBlockEntity);
 		if (blockentityrenderer instanceof ChestRenderer chestRenderer) {
-			chestRenderer.rootModelPart().getExtentsForGui(posestack, set);
+			chestRenderer.rootModelPart().getExtentsForGui(posestack, consumer);
 		}
 	}
 

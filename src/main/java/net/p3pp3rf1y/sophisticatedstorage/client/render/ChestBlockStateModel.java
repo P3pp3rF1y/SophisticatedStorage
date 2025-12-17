@@ -8,7 +8,7 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.core.BlockPos;
 import net.minecraft.data.AtlasIds;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
@@ -26,11 +26,11 @@ import java.util.Map;
 
 public class ChestBlockStateModel implements DynamicBlockStateModel {
 	private static final String BLOCK_BREAK_FOLDER = "block/break/";
-	private static final Map<String, ResourceLocation> WOOD_BREAK_TEXTURES = new HashMap<>();
-	public static final ResourceLocation TINTABLE_BREAK_TEXTURE = SophisticatedStorage.getRL(BLOCK_BREAK_FOLDER + "tintable_chest");
+	private static final Map<String, Identifier> WOOD_BREAK_TEXTURES = new HashMap<>();
+	public static final Identifier TINTABLE_BREAK_TEXTURE = SophisticatedStorage.getIdentifier(BLOCK_BREAK_FOLDER + "tintable_chest");
 
 	static {
-		WoodStorageBlockBase.CUSTOM_TEXTURE_WOOD_TYPES.keySet().forEach(woodType -> WOOD_BREAK_TEXTURES.put(woodType.name(), SophisticatedStorage.getRL(BLOCK_BREAK_FOLDER + woodType.name() + "_chest")));
+		WoodStorageBlockBase.CUSTOM_TEXTURE_WOOD_TYPES.keySet().forEach(woodType -> WOOD_BREAK_TEXTURES.put(woodType.name(), SophisticatedStorage.getIdentifier(BLOCK_BREAK_FOLDER + woodType.name() + "_chest")));
 	}
 
 	@Override
@@ -50,14 +50,14 @@ public class ChestBlockStateModel implements DynamicBlockStateModel {
 					boolean hasMainColor = be.getStorageWrapper().hasMainColor();
 					String woodName = be.getWoodType().map(WoodType::name).orElse("");
 
-					ResourceLocation texture = hasMainColor ? TINTABLE_BREAK_TEXTURE : WOOD_BREAK_TEXTURES.getOrDefault(woodName, TINTABLE_BREAK_TEXTURE);
+					Identifier texture = hasMainColor ? TINTABLE_BREAK_TEXTURE : WOOD_BREAK_TEXTURES.getOrDefault(woodName, TINTABLE_BREAK_TEXTURE);
 					return texture;
 				}).orElse(TINTABLE_BREAK_TEXTURE));
 	}
 
 	public static class Unbaked implements CustomUnbakedBlockStateModel {
 		public static final MapCodec<Unbaked> CODEC = MapCodec.unit(Unbaked::new);
-		public static final ResourceLocation ID = SophisticatedStorage.getRL("chest_model_loader");
+		public static final Identifier ID = SophisticatedStorage.getIdentifier("chest_model_loader");
 
 		@Override
 		public BlockStateModel bake(ModelBaker modelBaker) {

@@ -6,10 +6,10 @@ import net.minecraft.client.gui.render.pip.OversizedItemRenderer;
 import net.minecraft.client.gui.render.state.pip.OversizedItemRenderState;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.ShapeRenderer;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraft.util.ARGB;
@@ -48,9 +48,9 @@ public class ClientEventHandler {
 	private ClientEventHandler() {
 	}
 
-	private static final ResourceLocation CHEST_RL = ResourceLocation.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "chest");
-	private static final ResourceLocation CHEST_LEFT_RL = ResourceLocation.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "chest_left");
-	private static final ResourceLocation CHEST_RIGHT_RL = ResourceLocation.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "chest_right");
+	private static final Identifier CHEST_RL = Identifier.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "chest");
+	private static final Identifier CHEST_LEFT_RL = Identifier.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "chest_left");
+	private static final Identifier CHEST_RIGHT_RL = Identifier.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "chest_right");
 	public static final ModelLayerLocation CHEST_LAYER = new ModelLayerLocation(CHEST_RL, "main");
 	public static final ModelLayerLocation CHEST_LEFT_LAYER = new ModelLayerLocation(CHEST_LEFT_RL, "main");
 	public static final ModelLayerLocation CHEST_RIGHT_LAYER = new ModelLayerLocation(CHEST_RIGHT_RL, "main");
@@ -130,7 +130,7 @@ public class ClientEventHandler {
 		}
 
 		ItemStack stack = player.getMainHandItem();
-		CollisionContext collisionContext = CollisionContext.of(event.getCamera().getEntity());
+		CollisionContext collisionContext = CollisionContext.of(event.getCamera().entity());
 		if (stack.getItem() instanceof ChestBlockItem && ChestBlockItem.isDoubleChest(stack)) {
 			BlockHitResult hitresult = event.getHitResult();
 			BlockPos otherPos = hitresult.getBlockPos().relative(player.getDirection().getClockWise());
@@ -138,10 +138,11 @@ public class ClientEventHandler {
 			BlockState blockState = level.getBlockState(otherPos);
 			if (!blockState.isAir() && level.getWorldBorder().isWithinBounds(otherPos)) {
 				event.addCustomRenderer((blockOutlineRenderState, bufferSource, poseStack, b, levelRenderState) -> {
-					VertexConsumer vertexConsumer = bufferSource.getBuffer(RenderType.lines());
+					VertexConsumer vertexConsumer = bufferSource.getBuffer(RenderTypes.lines());
 					Vec3 cameraPos = levelRenderState.cameraRenderState.pos;
 					ShapeRenderer.renderShape(poseStack, vertexConsumer, blockState.getShape(level, otherPos, collisionContext),
-							otherPos.getX() - cameraPos.x, otherPos.getY() - cameraPos.y, otherPos.getZ() - cameraPos.z, ARGB.colorFromFloat(0.4F, 0, 0, 0));
+							otherPos.getX() - cameraPos.x, otherPos.getY() - cameraPos.y, otherPos.getZ() - cameraPos.z, ARGB.colorFromFloat(0.4F, 0, 0, 0),
+							minecraft.getWindow().getAppropriateLineWidth());
 					return false;
 				});
 			}
@@ -158,10 +159,11 @@ public class ClientEventHandler {
 					event.addCustomRenderer((blockOutlineRenderState, bufferSource, poseStack, b, levelRenderState) -> {
 						float red = !itemRequirements.itemsMissing().isEmpty() ? 1 : 0;
 						float green = itemRequirements.itemsMissing().isEmpty() ? 1 : 0;
-						VertexConsumer vertexConsumer = bufferSource.getBuffer(RenderType.lines());
+						VertexConsumer vertexConsumer = bufferSource.getBuffer(RenderTypes.lines());
 						Vec3 cameraPos = levelRenderState.cameraRenderState.pos;
 						ShapeRenderer.renderShape(poseStack, vertexConsumer, blockState.getShape(level, pos, collisionContext),
-								pos.getX() - cameraPos.x, pos.getY() - cameraPos.y, pos.getZ() - cameraPos.z, ARGB.colorFromFloat(1, red, green, 0));
+								pos.getX() - cameraPos.x, pos.getY() - cameraPos.y, pos.getZ() - cameraPos.z, ARGB.colorFromFloat(1, red, green, 0),
+								minecraft.getWindow().getAppropriateLineWidth());
 						return true;
 					});
 				});
@@ -208,17 +210,17 @@ public class ClientEventHandler {
 	}
 
 	private static void registerStorageLayerLoader(AddClientReloadListenersEvent event) {
-		event.addListener(SophisticatedStorage.getRL("chest_texture_manager"), StorageTextureManager.INSTANCE);
+		event.addListener(SophisticatedStorage.getIdentifier("chest_texture_manager"), StorageTextureManager.INSTANCE);
 	}
 
 	private static void onRegisterModelLoaders(ModelEvent.RegisterLoaders event) {
-		event.register(ResourceLocation.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "barrel"), BarrelUnbakedModel.Loader.INSTANCE);
-		event.register(ResourceLocation.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "limited_barrel"), LimitedBarrelUnbakedModel.Loader.INSTANCE);
-		event.register(ResourceLocation.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "simple_composite"), SimpleCompositeUnbakedModel.Loader.INSTANCE);
+		event.register(Identifier.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "barrel"), BarrelUnbakedModel.Loader.INSTANCE);
+		event.register(Identifier.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "limited_barrel"), LimitedBarrelUnbakedModel.Loader.INSTANCE);
+		event.register(Identifier.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "simple_composite"), SimpleCompositeUnbakedModel.Loader.INSTANCE);
 	}
 
 	private static void onRegisterReloadListeners(AddClientReloadListenersEvent event) {
-		event.addListener(SophisticatedStorage.getRL("barrel_cache_invalidation"), (ResourceManagerReloadListener) ClientEventHandler::invalidateBarrelCache);
+		event.addListener(SophisticatedStorage.getIdentifier("barrel_cache_invalidation"), (ResourceManagerReloadListener) ClientEventHandler::invalidateBarrelCache);
 	}
 
 	private static void invalidateBarrelCache(ResourceManager resourceManager) {
@@ -240,8 +242,8 @@ public class ClientEventHandler {
 	}
 
 	private static void registerOverlay(RegisterGuiLayersEvent event) {
-		event.registerAbove(VanillaGuiLayers.HOTBAR, ResourceLocation.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "storage_tool_info"), ToolInfoOverlay.HUD_TOOL_INFO);
-		event.registerAbove(VanillaGuiLayers.HOTBAR, ResourceLocation.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "paintbrush_info"), PaintbrushOverlay.HUD_PAINTBRUSH_INFO);
+		event.registerAbove(VanillaGuiLayers.HOTBAR, Identifier.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "storage_tool_info"), ToolInfoOverlay.HUD_TOOL_INFO);
+		event.registerAbove(VanillaGuiLayers.HOTBAR, Identifier.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "paintbrush_info"), PaintbrushOverlay.HUD_PAINTBRUSH_INFO);
 	}
 
 	private static void registerEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {
@@ -270,6 +272,6 @@ public class ClientEventHandler {
 	}
 
 	private static void registerBarrelItemModel(RegisterItemModelsEvent event) {
-		event.register(SophisticatedStorage.getRL("barrel"), BarrelItemModel.Unbaked.MAP_CODEC);
+		event.register(SophisticatedStorage.getIdentifier("barrel"), BarrelItemModel.Unbaked.MAP_CODEC);
 	}
 }

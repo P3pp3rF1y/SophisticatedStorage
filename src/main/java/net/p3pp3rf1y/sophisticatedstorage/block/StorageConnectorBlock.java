@@ -13,8 +13,7 @@ import net.minecraft.world.level.material.MapColor;
 import net.p3pp3rf1y.sophisticatedcore.controller.IControllerBoundable;
 import net.p3pp3rf1y.sophisticatedcore.util.BlockBase;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
-
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class StorageConnectorBlock extends BlockBase implements EntityBlock {
 	public StorageConnectorBlock(Properties properties) {

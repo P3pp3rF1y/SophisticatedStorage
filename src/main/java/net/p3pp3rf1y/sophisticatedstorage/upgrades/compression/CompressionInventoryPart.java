@@ -1,6 +1,6 @@
 package net.p3pp3rf1y.sophisticatedstorage.upgrades.compression;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -19,8 +19,8 @@ import net.p3pp3rf1y.sophisticatedcore.util.RecipeHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.SlotRange;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
+import org.jspecify.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.*;
 import java.util.stream.Collectors;
@@ -31,7 +31,7 @@ import static net.p3pp3rf1y.sophisticatedcore.util.MathHelper.intMaxCappedMultip
 
 public class CompressionInventoryPart implements IInventoryPartHandler {
 	public static final String NAME = "compression";
-	public static final ResourceLocation EMPTY_COMPRESSION_SLOT = SophisticatedStorage.getRL("container/slot/compression");
+	public static final Identifier EMPTY_COMPRESSION_SLOT = SophisticatedStorage.getIdentifier("container/slot/compression");
 	private final InventoryHandler parent;
 	private final SlotRange slotRange;
 	private final Supplier<MemorySettingsCategory> getMemorySettings;
@@ -692,7 +692,7 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 
 	@Nullable
 	@Override
-	public ResourceLocation getNoItemIcon(int slot) {
+	public Identifier getNoItemIcon(int slot) {
 		return EMPTY_COMPRESSION_SLOT;
 	}
 

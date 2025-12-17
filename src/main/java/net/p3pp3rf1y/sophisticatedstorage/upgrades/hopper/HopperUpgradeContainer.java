@@ -2,7 +2,7 @@ package net.p3pp3rf1y.sophisticatedstorage.upgrades.hopper;
 
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.level.block.state.BlockState;
@@ -15,12 +15,11 @@ import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockBase;
 import net.p3pp3rf1y.sophisticatedstorage.block.VerticalFacing;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.SideIOContainer;
 import net.p3pp3rf1y.sophisticatedstorage.upgrades.IOMode;
-
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class HopperUpgradeContainer extends UpgradeContainerBase<HopperUpgradeWrapper, HopperUpgradeContainer> {
-	public static final ResourceLocation EMPTY_INPUT_FILTER_SLOT_BACKGROUND = SophisticatedStorage.getRL("container/slot/input_filter");
-	public static final ResourceLocation EMPTY_OUTPUT_FILTER_SLOT_BACKGROUND = SophisticatedStorage.getRL("container/slot/output_filter");
+	public static final Identifier EMPTY_INPUT_FILTER_SLOT_BACKGROUND = SophisticatedStorage.getIdentifier("container/slot/input_filter");
+	public static final Identifier EMPTY_OUTPUT_FILTER_SLOT_BACKGROUND = SophisticatedStorage.getIdentifier("container/slot/output_filter");
 	private final ContentsFilterLogicContainer inputFilterLogicContainer;
 
 	private final ContentsFilterLogicContainer outputFilterLogicContainer;

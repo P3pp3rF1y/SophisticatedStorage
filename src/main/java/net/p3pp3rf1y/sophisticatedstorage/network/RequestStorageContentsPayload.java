@@ -13,7 +13,7 @@ import net.p3pp3rf1y.sophisticatedstorage.block.ItemContentsStorage;
 import java.util.UUID;
 
 public record RequestStorageContentsPayload(UUID storageUuid) implements CustomPacketPayload {
-	public static final Type<RequestStorageContentsPayload> TYPE = new Type<>(SophisticatedStorage.getRL("request_storage_contents"));
+	public static final Type<RequestStorageContentsPayload> TYPE = new Type<>(SophisticatedStorage.getIdentifier("request_storage_contents"));
 	public static final StreamCodec<ByteBuf, RequestStorageContentsPayload> STREAM_CODEC = StreamCodec.composite(
 			UUIDUtil.STREAM_CODEC,
 			RequestStorageContentsPayload::storageUuid,

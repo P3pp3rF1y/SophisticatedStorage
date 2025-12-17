@@ -20,9 +20,9 @@ public class FlatBarrelRecipesMaker {
 		BarrelBlockItem.toggleFlatTop(flatBarrel);
 
 		generator.shapeless(flatBarrel).requires(barrel)
-				.save(ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getRL("flatten_barrel")));
+				.save(ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getIdentifier("flatten_barrel")));
 
 		generator.shapeless(barrel).requires(flatBarrel)
-				.save(ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getRL("unflatten_barrel")));
+				.save(ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getIdentifier("unflatten_barrel")));
 	}
 }

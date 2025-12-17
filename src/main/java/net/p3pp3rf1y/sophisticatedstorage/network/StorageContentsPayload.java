@@ -13,7 +13,7 @@ import net.p3pp3rf1y.sophisticatedstorage.block.ItemContentsStorage;
 import java.util.UUID;
 
 public record StorageContentsPayload(UUID shulkerBoxUuid, ContainerContents contents) implements CustomPacketPayload {
-	public static final Type<StorageContentsPayload> TYPE = new Type<>(SophisticatedStorage.getRL("storage_contents"));
+	public static final Type<StorageContentsPayload> TYPE = new Type<>(SophisticatedStorage.getIdentifier("storage_contents"));
 	public static final StreamCodec<RegistryFriendlyByteBuf, StorageContentsPayload> STREAM_CODEC = StreamCodec.composite(
 			UUIDUtil.STREAM_CODEC,
 			StorageContentsPayload::shulkerBoxUuid,

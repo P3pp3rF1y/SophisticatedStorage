@@ -8,7 +8,7 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.core.BlockPos;
 import net.minecraft.data.AtlasIds;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
@@ -22,8 +22,8 @@ import java.util.List;
 
 public class ShulkerBoxBlockStateModel implements DynamicBlockStateModel {
 	private static final String BLOCK_BREAK_FOLDER = "block/break/";
-	public static final ResourceLocation TINTABLE_BREAK_TEXTURE = SophisticatedStorage.getRL(BLOCK_BREAK_FOLDER + "tintable_shulker_box");
-	public static final ResourceLocation MAIN_BREAK_TEXTURE = SophisticatedStorage.getRL(BLOCK_BREAK_FOLDER + "shulker_box");
+	public static final Identifier TINTABLE_BREAK_TEXTURE = SophisticatedStorage.getIdentifier(BLOCK_BREAK_FOLDER + "tintable_shulker_box");
+	public static final Identifier MAIN_BREAK_TEXTURE = SophisticatedStorage.getIdentifier(BLOCK_BREAK_FOLDER + "shulker_box");
 
 	@Override
 	public void collectParts(BlockAndTintGetter blockAndTintGetter, BlockPos blockPos, BlockState blockState, RandomSource randomSource, List<BlockModelPart> list) {
@@ -43,7 +43,7 @@ public class ShulkerBoxBlockStateModel implements DynamicBlockStateModel {
 
 	public static class Unbaked implements CustomUnbakedBlockStateModel {
 		public static final MapCodec<ShulkerBoxBlockStateModel.Unbaked> CODEC = MapCodec.unit(ShulkerBoxBlockStateModel.Unbaked::new);
-		public static final ResourceLocation ID = SophisticatedStorage.getRL("shulker_box_model_loader");
+		public static final Identifier ID = SophisticatedStorage.getIdentifier("shulker_box_model_loader");
 
 		@Override
 		public BlockStateModel bake(ModelBaker modelBaker) {

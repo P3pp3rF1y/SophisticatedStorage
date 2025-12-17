@@ -3,7 +3,7 @@ package net.p3pp3rf1y.sophisticatedstorage.common.gui;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -21,8 +21,8 @@ import net.p3pp3rf1y.sophisticatedcore.util.SlotRange;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.DecorationTableBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
+import org.jspecify.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -30,10 +30,10 @@ import java.util.function.Consumer;
 
 public class DecorationTableMenu extends AbstractContainerMenu implements ISyncedContainer {
 	private static final String SET_INHERITANCE_ACTION = "setInheritance";
-	private static final ResourceLocation EMPTY_RED_DYE_SLOT_BACKGROUND = SophisticatedStorage.getRL("container/slot/red_dye");
-	private static final ResourceLocation EMPTY_GREEN_DYE_SLOT_BACKGROUND = SophisticatedStorage.getRL("container/slot/green_dye");
-	private static final ResourceLocation EMPTY_BLUE_DYE_SLOT_BACKGROUND = SophisticatedStorage.getRL("container/slot/blue_dye");
-	private static final ResourceLocation EMPTY_MATERIAL_SLOT_BACKGROUND = SophisticatedStorage.getRL("container/slot/material");
+	private static final Identifier EMPTY_RED_DYE_SLOT_BACKGROUND = SophisticatedStorage.getIdentifier("container/slot/red_dye");
+	private static final Identifier EMPTY_GREEN_DYE_SLOT_BACKGROUND = SophisticatedStorage.getIdentifier("container/slot/green_dye");
+	private static final Identifier EMPTY_BLUE_DYE_SLOT_BACKGROUND = SophisticatedStorage.getIdentifier("container/slot/blue_dye");
+	private static final Identifier EMPTY_MATERIAL_SLOT_BACKGROUND = SophisticatedStorage.getIdentifier("container/slot/material");
 	public static final int DECORATION_SLOT_PADDING = 12;
 	private final DecorationTableBlockEntity blockEntity;
 
@@ -244,7 +244,7 @@ public class DecorationTableMenu extends AbstractContainerMenu implements ISynce
 
 	@Override
 	public boolean stillValid(Player player) {
-		return player.canInteractWithBlock(blockEntity.getBlockPos(), 4);
+		return player.isWithinBlockInteractionRange(blockEntity.getBlockPos(), 4);
 	}
 
 	public static DecorationTableMenu fromBuffer(int containerId, Inventory playerInventory, RegistryFriendlyByteBuf buffer) {
@@ -308,11 +308,11 @@ public class DecorationTableMenu extends AbstractContainerMenu implements ISynce
 		ClientPacketDistributor.sendToServer(new SyncContainerClientDataPayload(data));
 	}
 
-	public Map<ResourceLocation, Integer> getPartsNeeded() {
+	public Map<Identifier, Integer> getPartsNeeded() {
 		return blockEntity.getPartsNeeded();
 	}
 
-	public Set<ResourceLocation> getMissingDyes() {
+	public Set<Identifier> getMissingDyes() {
 		return blockEntity.getMissingDyes();
 	}
 
@@ -331,7 +331,7 @@ public class DecorationTableMenu extends AbstractContainerMenu implements ISynce
 		data.getInt("accentColor").ifPresent(this::setAccentColor);
 	}
 
-	public Map<ResourceLocation, Integer> getPartsStored() {
+	public Map<Identifier, Integer> getPartsStored() {
 		return blockEntity.getPartsStored();
 	}
 

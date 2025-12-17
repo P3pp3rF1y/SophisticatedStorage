@@ -3,7 +3,7 @@ package net.p3pp3rf1y.sophisticatedstorage.entity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -37,8 +37,8 @@ import net.p3pp3rf1y.sophisticatedcore.util.NoopStorageWrapper;
 import net.p3pp3rf1y.sophisticatedstorage.block.*;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModDataComponents;
 import net.p3pp3rf1y.sophisticatedstorage.item.*;
+import org.jspecify.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.*;
 
 public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITierDisplay, IUpgradeDisplay, IFillLevelDisplay, IMaterialHolder {
@@ -269,7 +269,7 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 						return true;
 					}
 				});
-				Map<BarrelMaterial, ResourceLocation> materials = BarrelBlockItem.getMaterials(storageItem);
+				Map<BarrelMaterial, Identifier> materials = BarrelBlockItem.getMaterials(storageItem);
 				if (!barrel.getMaterials().equals(materials)) {
 					barrel.setMaterials(materials);
 				}
@@ -540,7 +540,7 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 	}
 
 	@Override
-	public void setMaterials(Map<BarrelMaterial, ResourceLocation> materials) {
+	public void setMaterials(Map<BarrelMaterial, Identifier> materials) {
 		ItemStack storageItem = getSyncedStorageStack();
 		if (isBarrel()) {
 			BarrelBlockItem.setMaterials(storageItem, materials);
@@ -549,7 +549,7 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 	}
 
 	@Override
-	public Map<BarrelMaterial, ResourceLocation> getMaterials() {
+	public Map<BarrelMaterial, Identifier> getMaterials() {
 		return isBarrel() ? BarrelBlockItem.getMaterials(getSyncedStorageStack()) : Collections.emptyMap();
 	}
 

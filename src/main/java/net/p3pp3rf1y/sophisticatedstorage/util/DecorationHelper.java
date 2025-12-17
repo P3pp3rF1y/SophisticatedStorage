@@ -1,7 +1,7 @@
 package net.p3pp3rf1y.sophisticatedstorage.util;
 
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.ARGB;
 import net.minecraft.world.item.BlockItem;
@@ -13,8 +13,8 @@ import net.neoforged.neoforge.transfer.transaction.SnapshotJournal;
 import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelMaterial;
 import net.p3pp3rf1y.sophisticatedstorage.item.BarrelBlockItem;
+import org.jspecify.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
@@ -37,14 +37,14 @@ public class DecorationHelper {
 	}
 
 
-	public static Optional<ResourceLocation> getMaterialLocation(Item item) {
+	public static Optional<Identifier> getMaterialLocation(Item item) {
 		if (item instanceof BlockItem blockItem) {
 			return Optional.of(BuiltInRegistries.BLOCK.getKey(blockItem.getBlock()));
 		}
 		return Optional.empty();
 	}
 
-	public static boolean consumeDyes(int mainColorBeingSet, int accentColorBeingSet, Map<ResourceLocation, Integer> remainingParts, SnapshotJournal<Map<ResourceLocation, Integer>> remainingPartsJournal, List<ResourceHandler<ItemResource>> dyes, Integer storageMainColor, Integer storageAccentColor, TransactionContext tx) {
+	public static boolean consumeDyes(int mainColorBeingSet, int accentColorBeingSet, Map<Identifier, Integer> remainingParts, SnapshotJournal<Map<Identifier, Integer>> remainingPartsJournal, List<ResourceHandler<ItemResource>> dyes, Integer storageMainColor, Integer storageAccentColor, TransactionContext tx) {
 		Map<TagKey<Item>, Integer> partsNeeded = getDyePartsNeeded(mainColorBeingSet, accentColorBeingSet, storageMainColor, storageAccentColor);
 		if (partsNeeded.isEmpty()) {
 			return true;
@@ -118,37 +118,37 @@ public class DecorationHelper {
 		return result;
 	}
 
-	public static boolean consumeMaterials(Map<ResourceLocation, Integer> remainingParts, SnapshotJournal<Map<ResourceLocation, Integer>> remainingPartsJournal, List<ResourceHandler<ItemResource>> decorativeBlocks, Map<BarrelMaterial, ResourceLocation> originalMaterials, Map<BarrelMaterial, ResourceLocation> materials, TransactionContext tx) {
-		Map<ResourceLocation, Integer> partsNeeded = getMaterialPartsNeeded(originalMaterials, materials);
+	public static boolean consumeMaterials(Map<Identifier, Integer> remainingParts, SnapshotJournal<Map<Identifier, Integer>> remainingPartsJournal, List<ResourceHandler<ItemResource>> decorativeBlocks, Map<BarrelMaterial, Identifier> originalMaterials, Map<BarrelMaterial, Identifier> materials, TransactionContext tx) {
+		Map<Identifier, Integer> partsNeeded = getMaterialPartsNeeded(originalMaterials, materials);
 		return consumeMaterialPartsNeeded(partsNeeded, remainingParts, remainingPartsJournal, decorativeBlocks, tx).hasEnough();
 	}
 
-	public static ConsumptionResult consumeMaterialPartsNeeded(Map<ResourceLocation, Integer> partsNeeded, Map<ResourceLocation, Integer> remainingParts, SnapshotJournal<Map<ResourceLocation, Integer>> remainingPartsJournal, List<ResourceHandler<ItemResource>> decorativeBlocks, TransactionContext tx) {
+	public static ConsumptionResult consumeMaterialPartsNeeded(Map<Identifier, Integer> partsNeeded, Map<Identifier, Integer> remainingParts, SnapshotJournal<Map<Identifier, Integer>> remainingPartsJournal, List<ResourceHandler<ItemResource>> decorativeBlocks, TransactionContext tx) {
 		return consumePartsNeeded(partsNeeded, decorativeBlocks, location -> location,
 				(materialLocation, stack) -> getMaterialLocation(stack.getItem()).map(ml -> ml.equals(materialLocation)).orElse(false), remainingParts, remainingPartsJournal, tx);
 	}
 
-	public static Map<ResourceLocation, Integer> getMaterialPartsNeeded(Map<BarrelMaterial, ResourceLocation> originalMaterials, Map<BarrelMaterial, ResourceLocation> materialsToApply) {
-		Map<ResourceLocation, Integer> partsNeeded = new HashMap<>();
+	public static Map<Identifier, Integer> getMaterialPartsNeeded(Map<BarrelMaterial, Identifier> originalMaterials, Map<BarrelMaterial, Identifier> materialsToApply) {
+		Map<Identifier, Integer> partsNeeded = new HashMap<>();
 		BarrelBlockItem.uncompactMaterials(materialsToApply);
 
-		ResourceLocation topInnerTrimMaterialLocation = addMaterialCostForSlotAndGetMaterial(materialsToApply, BarrelMaterial.TOP_INNER_TRIM, null, partsNeeded, originalMaterials);
-		ResourceLocation topTrimMaterialLocation = addMaterialCostForSlotAndGetMaterial(materialsToApply, BarrelMaterial.TOP_TRIM, topInnerTrimMaterialLocation, partsNeeded, originalMaterials);
-		ResourceLocation sideTrimMaterialLocation = addMaterialCostForSlotAndGetMaterial(materialsToApply, BarrelMaterial.SIDE_TRIM, topTrimMaterialLocation, partsNeeded, originalMaterials);
+		Identifier topInnerTrimMaterialLocation = addMaterialCostForSlotAndGetMaterial(materialsToApply, BarrelMaterial.TOP_INNER_TRIM, null, partsNeeded, originalMaterials);
+		Identifier topTrimMaterialLocation = addMaterialCostForSlotAndGetMaterial(materialsToApply, BarrelMaterial.TOP_TRIM, topInnerTrimMaterialLocation, partsNeeded, originalMaterials);
+		Identifier sideTrimMaterialLocation = addMaterialCostForSlotAndGetMaterial(materialsToApply, BarrelMaterial.SIDE_TRIM, topTrimMaterialLocation, partsNeeded, originalMaterials);
 		addMaterialCostForSlotAndGetMaterial(materialsToApply, BarrelMaterial.BOTTOM_TRIM, sideTrimMaterialLocation, partsNeeded, originalMaterials);
-		ResourceLocation topMaterialLocation = addMaterialCostForSlotAndGetMaterial(materialsToApply, BarrelMaterial.TOP, topTrimMaterialLocation, partsNeeded, originalMaterials);
-		ResourceLocation sideMaterialLocation = addMaterialCostForSlotAndGetMaterial(materialsToApply, BarrelMaterial.SIDE, topMaterialLocation, partsNeeded, originalMaterials);
+		Identifier topMaterialLocation = addMaterialCostForSlotAndGetMaterial(materialsToApply, BarrelMaterial.TOP, topTrimMaterialLocation, partsNeeded, originalMaterials);
+		Identifier sideMaterialLocation = addMaterialCostForSlotAndGetMaterial(materialsToApply, BarrelMaterial.SIDE, topMaterialLocation, partsNeeded, originalMaterials);
 		addMaterialCostForSlotAndGetMaterial(materialsToApply, BarrelMaterial.BOTTOM, sideMaterialLocation, partsNeeded, originalMaterials);
 		return partsNeeded;
 	}
 
 	@Nullable
-	private static ResourceLocation addMaterialCostForSlotAndGetMaterial(Map<BarrelMaterial, ResourceLocation> materials, BarrelMaterial barrelMaterial, @Nullable ResourceLocation defaultMaterialLocation, Map<ResourceLocation, Integer> partsNeeded, Map<BarrelMaterial, ResourceLocation> originalMaterials) {
+	private static Identifier addMaterialCostForSlotAndGetMaterial(Map<BarrelMaterial, Identifier> materials, BarrelMaterial barrelMaterial, @Nullable Identifier defaultMaterialLocation, Map<Identifier, Integer> partsNeeded, Map<BarrelMaterial, Identifier> originalMaterials) {
 		boolean materialIsTheSame = Objects.deepEquals(originalMaterials.get(barrelMaterial), materials.get(barrelMaterial));
 		boolean newHasNoMaterial = !materials.containsKey(barrelMaterial);
 		boolean hasNoCost = (barrelMaterial == BarrelMaterial.TOP_TRIM && defaultMaterialLocation != null) || materialIsTheSame || newHasNoMaterial;
 
-		ResourceLocation materialLocation = materials.getOrDefault(barrelMaterial, defaultMaterialLocation);
+		Identifier materialLocation = materials.getOrDefault(barrelMaterial, defaultMaterialLocation);
 		if (hasNoCost) {
 			return materialLocation;
 		}
@@ -160,16 +160,16 @@ public class DecorationHelper {
 		return materialLocation;
 	}
 
-	public static ConsumptionResult consumeDyePartsNeeded(Map<TagKey<Item>, Integer> partsNeeded, List<ResourceHandler<ItemResource>> resourceHandlers, Map<ResourceLocation, Integer> remainingParts, SnapshotJournal<Map<ResourceLocation, Integer>> remainingPartsJournal, TransactionContext tx) {
+	public static ConsumptionResult consumeDyePartsNeeded(Map<TagKey<Item>, Integer> partsNeeded, List<ResourceHandler<ItemResource>> resourceHandlers, Map<Identifier, Integer> remainingParts, SnapshotJournal<Map<Identifier, Integer>> remainingPartsJournal, TransactionContext tx) {
 		return consumePartsNeeded(partsNeeded, resourceHandlers, TagKey::location, (dyeName, resource) -> resource.is(dyeName), remainingParts, remainingPartsJournal, tx);
 	}
 
-	private static <T> ConsumptionResult consumePartsNeeded(Map<T, Integer> partsNeeded, List<ResourceHandler<ItemResource>> resourceHandlers, Function<T, ResourceLocation> locationGetter, BiPredicate<T, ItemResource> resourceMatcher, Map<ResourceLocation, Integer> remainingParts, SnapshotJournal<Map<ResourceLocation, Integer>> remainingPartsJournal, TransactionContext tx) {
-		Map<ResourceLocation, Integer> missingParts = new HashMap<>();
+	private static <T> ConsumptionResult consumePartsNeeded(Map<T, Integer> partsNeeded, List<ResourceHandler<ItemResource>> resourceHandlers, Function<T, Identifier> locationGetter, BiPredicate<T, ItemResource> resourceMatcher, Map<Identifier, Integer> remainingParts, SnapshotJournal<Map<Identifier, Integer>> remainingPartsJournal, TransactionContext tx) {
+		Map<Identifier, Integer> missingParts = new HashMap<>();
 		for (Map.Entry<T, Integer> entry : partsNeeded.entrySet()) {
 			T material = entry.getKey();
 			Integer parts = entry.getValue();
-			ResourceLocation materialLocation = locationGetter.apply(material);
+			Identifier materialLocation = locationGetter.apply(material);
 			int remainingPartCount = remainingParts.getOrDefault(materialLocation, 0);
 			if (remainingPartCount > parts) {
 				remainingPartsJournal.updateSnapshots(tx);
@@ -193,7 +193,7 @@ public class DecorationHelper {
 		return new ConsumptionResult(missingParts.isEmpty(), missingParts);
 	}
 
-	private static <T> SingleItemConsumptionResult consumeFromHandlers(List<ResourceHandler<ItemResource>> resourceHandlers, BiPredicate<T, ItemResource> resourceMatcher, Map<ResourceLocation, Integer> remainingParts, SnapshotJournal<Map<ResourceLocation, Integer>> remainingPartsJournal, TransactionContext tx, T material, Integer parts, ResourceLocation materialLocation) {
+	private static <T> SingleItemConsumptionResult consumeFromHandlers(List<ResourceHandler<ItemResource>> resourceHandlers, BiPredicate<T, ItemResource> resourceMatcher, Map<Identifier, Integer> remainingParts, SnapshotJournal<Map<Identifier, Integer>> remainingPartsJournal, TransactionContext tx, T material, Integer parts, Identifier materialLocation) {
 		for (ResourceHandler<ItemResource> resources : resourceHandlers) {
 			for (int slot = 0; slot < resources.size(); slot++) {
 				ItemResource resource = resources.getResource(slot);
@@ -220,5 +220,5 @@ public class DecorationHelper {
 
 	private record SingleItemConsumptionResult(boolean hasEnough, int countMissing) {}
 
-	public record ConsumptionResult(boolean hasEnough, Map<ResourceLocation, Integer> missingParts) {}
+	public record ConsumptionResult(boolean hasEnough, Map<Identifier, Integer> missingParts) {}
 }

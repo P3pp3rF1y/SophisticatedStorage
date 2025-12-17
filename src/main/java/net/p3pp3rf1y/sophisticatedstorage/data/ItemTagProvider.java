@@ -4,7 +4,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.tags.TagAppender;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.common.data.ItemTagsProvider;
@@ -33,9 +33,9 @@ public class ItemTagProvider extends ItemTagsProvider {
 
 		TagAppender<Item, Item> upgradeTag = tag(ModItems.STORAGE_UPGRADE_TAG);
 		BuiltInRegistries.ITEM.entrySet().stream()
-				.filter(entry -> entry.getKey().location().getNamespace().equals(SophisticatedStorage.MOD_ID) && entry.getValue() instanceof UpgradeItemBase)
+				.filter(entry -> entry.getKey().identifier().getNamespace().equals(SophisticatedStorage.MOD_ID) && entry.getValue() instanceof UpgradeItemBase)
 				.map(Map.Entry::getValue).forEach(item -> {
-					ResourceLocation location = BuiltInRegistries.ITEM.getKey(item);
+					Identifier location = BuiltInRegistries.ITEM.getKey(item);
 					if (location.getPath().contains("/")) {
 						upgradeTag.addOptional(item);
 					} else {

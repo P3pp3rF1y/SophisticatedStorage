@@ -1,6 +1,5 @@
 package net.p3pp3rf1y.sophisticatedstorage.data;
 
-import net.mehvahdjukaar.sawmill.SawmillMod;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -8,20 +7,18 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.data.BlockFamily;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.*;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.properties.WoodType;
-import net.neoforged.fml.ModList;
 import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.common.conditions.ModLoadedCondition;
 import net.neoforged.neoforge.common.conditions.RegisteredCondition;
 import net.p3pp3rf1y.sophisticatedbackpacks.SophisticatedBackpacks;
-import net.p3pp3rf1y.sophisticatedcore.compat.CompatModIds;
 import net.p3pp3rf1y.sophisticatedcore.crafting.ShapeBasedRecipeBuilder;
 import net.p3pp3rf1y.sophisticatedcore.crafting.ShapelessBasedRecipeBuilder;
 import net.p3pp3rf1y.sophisticatedcore.crafting.UpgradeNextTierRecipe;
@@ -30,11 +27,8 @@ import net.p3pp3rf1y.sophisticatedcore.upgrades.stack.StackUpgradeItem;
 import net.p3pp3rf1y.sophisticatedcore.util.RegistryHelper;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.WoodStorageBlockBase;
-import net.p3pp3rf1y.sophisticatedstorage.compat.chipped.ChippedCompat;
-import net.p3pp3rf1y.sophisticatedstorage.compat.sawmill.SawmillCompat;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.*;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
-import net.p3pp3rf1y.sophisticatedstorage.init.ModCompat;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
 
@@ -185,7 +179,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('L', Tags.Items.LEATHERS)
 				.define('S', storageStackUpgrade)
 				.unlockedBy("has_storage_stack_upgrade", has(storageStackUpgrade))
-				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getRL("backpack_" + RegistryHelper.getItemKey(backpackStackUpgrade).getPath() + "_from_storage_" + RegistryHelper.getItemKey(storageStackUpgrade).getPath())));
+				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getIdentifier("backpack_" + RegistryHelper.getItemKey(backpackStackUpgrade).getPath() + "_from_storage_" + RegistryHelper.getItemKey(storageStackUpgrade).getPath())));
 	}
 
 	private void addBackpackUpgradeFromStorageUpgradeRecipe(RecipeOutput recipeOutput, UpgradeItemBase<?> backpackUpgrade, UpgradeItemBase<?> storageUpgrade) {
@@ -197,7 +191,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('L', Tags.Items.LEATHERS)
 				.define('U', storageUpgrade)
 				.unlockedBy("has_storage_upgrade", has(storageUpgrade))
-				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getRL("backpack_" + RegistryHelper.getItemKey(backpackUpgrade).getPath() + "_from_storage_" + RegistryHelper.getItemKey(storageUpgrade).getPath())));
+				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getIdentifier("backpack_" + RegistryHelper.getItemKey(backpackUpgrade).getPath() + "_from_storage_" + RegistryHelper.getItemKey(storageUpgrade).getPath())));
 	}
 
 	private void addStorageUpgradeFromBackpackUpgradeRecipe(RecipeOutput recipeOutput, UpgradeItemBase<?> storageUpgrade, UpgradeItemBase<?> backpackUpgrade) {
@@ -208,7 +202,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('P', ItemTags.PLANKS)
 				.define('U', backpackUpgrade)
 				.unlockedBy("has_backpack_upgrade", has(backpackUpgrade))
-				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getRL("storage_" + RegistryHelper.getItemKey(storageUpgrade).getPath() + "_from_backpack_" + RegistryHelper.getItemKey(backpackUpgrade).getPath())));
+				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getIdentifier("storage_" + RegistryHelper.getItemKey(storageUpgrade).getPath() + "_from_backpack_" + RegistryHelper.getItemKey(backpackUpgrade).getPath())));
 	}
 
 	private void addStorageStackUpgradeFromBackpackStackUpgradeRecipe(RecipeOutput recipeOutput, StackUpgradeItem storageStackUpgrade, StackUpgradeItem backpackStackUpgrade) {
@@ -219,7 +213,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('P', ItemTags.PLANKS)
 				.define('S', backpackStackUpgrade)
 				.unlockedBy("has_backpack_stack_upgrade", has(backpackStackUpgrade))
-				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getRL("storage_" + RegistryHelper.getItemKey(storageStackUpgrade).getPath() + "_from_backpack_" + RegistryHelper.getItemKey(backpackStackUpgrade).getPath())));
+				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getIdentifier("storage_" + RegistryHelper.getItemKey(storageStackUpgrade).getPath() + "_from_backpack_" + RegistryHelper.getItemKey(backpackStackUpgrade).getPath())));
 	}
 
 	private void addLimitedBarrelRecipes(RecipeOutput recipeOutput) {
@@ -243,7 +237,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('S', ItemTags.WOODEN_SLABS)
 				.define('R', Blocks.REDSTONE_TORCH)
 				.unlockedBy("has " + PLANK_SUFFIX, has(ItemTags.PLANKS))
-				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getRL("generic_limited_barrel_1")));
+				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getIdentifier("generic_limited_barrel_1")));
 
 		ShapeBasedRecipeBuilder.shaped(items, WoodStorageBlockItem.setWoodType(new ItemStack(ModBlocks.LIMITED_BARREL_2_ITEM.get()), WoodType.SPRUCE), GenericWoodStorageRecipe::new)
 				.pattern("PPP")
@@ -253,7 +247,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('S', ItemTags.WOODEN_SLABS)
 				.define('R', Blocks.REDSTONE_TORCH)
 				.unlockedBy("has " + PLANK_SUFFIX, has(ItemTags.PLANKS))
-				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getRL("generic_limited_barrel_2")));
+				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getIdentifier("generic_limited_barrel_2")));
 
 		ShapeBasedRecipeBuilder.shaped(items, WoodStorageBlockItem.setWoodType(new ItemStack(ModBlocks.LIMITED_BARREL_3_ITEM.get()), WoodType.SPRUCE), GenericWoodStorageRecipe::new)
 				.pattern("PSP")
@@ -263,7 +257,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('S', ItemTags.WOODEN_SLABS)
 				.define('R', Blocks.REDSTONE_TORCH)
 				.unlockedBy("has " + PLANK_SUFFIX, has(ItemTags.PLANKS))
-				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getRL("generic_limited_barrel_3")));
+				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getIdentifier("generic_limited_barrel_3")));
 
 		ShapeBasedRecipeBuilder.shaped(items, WoodStorageBlockItem.setWoodType(new ItemStack(ModBlocks.LIMITED_BARREL_4_ITEM.get()), WoodType.SPRUCE), GenericWoodStorageRecipe::new)
 				.pattern("SPS")
@@ -273,7 +267,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('S', ItemTags.WOODEN_SLABS)
 				.define('R', Blocks.REDSTONE_TORCH)
 				.unlockedBy("has " + PLANK_SUFFIX, has(ItemTags.PLANKS))
-				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getRL("generic_limited_barrel_4")));
+				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getIdentifier("generic_limited_barrel_4")));
 
 	}
 
@@ -294,7 +288,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('I', Tags.Items.INGOTS_IRON)
 				.define('S', copperTierItem)
 				.unlockedBy("has_" + RegistryHelper.getItemKey(copperTierItem).getPath(), has(copperTierItem))
-				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getRL(RegistryHelper.getItemKey(ironTierItem).getPath() + "_from_" + RegistryHelper.getItemKey(copperTierItem).getPath())));
+				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getIdentifier(RegistryHelper.getItemKey(ironTierItem).getPath() + "_from_" + RegistryHelper.getItemKey(copperTierItem).getPath())));
 
 		ShapeBasedRecipeBuilder.shaped(items, ironTierItem, StorageTierUpgradeRecipe::new)
 				.pattern("III")
@@ -339,7 +333,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('B', Tags.Items.STORAGE_BLOCKS_COPPER)
 				.define('S', baseTierItem)
 				.unlockedBy("has_" + RegistryHelper.getItemKey(baseTierItem).getPath(), has(baseTierItem))
-				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getRL("double_" + RegistryHelper.getItemKey(copperTierItem).getPath())));
+				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getIdentifier("double_" + RegistryHelper.getItemKey(copperTierItem).getPath())));
 
 		ShapeBasedRecipeBuilder.shaped(items, ironTierItem, DoubleChestTierUpgradeRecipe::new)
 				.pattern("III")
@@ -348,7 +342,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('I', Tags.Items.INGOTS_IRON)
 				.define('S', copperTierItem)
 				.unlockedBy("has_" + RegistryHelper.getItemKey(copperTierItem).getPath(), has(copperTierItem))
-				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getRL("double_" + RegistryHelper.getItemKey(ironTierItem).getPath() + "_from_" + RegistryHelper.getItemKey(copperTierItem).getPath())));
+				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getIdentifier("double_" + RegistryHelper.getItemKey(ironTierItem).getPath() + "_from_" + RegistryHelper.getItemKey(copperTierItem).getPath())));
 
 		ShapeBasedRecipeBuilder.shaped(items, ironTierItem, DoubleChestTierUpgradeRecipe::new)
 				.pattern("III")
@@ -358,7 +352,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('S', baseTierItem)
 				.define('B', Tags.Items.STORAGE_BLOCKS_IRON)
 				.unlockedBy("has_" + RegistryHelper.getItemKey(baseTierItem).getPath(), has(baseTierItem))
-				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getRL("double_" + RegistryHelper.getItemKey(ironTierItem).getPath())));
+				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getIdentifier("double_" + RegistryHelper.getItemKey(ironTierItem).getPath())));
 
 		ShapeBasedRecipeBuilder.shaped(items, goldTierItem, DoubleChestTierUpgradeRecipe::new)
 				.pattern("GGG")
@@ -368,7 +362,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('S', ironTierItem)
 				.define('B', Tags.Items.STORAGE_BLOCKS_GOLD)
 				.unlockedBy("has_" + RegistryHelper.getItemKey(ironTierItem).getPath(), has(ironTierItem))
-				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getRL("double_" + RegistryHelper.getItemKey(goldTierItem).getPath())));
+				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getIdentifier("double_" + RegistryHelper.getItemKey(goldTierItem).getPath())));
 
 		ShapeBasedRecipeBuilder.shaped(items, diamondTierItem, DoubleChestTierUpgradeRecipe::new)
 				.pattern("DDD")
@@ -378,14 +372,14 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('S', goldTierItem)
 				.define('B', Tags.Items.STORAGE_BLOCKS_DIAMOND)
 				.unlockedBy("has_" + RegistryHelper.getItemKey(goldTierItem).getPath(), has(goldTierItem))
-				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getRL("double_" + RegistryHelper.getItemKey(diamondTierItem).getPath())));
+				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getIdentifier("double_" + RegistryHelper.getItemKey(diamondTierItem).getPath())));
 
 		ShapelessBasedRecipeBuilder.shapeless(items, netheriteTierItem, DoubleChestTierUpgradeShapelessRecipe::new)
 				.requires(Ingredient.of(diamondTierItem))
 				.requires(Tags.Items.INGOTS_NETHERITE)
 				.requires(Tags.Items.INGOTS_NETHERITE)
 				.unlockedBy("has_" + RegistryHelper.getItemKey(diamondTierItem).getPath(), has(diamondTierItem))
-				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getRL("double_" + RegistryHelper.getItemKey(netheriteTierItem).getPath())));
+				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getIdentifier("double_" + RegistryHelper.getItemKey(netheriteTierItem).getPath())));
 	}
 
 	private void addControllerRelatedRecipes(RecipeOutput recipeOutput) {
@@ -404,7 +398,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.requires(ModBlocks.CONTROLLER_ITEM.get())
 				.requires(Tags.Items.ENDER_PEARLS)
 				.unlockedBy("has_controller", has(ModBlocks.CONTROLLER_ITEM.get()))
-				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getRL("storage_link_from_controller")));
+				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getIdentifier("storage_link_from_controller")));
 
 		ShapeBasedRecipeBuilder.shaped(items, ModBlocks.STORAGE_LINK_ITEM.get())
 				.pattern("EP")
@@ -532,7 +526,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('C', ModBlocks.CHEST_ITEM.get())
 				.define('S', Items.SHULKER_SHELL)
 				.unlockedBy("has_chest", has(ModBlocks.CHEST_ITEM.get()))
-				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getRL("shulker_from_chest")));
+				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getIdentifier("shulker_from_chest")));
 
 		addStorageTierUpgradeRecipes(recipeOutput, ModBlocks.SHULKER_BOX_ITEM.get(), ModBlocks.COPPER_SHULKER_BOX_ITEM.get(), ModBlocks.IRON_SHULKER_BOX_ITEM.get(), ModBlocks.GOLD_SHULKER_BOX_ITEM.get(), ModBlocks.DIAMOND_SHULKER_BOX_ITEM.get(), ModBlocks.NETHERITE_SHULKER_BOX_ITEM.get());
 
@@ -543,7 +537,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('C', ModBlocks.COPPER_CHEST_ITEM.get())
 				.define('S', Items.SHULKER_SHELL)
 				.unlockedBy("has_copper_chest", has(ModBlocks.COPPER_CHEST_ITEM.get()))
-				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getRL("copper_shulker_from_copper_chest")));
+				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getIdentifier("copper_shulker_from_copper_chest")));
 
 
 		ShapeBasedRecipeBuilder.shaped(items, ModBlocks.IRON_SHULKER_BOX_ITEM.get(), ShulkerBoxFromChestRecipe::new)
@@ -553,7 +547,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('C', ModBlocks.IRON_CHEST_ITEM.get())
 				.define('S', Items.SHULKER_SHELL)
 				.unlockedBy("has_iron_chest", has(ModBlocks.IRON_CHEST_ITEM.get()))
-				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getRL("iron_shulker_from_iron_chest")));
+				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getIdentifier("iron_shulker_from_iron_chest")));
 
 		ShapeBasedRecipeBuilder.shaped(items, ModBlocks.GOLD_SHULKER_BOX_ITEM.get(), ShulkerBoxFromChestRecipe::new)
 				.pattern("S")
@@ -562,7 +556,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('C', ModBlocks.GOLD_CHEST_ITEM.get())
 				.define('S', Items.SHULKER_SHELL)
 				.unlockedBy("has_gold_chest", has(ModBlocks.GOLD_CHEST_ITEM.get()))
-				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getRL("gold_shulker_from_gold_chest")));
+				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getIdentifier("gold_shulker_from_gold_chest")));
 
 		ShapeBasedRecipeBuilder.shaped(items, ModBlocks.DIAMOND_SHULKER_BOX_ITEM.get(), ShulkerBoxFromChestRecipe::new)
 				.pattern("S")
@@ -571,7 +565,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('C', ModBlocks.DIAMOND_CHEST_ITEM.get())
 				.define('S', Items.SHULKER_SHELL)
 				.unlockedBy("has_diamond_chest", has(ModBlocks.DIAMOND_CHEST_ITEM.get()))
-				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getRL("diamond_shulker_from_diamond_chest")));
+				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getIdentifier("diamond_shulker_from_diamond_chest")));
 
 		ShapeBasedRecipeBuilder.shaped(items, ModBlocks.NETHERITE_SHULKER_BOX_ITEM.get(), ShulkerBoxFromChestRecipe::new)
 				.pattern("S")
@@ -580,7 +574,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('C', ModBlocks.NETHERITE_CHEST_ITEM.get())
 				.define('S', Items.SHULKER_SHELL)
 				.unlockedBy("has_netherite_chest", has(ModBlocks.NETHERITE_CHEST_ITEM.get()))
-				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getRL("netherite_shulker_from_netherite_chest")));
+				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getIdentifier("netherite_shulker_from_netherite_chest")));
 	}
 
 	private void addTierUpgradeItemRecipes(RecipeOutput recipeOutput) {
@@ -618,7 +612,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('R', ModItems.BASIC_TO_COPPER_TIER_UPGRADE.get())
 				.define('I', Tags.Items.INGOTS_IRON)
 				.unlockedBy(HAS_REDSTONE_TORCH_CRITERION_NAME, has(Items.REDSTONE_TORCH))
-				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getRL("basic_to_iron_tier_from_basic_to_copper_tier")));
+				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getIdentifier("basic_to_iron_tier_from_basic_to_copper_tier")));
 
 		ShapeBasedRecipeBuilder.shaped(items, ModItems.BASIC_TO_GOLD_TIER_UPGRADE.get())
 				.pattern("GGG")
@@ -807,7 +801,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('R', Tags.Items.DUSTS_REDSTONE)
 				.define('M', ModItems.MAGNET_UPGRADE.get())
 				.unlockedBy("has_magnet_upgrade", has(ModItems.MAGNET_UPGRADE.get()))
-				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getRL("advanced_magnet_upgrade_from_basic")));
+				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getIdentifier("advanced_magnet_upgrade_from_basic")));
 
 		ShapeBasedRecipeBuilder.shaped(items, ModItems.FEEDING_UPGRADE.get())
 				.pattern(" C ")
@@ -937,7 +931,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('I', Tags.Items.INGOTS_IRON)
 				.define('B', Tags.Items.STORAGE_BLOCKS_IRON)
 				.unlockedBy("has_stack_upgrade_tier_1_plus", has(ModItems.STACK_UPGRADE_TIER_1_PLUS.get()))
-				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getRL("stack_upgrade_tier_2_from_tier_1_plus")));
+				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getIdentifier("stack_upgrade_tier_2_from_tier_1_plus")));
 
 		ShapeBasedRecipeBuilder.shaped(items, ModItems.STACK_UPGRADE_TIER_2.get())
 				.pattern("III")
@@ -1068,7 +1062,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('S', ModItems.SMELTING_UPGRADE.get())
 				.define('L', ItemTags.LOGS)
 				.unlockedBy(HAS_SMELTING_UPGRADE_CRITERION_NAME, has(ModItems.SMELTING_UPGRADE.get()))
-				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getRL("smoking_upgrade_from_smelting_upgrade")));
+				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getIdentifier("smoking_upgrade_from_smelting_upgrade")));
 
 		ShapeBasedRecipeBuilder.shaped(items, ModItems.AUTO_SMOKING_UPGRADE.get(), UpgradeNextTierRecipe::new)
 				.pattern("DHD")
@@ -1089,7 +1083,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('S', ModItems.AUTO_SMELTING_UPGRADE.get())
 				.define('L', ItemTags.LOGS)
 				.unlockedBy("has_auto_smelting_upgrade", has(ModItems.AUTO_SMELTING_UPGRADE.get()))
-				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getRL("auto_smoking_upgrade_from_auto_smelting_upgrade")));
+				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getIdentifier("auto_smoking_upgrade_from_auto_smelting_upgrade")));
 
 		ShapeBasedRecipeBuilder.shaped(items, ModItems.BLASTING_UPGRADE.get())
 				.pattern("RIR")
@@ -1110,7 +1104,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('I', Tags.Items.INGOTS_IRON)
 				.define('T', Items.SMOOTH_STONE)
 				.unlockedBy(HAS_SMELTING_UPGRADE_CRITERION_NAME, has(ModItems.SMELTING_UPGRADE.get()))
-				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getRL("blasting_upgrade_from_smelting_upgrade")));
+				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getIdentifier("blasting_upgrade_from_smelting_upgrade")));
 
 		ShapeBasedRecipeBuilder.shaped(items, ModItems.AUTO_BLASTING_UPGRADE.get(), UpgradeNextTierRecipe::new)
 				.pattern("DHD")
@@ -1132,7 +1126,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('I', Tags.Items.INGOTS_IRON)
 				.define('T', Items.SMOOTH_STONE)
 				.unlockedBy("has_auto_smelting_upgrade", has(ModItems.AUTO_SMELTING_UPGRADE.get()))
-				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getRL("auto_blasting_upgrade_from_auto_smelting_upgrade")));
+				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getIdentifier("auto_blasting_upgrade_from_auto_smelting_upgrade")));
 
 		ShapeBasedRecipeBuilder.shaped(items, ModItems.COMPRESSION_UPGRADE.get())
 				.pattern(" I ")
@@ -1197,7 +1191,8 @@ public class StorageRecipeProvider extends RecipeProvider {
 	}
 
 	private void addCompatUpgradeRecipes(RecipeOutput recipeOutput) {
-		if (ModList.get().isLoaded(CompatModIds.CHIPPED)) {
+//TODO readd when Chipped/Sawmill compat is updated
+		/*
 			addCompatUpgradeRecipe(recipeOutput, ChippedCompat.BOTANIST_WORKBENCH_UPGRADE.get(), earth.terrarium.chipped.common.registry.ModBlocks.BOTANIST_WORKBENCH.get(), net.p3pp3rf1y.sophisticatedbackpacks.compat.chipped.ChippedCompat.BOTANIST_WORKBENCH_UPGRADE.get(), CompatModIds.CHIPPED);
 			addCompatUpgradeRecipe(recipeOutput, ChippedCompat.GLASSBLOWER_UPGRADE.get(), earth.terrarium.chipped.common.registry.ModBlocks.GLASSBLOWER.get(), net.p3pp3rf1y.sophisticatedbackpacks.compat.chipped.ChippedCompat.GLASSBLOWER_UPGRADE.get(), CompatModIds.CHIPPED);
 			addCompatUpgradeRecipe(recipeOutput, ChippedCompat.CARPENTERS_TABLE_UPGRADE.get(), earth.terrarium.chipped.common.registry.ModBlocks.CARPENTERS_TABLE.get(), net.p3pp3rf1y.sophisticatedbackpacks.compat.chipped.ChippedCompat.CARPENTERS_TABLE_UPGRADE.get(), CompatModIds.CHIPPED);
@@ -1206,7 +1201,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 			addCompatUpgradeRecipe(recipeOutput, ChippedCompat.ALCHEMY_BENCH_UPGRADE.get(), earth.terrarium.chipped.common.registry.ModBlocks.ALCHEMY_BENCH.get(), net.p3pp3rf1y.sophisticatedbackpacks.compat.chipped.ChippedCompat.ALCHEMY_BENCH_UPGRADE.get(), CompatModIds.CHIPPED);
 			addCompatUpgradeRecipe(recipeOutput, ChippedCompat.TINKERING_TABLE_UPGRADE.get(), earth.terrarium.chipped.common.registry.ModBlocks.TINKERING_TABLE.get(), net.p3pp3rf1y.sophisticatedbackpacks.compat.chipped.ChippedCompat.TINKERING_TABLE_UPGRADE.get(), CompatModIds.CHIPPED);
 			addCompatUpgradeRecipe(recipeOutput, SawmillCompat.SAWMILL_UPGRADE.get(), SawmillMod.SAWMILL_BLOCK.get(), net.p3pp3rf1y.sophisticatedbackpacks.compat.sawmill.SawmillCompat.SAWMILL_UPGRADE.get(), ModCompat.SAWMILL_MOD_ID);
-		}
+*/
 	}
 
 	private void addCompatUpgradeRecipe(RecipeOutput recipeOutput, Item upgrade, Block workbench, Item backpackUpgrade, String modId) {
@@ -1232,7 +1227,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('P', ItemTags.PLANKS)
 				.define('U', backpackUpgrade)
 				.unlockedBy("has_backpack_upgrade", has(backpackUpgrade))
-				.save(sbChippedRecipeOutput, ResourceKey.create(Registries.RECIPE, ResourceLocation.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "storage_" + getCompatItemPath(upgrade) + "_from_backpack_" + getCompatItemPath(backpackUpgrade))));
+				.save(sbChippedRecipeOutput, ResourceKey.create(Registries.RECIPE, Identifier.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "storage_" + getCompatItemPath(upgrade) + "_from_backpack_" + getCompatItemPath(backpackUpgrade))));
 
 		//backpack from storage upgrade
 		ShapeBasedRecipeBuilder.shaped(items, backpackUpgrade)
@@ -1243,7 +1238,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('L', Tags.Items.LEATHERS)
 				.define('U', upgrade)
 				.unlockedBy("has_storage_upgrade", has(upgrade))
-				.save(sbChippedRecipeOutput, ResourceKey.create(Registries.RECIPE, ResourceLocation.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "backpack_" + getCompatItemPath(backpackUpgrade) + "_from_storage_" + getCompatItemPath(upgrade))));
+				.save(sbChippedRecipeOutput, ResourceKey.create(Registries.RECIPE, Identifier.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "backpack_" + getCompatItemPath(backpackUpgrade) + "_from_storage_" + getCompatItemPath(upgrade))));
 	}
 
 	private static String getCompatItemPath(Item upgrade) {
@@ -1260,13 +1255,13 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('P', ItemTags.PLANKS)
 				.define('R', Blocks.REDSTONE_TORCH)
 				.unlockedBy("has " + PLANK_SUFFIX, has(ItemTags.PLANKS))
-				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getRL("generic_chest")));
+				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getIdentifier("generic_chest")));
 
 		ShapelessBasedRecipeBuilder.shapeless(items, WoodStorageBlockItem.setWoodType(new ItemStack(ModBlocks.CHEST_ITEM.get()), WoodType.OAK))
 				.requires(Blocks.CHEST)
 				.requires(Blocks.REDSTONE_TORCH)
 				.unlockedBy("has_vanilla_chest", has(Blocks.CHEST))
-				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getRL("oak_chest_from_vanilla_chest")));
+				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getIdentifier("oak_chest_from_vanilla_chest")));
 
 		addStorageTierUpgradeRecipes(recipeOutput, ModBlocks.CHEST_ITEM.get(), ModBlocks.COPPER_CHEST_ITEM.get(), ModBlocks.IRON_CHEST_ITEM.get(), ModBlocks.GOLD_CHEST_ITEM.get(), ModBlocks.DIAMOND_CHEST_ITEM.get(), ModBlocks.NETHERITE_CHEST_ITEM.get());
 		addDoubleChestTierUpgradeRecipes(recipeOutput, ModBlocks.CHEST_ITEM.get(), ModBlocks.COPPER_CHEST_ITEM.get(), ModBlocks.IRON_CHEST_ITEM.get(), ModBlocks.GOLD_CHEST_ITEM.get(), ModBlocks.DIAMOND_CHEST_ITEM.get(), ModBlocks.NETHERITE_CHEST_ITEM.get());
@@ -1295,13 +1290,13 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.requires(chestBlock)
 				.requires(Blocks.REDSTONE_TORCH)
 				.save(
-						recipeOutput.withConditions(new RegisteredCondition<>(ResourceKey.create(Registries.ITEM, ResourceLocation.parse(chestRegistryName)))),
-						ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getRL(woodType.name() + "_chest_from_quark_" + name))
+						recipeOutput.withConditions(new RegisteredCondition<>(ResourceKey.create(Registries.ITEM, Identifier.parse(chestRegistryName)))),
+						ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getIdentifier(woodType.name() + "_chest_from_quark_" + name))
 				);
 	}
 
 	private Block getBlock(String registryName) {
-		return BuiltInRegistries.BLOCK.get(ResourceLocation.parse(registryName)).orElseThrow().value();
+		return BuiltInRegistries.BLOCK.get(Identifier.parse(registryName)).orElseThrow().value();
 	}
 
 	private void addBarrelRecipes(RecipeOutput recipeOutput) {
@@ -1315,13 +1310,13 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('S', ItemTags.WOODEN_SLABS)
 				.define('R', Blocks.REDSTONE_TORCH)
 				.unlockedBy("has " + PLANK_SUFFIX, has(ItemTags.PLANKS))
-				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getRL("generic_barrel")));
+				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getIdentifier("generic_barrel")));
 
 		ShapelessBasedRecipeBuilder.shapeless(items, WoodStorageBlockItem.setWoodType(new ItemStack(ModBlocks.BARREL_ITEM.get()), WoodType.SPRUCE))
 				.requires(Blocks.BARREL)
 				.requires(Blocks.REDSTONE_TORCH)
 				.unlockedBy("has_vanilla_barrel", has(Blocks.BARREL))
-				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getRL("spruce_barrel_from_vanilla_barrel")));
+				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getIdentifier("spruce_barrel_from_vanilla_barrel")));
 
 		addStorageTierUpgradeRecipes(recipeOutput, ModBlocks.BARREL_ITEM.get(), ModBlocks.COPPER_BARREL_ITEM.get(), ModBlocks.IRON_BARREL_ITEM.get(), ModBlocks.GOLD_BARREL_ITEM.get(), ModBlocks.DIAMOND_BARREL_ITEM.get(), ModBlocks.NETHERITE_BARREL_ITEM.get());
 	}
@@ -1335,7 +1330,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('S', slab)
 				.define('R', Blocks.REDSTONE_TORCH)
 				.unlockedBy("has_" + woodType.name() + PLANK_SUFFIX, has(planks))
-				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getRL(woodType.name() + "_barrel")));
+				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getIdentifier(woodType.name() + "_barrel")));
 	}
 
 	private void limitedWoodBarrelRecipe(RecipeOutput recipeOutput, WoodType woodType, Block planks, Block slab, Consumer<ShapedRecipeBuilder> addPattern, BlockItem item) {
@@ -1345,7 +1340,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('R', Blocks.REDSTONE_TORCH)
 				.unlockedBy("has_" + woodType.name() + PLANK_SUFFIX, has(planks));
 		addPattern.accept(builder);
-		builder.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getRL(woodType.name() + "_" + RegistryHelper.getItemKey(item).getPath())));
+		builder.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getIdentifier(woodType.name() + "_" + RegistryHelper.getItemKey(item).getPath())));
 	}
 
 	private void limitedWoodBarrel1Recipe(RecipeOutput recipeOutput, WoodType woodType, Block planks, Block slab) {
@@ -1388,7 +1383,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('P', planks)
 				.define('R', Blocks.REDSTONE_TORCH)
 				.unlockedBy("has_" + woodType.name() + PLANK_SUFFIX, has(planks))
-				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getRL(woodType.name() + "_chest")));
+				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getIdentifier(woodType.name() + "_chest")));
 	}
 
 	private void tintedShulkerBoxRecipe(RecipeOutput recipeOutput, Block vanillaShulkerBox, DyeColor dyeColor) {
@@ -1397,7 +1392,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.requires(vanillaShulkerBox)
 				.requires(Items.REDSTONE_TORCH)
 				.unlockedBy("has_" + vanillaShulkerBoxName, has(vanillaShulkerBox))
-				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getRL(vanillaShulkerBoxName + "_to_sophisticated")));
+				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getIdentifier(vanillaShulkerBoxName + "_to_sophisticated")));
 	}
 
 	public static class Runner extends RecipeProvider.Runner {

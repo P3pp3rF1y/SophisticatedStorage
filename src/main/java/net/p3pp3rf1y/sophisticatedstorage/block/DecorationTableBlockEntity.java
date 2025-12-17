@@ -6,7 +6,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.ARGB;
@@ -35,8 +35,8 @@ import net.p3pp3rf1y.sophisticatedstorage.item.BarrelBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.PaintbrushItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.util.DecorationHelper;
+import org.jspecify.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -45,8 +45,8 @@ public class DecorationTableBlockEntity extends BlockEntity {
 	private static final Codec<Map<PartSlot, Boolean>> SLOT_INHERITANCE_CODEC =
 			Codec.unboundedMap(PartSlot.CODEC, Codec.BOOL);
 
-	private static final Codec<Map<ResourceLocation, Integer>> REMAINING_PARTS_CODEC =
-			Codec.simpleMap(ResourceLocation.CODEC, Codec.INT, StringRepresentable.keys(PartSlot.values())).codec();
+	private static final Codec<Map<Identifier, Integer>> REMAINING_PARTS_CODEC =
+			Codec.simpleMap(Identifier.CODEC, Codec.INT, StringRepresentable.keys(PartSlot.values())).codec();
 
 	public static final int TOP_INNER_TRIM_SLOT = 0;
 	public static final int TOP_TRIM_SLOT = 1;
@@ -67,7 +67,7 @@ public class DecorationTableBlockEntity extends BlockEntity {
 		ITEM_DECORATORS.put(itemMatcher, itemDecorator);
 	}
 
-	private final Map<ResourceLocation, Integer> remainingParts = new HashMap<>();
+	private final Map<Identifier, Integer> remainingParts = new HashMap<>();
 
 	private final ItemStacksResourceHandler decorativeBlocks = new ItemStacksResourceHandler(7) {
 		@Override
@@ -106,7 +106,7 @@ public class DecorationTableBlockEntity extends BlockEntity {
 	private int accentColor = -1;
 	private int mainColor = -1;
 
-	private final Set<ResourceLocation> missingDyes = new HashSet<>();
+	private final Set<Identifier> missingDyes = new HashSet<>();
 
 	public void updateResultAndSetChanged() {
 		updateResult();
@@ -148,7 +148,7 @@ public class DecorationTableBlockEntity extends BlockEntity {
 
 	private TintDecorationResult decorateItem(IItemDecorator itemDecorator, ItemResource input) {
 		if (itemDecorator.supportsMaterials(input)) {
-			Map<BarrelMaterial, ResourceLocation> materialsToApply = getMaterialsToApply(itemDecorator.supportsTopInnerTrim(input));
+			Map<BarrelMaterial, Identifier> materialsToApply = getMaterialsToApply(itemDecorator.supportsTopInnerTrim(input));
 			if (!materialsToApply.isEmpty()) {
 				return new TintDecorationResult(itemDecorator.decorateWithMaterials(input.toStack(), materialsToApply), Collections.emptyMap());
 			}
@@ -180,12 +180,12 @@ public class DecorationTableBlockEntity extends BlockEntity {
 		}).orElse(Collections.emptyList());
 	}
 
-	public static boolean allMaterialsMatch(Map<BarrelMaterial, ResourceLocation> newMaterials, Map<BarrelMaterial, ResourceLocation> currentMaterials) {
+	public static boolean allMaterialsMatch(Map<BarrelMaterial, Identifier> newMaterials, Map<BarrelMaterial, Identifier> currentMaterials) {
 		if (newMaterials.size() != currentMaterials.size()) {
 			return false;
 		}
 
-		for (Map.Entry<BarrelMaterial, ResourceLocation> entry : newMaterials.entrySet()) {
+		for (Map.Entry<BarrelMaterial, Identifier> entry : newMaterials.entrySet()) {
 			if (!entry.getValue().equals(currentMaterials.get(entry.getKey()))) {
 				return false;
 			}
@@ -194,16 +194,16 @@ public class DecorationTableBlockEntity extends BlockEntity {
 		return true;
 	}
 
-	private Set<ResourceLocation> calculateMissingDyes(Map<TagKey<Item>, Integer> requiredDyeParts) {
-		Set<ResourceLocation> missingDyes = new HashSet<>();
+	private Set<Identifier> calculateMissingDyes(Map<TagKey<Item>, Integer> requiredDyeParts) {
+		Set<Identifier> missingDyes = new HashSet<>();
 		if (!dyes.getResource(RED_DYE_SLOT).isEmpty() && !dyes.getResource(GREEN_DYE_SLOT).isEmpty() && !dyes.getResource(BLUE_DYE_SLOT).isEmpty()) {
 			return missingDyes;
 		}
 
-		Map<ResourceLocation, Integer> partsNeeded =
+		Map<Identifier, Integer> partsNeeded =
 				requiredDyeParts.entrySet().stream().map(entry -> Map.entry(entry.getKey().location(), entry.getValue())).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-		for (Map.Entry<ResourceLocation, Integer> entry : partsNeeded.entrySet()) {
+		for (Map.Entry<Identifier, Integer> entry : partsNeeded.entrySet()) {
 			if (entry.getKey().equals(Tags.Items.DYES_RED.location()) && dyes.getResource(RED_DYE_SLOT).isEmpty()) {
 				missingDyes.add(entry.getKey());
 			} else if (entry.getKey().equals(Tags.Items.DYES_GREEN.location()) && dyes.getResource(GREEN_DYE_SLOT).isEmpty()) {
@@ -219,24 +219,24 @@ public class DecorationTableBlockEntity extends BlockEntity {
 		return DecorationHelper.getDyePartsNeeded(mainColorToSet, accentColorToSet, currentMainColor, currentAccentColor);
 	}
 
-	public Set<ResourceLocation> getMissingDyes() {
+	public Set<Identifier> getMissingDyes() {
 		return missingDyes;
 	}
 
-	private void setMaterialsFromDecorativeBlocks(Map<BarrelMaterial, ResourceLocation> materials, boolean supportsInnerTrim) {
-		ResourceLocation topInnerTrimMaterialLocation = setMaterialFromBlock(PartSlot.TOP_INNER_TRIM, null, materials, BarrelMaterial.TOP_INNER_TRIM, supportsInnerTrim);
-		ResourceLocation topTrimMaterialLocation = setMaterialFromBlock(PartSlot.TOP_TRIM, topInnerTrimMaterialLocation, materials, BarrelMaterial.TOP_TRIM, true);
-		ResourceLocation sideTrimMaterialLocation = setMaterialFromBlock(PartSlot.SIDE_TRIM, topTrimMaterialLocation, materials, BarrelMaterial.SIDE_TRIM, true);
+	private void setMaterialsFromDecorativeBlocks(Map<BarrelMaterial, Identifier> materials, boolean supportsInnerTrim) {
+		Identifier topInnerTrimMaterialLocation = setMaterialFromBlock(PartSlot.TOP_INNER_TRIM, null, materials, BarrelMaterial.TOP_INNER_TRIM, supportsInnerTrim);
+		Identifier topTrimMaterialLocation = setMaterialFromBlock(PartSlot.TOP_TRIM, topInnerTrimMaterialLocation, materials, BarrelMaterial.TOP_TRIM, true);
+		Identifier sideTrimMaterialLocation = setMaterialFromBlock(PartSlot.SIDE_TRIM, topTrimMaterialLocation, materials, BarrelMaterial.SIDE_TRIM, true);
 		setMaterialFromBlock(PartSlot.BOTTOM_TRIM, sideTrimMaterialLocation, materials, BarrelMaterial.BOTTOM_TRIM, true);
-		ResourceLocation topMaterialLocation = setMaterialFromBlock(PartSlot.TOP_CORE, topTrimMaterialLocation, materials, BarrelMaterial.TOP, true);
-		ResourceLocation sideMaterialLocation = setMaterialFromBlock(PartSlot.SIDE_CORE, topMaterialLocation, materials, BarrelMaterial.SIDE, true);
+		Identifier topMaterialLocation = setMaterialFromBlock(PartSlot.TOP_CORE, topTrimMaterialLocation, materials, BarrelMaterial.TOP, true);
+		Identifier sideMaterialLocation = setMaterialFromBlock(PartSlot.SIDE_CORE, topMaterialLocation, materials, BarrelMaterial.SIDE, true);
 		setMaterialFromBlock(PartSlot.BOTTOM_CORE, sideMaterialLocation, materials, BarrelMaterial.BOTTOM, true);
 	}
 
 	@Nullable
-	private ResourceLocation setMaterialFromBlock(PartSlot slot, @Nullable ResourceLocation defaultMaterialLocation, Map<BarrelMaterial, ResourceLocation> materials, BarrelMaterial material, boolean addToMaterials) {
+	private Identifier setMaterialFromBlock(PartSlot slot, @Nullable Identifier defaultMaterialLocation, Map<BarrelMaterial, Identifier> materials, BarrelMaterial material, boolean addToMaterials) {
 		ItemResource decorativeBlock = decorativeBlocks.getResource(slot.getSlotIndex());
-		ResourceLocation materialLocation = DecorationHelper.getMaterialLocation(decorativeBlock.getItem()).orElse(isSlotMaterialInherited(slot) ? defaultMaterialLocation : null);
+		Identifier materialLocation = DecorationHelper.getMaterialLocation(decorativeBlock.getItem()).orElse(isSlotMaterialInherited(slot) ? defaultMaterialLocation : null);
 		if (materialLocation != null) {
 			if (addToMaterials) {
 				materials.put(material, materialLocation);
@@ -379,11 +379,11 @@ public class DecorationTableBlockEntity extends BlockEntity {
 
 			boolean emptyDecorativeBlocks = ResourceHandlerUtil.isEmpty(decorativeBlocks);
 			try (Transaction tx = Transaction.openRoot()) {
-				SnapshotJournal<Map<ResourceLocation, Integer>> remainingPartsJournal = createRemainingPartsJournal();
+				SnapshotJournal<Map<Identifier, Integer>> remainingPartsJournal = createRemainingPartsJournal();
 				if ((emptyDecorativeBlocks || !itemDecorator.supportsMaterials(input)) && itemDecorator.supportsTints(input)) {
 					DecorationHelper.consumeDyes(mainColor, accentColor, remainingParts, remainingPartsJournal, List.of(dyes), StorageBlockItem.getMainColorFromComponentHolder(input).orElse(-1), StorageBlockItem.getAccentColorFromComponentHolder(input).orElse(-1), tx);
 				} else if (!emptyDecorativeBlocks && itemDecorator.supportsMaterials(input)) {
-					Map<BarrelMaterial, ResourceLocation> originalMaterials = BarrelBlockItem.getUncompactedMaterials(input.toStack());
+					Map<BarrelMaterial, Identifier> originalMaterials = BarrelBlockItem.getUncompactedMaterials(input.toStack());
 					DecorationHelper.consumeMaterials(remainingParts, remainingPartsJournal, List.of(decorativeBlocks), originalMaterials, getMaterialsToApply(!STORAGES_WIHOUT_TOP_INNER_TRIM.contains(input.getItem())), tx);
 				}
 				tx.commit();
@@ -394,23 +394,23 @@ public class DecorationTableBlockEntity extends BlockEntity {
 		});
 	}
 
-	private SnapshotJournal<Map<ResourceLocation, Integer>> createRemainingPartsJournal() {
+	private SnapshotJournal<Map<Identifier, Integer>> createRemainingPartsJournal() {
 		return new SnapshotJournal<>() {
 			@Override
-			protected Map<ResourceLocation, Integer> createSnapshot() {
+			protected Map<Identifier, Integer> createSnapshot() {
 				return new HashMap<>(remainingParts);
 			}
 
 			@Override
-			protected void revertToSnapshot(Map<ResourceLocation, Integer> snapshot) {
+			protected void revertToSnapshot(Map<Identifier, Integer> snapshot) {
 				remainingParts.clear();
 				remainingParts.putAll(snapshot);
 			}
 		};
 	}
 
-	public Map<ResourceLocation, Integer> getPartsNeeded() {
-		Map<ResourceLocation, Integer> partsNeeded = new HashMap<>();
+	public Map<Identifier, Integer> getPartsNeeded() {
+		Map<Identifier, Integer> partsNeeded = new HashMap<>();
 		ItemResource storageStack = storageBlock.getResource(0);
 		if (ResourceHandlerUtil.isEmpty((ResourceHandler<ItemResource>) decorativeBlocks) || !(storageStack.getItem() instanceof BarrelBlockItem)) {
 			DecorationHelper.getDyePartsNeeded(mainColor, accentColor, StorageBlockItem.getMainColorFromComponentHolder(storageStack).orElse(-1), StorageBlockItem.getAccentColorFromComponentHolder(storageStack).orElse(-1))
@@ -422,8 +422,8 @@ public class DecorationTableBlockEntity extends BlockEntity {
 		return partsNeeded;
 	}
 
-	private Map<BarrelMaterial, ResourceLocation> getMaterialsToApply(boolean supportsInnerTrim) {
-		Map<BarrelMaterial, ResourceLocation> materialsToApply = new EnumMap<>(BarrelMaterial.class);
+	private Map<BarrelMaterial, Identifier> getMaterialsToApply(boolean supportsInnerTrim) {
+		Map<BarrelMaterial, Identifier> materialsToApply = new EnumMap<>(BarrelMaterial.class);
 		setMaterialsFromDecorativeBlocks(materialsToApply, supportsInnerTrim);
 		return materialsToApply;
 	}
@@ -446,7 +446,7 @@ public class DecorationTableBlockEntity extends BlockEntity {
 		updateResultAndSetChanged();
 	}
 
-	public Map<ResourceLocation, Integer> getPartsStored() {
+	public Map<Identifier, Integer> getPartsStored() {
 		return remainingParts;
 	}
 
@@ -477,7 +477,7 @@ public class DecorationTableBlockEntity extends BlockEntity {
 
 		boolean supportsTopInnerTrim(ItemResource input);
 
-		ItemStack decorateWithMaterials(ItemStack input, Map<BarrelMaterial, ResourceLocation> materialsToApply);
+		ItemStack decorateWithMaterials(ItemStack input, Map<BarrelMaterial, Identifier> materialsToApply);
 
 		TintDecorationResult decorateWithTints(ItemStack input, int mainColorToSet, int accentColorToSet);
 
@@ -511,12 +511,12 @@ public class DecorationTableBlockEntity extends BlockEntity {
 		}
 
 		@Override
-		public ItemStack decorateWithMaterials(ItemStack input, Map<BarrelMaterial, ResourceLocation> materialsToApply) {
+		public ItemStack decorateWithMaterials(ItemStack input, Map<BarrelMaterial, Identifier> materialsToApply) {
 			if (materialsToApply.isEmpty()) {
 				return ItemStack.EMPTY;
 			}
 
-			Map<BarrelMaterial, ResourceLocation> materials = new EnumMap<>(BarrelMaterial.class);
+			Map<BarrelMaterial, Identifier> materials = new EnumMap<>(BarrelMaterial.class);
 			materials.putAll(BarrelBlockItem.getMaterials(input));
 			BarrelBlockItem.uncompactMaterials(materials);
 
@@ -582,7 +582,7 @@ public class DecorationTableBlockEntity extends BlockEntity {
 			}
 
 			@Override
-			public ItemStack decorateWithMaterials(ItemStack input, Map<BarrelMaterial, ResourceLocation> materialsToApply) {
+			public ItemStack decorateWithMaterials(ItemStack input, Map<BarrelMaterial, Identifier> materialsToApply) {
 				BarrelBlockItem.compactMaterials(materialsToApply);
 
 				if (allMaterialsMatch(materialsToApply, BarrelBlockItem.getMaterials(input))) {
@@ -637,7 +637,7 @@ public class DecorationTableBlockEntity extends BlockEntity {
 			}
 
 			@Override
-			public ItemStack decorateWithMaterials(ItemStack input, Map<BarrelMaterial, ResourceLocation> materialsToApply) {
+			public ItemStack decorateWithMaterials(ItemStack input, Map<BarrelMaterial, Identifier> materialsToApply) {
 				return ItemStack.EMPTY;
 			}
 

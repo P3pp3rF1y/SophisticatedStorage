@@ -12,7 +12,7 @@ import net.p3pp3rf1y.sophisticatedcore.util.StreamCodecHelper;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 
 public class RequestPlayerSettingsPayload implements CustomPacketPayload {
-	public static final Type<RequestPlayerSettingsPayload> TYPE = new Type<>(SophisticatedStorage.getRL("request_player_settings"));
+	public static final Type<RequestPlayerSettingsPayload> TYPE = new Type<>(SophisticatedStorage.getIdentifier("request_player_settings"));
 	public static final StreamCodec<ByteBuf, RequestPlayerSettingsPayload> STREAM_CODEC = StreamCodecHelper.singleton(RequestPlayerSettingsPayload::new);
 
 	@Override

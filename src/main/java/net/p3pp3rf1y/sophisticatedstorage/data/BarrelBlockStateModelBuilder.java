@@ -2,7 +2,7 @@ package net.p3pp3rf1y.sophisticatedstorage.data;
 
 import net.minecraft.client.renderer.block.model.Variant;
 import net.minecraft.client.renderer.block.model.VariantMutator;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.neoforged.neoforge.client.model.block.CustomUnbakedBlockStateModel;
 import net.neoforged.neoforge.client.model.generators.blockstate.CustomBlockStateModelBuilder;
 import net.neoforged.neoforge.client.model.generators.blockstate.UnbakedMutator;
@@ -11,7 +11,7 @@ import net.p3pp3rf1y.sophisticatedstorage.client.render.BarrelUnbakedModelBase;
 public class BarrelBlockStateModelBuilder extends CustomBlockStateModelBuilder {
 	private final Variant variant;
 
-	public BarrelBlockStateModelBuilder(ResourceLocation modelLocation) {
+	public BarrelBlockStateModelBuilder(Identifier modelLocation) {
 		this(new Variant(modelLocation));
 	}
 

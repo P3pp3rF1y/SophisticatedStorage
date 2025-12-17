@@ -16,7 +16,7 @@ import net.p3pp3rf1y.sophisticatedstorage.common.gui.LimitedBarrelContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
 
 public record OpenStorageInventoryPayload(BlockPos pos) implements CustomPacketPayload {
-	public static final Type<OpenStorageInventoryPayload> TYPE = new Type<>(SophisticatedStorage.getRL("open_storage_inventory"));
+	public static final Type<OpenStorageInventoryPayload> TYPE = new Type<>(SophisticatedStorage.getIdentifier("open_storage_inventory"));
 	public static final StreamCodec<ByteBuf, OpenStorageInventoryPayload> STREAM_CODEC = StreamCodec.composite(
 			BlockPos.STREAM_CODEC,
 			OpenStorageInventoryPayload::pos,

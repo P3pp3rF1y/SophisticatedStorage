@@ -1,9 +1,9 @@
 package net.p3pp3rf1y.sophisticatedstorage.item;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.Util;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.Util;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.TooltipDisplay;
@@ -18,7 +18,7 @@ import java.util.function.Consumer;
 
 public class StorageConnectorBlockItem extends BlockItemBase {
 	public static final String REGISTRY_NAME_WITHOUT_WOOD_TYPE = "storage_connector";
-	public static final String BLOCK_TRANSLATION_KEY = Util.makeDescriptionId("block", SophisticatedStorage.getRL(REGISTRY_NAME_WITHOUT_WOOD_TYPE));
+	public static final String BLOCK_TRANSLATION_KEY = Util.makeDescriptionId("block", SophisticatedStorage.getIdentifier(REGISTRY_NAME_WITHOUT_WOOD_TYPE));
 	public static final String TOOLTIP_TRANSLATION_KEY = BLOCK_TRANSLATION_KEY + TranslationHelper.TOOLTIP_SUFFIX;
 
 	public StorageConnectorBlockItem(Block block, Properties properties) {

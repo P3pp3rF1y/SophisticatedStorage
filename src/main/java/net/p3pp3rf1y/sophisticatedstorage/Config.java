@@ -1,7 +1,7 @@
 package net.p3pp3rf1y.sophisticatedstorage;
 
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.event.config.ModConfigEvent;
@@ -28,8 +28,8 @@ import net.p3pp3rf1y.sophisticatedstorage.block.ShulkerBoxBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.upgrades.compression.CompressionUpgradeConfig;
 import net.p3pp3rf1y.sophisticatedstorage.upgrades.hopper.HopperUpgradeConfig;
 import org.apache.commons.lang3.tuple.Pair;
+import org.jspecify.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.*;
 
 public class Config {
@@ -381,7 +381,7 @@ public class Config {
 				disallowedItemsSet = new HashSet<>();
 
 				for (String disallowedItemName : disallowedItemsList.get()) {
-					ResourceLocation registryName = ResourceLocation.parse(disallowedItemName);
+					Identifier registryName = Identifier.parse(disallowedItemName);
 					BuiltInRegistries.ITEM.getOptional(registryName).ifPresent(disallowedItemsSet::add);
 				}
 			}
@@ -412,7 +412,7 @@ public class Config {
 			}
 
 			@Override
-			public int getMaxUpgradesPerStorage(String storageType, @Nullable ResourceLocation upgradeRegistryName) {
+			public int getMaxUpgradesPerStorage(String storageType, @Nullable Identifier upgradeRegistryName) {
 				if (maxUpgradesPerStorage == null) {
 					initMaxUpgradesPerStorage();
 				}

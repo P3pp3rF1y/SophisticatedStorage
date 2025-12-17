@@ -5,17 +5,17 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.QuadCollection;
 import net.minecraft.core.Direction;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.state.BlockState;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlock;
+import org.jspecify.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 
 public class BarrelUnbakedModel extends BarrelUnbakedModelBase {
 
-	public BarrelUnbakedModel(@Nullable ResourceLocation parentLocation, Map<String, Map<BarrelModelPart, BarrelModelPartDefinition>> woodOverrides, Map<DynamicBarrelBakingData.DynamicPart, ResourceLocation> dynamicPartModels, Map<String, Map<BarrelModelPart, BarrelModelPartDefinition>> woodPartitionedModelPartDefinitions) {
+	public BarrelUnbakedModel(@Nullable Identifier parentLocation, Map<String, Map<BarrelModelPart, BarrelModelPartDefinition>> woodOverrides, Map<DynamicBarrelBakingData.DynamicPart, Identifier> dynamicPartModels, Map<String, Map<BarrelModelPart, BarrelModelPartDefinition>> woodPartitionedModelPartDefinitions) {
 		super(parentLocation, woodOverrides, dynamicPartModels, woodPartitionedModelPartDefinitions);
 	}
 
@@ -33,7 +33,7 @@ public class BarrelUnbakedModel extends BarrelUnbakedModelBase {
 		protected int createHash(@Nullable BlockState state) {
 			int hash = super.createHash(state);
 			if (state != null) {
-				hash = hash * 31 + (Boolean.TRUE.equals(state.getValue(BarrelBlock.OPEN)) ? 1 : 0);
+				hash = hash * 31 + (state.getValue(BarrelBlock.OPEN) ? 1 : 0);
 				hash = hash * 31 + state.getValue(BarrelBlock.FACING).get3DDataValue();
 			}
 
@@ -47,7 +47,7 @@ public class BarrelUnbakedModel extends BarrelUnbakedModelBase {
 
 		@Override
 		protected List<BakedQuad> rotateDisplayItemQuads(List<BakedQuad> quads, BlockState state) {
-			return DIRECTION_ROTATES.get(state.getValue(BarrelBlock.FACING)).process(quads);
+			return transformQuads(quads, DIRECTION_ROTATES.get(state.getValue(BarrelBlock.FACING)));
 		}
 
 		@Override
@@ -68,7 +68,7 @@ public class BarrelUnbakedModel extends BarrelUnbakedModelBase {
 		public static final Loader INSTANCE = new Loader();
 
 		@Override
-		protected BarrelUnbakedModel instantiateModel(@Nullable ResourceLocation parentLocation, Map<String, Map<BarrelModelPart, BarrelModelPartDefinition>> woodOverrides, Map<DynamicBarrelBakingData.DynamicPart, ResourceLocation> dynamicPartModels, Map<String, Map<BarrelModelPart, BarrelModelPartDefinition>> woodPartitionedModelPartDefinitions) {
+		protected BarrelUnbakedModel instantiateModel(@Nullable Identifier parentLocation, Map<String, Map<BarrelModelPart, BarrelModelPartDefinition>> woodOverrides, Map<DynamicBarrelBakingData.DynamicPart, Identifier> dynamicPartModels, Map<String, Map<BarrelModelPart, BarrelModelPartDefinition>> woodPartitionedModelPartDefinitions) {
 			return new BarrelUnbakedModel(parentLocation, woodOverrides, dynamicPartModels, woodPartitionedModelPartDefinitions);
 		}
 	}

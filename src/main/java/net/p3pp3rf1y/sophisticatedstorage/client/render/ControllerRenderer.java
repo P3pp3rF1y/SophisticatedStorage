@@ -9,12 +9,14 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.RenderStateShard;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.rendertype.LayeringTransform;
+import net.minecraft.client.renderer.rendertype.OutputTarget;
+import net.minecraft.client.renderer.rendertype.RenderSetup;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -32,27 +34,26 @@ import net.p3pp3rf1y.sophisticatedstorage.block.ControllerBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageToolItem;
 import org.joml.Quaternionf;
+import org.jspecify.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.OptionalDouble;
 import java.util.stream.Stream;
 
 public class ControllerRenderer implements BlockEntityRenderer<ControllerBlockEntity, ControllerRenderer.ControllerRenderState> {
 	public static final RenderPipeline NO_DEPTH_LINES_PIPELINE = RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)
 			.withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
 			.withDepthWrite(false)
-			.withLocation(SophisticatedStorage.getRL("pipeline/controller_lines"))
+			.withLocation(SophisticatedStorage.getIdentifier("pipeline/controller_lines"))
 			.build();
 
-	private static final RenderType LINES = RenderType.create("storage_lines", 1536, NO_DEPTH_LINES_PIPELINE,
-			RenderType.CompositeState.builder()
-					.setLineState(new RenderStateShard.LineStateShard(OptionalDouble.empty()))
-					.setLayeringState(RenderType.VIEW_OFFSET_Z_LAYERING)
-					.setOutputState(RenderType.ITEM_ENTITY_TARGET)
-					.createCompositeState(false)
+	private static final RenderType LINES = RenderType.create("storage_lines",
+			RenderSetup.builder(NO_DEPTH_LINES_PIPELINE)
+					.bufferSize(1536)
+					.setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING)
+					.setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET)
+					.createRenderSetup()
 	);
 
 	private void submitConnectedStorageBlocksInfo(SubmitNodeCollector submitNodeCollector, Direction playerLookDirection, PoseStack poseStack, List<BlockPos> storagePositions, List<Integer> storageSlots, BlockPos controllerPos) {
@@ -100,9 +101,9 @@ public class ControllerRenderer implements BlockEntityRenderer<ControllerBlockEn
 		float normalZ = (float) (pos.getZ() - initialPos.getZ() + (0.5F - center.z()));
 		submitNodeCollector.submitCustomGeometry(poseStack, LINES, (pose, buffer) -> {
 			buffer.addVertex(pose, 0.5F, 0.5F, 0.5F).setColor(red, green, blue, 255)
-					.setNormal(pose, normalX, normalY, normalZ);
+					.setNormal(pose, normalX, normalY, normalZ).setLineWidth(2);
 			buffer.addVertex(pose, (float) (pos.getX() - initialPos.getX() + center.x()), (float) (pos.getY() - initialPos.getY() + center.y()), (float) (pos.getZ() - initialPos.getZ() + center.z())).setColor(red, green, blue, 255)
-					.setNormal(pose, normalX, normalY, normalZ);
+					.setNormal(pose, normalX, normalY, normalZ).setLineWidth(2);
 		});
 	}
 
@@ -116,7 +117,7 @@ public class ControllerRenderer implements BlockEntityRenderer<ControllerBlockEn
 	}
 
 	@Override
-	public void extractRenderState(ControllerBlockEntity controller, ControllerRenderState renderState, float partialTick, Vec3 cameraPos, @Nullable ModelFeatureRenderer.CrumblingOverlay crumblingOverlay) {
+	public void extractRenderState(ControllerBlockEntity controller, ControllerRenderState renderState, float partialTick, Vec3 cameraPos, ModelFeatureRenderer.@Nullable CrumblingOverlay crumblingOverlay) {
 		BlockEntityRenderer.super.extractRenderState(controller, renderState, partialTick, cameraPos, crumblingOverlay);
 
 		Minecraft mc = Minecraft.getInstance();
@@ -193,6 +194,7 @@ public class ControllerRenderer implements BlockEntityRenderer<ControllerBlockEn
 		public List<LinkedBlockInfo> linkedBlocks = Collections.emptyList();
 		public List<VoxelOutliner.Edge> controllerEdges = Collections.emptyList();
 
-		public record LinkedBlockInfo(BlockPos pos, Vec3 center) { }
+		public record LinkedBlockInfo(BlockPos pos, Vec3 center) {
+		}
 	}
 }

@@ -19,7 +19,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.player.Inventory;
@@ -39,16 +39,16 @@ import net.p3pp3rf1y.sophisticatedstorage.util.DecorationHelper;
 import org.joml.Matrix3x2f;
 import org.joml.Matrix3x2fStack;
 import org.joml.Vector3f;
+import org.jspecify.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.IntConsumer;
 import java.util.function.Supplier;
 
 public class DecorationTableScreen extends AbstractContainerScreen<DecorationTableMenu> {
-	public static final ResourceLocation GUI_BACKGROUND = SophisticatedStorage.getRL("textures/gui/decoration_table.png");
-	public static final ResourceLocation GUI_DECORATION_TABLE_ELEMENTS = SophisticatedStorage.getRL("textures/gui/decoration_table_elements.png");
+	public static final Identifier GUI_BACKGROUND = SophisticatedStorage.getIdentifier("textures/gui/decoration_table.png");
+	public static final Identifier GUI_DECORATION_TABLE_ELEMENTS = SophisticatedStorage.getIdentifier("textures/gui/decoration_table_elements.png");
 	public static final Dimension SQUARE_64 = new Dimension(64, 64);
 	public static final Dimension SQUARE_8 = new Dimension(8, 8);
 	public static final TextureBlitData TOP_INNER_TRIM_HIGHLIGHT = new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, SQUARE_64, new UV(0, 0), Dimension.SQUARE_16);
@@ -250,8 +250,8 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 	}
 
 	@Override
-	protected void renderSlot(GuiGraphics guiGraphics, Slot slot) {
-		super.renderSlot(guiGraphics, slot);
+	protected void renderSlot(GuiGraphics guiGraphics, Slot slot, int mouseX, int mouseY) {
+		super.renderSlot(guiGraphics, slot, mouseX, mouseY);
 		if (slot.getItem().isEmpty() && getMenu().isSlotMaterialInherited(slot.index)) {
 			ItemStack inheritedItem = getMenu().getInheritedResource(slot.index).toStack();
 			if (!inheritedItem.isEmpty()) {
@@ -277,13 +277,13 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 			return resultPartsNeededTooltip;
 		}
 
-		Map<ResourceLocation, Integer> partsNeeded = getMenu().getPartsNeeded();
+		Map<Identifier, Integer> partsNeeded = getMenu().getPartsNeeded();
 		addPartCountInfo(partsNeeded, resultPartsNeededTooltip, location -> getMenu().getMissingDyes().contains(location) ? ChatFormatting.RED : ChatFormatting.DARK_GRAY);
 		return resultPartsNeededTooltip;
 	}
 
-	private static void addPartCountInfo(Map<ResourceLocation, Integer> partCounts, List<Component> tooltip, Function<ResourceLocation, ChatFormatting> getPartFormatting) {
-		Map<ItemStack, Tuple<ResourceLocation, Integer>> itemCounts = new LinkedHashMap<>();
+	private static void addPartCountInfo(Map<Identifier, Integer> partCounts, List<Component> tooltip, Function<Identifier, ChatFormatting> getPartFormatting) {
+		Map<ItemStack, Tuple<Identifier, Integer>> itemCounts = new LinkedHashMap<>();
 		partCounts.forEach((part, count) -> {
 			if (BuiltInRegistries.ITEM.containsKey(part)) {
 				Item item = BuiltInRegistries.ITEM.getValue(part);
@@ -296,7 +296,7 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 
 		itemCounts.entrySet().stream().sorted(Comparator.comparing(entry -> entry.getKey().getHoverName().getString())).forEach(entry -> {
 			ItemStack itemStack = entry.getKey();
-			ResourceLocation location = entry.getValue().getA();
+			Identifier location = entry.getValue().getA();
 			int count = entry.getValue().getB();
 			MutableComponent partCountText = Component.literal(count + "/" + DecorationHelper.BLOCK_TOTAL_PARTS + " (" + String.format("%.0f%%", (float) count / DecorationHelper.BLOCK_TOTAL_PARTS * 100) + ") of ");
 			tooltip.add(partCountText.append(itemStack.getHoverName()).withStyle(getPartFormatting.apply(location)));
@@ -421,9 +421,9 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 
 	private static class PartStorageInfo extends WidgetBase {
 		private final List<Component> partStorageTooltip = new ArrayList<>();
-		private final Supplier<Map<ResourceLocation, Integer>> getPartsStored;
+		private final Supplier<Map<Identifier, Integer>> getPartsStored;
 
-		protected PartStorageInfo(Position position, Supplier<Map<ResourceLocation, Integer>> getPartsStored) {
+		protected PartStorageInfo(Position position, Supplier<Map<Identifier, Integer>> getPartsStored) {
 			super(position, Dimension.SQUARE_16);
 			this.getPartsStored = getPartsStored;
 		}

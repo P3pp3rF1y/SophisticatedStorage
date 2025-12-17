@@ -3,7 +3,7 @@ package net.p3pp3rf1y.sophisticatedstorage.block;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.stats.Stats;
 import net.minecraft.util.RandomSource;
@@ -44,8 +44,8 @@ import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.item.BarrelBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
+import org.jspecify.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -136,7 +136,7 @@ public class BarrelBlock extends WoodStorageBlockBase {
 	public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
 		super.setPlacedBy(level, pos, state, placer, stack);
 		WorldHelper.getBlockEntity(level, pos, BarrelBlockEntity.class).ifPresent(barrel -> {
-			Map<BarrelMaterial, ResourceLocation> materials = BarrelBlockItem.getMaterials(stack);
+			Map<BarrelMaterial, Identifier> materials = BarrelBlockItem.getMaterials(stack);
 			if (!materials.isEmpty()) {
 				barrel.setMaterials(new EnumMap<>(materials));
 			}
@@ -173,7 +173,7 @@ public class BarrelBlock extends WoodStorageBlockBase {
 		ItemStack cloneItemStack = super.getCloneItemStack(level, pos, state, includeData);
 		BarrelBlockItem.setFlatTop(cloneItemStack, state.getValue(FLAT_TOP));
 		WorldHelper.getBlockEntity(level, pos, BarrelBlockEntity.class).ifPresent(barrelBlockEntity -> {
-			Map<BarrelMaterial, ResourceLocation> materials = barrelBlockEntity.getMaterials();
+			Map<BarrelMaterial, Identifier> materials = barrelBlockEntity.getMaterials();
 			if (!materials.isEmpty()) {
 				BarrelBlockItem.setMaterials(cloneItemStack, materials);
 			}
@@ -187,7 +187,7 @@ public class BarrelBlock extends WoodStorageBlockBase {
 		BlockState state = be.getBlockState();
 		BarrelBlockItem.setFlatTop(stack, state.getValue(FLAT_TOP));
 		if (be instanceof BarrelBlockEntity barrelBlockEntity) {
-			Map<BarrelMaterial, ResourceLocation> materials = barrelBlockEntity.getMaterials();
+			Map<BarrelMaterial, Identifier> materials = barrelBlockEntity.getMaterials();
 			if (!materials.isEmpty()) {
 				BarrelBlockItem.setMaterials(stack, materials);
 			}

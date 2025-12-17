@@ -198,19 +198,18 @@ TODO add this to StorageRenderState extraction
 		float maxZ = -2;
 
 		for (BakedQuad quad : quads) {
-			int i = 0;
-			int[] verts = quad.vertices();
-			while (i + 2 < verts.length) {
-				float x = Float.intBitsToFloat(verts[i]);
-				float y = Float.intBitsToFloat(verts[i + 1]);
-				float z = Float.intBitsToFloat(verts[i + 2]);
+			for (int v = 0; v < BakedQuad.VERTEX_COUNT; v++) {
+				Vector3fc pos = quad.position(v);
+				float x = pos.x();
+				float y = pos.y();
+				float z = pos.z();
+
 				minX = Math.min(minX, x);
 				maxX = Math.max(maxX, x);
 				minY = Math.min(minY, y);
 				maxY = Math.max(maxY, y);
 				minZ = Math.min(minZ, z);
 				maxZ = Math.max(maxZ, z);
-				i += 8;
 			}
 		}
 

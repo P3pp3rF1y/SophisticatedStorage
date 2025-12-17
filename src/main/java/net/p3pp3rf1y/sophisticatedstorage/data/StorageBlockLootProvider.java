@@ -1,6 +1,7 @@
 package net.p3pp3rf1y.sophisticatedstorage.data;
 
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.loot.BlockLootSubProvider;
@@ -12,7 +13,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
-import net.minecraft.world.level.storage.loot.functions.CopyNameFunction;
+import net.minecraft.world.level.storage.loot.functions.CopyComponentsFunction;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
@@ -100,7 +101,7 @@ public class StorageBlockLootProvider extends LootTableProvider {
 		@Override
 		protected Iterable<Block> getKnownBlocks() {
 			return BuiltInRegistries.BLOCK.entrySet().stream()
-					.filter(e -> e.getKey().location().getNamespace().equals(SophisticatedStorage.MOD_ID))
+					.filter(e -> e.getKey().identifier().getNamespace().equals(SophisticatedStorage.MOD_ID))
 					.map(Map.Entry::getValue)
 					.toList();
 		}
@@ -108,7 +109,8 @@ public class StorageBlockLootProvider extends LootTableProvider {
 		private static LootTable.Builder dropStorageWithContents(Item storageItem) {
 			LootPool.Builder pool = LootPool.lootPool().name("main").setRolls(ConstantValue.exactly(1))
 					.add(LootItem.lootTableItem(storageItem))
-					.apply(CopyNameFunction.copyName(new CopyNameFunction.Source(LootContextParams.BLOCK_ENTITY)))
+					.apply(CopyComponentsFunction.copyComponentsFromBlockEntity(LootContextParams.BLOCK_ENTITY)
+							.include(DataComponents.CUSTOM_NAME))
 					.apply(CopyStorageDataFunction.builder());
 			return LootTable.lootTable().withPool(pool);
 		}

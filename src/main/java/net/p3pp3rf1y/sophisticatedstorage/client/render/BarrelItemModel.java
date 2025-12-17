@@ -1,5 +1,6 @@
 package net.p3pp3rf1y.sophisticatedstorage.client.render;
 
+import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.MapCodec;
@@ -17,7 +18,7 @@ import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.resources.model.BlockModelRotation;
 import net.minecraft.client.resources.model.ResolvedModel;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
@@ -27,15 +28,15 @@ import net.p3pp3rf1y.sophisticatedstorage.item.BarrelBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
 import org.joml.Vector3f;
+import org.joml.Vector3fc;
+import org.jspecify.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Supplier;
 
 public record BarrelItemModel(BarrelBlockStateModelBase model, @Nullable BarrelBlockStateModelBase flatTopModel,
-							  List<ItemTintSource> tints, Supplier<Vector3f[]> extents) implements ItemModel {
+							  List<ItemTintSource> tints, Supplier<Vector3fc[]> extents) implements ItemModel {
 	private static final Vector3f DEFAULT_ROTATION = new Vector3f(0.0F, 0.0F, 0.0F);
 	private static final ItemTransforms ITEM_TRANSFORMS = createItemTransforms();
 
@@ -75,7 +76,7 @@ public record BarrelItemModel(BarrelBlockStateModelBase model, @Nullable BarrelB
 		updatedModel.setHasAccentColor(hasAccentColor);
 		state.appendModelIdentityElement(hasAccentColor);
 
-		Map<BarrelMaterial, ResourceLocation> materials = BarrelBlockItem.getMaterials(stack);
+		Map<BarrelMaterial, Identifier> materials = BarrelBlockItem.getMaterials(stack);
 		updatedModel.setBarrelMaterials(materials);
 		state.appendModelIdentityElement(materials);
 
@@ -109,18 +110,18 @@ public record BarrelItemModel(BarrelBlockStateModelBase model, @Nullable BarrelB
 
 		layerState.setExtents(extents);
 		layerState.setUsesBlockLight(true);
-		layerState.setRenderType(Sheets.translucentItemSheet());
+		layerState.setRenderType(Sheets.translucentBlockItemSheet());
 		layerState.setParticleIcon(updatedModel.particleIcon());
 		layerState.setTransform(ITEM_TRANSFORMS.getTransform(itemDisplayContext));
 		layerState.prepareQuadList().addAll(updatedModel.getQuads(clientLevel != null ? clientLevel.random : Minecraft.getInstance().level.random));
 	}
 
-	public record Unbaked(ResourceLocation model, @Nullable ResourceLocation flatTopModel,
+	public record Unbaked(Identifier model, @Nullable Identifier flatTopModel,
 						  List<ItemTintSource> tints) implements ItemModel.Unbaked {
 		public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec(instance ->
 				instance.group(
-								ResourceLocation.CODEC.fieldOf("model").forGetter(Unbaked::model),
-								ResourceLocation.CODEC.optionalFieldOf("flat_top_model").forGetter(unbaked -> Optional.ofNullable(unbaked.flatTopModel())),
+								Identifier.CODEC.fieldOf("model").forGetter(Unbaked::model),
+								Identifier.CODEC.optionalFieldOf("flat_top_model").forGetter(unbaked -> Optional.ofNullable(unbaked.flatTopModel())),
 								ItemTintSources.CODEC.listOf().optionalFieldOf("tints", List.of()).forGetter(Unbaked::tints)
 						)
 						.apply(instance, (model, flatTopModel, tints) -> new Unbaked(model, flatTopModel.orElse(null), tints))
@@ -136,7 +137,7 @@ public record BarrelItemModel(BarrelBlockStateModelBase model, @Nullable BarrelB
 			ResolvedModel resolved = context.blockModelBaker().getModel(model);
 			BarrelBlockStateModelBase barrelModel;
 			if (resolved.wrapped() instanceof BarrelUnbakedModelBase barrelUnbakedModel) {
-				barrelModel = barrelUnbakedModel.bakeBlockStateModel(context.blockModelBaker(), resolved, BlockModelRotation.X0_Y0);
+				barrelModel = barrelUnbakedModel.bakeBlockStateModel(context.blockModelBaker(), resolved, BlockModelRotation.IDENTITY);
 			} else {
 				throw new IllegalStateException("Expected BarrelUnbakedModelBase for " + model + ", got " + resolved.wrapped().getClass().getName());
 			}
@@ -145,7 +146,7 @@ public record BarrelItemModel(BarrelBlockStateModelBase model, @Nullable BarrelB
 			if (flatTopModel != null) {
 				ResolvedModel flatTopResolved = context.blockModelBaker().getModel(flatTopModel);
 				if (flatTopResolved.wrapped() instanceof BarrelUnbakedModelBase flatTopUnbakedModel) {
-					barrelFlatTopModel = flatTopUnbakedModel.bakeBlockStateModel(context.blockModelBaker(), flatTopResolved, BlockModelRotation.X0_Y0);
+					barrelFlatTopModel = flatTopUnbakedModel.bakeBlockStateModel(context.blockModelBaker(), flatTopResolved, BlockModelRotation.IDENTITY);
 				}
 			}
 

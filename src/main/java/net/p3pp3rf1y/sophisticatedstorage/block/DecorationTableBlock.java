@@ -20,8 +20,7 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.p3pp3rf1y.sophisticatedcore.util.BlockBase;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.DecorationTableMenu;
-
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class DecorationTableBlock extends BlockBase implements EntityBlock {
 	public static final EnumProperty<Direction> FACING = HorizontalDirectionalBlock.FACING;

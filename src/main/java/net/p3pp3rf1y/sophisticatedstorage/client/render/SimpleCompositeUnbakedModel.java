@@ -9,11 +9,11 @@ import net.minecraft.client.renderer.block.model.BlockModel;
 import net.minecraft.client.renderer.block.model.SimpleUnbakedGeometry;
 import net.minecraft.client.renderer.block.model.TextureSlots;
 import net.minecraft.client.resources.model.*;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.context.ContextMap;
 import net.neoforged.neoforge.client.model.*;
+import org.jspecify.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -40,13 +40,13 @@ public class SimpleCompositeUnbakedModel extends AbstractUnbakedModel {
 	}
 
 	public static class SimpleCompositeUnbakedGeometry implements ExtendedUnbakedGeometry {
-		private final ImmutableMap<String, Either<ResourceLocation, UnbakedModel>> children;
+		private final ImmutableMap<String, Either<Identifier, UnbakedModel>> children;
 
-		public Map<String, Either<ResourceLocation, UnbakedModel>> children() {
+		public Map<String, Either<Identifier, UnbakedModel>> children() {
 			return children;
 		}
 
-		public SimpleCompositeUnbakedGeometry(ImmutableMap<String, Either<ResourceLocation, UnbakedModel>> children) {
+		public SimpleCompositeUnbakedGeometry(ImmutableMap<String, Either<Identifier, UnbakedModel>> children) {
 			this.children = children;
 		}
 
@@ -85,7 +85,7 @@ public class SimpleCompositeUnbakedModel extends AbstractUnbakedModel {
 
 		public void resolveDependencies(Resolver resolver) {
 			children.values().forEach(child -> child.ifLeft(resolver::markDependency).ifRight(model -> {
-				ResourceLocation parent = model.parent();
+				Identifier parent = model.parent();
 				if (parent != null) {
 					resolver.markDependency(parent);
 				}
@@ -104,9 +104,9 @@ public class SimpleCompositeUnbakedModel extends AbstractUnbakedModel {
 
 		@Override
 		public SimpleCompositeUnbakedModel read(JsonObject jsonObject, JsonDeserializationContext deserializationContext) {
-			ImmutableMap.Builder<String, Either<ResourceLocation, UnbakedModel>> childrenBuilder = ImmutableMap.builder();
+			ImmutableMap.Builder<String, Either<Identifier, UnbakedModel>> childrenBuilder = ImmutableMap.builder();
 			readChildren(jsonObject, "parts", childrenBuilder, deserializationContext);
-			ImmutableMap<String, Either<ResourceLocation, UnbakedModel>> children = childrenBuilder.build();
+			ImmutableMap<String, Either<Identifier, UnbakedModel>> children = childrenBuilder.build();
 			if (children.isEmpty()) {
 				throw new JsonParseException("Simple Composite model requires a \"parts\" element with at least one element.");
 			}
@@ -114,14 +114,14 @@ public class SimpleCompositeUnbakedModel extends AbstractUnbakedModel {
 			return new SimpleCompositeUnbakedModel(new SimpleCompositeUnbakedGeometry(children), parameters);
 		}
 
-		private static void readChildren(JsonObject jsonObject, String name, ImmutableMap.Builder<String, Either<ResourceLocation, UnbakedModel>> children, JsonDeserializationContext context) {
+		private static void readChildren(JsonObject jsonObject, String name, ImmutableMap.Builder<String, Either<Identifier, UnbakedModel>> children, JsonDeserializationContext context) {
 			if (jsonObject.has(name)) {
 				JsonObject childrenJsonObject = jsonObject.getAsJsonObject(name);
 
 				for (Map.Entry<String, JsonElement> entry : childrenJsonObject.entrySet()) {
 					JsonElement jsonElement = entry.getValue();
-					Either<ResourceLocation, UnbakedModel> child = switch (jsonElement) {
-						case JsonPrimitive reference -> Either.left(ResourceLocation.parse(reference.getAsString()));
+					Either<Identifier, UnbakedModel> child = switch (jsonElement) {
+						case JsonPrimitive reference -> Either.left(Identifier.parse(reference.getAsString()));
 						case JsonObject inline ->
 								Either.right((UnbakedModel) context.deserialize(inline, UnbakedModel.class));
 						default -> throw new IllegalArgumentException("");

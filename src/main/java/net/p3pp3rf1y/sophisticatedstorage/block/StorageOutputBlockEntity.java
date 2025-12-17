@@ -7,8 +7,7 @@ import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
-
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class StorageOutputBlockEntity extends StorageIOBlockEntity {
 	@Nullable

@@ -9,17 +9,18 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.MaterialSet;
 import net.minecraft.core.Direction;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.ChestType;
@@ -32,8 +33,8 @@ import net.p3pp3rf1y.sophisticatedstorage.block.StorageWrapper;
 import net.p3pp3rf1y.sophisticatedstorage.client.ClientEventHandler;
 import net.p3pp3rf1y.sophisticatedstorage.client.StorageTextureManager;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
+import org.jspecify.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
@@ -161,7 +162,7 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity, ChestRender
 	}
 
 	@Override
-	public void extractRenderState(ChestBlockEntity blockEntity, ChestRenderState renderState, float partialTick, Vec3 cameraPos, @Nullable ModelFeatureRenderer.CrumblingOverlay crumblingOverlay) {
+	public void extractRenderState(ChestBlockEntity blockEntity, ChestRenderState renderState, float partialTick, Vec3 cameraPos, ModelFeatureRenderer.@Nullable CrumblingOverlay crumblingOverlay) {
 		super.extractRenderState(blockEntity, renderState, partialTick, cameraPos, crumblingOverlay);
 
 		BlockState blockState = blockEntity.getBlockState();
@@ -282,9 +283,9 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity, ChestRender
 
 		public ChestSubRenderer(ChestType chestType, ModelPart corePart, ModelPart lockPart) {
 			this.chestType = chestType;
-			this.coreModel = new ChestCoreModel(corePart, RenderType::entityCutout);
-			this.hiddenTierModel = new ChestCoreModel(corePart, RenderType::entityTranslucent);
-			this.lockModel = new ChestLockModel(lockPart, RenderType::entityCutout);
+			this.coreModel = new ChestCoreModel(corePart, RenderTypes::entityCutout);
+			this.hiddenTierModel = new ChestCoreModel(corePart, RenderTypes::entityTranslucent);
+			this.lockModel = new ChestLockModel(lockPart, RenderTypes::entityCutout);
 		}
 
 		private boolean setChestMaterialsFrom(WoodType woodType, Block block) {
@@ -305,7 +306,7 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity, ChestRender
 
 			int color = 0x7F_FFFFFF;
 
-			RenderType renderType = RenderType.entityTranslucent(tierMaterial.atlasLocation());
+			RenderType renderType = RenderTypes.entityTranslucent(tierMaterial.atlasLocation());
 			TextureAtlasSprite sprite = materialSet.get(tierMaterial);
 			submitNodeCollector.submitModel(hiddenTierModel, renderState.open, poseStack, renderType, renderState.lightCoords, OverlayTexture.NO_OVERLAY, color, sprite, 0, renderState.breakProgress);
 			poseStack.popPose();
@@ -313,7 +314,7 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity, ChestRender
 
 		private void submitBottomAndLid(SubmitNodeCollector submitNodeCollector, ChestRenderState renderState, PoseStack poseStack, StorageTextureManager.ChestMaterial chestMaterial, MaterialSet materialSet) {
 			Material material = chestMaterials.get(chestMaterial);
-			RenderType renderType = material.renderType(RenderType::entityCutout);
+			RenderType renderType = material.renderType(RenderTypes::entityCutout);
 			TextureAtlasSprite sprite = materialSet.get(material);
 
 			submitBottomAndLid(submitNodeCollector, renderState, poseStack, renderType, sprite);
@@ -333,7 +334,7 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity, ChestRender
 
 		private void submitBottomAndLidWithTint(SubmitNodeCollector submitNodeCollector, ChestRenderState renderState, PoseStack poseStack, int tint, StorageTextureManager.ChestMaterial chestMaterial, MaterialSet materialSet) {
 			Material material = chestMaterials.get(chestMaterial);
-			RenderType renderType = material.renderType(RenderType::entityCutout);
+			RenderType renderType = material.renderType(RenderTypes::entityCutout);
 			TextureAtlasSprite sprite = materialSet.get(material);
 			int color = 0xFF_000000 | tint;
 
@@ -349,7 +350,7 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity, ChestRender
 		}
 
 		private void submitChestLock(SubmitNodeCollector submitNodeCollector, ChestRenderState renderState, PoseStack poseStack, MaterialSet materialSet) {
-			submitNodeCollector.submitModel(lockModel, renderState.open, poseStack, RenderType.entityCutout(tierMaterial.atlasLocation()), renderState.lightCoords, OverlayTexture.NO_OVERLAY, -1, materialSet.get(tierMaterial), 0, renderState.breakProgress);
+			submitNodeCollector.submitModel(lockModel, renderState.open, poseStack, RenderTypes.entityCutout(tierMaterial.atlasLocation()), renderState.lightCoords, OverlayTexture.NO_OVERLAY, -1, materialSet.get(tierMaterial), 0, renderState.breakProgress);
 		}
 
 		private Material getTierMaterial(Block block) {
@@ -368,7 +369,7 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity, ChestRender
 		}
 
 		public void submitTier(SubmitNodeCollector submitNodeCollector, ChestRenderState chestRenderState, PoseStack poseStack, MaterialSet materialSet) {
-			RenderType renderType = RenderType.entityCutout(tierMaterial.atlasLocation());
+			RenderType renderType = RenderTypes.entityCutout(tierMaterial.atlasLocation());
 			TextureAtlasSprite sprite = materialSet.get(tierMaterial);
 			submitBottomAndLid(submitNodeCollector, chestRenderState, poseStack, renderType, sprite);
 		}
@@ -377,7 +378,7 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity, ChestRender
 	private static class ChestCoreModel extends Model<Float> {
 		private final ModelPart lidPart;
 
-		public ChestCoreModel(ModelPart root, Function<ResourceLocation, RenderType> renderType) {
+		public ChestCoreModel(ModelPart root, Function<Identifier, RenderType> renderType) {
 			super(root, renderType);
 			this.lidPart = root.getChild("lid");
 		}
@@ -393,7 +394,7 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity, ChestRender
 	private static class ChestLockModel extends Model<Float> {
 		private final ModelPart lockPart;
 
-		public ChestLockModel(ModelPart root, Function<ResourceLocation, RenderType> renderType) {
+		public ChestLockModel(ModelPart root, Function<Identifier, RenderType> renderType) {
 			super(root, renderType);
 			this.lockPart = root.getChild("lock");
 		}

@@ -4,10 +4,11 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.LevelRenderer;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
@@ -28,8 +29,8 @@ import net.p3pp3rf1y.sophisticatedstorage.block.LimitedBarrelBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.LimitedBarrelBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.block.VerticalFacing;
 import org.joml.Vector3f;
+import org.jspecify.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -38,7 +39,7 @@ import java.util.stream.IntStream;
 import static net.minecraft.client.Minecraft.UNIFORM_FONT;
 
 public class LimitedBarrelRenderer extends BarrelRendererBase<LimitedBarrelBlockEntity, LimitedBarrelRenderer.LimitedBarrelRenderState> {
-	public static final Material FILL_INDICATORS_TEXTURE = new Material(TextureAtlas.LOCATION_BLOCKS, SophisticatedStorage.getRL("block/fill_indicators"));
+	public static final Material FILL_INDICATORS_TEXTURE = new Material(TextureAtlas.LOCATION_BLOCKS, SophisticatedStorage.getIdentifier("block/fill_indicators"));
 	private static final float MULTIPLE_ITEMS_FONT_SCALE = 1 / 96f;
 	private static final float SINGLE_ITEM_FONT_SCALE = 1 / 48f;
 	public static final Style INFINITE_COUNT_DISPLAY_STYLE = Style.EMPTY.withFont(new FontDescription.Resource(UNIFORM_FONT));
@@ -183,9 +184,9 @@ public class LimitedBarrelRenderer extends BarrelRendererBase<LimitedBarrelBlock
 		poseStack.pushPose();
 		RenderType renderType;
 		if (translucentRender) {
-			renderType = FILL_INDICATORS_TEXTURE.renderType(RenderType::entityTranslucent);
+			renderType = FILL_INDICATORS_TEXTURE.renderType(RenderTypes::entityTranslucent);
 		} else {
-			renderType = FILL_INDICATORS_TEXTURE.renderType(RenderType::entitySmoothCutout);
+			renderType = FILL_INDICATORS_TEXTURE.renderType(RenderTypes::entitySmoothCutout);
 		}
 
 		TextureAtlasSprite sprite = materialSet.get(FILL_INDICATORS_TEXTURE);
@@ -208,7 +209,7 @@ public class LimitedBarrelRenderer extends BarrelRendererBase<LimitedBarrelBlock
 	}
 
 	@Override
-	public void extractRenderState(LimitedBarrelBlockEntity blockEntity, LimitedBarrelRenderState renderState, float partialTick, Vec3 cameraPos, @Nullable ModelFeatureRenderer.CrumblingOverlay crumblingOverlay) {
+	public void extractRenderState(LimitedBarrelBlockEntity blockEntity, LimitedBarrelRenderState renderState, float partialTick, Vec3 cameraPos, ModelFeatureRenderer.@Nullable CrumblingOverlay crumblingOverlay) {
 		super.extractRenderState(blockEntity, renderState, partialTick, cameraPos, crumblingOverlay);
 
 		if (renderState.packed) {

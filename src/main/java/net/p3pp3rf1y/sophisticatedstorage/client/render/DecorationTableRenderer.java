@@ -18,8 +18,7 @@ import net.minecraft.world.phys.Vec3;
 import net.p3pp3rf1y.sophisticatedstorage.block.DecorationTableBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.DecorationTableBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
-
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class DecorationTableRenderer implements BlockEntityRenderer<DecorationTableBlockEntity, DecorationTableRenderer.DecorationTableRenderState> {
 	private final ItemModelResolver itemModelResolver;
@@ -34,7 +33,7 @@ public class DecorationTableRenderer implements BlockEntityRenderer<DecorationTa
 	}
 
 	@Override
-	public void extractRenderState(DecorationTableBlockEntity blockEntity, DecorationTableRenderState renderState, float partialTick, Vec3 cameraPos, @Nullable ModelFeatureRenderer.CrumblingOverlay crumblingOverlay) {
+	public void extractRenderState(DecorationTableBlockEntity blockEntity, DecorationTableRenderState renderState, float partialTick, Vec3 cameraPos, ModelFeatureRenderer.@Nullable CrumblingOverlay crumblingOverlay) {
 		BlockEntityRenderer.super.extractRenderState(blockEntity, renderState, partialTick, cameraPos, crumblingOverlay);
 
 		ItemStack result = blockEntity.getResult();

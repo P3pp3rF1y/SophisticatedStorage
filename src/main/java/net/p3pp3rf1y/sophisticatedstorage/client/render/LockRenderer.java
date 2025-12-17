@@ -1,8 +1,9 @@
 package net.p3pp3rf1y.sophisticatedstorage.client.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -17,7 +18,7 @@ public class LockRenderer {
 	private LockRenderer() {
 	}
 
-	public static final Material LOCK_TEXTURE = new Material(TextureAtlas.LOCATION_BLOCKS, SophisticatedStorage.getRL("block/lock"));
+	public static final Material LOCK_TEXTURE = new Material(TextureAtlas.LOCATION_BLOCKS, SophisticatedStorage.getIdentifier("block/lock"));
 
 	public static void submitLock(SubmitNodeCollector submitNodeCollector, StorageRenderState renderState, PoseStack poseStack, float yOffset, BooleanSupplier holdsCorrectItem, MaterialSet materialSet) {
 		if (!renderState.isLocked || (!holdsCorrectItem.getAsBoolean() && !renderState.showsLock)) {
@@ -26,9 +27,9 @@ public class LockRenderer {
 		RenderType renderType;
 		boolean translucentRender = !renderState.showsLock && holdsCorrectItem.getAsBoolean();
 		if (translucentRender) {
-			renderType = RenderType.entityTranslucent(LockRenderer.LOCK_TEXTURE.atlasLocation());
+			renderType = RenderTypes.entityTranslucent(LockRenderer.LOCK_TEXTURE.atlasLocation());
 		} else {
-			renderType = RenderType.entitySmoothCutout(LockRenderer.LOCK_TEXTURE.atlasLocation());
+			renderType = RenderTypes.entitySmoothCutout(LockRenderer.LOCK_TEXTURE.atlasLocation());
 		}
 
 		poseStack.pushPose();

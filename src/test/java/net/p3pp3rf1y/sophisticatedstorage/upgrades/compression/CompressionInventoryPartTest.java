@@ -1,7 +1,7 @@
 package net.p3pp3rf1y.sophisticatedstorage.upgrades.compression;
 
 import net.minecraft.SharedConstants;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.Bootstrap;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -72,7 +72,7 @@ public class CompressionInventoryPartTest {
 		recipeHelperMock.when(() -> RecipeHelper.getUncompactingResult(stackOf(Items.QUARTZ_BLOCK))).thenReturn(new RecipeHelper.UncompactingResult(new ItemStack(Items.QUARTZ), RecipeHelper.CompactingShape.TWO_BY_TWO_UNCRAFTABLE));
 
 		ss = Mockito.mockStatic(SophisticatedStorage.class);
-		ss.when(() -> SophisticatedStorage.getRL(anyString())).thenAnswer(i -> ResourceLocation.parse(i.getArgument(0)));
+		ss.when(() -> SophisticatedStorage.getIdentifier(anyString())).thenAnswer(i -> Identifier.parse(i.getArgument(0)));
 	}
 
 	private static ItemStack stackOf(Item item) {

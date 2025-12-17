@@ -1,6 +1,6 @@
 package net.p3pp3rf1y.sophisticatedstorage.compat.chipped;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.StorageScreenBase;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.UpgradeGuiManager;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.Position;
@@ -14,7 +14,7 @@ public class ChippedCompatClient {
 	private ChippedCompatClient() {
 	}
 
-	public static void registerUpgradeTab(ResourceLocation itemId, UpgradeContainerType<BlockTransformationUpgradeWrapper, BlockTransformationUpgradeContainer> containerType) {
+	public static void registerUpgradeTab(Identifier itemId, UpgradeContainerType<BlockTransformationUpgradeWrapper, BlockTransformationUpgradeContainer> containerType) {
 		UpgradeGuiManager.registerTab(containerType, (BlockTransformationUpgradeContainer upgradeContainer, Position position, StorageScreenBase<?> screen) -> {
 			String itemName = itemId.getPath();
 			return new BlockTransformationUpgradeTab(upgradeContainer, position, screen, StorageButtonDefinitions.SHIFT_CLICK_TARGET, itemName.replace('/', '_').substring(0, itemName.length() - "_upgrade".length()));

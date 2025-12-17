@@ -11,15 +11,15 @@ import net.minecraft.client.renderer.block.model.*;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.*;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.context.ContextMap;
 import net.neoforged.neoforge.client.model.UnbakedModelLoader;
 import net.neoforged.neoforge.client.model.block.CustomUnbakedBlockStateModel;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.WoodStorageBlockBase;
-import org.joml.Quaternionf;
+import org.joml.Quaternionfc;
+import org.jspecify.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -35,13 +35,13 @@ public abstract class BarrelUnbakedModelBase implements UnbakedModel {
 	private final Map<String, Map<BarrelModelPart, BarrelModelPartDefinition>> woodModelPartDefinitions;
 
 	@Nullable
-	private final ResourceLocation parentLocation;
+	private final Identifier parentLocation;
 
-	private final Map<DynamicBarrelBakingData.DynamicPart, ResourceLocation> dynamicPartModels;
+	private final Map<DynamicBarrelBakingData.DynamicPart, Identifier> dynamicPartModels;
 	private final Map<String, Map<BarrelModelPart, BarrelModelPartDefinition>> woodPartitionedModelPartDefinitions;
 
-	protected BarrelUnbakedModelBase(@Nullable ResourceLocation parentLocation, Map<String, Map<BarrelModelPart, BarrelModelPartDefinition>> woodModelPartDefinitions,
-									 Map<DynamicBarrelBakingData.DynamicPart, ResourceLocation> dynamicPartModels, Map<String, Map<BarrelModelPart, BarrelModelPartDefinition>> woodPartitionedModelPartDefinitions) {
+	protected BarrelUnbakedModelBase(@Nullable Identifier parentLocation, Map<String, Map<BarrelModelPart, BarrelModelPartDefinition>> woodModelPartDefinitions,
+									 Map<DynamicBarrelBakingData.DynamicPart, Identifier> dynamicPartModels, Map<String, Map<BarrelModelPart, BarrelModelPartDefinition>> woodPartitionedModelPartDefinitions) {
 		this.parentLocation = parentLocation;
 		this.woodModelPartDefinitions = woodModelPartDefinitions;
 		this.dynamicPartModels = dynamicPartModels;
@@ -50,7 +50,7 @@ public abstract class BarrelUnbakedModelBase implements UnbakedModel {
 
 	@Nullable
 	@Override
-	public ResourceLocation parent() {
+	public Identifier parent() {
 		return parentLocation;
 	}
 
@@ -128,7 +128,7 @@ public abstract class BarrelUnbakedModelBase implements UnbakedModel {
 		ResolvedModel resolvedmodel = model;
 
 		TextureSlots.Resolver resolver;
-		for(resolver = new TextureSlots.Resolver(); resolvedmodel != null; resolvedmodel = resolvedmodel.parent()) {
+		for (resolver = new TextureSlots.Resolver(); resolvedmodel != null; resolvedmodel = resolvedmodel.parent()) {
 			resolver.addLast(resolvedmodel.wrapped().textureSlots());
 
 			if (resolvedmodel.wrapped().geometry() instanceof SimpleCompositeUnbakedModel.SimpleCompositeUnbakedGeometry simpleCompositeGeometry) {
@@ -181,7 +181,7 @@ public abstract class BarrelUnbakedModelBase implements UnbakedModel {
 		return hash;
 	}
 
-	public static int robustHash(Quaternionf q) {
+	public static int robustHash(Quaternionfc q) {
 		long h = 1;
 		h = 31 * h + Float.floatToIntBits(q.w());
 		h = 31 * h + Float.floatToIntBits(q.x());
@@ -334,14 +334,14 @@ public abstract class BarrelUnbakedModelBase implements UnbakedModel {
 	public abstract static class Loader<T extends BarrelUnbakedModelBase> implements UnbakedModelLoader<T> {
 		@Override
 		public T read(JsonObject modelContents, JsonDeserializationContext deserializationContext) {
-			ResourceLocation parentLocation = null;
+			Identifier parentLocation = null;
 			if (modelContents.has("parent")) {
-				parentLocation = ResourceLocation.parse(modelContents.get("parent").getAsString());
+				parentLocation = Identifier.parse(modelContents.get("parent").getAsString());
 			}
 
 			Map<BarrelModelPart, BarrelModelPartDefinition> modelParts = readModelParts(modelContents, "model_parts");
 			Map<BarrelModelPart, BarrelModelPartDefinition> partitionedModelParts = readModelParts(modelContents, "partitioned_model_parts");
-			Map<DynamicBarrelBakingData.DynamicPart, ResourceLocation> dynamicPartModels = readDynamicPartModels(modelContents);
+			Map<DynamicBarrelBakingData.DynamicPart, Identifier> dynamicPartModels = readDynamicPartModels(modelContents);
 			Map<String, Map<BarrelModelPart, BarrelModelPartDefinition>> woodOverrides = readWoodOverrides(modelContents);
 
 			if (parentLocation == null && modelParts.isEmpty() && woodOverrides.isEmpty() && dynamicPartModels.isEmpty()) {
@@ -383,13 +383,13 @@ public abstract class BarrelUnbakedModelBase implements UnbakedModel {
 			return woodOverrides;
 		}
 
-		private static Map<DynamicBarrelBakingData.DynamicPart, ResourceLocation> readDynamicPartModels(JsonObject modelContents) {
-			Map<DynamicBarrelBakingData.DynamicPart, ResourceLocation> dynamicPartModels = new EnumMap<>(DynamicBarrelBakingData.DynamicPart.class);
+		private static Map<DynamicBarrelBakingData.DynamicPart, Identifier> readDynamicPartModels(JsonObject modelContents) {
+			Map<DynamicBarrelBakingData.DynamicPart, Identifier> dynamicPartModels = new EnumMap<>(DynamicBarrelBakingData.DynamicPart.class);
 			if (modelContents.has("dynamic_part_models")) {
 				JsonObject dynamicPartsJson = modelContents.getAsJsonObject("dynamic_part_models");
 				for (Map.Entry<String, JsonElement> entry : dynamicPartsJson.entrySet()) {
 					DynamicBarrelBakingData.DynamicPart.getByNameOptional(entry.getKey()).ifPresent(part ->
-							dynamicPartModels.put(part, ResourceLocation.parse(entry.getValue().getAsString())));
+							dynamicPartModels.put(part, Identifier.parse(entry.getValue().getAsString())));
 				}
 			}
 			return dynamicPartModels;
@@ -428,17 +428,17 @@ public abstract class BarrelUnbakedModelBase implements UnbakedModel {
 			}
 		}
 
-		protected abstract T instantiateModel(@Nullable ResourceLocation parentLocation, Map<String, Map<BarrelModelPart, BarrelModelPartDefinition>> woodOverrides,
-											  Map<DynamicBarrelBakingData.DynamicPart, ResourceLocation> dynamicPartModels,
+		protected abstract T instantiateModel(@Nullable Identifier parentLocation, Map<String, Map<BarrelModelPart, BarrelModelPartDefinition>> woodOverrides,
+											  Map<DynamicBarrelBakingData.DynamicPart, Identifier> dynamicPartModels,
 											  Map<String, Map<BarrelModelPart, BarrelModelPartDefinition>> partitionedWoodOverrides);
 	}
 
 	public static final class BarrelModelPartDefinition {
 		@Nullable
-		private ResourceLocation modelLocation;
+		private Identifier modelLocation;
 		private final Map<String, Material> textures;
 
-		private BarrelModelPartDefinition(@Nullable ResourceLocation modelLocation, Map<String, Material> textures) {
+		private BarrelModelPartDefinition(@Nullable Identifier modelLocation, Map<String, Material> textures) {
 			this.modelLocation = modelLocation;
 			this.textures = textures;
 		}
@@ -460,9 +460,9 @@ public abstract class BarrelUnbakedModelBase implements UnbakedModel {
 		}
 
 		public static BarrelModelPartDefinition deserialize(JsonObject json) {
-			ResourceLocation modelLocation = null;
+			Identifier modelLocation = null;
 			if (json.has("model")) {
-				modelLocation = ResourceLocation.parse(json.get("model").getAsString());
+				modelLocation = Identifier.parse(json.get("model").getAsString());
 			}
 			Map<String, Material> textures = new ConcurrentHashMap<>();
 			if (json.has("textures")) {
@@ -472,13 +472,13 @@ public abstract class BarrelUnbakedModelBase implements UnbakedModel {
 					if (textureName.startsWith("#")) {
 						textureName = REFERENCE_PREFIX + textureName.substring(1);
 					}
-					textures.put(entry.getKey(), new Material(TextureAtlas.LOCATION_BLOCKS, ResourceLocation.parse(textureName)));
+					textures.put(entry.getKey(), new Material(TextureAtlas.LOCATION_BLOCKS, Identifier.parse(textureName)));
 				}
 			}
 			return new BarrelModelPartDefinition(modelLocation, textures);
 		}
 
-		public Optional<ResourceLocation> modelLocation() {
+		public Optional<Identifier> modelLocation() {
 			return Optional.ofNullable(modelLocation);
 		}
 
@@ -515,7 +515,7 @@ public abstract class BarrelUnbakedModelBase implements UnbakedModel {
 	public record UnbakedBlockStateModel(Variant variant) implements CustomUnbakedBlockStateModel {
 		public static final MapCodec<UnbakedBlockStateModel> CODEC = RecordCodecBuilder.mapCodec(instance ->
 				instance.group(Variant.MAP_CODEC.forGetter(UnbakedBlockStateModel::variant)).apply(instance, UnbakedBlockStateModel::new));
-		public static final ResourceLocation ID = SophisticatedStorage.getRL("barrel_blockstate_model_loader");
+		public static final Identifier ID = SophisticatedStorage.getIdentifier("barrel_blockstate_model_loader");
 
 		@Override
 		public BlockStateModel bake(ModelBaker modelBaker) {

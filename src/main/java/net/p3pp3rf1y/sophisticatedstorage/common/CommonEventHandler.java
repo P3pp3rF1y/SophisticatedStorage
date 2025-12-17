@@ -125,7 +125,7 @@ public class CommonEventHandler {
 
 		WorldHelper.getBlockEntity(event.getLevel(), event.getPos(), StorageBlockEntity.class)
 				.ifPresent(storageBlockEntity -> {
-					if (storageBlockEntity.getStorageWrapper().getUpgradeHandler().getTypeWrappers(InfinityUpgradeItem.TYPE).stream().anyMatch(w -> !player.hasPermissions(w.getPermissionLevel()))) {
+					if (storageBlockEntity.getStorageWrapper().getUpgradeHandler().getTypeWrappers(InfinityUpgradeItem.TYPE).stream().anyMatch(w -> !w.checkPermission(player))) {
 						event.setCanceled(true);
 						player.displayClientMessage(StorageTranslationHelper.INSTANCE.translStatusMessage("infinity_upgrade_only_admin_break").withStyle(ChatFormatting.RED), true);
 						scheduleRenderUpdate(storageBlockEntity, event.getLevel(), event.getPos(), event.getState());

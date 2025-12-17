@@ -3,7 +3,7 @@ package net.p3pp3rf1y.sophisticatedstorage.crafting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingBookCategory;
@@ -107,7 +107,7 @@ public class BarrelMaterialRecipe extends CustomRecipe {
 			}
 		}
 
-		Map<BarrelMaterial, ResourceLocation> materials = new EnumMap<>(BarrelMaterial.class);
+		Map<BarrelMaterial, Identifier> materials = new EnumMap<>(BarrelMaterial.class);
 		materials.putAll(BarrelBlockItem.getMaterials(barrelStackCopy));
 		BarrelBlockItem.uncompactMaterials(materials);
 
@@ -122,7 +122,7 @@ public class BarrelMaterialRecipe extends CustomRecipe {
 		return barrelStackCopy;
 	}
 
-	private static void fillEmptyMaterialsWithDefaults(Map<BarrelMaterial, ResourceLocation> materials) {
+	private static void fillEmptyMaterialsWithDefaults(Map<BarrelMaterial, Identifier> materials) {
 		for (BarrelMaterial material : BarrelMaterial.values()) {
 			if (material.isLeaf() && !materials.containsKey(material)) {
 				for (BarrelMaterial fillFromDefault : BarrelMaterial.getFillFromDefaults(material)) {
@@ -135,7 +135,7 @@ public class BarrelMaterialRecipe extends CustomRecipe {
 		}
 	}
 
-	private void fillGridMaterials(CraftingInput input, int barrelColumn, int barrelRow, Map<BarrelMaterial, ResourceLocation> materials) {
+	private void fillGridMaterials(CraftingInput input, int barrelColumn, int barrelRow, Map<BarrelMaterial, Identifier> materials) {
 		for (int row = 0; row < input.height(); row++) {
 			for (int col = 0; col < input.width(); col++) {
 				ItemStack item = input.getItem(col + row * input.width());

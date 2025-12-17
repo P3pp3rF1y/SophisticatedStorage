@@ -1,8 +1,8 @@
 package net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.common;
 
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
@@ -59,7 +59,7 @@ public class DyeRecipesMaker {
 					.define('Y', DyeColor.YELLOW.getTag())
 					.define('S', stacks)
 					.define('L', DyeColor.LIME.getTag())
-					.save(ResourceKey.create(Registries.RECIPE, ResourceLocation.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, getSubtypeInterpreter.apply(result).map(i -> i.getRegistrySanitizedItemString(result)).orElse("multiple_color"))));
+					.save(ResourceKey.create(Registries.RECIPE, Identifier.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, getSubtypeInterpreter.apply(result).map(i -> i.getRegistrySanitizedItemString(result)).orElse("multiple_color"))));
 		});
 	}
 
@@ -76,7 +76,7 @@ public class DyeRecipesMaker {
 						.pattern("C")
 						.define('C', color.getTag())
 						.define('S', stacks)
-						.save(ResourceKey.create(Registries.RECIPE, ResourceLocation.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, getSubtypeInterpreter.apply(result).map(i -> i.getRegistrySanitizedItemString(result)).orElse("single_color_" + color.getSerializedName()))));
+						.save(ResourceKey.create(Registries.RECIPE, Identifier.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, getSubtypeInterpreter.apply(result).map(i -> i.getRegistrySanitizedItemString(result)).orElse("single_color_" + color.getSerializedName()))));
 			});
 		}
 	}

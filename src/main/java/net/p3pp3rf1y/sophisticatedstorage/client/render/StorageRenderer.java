@@ -25,8 +25,8 @@ import net.p3pp3rf1y.sophisticatedstorage.block.StorageWrapper;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageTierUpgradeItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageToolItem;
+import org.jspecify.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -129,7 +129,7 @@ public abstract class StorageRenderer<T extends StorageBlockEntity, R extends St
 	}
 
 	@Override
-	public void extractRenderState(T blockEntity, R renderState, float partialTick, Vec3 cameraPos, @Nullable ModelFeatureRenderer.CrumblingOverlay crumblingOverlay) {
+	public void extractRenderState(T blockEntity, R renderState, float partialTick, Vec3 cameraPos, ModelFeatureRenderer.@Nullable CrumblingOverlay crumblingOverlay) {
 		BlockEntityRenderer.super.extractRenderState(blockEntity, renderState, partialTick, cameraPos, crumblingOverlay);
 
 		BlockState blockState = blockEntity.getBlockState();

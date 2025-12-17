@@ -4,9 +4,8 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -22,7 +21,7 @@ import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
 import java.util.function.IntFunction;
 
 public class LimitedBarrelScreen extends StorageScreen {
-	public static final ResourceLocation GUI_BACKGROUNDS = SophisticatedStorage.getRL("textures/gui/limited_barrels.png");
+	public static final Identifier GUI_BACKGROUNDS = SophisticatedStorage.getIdentifier("textures/gui/limited_barrels.png");
 	public static final TextureBlitData LIMITED_I_BACKGROUND = new TextureBlitData(GUI_BACKGROUNDS, Dimension.SQUARE_256, new UV(0, 0), new Dimension(84, 82));
 	public static final TextureBlitData LIMITED_II_BACKGROUND = new TextureBlitData(GUI_BACKGROUNDS, Dimension.SQUARE_256, new UV(84, 0), new Dimension(84, 82));
 	public static final TextureBlitData LIMITED_III_BACKGROUND = new TextureBlitData(GUI_BACKGROUNDS, Dimension.SQUARE_256, new UV(0, 82), new Dimension(84, 82));

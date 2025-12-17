@@ -11,7 +11,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
@@ -40,31 +40,31 @@ import net.p3pp3rf1y.sophisticatedstorage.block.*;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageTranslationHelper;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModDataComponents;
 import net.p3pp3rf1y.sophisticatedstorage.util.DecorationHelper;
+import org.jspecify.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Consumer;
 
 public class PaintbrushItem extends ItemBase {
-	public static final Codec<Map<ResourceLocation, Integer>> REMAINING_PARTS_CODEC =
-			Codec.unboundedMap(ResourceLocation.CODEC, ExtraCodecs.POSITIVE_INT);
+	public static final Codec<Map<Identifier, Integer>> REMAINING_PARTS_CODEC =
+			Codec.unboundedMap(Identifier.CODEC, ExtraCodecs.POSITIVE_INT);
 
-	public static final StreamCodec<FriendlyByteBuf, Map<ResourceLocation, Integer>> REMAINING_PARTS_STREAM_CODEC =
-			StreamCodec.of((buf, map) -> buf.writeMap(map, ResourceLocation.STREAM_CODEC, ByteBufCodecs.INT),
-					buf -> buf.readMap(ResourceLocation.STREAM_CODEC, ByteBufCodecs.INT));
+	public static final StreamCodec<FriendlyByteBuf, Map<Identifier, Integer>> REMAINING_PARTS_STREAM_CODEC =
+			StreamCodec.of((buf, map) -> buf.writeMap(map, Identifier.STREAM_CODEC, ByteBufCodecs.INT),
+					buf -> buf.readMap(Identifier.STREAM_CODEC, ByteBufCodecs.INT));
 
 	public PaintbrushItem(Properties properties) {
 		super(properties.stacksTo(1));
 	}
 
-	public static void setBarrelMaterials(ItemStack paintbrush, Map<BarrelMaterial, ResourceLocation> materials) {
+	public static void setBarrelMaterials(ItemStack paintbrush, Map<BarrelMaterial, Identifier> materials) {
 		paintbrush.set(ModDataComponents.BARREL_MATERIALS, Map.copyOf(materials));
 		resetMainColor(paintbrush);
 		resetAccentColor(paintbrush);
 	}
 
 	public static Optional<ItemRequirements> getItemRequirements(ItemStack paintbrush, Player player, Level level, BlockPos lookingAtPos) {
-		Map<BarrelMaterial, ResourceLocation> materialsToApply = new HashMap<>(getBarrelMaterials(paintbrush));
+		Map<BarrelMaterial, Identifier> materialsToApply = new HashMap<>(getBarrelMaterials(paintbrush));
 		BlockEntity be = level.getBlockEntity(lookingAtPos);
 		if (be == null) {
 			return Optional.empty();
@@ -77,8 +77,8 @@ public class PaintbrushItem extends ItemBase {
 		}
 	}
 
-	private static Optional<ItemRequirements> getMaterialItemRequirements(ItemStack paintbrush, Player player, BlockEntity be, Map<BarrelMaterial, ResourceLocation> materialsToApply) {
-		Map<ResourceLocation, Integer> allPartsNeeded = new HashMap<>();
+	private static Optional<ItemRequirements> getMaterialItemRequirements(ItemStack paintbrush, Player player, BlockEntity be, Map<BarrelMaterial, Identifier> materialsToApply) {
+		Map<Identifier, Integer> allPartsNeeded = new HashMap<>();
 		if (be instanceof IMaterialHolder materialHolder) {
 			allPartsNeeded = getMaterialHolderPartsNeeded(materialsToApply, materialHolder);
 		} else if (be instanceof ControllerBlockEntity controllerBe) {
@@ -93,19 +93,19 @@ public class PaintbrushItem extends ItemBase {
 		return getItemRequirements(paintbrush, player, allPartsNeeded);
 	}
 
-	public static Optional<ItemRequirements> getItemRequirements(ItemStack paintbrush, Player player, Map<ResourceLocation, Integer> allPartsNeeded) {
-		Map<ResourceLocation, Integer> remainingParts = getRemainingParts(paintbrush);
+	public static Optional<ItemRequirements> getItemRequirements(ItemStack paintbrush, Player player, Map<Identifier, Integer> allPartsNeeded) {
+		Map<Identifier, Integer> remainingParts = getRemainingParts(paintbrush);
 		DecorationHelper.ConsumptionResult result;
 		try (Transaction tx = Transaction.openRoot()) {
-			SnapshotJournal<Map<ResourceLocation, Integer>> remainingPartsJournal = createNoopRemainingPartsJournal();
+			SnapshotJournal<Map<Identifier, Integer>> remainingPartsJournal = createNoopRemainingPartsJournal();
 			result = DecorationHelper.consumeMaterialPartsNeeded(allPartsNeeded, remainingParts, remainingPartsJournal, InventoryHelper.getItemHandlersFromPlayerIncludingContainers(player), tx);
 		}
 
 		List<ItemStack> itemsPresent = new ArrayList<>();
 		List<ItemStack> itemsMissing = new ArrayList<>();
 
-		for (Map.Entry<ResourceLocation, Integer> entry : allPartsNeeded.entrySet()) {
-			ResourceLocation part = entry.getKey();
+		for (Map.Entry<Identifier, Integer> entry : allPartsNeeded.entrySet()) {
+			Identifier part = entry.getKey();
 			int count = Math.ceilDiv(entry.getValue() - remainingParts.getOrDefault(part, 0), DecorationHelper.BLOCK_TOTAL_PARTS);
 			int missing = Math.ceilDiv(result.missingParts().getOrDefault(part, 0), DecorationHelper.BLOCK_TOTAL_PARTS);
 			int present = count - missing;
@@ -122,9 +122,9 @@ public class PaintbrushItem extends ItemBase {
 		return Optional.of(new ItemRequirements(itemsPresent, itemsMissing));
 	}
 
-	private static void addStorageMaterialPartsNeeded(Map<BarrelMaterial, ResourceLocation> materialsToApply, ControllerBlockEntity controllerBe, BlockPos storagePosition, Map<ResourceLocation, Integer> allPartsNeeded) {
+	private static void addStorageMaterialPartsNeeded(Map<BarrelMaterial, Identifier> materialsToApply, ControllerBlockEntity controllerBe, BlockPos storagePosition, Map<Identifier, Integer> allPartsNeeded) {
 		WorldHelper.getBlockEntity(controllerBe.getLevel(), storagePosition, IMaterialHolder.class).ifPresent(materialHolder -> {
-			Map<ResourceLocation, Integer> storagePartsNeeded = getMaterialHolderPartsNeeded(materialsToApply, materialHolder);
+			Map<Identifier, Integer> storagePartsNeeded = getMaterialHolderPartsNeeded(materialsToApply, materialHolder);
 			storagePartsNeeded.forEach((part, count) -> allPartsNeeded.merge(part, count, Integer::sum));
 		});
 	}
@@ -149,24 +149,24 @@ public class PaintbrushItem extends ItemBase {
 	}
 
 	public static Optional<ItemRequirements> getDyeItemRequirements(ItemStack paintbrush, Player player, Map<TagKey<Item>, Integer> allPartsNeeded) {
-		Map<ResourceLocation, Integer> remainingParts = new HashMap<>(getRemainingParts(paintbrush));
+		Map<Identifier, Integer> remainingParts = new HashMap<>(getRemainingParts(paintbrush));
 
-		SnapshotJournal<Map<ResourceLocation, Integer>> remainingPartsJournal = createNoopRemainingPartsJournal();
+		SnapshotJournal<Map<Identifier, Integer>> remainingPartsJournal = createNoopRemainingPartsJournal();
 		try (Transaction tx = Transaction.openRoot()) {
 			DecorationHelper.ConsumptionResult result = DecorationHelper.consumeDyePartsNeeded(allPartsNeeded, InventoryHelper.getItemHandlersFromPlayerIncludingContainers(player), remainingParts, remainingPartsJournal, tx);
 			return compileDyeItemRequirements(allPartsNeeded, remainingParts, result);
 		}
 	}
 
-	private static SnapshotJournal<Map<ResourceLocation, Integer>> createNoopRemainingPartsJournal() {
+	private static SnapshotJournal<Map<Identifier, Integer>> createNoopRemainingPartsJournal() {
 		return new SnapshotJournal<>() { //just a dummy journal because the remaining parts on the stack don't get updated anywhere in here
 			@Override
-			protected Map<ResourceLocation, Integer> createSnapshot() {
+			protected Map<Identifier, Integer> createSnapshot() {
 				return new HashMap<>();
 			}
 
 			@Override
-			protected void revertToSnapshot(Map<ResourceLocation, Integer> map) {
+			protected void revertToSnapshot(Map<Identifier, Integer> map) {
 				//noop
 			}
 		};
@@ -184,7 +184,7 @@ public class PaintbrushItem extends ItemBase {
 	}
 
 
-	private static Optional<ItemRequirements> compileDyeItemRequirements(Map<TagKey<Item>, Integer> allPartsNeeded, Map<ResourceLocation, Integer> remainingParts, DecorationHelper.ConsumptionResult result) {
+	private static Optional<ItemRequirements> compileDyeItemRequirements(Map<TagKey<Item>, Integer> allPartsNeeded, Map<Identifier, Integer> remainingParts, DecorationHelper.ConsumptionResult result) {
 		List<ItemStack> itemsPresent = new ArrayList<>();
 		List<ItemStack> itemsMissing = new ArrayList<>();
 
@@ -216,8 +216,8 @@ public class PaintbrushItem extends ItemBase {
 		return Optional.of(new ItemRequirements(itemsPresent, itemsMissing));
 	}
 
-	public static Map<ResourceLocation, Integer> getMaterialHolderPartsNeeded(Map<BarrelMaterial, ResourceLocation> materialsToApply, IMaterialHolder materialHolder) {
-		Map<BarrelMaterial, ResourceLocation> originalMaterials = new HashMap<>(materialHolder.getMaterials());
+	public static Map<Identifier, Integer> getMaterialHolderPartsNeeded(Map<BarrelMaterial, Identifier> materialsToApply, IMaterialHolder materialHolder) {
+		Map<BarrelMaterial, Identifier> originalMaterials = new HashMap<>(materialHolder.getMaterials());
 		BarrelBlockItem.uncompactMaterials(originalMaterials);
 		return DecorationHelper.getMaterialPartsNeeded(originalMaterials, materialsToApply);
 	}
@@ -298,7 +298,7 @@ public class PaintbrushItem extends ItemBase {
 	}
 
 	public static boolean setColors(Player player, ItemStack paintbrush, ITintable tintable, @Nullable IMaterialHolder materialHolder) {
-		Map<ResourceLocation, Integer> remainingParts = new HashMap<>(getRemainingParts(paintbrush));
+		Map<Identifier, Integer> remainingParts = new HashMap<>(getRemainingParts(paintbrush));
 		List<ResourceHandler<ItemResource>> itemHandlers = InventoryHelper.getItemHandlersFromPlayerIncludingContainers(player);
 		int mainColorToSet = getMainColor(paintbrush);
 		int accentColorToSet = getAccentColor(paintbrush);
@@ -311,7 +311,7 @@ public class PaintbrushItem extends ItemBase {
 		}
 
 		try (Transaction tx = Transaction.openRoot()) {
-			SnapshotJournal<Map<ResourceLocation, Integer>> remainingPartsJournal = createRemainingPartsJournal(paintbrush);
+			SnapshotJournal<Map<Identifier, Integer>> remainingPartsJournal = createRemainingPartsJournal(paintbrush);
 			if (!DecorationHelper.consumeDyes(mainColorToSet, accentColorToSet, remainingParts, remainingPartsJournal, itemHandlers, originalMainColor, originalAccentColor, tx)) {
 				return false;
 			}
@@ -328,15 +328,15 @@ public class PaintbrushItem extends ItemBase {
 		return true;
 	}
 
-	private static SnapshotJournal<Map<ResourceLocation, Integer>> createRemainingPartsJournal(ItemStack paintbrush) {
+	private static SnapshotJournal<Map<Identifier, Integer>> createRemainingPartsJournal(ItemStack paintbrush) {
 		return new SnapshotJournal<>() {
 			@Override
-			protected Map<ResourceLocation, Integer> createSnapshot() {
+			protected Map<Identifier, Integer> createSnapshot() {
 				return new HashMap<>(getRemainingParts(paintbrush));
 			}
 
 			@Override
-			protected void revertToSnapshot(Map<ResourceLocation, Integer> snapshot) {
+			protected void revertToSnapshot(Map<Identifier, Integer> snapshot) {
 				setRemainingParts(paintbrush, snapshot);
 			}
 		};
@@ -344,10 +344,10 @@ public class PaintbrushItem extends ItemBase {
 
 	private static boolean applyMaterials(Player player, ItemStack paintbrush, IMaterialHolder materialHolder, ITintable tintable) {
 		List<ResourceHandler<ItemResource>> itemHandlers = InventoryHelper.getItemHandlersFromPlayerIncludingContainers(player);
-		Map<ResourceLocation, Integer> remainingParts = new HashMap<>(getRemainingParts(paintbrush));
+		Map<Identifier, Integer> remainingParts = new HashMap<>(getRemainingParts(paintbrush));
 
-		Map<BarrelMaterial, ResourceLocation> originalMaterials = new HashMap<>(materialHolder.getMaterials());
-		Map<BarrelMaterial, ResourceLocation> materialsToApply = new HashMap<>(getBarrelMaterials(paintbrush));
+		Map<BarrelMaterial, Identifier> originalMaterials = new HashMap<>(materialHolder.getMaterials());
+		Map<BarrelMaterial, Identifier> materialsToApply = new HashMap<>(getBarrelMaterials(paintbrush));
 		if (originalMaterials.equals(materialsToApply)) {
 			return false;
 		}
@@ -355,7 +355,7 @@ public class PaintbrushItem extends ItemBase {
 		BarrelBlockItem.uncompactMaterials(originalMaterials);
 
 		try (Transaction tx = Transaction.openRoot()) {
-			SnapshotJournal<Map<ResourceLocation, Integer>> remainingPartsJournal = createRemainingPartsJournal(paintbrush);
+			SnapshotJournal<Map<Identifier, Integer>> remainingPartsJournal = createRemainingPartsJournal(paintbrush);
 			if (!DecorationHelper.consumeMaterials(remainingParts, remainingPartsJournal, itemHandlers, originalMaterials, materialsToApply, tx)) {
 				return false;
 			}
@@ -417,11 +417,11 @@ public class PaintbrushItem extends ItemBase {
 		resetBarrelMaterials(paintbrush);
 	}
 
-	public static void setRemainingParts(ItemStack paintbrush, Map<ResourceLocation, Integer> remainingParts) {
+	public static void setRemainingParts(ItemStack paintbrush, Map<Identifier, Integer> remainingParts) {
 		paintbrush.set(ModDataComponents.REMAINING_PARTS, remainingParts);
 	}
 
-	public static Map<ResourceLocation, Integer> getRemainingParts(ItemStack paintbrush) {
+	public static Map<Identifier, Integer> getRemainingParts(ItemStack paintbrush) {
 		return paintbrush.getOrDefault(ModDataComponents.REMAINING_PARTS, Collections.emptyMap());
 	}
 
@@ -432,7 +432,7 @@ public class PaintbrushItem extends ItemBase {
 
 		if (hasBarrelMaterials(stack)) {
 			tooltipAdder.accept(Component.translatable(StorageTranslationHelper.INSTANCE.translItemTooltip("paintbrush") + ".materials").withStyle(ChatFormatting.GRAY));
-			Map<BarrelMaterial, ResourceLocation> barrelMaterials = getBarrelMaterials(stack);
+			Map<BarrelMaterial, Identifier> barrelMaterials = getBarrelMaterials(stack);
 			barrelMaterials.forEach((barrelMaterial, blockName) -> {
 				BuiltInRegistries.BLOCK.getOptional(blockName).ifPresent(block -> {
 					tooltipAdder.accept(
@@ -482,7 +482,7 @@ public class PaintbrushItem extends ItemBase {
 		return paintbrush.getOrDefault(ModCoreDataComponents.ACCENT_COLOR, -1);
 	}
 
-	public static Map<BarrelMaterial, ResourceLocation> getBarrelMaterials(ItemStack paintbrush) {
+	public static Map<BarrelMaterial, Identifier> getBarrelMaterials(ItemStack paintbrush) {
 		return paintbrush.getOrDefault(ModDataComponents.BARREL_MATERIALS, Collections.emptyMap());
 	}
 

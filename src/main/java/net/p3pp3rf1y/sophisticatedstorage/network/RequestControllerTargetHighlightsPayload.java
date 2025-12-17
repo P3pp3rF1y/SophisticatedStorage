@@ -22,7 +22,7 @@ import java.util.List;
 
 public record RequestControllerTargetHighlightsPayload(ItemStack stack,
 													   List<BlockPos> controllerPositions) implements CustomPacketPayload {
-	public static final Type<RequestControllerTargetHighlightsPayload> TYPE = new Type<>(SophisticatedStorage.getRL("request_controller_target_highlights"));
+	public static final Type<RequestControllerTargetHighlightsPayload> TYPE = new Type<>(SophisticatedStorage.getIdentifier("request_controller_target_highlights"));
 	public static final StreamCodec<RegistryFriendlyByteBuf, RequestControllerTargetHighlightsPayload> STREAM_CODEC = StreamCodec.composite(
 			ItemStack.STREAM_CODEC,
 			RequestControllerTargetHighlightsPayload::stack,

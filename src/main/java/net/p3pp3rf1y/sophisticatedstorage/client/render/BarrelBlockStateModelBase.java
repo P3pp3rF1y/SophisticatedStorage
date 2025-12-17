@@ -21,7 +21,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.item.*;
@@ -29,8 +29,7 @@ import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import net.neoforged.neoforge.client.model.DynamicBlockStateModel;
-import net.neoforged.neoforge.client.model.IQuadTransformer;
-import net.neoforged.neoforge.client.model.QuadTransformers;
+import net.neoforged.neoforge.client.model.quad.QuadTransforms;
 import net.neoforged.neoforge.common.util.TransformationHelper;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderData;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
@@ -38,11 +37,12 @@ import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelMaterial;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
+import org.joml.GeometryUtils;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
+import org.jspecify.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -50,8 +50,8 @@ import java.util.stream.Collectors;
 import static net.p3pp3rf1y.sophisticatedstorage.client.render.DisplayItemRenderer.*;
 
 public abstract class BarrelBlockStateModelBase implements DynamicBlockStateModel {
-	private static final IQuadTransformer MOVE_TO_CORNER = QuadTransformers.applying(new Transformation(new Vector3f(-.5f, -.5f, -.5f), null, null, null));
-	public static final Map<Direction, IQuadTransformer> DIRECTION_ROTATES = Map.of(
+	private static final Transformation MOVE_TO_CORNER = new Transformation(new Vector3f(-.5f, -.5f, -.5f), null, null, null);
+	public static final Map<Direction, Transformation> DIRECTION_ROTATES = Map.of(
 			Direction.UP, getDirectionRotationTransform(Direction.UP),
 			Direction.DOWN, getDirectionRotationTransform(Direction.DOWN),
 			Direction.NORTH, getDirectionRotationTransform(Direction.NORTH),
@@ -59,19 +59,19 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 			Direction.WEST, getDirectionRotationTransform(Direction.WEST),
 			Direction.EAST, getDirectionRotationTransform(Direction.EAST)
 	);
-	private static final LoadingCache<Direction, Cache<Integer, IQuadTransformer>> DIRECTION_MOVES_3D_ITEMS = CacheBuilder.newBuilder().expireAfterAccess(10L, TimeUnit.MINUTES).build(new CacheLoader<>() {
+	private static final LoadingCache<Direction, Cache<Integer, Transformation>> DIRECTION_MOVES_3D_ITEMS = CacheBuilder.newBuilder().expireAfterAccess(10L, TimeUnit.MINUTES).build(new CacheLoader<>() {
 		@Override
-		public Cache<Integer, IQuadTransformer> load(Direction key) {
+		public Cache<Integer, Transformation> load(Direction key) {
 			return CacheBuilder.newBuilder().expireAfterAccess(10L, TimeUnit.MINUTES).build();
 		}
 	});
-	private static final IQuadTransformer SCALE_BIG_ITEM = QuadTransformers.applying(new Transformation(null, null, new Vector3f(BIG_ITEM_SCALE, BIG_ITEM_SCALE, BIG_ITEM_SCALE), null));
-	private static final IQuadTransformer SCALE_SMALL_BLOCK_ITEM = QuadTransformers.applying(new Transformation(null, null, new Vector3f(SMALL_BLOCK_ITEM_SCALE, SMALL_BLOCK_ITEM_SCALE, SMALL_BLOCK_ITEM_SCALE), null));
-	private static final IQuadTransformer SCALE_SMALL_ITEM = QuadTransformers.applying(new Transformation(null, null, new Vector3f(SMALL_ITEM_SCALE, SMALL_ITEM_SCALE, SMALL_ITEM_SCALE), null));
-	private static final Cache<Integer, IQuadTransformer> DIRECTION_MOVE_BACK_TO_SIDE = CacheBuilder.newBuilder().expireAfterAccess(10L, TimeUnit.MINUTES).build();
+	private static final Transformation SCALE_BIG_ITEM = new Transformation(null, null, new Vector3f(BIG_ITEM_SCALE, BIG_ITEM_SCALE, BIG_ITEM_SCALE), null);
+	private static final Transformation SCALE_SMALL_BLOCK_ITEM = new Transformation(null, null, new Vector3f(SMALL_BLOCK_ITEM_SCALE, SMALL_BLOCK_ITEM_SCALE, SMALL_BLOCK_ITEM_SCALE), null);
+	private static final Transformation SCALE_SMALL_ITEM = new Transformation(null, null, new Vector3f(SMALL_ITEM_SCALE, SMALL_ITEM_SCALE, SMALL_ITEM_SCALE), null);
+	private static final Cache<Integer, Transformation> DIRECTION_MOVE_BACK_TO_SIDE = CacheBuilder.newBuilder().expireAfterAccess(10L, TimeUnit.MINUTES).build();
 	public static final Cache<Integer, List<BlockModelPart>> BAKED_PARTS_CACHE = CacheBuilder.newBuilder().expireAfterAccess(15L, TimeUnit.MINUTES).build();
 	public static final Cache<Integer, List<BakedQuad>> BAKED_QUADS_CACHE = CacheBuilder.newBuilder().expireAfterAccess(15L, TimeUnit.MINUTES).build();
-	private static final Map<Integer, IQuadTransformer> DISPLAY_ROTATIONS = new HashMap<>();
+	private static final Map<Integer, Transformation> DISPLAY_ROTATIONS = new HashMap<>();
 	private static final List<BarrelMaterial> PARTICLE_ICON_MATERIAL_PRIORITY = List.of(BarrelMaterial.ALL, BarrelMaterial.ALL_BUT_TRIM, BarrelMaterial.TOP_ALL, BarrelMaterial.TOP);
 	private List<RenderData.DisplayItemData> displayItems;
 	private List<Integer> inaccessibleSlots;
@@ -95,7 +95,7 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 	private boolean hasAccentColor = false;
 	private boolean isPacked = false;
 	private boolean showsTier = true;
-	private Map<BarrelMaterial, ResourceLocation> materials = new EnumMap<>(BarrelMaterial.class);
+	private Map<BarrelMaterial, Identifier> materials = new EnumMap<>(BarrelMaterial.class);
 
 	private boolean flatTop = false;
 	private final Map<String, Map<DynamicBarrelBakingData.DynamicPart, DynamicBarrelBakingData>> woodDynamicBakingData;
@@ -138,7 +138,7 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 		this.showsTier = showsTier;
 	}
 
-	public void setBarrelMaterials(Map<BarrelMaterial, ResourceLocation> barrelMaterials) {
+	public void setBarrelMaterials(Map<BarrelMaterial, Identifier> barrelMaterials) {
 		this.materials = barrelMaterials;
 	}
 
@@ -146,13 +146,13 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 		this.flatTop = flatTop;
 	}
 
-	private static IQuadTransformer getDirectionRotationTransform(Direction dir) {
-		return QuadTransformers.applying(new Transformation(null, DisplayItemRenderer.getNorthBasedRotation(dir), null, null));
+	private static Transformation getDirectionRotationTransform(Direction dir) {
+		return new Transformation(null, DisplayItemRenderer.getNorthBasedRotation(dir), null, null);
 	}
 
-	private IQuadTransformer getDirectionMoveBackToSide(BlockState state, Direction dir, float distFromCenter, int displayItemIndex, int displayItemCount) {
+	private Transformation getDirectionMoveBackToSide(BlockState state, Direction dir, float distFromCenter, int displayItemIndex, int displayItemCount) {
 		int hash = calculateMoveBackToSideHash(state, dir, distFromCenter, displayItemIndex, displayItemCount);
-		IQuadTransformer transform = DIRECTION_MOVE_BACK_TO_SIDE.getIfPresent(hash);
+		Transformation transform = DIRECTION_MOVE_BACK_TO_SIDE.getIfPresent(hash);
 		if (transform == null) {
 			Vec3i normal = dir.getUnitVec3i();
 			Vector3f offset = new Vector3f(distFromCenter, distFromCenter, distFromCenter);
@@ -162,7 +162,7 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 			rotateDisplayItemFrontOffset(state, dir, frontOffset);
 			frontOffset.add(0.5f, 0.5f, 0.5f);
 			offset.add(frontOffset);
-			transform = QuadTransformers.applying(new Transformation(offset, null, null, null));
+			transform = new Transformation(offset, null, null, null);
 
 			DIRECTION_MOVE_BACK_TO_SIDE.put(hash, transform);
 		}
@@ -334,11 +334,11 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 		Map<DynamicBarrelBakingData.DynamicPart, DynamicBarrelBakingData> bakingData = woodDynamicBakingData.get(woodName != null ? woodName : WoodType.ACACIA.name());
 
 		Map<String, Material> mats = new HashMap<>();
-		for (Map.Entry<BarrelMaterial, ResourceLocation> entry : materials.entrySet()) {
+		for (Map.Entry<BarrelMaterial, Identifier> entry : materials.entrySet()) {
 			BarrelMaterial barrelMaterial = entry.getKey();
 
 			for (BarrelMaterial childMaterial : barrelMaterial.getChildren()) {
-				ResourceLocation blockName = entry.getValue();
+				Identifier blockName = entry.getValue();
 				TextureAtlasSprite sprite = RenderHelper.getSprite(blockName, childMaterial.getLeafSide(), rand);
 				mats.put(childMaterial.getSerializedName(), new Material(TextureAtlas.LOCATION_BLOCKS, sprite.contents().name()));
 			}
@@ -367,7 +367,7 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 		return bakedModel;
 	}
 
-	private BlockState getDefaultBlockState(ResourceLocation blockName) {
+	private BlockState getDefaultBlockState(Identifier blockName) {
 		return BuiltInRegistries.BLOCK.get(blockName).orElseThrow().value().defaultBlockState();
 	}
 
@@ -476,35 +476,44 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 		}
 	}
 
+	public static List<BakedQuad> transformQuads(List<BakedQuad> quads, Transformation transformation) {
+		List<BakedQuad> result = new ArrayList<>(quads.size());
+
+		for (BakedQuad quad : quads) {
+			result.add(QuadTransforms.applyTransformation(quad, transformation));
+		}
+		return result;
+	}
+
 	@SuppressWarnings("java:S107")
 	private void addRenderedItem(QuadCollection.Builder builder, BlockState state, ItemStack displayItem, ItemStackRenderState renderState, List<BakedQuad> quads, ItemTransform transform, boolean gui3d, int rotation, int displayItemIndex, int displayItemCount) {
 		List<BakedQuad> originalQuads = quads;
-		quads = MOVE_TO_CORNER.process(quads);
-		quads = QuadTransformers.applying(toTransformation(transform)).process(quads);
+		quads = transformQuads(quads, MOVE_TO_CORNER);
+		quads = transformQuads(quads, toTransformation(transform));
 		if (gui3d && displayItem.getItem() instanceof BlockItem) {
 			if (displayItemCount > 1) {
-				quads = SCALE_SMALL_BLOCK_ITEM.process(quads);
+				quads = transformQuads(quads, SCALE_SMALL_BLOCK_ITEM);
 			}
 		} else {
 			if (displayItemCount == 1) {
-				quads = SCALE_BIG_ITEM.process(quads);
+				quads = transformQuads(quads, SCALE_BIG_ITEM);
 			} else {
-				quads = SCALE_SMALL_ITEM.process(quads);
+				quads = transformQuads(quads, SCALE_SMALL_ITEM);
 			}
 		}
 
 		if (rotation != 0) {
-			quads = getDisplayRotation(rotation).process(quads);
+			quads = transformQuads(quads, getDisplayRotation(rotation));
 		}
 
 		Direction facing = state.getBlock() instanceof BarrelBlock barrelBlock ? barrelBlock.getFacing(state) : Direction.NORTH;
 		quads = rotateDisplayItemQuads(quads, state);
 
 		if (gui3d) {
-			IQuadTransformer transformer = getDirectionMove(displayItem, renderState, gui3d, state, facing, displayItemIndex, displayItemCount, displayItemCount == 1 ? 1 : SMALL_BLOCK_ITEM_SCALE);
-			quads = transformer.process(quads);
+			Transformation transformation = getDirectionMove(displayItem, renderState, gui3d, state, facing, displayItemIndex, displayItemCount, displayItemCount == 1 ? 1 : SMALL_BLOCK_ITEM_SCALE);
+			quads = transformQuads(quads, transformation);
 		} else {
-			quads = getDirectionMove(displayItem, renderState, gui3d, state, facing, displayItemIndex, displayItemCount, 1).process(quads);
+			quads = transformQuads(quads, getDirectionMove(displayItem, renderState, gui3d, state, facing, displayItemIndex, displayItemCount, 1));
 		}
 		quads = recalculateDirections(quads);
 
@@ -535,7 +544,7 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 		int offset = (displayItemIndex + 1) * 10;
 		for (BakedQuad quad : quads) {
 			if (quad.tintIndex() >= 0) {
-				ret.add(new BakedQuad(quad.vertices(), quad.tintIndex() + offset, quad.direction(), quad.sprite(), quad.shade(), quad.lightEmission(), quad.hasAmbientOcclusion()));
+				ret.add(new BakedQuad(quad.position0(), quad.position1(), quad.position2(), quad.position3(), quad.packedUV0(), quad.packedUV1(), quad.packedUV2(), quad.packedUV3(), quad.tintIndex() + offset, quad.direction(), quad.sprite(), quad.shade(), quad.lightEmission(), quad.bakedNormals(), quad.bakedColors(), quad.hasAmbientOcclusion()));
 			} else {
 				ret.add(quad);
 			}
@@ -545,22 +554,62 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 
 	private List<BakedQuad> recalculateDirections(List<BakedQuad> quads) {
 		List<BakedQuad> ret = new ArrayList<>(quads.size());
+
 		for (BakedQuad quad : quads) {
-			Direction calculatedFacing = FaceBakery.calculateFacing(quad.vertices());
+			Direction calculatedFacing = Objects.requireNonNullElse(
+					calculateFacing(quad.position0(), quad.position1(), quad.position2()),
+					Direction.UP
+			);
+
 			if (quad.direction() != calculatedFacing) {
-				ret.add(new BakedQuad(quad.vertices(), quad.tintIndex(), calculatedFacing, quad.sprite(), quad.shade(), quad.lightEmission(), quad.hasAmbientOcclusion()));
+				ret.add(new BakedQuad(
+						quad.position0(), quad.position1(), quad.position2(), quad.position3(),
+						quad.packedUV0(), quad.packedUV1(), quad.packedUV2(), quad.packedUV3(),
+						quad.tintIndex(),
+						calculatedFacing,
+						quad.sprite(),
+						quad.shade(),
+						quad.lightEmission(),
+						quad.bakedNormals(),
+						quad.bakedColors(),
+						quad.hasAmbientOcclusion()
+				));
 			} else {
 				ret.add(quad);
 			}
 		}
+
 		return ret;
 	}
 
-	private IQuadTransformer getDirectionMove(ItemStack displayItem, ItemStackRenderState renderState, boolean isGui3d, BlockState state, Direction direction, int displayItemIndex, int displayItemCount, float itemScale) {
+	private static @Nullable Direction calculateFacing(Vector3fc v0, Vector3fc v1, Vector3fc v2) {
+		Vector3f normal = new Vector3f();
+		GeometryUtils.normal(v0, v1, v2, normal);
+		return findClosestDirection(normal);
+	}
+
+	private static @Nullable Direction findClosestDirection(Vector3f normal) {
+		if (!normal.isFinite()) return null;
+
+		Direction best = null;
+		float bestDot = 0.0F;
+
+		for (Direction dir : Direction.values()) {
+			float dot = normal.dot(dir.getUnitVec3f());
+			if (dot >= 0.0F && dot > bestDot) {
+				bestDot = dot;
+				best = dir;
+			}
+		}
+
+		return best;
+	}
+
+	private Transformation getDirectionMove(ItemStack displayItem, ItemStackRenderState renderState, boolean isGui3d, BlockState state, Direction direction, int displayItemIndex, int displayItemCount, float itemScale) {
 		boolean isFlatTop = state.getValue(BarrelBlock.FLAT_TOP);
 		int hash = calculateDirectionMoveHash(state, displayItem, displayItemIndex, displayItemCount, isFlatTop);
-		Cache<Integer, IQuadTransformer> directionCache = DIRECTION_MOVES_3D_ITEMS.getUnchecked(direction);
-		IQuadTransformer transformer = directionCache.getIfPresent(hash);
+		Cache<Integer, Transformation> directionCache = DIRECTION_MOVES_3D_ITEMS.getUnchecked(direction);
+		Transformation transformer = directionCache.getIfPresent(hash);
 
 		if (transformer == null) {
 			double offset = DisplayItemRenderer.getDisplayItemOffset(displayItem, renderState, isGui3d, itemScale);
@@ -584,8 +633,8 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 		return hashCode;
 	}
 
-	private IQuadTransformer getDisplayRotation(int rotation) {
-		return DISPLAY_ROTATIONS.computeIfAbsent(rotation, r -> QuadTransformers.applying(new Transformation(null, Axis.ZP.rotationDegrees(rotation), null, null)));
+	private Transformation getDisplayRotation(int rotation) {
+		return DISPLAY_ROTATIONS.computeIfAbsent(rotation, r -> new Transformation(null, Axis.ZP.rotationDegrees(rotation), null, null));
 	}
 
 	private void addTintableModelQuads(QuadCollection.Builder builder, @Nullable BlockState state, Map<BarrelModelPart, QuadCollection> modelParts) {

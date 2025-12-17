@@ -5,15 +5,15 @@ import com.google.gson.JsonObject;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.resources.FileToIdConverter;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.level.block.state.properties.ChestType;
 import net.minecraft.world.level.block.state.properties.WoodType;
+import org.jspecify.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Supplier;
 
@@ -38,11 +38,11 @@ public class StorageTextureManager extends SimpleJsonResourceReloadListener<Json
 	}
 
 	@Override
-	protected Map<ResourceLocation, JsonElement> prepare(ResourceManager resourceManager, ProfilerFiller profiler) {
+	protected Map<Identifier, JsonElement> prepare(ResourceManager resourceManager, ProfilerFiller profiler) {
 		clear();
-		Map<ResourceLocation, JsonElement> fileContents = super.prepare(resourceManager, profiler);
-		Map<ResourceLocation, StorageTextureDefinition> storageTextureDefinitions = new HashMap<>();
-		fileContents.forEach((resourceLocation, json) -> loadDefinition(storageTextureDefinitions, resourceLocation, json, fileContents));
+		Map<Identifier, JsonElement> fileContents = super.prepare(resourceManager, profiler);
+		Map<Identifier, StorageTextureDefinition> storageTextureDefinitions = new HashMap<>();
+		fileContents.forEach((identifier, json) -> loadDefinition(storageTextureDefinitions, identifier, json, fileContents));
 
 		storageTextureDefinitions.forEach((fileName, definition) -> {
 			String type = definition.getType();
@@ -69,7 +69,7 @@ public class StorageTextureManager extends SimpleJsonResourceReloadListener<Json
 	}
 
 	@Override
-	protected void apply(Map<ResourceLocation, JsonElement> entries, ResourceManager resourceManager, ProfilerFiller profilerFiller) {
+	protected void apply(Map<Identifier, JsonElement> entries, ResourceManager resourceManager, ProfilerFiller profilerFiller) {
 		//noop as everything is done in prepare due to the need to have it done before TextureStitchEvent fires
 	}
 
@@ -79,10 +79,10 @@ public class StorageTextureManager extends SimpleJsonResourceReloadListener<Json
 		return chestTypeMaterials == null ? null : chestTypeMaterials.get(chestType);
 	}
 
-	private Optional<StorageTextureDefinition> loadDefinition(Map<ResourceLocation, StorageTextureDefinition> storageTextureDefinitions, ResourceLocation resourceLocation, JsonElement json, Map<ResourceLocation, JsonElement> fileContents) {
+	private Optional<StorageTextureDefinition> loadDefinition(Map<Identifier, StorageTextureDefinition> storageTextureDefinitions, Identifier identifier, JsonElement json, Map<Identifier, JsonElement> fileContents) {
 		//already loaded probably because it is a parent to another definition
-		if (storageTextureDefinitions.containsKey(resourceLocation)) {
-			return Optional.of(storageTextureDefinitions.get(resourceLocation));
+		if (storageTextureDefinitions.containsKey(identifier)) {
+			return Optional.of(storageTextureDefinitions.get(identifier));
 		}
 
 		if (!json.isJsonObject()) {
@@ -97,7 +97,7 @@ public class StorageTextureManager extends SimpleJsonResourceReloadListener<Json
 		StorageTextureDefinition parentDefinition = null;
 
 		if (jsonContents.has(PARENT_TAG) && jsonContents.get(PARENT_TAG).isJsonPrimitive()) {
-			ResourceLocation parent = ResourceLocation.parse(jsonContents.get(PARENT_TAG).getAsString());
+			Identifier parent = Identifier.parse(jsonContents.get(PARENT_TAG).getAsString());
 			JsonElement parentJson = fileContents.get(parent);
 			parentDefinition = loadDefinition(storageTextureDefinitions, parent, parentJson, fileContents).orElse(null);
 			if (parentDefinition != null) {
@@ -120,7 +120,7 @@ public class StorageTextureManager extends SimpleJsonResourceReloadListener<Json
 		}
 
 		Optional<StorageTextureDefinition> result = textureParser.parseDefinition(type, jsonContents);
-		result.ifPresent(def -> storageTextureDefinitions.put(resourceLocation, def));
+		result.ifPresent(def -> storageTextureDefinitions.put(identifier, def));
 
 		return result;
 	}
@@ -128,16 +128,16 @@ public class StorageTextureManager extends SimpleJsonResourceReloadListener<Json
 	public static class StorageTextureDefinition {
 		private static final String ALL_SIDES_TEXTURES = "allSides";
 		private final String type;
-		private final Map<String, Map<String, Map<String, ResourceLocation>>> textures;
+		private final Map<String, Map<String, Map<String, Identifier>>> textures;
 
 		@SuppressWarnings({"unused", "java:S1172"})
 		//ignoring unused parameter bNatcause it's needed due to two constructors with the same erasure
-		public StorageTextureDefinition(String type, Map<String, Map<String, Map<String, ResourceLocation>>> multiplePartTextures, boolean multipleTextureIgnoredParameter) {
+		public StorageTextureDefinition(String type, Map<String, Map<String, Map<String, Identifier>>> multiplePartTextures, boolean multipleTextureIgnoredParameter) {
 			this.type = type;
 			textures = multiplePartTextures;
 		}
 
-		public StorageTextureDefinition(String type, Map<String, Map<String, ResourceLocation>> textures) {
+		public StorageTextureDefinition(String type, Map<String, Map<String, Identifier>> textures) {
 			this.type = type;
 			this.textures = new HashMap<>();
 			this.textures.put(ALL_SIDES_TEXTURES, textures);
@@ -147,7 +147,7 @@ public class StorageTextureManager extends SimpleJsonResourceReloadListener<Json
 			return type;
 		}
 
-		public Map<String, Map<String, ResourceLocation>> getTextures() {
+		public Map<String, Map<String, Identifier>> getTextures() {
 			return textures.getOrDefault(ALL_SIDES_TEXTURES, new HashMap<>());
 		}
 	}
@@ -159,7 +159,7 @@ public class StorageTextureManager extends SimpleJsonResourceReloadListener<Json
 	}
 
 	private static class ChestTextureParser implements ITextureParser {
-		private final Map<String, Map<String, ResourceLocation>> textures = new HashMap<>();
+		private final Map<String, Map<String, Identifier>> textures = new HashMap<>();
 
 		@Override
 		public void copyFromParentDefinition(StorageTextureDefinition parentDefinition) {
@@ -174,7 +174,7 @@ public class StorageTextureManager extends SimpleJsonResourceReloadListener<Json
 				jsonTextures.keySet().forEach(name ->
 						jsonTextures.get(name).getAsJsonObject().entrySet().forEach(entry -> {
 							if (entry.getValue().isJsonPrimitive()) {
-								textures.computeIfAbsent(name, k -> new HashMap<>()).put(entry.getKey(), ResourceLocation.parse(entry.getValue().getAsString()));
+								textures.computeIfAbsent(name, k -> new HashMap<>()).put(entry.getKey(), Identifier.parse(entry.getValue().getAsString()));
 							}
 						})
 				);

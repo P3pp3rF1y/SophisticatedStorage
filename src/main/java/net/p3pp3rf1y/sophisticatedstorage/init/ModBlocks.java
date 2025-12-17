@@ -58,8 +58,8 @@ public class ModBlocks {
 	private ModBlocks() {
 	}
 
-	public static final TagKey<Item> BASE_TIER_WOODEN_STORAGE_TAG = TagKey.create(Registries.ITEM, SophisticatedStorage.getRL("base_tier_wooden_storage"));
-	public static final TagKey<Item> ALL_STORAGE_TAG = TagKey.create(Registries.ITEM, SophisticatedStorage.getRL("all_storage"));
+	public static final TagKey<Item> BASE_TIER_WOODEN_STORAGE_TAG = TagKey.create(Registries.ITEM, SophisticatedStorage.getIdentifier("base_tier_wooden_storage"));
+	public static final TagKey<Item> ALL_STORAGE_TAG = TagKey.create(Registries.ITEM, SophisticatedStorage.getIdentifier("all_storage"));
 
 	public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(SophisticatedStorage.MOD_ID);
 	public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(SophisticatedStorage.MOD_ID);

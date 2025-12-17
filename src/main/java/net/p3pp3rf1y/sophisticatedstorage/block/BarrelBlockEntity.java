@@ -2,7 +2,7 @@ package net.p3pp3rf1y.sophisticatedstorage.block;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.Connection;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -21,7 +21,7 @@ import java.util.Map;
 public class BarrelBlockEntity extends WoodStorageBlockEntity implements IMaterialHolder {
 	public static final String MATERIALS = "materials";
 	public static final String STORAGE_TYPE = "barrel";
-	private Map<BarrelMaterial, ResourceLocation> materials = new EnumMap<>(BarrelMaterial.class);
+	private Map<BarrelMaterial, Identifier> materials = new EnumMap<>(BarrelMaterial.class);
 	private final SophisticatedOpenersCounter openersCounter = new SophisticatedOpenersCounter() {
 		protected void onOpen(Level level, BlockPos pos, BlockState state) {
 			playSound(state, SoundEvents.BARREL_OPEN);
@@ -133,13 +133,13 @@ public class BarrelBlockEntity extends WoodStorageBlockEntity implements IMateri
 	}
 
 	@Override
-	public void setMaterials(Map<BarrelMaterial, ResourceLocation> materials) {
+	public void setMaterials(Map<BarrelMaterial, Identifier> materials) {
 		this.materials = materials;
 		setChanged();
 	}
 
 	@Override
-	public Map<BarrelMaterial, ResourceLocation> getMaterials() {
+	public Map<BarrelMaterial, Identifier> getMaterials() {
 		return materials;
 	}
 

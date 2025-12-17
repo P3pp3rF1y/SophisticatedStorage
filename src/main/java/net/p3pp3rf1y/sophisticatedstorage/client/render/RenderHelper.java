@@ -14,7 +14,7 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -22,8 +22,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
+import org.jspecify.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -35,7 +35,7 @@ public class RenderHelper {
 
 	private static final Cache<Integer, TextureAtlasSprite> SPRITE_CACHE = CacheBuilder.newBuilder().expireAfterAccess(1, TimeUnit.MINUTES).build();
 
-	public static TextureAtlasSprite getSprite(ResourceLocation blockName, @Nullable Direction direction, RandomSource rand) {
+	public static TextureAtlasSprite getSprite(Identifier blockName, @Nullable Direction direction, RandomSource rand) {
 
 		int hash = blockName.hashCode();
 		hash = hash * 31 + (direction == null ? 0 : direction.hashCode());
@@ -48,7 +48,7 @@ public class RenderHelper {
 		return sprite;
 	}
 
-	private static TextureAtlasSprite parseSprite(ResourceLocation blockName, @Nullable Direction direction, RandomSource rand) {
+	private static TextureAtlasSprite parseSprite(Identifier blockName, @Nullable Direction direction, RandomSource rand) {
 		BlockState blockState = getDefaultBlockState(blockName);
 
 		TextureAtlasSprite sprite = parseSpriteFromModel(blockState, direction, rand);
@@ -106,7 +106,7 @@ public class RenderHelper {
 		return sprite;
 	}
 
-	private static BlockState getDefaultBlockState(ResourceLocation blockName) {
+	private static BlockState getDefaultBlockState(Identifier blockName) {
 		return BuiltInRegistries.BLOCK.getOptional(blockName).map(Block::defaultBlockState).orElse(Blocks.AIR.defaultBlockState());
 	}
 

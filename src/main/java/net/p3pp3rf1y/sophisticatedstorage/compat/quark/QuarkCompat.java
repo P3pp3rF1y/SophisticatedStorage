@@ -1,7 +1,7 @@
 package net.p3pp3rf1y.sophisticatedstorage.compat.quark;
 
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.state.properties.WoodType;
@@ -27,7 +27,7 @@ public class QuarkCompat implements ICompat {
 	@Override
 	public void setup() {
 		CHESTS.forEach((name, woodType) ->
-				BuiltInRegistries.BLOCK.getOptional(ResourceLocation.fromNamespaceAndPath(CompatModIds.QUARK, name)).ifPresent(chest -> {
+				BuiltInRegistries.BLOCK.getOptional(Identifier.fromNamespaceAndPath(CompatModIds.QUARK, name)).ifPresent(chest -> {
 					StorageTierUpgradeItem.TierUpgrade.BASIC.addTierUpgradeDefinition(chest,
 							new StorageTierUpgradeItem.VanillaTierUpgradeDefinition<>(ChestBlockEntity.class, chestBlockEntity -> chestBlockEntity.openersCounter.getOpenerCount() > 0, ModBlocks.CHEST.get(), woodType, ChestBlock.FACING, ChestBlock.WATERLOGGED, ChestBlock.TYPE));
 					StorageTierUpgradeItem.TierUpgrade.BASIC_TO_COPPER.addTierUpgradeDefinition(chest,

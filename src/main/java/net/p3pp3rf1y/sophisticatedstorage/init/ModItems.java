@@ -3,7 +3,7 @@ package net.p3pp3rf1y.sophisticatedstorage.init;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
@@ -87,10 +87,10 @@ public class ModItems {
 	}
 
 	public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(SophisticatedStorage.MOD_ID);
-	public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB.location(), SophisticatedStorage.MOD_ID);
-	public static final DeferredRegister<LootItemFunctionType<?>> LOOT_FUNCTION_TYPES = DeferredRegister.create(Registries.LOOT_FUNCTION_TYPE.location(), SophisticatedStorage.MOD_ID);
+	public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB.identifier(), SophisticatedStorage.MOD_ID);
+	public static final DeferredRegister<LootItemFunctionType<?>> LOOT_FUNCTION_TYPES = DeferredRegister.create(Registries.LOOT_FUNCTION_TYPE.identifier(), SophisticatedStorage.MOD_ID);
 	private static final DeferredRegister<MapCodec<? extends ICondition>> CONDITION_CODECS = DeferredRegister.create(NeoForgeRegistries.Keys.CONDITION_CODECS, SophisticatedStorage.MOD_ID);
-	public static final ResourceLocation STORAGE_UPGRADE_TAG_NAME = ResourceLocation.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "upgrade");
+	public static final Identifier STORAGE_UPGRADE_TAG_NAME = Identifier.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "upgrade");
 
 	public static final TagKey<Item> STORAGE_UPGRADE_TAG = TagKey.create(Registries.ITEM, STORAGE_UPGRADE_TAG_NAME);
 

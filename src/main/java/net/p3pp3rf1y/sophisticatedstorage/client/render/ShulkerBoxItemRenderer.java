@@ -22,10 +22,10 @@ import net.p3pp3rf1y.sophisticatedstorage.block.ShulkerBoxBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.ShulkerBoxBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
-import org.joml.Vector3f;
+import org.joml.Vector3fc;
+import org.jspecify.annotations.Nullable;
 
-import javax.annotation.Nullable;
-import java.util.Set;
+import java.util.function.Consumer;
 
 public class ShulkerBoxItemRenderer implements SpecialModelRenderer<ShulkerBoxItemRenderer.ShulkerBoxAttributes> {
 	private final LoadingCache<BlockItem, ShulkerBoxBlockEntity> shulkerBoxBlockEntities = CacheBuilder.newBuilder().maximumSize(512L).weakKeys().build(new CacheLoader<>() {
@@ -73,12 +73,12 @@ public class ShulkerBoxItemRenderer implements SpecialModelRenderer<ShulkerBoxIt
 	}
 
 	@Override
-	public void getExtents(Set<Vector3f> set) {
+	public void getExtents(Consumer<Vector3fc> consumer) {
 		PoseStack posestack = new PoseStack();
 		ShulkerBoxBlockEntity shulkerBoxItem = shulkerBoxBlockEntities.getUnchecked(ModBlocks.SHULKER_BOX_ITEM.get());
 		BlockEntityRenderer<ShulkerBoxBlockEntity, ShulkerBoxRenderer.ShulkerBoxRenderState> blockentityrenderer = Minecraft.getInstance().getBlockEntityRenderDispatcher().getRenderer(shulkerBoxItem);
 		if (blockentityrenderer instanceof ShulkerBoxRenderer shulkerBoxRenderer) {
-			shulkerBoxRenderer.rootModelPart().getExtentsForGui(posestack, set);
+			shulkerBoxRenderer.rootModelPart().getExtentsForGui(posestack, consumer);
 		}
 	}
 
