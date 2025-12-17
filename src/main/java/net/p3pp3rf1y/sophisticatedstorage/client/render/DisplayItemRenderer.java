@@ -62,10 +62,10 @@ public class DisplayItemRenderer {
 	}
 
 	public void submitDisplayItem(SubmitNodeCollector submitNodeCollector, PoseStack poseStack, int packedLight, int packedOverlay, StorageRenderState.DisplayItemInfo displayItemInfo) {
-		submitSingleItem(submitNodeCollector, poseStack, packedLight, packedOverlay, false, 1, displayItemInfo.item(), displayItemInfo.index(), displayItemInfo.itemOffset(), displayItemInfo.rotation(), displayItemInfo.isBlockItem());
+		submitSingleItem(submitNodeCollector, poseStack, packedLight, packedOverlay, 1, displayItemInfo.item(), displayItemInfo.index(), displayItemInfo.itemOffset(), displayItemInfo.rotation(), displayItemInfo.isBlockItem());
 	}
 
-	public void submitDisplayItems(SubmitNodeCollector submitNodeCollector, StorageRenderState storageRenderState, PoseStack poseStack, int packedOverlay, boolean renderOnlyCustom) {
+	public void submitDisplayItems(SubmitNodeCollector submitNodeCollector, StorageRenderState storageRenderState, PoseStack poseStack, int packedOverlay) {
 		if (storageRenderState.displayItems.isEmpty() && storageRenderState.inaccessibleSlots.isEmpty()) {
 			return;
 		}
@@ -76,7 +76,7 @@ public class DisplayItemRenderer {
 			}
 		}
 		for (StorageRenderState.DisplayItemInfo displayItemInfo : storageRenderState.displayItems) {
-			submitSingleDisplayItem(submitNodeCollector, poseStack, storageRenderState.lightCoords, packedOverlay, displayItemInfo, renderOnlyCustom, storageRenderState.displayItemSlots);
+			submitSingleDisplayItem(submitNodeCollector, poseStack, storageRenderState.lightCoords, packedOverlay, displayItemInfo, storageRenderState.displayItemSlots);
 		}
 	}
 
@@ -106,23 +106,19 @@ public class DisplayItemRenderer {
 		poseStack.popPose();
 	}
 
-	private void submitSingleDisplayItem(SubmitNodeCollector submitNodeCollector, PoseStack poseStack, int packedLight, int packedOverlay, StorageRenderState.DisplayItemInfo displayItemInfo, boolean renderOnlyCustom, int displayItemCount) {
-		submitSingleItem(submitNodeCollector, poseStack, packedLight, packedOverlay, renderOnlyCustom, displayItemCount, displayItemInfo.item(), displayItemInfo.index(), displayItemInfo.itemOffset(), displayItemInfo.rotation(), displayItemInfo.isBlockItem());
+	private void submitSingleDisplayItem(SubmitNodeCollector submitNodeCollector, PoseStack poseStack, int packedLight, int packedOverlay, StorageRenderState.DisplayItemInfo displayItemInfo, int displayItemCount) {
+		submitSingleItem(submitNodeCollector, poseStack, packedLight, packedOverlay, displayItemCount, displayItemInfo.item(), displayItemInfo.index(), displayItemInfo.itemOffset(), displayItemInfo.rotation(), displayItemInfo.isBlockItem());
 	}
 
 	private void submitSingleItem(SubmitNodeCollector submitNodeCollector, PoseStack poseStack, int packedLight, int packedOverlay, int displayItemCount, ItemStackRenderState item, int displayItemIndex) {
-		submitSingleItem(submitNodeCollector, poseStack, packedLight, packedOverlay, false, displayItemCount, item, displayItemIndex, 0, 0, false);
+		submitSingleItem(submitNodeCollector, poseStack, packedLight, packedOverlay, displayItemCount, item, displayItemIndex, 0, 0, false);
 	}
 
-	private void submitSingleItem(SubmitNodeCollector submitNodeCollector, PoseStack poseStack, int packedLight, int packedOverlay, boolean renderOnlyCustom, int displayItemCount, ItemStackRenderState item, int displayItemIndex, float itemOffset, int rotation, boolean isBlockItem) {
-		if (item.layers.length < 1 || (renderOnlyCustom && !RenderHelper.isSpecialRenderer(item))) {
+	private void submitSingleItem(SubmitNodeCollector submitNodeCollector, PoseStack poseStack, int packedLight, int packedOverlay, int displayItemCount, ItemStackRenderState item, int displayItemIndex, float itemOffset, int rotation, boolean isBlockItem) {
+		if (item.layers.length < 1) {
 			return;
 		}
 
-/*
-TODO add this to StorageRenderState extraction
-		float itemOffset = (float) getDisplayItemOffset(stack, item, isGui3d(item), displayItemCount == 1 ? 1 : SMALL_BLOCK_ITEM_OFFSET);
-*/
 		poseStack.pushPose();
 
 		Vector3f frontOffset = getDisplayItemIndexFrontOffset(displayItemIndex, displayItemCount, (float) yCenterTranslation);

@@ -81,8 +81,6 @@ public abstract class BarrelRendererBase<T extends BarrelBlockEntity, R extends 
 			renderState.lightCoords = LevelRenderer.getLightColor(blockEntity.getLevel(), pos.relative(facing));
 		}
 		renderState.flatTop = blockState.getValue(BarrelBlock.FLAT_TOP);
-		renderState.hasDynamicRenderer = blockEntity.hasDynamicRenderer();
-		renderState.hasFullyDynamicRenderer = blockEntity.hasFullyDynamicRenderer();
 
 		renderState.woodName = blockEntity.getWoodType().orElse(WoodType.ACACIA).name();
 		if (!renderState.showsTier && holdsItemThatShowsHiddenTiers()) {
@@ -106,9 +104,7 @@ public abstract class BarrelRendererBase<T extends BarrelBlockEntity, R extends 
 	public static class BarrelRenderStateBase extends StorageRenderState {
 		public boolean flatTop;
 		public boolean packed;
-		public boolean hasDynamicRenderer;
-		public boolean hasFullyDynamicRenderer;
-		public String woodName;
+		public String woodName = WoodType.ACACIA.name();
 		public List<BakedQuad> hiddenTierQuads = Collections.emptyList();
 		public List<BakedQuad> hiddenLockQuads = Collections.emptyList();
 

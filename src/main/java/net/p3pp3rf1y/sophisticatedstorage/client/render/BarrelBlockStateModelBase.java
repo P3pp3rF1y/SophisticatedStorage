@@ -4,13 +4,13 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import com.mojang.math.Axis;
 import com.mojang.math.Transformation;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.Sheets;
-import net.minecraft.client.renderer.block.model.*;
+import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.block.model.BlockModelPart;
+import net.minecraft.client.renderer.block.model.SimpleModelWrapper;
+import net.minecraft.client.renderer.block.model.TextureSlots;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
-import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.Material;
@@ -19,38 +19,27 @@ import net.minecraft.client.resources.model.QuadCollection;
 import net.minecraft.client.resources.model.UnbakedGeometry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.Vec3i;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.context.ContextMap;
-import net.minecraft.world.item.*;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import net.neoforged.neoforge.client.model.DynamicBlockStateModel;
-import net.neoforged.neoforge.client.model.quad.QuadTransforms;
-import net.neoforged.neoforge.common.util.TransformationHelper;
-import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderData;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelMaterial;
-import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
-import org.joml.GeometryUtils;
-import org.joml.Quaternionf;
-import org.joml.Vector3f;
-import org.joml.Vector3fc;
 import org.jspecify.annotations.Nullable;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import static net.p3pp3rf1y.sophisticatedstorage.client.render.DisplayItemRenderer.*;
-
 public abstract class BarrelBlockStateModelBase implements DynamicBlockStateModel {
-	private static final Transformation MOVE_TO_CORNER = new Transformation(new Vector3f(-.5f, -.5f, -.5f), null, null, null);
 	public static final Map<Direction, Transformation> DIRECTION_ROTATES = Map.of(
 			Direction.UP, getDirectionRotationTransform(Direction.UP),
 			Direction.DOWN, getDirectionRotationTransform(Direction.DOWN),
@@ -65,16 +54,10 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 			return CacheBuilder.newBuilder().expireAfterAccess(10L, TimeUnit.MINUTES).build();
 		}
 	});
-	private static final Transformation SCALE_BIG_ITEM = new Transformation(null, null, new Vector3f(BIG_ITEM_SCALE, BIG_ITEM_SCALE, BIG_ITEM_SCALE), null);
-	private static final Transformation SCALE_SMALL_BLOCK_ITEM = new Transformation(null, null, new Vector3f(SMALL_BLOCK_ITEM_SCALE, SMALL_BLOCK_ITEM_SCALE, SMALL_BLOCK_ITEM_SCALE), null);
-	private static final Transformation SCALE_SMALL_ITEM = new Transformation(null, null, new Vector3f(SMALL_ITEM_SCALE, SMALL_ITEM_SCALE, SMALL_ITEM_SCALE), null);
 	private static final Cache<Integer, Transformation> DIRECTION_MOVE_BACK_TO_SIDE = CacheBuilder.newBuilder().expireAfterAccess(10L, TimeUnit.MINUTES).build();
 	public static final Cache<Integer, List<BlockModelPart>> BAKED_PARTS_CACHE = CacheBuilder.newBuilder().expireAfterAccess(15L, TimeUnit.MINUTES).build();
 	public static final Cache<Integer, List<BakedQuad>> BAKED_QUADS_CACHE = CacheBuilder.newBuilder().expireAfterAccess(15L, TimeUnit.MINUTES).build();
-	private static final Map<Integer, Transformation> DISPLAY_ROTATIONS = new HashMap<>();
 	private static final List<BarrelMaterial> PARTICLE_ICON_MATERIAL_PRIORITY = List.of(BarrelMaterial.ALL, BarrelMaterial.ALL_BUT_TRIM, BarrelMaterial.TOP_ALL, BarrelMaterial.TOP);
-	private List<RenderData.DisplayItemData> displayItems;
-	private List<Integer> inaccessibleSlots;
 	private boolean showsLock;
 
 	public static void invalidateCache() {
@@ -150,25 +133,6 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 		return new Transformation(null, DisplayItemRenderer.getNorthBasedRotation(dir), null, null);
 	}
 
-	private Transformation getDirectionMoveBackToSide(BlockState state, Direction dir, float distFromCenter, int displayItemIndex, int displayItemCount) {
-		int hash = calculateMoveBackToSideHash(state, dir, distFromCenter, displayItemIndex, displayItemCount);
-		Transformation transform = DIRECTION_MOVE_BACK_TO_SIDE.getIfPresent(hash);
-		if (transform == null) {
-			Vec3i normal = dir.getUnitVec3i();
-			Vector3f offset = new Vector3f(distFromCenter, distFromCenter, distFromCenter);
-			offset.mul(normal.getX(), normal.getY(), normal.getZ());
-			Vector3f frontOffset = DisplayItemRenderer.getDisplayItemIndexFrontOffset(displayItemIndex, displayItemCount);
-			frontOffset.add(-0.5f, -0.5f, -0.5f);
-			rotateDisplayItemFrontOffset(state, dir, frontOffset);
-			frontOffset.add(0.5f, 0.5f, 0.5f);
-			offset.add(frontOffset);
-			transform = new Transformation(offset, null, null, null);
-
-			DIRECTION_MOVE_BACK_TO_SIDE.put(hash, transform);
-		}
-		return transform;
-	}
-
 	@Override
 	public TextureAtlasSprite particleIcon() {
 		if (hasMainColor) {
@@ -190,23 +154,8 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 		return particleIcons.values().iterator().next().get(BarrelModelPart.BASE);
 	}
 
-	@SuppressWarnings("java:S1172") //state used in override
-	protected void rotateDisplayItemFrontOffset(BlockState state, Direction dir, Vector3f frontOffset) {
-		frontOffset.rotate(getNorthBasedRotation(dir));
-	}
-
-	@SuppressWarnings("java:S1172") //state used in override
-	protected int calculateMoveBackToSideHash(BlockState state, Direction dir, float distFromCenter, int displayItemIndex, int displayItemCount) {
-		int hash = Float.hashCode(distFromCenter);
-		hash = 31 * hash + displayItemIndex;
-		hash = 31 * hash + displayItemCount;
-		return hash;
-	}
-
 	public List<BakedQuad> getQuads(RandomSource rand) {
 		showsLock = false;
-		inaccessibleSlots = Collections.emptyList();
-		displayItems = Collections.emptyList();
 
 		int hash = createItemHash();
 		List<BakedQuad> cachedQuads = BAKED_QUADS_CACHE.getIfPresent(hash);
@@ -230,8 +179,6 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 
 	@Override
 	public void collectParts(@Nullable BlockAndTintGetter level, BlockPos pos, @Nullable BlockState state, RandomSource rand, List<BlockModelPart> parts) {
-		displayItems = Collections.emptyList();
-		inaccessibleSlots = Collections.emptyList();
 		showsLock = false;
 
 		BarrelBlockEntity be = WorldHelper.getBlockEntity(level, pos, BarrelBlockEntity.class).orElse(null);
@@ -239,10 +186,6 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 		if (be != null) {
 			hasMainColor = be.getStorageWrapper().hasMainColor();
 			hasAccentColor = be.getStorageWrapper().hasAccentColor();
-			if (!be.hasFullyDynamicRenderer()) {
-				displayItems = be.getStorageWrapper().getRenderDataHandler().getDisplayData().displayItems();
-				inaccessibleSlots = be.getStorageWrapper().getRenderDataHandler().getDisplayData().inaccessibleSlots();
-			}
 			isPacked = be.isPacked();
 			showsTier = be.shouldShowTier();
 			woodName = be.getWoodType().map(WoodType::name).orElse(WoodType.ACACIA.name());
@@ -295,11 +238,8 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 
 		if (isPacked) {
 			addPartQuads(cutoutQuadCollectionBuilder, modelParts, BarrelModelPart.PACKED);
-		} else {
-			if (showsLock) {
-				addPartQuads(cutoutQuadCollectionBuilder, modelParts, BarrelModelPart.LOCKED);
-			}
-			addDisplayItemQuads(cutoutQuadCollectionBuilder, translucentQuadCollectionBuilder, state);
+		} else if (showsLock) {
+			addPartQuads(cutoutQuadCollectionBuilder, modelParts, BarrelModelPart.LOCKED);
 		}
 
 		List<BlockModelPart> parts = new ArrayList<>();
@@ -406,235 +346,7 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 		hash = hash * 31 + (showsTier ? 1 : 0);
 		hash = hash * 31 + (flatTop ? 1 : 0);
 		hash = hash * 31 + materials.hashCode();
-		hash = getDisplayItemsHash(displayItems, inaccessibleSlots, hash);
 		return hash;
-	}
-
-	private int getDisplayItemsHash(List<RenderData.DisplayItemData> displayItems, List<Integer> inaccessibleSlots, int hash) {
-		for (RenderData.DisplayItemData displayItem : displayItems) {
-			hash = hash * 31 + getDisplayItemHash(displayItem);
-		}
-		for (Integer inaccessibleSlot : inaccessibleSlots) {
-			hash = hash * 31 + inaccessibleSlot;
-		}
-		return hash;
-	}
-
-	private int getDisplayItemHash(RenderData.DisplayItemData displayItem) {
-		int hash = displayItem.rotation();
-		ItemStack stack = displayItem.item();
-		hash = hash * 31 + ItemStack.hashItemAndComponents(stack);
-		hash = hash * 31 + displayItem.slotIndex();
-		return hash;
-	}
-
-	private void addDisplayItemQuads(QuadCollection.Builder cutoutBuilder, QuadCollection.Builder translucentBuilder, @Nullable BlockState state) {
-		if (state == null || !(state.getBlock() instanceof BarrelBlock barrelBlock)) {
-			return;
-		}
-
-		int displayItemsCount = barrelBlock.getDisplayItemsCount(displayItems);
-		if (!displayItems.isEmpty()) {
-			int index = 0;
-			for (RenderData.DisplayItemData displayItem : displayItems) {
-				ItemStack item = displayItem.item();
-				if (barrelBlock.hasFixedIndexDisplayItems()) {
-					index = displayItem.slotIndex();
-				}
-				if (item.isEmpty()) {
-					continue;
-				}
-
-				ItemStackRenderState renderState = new ItemStackRenderState();
-				Minecraft.getInstance().getItemModelResolver().updateForTopItem(renderState, item, ItemDisplayContext.FIXED, null, null, 0);
-				for (ItemStackRenderState.LayerRenderState layer : renderState.layers) {
-					if (layer.specialRenderer == null) {
-						int rotation = displayItem.rotation();
-						QuadCollection.Builder builder = layer.renderType == Sheets.translucentItemSheet() ? translucentBuilder : cutoutBuilder;
-
-						addRenderedItem(builder, state, item, renderState, layer.prepareQuadList(), layer.transform, DisplayItemRenderer.isGui3d(renderState), rotation, index, displayItemsCount);
-					}
-					index++;
-				}
-			}
-		}
-
-		addInaccessibleSlotsQuads(cutoutBuilder, inaccessibleSlots, state, displayItemsCount);
-	}
-
-	private void addInaccessibleSlotsQuads(QuadCollection.Builder builder, List<Integer> inaccessibleSlots, BlockState state, int displayItemsCount) {
-		ItemStack inaccessibleSlotStack = new ItemStack(ModItems.INACCESSIBLE_SLOT.get());
-		ItemStackRenderState renderState = new ItemStackRenderState();
-		Minecraft.getInstance().getItemModelResolver().updateForTopItem(renderState, inaccessibleSlotStack, ItemDisplayContext.FIXED, null, null, 0);
-		boolean gui3d = DisplayItemRenderer.isGui3d(renderState);
-		for (int inaccessibleSlot : inaccessibleSlots) {
-			for (ItemStackRenderState.LayerRenderState layer : renderState.layers) {
-				if (layer.specialRenderer == null) {
-					addRenderedItem(builder, state, inaccessibleSlotStack, renderState, layer.prepareQuadList(), layer.transform, gui3d, 0, inaccessibleSlot, displayItemsCount);
-				}
-			}
-		}
-	}
-
-	public static List<BakedQuad> transformQuads(List<BakedQuad> quads, Transformation transformation) {
-		List<BakedQuad> result = new ArrayList<>(quads.size());
-
-		for (BakedQuad quad : quads) {
-			result.add(QuadTransforms.applyTransformation(quad, transformation));
-		}
-		return result;
-	}
-
-	@SuppressWarnings("java:S107")
-	private void addRenderedItem(QuadCollection.Builder builder, BlockState state, ItemStack displayItem, ItemStackRenderState renderState, List<BakedQuad> quads, ItemTransform transform, boolean gui3d, int rotation, int displayItemIndex, int displayItemCount) {
-		List<BakedQuad> originalQuads = quads;
-		quads = transformQuads(quads, MOVE_TO_CORNER);
-		quads = transformQuads(quads, toTransformation(transform));
-		if (gui3d && displayItem.getItem() instanceof BlockItem) {
-			if (displayItemCount > 1) {
-				quads = transformQuads(quads, SCALE_SMALL_BLOCK_ITEM);
-			}
-		} else {
-			if (displayItemCount == 1) {
-				quads = transformQuads(quads, SCALE_BIG_ITEM);
-			} else {
-				quads = transformQuads(quads, SCALE_SMALL_ITEM);
-			}
-		}
-
-		if (rotation != 0) {
-			quads = transformQuads(quads, getDisplayRotation(rotation));
-		}
-
-		Direction facing = state.getBlock() instanceof BarrelBlock barrelBlock ? barrelBlock.getFacing(state) : Direction.NORTH;
-		quads = rotateDisplayItemQuads(quads, state);
-
-		if (gui3d) {
-			Transformation transformation = getDirectionMove(displayItem, renderState, gui3d, state, facing, displayItemIndex, displayItemCount, displayItemCount == 1 ? 1 : SMALL_BLOCK_ITEM_SCALE);
-			quads = transformQuads(quads, transformation);
-		} else {
-			quads = transformQuads(quads, getDirectionMove(displayItem, renderState, gui3d, state, facing, displayItemIndex, displayItemCount, 1));
-		}
-		quads = recalculateDirections(quads);
-
-		quads = updateTintIndexes(quads, displayItemIndex);
-
-		quads.forEach(builder::addUnculledFace);
-	}
-
-	private Transformation toTransformation(ItemTransform transform) {
-		if (transform.equals(ItemTransform.NO_TRANSFORM)) {
-			return Transformation.identity();
-		}
-		return new Transformation(toVector3f(transform.translation()), quatFromXYZ(transform.rotation(), true), toVector3f(transform.scale()), null);
-	}
-
-	private Vector3f toVector3f(Vector3fc vec) {
-		return new Vector3f(vec.x(), vec.y(), vec.z());
-	}
-
-	public Quaternionf quatFromXYZ(Vector3fc xyz, boolean degrees) {
-		return TransformationHelper.quatFromXYZ(xyz.x(), xyz.y(), xyz.z(), degrees);
-	}
-
-	protected abstract List<BakedQuad> rotateDisplayItemQuads(List<BakedQuad> quads, BlockState state);
-
-	private List<BakedQuad> updateTintIndexes(List<BakedQuad> quads, int displayItemIndex) {
-		List<BakedQuad> ret = new ArrayList<>(quads.size());
-		int offset = (displayItemIndex + 1) * 10;
-		for (BakedQuad quad : quads) {
-			if (quad.tintIndex() >= 0) {
-				ret.add(new BakedQuad(quad.position0(), quad.position1(), quad.position2(), quad.position3(), quad.packedUV0(), quad.packedUV1(), quad.packedUV2(), quad.packedUV3(), quad.tintIndex() + offset, quad.direction(), quad.sprite(), quad.shade(), quad.lightEmission(), quad.bakedNormals(), quad.bakedColors(), quad.hasAmbientOcclusion()));
-			} else {
-				ret.add(quad);
-			}
-		}
-		return ret;
-	}
-
-	private List<BakedQuad> recalculateDirections(List<BakedQuad> quads) {
-		List<BakedQuad> ret = new ArrayList<>(quads.size());
-
-		for (BakedQuad quad : quads) {
-			Direction calculatedFacing = Objects.requireNonNullElse(
-					calculateFacing(quad.position0(), quad.position1(), quad.position2()),
-					Direction.UP
-			);
-
-			if (quad.direction() != calculatedFacing) {
-				ret.add(new BakedQuad(
-						quad.position0(), quad.position1(), quad.position2(), quad.position3(),
-						quad.packedUV0(), quad.packedUV1(), quad.packedUV2(), quad.packedUV3(),
-						quad.tintIndex(),
-						calculatedFacing,
-						quad.sprite(),
-						quad.shade(),
-						quad.lightEmission(),
-						quad.bakedNormals(),
-						quad.bakedColors(),
-						quad.hasAmbientOcclusion()
-				));
-			} else {
-				ret.add(quad);
-			}
-		}
-
-		return ret;
-	}
-
-	private static @Nullable Direction calculateFacing(Vector3fc v0, Vector3fc v1, Vector3fc v2) {
-		Vector3f normal = new Vector3f();
-		GeometryUtils.normal(v0, v1, v2, normal);
-		return findClosestDirection(normal);
-	}
-
-	private static @Nullable Direction findClosestDirection(Vector3f normal) {
-		if (!normal.isFinite()) return null;
-
-		Direction best = null;
-		float bestDot = 0.0F;
-
-		for (Direction dir : Direction.values()) {
-			float dot = normal.dot(dir.getUnitVec3f());
-			if (dot >= 0.0F && dot > bestDot) {
-				bestDot = dot;
-				best = dir;
-			}
-		}
-
-		return best;
-	}
-
-	private Transformation getDirectionMove(ItemStack displayItem, ItemStackRenderState renderState, boolean isGui3d, BlockState state, Direction direction, int displayItemIndex, int displayItemCount, float itemScale) {
-		boolean isFlatTop = state.getValue(BarrelBlock.FLAT_TOP);
-		int hash = calculateDirectionMoveHash(state, displayItem, displayItemIndex, displayItemCount, isFlatTop);
-		Cache<Integer, Transformation> directionCache = DIRECTION_MOVES_3D_ITEMS.getUnchecked(direction);
-		Transformation transformer = directionCache.getIfPresent(hash);
-
-		if (transformer == null) {
-			double offset = DisplayItemRenderer.getDisplayItemOffset(displayItem, renderState, isGui3d, itemScale);
-			if (!isFlatTop) {
-				offset -= 1 / 16D;
-			}
-
-			transformer = getDirectionMoveBackToSide(state, direction, (float) (0.5f + offset), displayItemIndex, displayItemCount);
-			directionCache.put(hash, transformer);
-		}
-
-		return transformer;
-	}
-
-	@SuppressWarnings("java:S1172") //state used in override
-	protected int calculateDirectionMoveHash(BlockState state, ItemStack displayItem, int displayItemIndex, int displayItemCount, boolean isFlatTop) {
-		int hashCode = ItemStack.hashItemAndComponents(displayItem);
-		hashCode = hashCode * 31 + displayItemIndex;
-		hashCode = hashCode * 31 + displayItemCount;
-		hashCode = hashCode * 31 + (isFlatTop ? 1 : 0);
-		return hashCode;
-	}
-
-	private Transformation getDisplayRotation(int rotation) {
-		return DISPLAY_ROTATIONS.computeIfAbsent(rotation, r -> new Transformation(null, Axis.ZP.rotationDegrees(rotation), null, null));
 	}
 
 	private void addTintableModelQuads(QuadCollection.Builder builder, @Nullable BlockState state, Map<BarrelModelPart, QuadCollection> modelParts) {
@@ -648,7 +360,7 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 	}
 
 	private BarrelModelPart getMainPart(@Nullable BlockState state) {
-		return rendersOpen() && state != null && Boolean.TRUE.equals(state.getValue(BarrelBlock.OPEN)) ? BarrelModelPart.TINTABLE_MAIN_OPEN : BarrelModelPart.TINTABLE_MAIN;
+		return rendersOpen() && state != null && state.getValue(BarrelBlock.OPEN) ? BarrelModelPart.TINTABLE_MAIN_OPEN : BarrelModelPart.TINTABLE_MAIN;
 	}
 
 	protected abstract boolean rendersOpen();
@@ -676,13 +388,6 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 	public void setModelPropertiesFromBlockEntity(BarrelBlockEntity be) {
 		hasMainColor = be.getStorageWrapper().hasMainColor();
 		hasAccentColor = be.getStorageWrapper().hasAccentColor();
-		if (!be.hasFullyDynamicRenderer()) {
-			displayItems = be.getStorageWrapper().getRenderDataHandler().getDisplayData().displayItems();
-			inaccessibleSlots = be.getStorageWrapper().getRenderDataHandler().getDisplayData().inaccessibleSlots();
-		} else {
-			displayItems = Collections.emptyList();
-			inaccessibleSlots = Collections.emptyList();
-		}
 		isPacked = be.isPacked();
 		showsLock = be.isLocked() && be.shouldShowLock();
 		showsTier = be.shouldShowTier();

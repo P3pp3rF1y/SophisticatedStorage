@@ -18,7 +18,8 @@ import org.jspecify.annotations.Nullable;
 import java.util.List;
 
 public class ModBlockColors {
-	private ModBlockColors() {}
+	private ModBlockColors() {
+	}
 
 	public static void registerBlockColorHandlers(RegisterColorHandlersEvent.Block event) {
 		event.register(ModBlockColors::getBarrelTintColor,
@@ -44,14 +45,6 @@ public class ModBlockColors {
 					} else if (tintIndex == 1) {
 						return be.getStorageWrapper().getAccentColor();
 					}
-
-					int displayItemIndex = tintIndex / 10 - 1;
-					if (displayItemIndex >= 0) {
-						int tintOffset = (displayItemIndex + 1) * 10;
-						int adjustedTintIndex = tintIndex - tintOffset;
-						return be.getOrComputeDisplayItemTint(displayItemIndex, adjustedTintIndex, () -> getTint(state, displayItemIndex, adjustedTintIndex, be));
-					}
-
 					return -1;
 				})
 				.orElse(-1);

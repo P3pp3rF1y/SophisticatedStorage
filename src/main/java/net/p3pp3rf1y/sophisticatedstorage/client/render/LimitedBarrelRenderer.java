@@ -54,7 +54,7 @@ public class LimitedBarrelRenderer extends BarrelRendererBase<LimitedBarrelBlock
 	}
 
 	private void submitFrontFace(SubmitNodeCollector submitNodeCollector, LimitedBarrelRenderState renderState, PoseStack poseStack) {
-		if (renderState.hasDynamicRenderer || holdsItemThatShowsUpgrades() || renderState.showsUpgrades || renderState.showsFillLevels || holdsItemThatShowsFillLevels()) {
+		if (!renderState.displayItems.isEmpty() || holdsItemThatShowsUpgrades() || renderState.showsUpgrades || renderState.showsFillLevels || holdsItemThatShowsFillLevels()) {
 			poseStack.pushPose();
 
 			poseStack.translate(0.5, 0.5, 0.5);
@@ -64,7 +64,7 @@ public class LimitedBarrelRenderer extends BarrelRendererBase<LimitedBarrelBlock
 			}
 			poseStack.translate(-0.5, -0.5, -(0.5 - (renderState.flatTop ? 0 : 1 / 16f)));
 
-			if (renderState.hasDynamicRenderer) {
+			if (!renderState.displayItems.isEmpty()) {
 				submitDisplayItems(submitNodeCollector, renderState, poseStack);
 			}
 
@@ -120,9 +120,9 @@ public class LimitedBarrelRenderer extends BarrelRendererBase<LimitedBarrelBlock
 
 	private void submitDisplayItems(SubmitNodeCollector submitNodeCollector, LimitedBarrelRenderState renderState, PoseStack poseStack) {
 		if (renderState.flatTop) {
-			flatDisplayItemRenderer.submitDisplayItems(submitNodeCollector, renderState, poseStack, OverlayTexture.NO_OVERLAY, !renderState.hasFullyDynamicRenderer);
+			flatDisplayItemRenderer.submitDisplayItems(submitNodeCollector, renderState, poseStack, OverlayTexture.NO_OVERLAY);
 		} else {
-			displayItemRenderer.submitDisplayItems(submitNodeCollector, renderState, poseStack, OverlayTexture.NO_OVERLAY, !renderState.hasFullyDynamicRenderer);
+			displayItemRenderer.submitDisplayItems(submitNodeCollector, renderState, poseStack, OverlayTexture.NO_OVERLAY);
 		}
 	}
 
@@ -236,7 +236,7 @@ public class LimitedBarrelRenderer extends BarrelRendererBase<LimitedBarrelBlock
 	@Override
 	public void submit(LimitedBarrelRenderState renderState, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState cameraRenderState) {
 		if (renderState.packed
-				|| (!renderState.hasDynamicRenderer && !renderState.showsCounts && !holdsItemThatShowsUpgrades() && !renderState.showsUpgrades)) {
+				|| (renderState.displayItems.isEmpty() && !renderState.showsCounts && !holdsItemThatShowsUpgrades() && !renderState.showsUpgrades)) {
 			return;
 		}
 
