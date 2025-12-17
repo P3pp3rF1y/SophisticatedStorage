@@ -173,6 +173,8 @@ dependencies {
     localRuntime "curse.maven:sawmill-964817:${sawmill_cf_file_id}"
     compileOnly "curse.maven:moonlightlib-499980:${moonlightlib_cf_file_id}"
     localRuntime "curse.maven:moonlightlib-499980:${moonlightlib_cf_file_id}"
+    compileOnly "curse.maven:toms-storage-378609:${toms_storage_cf_file_id}"
+    localRuntime "curse.maven:toms-storage-378609:${toms_storage_cf_file_id}"
 
     //compileOnly "curse.maven:quark-243121:${quark_cf_file_id}")
     //compileOnly "curse.maven:zeta-968868:${zeta_cf_file_id}")
