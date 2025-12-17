@@ -20,7 +20,7 @@ public class BarrelRenderer<T extends BarrelBlockEntity> extends BarrelRendererB
 	}
 
 	private void submitFrontFace(SubmitNodeCollector submitNodeCollector, BarrelRenderState renderState, PoseStack poseStack) {
-		if ((!renderState.hasDynamicRenderer && !holdsItemThatShowsUpgrades() && !renderState.showsUpgrades)) {
+		if ((renderState.displayItems.isEmpty() && !holdsItemThatShowsUpgrades() && !renderState.showsUpgrades)) {
 			return;
 		}
 
@@ -39,11 +39,11 @@ public class BarrelRenderer<T extends BarrelBlockEntity> extends BarrelRendererB
 			}
 		}
 
-		if (renderState.hasDynamicRenderer) {
+		if (!renderState.displayItems.isEmpty()) {
 			if (renderState.flatTop) {
-				flatDisplayItemRenderer.submitDisplayItems(submitNodeCollector, renderState, poseStack, OverlayTexture.NO_OVERLAY, !renderState.hasFullyDynamicRenderer);
+				flatDisplayItemRenderer.submitDisplayItems(submitNodeCollector, renderState, poseStack, OverlayTexture.NO_OVERLAY);
 			} else {
-				displayItemRenderer.submitDisplayItems(submitNodeCollector, renderState, poseStack, OverlayTexture.NO_OVERLAY, !renderState.hasFullyDynamicRenderer);
+				displayItemRenderer.submitDisplayItems(submitNodeCollector, renderState, poseStack, OverlayTexture.NO_OVERLAY);
 			}
 		}
 

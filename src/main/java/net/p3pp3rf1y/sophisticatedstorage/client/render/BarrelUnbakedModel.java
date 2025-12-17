@@ -1,16 +1,13 @@
 package net.p3pp3rf1y.sophisticatedstorage.client.render;
 
-import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.QuadCollection;
-import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.state.BlockState;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlock;
 
 import javax.annotation.Nullable;
-import java.util.List;
 import java.util.Map;
 
 public class BarrelUnbakedModel extends BarrelUnbakedModelBase {
@@ -33,7 +30,7 @@ public class BarrelUnbakedModel extends BarrelUnbakedModelBase {
 		protected int createHash(@Nullable BlockState state) {
 			int hash = super.createHash(state);
 			if (state != null) {
-				hash = hash * 31 + (Boolean.TRUE.equals(state.getValue(BarrelBlock.OPEN)) ? 1 : 0);
+				hash = hash * 31 + (state.getValue(BarrelBlock.OPEN) ? 1 : 0);
 				hash = hash * 31 + state.getValue(BarrelBlock.FACING).get3DDataValue();
 			}
 
@@ -46,20 +43,8 @@ public class BarrelUnbakedModel extends BarrelUnbakedModelBase {
 		}
 
 		@Override
-		protected List<BakedQuad> rotateDisplayItemQuads(List<BakedQuad> quads, BlockState state) {
-			return DIRECTION_ROTATES.get(state.getValue(BarrelBlock.FACING)).process(quads);
-		}
-
-		@Override
 		protected boolean rendersOpen() {
 			return true;
-		}
-
-		@Override
-		protected int calculateMoveBackToSideHash(BlockState state, Direction dir, float distFromCenter, int displayItemIndex, int displayItemCount) {
-			int hash = super.calculateMoveBackToSideHash(state, dir, distFromCenter, displayItemIndex, displayItemCount);
-			hash = 31 * hash + dir.hashCode();
-			return hash;
 		}
 	}
 

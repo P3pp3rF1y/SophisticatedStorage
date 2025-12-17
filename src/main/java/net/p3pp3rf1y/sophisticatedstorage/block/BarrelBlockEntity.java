@@ -1,7 +1,6 @@
 package net.p3pp3rf1y.sophisticatedstorage.block;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.Connection;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.player.Player;
@@ -46,8 +45,6 @@ public class BarrelBlockEntity extends WoodStorageBlockEntity implements IMateri
 		}
 	};
 
-	private IDynamicRenderTracker dynamicRenderTracker = IDynamicRenderTracker.NOOP;
-
 	@Override
 	public SophisticatedOpenersCounter getOpenersCounter() {
 		return openersCounter;
@@ -61,26 +58,12 @@ public class BarrelBlockEntity extends WoodStorageBlockEntity implements IMateri
 	protected BarrelBlockEntity(BlockPos pos, BlockState state, BlockEntityType<? extends BarrelBlockEntity> blockEntityType) {
 		super(pos, state, blockEntityType);
 		getStorageWrapper().getRenderDataHandler().setDisplayItemsChangeListener(ri -> {
-			dynamicRenderTracker.onRenderDataUpdated(ri);
-			setUpdateBlockRender();
 			WorldHelper.notifyBlockUpdate(this);
 		});
 	}
 
-	public void setDynamicRenderTracker(IDynamicRenderTracker dynamicRenderTracker) {
-		this.dynamicRenderTracker = dynamicRenderTracker;
-	}
-
 	public BarrelBlockEntity(BlockPos pos, BlockState state) {
 		this(pos, state, ModBlocks.BARREL_BLOCK_ENTITY_TYPE.get());
-	}
-
-	@Override
-	public void onDataPacket(Connection net, ValueInput in) {
-		super.onDataPacket(net, in);
-		if (in.getBooleanOr(UPDATE_BLOCK_RENDER_TAG, false)) {
-			dynamicRenderTracker.onRenderDataUpdated(getStorageWrapper().getRenderDataHandler());
-		}
 	}
 
 	void updateOpenBlockState(BlockState state, boolean open) {
@@ -88,22 +71,6 @@ public class BarrelBlockEntity extends WoodStorageBlockEntity implements IMateri
 			return;
 		}
 		level.setBlock(getBlockPos(), state.setValue(BarrelBlock.OPEN, open), 3);
-	}
-
-	@Override
-	public void setLevel(Level level) {
-		super.setLevel(level);
-		if (level.isClientSide() && dynamicRenderTracker == IDynamicRenderTracker.NOOP) {
-			dynamicRenderTracker = new DynamicRenderTracker(this);
-		}
-	}
-
-	public boolean hasDynamicRenderer() {
-		return dynamicRenderTracker.isDynamicRenderer();
-	}
-
-	public boolean hasFullyDynamicRenderer() {
-		return dynamicRenderTracker.isFullyDynamicRenderer();
 	}
 
 	@Override
@@ -122,14 +89,6 @@ public class BarrelBlockEntity extends WoodStorageBlockEntity implements IMateri
 	public void loadSynchronizedData(ValueInput in) {
 		super.loadSynchronizedData(in);
 		materials = in.read(MATERIALS, BarrelBlockItem.MATERIALS_CODEC).orElse(Map.of());
-	}
-
-	@Override
-	public void loadAdditional(ValueInput in) {
-		super.loadAdditional(in);
-		if (level != null && level.isClientSide() && in.getBooleanOr(UPDATE_BLOCK_RENDER_TAG, false)) {
-			dynamicRenderTracker.onRenderDataUpdated(getStorageWrapper().getRenderDataHandler());
-		}
 	}
 
 	@Override
