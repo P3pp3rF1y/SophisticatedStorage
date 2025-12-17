@@ -66,10 +66,10 @@ public class DisplayItemRenderer {
 	}
 
 	public void renderDisplayItem(PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, RenderInfo.DisplayItem displayItem) {
-		renderSingleItem(poseStack, bufferSource, packedLight, packedOverlay, Minecraft.getInstance(), false, 0, 1, displayItem.getItem(), displayItem.getRotation());
+		renderSingleItem(poseStack, bufferSource, packedLight, packedOverlay, Minecraft.getInstance(), 0, 1, displayItem.getItem(), displayItem.getRotation());
 	}
 
-	public void renderDisplayItems(StorageBlockEntity blockEntity, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, boolean renderOnlyCustom) {
+	public void renderDisplayItems(StorageBlockEntity blockEntity, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
 		RenderInfo.ItemDisplayRenderInfo itemDisplayRenderInfo = blockEntity.getStorageWrapper().getRenderInfo().getItemDisplayRenderInfo();
 		List<RenderInfo.DisplayItem> displayItems = itemDisplayRenderInfo.getDisplayItems();
 		List<Integer> inaccessibleSlots = itemDisplayRenderInfo.getInaccessibleSlots();
@@ -86,12 +86,12 @@ public class DisplayItemRenderer {
 		int displayItemCount = storageBlock.getDisplayItemsCount(displayItems);
 		for (int displayItemIndex = 0; displayItemIndex < displayItemCount; displayItemIndex++) {
 			if (inaccessibleSlots.contains(displayItemIndex)) {
-				renderSingleItem(poseStack, bufferSource, packedLight, packedOverlay, minecraft, renderOnlyCustom, displayItemIndex, displayItemCount, INACCESSIBLE_SLOT_STACK, 0);
+				renderSingleItem(poseStack, bufferSource, packedLight, packedOverlay, minecraft, displayItemIndex, displayItemCount, INACCESSIBLE_SLOT_STACK, 0);
 			}
 		}
 		int displayItemIndex = 0;
 		for (RenderInfo.DisplayItem displayItem : displayItems) {
-			renderSingleItem(poseStack, bufferSource, packedLight, packedOverlay, minecraft, renderOnlyCustom, storageBlock.hasFixedIndexDisplayItems() ? displayItem.getSlotIndex() : displayItemIndex, displayItemCount, displayItem.getItem(), displayItem.getRotation());
+			renderSingleItem(poseStack, bufferSource, packedLight, packedOverlay, minecraft, storageBlock.hasFixedIndexDisplayItems() ? displayItem.getSlotIndex() : displayItemIndex, displayItemCount, displayItem.getItem(), displayItem.getRotation());
 			displayItemIndex++;
 		}
 	}
@@ -128,12 +128,12 @@ public class DisplayItemRenderer {
 		poseStack.popPose();
 	}
 
-	private void renderSingleItem(PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, Minecraft minecraft, boolean renderOnlyCustom, int displayItemIndex, int displayItemCount, ItemStack stack, int rotation) {
+	private void renderSingleItem(PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, Minecraft minecraft, int displayItemIndex, int displayItemCount, ItemStack stack, int rotation) {
 		if (stack.isEmpty()) {
 			return;
 		}
 		minecraft.getItemModelResolver().updateForTopItem(itemStackRenderState, stack, ItemDisplayContext.FIXED, null, null, 0);
-		if (itemStackRenderState.layers.length < 1 || (renderOnlyCustom && !RenderHelper.isSpecialRenderer(itemStackRenderState))) {
+		if (itemStackRenderState.layers.length < 1) {
 			return;
 		}
 
