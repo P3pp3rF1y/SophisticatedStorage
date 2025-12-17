@@ -26,7 +26,7 @@ public class BarrelRenderer<T extends BarrelBlockEntity> extends StorageRenderer
 	@Override
 	public void render(T blockEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
 		BlockState blockState = blockEntity.getBlockState();
-		boolean flatTop = Boolean.TRUE.equals(blockState.getValue(BarrelBlock.FLAT_TOP));
+		boolean flatTop = blockState.getValue(BarrelBlock.FLAT_TOP);
 		if (blockEntity.isPacked() || !(blockState.getBlock() instanceof BarrelBlock storageBlock) || Minecraft.getInstance().player == null) {
 			return;
 		}
@@ -42,7 +42,7 @@ public class BarrelRenderer<T extends BarrelBlockEntity> extends StorageRenderer
 	}
 
 	private void renderFrontFace(T blockEntity, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, boolean flatTop, BlockState blockState) {
-		if ((!blockEntity.hasDynamicRenderer() && !holdsItemThatShowsUpgrades() && !blockEntity.shouldShowUpgrades())) {
+		if (hasNoDisplayItems(blockEntity) && !holdsItemThatShowsUpgrades() && !blockEntity.shouldShowUpgrades()) {
 			return;
 		}
 
@@ -63,15 +63,19 @@ public class BarrelRenderer<T extends BarrelBlockEntity> extends StorageRenderer
 			}
 		}
 
-		if (blockEntity.hasDynamicRenderer()) {
+		if (!hasNoDisplayItems(blockEntity)) {
 			if (flatTop) {
-				flatDisplayItemRenderer.renderDisplayItems(blockEntity, poseStack, bufferSource, packedLight, packedOverlay, !blockEntity.hasFullyDynamicRenderer());
+				flatDisplayItemRenderer.renderDisplayItems(blockEntity, poseStack, bufferSource, packedLight, packedOverlay);
 			} else {
-				displayItemRenderer.renderDisplayItems(blockEntity, poseStack, bufferSource, packedLight, packedOverlay, !blockEntity.hasFullyDynamicRenderer());
+				displayItemRenderer.renderDisplayItems(blockEntity, poseStack, bufferSource, packedLight, packedOverlay);
 			}
 		}
 
 		poseStack.popPose();
+	}
+
+	protected static <T extends BarrelBlockEntity> boolean hasNoDisplayItems(T blockEntity) {
+		return blockEntity.getStorageWrapper().getRenderInfo().getItemDisplayRenderInfo().getDisplayItems().isEmpty();
 	}
 
 	@Override
@@ -108,6 +112,7 @@ public class BarrelRenderer<T extends BarrelBlockEntity> extends StorageRenderer
 		}
 		poseStack.popPose();
 	}
+
 	private interface GetQuadsFunction {
 		List<BakedQuad> apply(BarrelBakedModelBase model, BlockState state, RandomSource rand, String woodName, RenderType renderType);
 

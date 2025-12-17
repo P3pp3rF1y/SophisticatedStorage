@@ -37,7 +37,6 @@ import net.p3pp3rf1y.sophisticatedstorage.upgrades.INeighborChangeListenerUpgrad
 
 import javax.annotation.Nullable;
 import java.util.*;
-import java.util.function.Supplier;
 
 public abstract class StorageBlockEntity extends BlockEntity implements IControllableStorage, ILinkable, ILockable, Nameable, ITierDisplay, IUpgradeDisplay {
 	public static final String STORAGE_WRAPPER_TAG = "storageWrapper";
@@ -46,7 +45,7 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 	@Nullable
 	protected Component displayName = null;
 
-	private boolean updateBlockRender = false;
+	private boolean updateBlockRender = true;
 	@Nullable
 	private BlockPos controllerPos = null;
 	private boolean isLinkedToController = false;
@@ -66,9 +65,6 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 	private boolean showUpgrades = false;
 	@Nullable
 	private ContentsFilteredItemHandler contentsFilteredItemHandler = null;
-
-	private final Map<DisplayTintKey, Integer> displayItemTints = new HashMap<>();
-	private record DisplayTintKey(int displayIndex, int tintIndex) {}
 
 	protected StorageBlockEntity(BlockPos pos, BlockState state, BlockEntityType<? extends StorageBlockEntity> blockEntityType) {
 		super(blockEntityType, pos, state);
@@ -301,7 +297,6 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		if (level != null && level.isClientSide) {
 			if (tag.getBoolean(UPDATE_BLOCK_RENDER_TAG)) {
 				WorldHelper.notifyBlockUpdate(this);
-				displayItemTints.clear();
 			}
 		}
 		loadControllerPos(tag);
@@ -346,7 +341,6 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 	@Override
 	public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
 		CompoundTag tag = super.getUpdateTag(registries);
-		updateBlockRender = true;
 		saveStorageWrapperClientData(tag);
 		saveSynchronizedData(tag);
 		return tag;
@@ -624,10 +618,6 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 
 	public void setShouldBeOpen(boolean shouldBeOpen) {
 		//noop by default
-	}
-
-	public int getOrComputeDisplayItemTint(int displayItemIndex, int tintIndex, Supplier<Integer> getTint) {
-		return displayItemTints.computeIfAbsent(new DisplayTintKey(displayItemIndex, tintIndex), key -> getTint.get());
 	}
 
 	@Override
