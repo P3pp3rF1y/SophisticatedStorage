@@ -49,9 +49,6 @@ public abstract class MovingStorageWrapper implements IStorageWrapper {
 	private InventoryHandler inventoryHandler = null;
 	@Nullable
 	private ContentsFilteredItemHandler contentsFilteredItemHandler = null;
-
-	@Nullable
-	private ITrackedContentsItemResourceHandler inventoryForUpgradeProcessing = null;
 	@Nullable
 	private InventoryIOHandler inventoryIOHandler = null;
 	@Nullable
@@ -130,11 +127,7 @@ public abstract class MovingStorageWrapper implements IStorageWrapper {
 
 	@Override
 	public ITrackedContentsItemResourceHandler getInventoryForUpgradeProcessing() {
-		if (inventoryForUpgradeProcessing == null) {
-			inventoryForUpgradeProcessing = new OverflowAwareInventoryHandler(getInventoryHandler());
-		}
-
-		return inventoryForUpgradeProcessing;
+		return getInventoryHandler();
 	}
 
 	@Override
@@ -343,7 +336,6 @@ public abstract class MovingStorageWrapper implements IStorageWrapper {
 
 	@Override
 	public void refreshInventoryForUpgradeProcessing() {
-		inventoryForUpgradeProcessing = null;
 		refreshInventoryForInputOutput();
 	}
 

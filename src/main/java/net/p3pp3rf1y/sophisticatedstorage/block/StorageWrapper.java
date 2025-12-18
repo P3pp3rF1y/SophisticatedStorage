@@ -45,8 +45,6 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 	@Nullable
 	private InventoryHandler inventoryHandler = null;
 	@Nullable
-	private ITrackedContentsItemResourceHandler inventoryForUpgradeProcessing = null;
-	@Nullable
 	private InventoryIOHandler inventoryIOHandler = null;
 	@Nullable
 	private UpgradeHandler upgradeHandler = null;
@@ -258,11 +256,7 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 
 	@Override
 	public ITrackedContentsItemResourceHandler getInventoryForUpgradeProcessing() {
-		if (inventoryForUpgradeProcessing == null) {
-			inventoryForUpgradeProcessing = new OverflowAwareInventoryHandler(getInventoryHandler());
-		}
-
-		return inventoryForUpgradeProcessing;
+		return getInventoryHandler();
 	}
 
 	@Override
@@ -417,7 +411,6 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 
 	@Override
 	public void refreshInventoryForUpgradeProcessing() {
-		inventoryForUpgradeProcessing = null;
 		refreshInventoryForInputOutput();
 	}
 
