@@ -407,7 +407,7 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 			return getStorageWrapper().getInventoryForInputOutput();
 		}
 		if (cachedFailedInsertItemHandler == null) {
-			cachedFailedInsertItemHandler = new CachedFailedInsertInventoryHandler(() -> getStorageWrapper().getInventoryForInputOutput(), () -> level != null ? level.getGameTime() : 0);
+			cachedFailedInsertItemHandler = new CachedFailedInsertInventoryHandler<>(() -> getStorageWrapper().getInventoryForInputOutput(), () -> level != null ? level.getGameTime() : 0);
 		}
 		return cachedFailedInsertItemHandler;
 	}
