@@ -92,12 +92,12 @@ public class ContentsFilteredItemHandler implements ITrackedContentsItemHandler 
 	}
 
 	@Override
-	public int getInternalSlotLimit(int slot) {
-		return itemHandlerGetter.get().getInternalSlotLimit(slot);
+	public void setStackInSlot(int slot, @Nonnull ItemStack stack) {
+		itemHandlerGetter.get().setStackInSlot(slot, stack);
 	}
 
 	@Override
-	public void setStackInSlot(int slot, @Nonnull ItemStack stack) {
-		itemHandlerGetter.get().setStackInSlot(slot, stack);
+	public boolean isInsertBlocked() {
+		return itemHandlerGetter.get().isInsertBlocked();
 	}
 }

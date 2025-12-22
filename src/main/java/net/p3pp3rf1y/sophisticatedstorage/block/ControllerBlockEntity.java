@@ -226,7 +226,7 @@ public class ControllerBlockEntity extends ControllerBlockEntityBase implements 
 			return this;
 		} else {
 			if (cachedFailedInsertItemHandler == null) {
-				cachedFailedInsertItemHandler = new CachedFailedInsertInventoryHandler(() -> this, () -> level != null ? level.getGameTime() : 0);
+				cachedFailedInsertItemHandler = new CachedFailedInsertInventoryHandler<>(() -> this, () -> level != null ? level.getGameTime() : 0);
 			}
 			return cachedFailedInsertItemHandler;
 		}
