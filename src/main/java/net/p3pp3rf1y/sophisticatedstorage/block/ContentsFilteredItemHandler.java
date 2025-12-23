@@ -114,4 +114,9 @@ public class ContentsFilteredItemHandler implements ITrackedContentsItemResource
 	public void setStackInSlot(int slot, @Nonnull ItemStack stack) {
 		itemHandlerGetter.get().setStackInSlot(slot, stack);
 	}
+
+	@Override
+	public boolean isInsertBlocked() {
+		return itemHandlerGetter.get().isInsertBlocked();
+	}
 }
