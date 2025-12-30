@@ -6,13 +6,14 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
 import net.p3pp3rf1y.sophisticatedcore.client.render.ClientStorageContentsTooltipBase;
+import net.p3pp3rf1y.sophisticatedcore.network.ISplittableMessage;
 import net.p3pp3rf1y.sophisticatedstorage.block.ItemContentsStorage;
 
 import javax.annotation.Nullable;
 import java.util.UUID;
 import java.util.function.Supplier;
 
-public class StorageContentsMessage {
+public class StorageContentsMessage implements ISplittableMessage {
 	private final UUID shulkerBoxUuid;
 	@Nullable
 	private final CompoundTag contents;
@@ -28,7 +29,7 @@ public class StorageContentsMessage {
 	}
 
 	public static StorageContentsMessage decode(FriendlyByteBuf packetBuffer) {
-		return new StorageContentsMessage(packetBuffer.readUUID(), packetBuffer.readNbt());
+		return new StorageContentsMessage(packetBuffer.readUUID(), packetBuffer.readAnySizeNbt());
 	}
 
 	static void onMessage(StorageContentsMessage msg, Supplier<NetworkEvent.Context> contextSupplier) {
