@@ -194,7 +194,7 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 				StorageBlockItem.getMainColorFromComponentHolder(chestBeingPlaced).orElse(-1),
 				StorageBlockItem.getAccentColorFromComponentHolder(chestBeingPlaced).orElse(-1),
 				WoodStorageBlockItem.getWoodType(chestBeingPlaced).orElse(WoodType.ACACIA),
-				wrapper.hasContents() && InventoryHelper.isEmpty(wrapper.getUpgradeHandler()));
+				!wrapper.hasContents() || InventoryHelper.isEmpty(wrapper.getUpgradeHandler()));
 	}
 
 	private BlockState getStateForPlacement(BlockPlaceContext context, Direction direction, FluidState fluidstate, int mainColor, int accentColor, WoodType woodType, boolean itemHasNoUpgrades) {
@@ -332,15 +332,21 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 
 	private static void joinChests(LevelAccessor level, BlockPos pos, BlockPos otherPos, ChestType currentChestType) {
 		level.getBlockEntity(pos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get()).ifPresent(currentBE ->
-				joinWithChest(level, otherPos, currentChestType, currentBE)
+						level.getBlockEntity(otherPos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get()).ifPresent(
+								otherChest -> {
+									if (!InventoryHelper.isEmpty(currentBE.getStorageWrapper().getUpgradeHandler()) && !InventoryHelper.isEmpty(otherChest.getStorageWrapper().getUpgradeHandler())) {
+										return;
+									}
+									joinWithChest(level, otherPos, currentChestType, currentBE);
+								}
+						)
 		);
 	}
 
 	private static void joinWithChest(LevelReader level, BlockPos otherPos, ChestType currentChestType, ChestBlockEntity currentBE) {
 		level.getBlockEntity(otherPos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get())
 				.ifPresent(otherBE -> {
-					if (InventoryHelper.isEmpty(currentBE.getStorageWrapper().getUpgradeHandler())
-							&& (currentChestType == ChestType.LEFT || !InventoryHelper.isEmpty(otherBE.getStorageWrapper().getUpgradeHandler()))) {
+					if (currentChestType == ChestType.LEFT) {
 						currentBE.joinWithChest(otherBE);
 						currentBE.syncTogglesFrom(otherBE);
 					} else {
