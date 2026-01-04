@@ -22,6 +22,7 @@ import net.p3pp3rf1y.sophisticatedcore.renderdata.DisplaySide;
 import net.p3pp3rf1y.sophisticatedcore.settings.ISettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.settings.SettingsHandler;
 import net.p3pp3rf1y.sophisticatedcore.settings.itemdisplay.ItemDisplaySettingsCategory;
+import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeHandler;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
@@ -116,9 +117,25 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 
 		moveStacksToMain(thisInventoryHandler, mainInventoryHandler, originalNumberOfSlots);
 
+		UpgradeHandler mainUpgradeHandler = mainBE.getStorageWrapper().getUpgradeHandler();
+		UpgradeHandler thisUpgradeHandler = getStorageWrapper().getUpgradeHandler();
+		moveUpgradesToMain(thisUpgradeHandler, mainUpgradeHandler);
+
 		copySettings(this, mainBE, 0, originalNumberOfSlots);
 		deleteSettingsFromSlot(this, 0);
 		WorldHelper.notifyBlockUpdate(mainBE);
+	}
+
+	private void moveUpgradesToMain(UpgradeHandler thisUpgradeHandler, UpgradeHandler mainUpgradeHandler) {
+		for (int slot = 0; slot < thisUpgradeHandler.size(); slot++) {
+			ItemStack slotStack = thisUpgradeHandler.getStackInSlot(slot);
+			if (!slotStack.isEmpty()) {
+				mainUpgradeHandler.setStackInSlot(slot, slotStack);
+			}
+		}
+		for (int slot = 0; slot < thisUpgradeHandler.size(); slot++) {
+			thisUpgradeHandler.setStackInSlot(slot, ItemStack.EMPTY);
+		}
 	}
 
 	private void copySettings(ChestBlockEntity from, ChestBlockEntity to, int startFromSlot, int slotOffset) {
