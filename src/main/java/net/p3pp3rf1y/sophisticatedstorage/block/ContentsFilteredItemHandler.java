@@ -72,6 +72,11 @@ public class ContentsFilteredItemHandler implements ITrackedContentsItemHandler 
 	}
 
 	@Override
+	public ItemStack extractItem(ItemStack stack, boolean simulate) {
+		return itemHandlerGetter.get().extractItem(stack, simulate);
+	}
+
+	@Override
 	public Set<ItemStackKey> getTrackedStacks() {
 		return itemHandlerGetter.get().getTrackedStacks();
 	}

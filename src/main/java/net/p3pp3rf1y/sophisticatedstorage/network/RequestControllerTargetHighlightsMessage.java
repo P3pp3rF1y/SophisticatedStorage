@@ -8,17 +8,22 @@ import net.minecraft.world.level.Level;
 import net.minecraftforge.network.NetworkEvent;
 import net.p3pp3rf1y.sophisticatedcore.inventory.ItemStackKey;
 import net.p3pp3rf1y.sophisticatedcore.network.PacketHandler;
-import net.p3pp3rf1y.sophisticatedcore.network.SyncItemHighlightsMessage;
+import net.p3pp3rf1y.sophisticatedcore.network.SyncBlockHighlightsMessage;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.block.ControllerBlockEntity;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 
 public record RequestControllerTargetHighlightsMessage(ItemStack stack,
 													   List<BlockPos> controllerPositions) {
+	public static final int MATCHING_STACK_HIGHLIGHT_COLOR = 0x4CAF50;
+	public static final int MATCHING_ITEM_HIGHLIGHT_COLOR = 0x42A5F5;
+	public static final int EMPTY_TARGET_HIGHLIGHT_COLOR = 0xFFEB3B;
+
 	public static void encode(RequestControllerTargetHighlightsMessage msg, FriendlyByteBuf packetBuffer) {
 		packetBuffer.writeItemStack(msg.stack(), false);
 		packetBuffer.writeCollection(msg.controllerPositions(), FriendlyByteBuf::writeBlockPos);
@@ -47,6 +52,12 @@ public record RequestControllerTargetHighlightsMessage(ItemStack stack,
 				emptyTargetSlotStorages.addAll(controller.getEmptyTargetSlotStorages(stackKey));
 			});
 		});
-		PacketHandler.INSTANCE.sendToClient(player, new SyncItemHighlightsMessage(stackStorages, itemStorages, emptyTargetSlotStorages));
+		PacketHandler.INSTANCE.sendToClient(player, new SyncBlockHighlightsMessage(
+				Map.of(
+						MATCHING_STACK_HIGHLIGHT_COLOR, stackStorages,
+						MATCHING_ITEM_HIGHLIGHT_COLOR, itemStorages,
+						EMPTY_TARGET_HIGHLIGHT_COLOR, emptyTargetSlotStorages
+				)
+		));
 	}
 }
