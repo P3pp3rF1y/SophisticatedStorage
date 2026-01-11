@@ -12,13 +12,14 @@ import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.p3pp3rf1y.sophisticatedcore.inventory.ItemStackKey;
-import net.p3pp3rf1y.sophisticatedcore.network.SyncItemHighlightsPayload;
+import net.p3pp3rf1y.sophisticatedcore.network.SyncBlockHighlightsPayload;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.ControllerBlockEntity;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public record RequestControllerTargetHighlightsPayload(ItemStack stack,
 													   List<BlockPos> controllerPositions) implements CustomPacketPayload {
@@ -29,6 +30,9 @@ public record RequestControllerTargetHighlightsPayload(ItemStack stack,
 			BlockPos.STREAM_CODEC.apply(ByteBufCodecs.list()),
 			RequestControllerTargetHighlightsPayload::controllerPositions,
 			RequestControllerTargetHighlightsPayload::new);
+	public static final int MATCHING_STACK_HIGHLIGHT_COLOR = 0x4CAF50;
+	public static final int MATCHING_ITEM_HIGHLIGHT_COLOR = 0x42A5F5;
+	public static final int EMPTY_TARGET_HIGHLIGHT_COLOR = 0xFFEB3B;
 
 	@Override
 	public Type<? extends CustomPacketPayload> type() {
@@ -50,7 +54,14 @@ public record RequestControllerTargetHighlightsPayload(ItemStack stack,
 					emptyTargetSlotStorages.addAll(controller.getEmptyTargetSlotStorages(stackKey));
 				});
 			});
-			PacketDistributor.sendToPlayer(serverPlayer, new SyncItemHighlightsPayload(stackStorages, itemStorages, emptyTargetSlotStorages));
+
+			PacketDistributor.sendToPlayer(serverPlayer, new SyncBlockHighlightsPayload(
+					Map.of(
+							MATCHING_STACK_HIGHLIGHT_COLOR, stackStorages,
+							MATCHING_ITEM_HIGHLIGHT_COLOR, itemStorages,
+							EMPTY_TARGET_HIGHLIGHT_COLOR, emptyTargetSlotStorages
+					)
+			));
 		}
 	}
 }
