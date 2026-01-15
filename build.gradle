@@ -33,22 +33,22 @@ repositories {
         name = "GHPCore"
         url = uri("https://maven.pkg.github.com/p3pp3rf1y/sophisticatedcore")
         credentials {
-            username = System.getenv("USERNAME")
-            password = System.getenv("READ_PACKAGES_TOKEN")
+            username = System.getenv("GITHUB_ACTOR")
+            password = System.getenv("GITHUB_TOKEN")
         }
         content {
-            includeGroupByRegex "sophisticatedcore.*"
+            includeModule("net.p3pp3rf1y", "sophisticatedcore")
         }
     }
     maven {
         name = "GHPBackpacks"
         url = uri("https://maven.pkg.github.com/p3pp3rf1y/sophisticatedbackpacks")
         credentials {
-            username = System.getenv("USERNAME")
-            password = System.getenv("READ_PACKAGES_TOKEN")
+            username = System.getenv("GITHUB_ACTOR")
+            password = System.getenv("GITHUB_TOKEN")
         }
         content {
-            includeGroupByRegex "sophisticatedbackpacks.*"
+            includeModule("net.p3pp3rf1y", "sophisticatedbackpacks")
         }
     }
     maven {
@@ -182,20 +182,20 @@ dependencies {
     if (findProject(':SophisticatedCore') != null) {
         dependencies.implementation project(':SophisticatedCore')
     } else {
-        dependencies.implementation("sophisticatedcore:sophisticatedcore:${sc_version}") {
+        dependencies.implementation("net.p3pp3rf1y:sophisticatedcore:${sc_version}") {
             transitive = false
         }
-        dependencies.testImplementation("sophisticatedcore:sophisticatedcore:${sc_version}") {
+        dependencies.testImplementation("net.p3pp3rf1y:sophisticatedcore:${sc_version}") {
             transitive = false
         }
     }
     if (findProject(':SophisticatedBackpacks') != null) {
         dependencies.implementation project(':SophisticatedBackpacks')
     } else {
-        dependencies.implementation("sophisticatedbackpacks:sophisticatedbackpacks:${sb_version}") {
+        dependencies.implementation("net.p3pp3rf1y:sophisticatedbackpacks:${sb_version}") {
             transitive = false
         }
-        dependencies.testImplementation("sophisticatedbackpacks:sophisticatedbackpacks:${sb_version}") {
+        dependencies.testImplementation("net.p3pp3rf1y:sophisticatedbackpacks:${sb_version}") {
             transitive = false
         }
     }
@@ -293,9 +293,9 @@ publishing {
     }
 }
 
-sonarqube {
+sonar {
     properties {
-        property "sonar.projectName", "${mod_id}"
+        property "sonar.organization", "p3pp3rf1y-github"
         property "sonar.projectKey", "${sonar_project_key}"
     }
 }
