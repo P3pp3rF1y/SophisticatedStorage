@@ -175,7 +175,14 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 	protected abstract String getStorageType();
 
 	protected void onUpgradeCachesInvalidated() {
+		invalidateCapabilitiesAndControllerCache();
+	}
+
+	private void invalidateCapabilitiesAndControllerCache() {
 		invalidateCapabilities();
+		if (level != null) {
+			onInventoryInputOutputHandlerRefresh();
+		}
 	}
 
 	public boolean isOpen() {
@@ -387,6 +394,7 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		int currentInventorySlots = getStorageWrapper().getInventoryHandler().size();
 		getStorageWrapper().changeSize(additionalInventorySlots, additionalUpgradeSlots);
 		changeSlots(currentInventorySlots + additionalInventorySlots);
+		invalidateCapabilitiesAndControllerCache();
 	}
 
 	public void dropContents() {
@@ -524,7 +532,7 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		updateEmptySlots();
 		if (allowsEmptySlotsMatchingItemInsertsWhenLocked()) {
 			contentsFilteredItemHandler = null;
-			invalidateCapabilities();
+			invalidateCapabilitiesAndControllerCache();
 		}
 		onInventoryInputOutputHandlerRefresh();
 		setChanged();
@@ -545,7 +553,7 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		updateEmptySlots();
 		if (allowsEmptySlotsMatchingItemInsertsWhenLocked()) {
 			contentsFilteredItemHandler = null;
-			invalidateCapabilities();
+			invalidateCapabilitiesAndControllerCache();
 		}
 		onInventoryInputOutputHandlerRefresh();
 		setChanged();
