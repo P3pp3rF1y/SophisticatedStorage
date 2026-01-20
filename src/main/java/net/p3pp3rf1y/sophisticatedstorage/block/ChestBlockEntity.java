@@ -391,11 +391,6 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 		return this;
 	}
 
-	@Override
-	public boolean canBeLinked() {
-		return isMainChest() && super.canBeLinked();
-	}
-
 	public void dropSecondPartContents(ChestBlock chestBlock, BlockPos dropPosition) {
 		InventoryHandler invHandler = getStorageWrapper().getInventoryHandler();
 
@@ -476,5 +471,26 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 			// need to update neighbors of the other half as well for comparators to pickup inventory changes
 			runOnTheOtherPart(level, worldPosition, (be, pos) -> level.updateNeighbourForOutputSignal(pos, be.getBlockState().getBlock()));
 		}
+	}
+
+	@Override
+	public void linkToController(BlockPos controllerPos) {
+		if (doubleMainPos != null) {
+			level.getBlockEntity(doubleMainPos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get())
+					.ifPresent(be -> be.linkToController(controllerPos));
+			return;
+		}
+		super.linkToController(controllerPos);
+	}
+
+	@Override
+	public void unlinkFromController() {
+		if (doubleMainPos != null) {
+			level.getBlockEntity(doubleMainPos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get())
+					.ifPresent(ChestBlockEntity::unlinkFromController);
+			return;
+		}
+
+		super.unlinkFromController();
 	}
 }
