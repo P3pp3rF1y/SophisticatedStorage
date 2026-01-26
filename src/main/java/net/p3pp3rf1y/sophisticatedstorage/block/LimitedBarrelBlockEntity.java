@@ -18,6 +18,7 @@ import net.p3pp3rf1y.sophisticatedcore.settings.SettingsHandler;
 import net.p3pp3rf1y.sophisticatedcore.settings.itemdisplay.ItemDisplaySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.settings.memory.MemorySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.settings.nosort.NoSortSettingsCategory;
+import net.p3pp3rf1y.sophisticatedcore.upgrades.voiding.VoidType;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.voiding.VoidUpgradeWrapper;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
@@ -36,7 +37,7 @@ import java.util.function.Predicate;
 public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICountDisplay, IFillLevelDisplay {
 	public static final Consumer<VoidUpgradeWrapper> VOID_UPGRADE_VOIDING_OVERFLOW_OF_EVERYTHING_BY_DEFAULT = voidUpgrade -> {
 		voidUpgrade.getFilterLogic().setAllowByDefault(false);
-		voidUpgrade.setShouldVoidOverflowDefaultOrLoadFromNbt(true);
+		voidUpgrade.setVoidOverflowDefaultOrLoadFromNbt(VoidType.SLOT_OVERFLOW);
 	};
 	public static final String STORAGE_TYPE = "limited_barrel";
 	private long lastDepositTime = -100;
