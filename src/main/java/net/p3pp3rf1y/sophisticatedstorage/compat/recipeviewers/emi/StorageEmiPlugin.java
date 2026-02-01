@@ -20,6 +20,8 @@ import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.emi.EmiRecipeDisplay
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.emi.EmiSettingsGhostDragDropHandler;
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.emi.EmiStorageGhostDragDropHandler;
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.emi.comparison.EmiSubtypeInterpreter;
+import net.p3pp3rf1y.sophisticatedstorage.client.gui.LimitedBarrelScreen;
+import net.p3pp3rf1y.sophisticatedstorage.client.gui.LimitedBarrelSettingsScreen;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageScreen;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageSettingsScreen;
 import net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.common.DyeRecipesMaker;
@@ -79,25 +81,33 @@ public class StorageEmiPlugin implements EmiPlugin {
 				.forEach((item, comparator) -> registry.setDefaultComparison(item, EmiSubtypeInterpreter.of(comparator)));
 	}
 
-	private void registerGuiHandlers(EmiRegistry registry) {
-		registry.addExclusionArea(StorageScreen.class, (screen, consumer) -> {
-			//noinspection ConstantValue
-			if (screen == null || screen.getUpgradeSettingsControl() == null) {
-				return;
-			}
-			screen.getUpgradeSlotsRectangle().ifPresent(r -> consumer.accept(new Bounds(r.getX(), r.getY(), r.getWidth(), r.getHeight())));
-			screen.getUpgradeSettingsControl().getTabRectangles().forEach(r -> consumer.accept(new Bounds(r.getX(), r.getY(), r.getWidth(), r.getHeight())));
-			screen.getSortButtonsRectangle().ifPresent(r -> consumer.accept(new Bounds(r.getX(), r.getY(), r.getWidth(), r.getHeight())));
-		});
-		registry.addExclusionArea(StorageSettingsScreen.class, (screen, consumer) -> {
-			if (screen == null) { // Due to how Emi collects the exclusion area this can be null
-				return;
-			}
-			screen.getExtendedControlsRectangles().forEach(r -> consumer.accept(new Bounds(r.getX(), r.getY(), r.getWidth(), r.getHeight())));
-		});
+    private void registerGuiHandlers(EmiRegistry registry) {
+		registry.addExclusionArea(StorageScreen.class, StorageEmiPlugin::addStorageExclusionArea);
+		registry.addExclusionArea(LimitedBarrelScreen.class, StorageEmiPlugin::addStorageExclusionArea);
+		registry.addExclusionArea(StorageSettingsScreen.class, StorageEmiPlugin::addSettingsExclusionArea);
+		registry.addExclusionArea(LimitedBarrelSettingsScreen.class, StorageEmiPlugin::addSettingsExclusionArea);
 
 		registry.addDragDropHandler(StorageScreen.class, new EmiStorageGhostDragDropHandler<>());
+		registry.addDragDropHandler(LimitedBarrelScreen.class, new EmiStorageGhostDragDropHandler<>());
 		registry.addDragDropHandler(SettingsScreen.class, new EmiSettingsGhostDragDropHandler<>());
+		registry.addDragDropHandler(LimitedBarrelSettingsScreen.class, new EmiSettingsGhostDragDropHandler<>());
+	}
+
+	private static void addSettingsExclusionArea(StorageSettingsScreen screen, Consumer<Bounds> consumer) {
+		if (screen == null) { // Due to how Emi collects the exclusion area this can be null
+			return;
+		}
+		screen.getExtendedControlsRectangles().forEach(r -> consumer.accept(new Bounds(r.getX(), r.getY(), r.getWidth(), r.getHeight())));
+	}
+
+	private static void addStorageExclusionArea(StorageScreen screen, Consumer<Bounds> consumer) {
+		//noinspection ConstantValue
+		if (screen == null || screen.getUpgradeSettingsControl() == null) {
+			return;
+		}
+		screen.getUpgradeSlotsRectangle().ifPresent(r -> consumer.accept(new Bounds(r.getX(), r.getY(), r.getWidth(), r.getHeight())));
+		screen.getUpgradeSettingsControl().getTabRectangles().forEach(r -> consumer.accept(new Bounds(r.getX(), r.getY(), r.getWidth(), r.getHeight())));
+		screen.getSortButtonsRectangle().ifPresent(r -> consumer.accept(new Bounds(r.getX(), r.getY(), r.getWidth(), r.getHeight())));
 	}
 
 	private void registerRecipes(EmiRegistry registry) {
