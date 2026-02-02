@@ -80,6 +80,7 @@ public abstract class WoodStorageBlockEntity extends StorageBlockEntity {
 		if (packed) {
 			RenderDataHandler renderDataHandler = getStorageWrapper().getRenderDataHandler();
 			renderDataHandler.removeAllUpgradeClientData();
+			setUpdateBlockRender();
 		}
 	}
 
