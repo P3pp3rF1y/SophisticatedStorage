@@ -248,7 +248,11 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 				player.displayClientMessage(Component.translatable("gui.sophisticatedstorage.status.packing_tape_disabled"), true);
 				return InteractionResult.FAIL;
 			} else {
-				return packStorage(player, hand, b, stackInHand);
+				InteractionResult interactionResult = packStorage(player, hand, b, stackInHand);
+				if (interactionResult instanceof InteractionResult.Success success && success.heldItemTransformedTo() != null && success.heldItemTransformedTo().isEmpty()) {
+					player.setItemInHand(hand, ItemStack.EMPTY);
+				}
+				return interactionResult;
 			}
 		}
 		return tryAddUpgrade(player, b, stackInHand, facing, hitResult);
