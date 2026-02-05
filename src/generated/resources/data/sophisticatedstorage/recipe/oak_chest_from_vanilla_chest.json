@@ -9,7 +9,7 @@
   "category": "misc",
   "ingredients": [
     "minecraft:chest",
-    "minecraft:redstone_torch"
+    "minecraft:lever"
   ],
   "result": {
     "components": {

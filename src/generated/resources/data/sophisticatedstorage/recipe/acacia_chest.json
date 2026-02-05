@@ -8,12 +8,12 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "P": "minecraft:acacia_planks",
-    "R": "minecraft:redstone_torch"
+    "L": "minecraft:lever",
+    "P": "minecraft:acacia_planks"
   },
   "pattern": [
     "PPP",
-    "PRP",
+    "PLP",
     "PPP"
   ],
   "result": {
