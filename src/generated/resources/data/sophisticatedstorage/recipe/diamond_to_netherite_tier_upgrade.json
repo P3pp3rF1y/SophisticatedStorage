@@ -9,7 +9,7 @@
   "category": "misc",
   "ingredients": [
     {
-      "item": "minecraft:redstone_torch"
+      "item": "minecraft:lever"
     },
     {
       "tag": "c:ingots/netherite"

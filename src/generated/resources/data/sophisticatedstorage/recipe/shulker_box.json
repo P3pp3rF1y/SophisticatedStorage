@@ -11,8 +11,8 @@
     "C": {
       "tag": "c:chests"
     },
-    "R": {
-      "item": "minecraft:redstone_torch"
+    "L": {
+      "item": "minecraft:lever"
     },
     "S": {
       "item": "minecraft:shulker_shell"
@@ -20,7 +20,7 @@
   },
   "pattern": [
     " S",
-    "RC",
+    "LC",
     " S"
   ],
   "result": {

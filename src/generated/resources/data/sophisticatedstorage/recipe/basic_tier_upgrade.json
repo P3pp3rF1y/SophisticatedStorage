@@ -8,8 +8,8 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "R": {
-      "item": "minecraft:redstone_torch"
+    "L": {
+      "item": "minecraft:lever"
     },
     "S": {
       "tag": "c:rods/wooden"
@@ -17,7 +17,7 @@
   },
   "pattern": [
     " S ",
-    "SRS",
+    "SLS",
     " S "
   ],
   "result": {
