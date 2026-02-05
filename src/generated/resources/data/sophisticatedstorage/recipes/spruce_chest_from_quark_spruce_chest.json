@@ -11,11 +11,9 @@
     }
   ],
   "ingredients": [
+    [],
     {
-      "item": "quark:spruce_chest"
-    },
-    {
-      "item": "minecraft:redstone_torch"
+      "item": "minecraft:lever"
     }
   ],
   "result": {

@@ -7,11 +7,11 @@
     }
   ],
   "key": {
+    "L": {
+      "item": "minecraft:lever"
+    },
     "P": {
       "item": "minecraft:warped_planks"
-    },
-    "R": {
-      "item": "minecraft:redstone_torch"
     },
     "S": {
       "item": "minecraft:warped_slab"
@@ -19,7 +19,7 @@
   },
   "pattern": [
     "PSP",
-    "PRP",
+    "PLP",
     "PPP"
   ],
   "result": {

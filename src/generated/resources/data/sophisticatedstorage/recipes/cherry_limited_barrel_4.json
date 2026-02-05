@@ -7,11 +7,11 @@
     }
   ],
   "key": {
+    "L": {
+      "item": "minecraft:lever"
+    },
     "P": {
       "item": "minecraft:cherry_planks"
-    },
-    "R": {
-      "item": "minecraft:redstone_torch"
     },
     "S": {
       "item": "minecraft:cherry_slab"
@@ -19,7 +19,7 @@
   },
   "pattern": [
     "SPS",
-    "PRP",
+    "PLP",
     "SPS"
   ],
   "result": {

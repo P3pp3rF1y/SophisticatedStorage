@@ -10,13 +10,13 @@
     "G": {
       "tag": "forge:ingots/gold"
     },
-    "R": {
-      "item": "minecraft:redstone_torch"
+    "L": {
+      "item": "minecraft:lever"
     }
   },
   "pattern": [
     "GGG",
-    "GRG",
+    "GLG",
     "GGG"
   ],
   "result": {

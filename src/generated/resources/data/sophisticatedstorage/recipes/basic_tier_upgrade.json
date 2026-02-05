@@ -7,8 +7,8 @@
     }
   ],
   "key": {
-    "R": {
-      "item": "minecraft:redstone_torch"
+    "L": {
+      "item": "minecraft:lever"
     },
     "S": {
       "tag": "forge:rods/wooden"
@@ -16,7 +16,7 @@
   },
   "pattern": [
     " S ",
-    "SRS",
+    "SLS",
     " S "
   ],
   "result": {

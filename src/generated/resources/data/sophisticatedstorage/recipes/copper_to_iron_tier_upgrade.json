@@ -10,13 +10,13 @@
     "I": {
       "tag": "forge:ingots/iron"
     },
-    "R": {
-      "item": "minecraft:redstone_torch"
+    "L": {
+      "item": "minecraft:lever"
     }
   },
   "pattern": [
     " I ",
-    "IRI",
+    "ILI",
     " I "
   ],
   "result": {

@@ -10,13 +10,13 @@
     "C": {
       "tag": "forge:ingots/copper"
     },
-    "R": {
-      "item": "minecraft:redstone_torch"
+    "L": {
+      "item": "minecraft:lever"
     }
   },
   "pattern": [
     "CCC",
-    "CRC",
+    "CLC",
     "CCC"
   ],
   "result": {

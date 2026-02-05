@@ -1,12 +1,12 @@
 {
   "parent": "minecraft:recipes/root",
   "criteria": {
-    "has_redstone_torch": {
+    "has_lever": {
       "conditions": {
         "items": [
           {
             "items": [
-              "minecraft:redstone_torch"
+              "minecraft:lever"
             ]
           }
         ]
@@ -22,7 +22,7 @@
   },
   "requirements": [
     [
-      "has_redstone_torch",
+      "has_lever",
       "has_the_recipe"
     ]
   ],

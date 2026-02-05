@@ -10,13 +10,13 @@
     "D": {
       "tag": "forge:gems/diamond"
     },
-    "R": {
-      "item": "minecraft:redstone_torch"
+    "L": {
+      "item": "minecraft:lever"
     }
   },
   "pattern": [
     "DDD",
-    "DRD",
+    "DLD",
     "DDD"
   ],
   "result": {
