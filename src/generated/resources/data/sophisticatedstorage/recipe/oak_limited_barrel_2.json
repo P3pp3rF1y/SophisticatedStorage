@@ -8,13 +8,13 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
+    "L": "minecraft:lever",
     "P": "minecraft:oak_planks",
-    "R": "minecraft:redstone_torch",
     "S": "minecraft:oak_slab"
   },
   "pattern": [
     "PPP",
-    "SRS",
+    "SLS",
     "PPP"
   ],
   "result": {

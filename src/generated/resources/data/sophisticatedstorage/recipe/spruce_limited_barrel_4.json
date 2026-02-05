@@ -8,13 +8,13 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
+    "L": "minecraft:lever",
     "P": "minecraft:spruce_planks",
-    "R": "minecraft:redstone_torch",
     "S": "minecraft:spruce_slab"
   },
   "pattern": [
     "SPS",
-    "PRP",
+    "PLP",
     "SPS"
   ],
   "result": {

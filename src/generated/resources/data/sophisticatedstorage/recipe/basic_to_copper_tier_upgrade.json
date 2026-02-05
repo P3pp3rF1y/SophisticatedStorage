@@ -9,11 +9,11 @@
   "category": "misc",
   "key": {
     "C": "#c:ingots/copper",
-    "R": "minecraft:redstone_torch"
+    "L": "minecraft:lever"
   },
   "pattern": [
     "CCC",
-    "CRC",
+    "CLC",
     "CCC"
   ],
   "result": {

@@ -9,7 +9,7 @@
   "category": "misc",
   "ingredients": [
     "minecraft:yellow_shulker_box",
-    "minecraft:redstone_torch"
+    "minecraft:lever"
   ],
   "result": {
     "components": {

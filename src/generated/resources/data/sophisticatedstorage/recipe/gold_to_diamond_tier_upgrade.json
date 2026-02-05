@@ -9,11 +9,11 @@
   "category": "misc",
   "key": {
     "D": "#c:gems/diamond",
-    "R": "minecraft:redstone_torch"
+    "L": "minecraft:lever"
   },
   "pattern": [
     "DDD",
-    "DRD",
+    "DLD",
     "DDD"
   ],
   "result": {
