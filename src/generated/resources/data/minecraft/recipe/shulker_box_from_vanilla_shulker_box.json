@@ -9,7 +9,7 @@
   "category": "misc",
   "ingredients": [
     "minecraft:shulker_box",
-    "minecraft:redstone_torch"
+    "minecraft:lever"
   ],
   "result": {
     "count": 1,

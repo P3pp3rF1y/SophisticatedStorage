@@ -9,7 +9,7 @@
   "category": "misc",
   "ingredients": [
     "minecraft:barrel",
-    "minecraft:redstone_torch"
+    "minecraft:lever"
   ],
   "result": {
     "components": {

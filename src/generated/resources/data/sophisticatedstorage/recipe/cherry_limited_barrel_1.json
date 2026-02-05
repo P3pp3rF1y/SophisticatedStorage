@@ -8,13 +8,13 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
+    "L": "minecraft:lever",
     "P": "minecraft:cherry_planks",
-    "R": "minecraft:redstone_torch",
     "S": "minecraft:cherry_slab"
   },
   "pattern": [
     "PSP",
-    "PRP",
+    "PLP",
     "PPP"
   ],
   "result": {

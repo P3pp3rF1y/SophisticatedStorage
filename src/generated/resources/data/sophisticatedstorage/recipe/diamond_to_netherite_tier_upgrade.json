@@ -8,7 +8,7 @@
   "type": "minecraft:crafting_shapeless",
   "category": "misc",
   "ingredients": [
-    "minecraft:redstone_torch",
+    "minecraft:lever",
     "#c:ingots/netherite"
   ],
   "result": {
