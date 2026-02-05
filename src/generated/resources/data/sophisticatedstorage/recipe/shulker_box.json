@@ -9,12 +9,12 @@
   "category": "misc",
   "key": {
     "C": "#c:chests",
-    "R": "minecraft:redstone_torch",
+    "L": "minecraft:lever",
     "S": "minecraft:shulker_shell"
   },
   "pattern": [
     " S",
-    "RC",
+    "LC",
     " S"
   ],
   "result": {

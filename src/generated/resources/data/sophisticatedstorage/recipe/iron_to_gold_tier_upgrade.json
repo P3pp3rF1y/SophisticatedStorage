@@ -9,11 +9,11 @@
   "category": "misc",
   "key": {
     "G": "#c:ingots/gold",
-    "R": "minecraft:redstone_torch"
+    "L": "minecraft:lever"
   },
   "pattern": [
     "GGG",
-    "GRG",
+    "GLG",
     "GGG"
   ],
   "result": {

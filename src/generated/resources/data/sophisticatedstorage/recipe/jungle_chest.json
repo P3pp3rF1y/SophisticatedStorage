@@ -8,12 +8,12 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "P": "minecraft:jungle_planks",
-    "R": "minecraft:redstone_torch"
+    "L": "minecraft:lever",
+    "P": "minecraft:jungle_planks"
   },
   "pattern": [
     "PPP",
-    "PRP",
+    "PLP",
     "PPP"
   ],
   "result": {
