@@ -9,11 +9,11 @@
   "category": "misc",
   "key": {
     "I": "#c:ingots/iron",
-    "R": "minecraft:redstone_torch"
+    "L": "minecraft:lever"
   },
   "pattern": [
     "III",
-    "IRI",
+    "ILI",
     "III"
   ],
   "result": {

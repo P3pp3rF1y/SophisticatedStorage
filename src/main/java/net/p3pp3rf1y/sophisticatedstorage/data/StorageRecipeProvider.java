@@ -37,6 +37,7 @@ import java.util.function.Consumer;
 
 public class StorageRecipeProvider extends RecipeProvider {
 	private static final String HAS_UPGRADE_BASE_CRITERION_NAME = "has_upgrade_base";
+	private static final String HAS_LEVER_CRITERION_NAME = "has_lever";
 	private static final String HAS_REDSTONE_TORCH_CRITERION_NAME = "has_redstone_torch";
 	private static final String HAS_SMELTING_UPGRADE_CRITERION_NAME = "has_smelting_upgrade";
 	public static final String HAS_BASE_TIER_WOODEN_STORAGE_CRITERION_NAME = "has_base_tier_wooden_storage";
@@ -231,41 +232,41 @@ public class StorageRecipeProvider extends RecipeProvider {
 
 		ShapeBasedRecipeBuilder.shaped(items, WoodStorageBlockItem.setWoodType(new ItemStack(ModBlocks.LIMITED_BARREL_1_ITEM.get()), WoodType.SPRUCE), GenericWoodStorageRecipe::new)
 				.pattern("PSP")
-				.pattern("PRP")
+				.pattern("PLP")
 				.pattern("PPP")
 				.define('P', ItemTags.PLANKS)
 				.define('S', ItemTags.WOODEN_SLABS)
-				.define('R', Blocks.REDSTONE_TORCH)
+				.define('L', Blocks.LEVER)
 				.unlockedBy("has " + PLANK_SUFFIX, has(ItemTags.PLANKS))
 				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getIdentifier("generic_limited_barrel_1")));
 
 		ShapeBasedRecipeBuilder.shaped(items, WoodStorageBlockItem.setWoodType(new ItemStack(ModBlocks.LIMITED_BARREL_2_ITEM.get()), WoodType.SPRUCE), GenericWoodStorageRecipe::new)
 				.pattern("PPP")
-				.pattern("SRS")
+				.pattern("SLS")
 				.pattern("PPP")
 				.define('P', ItemTags.PLANKS)
 				.define('S', ItemTags.WOODEN_SLABS)
-				.define('R', Blocks.REDSTONE_TORCH)
+				.define('L', Blocks.LEVER)
 				.unlockedBy("has " + PLANK_SUFFIX, has(ItemTags.PLANKS))
 				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getIdentifier("generic_limited_barrel_2")));
 
 		ShapeBasedRecipeBuilder.shaped(items, WoodStorageBlockItem.setWoodType(new ItemStack(ModBlocks.LIMITED_BARREL_3_ITEM.get()), WoodType.SPRUCE), GenericWoodStorageRecipe::new)
 				.pattern("PSP")
-				.pattern("PRP")
+				.pattern("PLP")
 				.pattern("SPS")
 				.define('P', ItemTags.PLANKS)
 				.define('S', ItemTags.WOODEN_SLABS)
-				.define('R', Blocks.REDSTONE_TORCH)
+				.define('L', Blocks.LEVER)
 				.unlockedBy("has " + PLANK_SUFFIX, has(ItemTags.PLANKS))
 				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getIdentifier("generic_limited_barrel_3")));
 
 		ShapeBasedRecipeBuilder.shaped(items, WoodStorageBlockItem.setWoodType(new ItemStack(ModBlocks.LIMITED_BARREL_4_ITEM.get()), WoodType.SPRUCE), GenericWoodStorageRecipe::new)
 				.pattern("SPS")
-				.pattern("PRP")
+				.pattern("PLP")
 				.pattern("SPS")
 				.define('P', ItemTags.PLANKS)
 				.define('S', ItemTags.WOODEN_SLABS)
-				.define('R', Blocks.REDSTONE_TORCH)
+				.define('L', Blocks.LEVER)
 				.unlockedBy("has " + PLANK_SUFFIX, has(ItemTags.PLANKS))
 				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getIdentifier("generic_limited_barrel_4")));
 
@@ -488,9 +489,9 @@ public class StorageRecipeProvider extends RecipeProvider {
 	private void addShulkerBoxRecipes(RecipeOutput recipeOutput) {
 		ShapeBasedRecipeBuilder.shaped(items, ModBlocks.SHULKER_BOX_ITEM.get())
 				.pattern(" S")
-				.pattern("RC")
+				.pattern("LC")
 				.pattern(" S")
-				.define('R', Items.REDSTONE_TORCH)
+				.define('L', Items.LEVER)
 				.define('S', Items.SHULKER_SHELL)
 				.define('C', Tags.Items.CHESTS)
 				.unlockedBy("has_shulker_shell", has(Items.SHULKER_SHELL))
@@ -498,7 +499,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 
 		ShapelessBasedRecipeBuilder.shapeless(items, ModBlocks.SHULKER_BOX_ITEM.get(), ShulkerBoxFromVanillaShapelessRecipe::new)
 				.requires(Items.SHULKER_BOX)
-				.requires(Items.REDSTONE_TORCH)
+				.requires(Items.LEVER)
 				.unlockedBy("has_shulker_box", has(Items.SHULKER_BOX))
 				.save(recipeOutput, "shulker_box_from_vanilla_shulker_box");
 
@@ -580,29 +581,29 @@ public class StorageRecipeProvider extends RecipeProvider {
 	private void addTierUpgradeItemRecipes(RecipeOutput recipeOutput) {
 		ShapeBasedRecipeBuilder.shaped(items, ModItems.BASIC_TIER_UPGRADE.get())
 				.pattern(" S ")
-				.pattern("SRS")
+				.pattern("SLS")
 				.pattern(" S ")
-				.define('R', Items.REDSTONE_TORCH)
+				.define('L', Items.LEVER)
 				.define('S', Tags.Items.RODS_WOODEN)
-				.unlockedBy(HAS_REDSTONE_TORCH_CRITERION_NAME, has(Items.REDSTONE_TORCH))
+				.unlockedBy(HAS_LEVER_CRITERION_NAME, has(Items.LEVER))
 				.save(recipeOutput);
 
 		ShapeBasedRecipeBuilder.shaped(items, ModItems.BASIC_TO_COPPER_TIER_UPGRADE.get())
 				.pattern("CCC")
-				.pattern("CRC")
+				.pattern("CLC")
 				.pattern("CCC")
-				.define('R', Items.REDSTONE_TORCH)
+				.define('L', Items.LEVER)
 				.define('C', Tags.Items.INGOTS_COPPER)
-				.unlockedBy(HAS_REDSTONE_TORCH_CRITERION_NAME, has(Items.REDSTONE_TORCH))
+				.unlockedBy(HAS_LEVER_CRITERION_NAME, has(Items.LEVER))
 				.save(recipeOutput);
 
 		ShapeBasedRecipeBuilder.shaped(items, ModItems.BASIC_TO_IRON_TIER_UPGRADE.get())
 				.pattern("III")
-				.pattern("IRI")
+				.pattern("ILI")
 				.pattern("III")
-				.define('R', Items.REDSTONE_TORCH)
+				.define('L', Items.LEVER)
 				.define('I', Tags.Items.INGOTS_IRON)
-				.unlockedBy(HAS_REDSTONE_TORCH_CRITERION_NAME, has(Items.REDSTONE_TORCH))
+				.unlockedBy(HAS_LEVER_CRITERION_NAME, has(Items.LEVER))
 				.save(recipeOutput);
 
 		ShapeBasedRecipeBuilder.shaped(items, ModItems.BASIC_TO_IRON_TIER_UPGRADE.get())
@@ -611,7 +612,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.pattern(" I ")
 				.define('R', ModItems.BASIC_TO_COPPER_TIER_UPGRADE.get())
 				.define('I', Tags.Items.INGOTS_IRON)
-				.unlockedBy(HAS_REDSTONE_TORCH_CRITERION_NAME, has(Items.REDSTONE_TORCH))
+				.unlockedBy("has_basic_to_copper_tier_upgrade", has(ModItems.BASIC_TO_COPPER_TIER_UPGRADE.get()))
 				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getIdentifier("basic_to_iron_tier_from_basic_to_copper_tier")));
 
 		ShapeBasedRecipeBuilder.shaped(items, ModItems.BASIC_TO_GOLD_TIER_UPGRADE.get())
@@ -640,11 +641,11 @@ public class StorageRecipeProvider extends RecipeProvider {
 
 		ShapeBasedRecipeBuilder.shaped(items, ModItems.COPPER_TO_IRON_TIER_UPGRADE.get())
 				.pattern(" I ")
-				.pattern("IRI")
+				.pattern("ILI")
 				.pattern(" I ")
-				.define('R', Items.REDSTONE_TORCH)
+				.define('L', Items.LEVER)
 				.define('I', Tags.Items.INGOTS_IRON)
-				.unlockedBy(HAS_REDSTONE_TORCH_CRITERION_NAME, has(Items.REDSTONE_TORCH))
+				.unlockedBy(HAS_LEVER_CRITERION_NAME, has(Items.LEVER))
 				.save(recipeOutput);
 
 		ShapeBasedRecipeBuilder.shaped(items, ModItems.COPPER_TO_GOLD_TIER_UPGRADE.get())
@@ -673,11 +674,11 @@ public class StorageRecipeProvider extends RecipeProvider {
 
 		ShapeBasedRecipeBuilder.shaped(items, ModItems.IRON_TO_GOLD_TIER_UPGRADE.get())
 				.pattern("GGG")
-				.pattern("GRG")
+				.pattern("GLG")
 				.pattern("GGG")
-				.define('R', Items.REDSTONE_TORCH)
+				.define('L', Items.LEVER)
 				.define('G', Tags.Items.INGOTS_GOLD)
-				.unlockedBy(HAS_REDSTONE_TORCH_CRITERION_NAME, has(Items.REDSTONE_TORCH))
+				.unlockedBy(HAS_LEVER_CRITERION_NAME, has(Items.LEVER))
 				.save(recipeOutput);
 
 		ShapeBasedRecipeBuilder.shaped(items, ModItems.IRON_TO_DIAMOND_TIER_UPGRADE.get())
@@ -697,11 +698,11 @@ public class StorageRecipeProvider extends RecipeProvider {
 
 		ShapeBasedRecipeBuilder.shaped(items, ModItems.GOLD_TO_DIAMOND_TIER_UPGRADE.get())
 				.pattern("DDD")
-				.pattern("DRD")
+				.pattern("DLD")
 				.pattern("DDD")
-				.define('R', Items.REDSTONE_TORCH)
+				.define('L', Items.LEVER)
 				.define('D', Tags.Items.GEMS_DIAMOND)
-				.unlockedBy(HAS_REDSTONE_TORCH_CRITERION_NAME, has(Items.REDSTONE_TORCH))
+				.unlockedBy(HAS_LEVER_CRITERION_NAME, has(Items.LEVER))
 				.save(recipeOutput);
 
 		ShapelessBasedRecipeBuilder.shapeless(items, ModItems.GOLD_TO_NETHERITE_TIER_UPGRADE.get())
@@ -711,9 +712,9 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.save(recipeOutput);
 
 		ShapelessBasedRecipeBuilder.shapeless(items, ModItems.DIAMOND_TO_NETHERITE_TIER_UPGRADE.get())
-				.requires(Items.REDSTONE_TORCH)
+				.requires(Items.LEVER)
 				.requires(Tags.Items.INGOTS_NETHERITE)
-				.unlockedBy(HAS_REDSTONE_TORCH_CRITERION_NAME, has(Items.REDSTONE_TORCH))
+				.unlockedBy(HAS_LEVER_CRITERION_NAME, has(Items.LEVER))
 				.save(recipeOutput);
 	}
 
@@ -1250,16 +1251,16 @@ public class StorageRecipeProvider extends RecipeProvider {
 
 		ShapeBasedRecipeBuilder.shaped(items, WoodStorageBlockItem.setWoodType(new ItemStack(ModBlocks.CHEST_ITEM.get()), WoodType.OAK), GenericWoodStorageRecipe::new)
 				.pattern("PPP")
-				.pattern("PRP")
+				.pattern("PLP")
 				.pattern("PPP")
 				.define('P', ItemTags.PLANKS)
-				.define('R', Blocks.REDSTONE_TORCH)
+				.define('L', Blocks.LEVER)
 				.unlockedBy("has " + PLANK_SUFFIX, has(ItemTags.PLANKS))
 				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getIdentifier("generic_chest")));
 
 		ShapelessBasedRecipeBuilder.shapeless(items, WoodStorageBlockItem.setWoodType(new ItemStack(ModBlocks.CHEST_ITEM.get()), WoodType.OAK))
 				.requires(Blocks.CHEST)
-				.requires(Blocks.REDSTONE_TORCH)
+				.requires(Blocks.LEVER)
 				.unlockedBy("has_vanilla_chest", has(Blocks.CHEST))
 				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getIdentifier("oak_chest_from_vanilla_chest")));
 
@@ -1288,7 +1289,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 		Block chestBlock = getBlock(chestRegistryName);
 		ShapelessBasedRecipeBuilder.shapeless(items, WoodStorageBlockItem.setWoodType(new ItemStack(ModBlocks.CHEST_ITEM.get()), woodType))
 				.requires(chestBlock)
-				.requires(Blocks.REDSTONE_TORCH)
+				.requires(Blocks.LEVER)
 				.save(
 						recipeOutput.withConditions(new RegisteredCondition<>(ResourceKey.create(Registries.ITEM, Identifier.parse(chestRegistryName)))),
 						ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getIdentifier(woodType.name() + "_chest_from_quark_" + name))
@@ -1304,17 +1305,17 @@ public class StorageRecipeProvider extends RecipeProvider {
 
 		ShapeBasedRecipeBuilder.shaped(items, WoodStorageBlockItem.setWoodType(new ItemStack(ModBlocks.BARREL_ITEM.get()), WoodType.SPRUCE), GenericWoodStorageRecipe::new)
 				.pattern("PSP")
-				.pattern("PRP")
+				.pattern("PLP")
 				.pattern("PSP")
 				.define('P', ItemTags.PLANKS)
 				.define('S', ItemTags.WOODEN_SLABS)
-				.define('R', Blocks.REDSTONE_TORCH)
+				.define('L', Blocks.LEVER)
 				.unlockedBy("has " + PLANK_SUFFIX, has(ItemTags.PLANKS))
 				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getIdentifier("generic_barrel")));
 
 		ShapelessBasedRecipeBuilder.shapeless(items, WoodStorageBlockItem.setWoodType(new ItemStack(ModBlocks.BARREL_ITEM.get()), WoodType.SPRUCE))
 				.requires(Blocks.BARREL)
-				.requires(Blocks.REDSTONE_TORCH)
+				.requires(Blocks.LEVER)
 				.unlockedBy("has_vanilla_barrel", has(Blocks.BARREL))
 				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getIdentifier("spruce_barrel_from_vanilla_barrel")));
 
@@ -1324,11 +1325,11 @@ public class StorageRecipeProvider extends RecipeProvider {
 	private void woodBarrelRecipe(RecipeOutput recipeOutput, WoodType woodType, Block planks, Block slab) {
 		ShapeBasedRecipeBuilder.shaped(items, WoodStorageBlockItem.setWoodType(new ItemStack(ModBlocks.BARREL_ITEM.get()), woodType))
 				.pattern("PSP")
-				.pattern("PRP")
+				.pattern("PLP")
 				.pattern("PSP")
 				.define('P', planks)
 				.define('S', slab)
-				.define('R', Blocks.REDSTONE_TORCH)
+				.define('L', Blocks.LEVER)
 				.unlockedBy("has_" + woodType.name() + PLANK_SUFFIX, has(planks))
 				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getIdentifier(woodType.name() + "_barrel")));
 	}
@@ -1337,7 +1338,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 		ShapedRecipeBuilder builder = ShapeBasedRecipeBuilder.shaped(items, WoodStorageBlockItem.setWoodType(new ItemStack(item), woodType))
 				.define('P', planks)
 				.define('S', slab)
-				.define('R', Blocks.REDSTONE_TORCH)
+				.define('L', Blocks.LEVER)
 				.unlockedBy("has_" + woodType.name() + PLANK_SUFFIX, has(planks));
 		addPattern.accept(builder);
 		builder.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getIdentifier(woodType.name() + "_" + RegistryHelper.getItemKey(item).getPath())));
@@ -1346,7 +1347,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 	private void limitedWoodBarrel1Recipe(RecipeOutput recipeOutput, WoodType woodType, Block planks, Block slab) {
 		limitedWoodBarrelRecipe(recipeOutput, woodType, planks, slab, builder ->
 						builder.pattern("PSP")
-								.pattern("PRP")
+								.pattern("PLP")
 								.pattern("PPP")
 				, ModBlocks.LIMITED_BARREL_1_ITEM.get());
 	}
@@ -1354,7 +1355,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 	private void limitedWoodBarrel2Recipe(RecipeOutput recipeOutput, WoodType woodType, Block planks, Block slab) {
 		limitedWoodBarrelRecipe(recipeOutput, woodType, planks, slab, builder ->
 						builder.pattern("PPP")
-								.pattern("SRS")
+								.pattern("SLS")
 								.pattern("PPP")
 				, ModBlocks.LIMITED_BARREL_2_ITEM.get());
 	}
@@ -1362,7 +1363,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 	private void limitedWoodBarrel3Recipe(RecipeOutput recipeOutput, WoodType woodType, Block planks, Block slab) {
 		limitedWoodBarrelRecipe(recipeOutput, woodType, planks, slab, builder ->
 						builder.pattern("PSP")
-								.pattern("PRP")
+								.pattern("PLP")
 								.pattern("SPS")
 				, ModBlocks.LIMITED_BARREL_3_ITEM.get());
 	}
@@ -1370,7 +1371,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 	private void limitedWoodBarrel4Recipe(RecipeOutput recipeOutput, WoodType woodType, Block planks, Block slab) {
 		limitedWoodBarrelRecipe(recipeOutput, woodType, planks, slab, builder ->
 						builder.pattern("SPS")
-								.pattern("PRP")
+								.pattern("PLP")
 								.pattern("SPS")
 				, ModBlocks.LIMITED_BARREL_4_ITEM.get());
 	}
@@ -1378,10 +1379,10 @@ public class StorageRecipeProvider extends RecipeProvider {
 	private void woodChestRecipe(RecipeOutput recipeOutput, WoodType woodType, Block planks) {
 		ShapeBasedRecipeBuilder.shaped(items, WoodStorageBlockItem.setWoodType(new ItemStack(ModBlocks.CHEST_ITEM.get()), woodType))
 				.pattern("PPP")
-				.pattern("PRP")
+				.pattern("PLP")
 				.pattern("PPP")
 				.define('P', planks)
-				.define('R', Blocks.REDSTONE_TORCH)
+				.define('L', Blocks.LEVER)
 				.unlockedBy("has_" + woodType.name() + PLANK_SUFFIX, has(planks))
 				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getIdentifier(woodType.name() + "_chest")));
 	}
@@ -1390,7 +1391,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 		String vanillaShulkerBoxName = BuiltInRegistries.BLOCK.getKey(vanillaShulkerBox).getPath();
 		ShapelessBasedRecipeBuilder.shapeless(items, ModBlocks.SHULKER_BOX.get().getTintedStack(dyeColor), ShulkerBoxFromVanillaShapelessRecipe::new)
 				.requires(vanillaShulkerBox)
-				.requires(Items.REDSTONE_TORCH)
+				.requires(Items.LEVER)
 				.unlockedBy("has_" + vanillaShulkerBoxName, has(vanillaShulkerBox))
 				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getIdentifier(vanillaShulkerBoxName + "_to_sophisticated")));
 	}

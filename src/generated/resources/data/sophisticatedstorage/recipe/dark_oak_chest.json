@@ -8,12 +8,12 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "P": "minecraft:dark_oak_planks",
-    "R": "minecraft:redstone_torch"
+    "L": "minecraft:lever",
+    "P": "minecraft:dark_oak_planks"
   },
   "pattern": [
     "PPP",
-    "PRP",
+    "PLP",
     "PPP"
   ],
   "result": {
