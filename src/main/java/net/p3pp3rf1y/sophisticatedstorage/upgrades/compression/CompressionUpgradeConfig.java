@@ -46,7 +46,9 @@ public class CompressionUpgradeConfig {
 				getDecompressibleEntry(Items.BRICKS, 4, Items.BRICK),
 				getDecompressibleEntry(Items.NETHER_BRICKS, 4, Items.NETHER_BRICK),
 				getDecompressibleEntry(Items.NETHER_WART_BLOCK, 9, Items.NETHER_WART),
-				getDecompressibleEntry(Items.MELON, 9, Items.MELON_SLICE)
+				getDecompressibleEntry(Items.MELON, 9, Items.MELON_SLICE),
+				getDecompressibleEntry(Items.PACKED_ICE, 9, Items.ICE),
+				getDecompressibleEntry(Items.BLUE_ICE, 9, Items.PACKED_ICE)
 		);
 	}
 
