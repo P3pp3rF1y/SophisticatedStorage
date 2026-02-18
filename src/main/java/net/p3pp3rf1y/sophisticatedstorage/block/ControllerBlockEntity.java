@@ -13,12 +13,14 @@ import net.neoforged.neoforge.transfer.transaction.Transaction;
 import net.p3pp3rf1y.sophisticatedcore.controller.ControllerBlockEntityBase;
 import net.p3pp3rf1y.sophisticatedcore.inventory.ItemStackKey;
 import net.p3pp3rf1y.sophisticatedcore.util.IDoubleBlock;
+import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.VoxelOutliner;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ControllerBlockEntity extends ControllerBlockEntityBase implements ILockable, ICountDisplay, ITierDisplay, IUpgradeDisplay, IFillLevelDisplay {
 	private long lastDepositTime = -100;
@@ -39,19 +41,18 @@ public class ControllerBlockEntity extends ControllerBlockEntityBase implements 
 		boolean doubleClick = gameTime - lastDepositTime < 10;
 		lastDepositTime = gameTime;
 		if (doubleClick) {
-			boolean insertedAny = false;
+			AtomicBoolean insertedAny = new AtomicBoolean(false);
 			try(Transaction tx = Transaction.openRoot()) {
-				for (int slot = 0; slot < player.getInventory().getContainerSize(); slot++) {
-					ItemStack stack = player.getInventory().getItem(slot);
+				InventoryHelper.iteratePlayerInventory(player, (slot, stack) -> {
 					if (canDepositStack(stack)) {
 						int inserted = insertItem(stack, tx, false);
 						if (inserted > 0) {
 							player.getInventory().removeItem(slot, inserted);
-							insertedAny = true;
+							insertedAny.set(true);
 						}
 					}
-				}
-				if (insertedAny) {
+				});
+				if (insertedAny.get()) {
 					tx.commit();
 				}
 			}
