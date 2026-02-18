@@ -9,12 +9,15 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.items.wrapper.PlayerMainInvWrapper;
 import net.p3pp3rf1y.sophisticatedcore.controller.ControllerBlockEntityBase;
 import net.p3pp3rf1y.sophisticatedcore.inventory.CachedFailedInsertInventoryHandler;
 import net.p3pp3rf1y.sophisticatedcore.inventory.ItemStackKey;
-import net.p3pp3rf1y.sophisticatedcore.util.*;
+import net.p3pp3rf1y.sophisticatedcore.util.IDoubleBlock;
+import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
+import net.p3pp3rf1y.sophisticatedcore.util.VoxelOutliner;
+import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 
@@ -42,16 +45,16 @@ public class ControllerBlockEntity extends ControllerBlockEntityBase implements 
 		boolean doubleClick = gameTime - lastDepositTime < 10;
 		lastDepositTime = gameTime;
 		if (doubleClick) {
-			CapabilityHelper.runOnCapability(player, Capabilities.ItemHandler.ENTITY, null,
-					playerInventory -> InventoryHelper.iterate(playerInventory, (slot, stack) -> {
-						if (canDepositStack(stack)) {
-							ItemStack resultStack = insertItem(stack, true, false);
-							int countToExtract = stack.getCount() - resultStack.getCount();
-							if (countToExtract > 0 && playerInventory.extractItem(slot, countToExtract, true).getCount() == countToExtract) {
-								insertItem(playerInventory.extractItem(slot, countToExtract, false), false, false);
-							}
-						}
-					}));
+			PlayerMainInvWrapper playerInventory = new PlayerMainInvWrapper(player.getInventory());
+			InventoryHelper.iterate(playerInventory, (slot, stack) -> {
+				if (canDepositStack(stack)) {
+					ItemStack resultStack = insertItem(stack, true, false);
+					int countToExtract = stack.getCount() - resultStack.getCount();
+					if (countToExtract > 0 && playerInventory.extractItem(slot, countToExtract, true).getCount() == countToExtract) {
+						insertItem(playerInventory.extractItem(slot, countToExtract, false), false, false);
+					}
+				}
+			});
 			return;
 		}
 
