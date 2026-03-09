@@ -316,7 +316,13 @@ public class ModBlocks {
 	}
 
 	public static void registerDispenseBehavior() {
-		DispenserBlock.registerBehavior(SHULKER_BOX_ITEM.get(), new ShulkerBoxDispenseBehavior());
+		ShulkerBoxDispenseBehavior behavior = new ShulkerBoxDispenseBehavior();
+		DispenserBlock.registerBehavior(SHULKER_BOX_ITEM.get(), behavior);
+		DispenserBlock.registerBehavior(COPPER_SHULKER_BOX_ITEM.get(), behavior);
+		DispenserBlock.registerBehavior(IRON_SHULKER_BOX_ITEM.get(), behavior);
+		DispenserBlock.registerBehavior(GOLD_SHULKER_BOX_ITEM.get(), behavior);
+		DispenserBlock.registerBehavior(DIAMOND_SHULKER_BOX_ITEM.get(), behavior);
+		DispenserBlock.registerBehavior(NETHERITE_SHULKER_BOX_ITEM.get(), behavior);
 	}
 
 	public static void registerCauldronInteractions() {
