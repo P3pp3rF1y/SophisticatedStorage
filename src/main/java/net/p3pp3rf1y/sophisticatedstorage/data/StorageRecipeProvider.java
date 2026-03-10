@@ -1,6 +1,8 @@
 package net.p3pp3rf1y.sophisticatedstorage.data;
 
 import net.mehvahdjukaar.sawmill.SawmillMod;
+import net.minecraft.advancements.Advancement;
+import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -13,11 +15,13 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import net.neoforged.fml.ModList;
 import net.neoforged.neoforge.common.Tags;
+import net.neoforged.neoforge.common.conditions.ICondition;
 import net.neoforged.neoforge.common.conditions.ModLoadedCondition;
 import net.neoforged.neoforge.common.conditions.RegisteredCondition;
 import net.p3pp3rf1y.sophisticatedbackpacks.SophisticatedBackpacks;
@@ -38,6 +42,7 @@ import net.p3pp3rf1y.sophisticatedstorage.init.ModCompat;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
 
+import javax.annotation.Nullable;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
@@ -1211,7 +1216,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 	}
 
 	private void addCompatUpgradeRecipe(RecipeOutput recipeOutput, Item upgrade, Block workbench, Item backpackUpgrade, String modId) {
-		RecipeOutput chippedRecipeOutput = recipeOutput.withConditions(new ModLoadedCondition(modId));
+		RecipeOutput compatRecipeOutput = recipeOutput.withConditions(new ModLoadedCondition(modId));
 		ShapeBasedRecipeBuilder.shaped(items, upgrade)
 				.pattern(" W ")
 				.pattern("IBI")
@@ -1221,9 +1226,10 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('I', Tags.Items.INGOTS_IRON)
 				.define('W', workbench)
 				.unlockedBy(HAS_UPGRADE_BASE_CRITERION_NAME, has(ModItems.UPGRADE_BASE.get()))
-				.save(chippedRecipeOutput);
+				.save(compatRecipeOutput);
 
-		RecipeOutput sbChippedRecipeOutput = chippedRecipeOutput.withConditions(new ModLoadedCondition(SophisticatedBackpacks.MOD_ID));
+		RecipeOutput sbCompatRecipeOutput = compatRecipeOutput.withConditions(new ModLoadedCondition(SophisticatedBackpacks.MOD_ID));
+		RecipeOutput sbCompatRecipeWithoutAdvancements = new RecipeOutputWithoutAdvancements(sbCompatRecipeOutput);
 
 		//storage from backpack upgrade
 		ShapeBasedRecipeBuilder.shaped(items, upgrade)
@@ -1233,7 +1239,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('P', ItemTags.PLANKS)
 				.define('U', backpackUpgrade)
 				.unlockedBy("has_backpack_upgrade", has(backpackUpgrade))
-				.save(sbChippedRecipeOutput, ResourceKey.create(Registries.RECIPE, ResourceLocation.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "storage_" + getCompatItemPath(upgrade) + "_from_backpack_" + getCompatItemPath(backpackUpgrade))));
+				.save(sbCompatRecipeWithoutAdvancements, ResourceKey.create(Registries.RECIPE, ResourceLocation.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "storage_" + getCompatItemPath(upgrade) + "_from_backpack_" + getCompatItemPath(backpackUpgrade))));
 
 		//backpack from storage upgrade
 		ShapeBasedRecipeBuilder.shaped(items, backpackUpgrade)
@@ -1244,11 +1250,28 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('L', Tags.Items.LEATHERS)
 				.define('U', upgrade)
 				.unlockedBy("has_storage_upgrade", has(upgrade))
-				.save(sbChippedRecipeOutput, ResourceKey.create(Registries.RECIPE, ResourceLocation.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "backpack_" + getCompatItemPath(backpackUpgrade) + "_from_storage_" + getCompatItemPath(upgrade))));
+				.save(sbCompatRecipeWithoutAdvancements, ResourceKey.create(Registries.RECIPE, ResourceLocation.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "backpack_" + getCompatItemPath(backpackUpgrade) + "_from_storage_" + getCompatItemPath(upgrade))));
 	}
 
 	private static String getCompatItemPath(Item upgrade) {
 		return RegistryHelper.getItemKey(upgrade).getPath().replace('/', '_');
+	}
+
+	private record RecipeOutputWithoutAdvancements(RecipeOutput delegate) implements RecipeOutput {
+		@Override
+		public Advancement.Builder advancement() {
+			return delegate.advancement();
+		}
+
+		@Override
+		public void accept(ResourceKey<Recipe<?>> id, Recipe<?> recipe, @Nullable AdvancementHolder advancement, ICondition... conditions) {
+			delegate.accept(id, recipe, null, conditions);
+		}
+
+		@Override
+		public void includeRootAdvancement() {
+			delegate.includeRootAdvancement();
+		}
 	}
 
 	private void addChestRecipes(RecipeOutput recipeOutput) {
