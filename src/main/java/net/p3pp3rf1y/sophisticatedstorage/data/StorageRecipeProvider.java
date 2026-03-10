@@ -1,5 +1,6 @@
 package net.p3pp3rf1y.sophisticatedstorage.data;
 
+import com.google.gson.JsonObject;
 import net.minecraft.data.BlockFamily;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.recipes.*;
@@ -10,6 +11,7 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.properties.WoodType;
@@ -35,6 +37,7 @@ import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
 
+import javax.annotation.Nullable;
 import java.util.function.Consumer;
 
 public class StorageRecipeProvider extends RecipeProvider {
@@ -1228,7 +1231,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.unlockedBy("has_backpack_upgrade", has(backpackUpgrade))
 				.condition(new ModLoadedCondition(CompatModIds.CHIPPED))
 				.condition(new ModLoadedCondition(SophisticatedBackpacks.MOD_ID))
-				.save(consumer, new ResourceLocation(SophisticatedStorage.MOD_ID, "storage_" + getChippedItemPath(upgrade) + "_from_backpack_" + getChippedItemPath(backpackUpgrade)));
+				.save(withoutAdvancements(consumer), new ResourceLocation(SophisticatedStorage.MOD_ID, "storage_" + getChippedItemPath(upgrade) + "_from_backpack_" + getChippedItemPath(backpackUpgrade)));
 
 		//backpack from storage upgrade
 		ShapeBasedRecipeBuilder.shaped(backpackUpgrade)
@@ -1241,11 +1244,44 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.unlockedBy("has_storage_upgrade", has(upgrade))
 				.condition(new ModLoadedCondition(CompatModIds.CHIPPED))
 				.condition(new ModLoadedCondition(SophisticatedBackpacks.MOD_ID))
-				.save(consumer, new ResourceLocation(SophisticatedStorage.MOD_ID, "backpack_" + getChippedItemPath(backpackUpgrade) + "_from_storage_" + getChippedItemPath(upgrade)));
+				.save(withoutAdvancements(consumer), new ResourceLocation(SophisticatedStorage.MOD_ID, "backpack_" + getChippedItemPath(backpackUpgrade) + "_from_storage_" + getChippedItemPath(upgrade)));
 	}
 
 	private static String getChippedItemPath(BlockTransformationUpgradeItem upgrade) {
 		return RegistryHelper.getItemKey(upgrade).getPath().replace('/', '_');
+	}
+
+	private static Consumer<FinishedRecipe> withoutAdvancements(Consumer<FinishedRecipe> consumer) {
+		return finishedRecipe -> consumer.accept(new FinishedRecipeWithoutAdvancements(finishedRecipe));
+	}
+
+	private record FinishedRecipeWithoutAdvancements(FinishedRecipe delegate) implements FinishedRecipe {
+		@Override
+		public void serializeRecipeData(JsonObject json) {
+			delegate.serializeRecipeData(json);
+		}
+
+		@Override
+		public ResourceLocation getId() {
+			return delegate.getId();
+		}
+
+		@Override
+		public RecipeSerializer<?> getType() {
+			return delegate.getType();
+		}
+
+		@Nullable
+		@Override
+		public JsonObject serializeAdvancement() {
+			return null;
+		}
+
+		@Nullable
+		@Override
+		public ResourceLocation getAdvancementId() {
+			return null;
+		}
 	}
 
 	private void addChestRecipes(Consumer<FinishedRecipe> consumer) {
