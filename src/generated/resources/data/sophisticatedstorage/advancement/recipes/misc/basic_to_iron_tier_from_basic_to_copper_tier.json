@@ -7,11 +7,11 @@
   ],
   "parent": "minecraft:recipes/root",
   "criteria": {
-    "has_redstone_torch": {
+    "has_basic_to_copper_tier_upgrade": {
       "conditions": {
         "items": [
           {
-            "items": "minecraft:lever"
+            "items": "sophisticatedstorage:basic_to_copper_tier_upgrade"
           }
         ]
       },
@@ -27,7 +27,7 @@
   "requirements": [
     [
       "has_the_recipe",
-      "has_redstone_torch"
+      "has_basic_to_copper_tier_upgrade"
     ]
   ],
   "rewards": {
