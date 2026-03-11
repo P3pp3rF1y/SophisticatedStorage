@@ -394,6 +394,16 @@ tasks.modrinth {
     onlyIf { !project.ext.changelog.isEmpty() }
 }
 
+tasks.withType(net.minecraftforge.gradle.common.util.runs.MinecraftRunTask).configureEach {
+    doFirst {
+        List<String> runArgs = getRunConfig().get().getArgs()
+        int fmlVersionArgIdx = runArgs.indexOf("--fml.fmlVersion")
+        if (fmlVersionArgIdx >= 0 && fmlVersionArgIdx + 1 < runArgs.size()) {
+            runArgs[fmlVersionArgIdx + 1] = project.neo_version.toString()
+        }
+    }
+}
+
 task printVersionName {
   println "version:" + project.version
 }

@@ -14,15 +14,18 @@ import net.p3pp3rf1y.sophisticatedstorage.item.StorageTierUpgradeItem;
 import java.util.Map;
 
 public class QuarkCompat implements ICompat {
-	private static final Map<String, WoodType> CHESTS = Map.of(
-			"oak_chest", WoodType.OAK,
-			"acacia_chest", WoodType.ACACIA,
-			"birch_chest", WoodType.BIRCH,
-			"crimson_chest", WoodType.CRIMSON,
-			"dark_oak_chest", WoodType.DARK_OAK,
-			"jungle_chest", WoodType.JUNGLE,
-			"spruce_chest", WoodType.SPRUCE,
-			"warped_chest", WoodType.WARPED
+	private static final Map<String, WoodType> CHESTS = Map.ofEntries(
+			Map.entry("oak_chest", WoodType.OAK),
+			Map.entry("acacia_chest", WoodType.ACACIA),
+			Map.entry("birch_chest", WoodType.BIRCH),
+			Map.entry("bamboo_chest", WoodType.BAMBOO),
+			Map.entry("cherry_chest", WoodType.CHERRY),
+			Map.entry("crimson_chest", WoodType.CRIMSON),
+			Map.entry("dark_oak_chest", WoodType.DARK_OAK),
+			Map.entry("jungle_chest", WoodType.JUNGLE),
+			Map.entry("mangrove_chest", WoodType.MANGROVE),
+			Map.entry("spruce_chest", WoodType.SPRUCE),
+			Map.entry("warped_chest", WoodType.WARPED)
 	);
 
 	@Override
