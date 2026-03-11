@@ -1295,7 +1295,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 		addStorageTierUpgradeRecipes(recipeOutput, ModBlocks.CHEST_ITEM.get(), ModBlocks.COPPER_CHEST_ITEM.get(), ModBlocks.IRON_CHEST_ITEM.get(), ModBlocks.GOLD_CHEST_ITEM.get(), ModBlocks.DIAMOND_CHEST_ITEM.get(), ModBlocks.NETHERITE_CHEST_ITEM.get());
 		addDoubleChestTierUpgradeRecipes(recipeOutput, ModBlocks.CHEST_ITEM.get(), ModBlocks.COPPER_CHEST_ITEM.get(), ModBlocks.IRON_CHEST_ITEM.get(), ModBlocks.GOLD_CHEST_ITEM.get(), ModBlocks.DIAMOND_CHEST_ITEM.get(), ModBlocks.NETHERITE_CHEST_ITEM.get());
 
-		//addQuarkChestRecipes(recipeOutput); // TODO readd with quark compat
+		//addQuarkChestRecipes(recipeOutput); // TODO Re-enable when Quark is available for this MC version and datagen can keep the generated files.
 	}
 
 	private void addQuarkChestRecipes(RecipeOutput recipeOutput) {
