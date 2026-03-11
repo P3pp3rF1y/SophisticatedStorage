@@ -176,10 +176,10 @@ dependencies {
     compileOnly "curse.maven:toms-storage-378609:${toms_storage_cf_file_id}"
     localRuntime "curse.maven:toms-storage-378609:${toms_storage_cf_file_id}"
 
-    //compileOnly "curse.maven:quark-243121:${quark_cf_file_id}")
-    //compileOnly "curse.maven:zeta-968868:${zeta_cf_file_id}")
-    //runtimeOnly "curse.maven:quark-243121:${quark_cf_file_id}")
-    //runtimeOnly "curse.maven:zeta-968868:${zeta_cf_file_id}")
+    compileOnly "curse.maven:quark-243121:${quark_cf_file_id}"
+    compileOnly "curse.maven:zeta-968868:${zeta_cf_file_id}"
+    localRuntime "curse.maven:quark-243121:${quark_cf_file_id}"
+    localRuntime "curse.maven:zeta-968868:${zeta_cf_file_id}"
 
     if (findProject(':SophisticatedCore') != null) {
         dependencies.implementation project(':SophisticatedCore')

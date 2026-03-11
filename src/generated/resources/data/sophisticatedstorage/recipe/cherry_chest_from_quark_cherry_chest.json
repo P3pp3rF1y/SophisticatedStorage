@@ -1,0 +1,29 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:item_exists",
+      "item": "quark:cherry_chest"
+    },
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:chest"
+    }
+  ],
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "quark:cherry_chest"
+    },
+    {
+      "item": "minecraft:lever"
+    }
+  ],
+  "result": {
+    "components": {
+      "sophisticatedstorage:wood_type": "cherry"
+    },
+    "count": 1,
+    "id": "sophisticatedstorage:chest"
+  }
+}

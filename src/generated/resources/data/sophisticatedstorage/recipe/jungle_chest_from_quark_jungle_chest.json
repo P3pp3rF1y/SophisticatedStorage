@@ -1,0 +1,29 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:item_exists",
+      "item": "quark:jungle_chest"
+    },
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:chest"
+    }
+  ],
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "quark:jungle_chest"
+    },
+    {
+      "item": "minecraft:lever"
+    }
+  ],
+  "result": {
+    "components": {
+      "sophisticatedstorage:wood_type": "jungle"
+    },
+    "count": 1,
+    "id": "sophisticatedstorage:chest"
+  }
+}
