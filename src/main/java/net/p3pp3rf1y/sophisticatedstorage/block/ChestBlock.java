@@ -315,7 +315,9 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 			level.getBlockEntity(otherPartPos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get()).ifPresent(be -> {
 				setRenderBlockRenderProperties(stack, be);
 				be.setMainPos(pos);
-				be.tryToAddToController();
+				if (be.getControllerPos().isEmpty()) {
+					be.tryToAddToController();
+				}
 			});
 		}
 

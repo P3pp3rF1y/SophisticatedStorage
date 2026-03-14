@@ -146,7 +146,9 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 			}
 
 			be.getStorageWrapper().onInit();
-			be.tryToAddToController();
+			if (be.getControllerPos().isEmpty()) {
+				be.tryToAddToController();
+			}
 
 			if (placer != null && placer.getOffhandItem().getItem() == ModItems.STORAGE_TOOL.get()) {
 				StorageToolItem.useOffHandOnPlaced(placer.getOffhandItem(), be);
