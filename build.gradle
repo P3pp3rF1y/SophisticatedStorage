@@ -20,15 +20,24 @@ group = mod_group_id
 
 repositories {
     mavenCentral()
-    maven { url = "https://modmaven.dev/" }
-    maven { url "https://minecraft.curseforge.com/api/maven/"}
+    maven {
+        url "https://minecraft.curseforge.com/api/maven/"
+        content {
+            includeGroup "curse.maven"
+        }
+    }
     maven {
         url "https://www.cursemaven.com"
         content {
             includeGroup "curse.maven"
         }
     }
-    maven { url "https://maven.blamejared.com/" }
+    maven {
+        url "https://maven.blamejared.com/"
+        content {
+            includeGroup "mezz.jei"
+        }
+    }
     maven {
         name = "GHPCore"
         url = uri("https://maven.pkg.github.com/p3pp3rf1y/sophisticatedcore")
@@ -154,13 +163,13 @@ configurations {
 
 dependencies {
     compileOnly "mezz.jei:jei-${jei_mc_version}-api:${jei_version}"
-    localRuntime "mezz.jei:jei-${jei_mc_version}:${jei_version}"
+    //localRuntime "mezz.jei:jei-${jei_mc_version}:${jei_version}"
     compileOnly "dev.emi:emi-neoforge:${emi_version}:api"
     //localRuntime "dev.emi:emi-neoforge:${emi_version}"
     compileOnly "me.shedaniel:RoughlyEnoughItems-api-neoforge:${rei_version}"
     compileOnly "me.shedaniel:RoughlyEnoughItems-default-plugin-neoforge:${rei_version}"
-    localRuntime "me.shedaniel:RoughlyEnoughItems-neoforge:${rei_version}"
-    localRuntime "me.shedaniel:RoughlyEnoughItems-default-plugin-neoforge:${rei_version}"
+    //localRuntime "me.shedaniel:RoughlyEnoughItems-neoforge:${rei_version}"
+    //localRuntime "me.shedaniel:RoughlyEnoughItems-default-plugin-neoforge:${rei_version}"
     compileOnly "curse.maven:jade-324717:${jade_cf_file_id}"
     compileOnly "curse.maven:chipped-456956:${chipped_cf_file_id}"
     //localRuntime "curse.maven:chipped-456956:${chipped_cf_file_id}"
@@ -173,7 +182,7 @@ dependencies {
     compileOnly "curse.maven:moonlightlib-499980:${moonlightlib_cf_file_id}"
     //localRuntime "curse.maven:moonlightlib-499980:${moonlightlib_cf_file_id}"
     compileOnly "curse.maven:toms-storage-378609:${toms_storage_cf_file_id}"
-    localRuntime "curse.maven:toms-storage-378609:${toms_storage_cf_file_id}"
+    //localRuntime "curse.maven:toms-storage-378609:${toms_storage_cf_file_id}"
 
     compileOnly "curse.maven:quark-243121:${quark_cf_file_id}"
     compileOnly "curse.maven:zeta-968868:${zeta_cf_file_id}"
