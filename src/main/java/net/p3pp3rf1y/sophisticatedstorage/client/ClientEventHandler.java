@@ -3,11 +3,11 @@ package net.p3pp3rf1y.sophisticatedstorage.client;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.render.pip.OversizedItemRenderer;
-import net.minecraft.client.gui.render.state.pip.OversizedItemRenderState;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.ShapeRenderer;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.client.renderer.state.gui.pip.OversizedItemRenderState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -72,7 +72,6 @@ public class ClientEventHandler {
 		modBus.addListener(ClientEventHandler::registerStorageClientExtensions);
 		modBus.addListener(ClientEventHandler::registerBarrelItemModel);
 		modBus.addListener(ClientEventHandler::registerSpecialModelRenderers);
-		modBus.addListener(ClientEventHandler::registerSpecialBlockModelRenderers);
 		modBus.addListener(ClientEventHandler::registerBlockStateModels);
 		modBus.addListener(ClientEventHandler::registerRenderPipelines);
 		modBus.addListener(ClientEventHandler::registerPictureInPictuterRenderers);
@@ -94,7 +93,7 @@ public class ClientEventHandler {
 	}
 
 	private static void registerRenderPipelines(RegisterRenderPipelinesEvent event) {
-		event.registerPipeline(ControllerRenderer.NO_DEPTH_LINES_PIPELINE);
+		// no custom pipeline needed for temporary lines fallback
 	}
 
 	private static void registerBlockStateModels(RegisterBlockStateModels event) {
@@ -106,16 +105,6 @@ public class ClientEventHandler {
 	private static void registerSpecialModelRenderers(RegisterSpecialModelRendererEvent event) {
 		event.register(ModBlocks.CHEST_ITEM.getId(), ChestItemRenderer.Unbaked.MAP_CODEC);
 		event.register(ModBlocks.SHULKER_BOX_ITEM.getId(), ShulkerBoxItemRenderer.Unbaked.MAP_CODEC);
-	}
-
-	private static void registerSpecialBlockModelRenderers(RegisterSpecialBlockModelRendererEvent event) {
-		ModBlocks.BLOCKS.getEntries().stream()
-				.filter(b -> b.get() instanceof ChestBlock)
-				.forEach(b -> event.register(b.get(), new ChestItemRenderer.Unbaked()));
-
-		ModBlocks.BLOCKS.getEntries().stream()
-				.filter(b -> b.get() instanceof ShulkerBoxBlock)
-				.forEach(b -> event.register(b.get(), new ShulkerBoxItemRenderer.Unbaked()));
 	}
 
 	private static void onPlayerLoggingIn(ClientPlayerNetworkEvent.LoggingIn event) {

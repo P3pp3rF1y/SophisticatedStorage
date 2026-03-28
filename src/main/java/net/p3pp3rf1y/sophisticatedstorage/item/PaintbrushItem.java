@@ -94,7 +94,7 @@ public class PaintbrushItem extends ItemBase {
 	}
 
 	public static Optional<ItemRequirements> getItemRequirements(ItemStack paintbrush, Player player, Map<Identifier, Integer> allPartsNeeded) {
-		Map<Identifier, Integer> remainingParts = getRemainingParts(paintbrush);
+		Map<Identifier, Integer> remainingParts = new HashMap<>(getRemainingParts(paintbrush));
 		DecorationHelper.ConsumptionResult result;
 		try (Transaction tx = Transaction.openRoot()) {
 			SnapshotJournal<Map<Identifier, Integer>> remainingPartsJournal = createNoopRemainingPartsJournal();
@@ -259,18 +259,21 @@ public class PaintbrushItem extends ItemBase {
 		if (player == null) {
 			return;
 		}
+		StorageBlockEntity renderUpdateBe = storageBe;
 		ITintable tintable = storageBe.getStorageWrapper();
 		IMaterialHolder materialHolder = storageBe instanceof IMaterialHolder ? (IMaterialHolder) storageBe : null;
 
 		if (storageBe instanceof ChestBlockEntity chestBe) {
 			tintable = chestBe.getMainStorageWrapper();
 			storageBe = chestBe.getMainChestBlockEntity();
+			renderUpdateBe = storageBe;
 		}
 
 		BlockState state = storageBe.getBlockState();
 		Direction effectOffsetDirection = state.getBlock() instanceof StorageBlockBase storageBlock ? storageBlock.getFacing(state) : Direction.UP;
 		if (paint(player, paintbrush, soundVolume, materialHolder, tintable, Vec3.atCenterOf(storageBe.getBlockPos()), effectOffsetDirection, state.getSoundType(player.level(), storageBe.getBlockPos(), null).getPlaceSound())) {
-			WorldHelper.notifyBlockUpdate(storageBe);
+			renderUpdateBe.setUpdateBlockRender();
+			WorldHelper.notifyBlockUpdate(renderUpdateBe);
 		}
 	}
 

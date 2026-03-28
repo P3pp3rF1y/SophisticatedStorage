@@ -98,7 +98,7 @@ public class StorageTierUpgradeItem extends ItemBase {
 
 		int countRequired = def.getCountRequired(state);
 		if (countRequired > stack.getCount()) {
-			player.displayClientMessage(Component.translatable(StorageTranslationHelper.INSTANCE.translGui("status.too_low_tier_upgrade_count"), countRequired, stack.getHoverName()), true);
+			player.sendOverlayMessage(Component.translatable(StorageTranslationHelper.INSTANCE.translGui("status.too_low_tier_upgrade_count"), countRequired, stack.getHoverName()));
 			return InteractionResult.FAIL;
 		}
 

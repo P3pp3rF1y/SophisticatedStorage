@@ -6,7 +6,6 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
-import net.minecraft.world.level.storage.loot.functions.LootItemFunctionType;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.p3pp3rf1y.sophisticatedstorage.block.IAdditionalDropDataBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
@@ -33,7 +32,7 @@ public class CopyStorageDataFunction implements LootItemFunction {
 	}
 
 	@Override
-	public LootItemFunctionType<? extends LootItemFunction> getType() {
+	public MapCodec<? extends LootItemFunction> codec() {
 		return ModItems.COPY_STORAGE_DATA.get();
 	}
 

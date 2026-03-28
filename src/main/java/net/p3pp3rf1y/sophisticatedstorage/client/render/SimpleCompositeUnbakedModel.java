@@ -1,17 +1,31 @@
 package net.p3pp3rf1y.sophisticatedstorage.client.render;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.gson.*;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonPrimitive;
 import com.mojang.datafixers.util.Either;
 import com.mojang.math.Transformation;
-import net.minecraft.client.renderer.block.model.BlockElement;
-import net.minecraft.client.renderer.block.model.BlockModel;
-import net.minecraft.client.renderer.block.model.SimpleUnbakedGeometry;
-import net.minecraft.client.renderer.block.model.TextureSlots;
-import net.minecraft.client.resources.model.*;
+import net.minecraft.client.resources.model.ModelBaker;
+import net.minecraft.client.resources.model.ModelDebugName;
+import net.minecraft.client.resources.model.ResolvedModel;
+import net.minecraft.client.resources.model.UnbakedModel;
+import net.minecraft.client.resources.model.cuboid.CuboidModel;
+import net.minecraft.client.resources.model.cuboid.CuboidModelElement;
+import net.minecraft.client.resources.model.cuboid.UnbakedCuboidGeometry;
+import net.minecraft.client.resources.model.geometry.QuadCollection;
+import net.minecraft.client.resources.model.geometry.UnbakedGeometry;
+import net.minecraft.client.resources.model.sprite.TextureSlots;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.context.ContextMap;
-import net.neoforged.neoforge.client.model.*;
+import net.neoforged.neoforge.client.model.AbstractUnbakedModel;
+import net.neoforged.neoforge.client.model.ExtendedUnbakedGeometry;
+import net.neoforged.neoforge.client.model.NeoForgeModelProperties;
+import net.neoforged.neoforge.client.model.StandardModelParameters;
+import net.neoforged.neoforge.client.model.UnbakedElementsHelper;
+import net.neoforged.neoforge.client.model.UnbakedModelLoader;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -33,50 +47,54 @@ public class SimpleCompositeUnbakedModel extends AbstractUnbakedModel {
 	}
 
 	@Override
-	public void resolveDependencies(ResolvableModel.Resolver resolver) {
+	public void resolveDependencies(Resolver resolver) {
 		super.resolveDependencies(resolver);
-
 		geometry.resolveDependencies(resolver);
 	}
 
-	public static class SimpleCompositeUnbakedGeometry implements ExtendedUnbakedGeometry {
+	public Map<String, Either<Identifier, UnbakedModel>> children() {
+		return geometry.children();
+	}
+
+	private static class SimpleCompositeUnbakedGeometry implements ExtendedUnbakedGeometry {
 		private final ImmutableMap<String, Either<Identifier, UnbakedModel>> children;
+
+		private SimpleCompositeUnbakedGeometry(ImmutableMap<String, Either<Identifier, UnbakedModel>> children) {
+			this.children = children;
+		}
 
 		public Map<String, Either<Identifier, UnbakedModel>> children() {
 			return children;
 		}
 
-		public SimpleCompositeUnbakedGeometry(ImmutableMap<String, Either<Identifier, UnbakedModel>> children) {
-			this.children = children;
-		}
-
 		@Override
-		public QuadCollection bake(TextureSlots slots, ModelBaker baker, ModelState state, ModelDebugName debugName, ContextMap additionalProperties) {
-			List<BlockElement> allElements = new ArrayList<>();
+		public QuadCollection bake(TextureSlots slots, ModelBaker baker, net.minecraft.client.renderer.block.dispatch.ModelState state, ModelDebugName debugName, ContextMap additionalProperties) {
+			List<CuboidModelElement> allElements = new ArrayList<>();
 			addAllChildElements(baker, debugName, allElements);
 
-			Transformation rootTransform = additionalProperties.getOrDefault(NeoForgeModelProperties.TRANSFORM, Transformation.identity());
+			Transformation rootTransform = additionalProperties.getOrDefault(NeoForgeModelProperties.TRANSFORM, Transformation.IDENTITY);
 			if (!rootTransform.isIdentity()) {
 				state = UnbakedElementsHelper.composeRootTransformIntoModelState(state, rootTransform);
 			}
 
-			return new SimpleUnbakedGeometry(allElements).bake(slots, baker, state, debugName, additionalProperties);
+			return UnbakedCuboidGeometry.bake(allElements, slots, baker, state, debugName);
 		}
 
-		private void addAllChildElements(ModelBaker baker, ModelDebugName debugName, List<BlockElement> elements) {
+		private void addAllChildElements(ModelBaker baker, ModelDebugName debugName, List<CuboidModelElement> elements) {
 			children.forEach((key, value) -> {
 				ResolvedModel model = value.map(baker::getModel,
-						(inline) -> baker.resolveInlineModel(inline, () -> debugName.debugName() + "_" + key));
+						inline -> baker.resolveInlineModel(inline, () -> debugName.debugName() + "_" + key));
 				addModelElements(baker, debugName, elements, model);
 			});
 		}
 
-		private void addModelElements(ModelBaker baker, ModelDebugName debugName, List<BlockElement> elements, ResolvedModel child) {
+		private void addModelElements(ModelBaker baker, ModelDebugName debugName, List<CuboidModelElement> elements, ResolvedModel child) {
 			if (child.wrapped() instanceof SimpleCompositeUnbakedModel compositeModel) {
 				compositeModel.geometry.addAllChildElements(baker, debugName, elements);
-			} else if (child.wrapped() instanceof BlockModel blockModel && blockModel.geometry() instanceof SimpleUnbakedGeometry geometry) {
+			} else if (child.wrapped() instanceof CuboidModel cuboidModel && cuboidModel.geometry() instanceof UnbakedCuboidGeometry geometry) {
 				elements.addAll(geometry.elements());
 			}
+
 			ResolvedModel parent = child.parent();
 			if (parent != null) {
 				addModelElements(baker, debugName, elements, parent);
@@ -94,8 +112,7 @@ public class SimpleCompositeUnbakedModel extends AbstractUnbakedModel {
 		}
 	}
 
-
-	@SuppressWarnings("java:S6548") // singleton implementation is good here
+	@SuppressWarnings("java:S6548")
 	public static final class Loader implements UnbakedModelLoader<SimpleCompositeUnbakedModel> {
 		public static final Loader INSTANCE = new Loader();
 
@@ -122,8 +139,7 @@ public class SimpleCompositeUnbakedModel extends AbstractUnbakedModel {
 					JsonElement jsonElement = entry.getValue();
 					Either<Identifier, UnbakedModel> child = switch (jsonElement) {
 						case JsonPrimitive reference -> Either.left(Identifier.parse(reference.getAsString()));
-						case JsonObject inline ->
-								Either.right((UnbakedModel) context.deserialize(inline, UnbakedModel.class));
+						case JsonObject inline -> Either.right((UnbakedModel) context.deserialize(inline, UnbakedModel.class));
 						default -> throw new IllegalArgumentException("");
 					};
 

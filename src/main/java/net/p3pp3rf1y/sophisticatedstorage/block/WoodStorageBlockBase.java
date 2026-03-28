@@ -271,7 +271,7 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 	protected InteractionResult tryItemInteraction(Player player, InteractionHand hand, WoodStorageBlockEntity b, ItemStack stackInHand, Direction facing, BlockHitResult hitResult) {
 		if (stackInHand.getItem() instanceof PackingTapeItem) {
 			if (Config.COMMON.dropPacked.get()) {
-				player.displayClientMessage(Component.translatable("gui.sophisticatedstorage.status.packing_tape_disabled"), true);
+				player.sendOverlayMessage(Component.translatable("gui.sophisticatedstorage.status.packing_tape_disabled"));
 				return InteractionResult.FAIL;
 			} else {
 				InteractionResult interactionResult = packStorage(player, hand, b, stackInHand);

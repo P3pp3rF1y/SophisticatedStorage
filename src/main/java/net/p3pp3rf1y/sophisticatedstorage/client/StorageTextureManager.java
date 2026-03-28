@@ -3,7 +3,7 @@ package net.p3pp3rf1y.sophisticatedstorage.client;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.minecraft.client.renderer.Sheets;
-import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.sprite.SpriteId;
 import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -14,16 +14,20 @@ import net.minecraft.world.level.block.state.properties.ChestType;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import org.jspecify.annotations.Nullable;
 
-import java.util.*;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.Supplier;
 
-@SuppressWarnings("java:S6548") //singleton is intended here
+@SuppressWarnings("java:S6548")
 public class StorageTextureManager extends SimpleJsonResourceReloadListener<JsonElement> {
 	public static final StorageTextureManager INSTANCE = new StorageTextureManager();
 	private static final String PARENT_TAG = "parent";
 	private static final String TYPE_TAG = "type";
 	private static final String TEXTURES_TAG = "textures";
-	private static final WoodType defaultChestWoodType = WoodType.ACACIA;
+	private static final WoodType DEFAULT_CHEST_WOOD_TYPE = WoodType.ACACIA;
 	private static final String CHEST_SUFFIX = "_chest";
 	private static final Map<String, Supplier<ITextureParser>> TEXTURE_PARSERS = new HashMap<>();
 
@@ -31,7 +35,7 @@ public class StorageTextureManager extends SimpleJsonResourceReloadListener<Json
 		TEXTURE_PARSERS.put("chest", ChestTextureParser::new);
 	}
 
-	private final Map<WoodType, Map<ChestType, Map<ChestMaterial, Material>>> woodChestMaterials = new HashMap<>();
+	private final Map<WoodType, Map<ChestType, Map<ChestMaterial, SpriteId>>> woodChestMaterials = new HashMap<>();
 
 	private StorageTextureManager() {
 		super(ExtraCodecs.JSON, FileToIdConverter.json("storage_texture_definitions"));
@@ -49,13 +53,11 @@ public class StorageTextureManager extends SimpleJsonResourceReloadListener<Json
 			String filePath = fileName.getPath();
 			if (type.equals("chest") && filePath.endsWith(CHEST_SUFFIX)) {
 				WoodType.values().filter(wt -> wt.name().equals(filePath.substring(0, filePath.lastIndexOf(CHEST_SUFFIX)))).findFirst().ifPresent(wt -> {
-					Map<ChestType, Map<ChestMaterial, Material>> chestMaterials = new EnumMap<>(ChestType.class);
+					Map<ChestType, Map<ChestMaterial, SpriteId>> chestMaterials = new EnumMap<>(ChestType.class);
 					definition.getTextures().forEach((chestTypeName, textures) -> textures.forEach((textureName, rl) ->
 							ChestMaterial.fromString(textureName)
-									.ifPresent(cm ->
-											chestMaterials.computeIfAbsent(ChestType.valueOf(chestTypeName.toUpperCase(Locale.ROOT)), t -> new EnumMap<>(ChestMaterial.class))
-													.put(cm, new Material(Sheets.CHEST_SHEET, rl))
-									)
+									.ifPresent(cm -> chestMaterials.computeIfAbsent(ChestType.valueOf(chestTypeName.toUpperCase(Locale.ROOT)), t -> new EnumMap<>(ChestMaterial.class))
+											.put(cm, new SpriteId(Sheets.CHEST_SHEET, rl)))
 					));
 					woodChestMaterials.put(wt, chestMaterials);
 				});
@@ -70,30 +72,26 @@ public class StorageTextureManager extends SimpleJsonResourceReloadListener<Json
 
 	@Override
 	protected void apply(Map<Identifier, JsonElement> entries, ResourceManager resourceManager, ProfilerFiller profilerFiller) {
-		//noop as everything is done in prepare due to the need to have it done before TextureStitchEvent fires
+		// noop as everything is done in prepare due to the need to have it done before texture usage
 	}
 
-	@Nullable //can return null when resources are reloading and this collection was cleared
-	public Map<ChestMaterial, Material> getWoodChestMaterials(ChestType chestType, WoodType woodType) {
-		Map<ChestType, Map<ChestMaterial, Material>> chestTypeMaterials = woodChestMaterials.getOrDefault(woodType, woodChestMaterials.get(defaultChestWoodType));
+	@Nullable
+	public Map<ChestMaterial, SpriteId> getWoodChestMaterials(ChestType chestType, WoodType woodType) {
+		Map<ChestType, Map<ChestMaterial, SpriteId>> chestTypeMaterials = woodChestMaterials.getOrDefault(woodType, woodChestMaterials.get(DEFAULT_CHEST_WOOD_TYPE));
 		return chestTypeMaterials == null ? null : chestTypeMaterials.get(chestType);
 	}
 
 	private Optional<StorageTextureDefinition> loadDefinition(Map<Identifier, StorageTextureDefinition> storageTextureDefinitions, Identifier identifier, JsonElement json, Map<Identifier, JsonElement> fileContents) {
-		//already loaded probably because it is a parent to another definition
 		if (storageTextureDefinitions.containsKey(identifier)) {
 			return Optional.of(storageTextureDefinitions.get(identifier));
 		}
 
-		if (!json.isJsonObject()) {
+		if (json == null || !json.isJsonObject()) {
 			return Optional.empty();
 		}
 
 		JsonObject jsonContents = json.getAsJsonObject();
-
 		String type = "";
-
-		@Nullable
 		StorageTextureDefinition parentDefinition = null;
 
 		if (jsonContents.has(PARENT_TAG) && jsonContents.get(PARENT_TAG).isJsonPrimitive()) {
@@ -114,14 +112,12 @@ public class StorageTextureManager extends SimpleJsonResourceReloadListener<Json
 		}
 
 		ITextureParser textureParser = TEXTURE_PARSERS.get(type).get();
-
 		if (parentDefinition != null) {
 			textureParser.copyFromParentDefinition(parentDefinition);
 		}
 
 		Optional<StorageTextureDefinition> result = textureParser.parseDefinition(type, jsonContents);
 		result.ifPresent(def -> storageTextureDefinitions.put(identifier, def));
-
 		return result;
 	}
 
@@ -131,7 +127,6 @@ public class StorageTextureManager extends SimpleJsonResourceReloadListener<Json
 		private final Map<String, Map<String, Map<String, Identifier>>> textures;
 
 		@SuppressWarnings({"unused", "java:S1172"})
-		//ignoring unused parameter bNatcause it's needed due to two constructors with the same erasure
 		public StorageTextureDefinition(String type, Map<String, Map<String, Map<String, Identifier>>> multiplePartTextures, boolean multipleTextureIgnoredParameter) {
 			this.type = type;
 			textures = multiplePartTextures;
@@ -170,14 +165,11 @@ public class StorageTextureManager extends SimpleJsonResourceReloadListener<Json
 		public Optional<StorageTextureDefinition> parseDefinition(String type, JsonObject jsonContents) {
 			if (jsonContents.has(TEXTURES_TAG) && jsonContents.get(TEXTURES_TAG).isJsonObject()) {
 				JsonObject jsonTextures = jsonContents.get(TEXTURES_TAG).getAsJsonObject();
-
-				jsonTextures.keySet().forEach(name ->
-						jsonTextures.get(name).getAsJsonObject().entrySet().forEach(entry -> {
-							if (entry.getValue().isJsonPrimitive()) {
-								textures.computeIfAbsent(name, k -> new HashMap<>()).put(entry.getKey(), Identifier.parse(entry.getValue().getAsString()));
-							}
-						})
-				);
+				jsonTextures.keySet().forEach(name -> jsonTextures.get(name).getAsJsonObject().entrySet().forEach(entry -> {
+					if (entry.getValue().isJsonPrimitive()) {
+						textures.computeIfAbsent(name, k -> new HashMap<>()).put(entry.getKey(), Identifier.parse(entry.getValue().getAsString()));
+					}
+				}));
 			}
 
 			return Optional.of(new StorageTextureDefinition(type, textures));

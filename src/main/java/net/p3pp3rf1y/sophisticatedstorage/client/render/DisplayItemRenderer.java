@@ -5,33 +5,23 @@ import com.google.common.cache.CacheBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.block.model.ItemTransform;
 import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
-import net.minecraft.core.BlockPos;
+import net.minecraft.client.resources.model.cuboid.ItemTransform;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.phys.shapes.CollisionContext;
-import net.minecraft.world.phys.shapes.VoxelShape;
-import net.neoforged.neoforge.common.util.TransformationHelper;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
-import org.joml.Vector3fc;
 
-import java.util.HashSet;
+import java.lang.reflect.Field;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.function.UnaryOperator;
 
 public class DisplayItemRenderer {
 	private static final ItemStackRenderState EMPTY_UPGRADE_STACK = new ItemStackRenderState();
@@ -41,16 +31,24 @@ public class DisplayItemRenderer {
 	static final float SMALL_ITEM_SCALE = 0.25f;
 	static final float UPGRADE_ITEM_SCALE = 0.125f;
 	private static final ItemStackRenderState INACCESSIBLE_SLOT_STACK = new ItemStackRenderState();
+	private static final Field ITEM_TRANSFORM_FIELD = getItemTransformField();
+	private static boolean helperStacksInitialized = false;
 	private final double yCenterTranslation;
 	private final Vec3 upgradesOffset;
 
 	public DisplayItemRenderer(double yCenterTranslation, Vec3 upgradesOffset) {
 		this.yCenterTranslation = yCenterTranslation;
 		this.upgradesOffset = upgradesOffset;
+	}
 
+	private static void initHelperStacks() {
+		if (helperStacksInitialized) {
+			return;
+		}
 		ItemModelResolver itemModelResolver = Minecraft.getInstance().getItemModelResolver();
 		itemModelResolver.updateForTopItem(EMPTY_UPGRADE_STACK, new ItemStack(ModItems.UPGRADE_BASE.get()), ItemDisplayContext.FIXED, null, null, 0);
 		itemModelResolver.updateForTopItem(INACCESSIBLE_SLOT_STACK, new ItemStack(ModItems.INACCESSIBLE_SLOT.get()), ItemDisplayContext.FIXED, null, null, 0);
+		helperStacksInitialized = true;
 	}
 
 	private static final Cache<Integer, Double> ITEM_HASHCODE_OFFSETS = CacheBuilder.newBuilder().expireAfterAccess(30L, TimeUnit.MINUTES).build();
@@ -69,6 +67,7 @@ public class DisplayItemRenderer {
 		if (storageRenderState.displayItems.isEmpty() && storageRenderState.inaccessibleSlots.isEmpty()) {
 			return;
 		}
+		initHelperStacks();
 
 		for (int displayItemIndex = 0; displayItemIndex < storageRenderState.displayItemSlots; displayItemIndex++) {
 			if (storageRenderState.inaccessibleSlots.contains(displayItemIndex)) {
@@ -81,6 +80,7 @@ public class DisplayItemRenderer {
 	}
 
 	public void submitUpgradeItems(SubmitNodeCollector submitNodeCollector, StorageRenderState storageRenderState, PoseStack poseStack, int packedOverlay, boolean renderEmptySlots) {
+		initHelperStacks();
 		poseStack.pushPose();
 		int i = 0;
 		for (ItemStackRenderState upgradeItem : storageRenderState.upgradeItems) {
@@ -138,134 +138,49 @@ public class DisplayItemRenderer {
 	}
 
 	public static double getDisplayItemOffset(ItemStack item, ItemStackRenderState itemStackRenderState, boolean isGui3d, float additionalScale) {
-		ItemStackRenderState.LayerRenderState layer = itemStackRenderState.layers[0];
-		ItemTransform transform = layer.transform;
-		List<BakedQuad> quads = layer.prepareQuadList();
 		int hash = ItemStack.hashItemAndComponents(item) * 31 + Float.hashCode(additionalScale);
 		Double offset = ITEM_HASHCODE_OFFSETS.getIfPresent(hash);
 		if (offset != null) {
 			return offset;
 		}
-		offset = calculateDisplayItemOffset(item, itemStackRenderState, transform, quads, isGui3d, additionalScale);
+		offset = calculateDisplayItemOffset(item, itemStackRenderState, isGui3d, additionalScale);
 		ITEM_HASHCODE_OFFSETS.put(hash, offset);
 		return offset;
 	}
 
-	private static double calculateDisplayItemOffset(ItemStack item, ItemStackRenderState itemStackRenderState, ItemTransform transform, List<BakedQuad> quads, boolean isGui3d, float additionalScale) {
-		double itemOffset = 0;
-		if (isGui3d && item.getItem() instanceof BlockItem blockItem) {
-			Block block = blockItem.getBlock();
-			ClientLevel level = Minecraft.getInstance().level;
-			if (level != null) {
-				itemOffset = calculateOffsetFromModelOrShape(itemStackRenderState, transform, quads, block, level, additionalScale);
-			}
-		}
-		return itemOffset;
+	private static double calculateDisplayItemOffset(ItemStack item, ItemStackRenderState itemStackRenderState, boolean isGui3d, float additionalScale) {
+		return isGui3d && item.getItem() instanceof BlockItem
+				? calculateOffsetFromBoundingBox(itemStackRenderState, additionalScale)
+				: 0;
 	}
 
-	private static double calculateOffsetFromModelOrShape(ItemStackRenderState itemStackRenderState, ItemTransform transform, List<BakedQuad> quads, Block block, ClientLevel level, float additionalScale) {
-		if (RenderHelper.isSpecialRenderer(itemStackRenderState)) {
-			return transformBoundsCornersAndCalculateOffset(transform, getBoundsCornersFromShape(block, level), additionalScale);
-		} else {
-			return transformBoundsCornersAndCalculateOffset(transform, getBoundsCornersFromModel(quads), additionalScale);
-		}
+	private static double calculateOffsetFromBoundingBox(ItemStackRenderState itemStackRenderState, float additionalScale) {
+		AABB boundingBox = itemStackRenderState.getModelBoundingBox();
+		double zScale = getFixedTransformScale(itemStackRenderState);
+		return ((zScale * (2 / 15.95D)) - boundingBox.maxZ) * additionalScale; //15.95 because of z-fighting if displayed model had surface offset exactly 1 pixel from the top most surface
 	}
 
-	private static double transformBoundsCornersAndCalculateOffset(ItemTransform transform, Set<Vector3f> points, float additionalScale) {
-		points = scalePoints(points, transform.scale());
-		points = rotatePoints(points, transform.rotation());
-		points = translatePoints(points, transform.translation());
-
-		float zScale = transform.scale().z();
-		return ((zScale * (2 / 15.95D)) - getMaxZ(points)) * additionalScale; //15.95 because of z-fighting if displayed model had surface offset exactly 1 pixel from the top most surface
-	}
-
-	private static Set<Vector3f> getBoundsCornersFromShape(Block block, ClientLevel level) {
-		VoxelShape shape = block.defaultBlockState().getShape(level, BlockPos.ZERO, CollisionContext.empty());
-		return getCornerPointsRelativeToCenter(shape.bounds());
-	}
-
-	private static Set<Vector3f> getBoundsCornersFromModel(List<BakedQuad> quads) {
-		float minX = 2;
-		float minY = 2;
-		float minZ = 2;
-		float maxX = -2;
-		float maxY = -2;
-		float maxZ = -2;
-
-		for (BakedQuad quad : quads) {
-			for (int v = 0; v < BakedQuad.VERTEX_COUNT; v++) {
-				Vector3fc pos = quad.position(v);
-				float x = pos.x();
-				float y = pos.y();
-				float z = pos.z();
-
-				minX = Math.min(minX, x);
-				maxX = Math.max(maxX, x);
-				minY = Math.min(minY, y);
-				maxY = Math.max(maxY, y);
-				minZ = Math.min(minZ, z);
-				maxZ = Math.max(maxZ, z);
-			}
+	private static double getFixedTransformScale(ItemStackRenderState itemStackRenderState) {
+		if (ITEM_TRANSFORM_FIELD == null || itemStackRenderState.layers.length == 0) {
+			return 1;
 		}
 
-		return getCornerPointsRelativeToCenter(minX, minY, minZ, maxX, maxY, maxZ);
-	}
-
-	private static double getMaxZ(Set<Vector3f> points) {
-		float maxZ = Float.MIN_VALUE;
-		for (Vector3f point : points) {
-			if (point.z() > maxZ) {
-				maxZ = point.z();
-			}
+		try {
+			ItemTransform itemTransform = (ItemTransform) ITEM_TRANSFORM_FIELD.get(itemStackRenderState.layers[0]);
+			return itemTransform == null ? 1 : itemTransform.scale().z();
+		} catch (IllegalAccessException e) {
+			return 1;
 		}
-		return maxZ;
 	}
 
-	private static Set<Vector3f> translatePoints(Set<Vector3f> points, Vector3fc translation) {
-		return transformPoints(points, point -> {
-			point.sub(translation);
-			return point;
-		});
-	}
-
-	private static Set<Vector3f> rotatePoints(Set<Vector3f> points, Vector3fc rotation) {
-		Quaternionf rot = TransformationHelper.quatFromXYZ(rotation.x(), rotation.y(), rotation.z(), true);
-		return transformPoints(points, point -> {
-			point.rotate(rot);
-			return point;
-		});
-	}
-
-	private static Set<Vector3f> scalePoints(Set<Vector3f> points, Vector3fc scale) {
-		return transformPoints(points, point -> new Vector3f(point.x() * scale.x(), point.y() * scale.y(), point.z() * scale.z()));
-	}
-
-	private static Set<Vector3f> transformPoints(Set<Vector3f> points, UnaryOperator<Vector3f> transform) {
-		Set<Vector3f> ret = new HashSet<>();
-
-		for (Vector3f point : points) {
-			ret.add(transform.apply(point));
+	private static Field getItemTransformField() {
+		try {
+			Field field = ItemStackRenderState.LayerRenderState.class.getDeclaredField("itemTransform");
+			field.setAccessible(true);
+			return field;
+		} catch (NoSuchFieldException e) {
+			return null;
 		}
-
-		return ret;
-	}
-
-	private static Set<Vector3f> getCornerPointsRelativeToCenter(AABB aabb) {
-		return getCornerPointsRelativeToCenter((float) aabb.minX, (float) aabb.minY, (float) aabb.minZ, (float) aabb.maxX, (float) aabb.maxY, (float) aabb.maxZ);
-	}
-
-	private static Set<Vector3f> getCornerPointsRelativeToCenter(float minX, float minY, float minZ, float maxX, float maxY, float maxZ) {
-		Set<Vector3f> ret = new HashSet<>();
-		ret.add(new Vector3f(0.5F - minX, 0.5F - minY, 0.5F - minZ));
-		ret.add(new Vector3f(0.5F - minX, 0.5F - minY, 0.5F - maxZ));
-		ret.add(new Vector3f(0.5F - minX, 0.5F - maxY, 0.5F - minZ));
-		ret.add(new Vector3f(0.5F - minX, 0.5F - maxY, 0.5F - maxZ));
-		ret.add(new Vector3f(0.5F - maxX, 0.5F - minY, 0.5F - minZ));
-		ret.add(new Vector3f(0.5F - maxX, 0.5F - minY, 0.5F - maxZ));
-		ret.add(new Vector3f(0.5F - maxX, 0.5F - maxY, 0.5F - minZ));
-		ret.add(new Vector3f(0.5F - maxX, 0.5F - maxY, 0.5F - maxZ));
-		return ret;
 	}
 
 	public static Vector3f getDisplayItemIndexFrontOffset(int displayItemIndex, int displayItemCount) {

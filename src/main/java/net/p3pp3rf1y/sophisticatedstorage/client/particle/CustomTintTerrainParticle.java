@@ -17,9 +17,9 @@ public class CustomTintTerrainParticle extends TerrainParticle {
 
 		int color;
 		if (state.getBlock() instanceof BarrelBlock) {
-			color = Minecraft.getInstance().getBlockColors().getColor(state, level, pos, 1000);
+			color = -1;
 		} else {
-			color = Minecraft.getInstance().getBlockColors().getColor(state, level, pos, 0);
+			color = -1;
 		}
 		rCol *= (color >> 16 & 255) / 255.0F;
 		gCol *= (color >> 8 & 255) / 255.0F;

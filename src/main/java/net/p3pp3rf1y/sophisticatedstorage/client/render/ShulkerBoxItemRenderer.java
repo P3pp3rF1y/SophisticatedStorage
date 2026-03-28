@@ -52,7 +52,7 @@ public class ShulkerBoxItemRenderer implements SpecialModelRenderer<ShulkerBoxIt
 	}
 
 	@Override
-	public void submit(@Nullable ShulkerBoxAttributes shulkerBoxAttributes, ItemDisplayContext itemDisplayContext, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, int i, int i1, boolean b, int i2) {
+	public void submit(@Nullable ShulkerBoxAttributes shulkerBoxAttributes, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, int i, int i1, boolean b, int i2) {
 		if (shulkerBoxAttributes == null) {
 			return;
 		}
@@ -75,6 +75,11 @@ public class ShulkerBoxItemRenderer implements SpecialModelRenderer<ShulkerBoxIt
 	@Override
 	public void getExtents(Consumer<Vector3fc> consumer) {
 		PoseStack posestack = new PoseStack();
+		posestack.translate(0.5D, 0.5D, 0.5D);
+		posestack.scale(0.9995F, 0.9995F, 0.9995F);
+		posestack.mulPose(Direction.SOUTH.getRotation());
+		posestack.scale(1.0F, -1.0F, -1.0F);
+		posestack.translate(0.0D, -1.0D, 0.0D);
 		ShulkerBoxBlockEntity shulkerBoxItem = shulkerBoxBlockEntities.getUnchecked(ModBlocks.SHULKER_BOX_ITEM.get());
 		BlockEntityRenderer<ShulkerBoxBlockEntity, ShulkerBoxRenderer.ShulkerBoxRenderState> blockentityrenderer = Minecraft.getInstance().getBlockEntityRenderDispatcher().getRenderer(shulkerBoxItem);
 		if (blockentityrenderer instanceof ShulkerBoxRenderer shulkerBoxRenderer) {
@@ -84,17 +89,17 @@ public class ShulkerBoxItemRenderer implements SpecialModelRenderer<ShulkerBoxIt
 
 	public record ShulkerBoxAttributes(BlockItem blockItem, int mainColor, int accentColor, boolean showsTier) {}
 
-	public static class Unbaked implements SpecialModelRenderer.Unbaked {
+	public static class Unbaked implements SpecialModelRenderer.Unbaked<ShulkerBoxAttributes> {
 		public static final MapCodec<Unbaked> MAP_CODEC = MapCodec.unit(new Unbaked());
 
 		@Nullable
 		@Override
-		public SpecialModelRenderer<?> bake(BakingContext bakingContext) {
+		public SpecialModelRenderer<ShulkerBoxAttributes> bake(BakingContext bakingContext) {
 			return new ShulkerBoxItemRenderer();
 		}
 
 		@Override
-		public MapCodec<? extends Unbaked> type() {
+		public MapCodec<? extends SpecialModelRenderer.Unbaked<ShulkerBoxAttributes>> type() {
 			return MAP_CODEC;
 		}
 	}

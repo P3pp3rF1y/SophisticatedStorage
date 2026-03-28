@@ -2,7 +2,10 @@
     "loader": "sophisticatedstorage:simple_composite",
     "parts": {
         "base": {
-            "parent": "sophisticatedstorage:block/barrel_part/base"
+            "parent": "sophisticatedstorage:block/barrel_part/base",
+            "textures": {
+                "particle": "sophisticatedstorage:block/limited_acacia_barrel_1_top"
+            }
         },
         "middle_inner_trim": {
             "parent": "sophisticatedstorage:block/barrel_part/middle_inner_trim"

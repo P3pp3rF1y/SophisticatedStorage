@@ -9,16 +9,16 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.item.ItemTintSource;
 import net.minecraft.client.color.item.ItemTintSources;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.Sheets;
-import net.minecraft.client.renderer.block.model.ItemTransform;
-import net.minecraft.client.renderer.block.model.ItemTransforms;
-import net.minecraft.client.renderer.item.BlockModelWrapper;
+import net.minecraft.client.renderer.block.dispatch.BlockModelRotation;
 import net.minecraft.client.renderer.item.ItemModel;
 import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
-import net.minecraft.client.resources.model.BlockModelRotation;
+import net.minecraft.client.renderer.item.CuboidItemModelWrapper;
+import net.minecraft.client.resources.model.cuboid.ItemTransform;
+import net.minecraft.client.resources.model.cuboid.ItemTransforms;
 import net.minecraft.client.resources.model.ResolvedModel;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
@@ -57,7 +57,7 @@ public record BarrelItemModel(BarrelBlockStateModelBase model, @Nullable BarrelB
 	}
 
 	public BarrelItemModel(BarrelBlockStateModelBase model, @Nullable BarrelBlockStateModelBase flatTopModel, List<ItemTintSource> tints) {
-		this(model, flatTopModel, tints, Suppliers.memoize(() -> BlockModelWrapper.computeExtents(model.getTierQuads().getAll())));
+		this(model, flatTopModel, tints, Suppliers.memoize(() -> CuboidItemModelWrapper.computeExtents(model.getTierQuads().getAll())));
 	}
 
 	@Override
@@ -99,21 +99,19 @@ public record BarrelItemModel(BarrelBlockStateModelBase model, @Nullable BarrelB
 		state.appendModelIdentityElement(stack.getItem());
 
 		ItemStackRenderState.LayerRenderState layerState = state.newLayer();
-		int[] tintArray = new int[tints.size()];
+		List<net.minecraft.client.resources.model.geometry.BakedQuad> quads = updatedModel.getQuads(clientLevel != null ? clientLevel.getRandom() : RandomSource.create());
 
-		for (int j = 0; j < tintArray.length; ++j) {
-			tintArray[j] = tints.get(j).calculate(stack, clientLevel, itemOwner == null ? null : itemOwner.asLivingEntity());
-			state.appendModelIdentityElement(tintArray[j]);
+		for (int j = 0; j < tints.size(); ++j) {
+			int tint = tints.get(j).calculate(stack, clientLevel, itemOwner == null ? null : itemOwner.asLivingEntity());
+			layerState.tintLayers().add(tint);
+			state.appendModelIdentityElement(tint);
 		}
-		int[] aint = layerState.prepareTintLayers(tintArray.length);
-		System.arraycopy(tintArray, 0, aint, 0, tintArray.length);
 
-		layerState.setExtents(extents);
+		layerState.setExtents(Suppliers.memoize(() -> CuboidItemModelWrapper.computeExtents(quads)));
 		layerState.setUsesBlockLight(true);
-		layerState.setRenderType(Sheets.translucentBlockItemSheet());
-		layerState.setParticleIcon(updatedModel.particleIcon());
-		layerState.setTransform(ITEM_TRANSFORMS.getTransform(itemDisplayContext));
-		layerState.prepareQuadList().addAll(updatedModel.getQuads(clientLevel != null ? clientLevel.random : Minecraft.getInstance().level.random));
+		layerState.setParticleMaterial(updatedModel.particleMaterial());
+		layerState.setItemTransform(ITEM_TRANSFORMS.getTransform(itemDisplayContext));
+		layerState.prepareQuadList().addAll(quads);
 	}
 
 	public record Unbaked(Identifier model, @Nullable Identifier flatTopModel,
@@ -133,7 +131,7 @@ public record BarrelItemModel(BarrelBlockStateModelBase model, @Nullable BarrelB
 		}
 
 		@Override
-		public ItemModel bake(BakingContext context) {
+		public ItemModel bake(BakingContext context, org.joml.Matrix4fc transformation) {
 			ResolvedModel resolved = context.blockModelBaker().getModel(model);
 			BarrelBlockStateModelBase barrelModel;
 			if (resolved.wrapped() instanceof BarrelUnbakedModelBase barrelUnbakedModel) {

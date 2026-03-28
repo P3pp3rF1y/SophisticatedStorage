@@ -2,11 +2,13 @@ package net.p3pp3rf1y.sophisticatedstorage.block;
 
 import com.mojang.math.Axis;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -126,7 +128,10 @@ public class LimitedBarrelBlock extends BarrelBlock {
 				return InteractionResult.PASS;
 			} else if (limitedBarrelBlockEntity.depositItem(player, hand, stackInHand, slot)) {
 				return InteractionResult.SUCCESS;
-			} else if (Config.SERVER.limitedBarrelCountDyeingEnabled.getAsBoolean() && stackInHand.getItem() instanceof DyeItem dyeItem && limitedBarrelBlockEntity.applyDye(slot, stackInHand, dyeItem.getDyeColor(), player.isShiftKeyDown())) {
+			}
+
+			DyeColor dyeColor = stackInHand.get(DataComponents.DYE);
+			if (Config.SERVER.limitedBarrelCountDyeingEnabled.getAsBoolean() && stackInHand.getItem() instanceof DyeItem && dyeColor != null && limitedBarrelBlockEntity.applyDye(slot, stackInHand, dyeColor, player.isShiftKeyDown())) {
 				return InteractionResult.SUCCESS;
 			}
 		}
@@ -146,9 +151,13 @@ public class LimitedBarrelBlock extends BarrelBlock {
 		if (hitVec.getDirection() != getFacing(state) || !(itemStack.getItem() instanceof DyeItem)) {
 			return false;
 		}
-		return WorldHelper.getBlockEntity(level, pos, LimitedBarrelBlockEntity.class).map(barrel ->
-				barrel.applyDye(0, itemStack, ((DyeItem) itemStack.getItem()).getDyeColor(), true)
-		).orElse(false);
+		DyeColor dyeColor = itemStack.get(DataComponents.DYE);
+		if (dyeColor == null) {
+			return false;
+		}
+		return WorldHelper.getBlockEntity(level, pos, LimitedBarrelBlockEntity.class)
+				.map(barrel -> barrel.applyDye(0, itemStack, dyeColor, true))
+				.orElse(false);
 	}
 
 	private int getInteractionSlot(BlockPos pos, BlockState state, BlockHitResult hitResult) {

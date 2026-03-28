@@ -58,6 +58,7 @@ public class DecorationTableBlockEntity extends BlockEntity {
 	public static final int RED_DYE_SLOT = 0;
 	public static final int GREEN_DYE_SLOT = 1;
 	public static final int BLUE_DYE_SLOT = 2;
+	private static final TagKey<Item> DYEABLE_ITEMS = ItemTags.create(Identifier.withDefaultNamespace("dyeable"));
 	public static final Set<Item> STORAGES_WIHOUT_TOP_INNER_TRIM = Set.of(ModBlocks.BARREL_ITEM.get(), ModBlocks.COPPER_BARREL_ITEM.get(), ModBlocks.IRON_BARREL_ITEM.get(), ModBlocks.GOLD_BARREL_ITEM.get(), ModBlocks.DIAMOND_BARREL_ITEM.get(), ModBlocks.NETHERITE_BARREL_ITEM.get(),
 			ModBlocks.LIMITED_BARREL_1_ITEM.get(), ModBlocks.LIMITED_COPPER_BARREL_1_ITEM.get(), ModBlocks.LIMITED_IRON_BARREL_1_ITEM.get(), ModBlocks.LIMITED_GOLD_BARREL_1_ITEM.get(), ModBlocks.LIMITED_DIAMOND_BARREL_1_ITEM.get(), ModBlocks.LIMITED_NETHERITE_BARREL_1_ITEM.get());
 
@@ -111,6 +112,7 @@ public class DecorationTableBlockEntity extends BlockEntity {
 	public void updateResultAndSetChanged() {
 		updateResult();
 		setChanged();
+		WorldHelper.notifyBlockUpdate(this);
 	}
 
 	private final ItemStacksResourceHandler storageBlock = new ItemStacksResourceHandler(1) {
@@ -620,7 +622,7 @@ public class DecorationTableBlockEntity extends BlockEntity {
 				return List.of(new ItemStack(ModBlocks.LIMITED_BARREL_3_ITEM.get()), new ItemStack(ModBlocks.CHEST_ITEM.get()), new ItemStack(ModBlocks.SHULKER_BOX_ITEM.get()));
 			}
 		});
-		ITEM_DECORATORS.put(item -> item.builtInRegistryHolder().is(ItemTags.DYEABLE), new IItemDecorator() {
+		ITEM_DECORATORS.put(item -> item.builtInRegistryHolder().is(DYEABLE_ITEMS), new IItemDecorator() {
 			@Override
 			public boolean supportsMaterials(ItemResource input) {
 				return false;

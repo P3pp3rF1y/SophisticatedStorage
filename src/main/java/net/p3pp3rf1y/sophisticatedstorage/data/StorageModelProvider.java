@@ -7,9 +7,10 @@ import net.minecraft.client.data.models.MultiVariant;
 import net.minecraft.client.data.models.blockstates.MultiVariantGenerator;
 import net.minecraft.client.data.models.blockstates.PropertyDispatch;
 import net.minecraft.client.data.models.model.*;
-import net.minecraft.client.renderer.block.model.VariantMutator;
+import net.minecraft.client.renderer.block.dispatch.VariantMutator;
 import net.minecraft.client.renderer.item.ItemModel;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
+import net.minecraft.client.resources.model.sprite.Material;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.Identifier;
@@ -75,7 +76,7 @@ public class StorageModelProvider extends SophisticatedModelProvider {
 				ExtendedModelTemplateBuilder.builder().customLoader(() -> createSimpleCustomLoaderBuilder(loaderName), loader -> {
 				}).build()
 		);
-		Identifier itemModel = itemModelTemplate.create(baseBlock.asItem(), TextureMapping.particle(baseParticle), blockModels.modelOutput);
+		Identifier itemModel = itemModelTemplate.create(baseBlock.asItem(), TextureMapping.particle(new Material(baseParticle)), blockModels.modelOutput);
 		BuiltInRegistries.BLOCK.entrySet().stream()
 				.filter(entry -> entry.getKey().identifier().getNamespace().equals(modId)
 						&& blockClass.isAssignableFrom(entry.getValue().getClass()))

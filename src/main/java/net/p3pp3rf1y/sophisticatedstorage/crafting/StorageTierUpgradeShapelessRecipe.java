@@ -1,9 +1,9 @@
 package net.p3pp3rf1y.sophisticatedstorage.crafting;
 
-import net.minecraft.core.HolderLookup;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.CraftingInput;
+import net.minecraft.world.item.crafting.PlacementInfo;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.ShapelessRecipe;
 import net.minecraft.world.level.Level;
@@ -16,9 +16,11 @@ import net.p3pp3rf1y.sophisticatedstorage.item.ChestBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.StackStorageWrapper;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
 
+import java.util.List;
 import java.util.Optional;
 
 public class StorageTierUpgradeShapelessRecipe extends CustomShapelessRecipe implements IWrapperRecipe<ShapelessRecipe> {
+	public static final RecipeSerializer<StorageTierUpgradeShapelessRecipe> SERIALIZER = RecipeWrapperSerializer.create(StorageTierUpgradeShapelessRecipe::new, ShapelessRecipe.SERIALIZER);
 	private final ShapelessRecipe compose;
 
 	public StorageTierUpgradeShapelessRecipe(ShapelessRecipe compose) {
@@ -32,11 +34,11 @@ public class StorageTierUpgradeShapelessRecipe extends CustomShapelessRecipe imp
 	}
 
 	@Override
-	public ItemStack assemble(CraftingInput input, HolderLookup.Provider registries) {
-		ItemStack upgradedStorage = super.assemble(input, registries);
+	public ItemStack assemble(CraftingInput input) {
+		ItemStack upgradedStorage = super.assemble(input);
 		getOriginalStorage(input).ifPresent(originalStorage -> upgradedStorage.applyComponents(originalStorage.getComponentsPatch()));
 		if (upgradedStorage.has(ModCoreDataComponents.STORAGE_UUID)) {
-			StackStorageWrapper storageWrapper = StackStorageWrapper.fromStack(registries, upgradedStorage);
+			StackStorageWrapper storageWrapper = new StackStorageWrapper(upgradedStorage);
 			StorageBlockItem.setNumberOfInventorySlots(upgradedStorage, storageWrapper.getDefaultNumberOfInventorySlots());
 			StorageBlockItem.setNumberOfUpgradeSlots(upgradedStorage, storageWrapper.getDefaultNumberOfUpgradeSlots());
 		}
@@ -65,9 +67,29 @@ public class StorageTierUpgradeShapelessRecipe extends CustomShapelessRecipe imp
 		return compose;
 	}
 
-	public static class Serializer extends RecipeWrapperSerializer<ShapelessRecipe, StorageTierUpgradeShapelessRecipe> {
-		public Serializer() {
-			super(StorageTierUpgradeShapelessRecipe::new, RecipeSerializer.SHAPELESS_RECIPE);
-		}
+	@Override
+	public boolean showNotification() {
+		return compose.showNotification();
 	}
+
+	@Override
+	public String group() {
+		return compose.group();
+	}
+
+	@Override
+	public CraftingBookCategory category() {
+		return compose.category();
+	}
+
+	@Override
+	public PlacementInfo placementInfo() {
+		return compose.placementInfo();
+	}
+
+	@Override
+	public List<net.minecraft.world.item.crafting.display.RecipeDisplay> display() {
+		return compose.display();
+	}
+
 }

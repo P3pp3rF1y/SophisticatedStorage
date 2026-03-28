@@ -38,7 +38,7 @@ public class StorageHolderTierUpgradeHandler {
 
 			int countRequired = upgradeDefinition.getCountRequired(storageStack);
 			if (countRequired > itemInHand.getCount()) {
-				player.displayClientMessage(Component.translatable(StorageTranslationHelper.INSTANCE.translGui("status.too_low_tier_upgrade_count"), countRequired, itemInHand.getHoverName()), true);
+				player.sendOverlayMessage(Component.translatable(StorageTranslationHelper.INSTANCE.translGui("status.too_low_tier_upgrade_count"), countRequired, itemInHand.getHoverName()));
 				return InteractionResult.FAIL;
 			}
 

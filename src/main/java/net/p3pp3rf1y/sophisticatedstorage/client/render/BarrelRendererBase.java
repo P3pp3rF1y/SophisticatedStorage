@@ -1,17 +1,19 @@
 package net.p3pp3rf1y.sophisticatedstorage.client.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.QuadInstance;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.block.model.BlockStateModel;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.data.AtlasIds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.BlockState;
@@ -25,7 +27,7 @@ import java.util.Collections;
 import java.util.List;
 
 public abstract class BarrelRendererBase<T extends BarrelBlockEntity, R extends BarrelRendererBase.BarrelRenderStateBase> extends StorageRenderer<T, R> {
-	public static final RenderType TRANSLUCENT = RenderTypes.entityTranslucent(TextureAtlas.LOCATION_BLOCKS);
+	public static final RenderType TRANSLUCENT = RenderTypes.entityTranslucent(AtlasIds.BLOCKS);
 	protected final DisplayItemRenderer displayItemRenderer = new DisplayItemRenderer(0.5, new Vec3(0, 0, -1 / 16D));
 	protected final DisplayItemRenderer flatDisplayItemRenderer = new DisplayItemRenderer(0.5, Vec3.ZERO);
 
@@ -55,7 +57,11 @@ public abstract class BarrelRendererBase<T extends BarrelBlockEntity, R extends 
 		poseStack.scale(1.01f, 1.01f, 1.01f);
 
 		submitNodeCollector.submitCustomGeometry(poseStack, TRANSLUCENT, (pose, vertexConsumer) -> {
-			quads.forEach(quad -> vertexConsumer.putBulkData(pose, quad, 1, 1, 1, 0.5f, packedLight, OverlayTexture.NO_OVERLAY));
+			QuadInstance quadInstance = new QuadInstance();
+			quadInstance.setColor(0x80FFFFFF);
+			quadInstance.setLightCoords(packedLight);
+			quadInstance.setOverlayCoords(OverlayTexture.NO_OVERLAY);
+			quads.forEach(quad -> vertexConsumer.putBakedQuad(pose, quad, quadInstance));
 		});
 		poseStack.popPose();
 	}
@@ -78,13 +84,13 @@ public abstract class BarrelRendererBase<T extends BarrelBlockEntity, R extends 
 		BlockState blockState = blockEntity.getBlockState();
 		if (blockState.getBlock() instanceof BarrelBlock storageBlock && blockEntity.getLevel() != null && pos != BlockPos.ZERO) {
 			Direction facing = storageBlock.getFacing(blockState);
-			renderState.lightCoords = LevelRenderer.getLightColor(blockEntity.getLevel(), pos.relative(facing));
+			renderState.lightCoords = LevelRenderer.getLightCoords(blockEntity.getLevel(), pos.relative(facing));
 		}
 		renderState.flatTop = blockState.getValue(BarrelBlock.FLAT_TOP);
 
 		renderState.woodName = blockEntity.getWoodType().orElse(WoodType.ACACIA).name();
 		if (!renderState.showsTier && holdsItemThatShowsHiddenTiers()) {
-			BlockStateModel blockModel = Minecraft.getInstance().getBlockRenderer().getBlockModel(blockState);
+			BlockStateModel blockModel = Minecraft.getInstance().getModelManager().getBlockStateModelSet().get(blockState);
 
 			if (blockModel instanceof BarrelBlockStateModelBase barrelBlockStateModel) {
 				barrelBlockStateModel.setWoodName(renderState.woodName);
@@ -92,7 +98,7 @@ public abstract class BarrelRendererBase<T extends BarrelBlockEntity, R extends 
 			}
 		}
 		if (!renderState.showsLock && holdsToolInToggleLockOrLockDisplay()) {
-			BlockStateModel blockModel = Minecraft.getInstance().getBlockRenderer().getBlockModel(blockState);
+			BlockStateModel blockModel = Minecraft.getInstance().getModelManager().getBlockStateModelSet().get(blockState);
 
 			if (blockModel instanceof BarrelBlockStateModelBase barrelBlockStateModel) {
 				barrelBlockStateModel.setWoodName(renderState.woodName);

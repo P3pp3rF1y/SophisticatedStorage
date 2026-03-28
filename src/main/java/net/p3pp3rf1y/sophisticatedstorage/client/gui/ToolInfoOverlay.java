@@ -25,7 +25,7 @@ public class ToolInfoOverlay {
 			int i = font.width(overlayMessage);
 			int x = (guiGraphics.guiWidth() - i) / 2;
 			int y = guiGraphics.guiHeight() - 75;
-			guiGraphics.drawString(font, overlayMessage, x + 1, y, DyeColor.WHITE.getTextColor(), false);
+			guiGraphics.text(font, overlayMessage, x + 1, y, DyeColor.WHITE.getTextColor(), false);
 		});
 	};
 }

@@ -68,7 +68,7 @@ public class ChestItemRenderer implements SpecialModelRenderer<ChestItemRenderer
 	}
 
 	@Override
-	public void submit(@Nullable ChestAttributes chestAttributes, ItemDisplayContext itemDisplayContext, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, int packedLight, int packedOverlay, boolean hasFoil, int color) {
+	public void submit(@Nullable ChestAttributes chestAttributes, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, int packedLight, int packedOverlay, boolean hasFoil, int color) {
 		if (chestAttributes == null) {
 			return;
 		}
@@ -138,17 +138,17 @@ public class ChestItemRenderer implements SpecialModelRenderer<ChestItemRenderer
 		}
 	}
 
-	public static class Unbaked implements SpecialModelRenderer.Unbaked {
+	public static class Unbaked implements SpecialModelRenderer.Unbaked<ChestAttributes> {
 		public static final MapCodec<Unbaked> MAP_CODEC = MapCodec.unit(new Unbaked());
 
 		@Nullable
 		@Override
-		public SpecialModelRenderer<?> bake(BakingContext bakingContext) {
+		public SpecialModelRenderer<ChestAttributes> bake(BakingContext bakingContext) {
 			return new ChestItemRenderer();
 		}
 
 		@Override
-		public MapCodec<? extends SpecialModelRenderer.Unbaked> type() {
+		public MapCodec<? extends SpecialModelRenderer.Unbaked<ChestAttributes>> type() {
 			return MAP_CODEC;
 		}
 	}

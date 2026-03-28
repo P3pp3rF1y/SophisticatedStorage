@@ -74,7 +74,7 @@
             "model": "sophisticatedstorage:block/barrel_part/tintable_main"
         },
         "tintable_main_open": {
-            "model": "sophisticatedstorage:block/barrel_part/tintable_main",
+            "model": "sophisticatedstorage:block/barrel_part/tintable_core",
             "textures": {
                 "particle": "sophisticatedstorage:block/barrel_top_tintable_main_open",
                 "top": "sophisticatedstorage:block/barrel_top_tintable_main_open"

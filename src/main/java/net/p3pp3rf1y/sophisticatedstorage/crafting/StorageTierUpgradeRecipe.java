@@ -1,8 +1,10 @@
 package net.p3pp3rf1y.sophisticatedstorage.crafting;
 
-import net.minecraft.core.HolderLookup;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.CraftingInput;
+import net.minecraft.world.item.crafting.CraftingRecipe;
+import net.minecraft.world.item.crafting.PlacementInfo;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.minecraft.world.level.Level;
@@ -14,13 +16,14 @@ import net.p3pp3rf1y.sophisticatedstorage.item.ChestBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.StackStorageWrapper;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
 
+import java.util.List;
 import java.util.Optional;
 
-public class StorageTierUpgradeRecipe extends ShapedRecipe implements IWrapperRecipe<ShapedRecipe> {
+public class StorageTierUpgradeRecipe implements CraftingRecipe, IWrapperRecipe<ShapedRecipe> {
+	public static final RecipeSerializer<StorageTierUpgradeRecipe> SERIALIZER = RecipeWrapperSerializer.create(StorageTierUpgradeRecipe::new, ShapedRecipe.SERIALIZER);
 	private final ShapedRecipe compose;
 
 	public StorageTierUpgradeRecipe(ShapedRecipe compose) {
-		super(compose.group(), compose.category(), compose.pattern, compose.result);
 		this.compose = compose;
 	}
 
@@ -31,17 +34,17 @@ public class StorageTierUpgradeRecipe extends ShapedRecipe implements IWrapperRe
 
 	@Override
 	public boolean matches(CraftingInput input, Level level) {
-		return super.matches(input, level) && getOriginalStorage(input).isPresent();
+		return compose.matches(input, level) && getOriginalStorage(input).isPresent();
 	}
 
 	@Override
-	public ItemStack assemble(CraftingInput input, HolderLookup.Provider registries) {
-		ItemStack upgradedStorage = super.assemble(input, registries);
+	public ItemStack assemble(CraftingInput input) {
+		ItemStack upgradedStorage = compose.assemble(input);
 		getOriginalStorage(input).ifPresent(originalStorage -> {
 			upgradedStorage.applyComponents(originalStorage.getComponentsPatch());
 		});
 		if (upgradedStorage.has(ModCoreDataComponents.STORAGE_UUID)) {
-			StackStorageWrapper storageWrapper = StackStorageWrapper.fromStack(registries, upgradedStorage);
+			StackStorageWrapper storageWrapper = new StackStorageWrapper(upgradedStorage);
 			StorageBlockItem.setNumberOfInventorySlots(upgradedStorage, storageWrapper.getDefaultNumberOfInventorySlots());
 			StorageBlockItem.setNumberOfUpgradeSlots(upgradedStorage, storageWrapper.getDefaultNumberOfUpgradeSlots());
 		}
@@ -70,9 +73,29 @@ public class StorageTierUpgradeRecipe extends ShapedRecipe implements IWrapperRe
 		return ModBlocks.STORAGE_TIER_UPGRADE_RECIPE_SERIALIZER.get();
 	}
 
-	public static class Serializer extends RecipeWrapperSerializer<ShapedRecipe, StorageTierUpgradeRecipe> {
-		public Serializer() {
-			super(StorageTierUpgradeRecipe::new, RecipeSerializer.SHAPED_RECIPE);
-		}
+	@Override
+	public boolean showNotification() {
+		return compose.showNotification();
 	}
+
+	@Override
+	public String group() {
+		return compose.group();
+	}
+
+	@Override
+	public CraftingBookCategory category() {
+		return compose.category();
+	}
+
+	@Override
+	public PlacementInfo placementInfo() {
+		return compose.placementInfo();
+	}
+
+	@Override
+	public List<net.minecraft.world.item.crafting.display.RecipeDisplay> display() {
+		return compose.display();
+	}
+
 }

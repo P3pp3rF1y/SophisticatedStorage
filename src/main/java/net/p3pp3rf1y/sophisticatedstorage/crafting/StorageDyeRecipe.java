@@ -1,5 +1,8 @@
 package net.p3pp3rf1y.sophisticatedstorage.crafting;
 
+import com.mojang.serialization.MapCodec;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
@@ -13,6 +16,11 @@ import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import java.util.List;
 
 public class StorageDyeRecipe extends StorageDyeRecipeBase {
+	public static final StorageDyeRecipe INSTANCE = new StorageDyeRecipe(CraftingBookCategory.MISC);
+	public static final MapCodec<StorageDyeRecipe> MAP_CODEC = MapCodec.unit(INSTANCE);
+	public static final StreamCodec<RegistryFriendlyByteBuf, StorageDyeRecipe> STREAM_CODEC = StreamCodec.unit(INSTANCE);
+	public static final RecipeSerializer<StorageDyeRecipe> SERIALIZER = new RecipeSerializer<>(MAP_CODEC, STREAM_CODEC);
+
 	public StorageDyeRecipe(CraftingBookCategory category) {
 		super(category);
 	}

@@ -6,17 +6,17 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.mojang.math.Transformation;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.block.model.BlockModelPart;
-import net.minecraft.client.renderer.block.model.SimpleModelWrapper;
-import net.minecraft.client.renderer.block.model.TextureSlots;
-import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
+import net.minecraft.client.renderer.block.BlockAndTintGetter;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.SimpleModelWrapper;
 import net.minecraft.client.resources.model.ModelBaker;
-import net.minecraft.client.resources.model.QuadCollection;
-import net.minecraft.client.resources.model.UnbakedGeometry;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
+import net.minecraft.client.resources.model.geometry.QuadCollection;
+import net.minecraft.client.resources.model.geometry.UnbakedGeometry;
+import net.minecraft.client.resources.model.sprite.TextureSlots;
+import net.minecraft.client.resources.model.sprite.Material;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -25,7 +25,6 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import net.neoforged.neoforge.client.model.DynamicBlockStateModel;
@@ -55,7 +54,7 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 		}
 	});
 	private static final Cache<Integer, Transformation> DIRECTION_MOVE_BACK_TO_SIDE = CacheBuilder.newBuilder().expireAfterAccess(10L, TimeUnit.MINUTES).build();
-	public static final Cache<Integer, List<BlockModelPart>> BAKED_PARTS_CACHE = CacheBuilder.newBuilder().expireAfterAccess(15L, TimeUnit.MINUTES).build();
+	public static final Cache<Integer, List<BlockStateModelPart>> BAKED_PARTS_CACHE = CacheBuilder.newBuilder().expireAfterAccess(15L, TimeUnit.MINUTES).build();
 	public static final Cache<Integer, List<BakedQuad>> BAKED_QUADS_CACHE = CacheBuilder.newBuilder().expireAfterAccess(15L, TimeUnit.MINUTES).build();
 	private static final List<BarrelMaterial> PARTICLE_ICON_MATERIAL_PRIORITY = List.of(BarrelMaterial.ALL, BarrelMaterial.ALL_BUT_TRIM, BarrelMaterial.TOP_ALL, BarrelMaterial.TOP);
 	private boolean showsLock;
@@ -133,8 +132,7 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 		return new Transformation(null, DisplayItemRenderer.getNorthBasedRotation(dir), null, null);
 	}
 
-	@Override
-	public TextureAtlasSprite particleIcon() {
+	private TextureAtlasSprite particleIcon() {
 		if (hasMainColor) {
 			return particleIcons.values().iterator().next().get(BarrelModelPart.TINTABLE_MAIN);
 		}
@@ -143,7 +141,7 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 			for (BarrelMaterial barrelMaterial : PARTICLE_ICON_MATERIAL_PRIORITY) {
 				if (materials.containsKey(barrelMaterial)) {
 					BlockState blockState = getDefaultBlockState(materials.get(barrelMaterial));
-					return Minecraft.getInstance().getBlockRenderer().getBlockModel(blockState).particleIcon();
+					return Minecraft.getInstance().getModelManager().getBlockStateModelSet().getParticleMaterial(blockState).sprite();
 				}
 			}
 		}
@@ -162,10 +160,10 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 		if (cachedQuads != null) {
 			return cachedQuads;
 		}
-		List<BlockModelPart> parts = getParts(null, rand);
+		List<BlockStateModelPart> parts = getParts(null, rand);
 		List<BakedQuad> bakedQuads = new ArrayList<>();
 
-		for (BlockModelPart part : parts) {
+		for (BlockStateModelPart part : parts) {
 			for (Direction dir : Direction.values()) {
 				bakedQuads.addAll(part.getQuads(dir));
 			}
@@ -178,7 +176,7 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 	}
 
 	@Override
-	public void collectParts(@Nullable BlockAndTintGetter level, BlockPos pos, @Nullable BlockState state, RandomSource rand, List<BlockModelPart> parts) {
+	public void collectParts(@Nullable BlockAndTintGetter level, BlockPos pos, @Nullable BlockState state, RandomSource rand, List<BlockStateModelPart> parts) {
 		showsLock = false;
 
 		BarrelBlockEntity be = WorldHelper.getBlockEntity(level, pos, BarrelBlockEntity.class).orElse(null);
@@ -197,18 +195,18 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 		}
 
 		int hash = createHash(state);
-		List<BlockModelPart> cachedParts = BAKED_PARTS_CACHE.getIfPresent(hash);
+		List<BlockStateModelPart> cachedParts = BAKED_PARTS_CACHE.getIfPresent(hash);
 		if (cachedParts != null) {
 			parts.addAll(cachedParts);
 			return;
 		}
-		List<BlockModelPart> partsToCache = getParts(state, rand);
+		List<BlockStateModelPart> partsToCache = getParts(state, rand);
 		BAKED_PARTS_CACHE.put(hash, partsToCache);
 
 		parts.addAll(partsToCache);
 	}
 
-	private List<BlockModelPart> getParts(@Nullable BlockState state, RandomSource rand) {
+	private List<BlockStateModelPart> getParts(@Nullable BlockState state, RandomSource rand) {
 		QuadCollection.Builder cutoutQuadCollectionBuilder = new QuadCollection.Builder();
 		QuadCollection.Builder translucentQuadCollectionBuilder = new QuadCollection.Builder();
 
@@ -242,11 +240,11 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 			addPartQuads(cutoutQuadCollectionBuilder, modelParts, BarrelModelPart.LOCKED);
 		}
 
-		List<BlockModelPart> parts = new ArrayList<>();
-		parts.add(new SimpleModelWrapper(cutoutQuadCollectionBuilder.build(), true, particleIcon(), ChunkSectionLayer.CUTOUT));
+		List<BlockStateModelPart> parts = new ArrayList<>();
+		parts.add(new SimpleModelWrapper(cutoutQuadCollectionBuilder.build(), true, particleMaterial()));
 		QuadCollection translucentQuads = translucentQuadCollectionBuilder.build();
 		if (!translucentQuads.getAll().isEmpty()) {
-			parts.add(new SimpleModelWrapper(translucentQuads, true, particleIcon(), ChunkSectionLayer.TRANSLUCENT));
+			parts.add(new SimpleModelWrapper(translucentQuads, true, new Material.Baked(particleMaterial().sprite(), true)));
 		}
 
 		return parts;
@@ -280,7 +278,7 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 			for (BarrelMaterial childMaterial : barrelMaterial.getChildren()) {
 				Identifier blockName = entry.getValue();
 				TextureAtlasSprite sprite = RenderHelper.getSprite(blockName, childMaterial.getLeafSide(), rand);
-				mats.put(childMaterial.getSerializedName(), new Material(TextureAtlas.LOCATION_BLOCKS, sprite.contents().name()));
+				mats.put(childMaterial.getSerializedName(), new Material(sprite.contents().name()));
 			}
 		}
 
@@ -399,5 +397,15 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 		}
 
 		materials = be.getMaterials();
+	}
+
+	@Override
+	public Material.Baked particleMaterial() {
+		return new Material.Baked(particleIcon(), false);
+	}
+
+	@Override
+	public int materialFlags() {
+		return 0;
 	}
 }

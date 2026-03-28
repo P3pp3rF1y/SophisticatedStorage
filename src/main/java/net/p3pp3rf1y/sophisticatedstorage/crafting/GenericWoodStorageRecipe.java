@@ -4,7 +4,10 @@ import net.minecraft.data.BlockFamily;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.CraftingInput;
+import net.minecraft.world.item.crafting.CraftingRecipe;
+import net.minecraft.world.item.crafting.PlacementInfo;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.minecraft.world.level.Level;
@@ -14,14 +17,15 @@ import net.p3pp3rf1y.sophisticatedstorage.block.WoodStorageBlockBase;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-public class GenericWoodStorageRecipe extends ShapedRecipe implements IWrapperRecipe<ShapedRecipe> {
+public class GenericWoodStorageRecipe implements CraftingRecipe, IWrapperRecipe<ShapedRecipe> {
+	public static final RecipeSerializer<GenericWoodStorageRecipe> SERIALIZER = RecipeWrapperSerializer.create(GenericWoodStorageRecipe::new, ShapedRecipe.SERIALIZER);
 	private final ShapedRecipe compose;
 
 	public GenericWoodStorageRecipe(ShapedRecipe compose) {
-		super(compose.group(), compose.category(), compose.pattern, compose.result);
 		this.compose = compose;
 	}
 
@@ -32,22 +36,22 @@ public class GenericWoodStorageRecipe extends ShapedRecipe implements IWrapperRe
 
 	@Override
 	public boolean matches(CraftingInput input, Level level) {
-		return super.matches(input, level) && hasMixedOrNonCustomWood(input);
+		return compose.matches(input, level) && hasMixedOrNonCustomWood(input);
 	}
 
 	private record TopLeftCornerCoords(int left, int top) {
 	}
 
 	private TopLeftCornerCoords getTopLeftCornerCoords(CraftingInput input) {
-		if (getHeight() * getWidth() == input.size()) {
+		if (compose.getHeight() * compose.getWidth() == input.size()) {
 			return new TopLeftCornerCoords(0, 0);
 		}
 
 		int minRow = Integer.MAX_VALUE;
 		int minCol = Integer.MAX_VALUE;
 
-		for (int row = 0; row < input.height() - getHeight(); row++) {
-			for (int col = 0; col < input.width() - getWidth(); col++) {
+		for (int row = 0; row < input.height() - compose.getHeight(); row++) {
+			for (int col = 0; col < input.width() - compose.getWidth(); col++) {
 				if (!input.getItem(col + row * input.width()).isEmpty()) {
 					minRow = Math.min(minRow, row);
 					minCol = Math.min(minCol, col);
@@ -60,11 +64,11 @@ public class GenericWoodStorageRecipe extends ShapedRecipe implements IWrapperRe
 	private boolean hasMixedOrNonCustomWood(CraftingInput input) {
 		TopLeftCornerCoords topLeftCorner = getTopLeftCornerCoords(input);
 		Set<BlockFamily> customFamilies = new LinkedHashSet<>();
-		for (int row = topLeftCorner.top; row < topLeftCorner.top + getHeight(); row++) {
-			for (int col = topLeftCorner.left; col < topLeftCorner.left + getWidth(); col++) {
+		for (int row = topLeftCorner.top; row < topLeftCorner.top + compose.getHeight(); row++) {
+			for (int col = topLeftCorner.left; col < topLeftCorner.left + compose.getWidth(); col++) {
 				int slot = col + row * input.width();
 				ItemStack itemStack = input.getItem(slot);
-				if (itemStack.isEmpty() || pattern.ingredients().get(slot).map(i -> i.getValues().size() < 2).orElse(true)) {
+				if (itemStack.isEmpty() || compose.pattern.ingredients().get(slot).map(i -> i.getValues().size() < 2).orElse(true)) {
 					continue;
 				}
 
@@ -99,9 +103,34 @@ public class GenericWoodStorageRecipe extends ShapedRecipe implements IWrapperRe
 		return ModBlocks.GENERIC_WOOD_STORAGE_RECIPE_SERIALIZER.get();
 	}
 
-	public static class Serializer extends RecipeWrapperSerializer<ShapedRecipe, GenericWoodStorageRecipe> {
-		public Serializer() {
-			super(GenericWoodStorageRecipe::new, RecipeSerializer.SHAPED_RECIPE);
-		}
+	@Override
+	public ItemStack assemble(CraftingInput input) {
+		return compose.assemble(input);
 	}
+
+	@Override
+	public boolean showNotification() {
+		return compose.showNotification();
+	}
+
+	@Override
+	public String group() {
+		return compose.group();
+	}
+
+	@Override
+	public CraftingBookCategory category() {
+		return compose.category();
+	}
+
+	@Override
+	public PlacementInfo placementInfo() {
+		return compose.placementInfo();
+	}
+
+	@Override
+	public List<net.minecraft.world.item.crafting.display.RecipeDisplay> display() {
+		return compose.display();
+	}
+
 }

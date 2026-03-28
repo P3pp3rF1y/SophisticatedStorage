@@ -37,9 +37,11 @@ import net.p3pp3rf1y.sophisticatedcore.util.NoopStorageWrapper;
 import net.p3pp3rf1y.sophisticatedstorage.block.*;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModDataComponents;
 import net.p3pp3rf1y.sophisticatedstorage.item.*;
+import org.joml.Vector3f;
 import org.jspecify.annotations.Nullable;
 
 import java.util.*;
+import java.util.function.UnaryOperator;
 
 public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITierDisplay, IUpgradeDisplay, IFillLevelDisplay, IMaterialHolder {
 	@Nullable
@@ -348,9 +350,9 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 		if (updateRenderAttributes && getRenderBlockEntity() != null) {
 			updateRenderBlockEntityAttributes(getSyncedStorageStack(), getRenderBlockEntity());
 		}
-		if (level.random.nextInt(10) == 0) {
+		if (level.getRandom().nextInt(10) == 0) {
 			RenderDataHandler renderDataHandler = getStorageWrapper().getRenderDataHandler();
-			renderUpgrades(level, level.random, renderDataHandler);
+			renderUpgrades(level, level.getRandom(), renderDataHandler);
 		}
 		if (getRenderBlockEntity() instanceof ChestBlockEntity chestBlockEntity) {
 			ChestBlockEntity.lidAnimateTick(chestBlockEntity);
@@ -369,7 +371,11 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 
 	private <T extends IUpgradeClientData> void clientTickUpgrade(IUpgradeClientTickHandler<T> renderer, Level level, RandomSource rand, UpgradeClientDataType<?> type, IUpgradeClientData data) {
 		//noinspection unchecked
-		type.cast(data).ifPresent(clientData -> renderer.onClientTick(level, rand, vector -> vector.add((float) getPosition().x(), (float) getPosition().y() + getUpgradeRenderYOffset(), (float) getPosition().z()), (T) clientData));
+		type.cast(data).ifPresent(clientData -> renderer.onClientTick(level, rand, getUpgradeRenderPosition(), (T) clientData));
+	}
+
+	protected UnaryOperator<Vector3f> getUpgradeRenderPosition() {
+		return vector -> vector.add((float) getPosition().x(), (float) getPosition().y() + getUpgradeRenderYOffset(), (float) getPosition().z());
 	}
 
 	protected float getUpgradeRenderYOffset() {

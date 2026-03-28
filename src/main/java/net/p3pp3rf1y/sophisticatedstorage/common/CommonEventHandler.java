@@ -127,7 +127,7 @@ public class CommonEventHandler {
 				.ifPresent(storageBlockEntity -> {
 					if (storageBlockEntity.getStorageWrapper().getUpgradeHandler().getTypeWrappers(InfinityUpgradeItem.TYPE).stream().anyMatch(w -> !w.checkPermission(player))) {
 						event.setCanceled(true);
-						player.displayClientMessage(StorageTranslationHelper.INSTANCE.translStatusMessage("infinity_upgrade_only_admin_break").withStyle(ChatFormatting.RED), true);
+						player.sendOverlayMessage(StorageTranslationHelper.INSTANCE.translStatusMessage("infinity_upgrade_only_admin_break").withStyle(ChatFormatting.RED));
 						scheduleRenderUpdate(storageBlockEntity, event.getLevel(), event.getPos(), event.getState());
 					}
 				});

@@ -239,7 +239,7 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 			ItemStack stackTaken = resourceInSlot.toStack(inventoryHandler.extract(slot, resourceInSlot, countToTake, tx));
 			if (player.getInventory().add(stackTaken)) {
 				//noinspection ConstantConditions
-				getLevel().playSound(null, getBlockPos(), SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, .2f, (RandHelper.getRandomMinusOneToOne(getLevel().random) * .7f + 1) * 2);
+				getLevel().playSound(null, getBlockPos(), SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, .2f, (RandHelper.getRandomMinusOneToOne(getLevel().getRandom()) * .7f + 1) * 2);
 			} else {
 				player.drop(stackTaken, false);
 			}

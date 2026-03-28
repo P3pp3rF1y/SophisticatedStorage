@@ -50,7 +50,7 @@
                 "top": "sophisticatedstorage:block/wood_barrel_top",
                 "side": "sophisticatedstorage:block/wood_barrel_side",
                 "bottom": "sophisticatedstorage:block/wood_barrel_bottom",
-                "top_trim": "sophisticatedstorage:block/wood_barrel_top"
+                "particle": "sophisticatedstorage:block/wood_barrel_top"
             }
         },
         "tintable_main": {
@@ -75,7 +75,7 @@
                 "top": "sophisticatedstorage:block/barrel_top_packed",
                 "side": "sophisticatedstorage:block/barrel_side_packed",
                 "bottom": "sophisticatedstorage:block/barrel_bottom_packed",
-                "top_trim": "sophisticatedstorage:block/barrel_top_packed"
+                "particle": "sophisticatedstorage:block/barrel_top_packed"
             }
         },
         "locked": {

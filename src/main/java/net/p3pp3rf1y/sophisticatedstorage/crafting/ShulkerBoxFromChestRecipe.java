@@ -1,10 +1,12 @@
 package net.p3pp3rf1y.sophisticatedstorage.crafting;
 
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.CraftingInput;
+import net.minecraft.world.item.crafting.CraftingRecipe;
+import net.minecraft.world.item.crafting.PlacementInfo;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.minecraft.world.level.Level;
@@ -15,19 +17,20 @@ import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
 
+import java.util.List;
 import java.util.Optional;
 
-public class ShulkerBoxFromChestRecipe extends ShapedRecipe implements IWrapperRecipe<ShapedRecipe> {
+public class ShulkerBoxFromChestRecipe implements CraftingRecipe, IWrapperRecipe<ShapedRecipe> {
+	public static final RecipeSerializer<ShulkerBoxFromChestRecipe> SERIALIZER = RecipeWrapperSerializer.create(ShulkerBoxFromChestRecipe::new, ShapedRecipe.SERIALIZER);
 	private final ShapedRecipe compose;
 
 	public ShulkerBoxFromChestRecipe(ShapedRecipe compose) {
-		super(compose.group(), compose.category(), compose.pattern, compose.result);
 		this.compose = compose;
 	}
 
 	@Override
 	public boolean matches(CraftingInput input, Level level) {
-		return super.matches(input, level) && getChest(input).map(c -> !WoodStorageBlockItem.isPacked(c)).orElse(false);
+		return compose.matches(input, level) && getChest(input).map(c -> !WoodStorageBlockItem.isPacked(c)).orElse(false);
 	}
 
 	@Override
@@ -46,8 +49,8 @@ public class ShulkerBoxFromChestRecipe extends ShapedRecipe implements IWrapperR
 	}
 
 	@Override
-	public ItemStack assemble(CraftingInput input, HolderLookup.Provider registries) {
-		ItemStack shulker = super.assemble(input, registries);
+	public ItemStack assemble(CraftingInput input) {
+		ItemStack shulker = compose.assemble(input);
 		getChest(input).ifPresent(chest -> {
 			if (chest.has(DataComponents.CUSTOM_NAME)) {
 				shulker.set(DataComponents.CUSTOM_NAME, chest.getHoverName());
@@ -70,9 +73,29 @@ public class ShulkerBoxFromChestRecipe extends ShapedRecipe implements IWrapperR
 		return ModBlocks.SHULKER_BOX_FROM_CHEST_RECIPE_SERIALIZER.get();
 	}
 
-	public static class Serializer extends RecipeWrapperSerializer<ShapedRecipe, ShulkerBoxFromChestRecipe> {
-		public Serializer() {
-			super(ShulkerBoxFromChestRecipe::new, RecipeSerializer.SHAPED_RECIPE);
-		}
+	@Override
+	public boolean showNotification() {
+		return compose.showNotification();
 	}
+
+	@Override
+	public String group() {
+		return compose.group();
+	}
+
+	@Override
+	public CraftingBookCategory category() {
+		return compose.category();
+	}
+
+	@Override
+	public PlacementInfo placementInfo() {
+		return compose.placementInfo();
+	}
+
+	@Override
+	public List<net.minecraft.world.item.crafting.display.RecipeDisplay> display() {
+		return compose.display();
+	}
+
 }

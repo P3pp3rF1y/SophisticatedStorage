@@ -1,6 +1,8 @@
 package net.p3pp3rf1y.sophisticatedstorage.upgrades.compression;
 
 import net.minecraft.SharedConstants;
+import net.minecraft.core.component.DataComponentMap;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.Bootstrap;
 import net.minecraft.world.item.Item;
@@ -41,6 +43,10 @@ public class CompressionInventoryPartTest {
 	public static void setup() {
 		SharedConstants.tryDetectVersion();
 		Bootstrap.bootStrap();
+		bindTestComponents(Items.CLAY, Items.COBBLESTONE, Items.DEAD_BUSH, Items.GOLD_BLOCK, Items.GOLD_NUGGET,
+				Items.IRON_AXE, Items.IRON_BLOCK, Items.IRON_INGOT, Items.IRON_NUGGET, Items.IRON_SWORD,
+				Items.NETHERITE_AXE, Items.QUARTZ, Items.QUARTZ_BLOCK, Items.REDSTONE, Items.REDSTONE_BLOCK,
+				Items.SAND, Items.STICK);
 
 		recipeHelperMock = Mockito.mockStatic(RecipeHelper.class);
 
@@ -77,6 +83,19 @@ public class CompressionInventoryPartTest {
 
 	private static ItemStack stackOf(Item item) {
 		return argThat(stack -> stack.getItem() == item);
+	}
+
+	private static void bindTestComponents(Item... items) {
+		for (Item item : items) {
+			DataComponentMap.Builder components = DataComponentMap.builder();
+			if (item == Items.IRON_AXE || item == Items.IRON_SWORD || item == Items.NETHERITE_AXE) {
+				components.set(DataComponents.MAX_STACK_SIZE, 1);
+				components.set(DataComponents.MAX_DAMAGE, 4096);
+			} else {
+				components.set(DataComponents.MAX_STACK_SIZE, 64);
+			}
+			item.builtInRegistryHolder().bindComponents(components.build());
+		}
 	}
 
 	@BeforeEach

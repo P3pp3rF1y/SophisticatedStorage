@@ -69,12 +69,12 @@ public class PaintbrushOverlay {
 					int i = font.width(missingItems);
 					int x = (guiGraphics.guiWidth() - i) / 2;
 					int y = guiGraphics.guiHeight() - 75 - 10;
-					guiGraphics.drawStringWithBackdrop(font, missingItems, x + 1, y, DyeColor.WHITE.getTextColor(), 0xFFFFFFFF);
+					guiGraphics.text(font, missingItems, x + 1, y, DyeColor.WHITE.getTextColor(), true);
 
 					x = (guiGraphics.guiWidth() - itemRequirements.itemsMissing().size() * 18) / 2;
 					for (ItemStack missingItem : itemRequirements.itemsMissing()) {
-						guiGraphics.renderItem(missingItem, x, y + 10);
-						guiGraphics.renderItemDecorations(font, missingItem, x, y + 10);
+						guiGraphics.item(missingItem, x, y + 10);
+						guiGraphics.itemDecorations(font, missingItem, x, y + 10);
 						x += 18;
 					}
 				});

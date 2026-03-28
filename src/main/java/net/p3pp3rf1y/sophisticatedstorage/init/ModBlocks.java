@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.cauldron.CauldronInteraction;
+import net.minecraft.core.cauldron.CauldronInteractions;
 import net.minecraft.core.dispenser.ShulkerBoxDispenseBehavior;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -298,16 +299,16 @@ public class ModBlocks {
 			() -> IMenuTypeExtension.create(DecorationTableMenu::fromBuffer));
 
 	private static final DeferredRegister<RecipeSerializer<?>> RECIPE_SERIALIZERS = DeferredRegister.create(BuiltInRegistries.RECIPE_SERIALIZER, SophisticatedStorage.MOD_ID);
-	public static final Supplier<CustomRecipe.Serializer<StorageDyeRecipe>> STORAGE_DYE_RECIPE_SERIALIZER = RECIPE_SERIALIZERS.register("storage_dye", () -> new CustomRecipe.Serializer<>(StorageDyeRecipe::new));
-	public static final Supplier<RecipeSerializer<StorageTierUpgradeRecipe>> STORAGE_TIER_UPGRADE_RECIPE_SERIALIZER = RECIPE_SERIALIZERS.register("storage_tier_upgrade", StorageTierUpgradeRecipe.Serializer::new);
-	public static final Supplier<RecipeSerializer<DoubleChestTierUpgradeRecipe>> DOUBLE_CHEST_TIER_UPGRADE_RECIPE_SERIALIZER = RECIPE_SERIALIZERS.register("double_chest_tier_upgrade", DoubleChestTierUpgradeRecipe.Serializer::new);
-	public static final Supplier<RecipeSerializer<ShulkerBoxFromVanillaShapelessRecipe>> SHULKER_BOX_FROM_VANILLA_SHAPELESS_RECIPE_SERIALIZER = RECIPE_SERIALIZERS.register("shulker_box_from_vanilla_shapeless", ShulkerBoxFromVanillaShapelessRecipe.Serializer::new);
-	public static final Supplier<RecipeSerializer<StorageTierUpgradeShapelessRecipe>> STORAGE_TIER_UPGRADE_SHAPELESS_RECIPE_SERIALIZER = RECIPE_SERIALIZERS.register("storage_tier_upgrade_shapeless", StorageTierUpgradeShapelessRecipe.Serializer::new);
-	public static final Supplier<RecipeSerializer<DoubleChestTierUpgradeShapelessRecipe>> DOUBLE_CHEST_TIER_UPGRADE_SHAPELESS_RECIPE_SERIALIZER = RECIPE_SERIALIZERS.register("double_chest_tier_upgrade_shapeless", DoubleChestTierUpgradeShapelessRecipe.Serializer::new);
-	public static final Supplier<RecipeSerializer<ShulkerBoxFromChestRecipe>> SHULKER_BOX_FROM_CHEST_RECIPE_SERIALIZER = RECIPE_SERIALIZERS.register("shulker_box_from_chest", ShulkerBoxFromChestRecipe.Serializer::new);
-	public static final Supplier<RecipeSerializer<GenericWoodStorageRecipe>> GENERIC_WOOD_STORAGE_RECIPE_SERIALIZER = RECIPE_SERIALIZERS.register("generic_wood_storage", GenericWoodStorageRecipe.Serializer::new);
-	public static final Supplier<CustomRecipe.Serializer<FlatTopBarrelToggleRecipe>> FLAT_TOP_BARREL_TOGGLE_RECIPE_SERIALIZER = RECIPE_SERIALIZERS.register("flat_top_barrel_toggle", () -> new CustomRecipe.Serializer<>(FlatTopBarrelToggleRecipe::new));
-	public static final Supplier<CustomRecipe.Serializer<BarrelMaterialRecipe>> BARREL_MATERIAL_RECIPE_SERIALIZER = RECIPE_SERIALIZERS.register("barrel_material", () -> new CustomRecipe.Serializer<>(BarrelMaterialRecipe::new));
+	public static final Supplier<RecipeSerializer<StorageDyeRecipe>> STORAGE_DYE_RECIPE_SERIALIZER = RECIPE_SERIALIZERS.register("storage_dye", () -> StorageDyeRecipe.SERIALIZER);
+	public static final Supplier<RecipeSerializer<StorageTierUpgradeRecipe>> STORAGE_TIER_UPGRADE_RECIPE_SERIALIZER = RECIPE_SERIALIZERS.register("storage_tier_upgrade", () -> StorageTierUpgradeRecipe.SERIALIZER);
+	public static final Supplier<RecipeSerializer<DoubleChestTierUpgradeRecipe>> DOUBLE_CHEST_TIER_UPGRADE_RECIPE_SERIALIZER = RECIPE_SERIALIZERS.register("double_chest_tier_upgrade", () -> DoubleChestTierUpgradeRecipe.SERIALIZER);
+	public static final Supplier<RecipeSerializer<ShulkerBoxFromVanillaShapelessRecipe>> SHULKER_BOX_FROM_VANILLA_SHAPELESS_RECIPE_SERIALIZER = RECIPE_SERIALIZERS.register("shulker_box_from_vanilla_shapeless", () -> ShulkerBoxFromVanillaShapelessRecipe.SERIALIZER);
+	public static final Supplier<RecipeSerializer<StorageTierUpgradeShapelessRecipe>> STORAGE_TIER_UPGRADE_SHAPELESS_RECIPE_SERIALIZER = RECIPE_SERIALIZERS.register("storage_tier_upgrade_shapeless", () -> StorageTierUpgradeShapelessRecipe.SERIALIZER);
+	public static final Supplier<RecipeSerializer<DoubleChestTierUpgradeShapelessRecipe>> DOUBLE_CHEST_TIER_UPGRADE_SHAPELESS_RECIPE_SERIALIZER = RECIPE_SERIALIZERS.register("double_chest_tier_upgrade_shapeless", () -> DoubleChestTierUpgradeShapelessRecipe.SERIALIZER);
+	public static final Supplier<RecipeSerializer<ShulkerBoxFromChestRecipe>> SHULKER_BOX_FROM_CHEST_RECIPE_SERIALIZER = RECIPE_SERIALIZERS.register("shulker_box_from_chest", () -> ShulkerBoxFromChestRecipe.SERIALIZER);
+	public static final Supplier<RecipeSerializer<GenericWoodStorageRecipe>> GENERIC_WOOD_STORAGE_RECIPE_SERIALIZER = RECIPE_SERIALIZERS.register("generic_wood_storage", () -> GenericWoodStorageRecipe.SERIALIZER);
+	public static final Supplier<RecipeSerializer<FlatTopBarrelToggleRecipe>> FLAT_TOP_BARREL_TOGGLE_RECIPE_SERIALIZER = RECIPE_SERIALIZERS.register("flat_top_barrel_toggle", () -> FlatTopBarrelToggleRecipe.SERIALIZER);
+	public static final Supplier<RecipeSerializer<BarrelMaterialRecipe>> BARREL_MATERIAL_RECIPE_SERIALIZER = RECIPE_SERIALIZERS.register("barrel_material", () -> BarrelMaterialRecipe.SERIALIZER);
 	private static final DeferredRegister<IngredientType<?>> INGREDIENT_TYPES = DeferredRegister.create(NeoForgeRegistries.Keys.INGREDIENT_TYPES, SophisticatedStorage.MOD_ID);
 	public static final Supplier<IngredientType<BaseTierWoodenStorageIngredient>> BASE_TIER_WOODEN_STORAGE_INGREDIENT_TYPE = INGREDIENT_TYPES.register("base_tier_wooden_storage", () -> new IngredientType<>(BaseTierWoodenStorageIngredient.CODEC));
 
@@ -346,51 +347,51 @@ public class ModBlocks {
 	}
 
 	public static void registerCauldronInteractions() {
-		CauldronInteraction.WATER.map().put(BARREL_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
-		CauldronInteraction.WATER.map().put(COPPER_BARREL_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
-		CauldronInteraction.WATER.map().put(IRON_BARREL_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
-		CauldronInteraction.WATER.map().put(GOLD_BARREL_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
-		CauldronInteraction.WATER.map().put(DIAMOND_BARREL_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
-		CauldronInteraction.WATER.map().put(NETHERITE_BARREL_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
+		CauldronInteractions.WATER.put(BARREL_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
+		CauldronInteractions.WATER.put(COPPER_BARREL_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
+		CauldronInteractions.WATER.put(IRON_BARREL_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
+		CauldronInteractions.WATER.put(GOLD_BARREL_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
+		CauldronInteractions.WATER.put(DIAMOND_BARREL_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
+		CauldronInteractions.WATER.put(NETHERITE_BARREL_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
 
-		CauldronInteraction.WATER.map().put(LIMITED_BARREL_1_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
-		CauldronInteraction.WATER.map().put(LIMITED_BARREL_2_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
-		CauldronInteraction.WATER.map().put(LIMITED_BARREL_3_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
-		CauldronInteraction.WATER.map().put(LIMITED_BARREL_4_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
-		CauldronInteraction.WATER.map().put(LIMITED_COPPER_BARREL_1_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
-		CauldronInteraction.WATER.map().put(LIMITED_COPPER_BARREL_2_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
-		CauldronInteraction.WATER.map().put(LIMITED_COPPER_BARREL_3_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
-		CauldronInteraction.WATER.map().put(LIMITED_COPPER_BARREL_4_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
-		CauldronInteraction.WATER.map().put(LIMITED_IRON_BARREL_1_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
-		CauldronInteraction.WATER.map().put(LIMITED_IRON_BARREL_2_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
-		CauldronInteraction.WATER.map().put(LIMITED_IRON_BARREL_3_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
-		CauldronInteraction.WATER.map().put(LIMITED_IRON_BARREL_4_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
-		CauldronInteraction.WATER.map().put(LIMITED_GOLD_BARREL_1_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
-		CauldronInteraction.WATER.map().put(LIMITED_GOLD_BARREL_2_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
-		CauldronInteraction.WATER.map().put(LIMITED_GOLD_BARREL_3_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
-		CauldronInteraction.WATER.map().put(LIMITED_GOLD_BARREL_4_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
-		CauldronInteraction.WATER.map().put(LIMITED_DIAMOND_BARREL_1_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
-		CauldronInteraction.WATER.map().put(LIMITED_DIAMOND_BARREL_2_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
-		CauldronInteraction.WATER.map().put(LIMITED_DIAMOND_BARREL_3_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
-		CauldronInteraction.WATER.map().put(LIMITED_DIAMOND_BARREL_4_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
-		CauldronInteraction.WATER.map().put(LIMITED_NETHERITE_BARREL_1_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
-		CauldronInteraction.WATER.map().put(LIMITED_NETHERITE_BARREL_2_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
-		CauldronInteraction.WATER.map().put(LIMITED_NETHERITE_BARREL_3_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
-		CauldronInteraction.WATER.map().put(LIMITED_NETHERITE_BARREL_4_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
+		CauldronInteractions.WATER.put(LIMITED_BARREL_1_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
+		CauldronInteractions.WATER.put(LIMITED_BARREL_2_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
+		CauldronInteractions.WATER.put(LIMITED_BARREL_3_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
+		CauldronInteractions.WATER.put(LIMITED_BARREL_4_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
+		CauldronInteractions.WATER.put(LIMITED_COPPER_BARREL_1_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
+		CauldronInteractions.WATER.put(LIMITED_COPPER_BARREL_2_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
+		CauldronInteractions.WATER.put(LIMITED_COPPER_BARREL_3_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
+		CauldronInteractions.WATER.put(LIMITED_COPPER_BARREL_4_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
+		CauldronInteractions.WATER.put(LIMITED_IRON_BARREL_1_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
+		CauldronInteractions.WATER.put(LIMITED_IRON_BARREL_2_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
+		CauldronInteractions.WATER.put(LIMITED_IRON_BARREL_3_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
+		CauldronInteractions.WATER.put(LIMITED_IRON_BARREL_4_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
+		CauldronInteractions.WATER.put(LIMITED_GOLD_BARREL_1_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
+		CauldronInteractions.WATER.put(LIMITED_GOLD_BARREL_2_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
+		CauldronInteractions.WATER.put(LIMITED_GOLD_BARREL_3_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
+		CauldronInteractions.WATER.put(LIMITED_GOLD_BARREL_4_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
+		CauldronInteractions.WATER.put(LIMITED_DIAMOND_BARREL_1_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
+		CauldronInteractions.WATER.put(LIMITED_DIAMOND_BARREL_2_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
+		CauldronInteractions.WATER.put(LIMITED_DIAMOND_BARREL_3_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
+		CauldronInteractions.WATER.put(LIMITED_DIAMOND_BARREL_4_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
+		CauldronInteractions.WATER.put(LIMITED_NETHERITE_BARREL_1_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
+		CauldronInteractions.WATER.put(LIMITED_NETHERITE_BARREL_2_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
+		CauldronInteractions.WATER.put(LIMITED_NETHERITE_BARREL_3_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
+		CauldronInteractions.WATER.put(LIMITED_NETHERITE_BARREL_4_ITEM.get(), BarrelCauldronInteraction.INSTANCE);
 
-		CauldronInteraction.WATER.map().put(CHEST_ITEM.get(), WoodStorageCauldronInteraction.INSTANCE);
-		CauldronInteraction.WATER.map().put(COPPER_CHEST_ITEM.get(), WoodStorageCauldronInteraction.INSTANCE);
-		CauldronInteraction.WATER.map().put(IRON_CHEST_ITEM.get(), WoodStorageCauldronInteraction.INSTANCE);
-		CauldronInteraction.WATER.map().put(GOLD_CHEST_ITEM.get(), WoodStorageCauldronInteraction.INSTANCE);
-		CauldronInteraction.WATER.map().put(DIAMOND_CHEST_ITEM.get(), WoodStorageCauldronInteraction.INSTANCE);
-		CauldronInteraction.WATER.map().put(NETHERITE_CHEST_ITEM.get(), WoodStorageCauldronInteraction.INSTANCE);
+		CauldronInteractions.WATER.put(CHEST_ITEM.get(), WoodStorageCauldronInteraction.INSTANCE);
+		CauldronInteractions.WATER.put(COPPER_CHEST_ITEM.get(), WoodStorageCauldronInteraction.INSTANCE);
+		CauldronInteractions.WATER.put(IRON_CHEST_ITEM.get(), WoodStorageCauldronInteraction.INSTANCE);
+		CauldronInteractions.WATER.put(GOLD_CHEST_ITEM.get(), WoodStorageCauldronInteraction.INSTANCE);
+		CauldronInteractions.WATER.put(DIAMOND_CHEST_ITEM.get(), WoodStorageCauldronInteraction.INSTANCE);
+		CauldronInteractions.WATER.put(NETHERITE_CHEST_ITEM.get(), WoodStorageCauldronInteraction.INSTANCE);
 
-		CauldronInteraction.WATER.map().put(SHULKER_BOX_ITEM.get(), StorageCauldronInteraction.INSTANCE);
-		CauldronInteraction.WATER.map().put(COPPER_SHULKER_BOX_ITEM.get(), StorageCauldronInteraction.INSTANCE);
-		CauldronInteraction.WATER.map().put(IRON_SHULKER_BOX_ITEM.get(), StorageCauldronInteraction.INSTANCE);
-		CauldronInteraction.WATER.map().put(GOLD_SHULKER_BOX_ITEM.get(), StorageCauldronInteraction.INSTANCE);
-		CauldronInteraction.WATER.map().put(DIAMOND_SHULKER_BOX_ITEM.get(), StorageCauldronInteraction.INSTANCE);
-		CauldronInteraction.WATER.map().put(NETHERITE_SHULKER_BOX_ITEM.get(), StorageCauldronInteraction.INSTANCE);
+		CauldronInteractions.WATER.put(SHULKER_BOX_ITEM.get(), StorageCauldronInteraction.INSTANCE);
+		CauldronInteractions.WATER.put(COPPER_SHULKER_BOX_ITEM.get(), StorageCauldronInteraction.INSTANCE);
+		CauldronInteractions.WATER.put(IRON_SHULKER_BOX_ITEM.get(), StorageCauldronInteraction.INSTANCE);
+		CauldronInteractions.WATER.put(GOLD_SHULKER_BOX_ITEM.get(), StorageCauldronInteraction.INSTANCE);
+		CauldronInteractions.WATER.put(DIAMOND_SHULKER_BOX_ITEM.get(), StorageCauldronInteraction.INSTANCE);
+		CauldronInteractions.WATER.put(NETHERITE_SHULKER_BOX_ITEM.get(), StorageCauldronInteraction.INSTANCE);
 	}
 
 	@SuppressWarnings("java:S6548") //singleton is correct here

@@ -7,10 +7,20 @@ import com.google.gson.JsonObject;
 import com.mojang.math.Transformation;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.client.renderer.block.model.*;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
+import net.minecraft.client.renderer.block.dispatch.ModelState;
+import net.minecraft.client.renderer.block.dispatch.Variant;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.*;
+import net.minecraft.client.resources.model.ModelBaker;
+import net.minecraft.client.resources.model.ModelDebugName;
+import net.minecraft.client.resources.model.ResolvedModel;
+import net.minecraft.client.resources.model.UnbakedModel;
+import net.minecraft.client.resources.model.cuboid.CuboidModel;
+import net.minecraft.client.resources.model.cuboid.ItemTransforms;
+import net.minecraft.client.resources.model.geometry.QuadCollection;
+import net.minecraft.client.resources.model.sprite.Material;
+import net.minecraft.client.resources.model.sprite.TextureSlots;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.context.ContextMap;
 import net.neoforged.neoforge.client.model.UnbakedModelLoader;
@@ -63,8 +73,8 @@ public abstract class BarrelUnbakedModelBase implements UnbakedModel {
 		partitionedWoodOverrides.values().forEach(partDefinitions -> partDefinitions.values().forEach(definition -> {
 			Map<String, Material> replacements = new HashMap<>();
 			definition.textures.forEach((key, value) -> {
-				String path = value.texture().getPath();
-				if (value.texture().getNamespace().equals("minecraft") && path.startsWith(REFERENCE_PREFIX)) {
+				String path = value.sprite().getPath();
+				if (value.sprite().getNamespace().equals("minecraft") && path.startsWith(REFERENCE_PREFIX)) {
 					String referredTextureName = path.substring(REFERENCE_PREFIX.length());
 					if (definition.textures().containsKey(referredTextureName)) {
 						replacements.put(key, definition.textures.get(referredTextureName));
@@ -99,7 +109,12 @@ public abstract class BarrelUnbakedModelBase implements UnbakedModel {
 					barrelPartDefinition.modelLocation().ifPresent(partModelLocation -> {
 						TextureSlots.Data.Builder textureBuilder = new TextureSlots.Data.Builder();
 						barrelPartDefinition.textures().forEach(textureBuilder::addTexture);
-						modelsBuilder.put(barrelPart, baker.resolveInlineModel(new BlockModel(null, null, true, ItemTransforms.NO_TRANSFORMS, textureBuilder.build(), partModelLocation), debugName));
+						String partName = barrelPart.name().toLowerCase(Locale.ROOT);
+						ResolvedModel resolvedInlineModel = baker.resolveInlineModel(
+								new CuboidModel(null, null, true, ItemTransforms.NO_TRANSFORMS, textureBuilder.build(), partModelLocation),
+								() -> debugName.debugName() + "_" + woodName + "_" + partName
+						);
+						modelsBuilder.put(barrelPart, resolvedInlineModel);
 					}));
 			woodModelsBuilder.put(woodName, modelsBuilder.build());
 		});
@@ -125,27 +140,37 @@ public abstract class BarrelUnbakedModelBase implements UnbakedModel {
 	}
 
 	private TextureSlots findTopTextureSlots(ResolvedModel model, ModelBaker baker) {
-		ResolvedModel resolvedmodel = model;
-
-		TextureSlots.Resolver resolver;
-		for (resolver = new TextureSlots.Resolver(); resolvedmodel != null; resolvedmodel = resolvedmodel.parent()) {
-			resolver.addLast(resolvedmodel.wrapped().textureSlots());
-
-			if (resolvedmodel.wrapped().geometry() instanceof SimpleCompositeUnbakedModel.SimpleCompositeUnbakedGeometry simpleCompositeGeometry) {
-				simpleCompositeGeometry.children().forEach((key, childModel) -> {
-					ResolvedModel childResolvedModel = childModel.map(baker::getModel,
-							(inline) -> baker.resolveInlineModel(inline, () -> model.debugName() + "_" + key));
-					resolver.addLast(childResolvedModel.wrapped().textureSlots());
-					childResolvedModel = childResolvedModel.parent();
-					while (childResolvedModel != null) {
-						resolver.addLast(childResolvedModel.wrapped().textureSlots());
-						childResolvedModel = childResolvedModel.parent();
-					}
-				});
+		TextureSlots.Resolver resolver = new TextureSlots.Resolver();
+		ResolvedModel resolvedModel = model;
+		while (resolvedModel != null) {
+			resolver.addLast(resolvedModel.wrapped().textureSlots());
+			if (resolvedModel.wrapped() instanceof SimpleCompositeUnbakedModel simpleCompositeModel) {
+				simpleCompositeModel.children().forEach((key, childModel) -> addTextureSlots(
+						resolver,
+						childModel.map(baker::getModel, inline -> baker.resolveInlineModel(inline, () -> model.debugName() + "_" + key)),
+						baker,
+						model.debugName() + "_" + key
+				));
 			}
+			resolvedModel = resolvedModel.parent();
 		}
-
 		return resolver.resolve(model);
+	}
+
+	private void addTextureSlots(TextureSlots.Resolver resolver, ResolvedModel model, ModelBaker baker, String debugName) {
+		ResolvedModel resolvedModel = model;
+		while (resolvedModel != null) {
+			resolver.addLast(resolvedModel.wrapped().textureSlots());
+			if (resolvedModel.wrapped() instanceof SimpleCompositeUnbakedModel simpleCompositeModel) {
+				simpleCompositeModel.children().forEach((key, childModel) -> addTextureSlots(
+						resolver,
+						childModel.map(baker::getModel, inline -> baker.resolveInlineModel(inline, () -> debugName + "_" + key)),
+						baker,
+						debugName + "_" + key
+				));
+			}
+			resolvedModel = resolvedModel.parent();
+		}
 	}
 
 	private Map<String, Map<DynamicBarrelBakingData.DynamicPart, DynamicBarrelBakingData>> getDynamicBakingData(ModelState modelTransform, ModelDebugName modelDebugName, Map<DynamicBarrelBakingData.DynamicPart, ResolvedModel> resolvedDynamicPartModels) {
@@ -165,19 +190,16 @@ public abstract class BarrelUnbakedModelBase implements UnbakedModel {
 
 		hash = 31 * hash + getDepHash(model);
 
-		if (model.wrapped() instanceof BlockModel blockModel) {
-			for (TextureSlots.SlotContents material : blockModel.textureSlots().values().values()) {
-				hash = 31 * hash + material.hashCode();
-			}
+		for (TextureSlots.SlotContents material : model.wrapped().textureSlots().values().values()) {
+			hash = 31 * hash + material.hashCode();
 		}
 
 		Transformation transformation = modelTransform.transformation();
 		hash = 31 * hash + transformation.getMatrix().hashCode();
-		hash = 31 * hash + transformation.getTranslation().hashCode();
-		hash = 31 * hash + robustHash(transformation.getRightRotation());
-		hash = 31 * hash + robustHash(transformation.getLeftRotation());
-		hash = 31 * hash + transformation.getScale().hashCode();
-
+		hash = 31 * hash + transformation.translation().hashCode();
+		hash = 31 * hash + robustHash(transformation.rightRotation());
+		hash = 31 * hash + robustHash(transformation.leftRotation());
+		hash = 31 * hash + transformation.scale().hashCode();
 		return hash;
 	}
 
@@ -192,20 +214,15 @@ public abstract class BarrelUnbakedModelBase implements UnbakedModel {
 
 	private int getDepHash(ResolvedModel model) {
 		int depHash = 0;
-		while (model.wrapped() instanceof BarrelUnbakedModelBase || model.wrapped() instanceof BlockModel) {
+		while (model != null && (model.wrapped() instanceof BarrelUnbakedModelBase || model.wrapped() instanceof CuboidModel)) {
 			if (model.wrapped() instanceof BarrelUnbakedModelBase barrelModel) {
 				if (barrelModel.parentLocation != null) {
 					depHash = 31 * depHash + barrelModel.parentLocation.hashCode();
 				}
-			} else if (model.wrapped() instanceof BlockModel blockModel) {
-				if (blockModel.parent() != null) {
-					depHash = 31 * depHash + blockModel.parent().hashCode();
-				}
+			} else if (model.wrapped() instanceof CuboidModel cuboidModel && cuboidModel.parent() != null) {
+				depHash = 31 * depHash + cuboidModel.parent().hashCode();
 			}
 			model = model.parent();
-			if (model == null) {
-				break;
-			}
 		}
 		return depHash;
 	}
@@ -323,7 +340,7 @@ public abstract class BarrelUnbakedModelBase implements UnbakedModel {
 			Map<BarrelModelPart, TextureAtlasSprite> textures = new EnumMap<>(BarrelModelPart.class);
 			modelParts.forEach((part, model) -> {
 				if (part == BarrelModelPart.BASE || part == BarrelModelPart.TINTABLE_MAIN) {
-					textures.put(part, model.resolveParticleSprite(model.getTopTextureSlots(), baker));
+					textures.put(part, model.resolveParticleMaterial(findTopTextureSlots(model, baker), baker).sprite());
 				}
 			});
 			particleIcons.put(woodName, textures);
@@ -472,7 +489,7 @@ public abstract class BarrelUnbakedModelBase implements UnbakedModel {
 					if (textureName.startsWith("#")) {
 						textureName = REFERENCE_PREFIX + textureName.substring(1);
 					}
-					textures.put(entry.getKey(), new Material(TextureAtlas.LOCATION_BLOCKS, Identifier.parse(textureName)));
+					textures.put(entry.getKey(), new Material(Identifier.parse(textureName)));
 				}
 			}
 			return new BarrelModelPartDefinition(modelLocation, textures);

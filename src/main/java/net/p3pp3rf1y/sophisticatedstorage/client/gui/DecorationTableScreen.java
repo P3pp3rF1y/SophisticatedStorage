@@ -3,18 +3,18 @@ package net.p3pp3rf1y.sophisticatedstorage.client.gui;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.events.GuiEventListener;
-import net.minecraft.client.gui.render.state.GuiItemRenderState;
-import net.minecraft.client.gui.render.state.pip.OversizedItemRenderState;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.block.model.ItemTransform;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.item.TrackingItemStackRenderState;
+import net.minecraft.client.renderer.state.gui.GuiItemRenderState;
+import net.minecraft.client.renderer.state.gui.pip.OversizedItemRenderState;
+import net.minecraft.client.resources.model.cuboid.ItemTransform;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -28,8 +28,10 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec2;
+import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.controls.*;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.*;
+import net.p3pp3rf1y.sophisticatedcore.network.SyncContainerClientDataPayload;
 import net.p3pp3rf1y.sophisticatedcore.util.Easing;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.DecorationTableBlockEntity;
@@ -38,6 +40,7 @@ import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.util.DecorationHelper;
 import org.joml.Matrix3x2f;
 import org.joml.Matrix3x2fStack;
+import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.jspecify.annotations.Nullable;
 
@@ -45,6 +48,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.function.IntConsumer;
 import java.util.function.Supplier;
+import java.lang.reflect.Field;
 
 public class DecorationTableScreen extends AbstractContainerScreen<DecorationTableMenu> {
 	public static final Identifier GUI_BACKGROUND = SophisticatedStorage.getIdentifier("textures/gui/decoration_table.png");
@@ -88,11 +92,11 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 	private ColorPicker colorPicker;
 
 	private final List<Component> resultPartsNeededTooltip = new ArrayList<>();
+	@Nullable
+	private static final Field ITEM_TRANSFORM_FIELD = getItemTransformField();
 
 	public DecorationTableScreen(DecorationTableMenu menu, Inventory playerInventory, Component title) {
-		super(menu, playerInventory, title);
-		imageWidth = 250;
-		imageHeight = 226;
+		super(menu, playerInventory, title, 250, 226);
 		inventoryLabelX = 45;
 		getMenu().setSlotChangedListener(this::updatePreviewStacks);
 	}
@@ -106,6 +110,7 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 	@Override
 	protected void init() {
 		super.init();
+		menu.setClientDataSender(data -> ClientPacketDistributor.sendToServer(new SyncContainerClientDataPayload(data)));
 		inventoryLabelY = getMenu().getSlot(DecorationTableBlockEntity.BOTTOM_TRIM_SLOT).y + 18 + 2;
 		int lastDyeSlotIndex = getMenu().getDyeSlotRange().firstSlot() + getMenu().getDyeSlotRange().size() - 1;
 		Slot lastDyeSlot = getMenu().getSlot(lastDyeSlotIndex);
@@ -181,8 +186,8 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 					updatePreviewStacks();
 				}, () -> getMenu().isSlotMaterialInherited(partSlot)) {
 			@Override
-			public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
-				super.render(guiGraphics, mouseX, mouseY, partialTicks);
+			public void extractRenderState(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTicks) {
+				super.extractRenderState(guiGraphics, mouseX, mouseY, partialTicks);
 				if (isMouseOver(mouseX, mouseY)) {
 					Vec2 rotations = SLOT_PREVIEW_ROTATIONS.get(partSlot);
 					if (rotations != null) {
@@ -194,17 +199,14 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 	}
 
 	@Override
-	protected void renderBg(GuiGraphics guiGraphics, float v, int i, int i1) {
+	public void extractBackground(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTicks) {
+		extractTransparentBackground(guiGraphics);
 		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, GUI_BACKGROUND, leftPos, topPos, 0, 0, imageWidth, imageHeight, 256, 256);
 
 		renderDyeSlotsOverlays(guiGraphics);
-
-		if (colorPicker != null) {
-			colorPicker.renderBg(guiGraphics, minecraft, i, i1);
-		}
 	}
 
-	private void renderDyeSlotsOverlays(GuiGraphics guiGraphics) {
+	private void renderDyeSlotsOverlays(GuiGraphicsExtractor guiGraphics) {
 		Matrix3x2fStack pose = guiGraphics.pose();
 		pose.pushMatrix();
 		pose.translate(leftPos, topPos);
@@ -217,7 +219,7 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 		pose.popMatrix();
 	}
 
-	private void renderSlotOverlay(GuiGraphics guiGraphics, Slot slot, int slotColor) {
+	private void renderSlotOverlay(GuiGraphicsExtractor guiGraphics, Slot slot, int slotColor) {
 		guiGraphics.fill(slot.x, slot.y, slot.x + 16, slot.y + 16, slotColor);
 	}
 
@@ -227,35 +229,23 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 	}
 
 	@Override
-	public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+	public void extractContents(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
 		updatePreviewRotation(mouseX, mouseY);
-		super.render(guiGraphics, mouseX, mouseY, partialTick);
+		super.extractContents(guiGraphics, mouseX, mouseY, partialTick);
 
 		if (colorPicker != null) {
-			renderTransparentBackground(guiGraphics);
-			colorPicker.render(guiGraphics, mouseX, mouseY, partialTick);
-			colorPicker.renderTooltip(this, guiGraphics, mouseX, mouseY);
-		} else {
-			renderTooltip(guiGraphics, mouseX, mouseY);
+			extractTransparentBackground(guiGraphics);
+			colorPicker.extractRenderState(guiGraphics, mouseX, mouseY, partialTick);
 		}
 	}
 
 	@Override
-	protected void renderSlotContents(GuiGraphics guiGraphics, ItemStack itemstack, Slot slot, @Nullable String countString) {
-		if (colorPicker != null) {
-			return;
-		}
-
-		super.renderSlotContents(guiGraphics, itemstack, slot, countString);
-	}
-
-	@Override
-	protected void renderSlot(GuiGraphics guiGraphics, Slot slot, int mouseX, int mouseY) {
-		super.renderSlot(guiGraphics, slot, mouseX, mouseY);
+	protected void extractSlot(GuiGraphicsExtractor guiGraphics, Slot slot, int mouseX, int mouseY) {
+		super.extractSlot(guiGraphics, slot, mouseX, mouseY);
 		if (slot.getItem().isEmpty() && getMenu().isSlotMaterialInherited(slot.index)) {
 			ItemStack inheritedItem = getMenu().getInheritedResource(slot.index).toStack();
 			if (!inheritedItem.isEmpty()) {
-				guiGraphics.renderItem(inheritedItem, slot.x, slot.y, slot.x + slot.y * imageWidth);
+				guiGraphics.item(inheritedItem, slot.x, slot.y, slot.x + slot.y * imageWidth);
 				guiGraphics.blit(RenderPipelines.GUI_TEXTURED, GuiHelper.GUI_CONTROLS, slot.x, slot.y, 77, 0, 16, 16, 256, 256);
 			}
 		}
@@ -301,6 +291,17 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 			MutableComponent partCountText = Component.literal(count + "/" + DecorationHelper.BLOCK_TOTAL_PARTS + " (" + String.format("%.0f%%", (float) count / DecorationHelper.BLOCK_TOTAL_PARTS * 100) + ") of ");
 			tooltip.add(partCountText.append(itemStack.getHoverName()).withStyle(getPartFormatting.apply(location)));
 		});
+	}
+
+	@Nullable
+	private static Field getItemTransformField() {
+		try {
+			Field field = ItemStackRenderState.LayerRenderState.class.getDeclaredField("itemTransform");
+			field.setAccessible(true);
+			return field;
+		} catch (NoSuchFieldException e) {
+			return null;
+		}
 	}
 
 	private static final Map<Integer, Vec2> SLOT_PREVIEW_ROTATIONS = Map.of(
@@ -356,12 +357,17 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 	}
 
 	@Override
-	protected void renderTooltip(GuiGraphics guiGraphics, int x, int y) {
-		super.renderTooltip(guiGraphics, x, y);
+	protected void extractTooltip(GuiGraphicsExtractor guiGraphics, int x, int y) {
+		if (colorPicker != null) {
+			colorPicker.extractTooltip(this, guiGraphics, x, y);
+			return;
+		}
+
+		super.extractTooltip(guiGraphics, x, y);
 
 		renderables.forEach(renderable -> {
 			if (renderable instanceof WidgetBase widget) {
-				widget.renderTooltip(this, guiGraphics, x, y);
+				widget.extractTooltip(this, guiGraphics, x, y);
 			}
 		});
 	}
@@ -402,17 +408,17 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 		}
 
 		@Override
-		protected void renderBg(GuiGraphics guiGraphics, Minecraft minecraft, int mouseX, int mouseY) {
+		protected void extractBg(GuiGraphicsExtractor guiGraphics, Minecraft minecraft, int mouseX, int mouseY) {
 			GuiHelper.blit(guiGraphics, x, y, texture);
 		}
 
 		@Override
-		protected void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
+		protected void extractWidget(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTicks) {
 			//noop
 		}
 
 		@Override
-		public void renderTooltip(Screen screen, GuiGraphics guiGraphics, int mouseX, int mouseY) {
+		public void extractTooltip(Screen screen, GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY) {
 			if (isMouseOver(mouseX, mouseY)) {
 				guiGraphics.setTooltipForNextFrame(screen.getMinecraft().font, tooltip, mouseX, mouseY);
 			}
@@ -429,7 +435,7 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 		}
 
 		@Override
-		protected void renderBg(GuiGraphics guiGraphics, Minecraft minecraft, int mouseX, int mouseY) {
+		protected void extractBg(GuiGraphicsExtractor guiGraphics, Minecraft minecraft, int mouseX, int mouseY) {
 			if (hasNoPartsToShow()) {
 				return;
 			}
@@ -442,12 +448,12 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 		}
 
 		@Override
-		protected void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
+		protected void extractWidget(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTicks) {
 			//noop
 		}
 
 		@Override
-		public void renderTooltip(Screen screen, GuiGraphics guiGraphics, int mouseX, int mouseY) {
+		public void extractTooltip(Screen screen, GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY) {
 			if (hasNoPartsToShow()) {
 				return;
 			}
@@ -480,18 +486,18 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 		}
 
 		@Override
-		protected void renderBg(GuiGraphics guiGraphics, Minecraft minecraft, int mouseX, int mouseY) {
+		protected void extractBg(GuiGraphicsExtractor guiGraphics, Minecraft minecraft, int mouseX, int mouseY) {
 
 		}
 
 		@Override
-		protected void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
+		protected void extractWidget(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTicks) {
 			ItemStack stack = stackSupplier.get();
 			if (stack.isEmpty()) {
 				return;
 			}
 
-			guiGraphics.renderItem(stack, x + 1, y + 1);
+			guiGraphics.item(stack, x + 1, y + 1);
 			if (isMouseOver(mouseX, mouseY)) {
 				GuiHelper.blit(guiGraphics, x, y, BUTTON_HOVER);
 			}
@@ -556,16 +562,31 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 			ItemStackRenderState renderState = new ItemStackRenderState();
 			resolveModel(previewStack, renderState, ItemDisplayContext.GUI);
 
-			if (renderState.layers.length < 1) {
+			if (renderState.isEmpty()) {
 				return;
 			}
 
-			ItemTransform guiTransform = renderState.layers[0].transform;
-			setTargetRotations((int) guiTransform.rotation().x(), (int) guiTransform.rotation().y());
+			ItemTransform itemTransform = getItemTransform(renderState.layers[0]);
+			if (itemTransform != null) {
+				setTargetRotations((int) itemTransform.rotation().x(), (int) itemTransform.rotation().y());
+			}
 		}
 
 		private void resolveModel(ItemStack previewStack, ItemStackRenderState renderState, ItemDisplayContext displayContext) {
 			minecraft.getItemModelResolver().updateForTopItem(renderState, previewStack, displayContext, null, null, 0);
+		}
+
+		@Nullable
+		private ItemTransform getItemTransform(ItemStackRenderState.LayerRenderState layer) {
+			if (ITEM_TRANSFORM_FIELD == null) {
+				return null;
+			}
+
+			try {
+				return (ItemTransform) ITEM_TRANSFORM_FIELD.get(layer);
+			} catch (IllegalAccessException e) {
+				return null;
+			}
 		}
 
 		public void setTargetRotations(int xAxisRotation, int yAxisRotation) {
@@ -581,13 +602,13 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 		}
 
 		@Override
-		protected void renderBg(GuiGraphics guiGraphics, Minecraft minecraft, int mouseX, int mouseY) {
+		protected void extractBg(GuiGraphicsExtractor guiGraphics, Minecraft minecraft, int mouseX, int mouseY) {
 			guiGraphics.fill(x, y, x + getWidth(), y + getHeight(), 0xFF_000000);
 		}
 
 		@Override
-		protected void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
-			super.renderWidget(guiGraphics, mouseX, mouseY, partialTicks);
+		protected void extractWidget(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTicks) {
+			super.extractWidget(guiGraphics, mouseX, mouseY, partialTicks);
 			if (previewStacks.isEmpty()) {
 				return;
 			}
@@ -602,12 +623,19 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 
 			TrackingItemStackRenderState renderState = new TrackingItemStackRenderState();
 			resolveModel(previewStack, renderState, ItemDisplayContext.NONE);
-			ItemTransform transform = renderState.layers[0].transform;
-			renderState.layers[0].transform = new ItemTransform(new Vector3f(xAxisRotation, yAxisRotation, 0), transform.translation(), new Vector3f(3, 3, 3));
+			if (renderState.isEmpty()) {
+				return;
+			}
+			ItemStackRenderState.LayerRenderState layer = renderState.layers[0];
+			layer.setLocalTransform(new Matrix4f().rotationXYZ((float) Math.toRadians(xAxisRotation), (float) Math.toRadians(yAxisRotation), 0));
+			ItemTransform itemTransform = getItemTransform(layer);
+			if (itemTransform != null) {
+				layer.setItemTransform(new ItemTransform(itemTransform.rotation(), itemTransform.translation(), new Vector3f(3, 3, 3)));
+			}
 			renderState.setOversizedInGui(true);
 			renderState.appendModelIdentityElement(xAxisRotation);
 			renderState.appendModelIdentityElement(yAxisRotation);
-			guiGraphics.submitPictureInPictureRenderState(new OversizedItemRenderState(new GuiItemRenderState(previewStack.getItem().getName().toString(),
+			guiGraphics.submitPictureInPictureRenderState(new OversizedItemRenderState(new GuiItemRenderState(
 					new Matrix3x2f(guiGraphics.pose()),
 					renderState,
 					x,

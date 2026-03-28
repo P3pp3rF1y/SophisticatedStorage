@@ -57,9 +57,9 @@ public class StorageRecipeProvider extends RecipeProvider {
 
 	@Override
 	protected void buildRecipes() {
-		SpecialRecipeBuilder.special(StorageDyeRecipe::new).save(output, SophisticatedStorage.getRegistryName("storage_dye"));
-		SpecialRecipeBuilder.special(FlatTopBarrelToggleRecipe::new).save(output, SophisticatedStorage.getRegistryName("flat_top_barrel_toggle"));
-		SpecialRecipeBuilder.special(BarrelMaterialRecipe::new).save(output, SophisticatedStorage.getRegistryName("barrel_material"));
+		SpecialRecipeBuilder.special(() -> StorageDyeRecipe.INSTANCE).save(output, SophisticatedStorage.getRegistryName("storage_dye"));
+		SpecialRecipeBuilder.special(() -> FlatTopBarrelToggleRecipe.INSTANCE).save(output, SophisticatedStorage.getRegistryName("flat_top_barrel_toggle"));
+		SpecialRecipeBuilder.special(() -> BarrelMaterialRecipe.INSTANCE).save(output, SophisticatedStorage.getRegistryName("barrel_material"));
 
 		addBarrelRecipes(output);
 		addLimitedBarrelRecipes(output);
@@ -1357,8 +1357,8 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getIdentifier(woodType.name() + "_barrel")));
 	}
 
-	private void limitedWoodBarrelRecipe(RecipeOutput recipeOutput, WoodType woodType, Block planks, Block slab, Consumer<ShapedRecipeBuilder> addPattern, BlockItem item) {
-		ShapedRecipeBuilder builder = ShapeBasedRecipeBuilder.shaped(items, WoodStorageBlockItem.setWoodType(new ItemStack(item), woodType))
+	private void limitedWoodBarrelRecipe(RecipeOutput recipeOutput, WoodType woodType, Block planks, Block slab, Consumer<ShapeBasedRecipeBuilder> addPattern, BlockItem item) {
+		ShapeBasedRecipeBuilder builder = ShapeBasedRecipeBuilder.shaped(items, WoodStorageBlockItem.setWoodType(new ItemStack(item), woodType))
 				.define('P', planks)
 				.define('S', slab)
 				.define('L', Blocks.LEVER)

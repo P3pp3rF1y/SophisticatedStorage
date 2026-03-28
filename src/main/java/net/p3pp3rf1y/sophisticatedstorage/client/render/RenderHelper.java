@@ -5,11 +5,11 @@ import com.google.common.cache.CacheBuilder;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.block.model.BlockModelPart;
-import net.minecraft.client.renderer.block.model.BlockStateModel;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
-import net.minecraft.client.renderer.state.CameraRenderState;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -24,6 +24,7 @@ import org.joml.Vector3f;
 import org.joml.Vector4f;
 import org.jspecify.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -54,7 +55,7 @@ public class RenderHelper {
 		TextureAtlasSprite sprite = parseSpriteFromModel(blockState, direction, rand);
 
 		if (sprite == null) {
-			sprite = Minecraft.getInstance().getModelManager().getMissingBlockStateModel().particleIcon();
+			sprite = Minecraft.getInstance().getModelManager().getBlockStateModelSet().getParticleMaterial(Blocks.AIR.defaultBlockState()).sprite();
 		}
 
 		return sprite;
@@ -66,28 +67,29 @@ public class RenderHelper {
 	private static TextureAtlasSprite parseSpriteFromModel(BlockState blockState, @Nullable Direction direction, RandomSource rand) {
 		TextureAtlasSprite sprite = null;
 
-		BlockStateModel blockModel = Minecraft.getInstance().getBlockRenderer().getBlockModel(blockState);
+		BlockStateModel blockModel = Minecraft.getInstance().getModelManager().getBlockStateModelSet().get(blockState);
 		ClientLevel level = Minecraft.getInstance().level;
 		if (level == null) {
 			return null;
 		}
 
 		try {
-			List<BlockModelPart> parts = blockModel.collectParts(level, BlockPos.ZERO, blockState, rand);
+			List<BlockStateModelPart> parts = new ArrayList<>();
+			blockModel.collectParts(level, BlockPos.ZERO, blockState, rand, parts);
 
-			for (BlockModelPart part : parts) {
+			for (BlockStateModelPart part : parts) {
 				List<BakedQuad> quads = part.getQuads(direction);
 				if (!quads.isEmpty()) {
-					return quads.getFirst().sprite();
+					return quads.getFirst().materialInfo().sprite();
 				}
 
 				for (BakedQuad quad : part.getQuads(null)) {
 					if (sprite == null) {
-						sprite = quad.sprite();
+						sprite = quad.materialInfo().sprite();
 					}
 
 					if (quad.direction() == direction) {
-						return quad.sprite();
+						return quad.materialInfo().sprite();
 					}
 				}
 			}
@@ -97,7 +99,7 @@ public class RenderHelper {
 
 		if (sprite == null) {
 			try {
-				sprite = blockModel.particleIcon(level, BlockPos.ZERO, blockState);
+				sprite = blockModel.particleMaterial(level, BlockPos.ZERO, blockState).sprite();
 			} catch (Exception e) {
 				// NO OP
 			}
@@ -135,11 +137,6 @@ public class RenderHelper {
 	}
 
 	public static boolean isSpecialRenderer(ItemStackRenderState renderState) {
-		for (ItemStackRenderState.LayerRenderState layer : renderState.layers) {
-			if (layer.specialRenderer != null) {
-				return true;
-			}
-		}
 		return false;
 	}
 }

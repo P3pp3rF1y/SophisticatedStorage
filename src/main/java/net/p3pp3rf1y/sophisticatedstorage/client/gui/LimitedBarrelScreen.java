@@ -1,7 +1,7 @@
 package net.p3pp3rf1y.sophisticatedstorage.client.gui;
 
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
@@ -36,22 +36,22 @@ public class LimitedBarrelScreen extends StorageScreen {
 	}
 
 	@Override
-	protected void drawSlotBg(GuiGraphics guiGraphics, int x, int y, int visibleSlotsCount) {
+	protected void drawSlotBg(GuiGraphicsExtractor guiGraphics, int x, int y, int visibleSlotsCount) {
 		LimitedBarrelScreen.drawSlotBg(this, guiGraphics, x, y, getMenu().getNumberOfStorageInventorySlots());
 	}
 
-	public static void drawSlotBg(AbstractContainerScreen<?> screen, GuiGraphics guiGraphics, int x, int y, int slotsNumber) {
+	public static void drawSlotBg(AbstractContainerScreen<?> screen, GuiGraphicsExtractor guiGraphics, int x, int y, int slotsNumber) {
 		TextureBlitData backgroundTexture = getBackgroundTexture(slotsNumber);
 		GuiHelper.blit(guiGraphics, x + screen.getXSize() / 2 - backgroundTexture.getWidth() / 2 - 1, y + 17, backgroundTexture);
 	}
 
 	@Override
-	protected void renderLabels(GuiGraphics guiGraphics, int mouseX, int mouseY) {
-		super.renderLabels(guiGraphics, mouseX, mouseY);
+	protected void extractLabels(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY) {
+		super.extractLabels(guiGraphics, mouseX, mouseY);
 		renderBars(font, imageWidth, getMenu(), guiGraphics, getMenu()::getSlotFillPercentage);
 	}
 
-	public static void renderBars(Font font, int imageWidth, StorageContainerMenuBase<?> menu, GuiGraphics guiGraphics, IntFunction<Float> getSlotFillPercentage) {
+	public static void renderBars(Font font, int imageWidth, StorageContainerMenuBase<?> menu, GuiGraphicsExtractor guiGraphics, IntFunction<Float> getSlotFillPercentage) {
 		switch (menu.getNumberOfStorageInventorySlots()) {
 			case 1 ->
 					renderBar(font, guiGraphics, imageWidth / 2 + 37, 18 + 6, getSlotFillPercentage.apply(0), LARGE_BAR_FILL, false);
@@ -138,7 +138,7 @@ public class LimitedBarrelScreen extends StorageScreen {
 		}
 	}
 
-	private static void renderBar(Font font, GuiGraphics guiGraphics, int x, int y, float percentage, TextureBlitData barTexture, boolean left) {
+	private static void renderBar(Font font, GuiGraphicsExtractor guiGraphics, int x, int y, float percentage, TextureBlitData barTexture, boolean left) {
 		int barHeight = (int) (barTexture.getHeight() * percentage);
 		int yOffset = barTexture.getHeight() - barHeight;
 
@@ -151,7 +151,7 @@ public class LimitedBarrelScreen extends StorageScreen {
 		} else {
 			percentageX += 6;
 		}
-		guiGraphics.drawString(font, text, percentageX, y + barTexture.getHeight() / 2 - 3, ARGB.opaque(0x2c2c2c), false);
+		guiGraphics.text(font, text, percentageX, y + barTexture.getHeight() / 2 - 3, ARGB.opaque(0x2c2c2c), false);
 	}
 
 	@Override

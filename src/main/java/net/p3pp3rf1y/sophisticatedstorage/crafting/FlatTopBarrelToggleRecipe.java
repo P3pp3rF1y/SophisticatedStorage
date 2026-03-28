@@ -1,6 +1,8 @@
 package net.p3pp3rf1y.sophisticatedstorage.crafting;
 
-import net.minecraft.core.HolderLookup;
+import com.mojang.serialization.MapCodec;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingBookCategory;
@@ -13,8 +15,13 @@ import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.item.BarrelBlockItem;
 
 public class FlatTopBarrelToggleRecipe extends CustomRecipe {
+	public static final FlatTopBarrelToggleRecipe INSTANCE = new FlatTopBarrelToggleRecipe(CraftingBookCategory.MISC);
+	public static final MapCodec<FlatTopBarrelToggleRecipe> MAP_CODEC = MapCodec.unit(INSTANCE);
+	public static final StreamCodec<RegistryFriendlyByteBuf, FlatTopBarrelToggleRecipe> STREAM_CODEC = StreamCodec.unit(INSTANCE);
+	public static final RecipeSerializer<FlatTopBarrelToggleRecipe> SERIALIZER = new RecipeSerializer<>(MAP_CODEC, STREAM_CODEC);
+
 	public FlatTopBarrelToggleRecipe(CraftingBookCategory category) {
-		super(category);
+		super();
 	}
 
 	@Override
@@ -37,7 +44,7 @@ public class FlatTopBarrelToggleRecipe extends CustomRecipe {
 	}
 
 	@Override
-	public ItemStack assemble(CraftingInput input, HolderLookup.Provider registries) {
+	public ItemStack assemble(CraftingInput input) {
 		for (int i = 0; i < input.size(); i++) {
 			ItemStack item = input.getItem(i);
 			if (item.isEmpty()) {
@@ -57,6 +64,6 @@ public class FlatTopBarrelToggleRecipe extends CustomRecipe {
 
 	@Override
 	public RecipeSerializer<FlatTopBarrelToggleRecipe> getSerializer() {
-		return ModBlocks.FLAT_TOP_BARREL_TOGGLE_RECIPE_SERIALIZER.get();
+		return SERIALIZER;
 	}
 }

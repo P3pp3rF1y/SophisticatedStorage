@@ -10,7 +10,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.neoforged.neoforge.transfer.item.ItemStacksResourceHandler;
 import net.neoforged.neoforge.transfer.item.ResourceHandlerSlot;
@@ -45,6 +44,8 @@ public class DecorationTableMenu extends AbstractContainerMenu implements ISynce
 	private SlotRange playerSlotRange;
 	@Nullable
 	private Runnable slotChangedListener = null;
+	@Nullable
+	private Consumer<CompoundTag> clientDataSender = null;
 	private ResourceHandlerSlot storageSlot;
 
 	public DecorationTableMenu(int containerId, Player player, BlockPos pos) {
@@ -62,6 +63,10 @@ public class DecorationTableMenu extends AbstractContainerMenu implements ISynce
 
 	public void setSlotChangedListener(@Nullable Runnable listener) {
 		slotChangedListener = listener;
+	}
+
+	public void setClientDataSender(@Nullable Consumer<CompoundTag> clientDataSender) {
+		this.clientDataSender = clientDataSender;
 	}
 
 	public Slot getStorageSlot() {
@@ -299,13 +304,13 @@ public class DecorationTableMenu extends AbstractContainerMenu implements ISynce
 	}
 
 	protected void sendToServer(Consumer<CompoundTag> addData) {
-		if (blockEntity.getLevel() == null || !blockEntity.getLevel().isClientSide()) {
+		if (blockEntity.getLevel() == null || !blockEntity.getLevel().isClientSide() || clientDataSender == null) {
 			return;
 		}
 
 		CompoundTag data = new CompoundTag();
 		addData.accept(data);
-		ClientPacketDistributor.sendToServer(new SyncContainerClientDataPayload(data));
+		clientDataSender.accept(data);
 	}
 
 	public Map<Identifier, Integer> getPartsNeeded() {

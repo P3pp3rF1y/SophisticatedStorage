@@ -1,23 +1,18 @@
 package net.p3pp3rf1y.sophisticatedstorage.client.render;
 
-import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.platform.DepthTestFunction;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
-import net.minecraft.client.renderer.rendertype.LayeringTransform;
-import net.minecraft.client.renderer.rendertype.OutputTarget;
-import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.state.CameraRenderState;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -42,19 +37,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 public class ControllerRenderer implements BlockEntityRenderer<ControllerBlockEntity, ControllerRenderer.ControllerRenderState> {
-	public static final RenderPipeline NO_DEPTH_LINES_PIPELINE = RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)
-			.withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
-			.withDepthWrite(false)
-			.withLocation(SophisticatedStorage.getIdentifier("pipeline/controller_lines"))
-			.build();
-
-	private static final RenderType LINES = RenderType.create("storage_lines",
-			RenderSetup.builder(NO_DEPTH_LINES_PIPELINE)
-					.bufferSize(1536)
-					.setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING)
-					.setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET)
-					.createRenderSetup()
-	);
+	private static final RenderType LINES = RenderTypes.lines();
 
 	private void submitConnectedStorageBlocksInfo(SubmitNodeCollector submitNodeCollector, Direction playerLookDirection, PoseStack poseStack, List<BlockPos> storagePositions, List<Integer> storageSlots, BlockPos controllerPos) {
 		double zScale = 0.001;
