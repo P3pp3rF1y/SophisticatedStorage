@@ -33,8 +33,11 @@ import net.p3pp3rf1y.sophisticatedcore.util.NoopStorageWrapper;
 import net.p3pp3rf1y.sophisticatedstorage.block.*;
 import net.p3pp3rf1y.sophisticatedstorage.item.*;
 
+import org.joml.Vector3f;
+
 import javax.annotation.Nullable;
 import java.util.*;
+import java.util.function.UnaryOperator;
 
 public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITierDisplay, IUpgradeDisplay, IFillLevelDisplay, IMaterialHolder {
 	public static final String UPGRADES_VISIBLE_TAG = "upgradesVisible";
@@ -358,7 +361,11 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 
 	private <T extends IUpgradeRenderData> void renderUpgrade(IUpgradeRenderer<T> renderer, Level level, RandomSource rand, UpgradeRenderDataType<?> type, IUpgradeRenderData data) {
 		//noinspection unchecked
-		type.cast(data).ifPresent(renderData -> renderer.render(level, rand, vector -> vector.add((float) getPosition().x(), (float) getPosition().y() + getUpgradeRenderYOffset(), (float) getPosition().z()), (T) renderData));
+		type.cast(data).ifPresent(renderData -> renderer.render(level, rand, getUpgradeRenderPosition(), (T) renderData));
+	}
+
+	protected UnaryOperator<Vector3f> getUpgradeRenderPosition() {
+		return vector -> vector.add((float) getPosition().x(), (float) getPosition().y() + getUpgradeRenderYOffset(), (float) getPosition().z());
 	}
 
 	protected float getUpgradeRenderYOffset() {
