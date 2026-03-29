@@ -78,10 +78,11 @@ public class LimitedBarrelRenderer extends BarrelRendererBase<LimitedBarrelBlock
 	}
 
 	private void submitUpgrades(SubmitNodeCollector submitNodeCollector, LimitedBarrelRenderState renderState, PoseStack poseStack) {
+		boolean holdsItemThatShowsUpgrades = holdsItemThatShowsUpgrades();
 		if (renderState.flatTop) {
-			flatDisplayItemRenderer.submitUpgradeItems(submitNodeCollector, renderState, poseStack, OverlayTexture.NO_OVERLAY, renderState.showsDisabledUpgradeDisplay);
+			flatDisplayItemRenderer.submitUpgradeItems(submitNodeCollector, renderState, poseStack, OverlayTexture.NO_OVERLAY, holdsItemThatShowsUpgrades);
 		} else {
-			displayItemRenderer.submitUpgradeItems(submitNodeCollector, renderState, poseStack, OverlayTexture.NO_OVERLAY, renderState.showsDisabledUpgradeDisplay);
+			displayItemRenderer.submitUpgradeItems(submitNodeCollector, renderState, poseStack, OverlayTexture.NO_OVERLAY, holdsItemThatShowsUpgrades);
 		}
 	}
 
