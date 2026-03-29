@@ -130,6 +130,7 @@ public class ShulkerBoxRenderer extends StorageRenderer<ShulkerBoxBlockEntity, S
 
 		poseStack.translate(0.5, 0.5, 0.5);
 		poseStack.mulPose(getNorthBasedRotation(renderState.facing));
+		boolean holdsItemThatShowsUpgrades = holdsItemThatShowsUpgrades();
 
 		float zOffset = 0;
 		if (renderState.lidProgress > 0) {
@@ -139,8 +140,8 @@ public class ShulkerBoxRenderer extends StorageRenderer<ShulkerBoxBlockEntity, S
 
 		poseStack.translate(-0.5D, -0.5D, -0.5D - zOffset);
 
-		if (renderState.showsUpgrades || holdsItemThatShowsUpgrades()) {
-			displayItemRenderer.submitUpgradeItems(submitNodeCollector, renderState, poseStack, OverlayTexture.NO_OVERLAY, renderState.showsDisabledUpgradeDisplay);
+		if (renderState.showsUpgrades || holdsItemThatShowsUpgrades) {
+			displayItemRenderer.submitUpgradeItems(submitNodeCollector, renderState, poseStack, OverlayTexture.NO_OVERLAY, holdsItemThatShowsUpgrades);
 		}
 		if (!renderState.displayItems.isEmpty()) {
 			displayItemRenderer.submitDisplayItem(submitNodeCollector, poseStack, renderState.lightCoords, OverlayTexture.NO_OVERLAY, renderState.displayItems.getFirst());

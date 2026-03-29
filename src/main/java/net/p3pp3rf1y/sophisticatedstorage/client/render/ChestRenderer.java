@@ -227,6 +227,7 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity, ChestRender
 			poseStack.pushPose();
 			poseStack.translate(0.5, 0.5, 0.5);
 			poseStack.mulPose(Axis.YP.rotationDegrees(180));
+			boolean holdsItemThatShowsUpgrades = holdsItemThatShowsUpgrades();
 
 			poseStack.pushPose();
 			poseStack.translate(-0.5, -0.5, -(0.5 - 1 / 16f));
@@ -248,7 +249,7 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity, ChestRender
 					poseStack.translate(-0.5, -(0.5 - 1 / 16f), -(0.5 - 2 / 16f));
 				}
 
-				displayItemRenderer.submitUpgradeItems(submitNodeCollector, renderState, poseStack, OverlayTexture.NO_OVERLAY, renderState.showsDisabledUpgradeDisplay);
+				displayItemRenderer.submitUpgradeItems(submitNodeCollector, renderState, poseStack, OverlayTexture.NO_OVERLAY, holdsItemThatShowsUpgrades);
 				poseStack.popPose();
 			}
 
