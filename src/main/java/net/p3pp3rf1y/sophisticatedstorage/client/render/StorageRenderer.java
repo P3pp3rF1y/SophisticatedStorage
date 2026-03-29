@@ -138,9 +138,8 @@ public abstract class StorageRenderer<T extends StorageBlockEntity, R extends St
 		}
 		RenderDataHandler renderDataHandler = getStorageWrapper(blockEntity).getRenderDataHandler();
 		renderState.upgradeItems = renderDataHandler.getUpgradeItems().stream().flatMap(upgradeItem -> {
-			ItemStack stack = upgradeItem.isEmpty() ? new ItemStack(ModItems.UPGRADE_BASE.get()) : upgradeItem;
 			ItemStackRenderState stackRenderState = new ItemStackRenderState();
-			itemModelResolver.updateForTopItem(stackRenderState, stack, ItemDisplayContext.FIXED, blockEntity.getLevel(), null, 0);
+			itemModelResolver.updateForTopItem(stackRenderState, upgradeItem, ItemDisplayContext.FIXED, blockEntity.getLevel(), null, 0);
 
 			return Stream.of(stackRenderState);
 		}).toList();
