@@ -118,7 +118,8 @@ public class HopperUpgradeWrapper extends UpgradeWrapperBase<HopperUpgradeWrappe
 			if (!slotResource.isEmpty() && filterLogic.matchesFilter(slotResource)) {
 				if (!slotResource.isEmpty()) {
 					try (Transaction tx = Transaction.openRoot()) {
-						int inserted = toHandler.insert(slotResource, fromHandler.getAmountAsInt(slot), tx);
+						int maxToTransfer = Math.min(fromHandler.getAmountAsInt(slot), upgradeItem.getMaxTransferStackSize());
+						int inserted = toHandler.insert(slotResource, maxToTransfer, tx);
 						if (inserted > 0) {
 							int extracted = fromHandler.extract(slot, slotResource, inserted, tx);
 							if (extracted > 0) {
