@@ -33,7 +33,7 @@ public class LimitedBarrelUnbakedModel extends BarrelUnbakedModelBase {
 		@Override
 		protected int createHash(@Nullable BlockState state) {
 			int hash = super.createHash(state);
-			if (state != null) {
+			if (state != null && state.hasProperty(LimitedBarrelBlock.HORIZONTAL_FACING) && state.hasProperty(LimitedBarrelBlock.VERTICAL_FACING)) {
 				hash = hash * 31 + state.getValue(LimitedBarrelBlock.HORIZONTAL_FACING).get2DDataValue();
 				hash = hash * 31 + state.getValue(LimitedBarrelBlock.VERTICAL_FACING).getIndex();
 			}

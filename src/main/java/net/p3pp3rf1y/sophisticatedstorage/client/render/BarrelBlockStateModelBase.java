@@ -188,7 +188,7 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 			showsTier = be.shouldShowTier();
 			woodName = be.getWoodType().map(WoodType::name).orElse(WoodType.ACACIA.name());
 			materials = be.getMaterials();
-			flatTop = state != null && state.getValue(BarrelBlock.FLAT_TOP);
+			flatTop = state != null && state.hasProperty(BarrelBlock.FLAT_TOP) && state.getValue(BarrelBlock.FLAT_TOP);
 
 			showsLock = be.isLocked() && be.shouldShowLock();
 			showsTier = be.shouldShowTier();
@@ -358,7 +358,7 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 	}
 
 	private BarrelModelPart getMainPart(@Nullable BlockState state) {
-		return rendersOpen() && state != null && state.getValue(BarrelBlock.OPEN) ? BarrelModelPart.TINTABLE_MAIN_OPEN : BarrelModelPart.TINTABLE_MAIN;
+		return rendersOpen() && state != null && state.hasProperty(BarrelBlock.OPEN) && state.getValue(BarrelBlock.OPEN) ? BarrelModelPart.TINTABLE_MAIN_OPEN : BarrelModelPart.TINTABLE_MAIN;
 	}
 
 	protected abstract boolean rendersOpen();
