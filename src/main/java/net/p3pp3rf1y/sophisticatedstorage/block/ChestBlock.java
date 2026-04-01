@@ -430,6 +430,9 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 	@SuppressWarnings("deprecation")
 	@Override
 	public BlockState mirror(BlockState state, Mirror mirror) {
+		if (state.getValue(TYPE) != ChestType.SINGLE) {
+			return state;
+		}
 		return state.rotate(mirror.getRotation(state.getValue(FACING)));
 	}
 
@@ -516,6 +519,9 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 
 	@Override
 	public BlockState rotate(BlockState state, Rotation rotation) {
+		if (state.getValue(TYPE) != ChestType.SINGLE) {
+			return state;
+		}
 		return state.setValue(FACING, rotation.rotate(state.getValue(FACING)));
 	}
 
