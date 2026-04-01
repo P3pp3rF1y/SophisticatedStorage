@@ -14,12 +14,15 @@ import net.p3pp3rf1y.sophisticatedcore.settings.memory.MemorySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeItemBase;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeType;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeWrapperBase;
+import net.p3pp3rf1y.sophisticatedcore.upgrades.compacting.CompactingUpgradeItem;
+import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.RecipeHelper;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageTranslationHelper;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -46,6 +49,11 @@ public class CompressionUpgradeItem extends UpgradeItemBase<CompressionUpgradeIt
 			return result;
 		}
 
+		result = checkForCompactingUpgrade(storageWrapper);
+		if (!result.isSuccessful()) {
+			return result;
+		}
+
 		if (isClientSide) {
 			return new UpgradeSlotChangeResult.Success();
 		}
@@ -54,6 +62,30 @@ public class CompressionUpgradeItem extends UpgradeItemBase<CompressionUpgradeIt
 
 		return slotRange.map(range -> canUseForCompression(storageWrapper, range))
 				.orElseGet(() -> new UpgradeSlotChangeResult.Fail(StorageTranslationHelper.INSTANCE.translError("add.compression_no_space"), Collections.emptySet(), Collections.emptySet(), Collections.emptySet()));
+	}
+
+	@Override
+	public UpgradeSlotChangeResult canSwapUpgradeFor(ItemStack upgradeStackToPut, IStorageWrapper storageWrapper, boolean isClientSide) {
+		if (upgradeStackToPut.getItem() instanceof CompactingUpgradeItem) {
+			UpgradeSlotChangeResult result = checkForCompactingUpgrade(storageWrapper);
+			if (!result.isSuccessful()) {
+				return result;
+			}
+		}
+
+		return super.canSwapUpgradeFor(upgradeStackToPut, storageWrapper, isClientSide);
+	}
+
+	private UpgradeSlotChangeResult checkForCompactingUpgrade(IStorageWrapper storageWrapper) {
+		Set<Integer> errorUpgradeSlots = new HashSet<>();
+		InventoryHelper.iterate(storageWrapper.getUpgradeHandler(), (slot, stack) -> {
+			if (stack.getItem() instanceof CompactingUpgradeItem) {
+				errorUpgradeSlots.add(slot);
+			}
+		});
+
+		return errorUpgradeSlots.isEmpty() ? new UpgradeSlotChangeResult.Success()
+				: new UpgradeSlotChangeResult.Fail(StorageTranslationHelper.INSTANCE.translError("add.compacting_exists"), errorUpgradeSlots, Collections.emptySet(), Collections.emptySet());
 	}
 
 	private UpgradeSlotChangeResult canUseForCompression(IStorageWrapper storageWrapper, InventoryPartitioner.SlotRange slotRange) {

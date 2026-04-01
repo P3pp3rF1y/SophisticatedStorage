@@ -22,10 +22,11 @@ import net.minecraftforge.registries.RegistryObject;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.StorageScreenBase;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.UpgradeGuiManager;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.Position;
-import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.TranslationHelper;
+import net.p3pp3rf1y.sophisticatedcore.common.gui.UpgradeSlotChangeResult;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.UpgradeContainerRegistry;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.UpgradeContainerType;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.ContentsFilteredUpgradeContainer;
+import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.battery.BatteryInventoryPart;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.battery.BatteryUpgradeContainer;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.battery.BatteryUpgradeTab;
@@ -91,7 +92,11 @@ import net.p3pp3rf1y.sophisticatedstorage.upgrades.hopper.HopperUpgradeTab;
 import net.p3pp3rf1y.sophisticatedstorage.upgrades.hopper.HopperUpgradeWrapper;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.function.IntSupplier;
 
 public class ModItems {
 	private ModItems() {
@@ -120,9 +125,9 @@ public class ModItems {
 	public static final RegistryObject<FeedingUpgradeItem> ADVANCED_FEEDING_UPGRADE = ITEMS.register("advanced_feeding_upgrade",
 			() -> new FeedingUpgradeItem(Config.SERVER.advancedFeedingUpgrade.filterSlots::get, SophisticatedStorage.CREATIVE_TAB, Config.SERVER.maxUpgradesPerStorage));
 	public static final RegistryObject<CompactingUpgradeItem> COMPACTING_UPGRADE = ITEMS.register("compacting_upgrade",
-			() -> new CompactingUpgradeItem(false, Config.SERVER.compactingUpgrade.filterSlots::get, SophisticatedStorage.CREATIVE_TAB, Config.SERVER.maxUpgradesPerStorage));
+			() -> new StorageCompactingUpgradeItem(false, Config.SERVER.compactingUpgrade.filterSlots::get));
 	public static final RegistryObject<CompactingUpgradeItem> ADVANCED_COMPACTING_UPGRADE = ITEMS.register("advanced_compacting_upgrade",
-			() -> new CompactingUpgradeItem(true, Config.SERVER.advancedCompactingUpgrade.filterSlots::get, SophisticatedStorage.CREATIVE_TAB, Config.SERVER.maxUpgradesPerStorage));
+			() -> new StorageCompactingUpgradeItem(true, Config.SERVER.advancedCompactingUpgrade.filterSlots::get));
 	public static final RegistryObject<VoidUpgradeItem> VOID_UPGRADE = ITEMS.register("void_upgrade",
 			() -> new VoidUpgradeItem(Config.SERVER.voidUpgrade, SophisticatedStorage.CREATIVE_TAB, Config.SERVER.maxUpgradesPerStorage));
 	public static final RegistryObject<VoidUpgradeItem> ADVANCED_VOID_UPGRADE = ITEMS.register("advanced_void_upgrade",
@@ -311,5 +316,46 @@ public class ModItems {
 			UpgradeGuiManager.registerTab(HOPPER_TYPE, HopperUpgradeTab.Basic::new);
 			UpgradeGuiManager.registerTab(ADVANCED_HOPPER_TYPE, HopperUpgradeTab.Advanced::new);
 		});
+	}
+
+	private static class StorageCompactingUpgradeItem extends CompactingUpgradeItem {
+		public StorageCompactingUpgradeItem(boolean shouldCompactThreeByThree, IntSupplier filterSlotCount) {
+			super(shouldCompactThreeByThree, filterSlotCount, SophisticatedStorage.CREATIVE_TAB, Config.SERVER.maxUpgradesPerStorage);
+		}
+
+		@Override
+		public UpgradeSlotChangeResult canAddUpgradeTo(IStorageWrapper storageWrapper, ItemStack upgradeStack, boolean firstLevelStorage, boolean isClientSide) {
+			UpgradeSlotChangeResult result = super.canAddUpgradeTo(storageWrapper, upgradeStack, firstLevelStorage, isClientSide);
+			if (!result.isSuccessful()) {
+				return result;
+			}
+
+			return checkForCompressionUpgrade(storageWrapper);
+		}
+
+		@Override
+		public UpgradeSlotChangeResult canSwapUpgradeFor(ItemStack upgradeStackToPut, IStorageWrapper storageWrapper, boolean isClientSide) {
+			if (upgradeStackToPut.getItem() instanceof CompressionUpgradeItem) {
+				UpgradeSlotChangeResult result = checkForCompressionUpgrade(storageWrapper);
+				if (!result.isSuccessful()) {
+					return result;
+				}
+			}
+
+			return super.canSwapUpgradeFor(upgradeStackToPut, storageWrapper, isClientSide);
+		}
+
+		private UpgradeSlotChangeResult checkForCompressionUpgrade(IStorageWrapper storageWrapper) {
+			Set<Integer> errorUpgradeSlots = new HashSet<>();
+			for (int slot = 0; slot < storageWrapper.getUpgradeHandler().getSlots(); slot++) {
+				if (storageWrapper.getUpgradeHandler().getStackInSlot(slot).getItem() instanceof CompressionUpgradeItem) {
+					errorUpgradeSlots.add(slot);
+				}
+			}
+
+			return errorUpgradeSlots.isEmpty() ? new UpgradeSlotChangeResult.Success()
+					: new UpgradeSlotChangeResult.Fail(StorageTranslationHelper.INSTANCE.translError("add.compression_exists"), errorUpgradeSlots, Collections.emptySet(), Collections.emptySet());
+		}
+
 	}
 }
