@@ -56,7 +56,7 @@ public class DisplayItemRenderer {
 	static boolean isGui3d(ItemStackRenderState renderState) {
 		AABB.Builder builder = new AABB.Builder();
 		renderState.visitExtents(builder::include);
-		return builder.build().getZsize() > 0.0625F;
+		return builder.isDefined() && builder.build().getZsize() > 0.0625F;
 	}
 
 	public void submitDisplayItem(SubmitNodeCollector submitNodeCollector, PoseStack poseStack, int packedLight, int packedOverlay, StorageRenderState.DisplayItemInfo displayItemInfo) {
