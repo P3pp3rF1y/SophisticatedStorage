@@ -82,7 +82,7 @@ public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageIte
 	public ItemStack stash(HolderLookup.Provider registries, ItemStack storageStack, ItemStack stack, boolean simulate) {
 		StackStorageWrapper wrapper = StackStorageWrapper.fromStack(registries, storageStack);
 		if (wrapper.getContentsUuid().isEmpty()) {
-			wrapper.setContentsUuid(UUID.randomUUID());
+			wrapper.ensureContentsUuid();
 		}
 		return wrapper.getInventoryForUpgradeProcessing().insertItem(stack, simulate);
 	}
