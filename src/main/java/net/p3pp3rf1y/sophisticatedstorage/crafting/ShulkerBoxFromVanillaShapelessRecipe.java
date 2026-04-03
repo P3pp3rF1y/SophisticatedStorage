@@ -47,6 +47,7 @@ public class ShulkerBoxFromVanillaShapelessRecipe extends ShapelessRecipe implem
 
 			vanillaShulkerBox.getCapability(ForgeCapabilities.ITEM_HANDLER).ifPresent(itemCap -> {
 				upgradedStorage.getCapability(CapabilityStorageWrapper.getCapabilityInstance()).ifPresent(wrapper -> {
+					wrapper.ensureContentsUuid();
 					InventoryHelper.iterate(itemCap, (slot, stack) -> {
 						if (!stack.isEmpty()) {
 							wrapper.getInventoryHandler().insertItem(stack, false);

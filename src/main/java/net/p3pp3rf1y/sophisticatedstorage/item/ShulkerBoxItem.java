@@ -148,7 +148,7 @@ public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageIte
 	public ItemStack stash(ItemStack storageStack, ItemStack stack, boolean simulate) {
 		return storageStack.getCapability(CapabilityStorageWrapper.getCapabilityInstance()).map(wrapper -> {
 			if (wrapper.getContentsUuid().isEmpty()) {
-				wrapper.setContentsUuid(UUID.randomUUID());
+				wrapper.ensureContentsUuid();
 			}
 			return wrapper.getInventoryForUpgradeProcessing().insertItem(stack, simulate);
 		}).orElse(stack);

@@ -22,6 +22,12 @@ public class StackStorageWrapper extends StorageWrapper {
 		this.storageStack = storageStack;
 	}
 
+	public void ensureContentsUuid() {
+		if (contentsUuid == null) {
+			setContentsUuid(UUID.randomUUID());
+		}
+	}
+
 	private UUID getNewUuid() {
 		UUID newUuid = UUID.randomUUID();
 		setContentsUuid(newUuid);
@@ -67,6 +73,13 @@ public class StackStorageWrapper extends StorageWrapper {
 	@Override
 	protected void onUpgradeRefresh() {
 		//noop - there should be no upgrade refresh happening here
+	}
+
+	@Override
+	protected void save() {
+		if (contentsUuid != null) {
+			ItemContentsStorage.get().setDirty();
+		}
 	}
 
 	@Override
