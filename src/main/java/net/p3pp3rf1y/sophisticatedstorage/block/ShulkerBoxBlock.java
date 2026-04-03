@@ -149,9 +149,14 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 			if (storageUuid != null) {
 				ItemContentsStorage itemContentsStorage = ItemContentsStorage.get();
 				CompoundTag beTag = itemContentsStorage.getOrCreateAddtionalBeData(storageUuid);
+				CompoundTag storageWrapperTag = beTag.getCompound(StorageBlockEntity.STORAGE_WRAPPER).orElseGet(() -> {
+					CompoundTag newStorageWrapperTag = new CompoundTag();
+					beTag.put(StorageBlockEntity.STORAGE_WRAPPER, newStorageWrapperTag);
+					return newStorageWrapperTag;
+				});
 				ContainerContents contents = itemContentsStorage.getOrCreateContents(storageUuid);
 				Tag contentsTag = ContainerContents.CODEC.encodeStart(RegistryOps.create(NbtOps.INSTANCE, be.getLevel().registryAccess()), contents).getOrThrow();
-				beTag.getCompound(StorageBlockEntity.STORAGE_WRAPPER).ifPresent(tag -> tag.put(StorageWrapper.CONTENTS, contentsTag));
+				storageWrapperTag.put(StorageWrapper.CONTENTS, contentsTag);
 				be.loadAdditional(ValueIOHelper.inputFromCompoundTag(level.registryAccess(), beTag));
 				itemContentsStorage.removeContents(storageUuid);
 				itemContentsStorage.removeAddtionalBeData(storageUuid);

@@ -46,6 +46,7 @@ public class ShulkerBoxFromVanillaShapelessRecipe extends CustomShapelessRecipe 
 			@Nullable ResourceHandler<ItemResource> itemCap = vanillaShulkerBox.getCapability(Capabilities.Item.ITEM, ItemAccess.forStack(vanillaShulkerBox));
 			if (itemCap != null) {
 				StackStorageWrapper wrapper = new StackStorageWrapper(upgradedStorage);
+				wrapper.ensureContentsUuid();
 				try (Transaction tx = Transaction.openRoot()) {
 					InventoryHelper.iterate(itemCap, (slot, resource, amount) -> {
 						if (!resource.isEmpty()) {
