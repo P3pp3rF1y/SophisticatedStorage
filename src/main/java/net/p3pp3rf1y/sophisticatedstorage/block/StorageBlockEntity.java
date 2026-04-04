@@ -24,6 +24,7 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.fml.util.thread.SidedThreadGroups;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.network.PacketDistributor;
+import net.p3pp3rf1y.sophisticatedcore.SophisticatedCore;
 import net.p3pp3rf1y.sophisticatedcore.controller.IControllableStorage;
 import net.p3pp3rf1y.sophisticatedcore.controller.ILinkable;
 import net.p3pp3rf1y.sophisticatedcore.inventory.CachedFailedInsertInventoryHandler;
@@ -295,8 +296,24 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 	@Override
 	public void onLoad() {
 		super.onLoad();
-		storageWrapper.onInit();
-		registerWithControllerOnLoad();
+		try {
+			storageWrapper.onInit();
+		} catch (Exception e) {
+			String posInfo = worldPosition != null ? worldPosition.toShortString() : "unknown position";
+			SophisticatedCore.LOGGER.error(
+					"StorageBlockEntity failed to initialize at {}. Block entity will be removed to prevent server crash. Error: {}",
+					posInfo, e.getMessage(), e);
+			setRemoved();
+			return;
+		}
+		try {
+			registerWithControllerOnLoad();
+		} catch (Exception e) {
+			String posInfo = worldPosition != null ? worldPosition.toShortString() : "unknown position";
+			SophisticatedCore.LOGGER.error(
+					"StorageBlockEntity failed to register with controller at {}: {}",
+					posInfo, e.getMessage(), e);
+		}
 	}
 
 	public void loadSynchronizedData(CompoundTag tag, HolderLookup.Provider registries) {
@@ -342,7 +359,7 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		}
 
 		loadStorageWrapper(tag, registries);
-		loadSynchronizedData(tag,registries);
+		loadSynchronizedData(tag, registries);
 	}
 
 	public void setUpdateBlockRender() {
@@ -626,11 +643,10 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 
 	@SuppressWarnings("unused") //parameter used in override
 	public float getSlotFillPercentage(int slot) {
-		return 0; //only used in limited barrels
+		return 0;
 	}
 
 	public void setShouldBeOpen(boolean shouldBeOpen) {
-		//noop by default
 	}
 
 	@Override
