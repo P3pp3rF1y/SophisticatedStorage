@@ -80,8 +80,8 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 	public void addDropData(ItemStack stack, StorageBlockEntity be) {
 		if (be instanceof WoodStorageBlockEntity wbe) {
 			addNameWoodAndTintData(stack, wbe);
-			if (wbe.isPacked() || shouldNonEmptyDropPacked(wbe)) {
-				wbe.setPacked(true);
+			boolean packed = wbe.isPacked() || shouldNonEmptyDropPacked(wbe);
+			if (packed) {
 				StorageWrapper storageWrapper = be.getStorageWrapper();
 				UUID storageUuid = storageWrapper.getContentsUuid().orElse(UUID.randomUUID());
 				CompoundTag storageContents = wbe.getStorageContentsTag();
@@ -161,7 +161,13 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 	@Override
 	public ItemStack getCloneItemStack(BlockState state, HitResult target, BlockGetter world, BlockPos pos, Player player) {
 		ItemStack stack = new ItemStack(this);
-		addNameWoodAndTintData(stack, world, pos);
+		WorldHelper.getBlockEntity(world, pos, WoodStorageBlockEntity.class).ifPresentOrElse(be -> {
+			if (be.isPacked()) {
+				addDropData(stack, be);
+			} else {
+				addNameWoodAndTintData(stack, be);
+			}
+		}, () -> addNameWoodAndTintData(stack, world, pos));
 		return stack;
 	}
 
@@ -209,6 +215,8 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 	protected void setRenderBlockRenderProperties(ItemStack stack, WoodStorageBlockEntity be) {
 		WoodStorageBlockItem.getWoodType(stack).ifPresent(be::setWoodType);
 		be.getStorageWrapper().setColors(StorageBlockItem.getMainColorFromStack(stack).orElse(-1), StorageBlockItem.getAccentColorFromStack(stack).orElse(-1));
+		be.setUpdateBlockRender();
+		WorldHelper.notifyBlockUpdate(be);
 	}
 
 	@Override
