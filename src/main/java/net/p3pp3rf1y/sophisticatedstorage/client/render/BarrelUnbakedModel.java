@@ -27,8 +27,7 @@ public class BarrelUnbakedModel extends BarrelUnbakedModelBase {
 		}
 
 		@Override
-		protected int createHash(@Nullable BlockState state) {
-			int hash = super.createHash(state);
+		protected int addBlockStateToHash(int hash, @Nullable BlockState state) {
 			if (state != null) {
 				hash = hash * 31 + (state.getValue(BarrelBlock.OPEN) ? 1 : 0);
 				hash = hash * 31 + state.getValue(BarrelBlock.FACING).get3DDataValue();
