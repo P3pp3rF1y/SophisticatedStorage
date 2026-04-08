@@ -13,7 +13,6 @@ import net.neoforged.neoforge.items.wrapper.PlayerMainInvWrapper;
 import net.p3pp3rf1y.sophisticatedcore.controller.ControllerBlockEntityBase;
 import net.p3pp3rf1y.sophisticatedcore.inventory.CachedFailedInsertInventoryHandler;
 import net.p3pp3rf1y.sophisticatedcore.inventory.ItemStackKey;
-import net.p3pp3rf1y.sophisticatedcore.util.IDoubleBlock;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.VoxelOutliner;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
@@ -248,16 +247,8 @@ public class ControllerBlockEntity extends ControllerBlockEntityBase implements 
 
 	public List<VoxelOutliner.Edge> getStorageBlockEdges() {
 		if (cachedStorageEdges == null) {
-			Set<BlockPos> positions = new HashSet<>(getStoragePositions());
-			positions.removeIf(getLinkedBlocks()::contains);
-			List<BlockPos> extraPositions = new ArrayList<>();
-			positions.forEach(pos -> {
-				BlockState state = level.getBlockState(pos);
-				if (state.getBlock() instanceof IDoubleBlock doubleBlock) {
-					doubleBlock.getOtherPosition(state, pos).ifPresent(extraPositions::add);
-				}
-			});
-			positions.addAll(extraPositions);
+			Set<BlockPos> positions = new HashSet<>();
+			getStoragePositions().stream().filter(pos -> !getLinkedBlocks().contains(pos)).forEach(pos -> positions.addAll(StoragePositionGroups.getGroup(level, pos).memberPositions()));
 			cachedStorageEdges = VoxelOutliner.computeRenderableEdges(positions);
 		}
 		return cachedStorageEdges;
