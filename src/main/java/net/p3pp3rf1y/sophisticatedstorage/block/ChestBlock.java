@@ -47,12 +47,12 @@ import net.p3pp3rf1y.sophisticatedstorage.item.StackStorageWrapper;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
 import org.joml.Vector3f;
-import org.jspecify.annotations.Nullable;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 
-public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterloggedBlock, IDoubleBlock {
+public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterloggedBlock {
 	public static final EnumProperty<Direction> FACING = HorizontalDirectionalBlock.FACING;
 	public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
 	public static final EnumProperty<ChestType> TYPE = BlockStateProperties.CHEST_TYPE;
@@ -472,11 +472,6 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 			}
 			return List.of(origin.relative(facing), origin.relative(connectedDirection).relative(facing));
 		}
-	}
-
-	@Override
-	public Optional<BlockPos> getOtherPosition(BlockState state, BlockPos pos) {
-		return state.getValue(TYPE) == ChestType.SINGLE ? Optional.empty() : Optional.of(pos.relative(getConnectedDirection(state)));
 	}
 
 	@Override
