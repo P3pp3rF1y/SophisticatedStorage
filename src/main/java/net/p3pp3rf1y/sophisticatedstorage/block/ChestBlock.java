@@ -38,7 +38,6 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.p3pp3rf1y.sophisticatedcore.util.IDoubleBlock;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
@@ -55,7 +54,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterloggedBlock, IDoubleBlock {
+public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterloggedBlock {
 	public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
 	public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
 	public static final EnumProperty<ChestType> TYPE = BlockStateProperties.CHEST_TYPE;
@@ -477,11 +476,6 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 			}
 			return List.of(origin.relative(facing), origin.relative(connectedDirection).relative(facing));
 		}
-	}
-
-	@Override
-	public Optional<BlockPos> getOtherPosition(BlockState state, BlockPos pos) {
-		return state.getValue(TYPE) == ChestType.SINGLE ? Optional.empty() : Optional.of(pos.relative(getConnectedDirection(state)));
 	}
 
 	@Override
