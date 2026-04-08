@@ -16,6 +16,7 @@ import net.p3pp3rf1y.sophisticatedcore.network.SyncBlockHighlightsPayload;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.ControllerBlockEntity;
+import net.p3pp3rf1y.sophisticatedstorage.block.StoragePositionGroups;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,9 +58,9 @@ public record RequestControllerTargetHighlightsPayload(ItemStack stack,
 
 			PacketDistributor.sendToPlayer(serverPlayer, new SyncBlockHighlightsPayload(
 					Map.of(
-							MATCHING_STACK_HIGHLIGHT_COLOR, stackStorages,
-							MATCHING_ITEM_HIGHLIGHT_COLOR, itemStorages,
-							EMPTY_TARGET_HIGHLIGHT_COLOR, emptyTargetSlotStorages
+							MATCHING_STACK_HIGHLIGHT_COLOR, StoragePositionGroups.getGroupPositions(player.level(), stackStorages),
+							MATCHING_ITEM_HIGHLIGHT_COLOR, StoragePositionGroups.getGroupPositions(player.level(), itemStorages),
+							EMPTY_TARGET_HIGHLIGHT_COLOR, StoragePositionGroups.getGroupPositions(player.level(), emptyTargetSlotStorages)
 					)
 			));
 		}
