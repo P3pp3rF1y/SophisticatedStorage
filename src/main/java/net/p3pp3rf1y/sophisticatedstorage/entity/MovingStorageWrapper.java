@@ -6,6 +6,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageSavedData;
@@ -62,6 +63,7 @@ public abstract class MovingStorageWrapper implements IStorageWrapper {
 	@Nullable
 	private SettingsHandler settingsHandler;
 	private final RenderInfo renderInfo;
+	private boolean renderInfoValidationPending = true;
 	private final Function<UUID, IStorageSavedData> getStorageData;
 
 	private final Map<Class<? extends IUpgradeWrapper>, Consumer<? extends IUpgradeWrapper>> upgradeDefaultsHandlers = new HashMap<>();
@@ -104,6 +106,15 @@ public abstract class MovingStorageWrapper implements IStorageWrapper {
 	@Override
 	public boolean isUpgradeRunnable(ItemStack upgrade) {
 		return isUpgradeRunnable.test(upgrade);
+	}
+
+	@Override
+	public void onInit(Level level) {
+		IStorageWrapper.super.onInit(level);
+		if (renderInfoValidationPending && !level.isClientSide()) {
+			getRenderInfo().validate(this, level);
+			renderInfoValidationPending = false;
+		}
 	}
 
 	private UUID getNewUuid() {
