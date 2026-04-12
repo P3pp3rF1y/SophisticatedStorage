@@ -4,6 +4,7 @@ import net.minecraft.core.UUIDUtil;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.fml.util.thread.SidedThreadGroups;
@@ -54,6 +55,7 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 	private CompoundTag settingsNbt = new CompoundTag();
 	private final SettingsHandler settingsHandler;
 	private final RenderInfo renderInfo;
+	private boolean renderInfoValidationPending = true;
 
 	private CompoundTag renderInfoNbt = new CompoundTag();
 
@@ -216,6 +218,7 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 		settingsHandler.reloadFrom(settingsNbt);
 		renderInfoNbt = in.read(RENDER_INFO_TAG, CompoundTag.CODEC).orElse(new CompoundTag());
 		renderInfo.deserializeFrom(renderInfoNbt);
+		renderInfoValidationPending = true;
 		contentsUuid = in.read(UUID, UUIDUtil.CODEC).orElse(null);
 		openTabId = in.getIntOr(OPEN_TAB_ID, -1);
 		sortBy = in.read(SORT_BY, SortBy.CODEC).orElse(SortBy.NAME);
@@ -223,6 +226,15 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 		loadSlotNumbers(in);
 		mainColor = in.getIntOr(MAIN_COLOR, -1);
 		accentColor = in.getIntOr(ACCENT_COLOR, -1);
+	}
+
+	@Override
+	public void onInit(Level level) {
+		IStorageWrapper.super.onInit(level);
+		if (renderInfoValidationPending && !level.isClientSide()) {
+			getRenderInfo().validate(this, level);
+			renderInfoValidationPending = false;
+		}
 	}
 
 	protected void loadSlotNumbers(ValueInput in) {
