@@ -198,7 +198,7 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 			}
 			setRenderBlockRenderProperties(stack, be);
 
-			be.getStorageWrapper().onInit();
+			be.getStorageWrapper().onInit(level);
 			be.tryToAddToController();
 
 			if (placer != null && placer.getOffhandItem().getItem() == ModItems.STORAGE_TOOL.get()) {

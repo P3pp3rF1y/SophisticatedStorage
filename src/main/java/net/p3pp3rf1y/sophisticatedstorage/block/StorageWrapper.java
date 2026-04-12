@@ -1,17 +1,19 @@
 package net.p3pp3rf1y.sophisticatedstorage.block;
 
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtUtils;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.fml.util.thread.SidedThreadGroups;
+import net.neoforged.neoforge.common.util.ValueIOSerializable;
+import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.SortBy;
-import net.p3pp3rf1y.sophisticatedcore.inventory.ITrackedContentsItemHandler;
-import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryHandler;
-import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryIOHandler;
-import net.p3pp3rf1y.sophisticatedcore.inventory.ItemStackKey;
-import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
+import net.p3pp3rf1y.sophisticatedcore.inventory.*;
+import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderData;
+import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderDataHandler;
 import net.p3pp3rf1y.sophisticatedcore.settings.SettingsHandler;
 import net.p3pp3rf1y.sophisticatedcore.settings.itemdisplay.ItemDisplaySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.settings.memory.MemorySettingsCategory;
@@ -20,26 +22,25 @@ import net.p3pp3rf1y.sophisticatedcore.upgrades.IUpgradeWrapper;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeHandler;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.stack.StackUpgradeItem;
 import net.p3pp3rf1y.sophisticatedcore.util.InventorySorter;
-import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.settings.StorageSettingsHandler;
+import org.jspecify.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public abstract class StorageWrapper implements IStorageWrapper {
-	public static final String MAIN_COLOR_TAG = "mainColor";
-	public static final String ACCENT_COLOR_TAG = "accentColor";
-	private static final String UUID_TAG = "uuid";
-	private static final String OPEN_TAB_ID_TAG = "openTabId";
-	public static final String CONTENTS_TAG = "contents";
-	public static final String NUMBER_OF_INVENTORY_SLOTS_TAG = "numberOfInventorySlots";
-	public static final String NUMBER_OF_UPGRADE_SLOTS_TAG = "numberOfUpgradeSlots";
-	public static final String RENDER_INFO_TAG = "renderInfo";
-	public static final String SORT_BY_TAG = "sortBy";
+public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializable {
+	public static final String MAIN_COLOR = "mainColor";
+	public static final String ACCENT_COLOR = "accentColor";
+	private static final String UUID = "uuid";
+	private static final String OPEN_TAB_ID = "openTabId";
+	public static final String CONTENTS = "contents";
+	public static final String NUMBER_OF_INVENTORY_SLOTS = "numberOfInventorySlots";
+	public static final String NUMBER_OF_UPGRADE_SLOTS = "numberOfUpgradeSlots";
+	public static final String RENDER_DATA = "renderData";
+	public static final String SORT_BY = "sortBy";
 	private final Supplier<Runnable> getSaveHandler;
 
 	@Nullable
@@ -48,12 +49,12 @@ public abstract class StorageWrapper implements IStorageWrapper {
 	private InventoryIOHandler inventoryIOHandler = null;
 	@Nullable
 	private UpgradeHandler upgradeHandler = null;
-	private CompoundTag contentsNbt = new CompoundTag();
-	private CompoundTag settingsNbt = new CompoundTag();
+	private ContainerContents contents = new ContainerContents();
 	private final SettingsHandler settingsHandler;
-	private final RenderInfo renderInfo;
+	private final RenderDataHandler renderDataHandler;
+	private boolean renderDataValidationPending = true;
 
-	private CompoundTag renderInfoNbt = new CompoundTag();
+	private RenderData renderData = new RenderData();
 
 	@Nullable
 	protected UUID contentsUuid = null;
@@ -74,25 +75,18 @@ public abstract class StorageWrapper implements IStorageWrapper {
 	private Runnable onInventoryForInputOutputHandlerRefresh = () -> {
 	};
 
-	protected StorageWrapper(Supplier<Runnable> getSaveHandler, Runnable onSerializeRenderInfo, Runnable markContentsDirty) {
-		this(getSaveHandler, onSerializeRenderInfo, markContentsDirty, 1, false);
+	protected StorageWrapper(Supplier<Runnable> getSaveHandler, Runnable onSerializeRenderData, Runnable markContentsDirty) {
+		this(getSaveHandler, onSerializeRenderData, markContentsDirty, 1, false);
 	}
 
-	protected StorageWrapper(Supplier<Runnable> getSaveHandler, Runnable onSerializeRenderInfo, Runnable markContentsDirty, int numberOfDisplayItems, boolean showsCountsAndFillRatios) {
+	protected StorageWrapper(Supplier<Runnable> getSaveHandler, Runnable onSerializeRenderData, Runnable markContentsDirty, int numberOfDisplayItems, boolean showsCountsAndFillRatios) {
 		this.getSaveHandler = getSaveHandler;
-		renderInfo = new RenderInfo(getSaveHandler, showsCountsAndFillRatios) {
-			@Override
-			protected void serializeRenderInfo(CompoundTag renderInfo) {
-				renderInfoNbt = renderInfo;
-				onSerializeRenderInfo.run();
-			}
-
-			@Override
-			protected Optional<CompoundTag> getRenderInfoTag() {
-				return Optional.of(renderInfoNbt);
-			}
-		};
-		settingsHandler = new StorageSettingsHandler(settingsNbt, markContentsDirty, this::getInventoryHandler, () -> renderInfo) {
+		renderDataHandler = new RenderDataHandler(renderData,
+				renderData -> {
+					onSerializeRenderData.run();
+					getSaveHandler.get().run();
+				}, showsCountsAndFillRatios);
+		settingsHandler = new StorageSettingsHandler(contents.settings(), markContentsDirty, this::getInventoryHandler, () -> renderDataHandler) {
 
 			@Override
 			protected int getNumberOfDisplayItems() {
@@ -113,7 +107,7 @@ public abstract class StorageWrapper implements IStorageWrapper {
 	@Override
 	public UpgradeHandler getUpgradeHandler() {
 		if (upgradeHandler == null) {
-			upgradeHandler = new UpgradeHandler(getNumberOfUpgradeSlots(), this, getContentsNbt(), getSaveHandler.get(), () -> {
+			upgradeHandler = new UpgradeHandler(getNumberOfUpgradeSlots(), this, getContents(), getSaveHandler.get(), () -> {
 				if (inventoryHandler != null) {
 					inventoryHandler.clearListeners();
 					inventoryHandler.setBaseSlotLimit(StackUpgradeItem.getInventorySlotLimit(this));
@@ -123,8 +117,8 @@ public abstract class StorageWrapper implements IStorageWrapper {
 				getSettingsHandler().getTypeCategory(ItemDisplaySettingsCategory.class).itemsChanged(); //in case stack upgrade changed need to send updated fill ratios to client
 			}) {
 				@Override
-				public boolean isItemValid(int slot, ItemStack stack) {
-					return super.isItemValid(slot, stack) && (stack.isEmpty() || stack.is(ModItems.STORAGE_UPGRADE_TAG));
+				public boolean isValid(int index, ItemResource resource) {
+					return super.isValid(index, resource) && (resource.isEmpty() || resource.is(ModItems.STORAGE_UPGRADE_TAG));
 				}
 
 				@Override
@@ -151,51 +145,51 @@ public abstract class StorageWrapper implements IStorageWrapper {
 
 	protected abstract void onUpgradeRefresh();
 
-	public CompoundTag save(CompoundTag tag) {
-		saveContents(tag);
-		saveData(tag);
-		return tag;
+	@Override
+	public void serialize(ValueOutput out) {
+		saveContents(out);
+		saveData(out);
 	}
 
-	private void saveContents(CompoundTag tag) {
-		tag.put(CONTENTS_TAG, getContentsNbt().copy());
+	private void saveContents(ValueOutput out) {
+		out.store(CONTENTS, ContainerContents.CODEC, getContents().copy());
 	}
 
-	CompoundTag saveData(CompoundTag tag) {
-		if (!settingsNbt.isEmpty()) {
-			tag.put(SETTINGS_TAG, settingsNbt);
-		}
-		if (!renderInfoNbt.isEmpty()) {
-			tag.put(RENDER_INFO_TAG, renderInfoNbt);
-		}
+	void saveClientData(ValueOutput out) {
+		out.store(SETTINGS, ContainerContents.SettingsData.CODEC, contents.settings());
+		saveData(out);
+	}
+
+	void saveData(ValueOutput out) {
+		out.store(RENDER_DATA, RenderData.CODEC, renderData);
 		if (contentsUuid != null) {
-			tag.put(UUID_TAG, NbtUtils.createUUID(contentsUuid));
+			out.store(UUID, UUIDUtil.CODEC, contentsUuid);
 		}
 		if (openTabId >= 0) {
-			tag.putInt(OPEN_TAB_ID_TAG, openTabId);
+			out.putInt(OPEN_TAB_ID, openTabId);
 		}
-		tag.putString(SORT_BY_TAG, sortBy.getSerializedName());
+		out.putString(SORT_BY, sortBy.getSerializedName());
 		if (columnsTaken > 0) {
-			tag.putInt("columnsTaken", columnsTaken);
+			out.putInt("columnsTaken", columnsTaken);
 		}
 		if (numberOfInventorySlots > 0) {
-			tag.putInt(NUMBER_OF_INVENTORY_SLOTS_TAG, numberOfInventorySlots);
+			out.putInt(NUMBER_OF_INVENTORY_SLOTS, numberOfInventorySlots);
 		}
 		if (numberOfUpgradeSlots > -1) {
-			tag.putInt(NUMBER_OF_UPGRADE_SLOTS_TAG, numberOfUpgradeSlots);
+			out.putInt(NUMBER_OF_UPGRADE_SLOTS, numberOfUpgradeSlots);
 		}
 		if (mainColor != -1) {
-			tag.putInt(MAIN_COLOR_TAG, mainColor);
+			out.putInt(MAIN_COLOR, mainColor);
 		}
 		if (accentColor != -1) {
-			tag.putInt(ACCENT_COLOR_TAG, accentColor);
+			out.putInt(ACCENT_COLOR, accentColor);
 		}
-		return tag;
 	}
 
-	public void load(CompoundTag tag) {
-		loadContents(tag);
-		loadData(tag);
+	@Override
+	public void deserialize(ValueInput in) {
+		loadContents(in);
+		loadData(in);
 
 		if (inventoryHandler != null) {
 			initInventoryHandler();
@@ -203,35 +197,68 @@ public abstract class StorageWrapper implements IStorageWrapper {
 		if (upgradeHandler != null) {
 			getUpgradeHandler().refreshUpgradeWrappers();
 		}
-		if (Thread.currentThread().getThreadGroup() == SidedThreadGroups.SERVER && getRenderInfo().getUpgradeItems().size() != getUpgradeHandler().getSlots()) {
+		if (Thread.currentThread().getThreadGroup() == SidedThreadGroups.SERVER && getRenderDataHandler().getUpgradeItems().size() != getUpgradeHandler().size()) {
 			getUpgradeHandler().setRenderUpgradeItems();
 		}
 	}
 
-	private void loadData(CompoundTag tag) {
-		settingsNbt = tag.getCompound(SETTINGS_TAG);
-		settingsHandler.reloadFrom(settingsNbt);
-		renderInfoNbt = tag.getCompound(RENDER_INFO_TAG);
-		renderInfo.deserializeFrom(renderInfoNbt);
-		contentsUuid = NBTHelper.getTagValue(tag, UUID_TAG, CompoundTag::get).map(NbtUtils::loadUUID).orElse(null);
-		openTabId = NBTHelper.getInt(tag, OPEN_TAB_ID_TAG).orElse(-1);
-		sortBy = NBTHelper.getString(tag, SORT_BY_TAG).map(SortBy::fromName).orElse(SortBy.NAME);
-		columnsTaken = NBTHelper.getInt(tag, "columnsTaken").orElse(0);
-		loadSlotNumbers(tag);
-		mainColor = NBTHelper.getInt(tag, MAIN_COLOR_TAG).orElse(-1);
-		accentColor = NBTHelper.getInt(tag, ACCENT_COLOR_TAG).orElse(-1);
-	}
+	public void loadClientData(ValueInput in) {
+		in.read(SETTINGS, ContainerContents.SettingsData.CODEC).ifPresent(contents.settings()::reloadFrom);
+		settingsHandler.reloadFrom(contents.settings());
+		loadData(in);
 
-	protected void loadSlotNumbers(CompoundTag tag) {
-		numberOfInventorySlots = NBTHelper.getInt(tag, NUMBER_OF_INVENTORY_SLOTS_TAG).orElse(0);
-		numberOfUpgradeSlots = NBTHelper.getInt(tag, NUMBER_OF_UPGRADE_SLOTS_TAG).orElse(-1);
-	}
-
-	private void loadContents(CompoundTag tag) {
-		if (tag.contains(CONTENTS_TAG)) {
-			contentsNbt = tag.getCompound(CONTENTS_TAG);
-			onContentsNbtUpdated();
+		if (inventoryHandler != null) {
+			initInventoryHandler();
 		}
+		if (upgradeHandler != null) {
+			getUpgradeHandler().refreshUpgradeWrappers();
+		}
+	}
+
+	private void loadData(ValueInput in) {
+		renderData = in.read(RENDER_DATA, RenderData.CODEC)
+				.or(() -> in.read("renderInfo", RenderData.CODEC)) //TODO remove legacy deserialization likely after major 1.22 release
+				.orElse(RenderData.EMPTY.copy());
+		renderDataHandler.reloadFrom(renderData);
+		renderDataValidationPending = true;
+		contentsUuid = in.read(UUID, UUIDUtil.CODEC).orElse(null);
+		openTabId = in.getIntOr(OPEN_TAB_ID, -1);
+		sortBy = in.read(SORT_BY, SortBy.CODEC).orElse(SortBy.NAME);
+		columnsTaken = in.getIntOr("columnsTaken", 0);
+		loadSlotNumbers(in);
+		mainColor = in.getIntOr(MAIN_COLOR, -1);
+		accentColor = in.getIntOr(ACCENT_COLOR, -1);
+	}
+
+	protected void loadSlotNumbers(ValueInput in) {
+		numberOfInventorySlots = in.getIntOr(NUMBER_OF_INVENTORY_SLOTS, 0);
+		numberOfUpgradeSlots = in.getIntOr(NUMBER_OF_UPGRADE_SLOTS, -1);
+	}
+
+	@Override
+	public void onInit(Level level) {
+		IStorageWrapper.super.onInit(level);
+		if (renderDataValidationPending && !level.isClientSide()) {
+			getRenderDataHandler().validate(this, level);
+			renderDataValidationPending = false;
+		}
+	}
+
+	private void loadContents(ValueInput in) {
+		readContainerContents(in).ifPresent(c -> {
+			contents = c;
+			onContentsUpdated();
+		});
+	}
+
+	private Optional<ContainerContents> readContainerContents(ValueInput in) {
+		return in.read(CONTENTS, ContainerContents.CODEC).map(contents -> {
+			in.read(SETTINGS, CompoundTag.CODEC).ifPresent(settingsTag -> { // TODO remove legacy deserialization likely after major 1.22 release
+				CompoundTag settingsNbt = in.read(SETTINGS, CompoundTag.CODEC).orElse(new CompoundTag());
+				contents.settings().reloadFrom(ContainerContents.LegacyDeserialization.deserializeSettingsData(settingsNbt));
+			});
+			return contents;
+		});
 	}
 
 	@Override
@@ -240,7 +267,7 @@ public abstract class StorageWrapper implements IStorageWrapper {
 	}
 
 	@Override
-	public ITrackedContentsItemHandler getInventoryForUpgradeProcessing() {
+	public ITrackedContentsItemResourceHandler getInventoryForUpgradeProcessing() {
 		return getInventoryHandler();
 	}
 
@@ -253,10 +280,10 @@ public abstract class StorageWrapper implements IStorageWrapper {
 	}
 
 	private void initInventoryHandler() {
-		inventoryHandler = new InventoryHandler(getNumberOfInventorySlots(), this, getContentsNbt(), getSaveHandler.get(), StackUpgradeItem.getInventorySlotLimit(this), Config.SERVER.stackUpgrade) {
+		inventoryHandler = new InventoryHandler(getNumberOfInventorySlots(), this, getContents(), getSaveHandler.get(), StackUpgradeItem.getInventorySlotLimit(this), Config.SERVER.stackUpgrade) {
 			@Override
-			protected boolean isAllowed(ItemStack stack) {
-				return isAllowedInStorage(stack);
+			protected boolean isAllowed(ItemResource resource) {
+				return isAllowedInStorage(resource);
 			}
 		};
 		inventoryHandler.addListener(getSettingsHandler().getTypeCategory(ItemDisplaySettingsCategory.class)::itemChanged);
@@ -267,8 +294,8 @@ public abstract class StorageWrapper implements IStorageWrapper {
 		return true;
 	}
 
-	protected CompoundTag getContentsNbt() {
-		return contentsNbt;
+	public ContainerContents getContents() {
+		return contents;
 	}
 
 	public int getNumberOfInventorySlots() {
@@ -287,7 +314,7 @@ public abstract class StorageWrapper implements IStorageWrapper {
 
 	public abstract int getDefaultNumberOfInventorySlots();
 
-	protected abstract boolean isAllowedInStorage(ItemStack stack);
+	protected abstract boolean isAllowedInStorage(ItemResource resource);
 
 	@Override
 	public int getNumberOfSlotRows() {
@@ -296,7 +323,7 @@ public abstract class StorageWrapper implements IStorageWrapper {
 	}
 
 	@Override
-	public ITrackedContentsItemHandler getInventoryForInputOutput() {
+	public ITrackedContentsItemResourceHandler getInventoryForInputOutput() {
 		if (inventoryIOHandler == null) {
 			inventoryIOHandler = new InventoryIOHandler(this);
 		}
@@ -387,9 +414,10 @@ public abstract class StorageWrapper implements IStorageWrapper {
 	}
 
 	@Override
-	public void onContentsNbtUpdated() {
+	public void onContentsUpdated() {
 		inventoryHandler = null;
 		upgradeHandler = null;
+		settingsHandler.reloadFrom(contents.settings());
 		refreshInventoryForUpgradeProcessing();
 	}
 
@@ -421,8 +449,8 @@ public abstract class StorageWrapper implements IStorageWrapper {
 	}
 
 	@Override
-	public RenderInfo getRenderInfo() {
-		return renderInfo;
+	public RenderDataHandler getRenderDataHandler() {
+		return renderDataHandler;
 	}
 
 	@Override
@@ -438,10 +466,9 @@ public abstract class StorageWrapper implements IStorageWrapper {
 
 	public void changeSize(int additionalInventorySlots, int additionalUpgradeSlots) {
 		numberOfInventorySlots += additionalInventorySlots;
-		getInventoryHandler().changeSlots(additionalInventorySlots);
-
 		numberOfUpgradeSlots += additionalUpgradeSlots;
-		getUpgradeHandler().increaseSize(additionalUpgradeSlots);
+		save();
+		onContentsUpdated();
 	}
 
 	public <T extends IUpgradeWrapper> void registerUpgradeDefaultsHandler(Class<T> upgradeClass, Consumer<T> defaultsHandler) {
