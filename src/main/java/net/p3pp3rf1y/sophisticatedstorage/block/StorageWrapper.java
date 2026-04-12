@@ -5,6 +5,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.neoforged.fml.util.thread.SidedThreadGroups;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.SortBy;
@@ -53,6 +54,7 @@ public abstract class StorageWrapper implements IStorageWrapper {
 	private CompoundTag settingsNbt = new CompoundTag();
 	private final SettingsHandler settingsHandler;
 	private final RenderInfo renderInfo;
+	private boolean renderInfoValidationPending = true;
 
 	private CompoundTag renderInfoNbt = new CompoundTag();
 
@@ -214,6 +216,7 @@ public abstract class StorageWrapper implements IStorageWrapper {
 		settingsHandler.reloadFrom(settingsNbt);
 		renderInfoNbt = tag.getCompoundOrEmpty(RENDER_INFO_TAG);
 		renderInfo.deserializeFrom(renderInfoNbt);
+		renderInfoValidationPending = true;
 		contentsUuid = NBTHelper.getTagValue(tag, UUID_TAG, (t, k) -> Optional.ofNullable(t.get(k))).flatMap(t -> UUIDUtil.CODEC.parse(NbtOps.INSTANCE, t).result()).orElse(null);
 		openTabId = NBTHelper.getInt(tag, OPEN_TAB_ID_TAG).orElse(-1);
 		sortBy = NBTHelper.getString(tag, SORT_BY_TAG).map(SortBy::fromName).orElse(SortBy.NAME);
@@ -221,6 +224,15 @@ public abstract class StorageWrapper implements IStorageWrapper {
 		loadSlotNumbers(tag);
 		mainColor = NBTHelper.getInt(tag, MAIN_COLOR_TAG).orElse(-1);
 		accentColor = NBTHelper.getInt(tag, ACCENT_COLOR_TAG).orElse(-1);
+	}
+
+	@Override
+	public void onInit(Level level) {
+		IStorageWrapper.super.onInit(level);
+		if (renderInfoValidationPending && !level.isClientSide()) {
+			getRenderInfo().validate(this, level);
+			renderInfoValidationPending = false;
+		}
 	}
 
 	protected void loadSlotNumbers(CompoundTag tag) {

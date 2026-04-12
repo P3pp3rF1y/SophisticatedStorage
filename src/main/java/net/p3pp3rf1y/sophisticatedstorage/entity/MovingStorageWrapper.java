@@ -7,6 +7,7 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageSavedData;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
@@ -58,6 +59,7 @@ public abstract class MovingStorageWrapper implements IStorageWrapper {
 	@Nullable
 	private SettingsHandler settingsHandler;
 	private final RenderInfo renderInfo;
+	private boolean renderInfoValidationPending = true;
 	private final Supplier<IStorageSavedData> getStorageData;
 
 	private final Map<Class<? extends IUpgradeWrapper>, Consumer<? extends IUpgradeWrapper>> upgradeDefaultsHandlers = new HashMap<>();
@@ -98,6 +100,15 @@ public abstract class MovingStorageWrapper implements IStorageWrapper {
 		}
 
 		return movingStorageWrapper;
+	}
+
+	@Override
+	public void onInit(Level level) {
+		IStorageWrapper.super.onInit(level);
+		if (renderInfoValidationPending && !level.isClientSide()) {
+			getRenderInfo().validate(this, level);
+			renderInfoValidationPending = false;
+		}
 	}
 
 	@Override
