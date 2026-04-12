@@ -293,7 +293,7 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 	@Override
 	public void onLoad() {
 		super.onLoad();
-		storageWrapper.onInit();
+		storageWrapper.onInit(level);
 		registerWithControllerOnLoad();
 	}
 

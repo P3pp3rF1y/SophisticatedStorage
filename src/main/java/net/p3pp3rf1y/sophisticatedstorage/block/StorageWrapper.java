@@ -3,6 +3,7 @@ package net.p3pp3rf1y.sophisticatedstorage.block;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.fml.util.thread.SidedThreadGroups;
@@ -51,6 +52,7 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 	private ContainerContents contents = new ContainerContents();
 	private final SettingsHandler settingsHandler;
 	private final RenderDataHandler renderDataHandler;
+	private boolean renderDataValidationPending = true;
 
 	private RenderData renderData = new RenderData();
 
@@ -218,6 +220,7 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 				.or(() -> in.read("renderInfo", RenderData.CODEC)) //TODO remove legacy deserialization likely after major 1.22 release
 				.orElse(RenderData.EMPTY.copy());
 		renderDataHandler.reloadFrom(renderData);
+		renderDataValidationPending = true;
 		contentsUuid = in.read(UUID, UUIDUtil.CODEC).orElse(null);
 		openTabId = in.getIntOr(OPEN_TAB_ID, -1);
 		sortBy = in.read(SORT_BY, SortBy.CODEC).orElse(SortBy.NAME);
@@ -230,6 +233,15 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 	protected void loadSlotNumbers(ValueInput in) {
 		numberOfInventorySlots = in.getIntOr(NUMBER_OF_INVENTORY_SLOTS, 0);
 		numberOfUpgradeSlots = in.getIntOr(NUMBER_OF_UPGRADE_SLOTS, -1);
+	}
+
+	@Override
+	public void onInit(Level level) {
+		IStorageWrapper.super.onInit(level);
+		if (renderDataValidationPending && !level.isClientSide()) {
+			getRenderDataHandler().validate(this, level);
+			renderDataValidationPending = false;
+		}
 	}
 
 	private void loadContents(ValueInput in) {
