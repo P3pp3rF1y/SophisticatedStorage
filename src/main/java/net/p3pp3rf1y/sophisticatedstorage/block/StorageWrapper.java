@@ -3,17 +3,18 @@ package net.p3pp3rf1y.sophisticatedstorage.block;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.Level;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.fml.util.thread.SidedThreadGroups;
 import net.neoforged.neoforge.common.util.ValueIOSerializable;
-import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.SortBy;
-import net.p3pp3rf1y.sophisticatedcore.inventory.*;
-import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderData;
-import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderDataHandler;
+import net.p3pp3rf1y.sophisticatedcore.inventory.ITrackedContentsItemHandler;
+import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryHandler;
+import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryIOHandler;
+import net.p3pp3rf1y.sophisticatedcore.inventory.ItemStackKey;
+import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
 import net.p3pp3rf1y.sophisticatedcore.settings.SettingsHandler;
 import net.p3pp3rf1y.sophisticatedcore.settings.itemdisplay.ItemDisplaySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.settings.memory.MemorySettingsCategory;
@@ -25,8 +26,8 @@ import net.p3pp3rf1y.sophisticatedcore.util.InventorySorter;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.settings.StorageSettingsHandler;
-import org.jspecify.annotations.Nullable;
 
+import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -36,10 +37,10 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 	public static final String ACCENT_COLOR = "accentColor";
 	private static final String UUID = "uuid";
 	private static final String OPEN_TAB_ID = "openTabId";
-	public static final String CONTENTS = "contents";
+	public static final String CONTENTS_TAG = "contents";
 	public static final String NUMBER_OF_INVENTORY_SLOTS = "numberOfInventorySlots";
 	public static final String NUMBER_OF_UPGRADE_SLOTS = "numberOfUpgradeSlots";
-	public static final String RENDER_DATA = "renderData";
+	public static final String RENDER_INFO_TAG = "renderInfo";
 	public static final String SORT_BY = "sortBy";
 	private final Supplier<Runnable> getSaveHandler;
 
@@ -49,12 +50,12 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 	private InventoryIOHandler inventoryIOHandler = null;
 	@Nullable
 	private UpgradeHandler upgradeHandler = null;
-	private ContainerContents contents = new ContainerContents();
+	private CompoundTag contentsNbt = new CompoundTag();
+	private CompoundTag settingsNbt = new CompoundTag();
 	private final SettingsHandler settingsHandler;
-	private final RenderDataHandler renderDataHandler;
-	private boolean renderDataValidationPending = true;
+	private final RenderInfo renderInfo;
 
-	private RenderData renderData = new RenderData();
+	private CompoundTag renderInfoNbt = new CompoundTag();
 
 	@Nullable
 	protected UUID contentsUuid = null;
@@ -75,18 +76,25 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 	private Runnable onInventoryForInputOutputHandlerRefresh = () -> {
 	};
 
-	protected StorageWrapper(Supplier<Runnable> getSaveHandler, Runnable onSerializeRenderData, Runnable markContentsDirty) {
-		this(getSaveHandler, onSerializeRenderData, markContentsDirty, 1, false);
+	protected StorageWrapper(Supplier<Runnable> getSaveHandler, Runnable onSerializeRenderInfo, Runnable markContentsDirty) {
+		this(getSaveHandler, onSerializeRenderInfo, markContentsDirty, 1, false);
 	}
 
-	protected StorageWrapper(Supplier<Runnable> getSaveHandler, Runnable onSerializeRenderData, Runnable markContentsDirty, int numberOfDisplayItems, boolean showsCountsAndFillRatios) {
+	protected StorageWrapper(Supplier<Runnable> getSaveHandler, Runnable onSerializeRenderInfo, Runnable markContentsDirty, int numberOfDisplayItems, boolean showsCountsAndFillRatios) {
 		this.getSaveHandler = getSaveHandler;
-		renderDataHandler = new RenderDataHandler(renderData,
-				renderData -> {
-					onSerializeRenderData.run();
-					getSaveHandler.get().run();
-				}, showsCountsAndFillRatios);
-		settingsHandler = new StorageSettingsHandler(contents.settings(), markContentsDirty, this::getInventoryHandler, () -> renderDataHandler) {
+		renderInfo = new RenderInfo(getSaveHandler, showsCountsAndFillRatios) {
+			@Override
+			protected void serializeRenderInfo(CompoundTag renderInfo) {
+				renderInfoNbt = renderInfo;
+				onSerializeRenderInfo.run();
+			}
+
+			@Override
+			protected Optional<CompoundTag> getRenderInfoTag() {
+				return Optional.of(renderInfoNbt);
+			}
+		};
+		settingsHandler = new StorageSettingsHandler(settingsNbt, markContentsDirty, this::getInventoryHandler, () -> renderInfo) {
 
 			@Override
 			protected int getNumberOfDisplayItems() {
@@ -107,7 +115,7 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 	@Override
 	public UpgradeHandler getUpgradeHandler() {
 		if (upgradeHandler == null) {
-			upgradeHandler = new UpgradeHandler(getNumberOfUpgradeSlots(), this, getContents(), getSaveHandler.get(), () -> {
+			upgradeHandler = new UpgradeHandler(getNumberOfUpgradeSlots(), this, getContentsNbt(), getSaveHandler.get(), () -> {
 				if (inventoryHandler != null) {
 					inventoryHandler.clearListeners();
 					inventoryHandler.setBaseSlotLimit(StackUpgradeItem.getInventorySlotLimit(this));
@@ -117,8 +125,8 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 				getSettingsHandler().getTypeCategory(ItemDisplaySettingsCategory.class).itemsChanged(); //in case stack upgrade changed need to send updated fill ratios to client
 			}) {
 				@Override
-				public boolean isValid(int index, ItemResource resource) {
-					return super.isValid(index, resource) && (resource.isEmpty() || resource.is(ModItems.STORAGE_UPGRADE_TAG));
+				public boolean isItemValid(int slot, ItemStack stack) {
+					return super.isItemValid(slot, stack) && (stack.isEmpty() || stack.is(ModItems.STORAGE_UPGRADE_TAG));
 				}
 
 				@Override
@@ -152,16 +160,16 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 	}
 
 	private void saveContents(ValueOutput out) {
-		out.store(CONTENTS, ContainerContents.CODEC, getContents().copy());
-	}
-
-	void saveClientData(ValueOutput out) {
-		out.store(SETTINGS, ContainerContents.SettingsData.CODEC, contents.settings());
-		saveData(out);
+		out.store(CONTENTS_TAG, CompoundTag.CODEC, getContentsNbt().copy());
 	}
 
 	void saveData(ValueOutput out) {
-		out.store(RENDER_DATA, RenderData.CODEC, renderData);
+		if (!settingsNbt.isEmpty()) {
+			out.store(SETTINGS_TAG, CompoundTag.CODEC, settingsNbt);
+		}
+		if (!renderInfoNbt.isEmpty()) {
+			out.store(RENDER_INFO_TAG, CompoundTag.CODEC, renderInfoNbt);
+		}
 		if (contentsUuid != null) {
 			out.store(UUID, UUIDUtil.CODEC, contentsUuid);
 		}
@@ -197,30 +205,17 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 		if (upgradeHandler != null) {
 			getUpgradeHandler().refreshUpgradeWrappers();
 		}
-		if (Thread.currentThread().getThreadGroup() == SidedThreadGroups.SERVER && getRenderDataHandler().getUpgradeItems().size() != getUpgradeHandler().size()) {
+		if (Thread.currentThread().getThreadGroup() == SidedThreadGroups.SERVER && getRenderInfo().getUpgradeItems().size() != getUpgradeHandler().getSlots()) {
 			getUpgradeHandler().setRenderUpgradeItems();
 		}
-	}
 
-	public void loadClientData(ValueInput in) {
-		in.read(SETTINGS, ContainerContents.SettingsData.CODEC).ifPresent(contents.settings()::reloadFrom);
-		settingsHandler.reloadFrom(contents.settings());
-		loadData(in);
-
-		if (inventoryHandler != null) {
-			initInventoryHandler();
-		}
-		if (upgradeHandler != null) {
-			getUpgradeHandler().refreshUpgradeWrappers();
-		}
 	}
 
 	private void loadData(ValueInput in) {
-		renderData = in.read(RENDER_DATA, RenderData.CODEC)
-				.or(() -> in.read("renderInfo", RenderData.CODEC)) //TODO remove legacy deserialization likely after major 1.22 release
-				.orElse(RenderData.EMPTY.copy());
-		renderDataHandler.reloadFrom(renderData);
-		renderDataValidationPending = true;
+		settingsNbt = in.read(SETTINGS_TAG, CompoundTag.CODEC).orElse(new CompoundTag());
+		settingsHandler.reloadFrom(settingsNbt);
+		renderInfoNbt = in.read(RENDER_INFO_TAG, CompoundTag.CODEC).orElse(new CompoundTag());
+		renderInfo.deserializeFrom(renderInfoNbt);
 		contentsUuid = in.read(UUID, UUIDUtil.CODEC).orElse(null);
 		openTabId = in.getIntOr(OPEN_TAB_ID, -1);
 		sortBy = in.read(SORT_BY, SortBy.CODEC).orElse(SortBy.NAME);
@@ -235,30 +230,12 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 		numberOfUpgradeSlots = in.getIntOr(NUMBER_OF_UPGRADE_SLOTS, -1);
 	}
 
-	@Override
-	public void onInit(Level level) {
-		IStorageWrapper.super.onInit(level);
-		if (renderDataValidationPending && !level.isClientSide()) {
-			getRenderDataHandler().validate(this, level);
-			renderDataValidationPending = false;
-		}
-	}
-
 	private void loadContents(ValueInput in) {
-		readContainerContents(in).ifPresent(c -> {
-			contents = c;
-			onContentsUpdated();
-		});
-	}
-
-	private Optional<ContainerContents> readContainerContents(ValueInput in) {
-		return in.read(CONTENTS, ContainerContents.CODEC).map(contents -> {
-			in.read(SETTINGS, CompoundTag.CODEC).ifPresent(settingsTag -> { // TODO remove legacy deserialization likely after major 1.22 release
-				CompoundTag settingsNbt = in.read(SETTINGS, CompoundTag.CODEC).orElse(new CompoundTag());
-				contents.settings().reloadFrom(ContainerContents.LegacyDeserialization.deserializeSettingsData(settingsNbt));
-			});
-			return contents;
-		});
+		in.read(CONTENTS_TAG, CompoundTag.CODEC)
+				.ifPresent(contents -> {
+					contentsNbt = contents;
+					onContentsNbtUpdated();
+				});
 	}
 
 	@Override
@@ -267,7 +244,7 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 	}
 
 	@Override
-	public ITrackedContentsItemResourceHandler getInventoryForUpgradeProcessing() {
+	public ITrackedContentsItemHandler getInventoryForUpgradeProcessing() {
 		return getInventoryHandler();
 	}
 
@@ -280,10 +257,10 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 	}
 
 	private void initInventoryHandler() {
-		inventoryHandler = new InventoryHandler(getNumberOfInventorySlots(), this, getContents(), getSaveHandler.get(), StackUpgradeItem.getInventorySlotLimit(this), Config.SERVER.stackUpgrade) {
+		inventoryHandler = new InventoryHandler(getNumberOfInventorySlots(), this, getContentsNbt(), getSaveHandler.get(), StackUpgradeItem.getInventorySlotLimit(this), Config.SERVER.stackUpgrade) {
 			@Override
-			protected boolean isAllowed(ItemResource resource) {
-				return isAllowedInStorage(resource);
+			protected boolean isAllowed(ItemStack stack) {
+				return isAllowedInStorage(stack);
 			}
 		};
 		inventoryHandler.addListener(getSettingsHandler().getTypeCategory(ItemDisplaySettingsCategory.class)::itemChanged);
@@ -294,8 +271,8 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 		return true;
 	}
 
-	public ContainerContents getContents() {
-		return contents;
+	protected CompoundTag getContentsNbt() {
+		return contentsNbt;
 	}
 
 	public int getNumberOfInventorySlots() {
@@ -314,7 +291,7 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 
 	public abstract int getDefaultNumberOfInventorySlots();
 
-	protected abstract boolean isAllowedInStorage(ItemResource resource);
+	protected abstract boolean isAllowedInStorage(ItemStack stack);
 
 	@Override
 	public int getNumberOfSlotRows() {
@@ -323,7 +300,7 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 	}
 
 	@Override
-	public ITrackedContentsItemResourceHandler getInventoryForInputOutput() {
+	public ITrackedContentsItemHandler getInventoryForInputOutput() {
 		if (inventoryIOHandler == null) {
 			inventoryIOHandler = new InventoryIOHandler(this);
 		}
@@ -414,10 +391,9 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 	}
 
 	@Override
-	public void onContentsUpdated() {
+	public void onContentsNbtUpdated() {
 		inventoryHandler = null;
 		upgradeHandler = null;
-		settingsHandler.reloadFrom(contents.settings());
 		refreshInventoryForUpgradeProcessing();
 	}
 
@@ -449,8 +425,8 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 	}
 
 	@Override
-	public RenderDataHandler getRenderDataHandler() {
-		return renderDataHandler;
+	public RenderInfo getRenderInfo() {
+		return renderInfo;
 	}
 
 	@Override
@@ -466,9 +442,10 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 
 	public void changeSize(int additionalInventorySlots, int additionalUpgradeSlots) {
 		numberOfInventorySlots += additionalInventorySlots;
+		getInventoryHandler().changeSlots(additionalInventorySlots);
+
 		numberOfUpgradeSlots += additionalUpgradeSlots;
-		save();
-		onContentsUpdated();
+		getUpgradeHandler().increaseSize(additionalUpgradeSlots);
 	}
 
 	public <T extends IUpgradeWrapper> void registerUpgradeDefaultsHandler(Class<T> upgradeClass, Consumer<T> defaultsHandler) {
