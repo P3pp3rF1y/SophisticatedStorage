@@ -58,11 +58,11 @@ public class ModBlockColors {
 		if (isLimitedBarrel) {
 			for (RenderData.DisplayItemData displayItem : displayItems) {
 				if (displayItem.slotIndex() == displayItemIndex) {
-					return displayItem.item();
+					return displayItem.createItemStack();
 				}
 			}
 		}
-		return displayItems.size() > displayItemIndex ? displayItems.get(displayItemIndex).item() : ItemStack.EMPTY;
+		return displayItems.size() > displayItemIndex ? displayItems.get(displayItemIndex).createItemStack() : ItemStack.EMPTY;
 	}
 
 	private abstract static class StorageBlockTintSource implements BlockTintSource {
