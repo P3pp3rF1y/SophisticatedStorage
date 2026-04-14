@@ -83,6 +83,7 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 		this.getSaveHandler = getSaveHandler;
 		renderDataHandler = new RenderDataHandler(renderData,
 				renderData -> {
+					this.renderData = renderData;
 					onSerializeRenderData.run();
 					getSaveHandler.get().run();
 				}, showsCountsAndFillRatios);
