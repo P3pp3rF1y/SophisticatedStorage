@@ -157,6 +157,12 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 				return super.getInventoryForInputOutput();
 			}
 		};
+		storageWrapper.getRenderDataHandler().setRenderUpdateChangeListener(renderDataHandler -> {
+			setUpdateBlockRender();
+			if (level != null && !level.isClientSide()) {
+				WorldHelper.notifyBlockUpdate(this);
+			}
+		});
 		storageWrapper.setUpgradeCachesInvalidatedHandler(this::onUpgradeCachesInvalidated);
 	}
 

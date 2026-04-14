@@ -158,7 +158,7 @@ public abstract class StorageRenderer<T extends StorageBlockEntity, R extends St
 		renderState.displayItems = new ArrayList<>();
 		for (int i = 0; i < displayItems.size(); i++) {
 			RenderData.DisplayItemData displayItem = displayItems.get(i);
-			ItemStack stack = displayItem.item();
+			ItemStack stack = displayItem.createItemStack();
 			if (stack.isEmpty()) {
 				continue;
 			}
