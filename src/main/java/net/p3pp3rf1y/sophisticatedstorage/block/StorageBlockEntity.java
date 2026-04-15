@@ -610,6 +610,9 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		if (direction == null) {
 			return;
 		}
+		if (storageWrapper.isUpgradeHandlerInitializing()) {
+			return;
+		}
 		storageWrapper.getUpgradeHandler().getWrappersThatImplement(INeighborChangeListenerUpgrade.class).forEach(upgrade -> upgrade.onNeighborChange(level, worldPosition, direction));
 	}
 
