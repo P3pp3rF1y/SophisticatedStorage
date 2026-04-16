@@ -49,6 +49,7 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 	private InventoryIOHandler inventoryIOHandler = null;
 	@Nullable
 	private UpgradeHandler upgradeHandler = null;
+	private boolean upgradeHandlerInitializing = false;
 	private ContainerContents contents = new ContainerContents();
 	private final SettingsHandler settingsHandler;
 	private final RenderDataHandler renderDataHandler;
@@ -108,6 +109,7 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 	@Override
 	public UpgradeHandler getUpgradeHandler() {
 		if (upgradeHandler == null) {
+			upgradeHandlerInitializing = true;
 			upgradeHandler = new UpgradeHandler(getNumberOfUpgradeSlots(), this, getContents(), getSaveHandler.get(), () -> {
 				if (inventoryHandler != null) {
 					inventoryHandler.clearListeners();
@@ -130,8 +132,13 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 
 			};
 			upgradeDefaultsHandlers.forEach(this::registerUpgradeDefaultsHandlerInUpgradeHandler);
+			upgradeHandlerInitializing = false;
 		}
 		return upgradeHandler;
+	}
+
+	public boolean isUpgradeHandlerInitializing() {
+		return upgradeHandlerInitializing;
 	}
 
 	private <T extends IUpgradeWrapper> void registerUpgradeDefaultsHandlerInUpgradeHandler(Class<T> wrapperClass, Consumer<? extends IUpgradeWrapper> defaultsHandler) {
