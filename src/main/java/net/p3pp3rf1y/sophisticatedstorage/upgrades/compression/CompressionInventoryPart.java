@@ -177,7 +177,7 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 			}
 			int prevSlot = slot - 1;
 			ItemStack prevStack = parent.getInternalStack(prevSlot);
-			int stackLimit = parent.getBaseCapacity(parent.getResource(prevSlot));
+			int stackLimit = parent.getBaseCapacity(slotDefinitions.get(prevSlot).itemResource());
 			int prevStackCount = toUpdate.containsKey(prevSlot) ? toUpdate.get(prevSlot) : prevStack.getCount();
 			int availableSpace = stackLimit - prevStackCount;
 			int countToInsert = Math.min(availableSpace, slotStack.getCount() / multiplier);
@@ -549,7 +549,7 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 		long calculatedAddition = 0;
 		while (slot <= slotToStartFrom) {
 			calculatedAddition *= getPrevSlotMultiplier(slot);
-			ItemResource slotResource = parent.getResource(slot);
+			ItemResource slotResource = slotDefinitions.get(slot).itemResource();
 			int toSet = (int) Math.min(amountToSet / totalMultiplier, parent.getBaseCapacity(slotResource));
 			calculatedAddition += (toSet - parent.getInternalStack(slot).getCount());
 			calculatedAdditions.put(slot, (int) Math.min(calculatedAddition, Integer.MAX_VALUE));
