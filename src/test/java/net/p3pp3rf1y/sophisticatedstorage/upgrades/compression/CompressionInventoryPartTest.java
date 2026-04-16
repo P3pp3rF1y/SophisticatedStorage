@@ -113,7 +113,7 @@ public class CompressionInventoryPartTest {
 		InventoryHandler inventoryHandler = Mockito.mock(InventoryHandler.class);
 		when(inventoryHandler.getBaseCapacity(any(ItemResource.class))).thenAnswer(i -> {
 			ItemResource resource = i.getArgument(0);
-			int maxStackSize = resource.isEmpty() ? 64 : resource.getMaxStackSize();
+			int maxStackSize = resource.isEmpty() ? baseSlotLimit : resource.getMaxStackSize();
 			int limit = MathHelper.intMaxCappedMultiply(maxStackSize, (baseSlotLimit / 64));
 			int remainder = baseSlotLimit % 64;
 			if (remainder > 0) {
@@ -755,6 +755,45 @@ public class CompressionInventoryPartTest {
 
 		assertEquals(0, firstResult, "Insert result does not equal");
 		assertEquals(32, secondResult, "Insert result does not equal");
+	}
+
+	@Test
+	void fillingMiddleCompressionSlotAndReloadingKeepsCalculatedStacksStable() {
+		Map<Integer, ItemStack> slotStacksInput = Map.of(0, ItemStack.EMPTY, 1, ItemStack.EMPTY, 2, ItemStack.EMPTY);
+		InventoryHandler invHandler = getFilledInventoryHandler(slotStacksInput, 640);
+		CompressionInventoryPart part = initCompressionInventoryPart(invHandler, new SlotRange(0, 3), () -> getMemorySettings(invHandler, Map.of()));
+
+		part.set(1, ItemResource.of(Items.IRON_INGOT), 6400, (slot, resource, amount) -> {
+		});
+
+		Map<Integer, ItemStack> expectedCalculatedStacks = Map.of(
+				0, new ItemStack(Items.IRON_BLOCK, 640),
+				1, new ItemStack(Items.IRON_INGOT, 6400),
+				2, new ItemStack(Items.IRON_NUGGET, 57600)
+		);
+		assertCalculatedStacks(expectedCalculatedStacks, 0, part);
+
+		CompressionInventoryPart reloadedPart = initCompressionInventoryPart(invHandler, new SlotRange(0, 3), () -> getMemorySettings(invHandler, Map.of()));
+		assertCalculatedStacks(expectedCalculatedStacks, 0, reloadedPart);
+	}
+
+	@Test
+	void initializingFromFullMiddleSlotCompactsIntoBlockSlotUsingBlockLimit() {
+		InventoryHandler invHandler = getFilledInventoryHandler(
+				Map.of(0, ItemStack.EMPTY, 1, new ItemStack(Items.IRON_INGOT, 6400), 2, ItemStack.EMPTY),
+				640
+		);
+
+		CompressionInventoryPart part = initCompressionInventoryPart(invHandler, new SlotRange(0, 3), () -> getMemorySettings(invHandler, Map.of()));
+
+		assertCalculatedStacks(Map.of(
+				0, new ItemStack(Items.IRON_BLOCK, 640),
+				1, new ItemStack(Items.IRON_INGOT, 6400),
+				2, new ItemStack(Items.IRON_NUGGET, 57600)
+		), 0, part);
+		assertStackEquals(new ItemStack(Items.IRON_BLOCK, 640), invHandler.getInternalStack(0), "Block slot internal stack doesn't match");
+		assertStackEquals(new ItemStack(Items.IRON_INGOT, 640), invHandler.getInternalStack(1), "Ingot slot internal stack doesn't match");
+		assertStackEquals(ItemStack.EMPTY, invHandler.getInternalStack(2), "Nugget slot internal stack doesn't match");
 	}
 
 	@ParameterizedTest
