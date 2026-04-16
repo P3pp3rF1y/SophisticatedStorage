@@ -203,7 +203,11 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 		if (direction == null) {
 			return;
 		}
-		getMainStorageWrapper().getUpgradeHandler().getWrappersThatImplement(INeighborChangeListenerUpgrade.class).forEach(upgrade -> upgrade.onNeighborChange(level, worldPosition, direction));
+		StorageWrapper mainStorageWrapper = getMainStorageWrapper();
+		if (mainStorageWrapper.isUpgradeHandlerInitializing()) {
+			return;
+		}
+		mainStorageWrapper.getUpgradeHandler().getWrappersThatImplement(INeighborChangeListenerUpgrade.class).forEach(upgrade -> upgrade.onNeighborChange(level, worldPosition, direction));
 	}
 
 	private void moveOtherPartStacksToIt() {
