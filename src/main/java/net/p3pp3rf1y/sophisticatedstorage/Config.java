@@ -21,6 +21,7 @@ import net.p3pp3rf1y.sophisticatedcore.upgrades.stack.StackUpgradeConfig;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.stack.StackUpgradeItem;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.voiding.VoidUpgradeConfig;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.xppump.XpPumpUpgradeConfig;
+import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageTranslationHelper;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.block.ChestBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.block.LimitedBarrelBlockEntity;
@@ -37,6 +38,7 @@ public class Config {
 	}
 
 	private static final String MAX_UPGRADES_MATCHER = "([a-z0-9_]+\\|[a-z0-9_/.-]+\\|\\d+)";
+	private static final String REGISTRY_NAME_MATCHER = "([a-z0-9_.-]+:[a-z0-9_/.-]+)";
 
 	public static final Client CLIENT;
 	public static final ModConfigSpec CLIENT_SPEC;
@@ -79,7 +81,7 @@ public class Config {
 
 			showHigherTierTintedVariants = builder.comment("Determines whether JEI and creative tab will show tinted storage items for iron and higher tiers. Can help with easily removing many of these items from there.")
 					.worldRestart().define("showHigherTierTintedVariants", true);
-			showSingleWoodVariantOnly = builder.comment("Determines whether JEI and creative tab will show only single wood variant of storage item per tier. Makes creative tab and .")
+			showSingleWoodVariantOnly = builder.comment("Determines whether JEI and creative tab will show only one wood variant of each storage item tier. Makes creative tab and JEI lists smaller.")
 					.worldRestart().define("showSingleWoodVariantOnly", false);
 
 			builder.pop();
@@ -300,7 +302,7 @@ public class Config {
 					)
 			));
 
-			tooManyItemEntityDrops = builder.comment("Threshold of number of item entities dropped from chest / barrel above which break is canceled (unless shift key is pressed) and message is displayed explaining to player many drops and packing tape use").defineInRange("tooManyItemEntityDrops", 200, 0, 1000);
+			tooManyItemEntityDrops = builder.comment("Threshold of item entities dropped from chest / barrel above which breaking is canceled (unless shift is pressed) and a message explains there would be many drops and packing tape should be used").defineInRange("tooManyItemEntityDrops", 200, 0, 1000);
 			limitedBarrelCountDyeingEnabled = builder.comment("Determines if limited barrel counts can be dyed to change their color").define("limitedBarrelCountDyeingEnabled", true);
 			controllerRange = builder.comment("Defines the maximum range of the controller at which it connects storage blocks to multiblock").defineInRange("controllerRange", 15, 4, 64);
 			builder.pop();
@@ -311,7 +313,7 @@ public class Config {
 			public final ModConfigSpec.IntValue upgradeSlotCount;
 
 			public StorageConfig(ModConfigSpec.Builder builder, String storagePrefix, int inventorySlotCountDefault, int upgradeSlotCountDefault) {
-				builder.comment(storagePrefix + " Settings").push(storagePrefix.replace(" ", ""));
+				builder.comment(storagePrefix + " Settings").translation(StorageTranslationHelper.INSTANCE.translConfig(toConfigKey(storagePrefix))).push(storagePrefix.replace(" ", ""));
 				inventorySlotCount = builder.comment("Number of inventory slots in the storage").defineInRange("inventorySlotCount", inventorySlotCountDefault, 1, 180);
 				upgradeSlotCount = builder.comment("Number of upgrade slots in the storage").defineInRange("upgradeSlotCount", upgradeSlotCountDefault, 0, 10);
 				builder.pop();
@@ -331,7 +333,7 @@ public class Config {
 			public final ModConfigSpec.IntValue upgradeSlotCount;
 
 			public LimitedBarrelConfig(ModConfigSpec.Builder builder, String storagePrefix, int baseSlotLimitMultiplierDefault, int upgradeSlotCountDefault) {
-				builder.comment(storagePrefix + " Settings").push(storagePrefix.replace(" ", ""));
+				builder.comment(storagePrefix + " Settings").translation(StorageTranslationHelper.INSTANCE.translConfig(toConfigKey(storagePrefix))).push(storagePrefix.replace(" ", ""));
 				baseSlotLimitMultiplier = builder.comment("Multiplier that's used to calculate base slot limit").defineInRange("baseSlotLimitMultiplier", baseSlotLimitMultiplierDefault, 1, 8192);
 				upgradeSlotCount = builder.comment("Number of upgrade slots in the storage").defineInRange("upgradeSlotCount", upgradeSlotCountDefault, 0, 10);
 				builder.pop();
@@ -346,15 +348,39 @@ public class Config {
 			}
 		}
 
+		private static String toConfigKey(String storagePrefix) {
+			String[] parts = storagePrefix.split(" ");
+			StringBuilder key = new StringBuilder();
+			for (int i = 0; i < parts.length; i++) {
+				String part = switch (parts[i]) {
+					case "IV" -> "4";
+					case "III" -> "3";
+					case "II" -> "2";
+					case "I" -> "1";
+					default -> parts[i];
+				};
+
+				if (i == 0) {
+					key.append(part.substring(0, 1).toLowerCase(Locale.ROOT)).append(part.substring(1));
+				} else if (Character.isDigit(part.charAt(0))) {
+					key.append(part);
+				} else {
+					key.append(part.substring(0, 1).toUpperCase(Locale.ROOT)).append(part.substring(1));
+				}
+			}
+			return key.toString();
+		}
+
 		public static class ShulkerBoxDisallowedItems {
 			private final ModConfigSpec.BooleanValue containerItemsDisallowed;
-			private final ModConfigSpec.ConfigValue<List<String>> disallowedItemsList;
+			private final ModConfigSpec.ConfigValue<List<? extends String>> disallowedItemsList;
 			private boolean initialized = false;
 			private Set<Item> disallowedItemsSet = null;
 
 			ShulkerBoxDisallowedItems(ModConfigSpec.Builder builder) {
 				builder.push("shulkerBoxDisallowedItems");
-				disallowedItemsList = builder.comment("List of items that are not allowed to be put in shulkerboxes - e.g. \"minecraft:bundle\"").define("disallowedItems", new ArrayList<>());
+				disallowedItemsList = builder.comment("List of items that are not allowed to be put in shulker boxes - e.g. \"minecraft:bundle\"")
+						.defineListAllowEmpty("disallowedItems", ArrayList::new, () -> "minecraft:bundle", mapping -> mapping instanceof String str && str.matches(REGISTRY_NAME_MATCHER));
 				containerItemsDisallowed = builder.comment("Determines if container items (those that override canFitInsideContainerItems to false) are able to fit in shulker boxes")
 						.define("containerItemsDisallowed", false);
 				builder.pop();
