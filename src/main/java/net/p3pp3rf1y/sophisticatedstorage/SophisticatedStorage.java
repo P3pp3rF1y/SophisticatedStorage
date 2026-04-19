@@ -4,9 +4,12 @@ import net.minecraft.resources.Identifier;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.neoforge.client.gui.ConfigurationScreen;
+import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.p3pp3rf1y.sophisticatedstorage.client.ClientEventHandler;
 import net.p3pp3rf1y.sophisticatedstorage.common.CommonEventHandler;
 import net.p3pp3rf1y.sophisticatedstorage.data.DataGenerators;
@@ -25,6 +28,9 @@ public class SophisticatedStorage {
 		container.registerConfig(ModConfig.Type.SERVER, Config.SERVER_SPEC);
 		container.registerConfig(ModConfig.Type.CLIENT, Config.CLIENT_SPEC);
 		container.registerConfig(ModConfig.Type.COMMON, Config.COMMON_SPEC);
+		if (dist == Dist.CLIENT && !ModList.get().isLoaded("configured")) {
+			container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
+		}
 		Config.SERVER.initListeners(modBus);
 		commonEventHandler.registerHandlers();
 		ModCompat.register();
