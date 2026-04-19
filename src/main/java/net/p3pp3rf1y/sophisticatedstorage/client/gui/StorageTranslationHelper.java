@@ -12,6 +12,10 @@ public class StorageTranslationHelper extends TranslationHelper {
 		super(SophisticatedStorage.MOD_ID);
 	}
 
+	public String translConfig(String configKey) {
+		return SophisticatedStorage.MOD_ID + ".configuration." + configKey;
+	}
+
 	public Component translItemOverlayMessage(Item item, String overlayMessage, Object... params) {
 		return Component.translatable(item.getDescriptionId() + ".overlay." + overlayMessage, params);
 	}

@@ -20,7 +20,7 @@ import java.util.regex.Pattern;
 public class CompressionUpgradeConfig {
 	private static final String DECOMPRESSIBLE_MATCHER = "([a-z0-9_.-]+:[a-z0-9_/.-]+)=(\\d+)x([a-z0-9_.-]+:[a-z0-9_/.-]+)";
 	public final ModConfigSpec.IntValue maxNumberOfSlots;
-	public final ModConfigSpec.ConfigValue<List<String>> additionalDecompressibleItems;
+	public final ModConfigSpec.ConfigValue<List<? extends String>> additionalDecompressibleItems;
 
 	@Nullable
 	private Map<Item, RecipeHelper.UncompactingResult> additionalDecompressibleItemsMap = null;
@@ -29,10 +29,8 @@ public class CompressionUpgradeConfig {
 		builder.comment("Compression Upgrade Settings").push("compressionUpgrade");
 		maxNumberOfSlots = builder.comment("Defines how many slots at a maximum compression upgrade is able to use").defineInRange("maxNumberOfSlots", 5, 3, 9);
 		additionalDecompressibleItems = builder.comment("List of items that can be decompressed by compression upgrade and their results. "
-				+ "Item registry names are expected here in format of \"mod:itemBeingDecompressed=Nxmod:itemDecompressResult").define("additionalDecompressibleItems", getDecompressibleItemsDefault(), entries -> {
-			List<String> decompressibleItems = (List<String>) entries;
-			return decompressibleItems != null && decompressibleItems.stream().allMatch(itemName -> itemName.matches(DECOMPRESSIBLE_MATCHER));
-		});
+				+ "Item registry names are expected here in format of \"mod:itemBeingDecompressed=Nxmod:itemDecompressResult\"")
+				.defineList("additionalDecompressibleItems", CompressionUpgradeConfig::getDecompressibleItemsDefault, () -> "minecraft:glowstone=4xminecraft:glowstone_dust", itemName -> itemName instanceof String str && str.matches(DECOMPRESSIBLE_MATCHER));
 		builder.pop();
 	}
 
