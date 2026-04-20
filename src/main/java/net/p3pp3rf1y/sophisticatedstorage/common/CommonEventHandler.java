@@ -16,7 +16,7 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
-import net.neoforged.neoforge.event.level.BlockEvent;
+import net.neoforged.neoforge.event.level.block.BreakBlockEvent;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryHandler;
@@ -116,7 +116,7 @@ public class CommonEventHandler {
 		}
 	}
 
-	private void handleBreakStorageWithInfinityUpgrade(BlockEvent.BreakEvent event) {
+	private void handleBreakStorageWithInfinityUpgrade(BreakBlockEvent event) {
 		Player player = event.getPlayer();
 
 		if (!(event.getState().getBlock() instanceof StorageBlockBase)) {
@@ -127,13 +127,16 @@ public class CommonEventHandler {
 				.ifPresent(storageBlockEntity -> {
 					if (storageBlockEntity.getStorageWrapper().getUpgradeHandler().getTypeWrappers(InfinityUpgradeItem.TYPE).stream().anyMatch(w -> !w.checkPermission(player))) {
 						event.setCanceled(true);
-						player.sendOverlayMessage(StorageTranslationHelper.INSTANCE.translStatusMessage("infinity_upgrade_only_admin_break").withStyle(ChatFormatting.RED));
+						if (!event.getLevel().isClientSide()) {
+							event.setNotifyClient(true);
+							player.sendOverlayMessage(StorageTranslationHelper.INSTANCE.translStatusMessage("infinity_upgrade_only_admin_break").withStyle(ChatFormatting.RED));
+						}
 						scheduleRenderUpdate(storageBlockEntity, event.getLevel(), event.getPos(), event.getState());
 					}
 				});
 	}
 
-	private void handleTooManyDropsBreak(BlockEvent.BreakEvent event) {
+	private void handleTooManyDropsBreak(BreakBlockEvent event) {
 		Player player = event.getPlayer();
 		if (!(event.getState().getBlock() instanceof WoodStorageBlockBase) || player.isShiftKeyDown()) {
 			return;
@@ -167,6 +170,9 @@ public class CommonEventHandler {
 
 			if (droppedItemEntityCount.get() > Config.SERVER.tooManyItemEntityDrops.get()) {
 				event.setCanceled(true);
+				if (!event.getLevel().isClientSide()) {
+					event.setNotifyClient(true);
+				}
 				ItemBase packingTapeItem = ModItems.PACKING_TAPE.get();
 				Component packingTapeItemName = packingTapeItem.getName(new ItemStack(packingTapeItem)).copy().withStyle(ChatFormatting.GREEN);
 				BlockState state = event.getState();

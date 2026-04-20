@@ -408,7 +408,7 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 			return;
 		}
 		isDroppingContents = true;
-		InventoryHelper.dropResources(storageWrapper.getInventoryHandler(), level, worldPosition);
+		InventoryHelper.dropItems(storageWrapper.getInventoryHandler(), level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ());
 
 		InventoryHelper.dropResources(storageWrapper.getUpgradeHandler(), level, worldPosition);
 		isDroppingContents = false;
