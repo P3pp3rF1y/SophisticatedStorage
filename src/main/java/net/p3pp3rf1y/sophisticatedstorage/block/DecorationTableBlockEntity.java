@@ -11,6 +11,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.FastColor;
+import net.minecraft.world.Clearable;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -33,7 +34,7 @@ import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-public class DecorationTableBlockEntity extends BlockEntity {
+public class DecorationTableBlockEntity extends BlockEntity implements Clearable {
 	public static final int TOP_INNER_TRIM_SLOT = 0;
 	public static final int TOP_TRIM_SLOT = 1;
 	public static final int SIDE_TRIM_SLOT = 2;
@@ -447,6 +448,25 @@ public class DecorationTableBlockEntity extends BlockEntity {
 		InventoryHelper.dropItems(decorativeBlocks, level, worldPosition);
 		InventoryHelper.dropItems(dyes, level, worldPosition);
 		InventoryHelper.dropItems(storageBlock, level, worldPosition);
+	}
+
+	@Override
+	public void clearContent() {
+		clearItemHandler(decorativeBlocks);
+		clearItemHandler(dyes);
+		clearItemHandler(storageBlock);
+		result = ItemStack.EMPTY;
+		missingDyes.clear();
+		setChanged();
+		if (level != null && !level.isClientSide) {
+			WorldHelper.notifyBlockUpdate(this);
+		}
+	}
+
+	private static void clearItemHandler(ItemStackHandler itemHandler) {
+		for (int slot = 0; slot < itemHandler.getSlots(); slot++) {
+			itemHandler.setStackInSlot(slot, ItemStack.EMPTY);
+		}
 	}
 
 	public record TintDecorationResult(ItemStack result, Map<TagKey<Item>, Integer> requiredDyeParts) {
