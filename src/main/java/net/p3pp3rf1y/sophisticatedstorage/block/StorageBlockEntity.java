@@ -12,6 +12,7 @@ import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.Clearable;
 import net.minecraft.world.Nameable;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -41,7 +42,7 @@ import net.p3pp3rf1y.sophisticatedstorage.upgrades.INeighborChangeListenerUpgrad
 import javax.annotation.Nullable;
 import java.util.*;
 
-public abstract class StorageBlockEntity extends BlockEntity implements IControllableStorage, ILinkable, ILockable, Nameable, ITierDisplay, IUpgradeDisplay {
+public abstract class StorageBlockEntity extends BlockEntity implements IControllableStorage, ILinkable, ILockable, Nameable, ITierDisplay, IUpgradeDisplay, Clearable {
 	public static final String STORAGE_WRAPPER = "storageWrapper";
 	public static final String UPDATE_BLOCK_RENDER_TAG = "updateBlockRender";
 	private final StorageWrapper storageWrapper;
@@ -394,6 +395,18 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 
 		InventoryHelper.dropItems(storageWrapper.getUpgradeHandler(), level, worldPosition);
 		isDroppingContents = false;
+	}
+
+	@Override
+	public void clearContent() {
+		for (int slot = 0; slot < storageWrapper.getInventoryHandler().getSlots(); slot++) {
+			storageWrapper.getInventoryHandler().setStackInSlot(slot, ItemStack.EMPTY);
+		}
+		for (int slot = 0; slot < storageWrapper.getUpgradeHandler().getSlots(); slot++) {
+			storageWrapper.getUpgradeHandler().setStackInSlot(slot, ItemStack.EMPTY);
+		}
+		setChanged();
+		invalidateCapabilitiesAndControllerCache();
 	}
 
 	public void setCustomName(Component customName) {
