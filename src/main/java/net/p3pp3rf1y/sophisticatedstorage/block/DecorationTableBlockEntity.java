@@ -11,6 +11,7 @@ import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.Clearable;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -41,7 +42,7 @@ import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-public class DecorationTableBlockEntity extends BlockEntity {
+public class DecorationTableBlockEntity extends BlockEntity implements Clearable {
 	private static final Codec<Map<PartSlot, Boolean>> SLOT_INHERITANCE_CODEC =
 			Codec.unboundedMap(PartSlot.CODEC, Codec.BOOL);
 
@@ -456,6 +457,25 @@ public class DecorationTableBlockEntity extends BlockEntity {
 		InventoryHelper.dropResources(decorativeBlocks, level, worldPosition);
 		InventoryHelper.dropResources(dyes, level, worldPosition);
 		InventoryHelper.dropResources(storageBlock, level, worldPosition);
+	}
+
+	@Override
+	public void clearContent() {
+		clearResourceHandler(decorativeBlocks);
+		clearResourceHandler(dyes);
+		clearResourceHandler(storageBlock);
+		result = ItemStack.EMPTY;
+		missingDyes.clear();
+		setChanged();
+		if (level != null && !level.isClientSide()) {
+			WorldHelper.notifyBlockUpdate(this);
+		}
+	}
+
+	private static void clearResourceHandler(ItemStacksResourceHandler itemHandler) {
+		for (int slot = 0; slot < itemHandler.size(); slot++) {
+			itemHandler.set(slot, ItemResource.EMPTY, 0);
+		}
 	}
 
 	@Override
