@@ -19,6 +19,14 @@ if (findProject(':SophisticatedCore') != null) {
     evaluationDependsOn(':SophisticatedCore')
 }
 
+def storageRunDataTaskNames = [':SophisticatedStorage:runData', 'SophisticatedStorage:runData']
+if (gradle.startParameter.taskNames.any { it in storageRunDataTaskNames }) {
+    def prepTaskNames = [':Reliquary:prepareRunDataCompile', ':SophisticatedCore:prepareRunDataCompile', ':SophisticatedBackpacks:prepareRunDataCompile']
+    if (!prepTaskNames.every { prepTaskName -> gradle.startParameter.taskNames.contains(prepTaskName) }) {
+        gradle.startParameter.setTaskNames(prepTaskNames + gradle.startParameter.taskNames)
+    }
+}
+
 repositories {
     mavenCentral()
     maven { url = "https://modmaven.dev/" }
@@ -138,6 +146,14 @@ sourceSets.main.resources {
     srcDir 'src/generated/resources'
 }
 
+tasks.matching { it.name in ['prepareRunDataCompile', 'runData'] }.configureEach {
+	[':Reliquary', ':SophisticatedCore', ':SophisticatedBackpacks'].each { siblingProjectPath ->
+		if (findProject(siblingProjectPath) != null) {
+			dependsOn "${siblingProjectPath}:prepareRunDataCompile"
+		}
+	}
+}
+
 dependencies {
     minecraft "net.neoforged:forge:${minecraft_version}-${neo_version}"
 
@@ -149,8 +165,11 @@ dependencies {
     compileOnly fg.deobf("curse.maven:rubidium-574856:${rubidium_cf_file_id}")
     compileOnly fg.deobf("curse.maven:jade-324717:${jade_cf_file_id}")
     compileOnly fg.deobf("curse.maven:chipped-456956:${chipped_cf_file_id}")
+    runtimeOnly fg.deobf("curse.maven:chipped-456956:${chipped_cf_file_id}")
     compileOnly fg.deobf("curse.maven:athena-841890:${athena_cf_file_id}")
+    runtimeOnly fg.deobf("curse.maven:athena-841890:${athena_cf_file_id}")
     compileOnly fg.deobf("curse.maven:resourcefullib-570073:${resourcefullib_cf_file_id}")
+    runtimeOnly fg.deobf("curse.maven:resourcefullib-570073:${resourcefullib_cf_file_id}")
 
     compileOnly fg.deobf("curse.maven:quark-243121:${quark_cf_file_id}")
     compileOnly fg.deobf("curse.maven:zeta-968868:${zeta_cf_file_id}")
