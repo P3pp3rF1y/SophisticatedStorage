@@ -75,7 +75,7 @@ public class StorageInputBlockEntity extends StorageIOBlockEntity {
 
 		@Override
 		public int insert(int slot, ItemResource itemResource, int amount, TransactionContext transaction) {
-			return 0;
+			return insert(itemResource, amount, transaction);
 		}
 
 		@Override
