@@ -133,8 +133,6 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 				if (!level.isClientSide() && !be.isBeingUpgraded() && !be.isPacked()) {
 					if (be.isMainChest() && state.getBlock() instanceof ChestBlock chestBlock) {
 						be.dropSecondPartContents(chestBlock, facingPos);
-					} else if (!be.isMainChest()) {
-						be.removeDoubleMainPos();
 					}
 				}
 			});
@@ -259,11 +257,8 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 	@Override
 	protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
 		return WorldHelper.getBlockEntity(level, pos, ChestBlockEntity.class).map(b -> {
-			BlockPos mainChestPos;
-			if (!b.isMainChest()) {
-				mainChestPos = pos.relative(getConnectedDirection(state));
-				b = WorldHelper.getBlockEntity(level, mainChestPos, ChestBlockEntity.class).orElse(b);
-			}
+			BlockPos mainChestPos = b.getMainPos();
+			b = WorldHelper.getBlockEntity(level, mainChestPos, ChestBlockEntity.class).orElse(b);
 
 			if (b.isPacked()) {
 				return ItemInteractionResult.FAIL;
@@ -286,13 +281,8 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 		}
 
 		return WorldHelper.getBlockEntity(level, pos, ChestBlockEntity.class).map(b -> {
-			BlockPos mainChestPos;
-			if (!b.isMainChest()) {
-				mainChestPos = pos.relative(getConnectedDirection(state));
-				b = WorldHelper.getBlockEntity(level, mainChestPos, ChestBlockEntity.class).orElse(b);
-			} else {
-				mainChestPos = pos;
-			}
+			BlockPos mainChestPos = b.getMainPos();
+			b = WorldHelper.getBlockEntity(level, mainChestPos, ChestBlockEntity.class).orElse(b);
 
 			if (b.isPacked()) {
 				return InteractionResult.PASS;
@@ -321,7 +311,6 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 			level.setBlock(otherPartPos, state.setValue(TYPE, ChestType.LEFT), 3);
 			level.getBlockEntity(otherPartPos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get()).ifPresent(be -> {
 				setRenderBlockRenderProperties(stack, be);
-				be.setMainPos(pos);
 				be.tryToAddToController();
 			});
 		}
@@ -434,10 +423,8 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 	@SuppressWarnings("deprecation")
 	@Override
 	public BlockState mirror(BlockState state, Mirror mirror) {
-		if (state.getValue(TYPE) != ChestType.SINGLE) {
-			return state;
-		}
-		return state.rotate(mirror.getRotation(state.getValue(FACING)));
+		BlockState rotated = state.rotate(mirror.getRotation(state.getValue(FACING)));
+		return mirror == Mirror.NONE ? rotated : rotated.setValue(TYPE, rotated.getValue(TYPE).getOpposite());
 	}
 
 	@Override
@@ -516,9 +503,6 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 
 	@Override
 	protected BlockState rotate(BlockState state, Rotation rotation) {
-		if (state.getValue(TYPE) != ChestType.SINGLE) {
-			return state;
-		}
 		return state.setValue(FACING, rotation.rotate(state.getValue(FACING)));
 	}
 
