@@ -23,6 +23,7 @@ import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -701,6 +702,36 @@ public class CompressionInventoryPartTest {
 	}
 
 	@Test
+	void insertingIntoEmptyCompressionPartRefreshesParentAfterCalculatedStacksExist() {
+		InventoryHandler invHandler = getFilledInventoryHandler(Map.of(0, ItemStack.EMPTY, 1, ItemStack.EMPTY, 2, ItemStack.EMPTY), 64);
+		MemorySettingsCategory memorySettings = getMemorySettings(invHandler, Map.of());
+		Supplier<MemorySettingsCategory> memorySettingsSupplier = () -> memorySettings;
+
+		CompressionInventoryPart part = new CompressionInventoryPart(invHandler, new SlotRange(0, 3), memorySettingsSupplier) {
+			@Override
+			Optional<RecipeHelper.UncompactingResult> getDecompressionResultFromConfig(Item currentItem) {
+				return Optional.empty();
+			}
+		};
+		part.onInit();
+		clearInvocations(invHandler);
+
+		try (Transaction tx = Transaction.openRoot()) {
+			part.insert(0, ItemResource.of(Items.IRON_BLOCK), 1, tx, (slot, resource, amount, transaction) -> amount);
+			tx.commit();
+		}
+
+		InOrder inOrder = inOrder(invHandler);
+		inOrder.verify(invHandler, atLeastOnce()).setStackInSlotInternal(anyInt(), any(ItemStack.class));
+		inOrder.verify(invHandler).onFilterItemsChanged();
+		assertCalculatedStacks(Map.of(
+				0, new ItemStack(Items.IRON_BLOCK, 1),
+				1, new ItemStack(Items.IRON_INGOT, 9),
+				2, new ItemStack(Items.IRON_NUGGET, 81)
+		), 0, part);
+	}
+
+	@Test
 	void extractItemAllowsDifferentToBeInsertedIfExtractedFully() {
 		int originalAmount = 63;
 		Map<Integer, ItemStack> slotStacksInput = Map.of(0, new ItemStack(Items.IRON_BLOCK, originalAmount), 1, ItemStack.EMPTY, 2, ItemStack.EMPTY);
@@ -755,6 +786,151 @@ public class CompressionInventoryPartTest {
 
 		assertEquals(0, firstResult, "Insert result does not equal");
 		assertEquals(32, secondResult, "Insert result does not equal");
+	}
+
+	@Test
+	void insertingIntoRememberedCompressionSlotRefreshesParentAfterCalculatedStacksExist() {
+		InventoryHandler invHandler = getFilledInventoryHandler(Map.of(0, ItemStack.EMPTY, 1, ItemStack.EMPTY, 2, ItemStack.EMPTY), 64);
+		MemorySettingsCategory memorySettings = getMemorySettings(invHandler, Map.of());
+		when(memorySettings.getSlotFilterStack(1, true)).thenReturn(Optional.of(new ItemStack(Items.IRON_BLOCK)));
+
+		CompressionInventoryPart part = initCompressionInventoryPart(invHandler, new SlotRange(0, 3), () -> memorySettings);
+		clearInvocations(invHandler);
+
+		try (Transaction tx = Transaction.openRoot()) {
+			part.insert(1, ItemResource.of(Items.IRON_BLOCK), 1, tx, (slot, resource, amount, transaction) -> amount);
+			tx.commit();
+		}
+
+		InOrder inOrder = inOrder(invHandler);
+		inOrder.verify(invHandler, atLeastOnce()).setStackInSlotInternal(anyInt(), any(ItemStack.class));
+		inOrder.verify(invHandler).onFilterItemsChanged();
+		assertCalculatedStacks(Map.of(
+				0, ItemStack.EMPTY,
+				1, new ItemStack(Items.IRON_BLOCK, 1),
+				2, new ItemStack(Items.IRON_INGOT, 9)
+		), 0, part);
+	}
+
+	@Test
+	void insertingWithoutChangingControllerVisibleCompressionStateDoesNotRefreshParent() {
+		InventoryHandler invHandler = getFilledInventoryHandler(Map.of(0, new ItemStack(Items.IRON_BLOCK, 1), 1, ItemStack.EMPTY, 2, ItemStack.EMPTY), 64);
+		CompressionInventoryPart part = initCompressionInventoryPart(invHandler, new SlotRange(0, 3), () -> getMemorySettings(invHandler, Map.of()));
+		clearInvocations(invHandler);
+
+		try (Transaction tx = Transaction.openRoot()) {
+			part.insert(0, ItemResource.of(Items.IRON_BLOCK), 1, tx, (slot, resource, amount, transaction) -> amount);
+			tx.commit();
+		}
+
+		verify(invHandler, never()).onFilterItemsChanged();
+		assertCalculatedStacks(Map.of(
+				0, new ItemStack(Items.IRON_BLOCK, 2),
+				1, new ItemStack(Items.IRON_INGOT, 18),
+				2, new ItemStack(Items.IRON_NUGGET, 162)
+		), 0, part);
+	}
+
+	@Test
+	void insertingAcrossCompressionCapacityBoundaryRefreshesParent() {
+		InventoryHandler invHandler = getFilledInventoryHandler(Map.of(0, new ItemStack(Items.IRON_BLOCK, 63), 1, ItemStack.EMPTY, 2, ItemStack.EMPTY), 64);
+		CompressionInventoryPart part = initCompressionInventoryPart(invHandler, new SlotRange(0, 3), () -> getMemorySettings(invHandler, Map.of()));
+		clearInvocations(invHandler);
+
+		try (Transaction tx = Transaction.openRoot()) {
+			part.insert(0, ItemResource.of(Items.IRON_BLOCK), 1, tx, (slot, resource, amount, transaction) -> amount);
+			tx.commit();
+		}
+
+		verify(invHandler).onFilterItemsChanged();
+		assertCalculatedStacks(Map.of(
+				0, new ItemStack(Items.IRON_BLOCK, 64),
+				1, new ItemStack(Items.IRON_INGOT, 576),
+				2, new ItemStack(Items.IRON_NUGGET, 5184)
+		), 0, part);
+	}
+
+	@Test
+	void extractingNuggetFromBlockAndInsertingItBackKeepsCompressionStateStable() {
+		InventoryHandler invHandler = getFilledInventoryHandler(Map.of(0, new ItemStack(Items.IRON_BLOCK, 1), 1, ItemStack.EMPTY, 2, ItemStack.EMPTY), 64);
+		CompressionInventoryPart part = initCompressionInventoryPart(invHandler, new SlotRange(0, 3), () -> getMemorySettings(invHandler, Map.of()));
+		clearInvocations(invHandler);
+
+		int extracted;
+		try (Transaction tx = Transaction.openRoot()) {
+			extracted = part.extract(2, ItemResource.of(Items.IRON_NUGGET), 1, tx, (slot, resource, amount, transaction) -> amount);
+			tx.commit();
+		}
+
+		assertEquals(1, extracted, "Extract result doesn't match");
+		verify(invHandler).onFilterItemsChanged();
+		assertCalculatedStacks(Map.of(
+				0, ItemStack.EMPTY,
+				1, new ItemStack(Items.IRON_INGOT, 8),
+				2, new ItemStack(Items.IRON_NUGGET, 80)
+		), 0, part);
+		assertInternalStacks(Map.of(
+				0, ItemStack.EMPTY,
+				1, new ItemStack(Items.IRON_INGOT, 8),
+				2, new ItemStack(Items.IRON_NUGGET, 8)
+		), invHandler);
+
+		clearInvocations(invHandler);
+
+		int inserted;
+		try (Transaction tx = Transaction.openRoot()) {
+			inserted = part.insert(2, ItemResource.of(Items.IRON_NUGGET), 1, tx, (slot, resource, amount, transaction) -> amount);
+			tx.commit();
+		}
+
+		assertEquals(1, inserted, "Insert result doesn't match");
+		verify(invHandler).onFilterItemsChanged();
+		assertCalculatedStacks(Map.of(
+				0, new ItemStack(Items.IRON_BLOCK, 1),
+				1, new ItemStack(Items.IRON_INGOT, 9),
+				2, new ItemStack(Items.IRON_NUGGET, 81)
+		), 0, part);
+		assertInternalStacks(Map.of(
+				0, new ItemStack(Items.IRON_BLOCK, 1),
+				1, ItemStack.EMPTY,
+				2, ItemStack.EMPTY
+		), invHandler);
+	}
+
+	@Test
+	void simulatedInsertDoesNotRefreshParent() {
+		InventoryHandler invHandler = getFilledInventoryHandler(Map.of(0, ItemStack.EMPTY, 1, ItemStack.EMPTY, 2, ItemStack.EMPTY), 64);
+		CompressionInventoryPart part = initCompressionInventoryPart(invHandler, new SlotRange(0, 3), () -> getMemorySettings(invHandler, Map.of()));
+		clearInvocations(invHandler);
+
+		try (Transaction tx = Transaction.openRoot()) {
+			part.insert(0, ItemResource.of(Items.IRON_BLOCK), 1, tx, (slot, resource, amount, transaction) -> amount);
+		}
+
+		verify(invHandler, never()).onFilterItemsChanged();
+		assertCalculatedStacks(Map.of(
+				0, ItemStack.EMPTY,
+				1, ItemStack.EMPTY,
+				2, ItemStack.EMPTY
+		), 0, part);
+	}
+
+	@Test
+	void simulatedExtractDoesNotRefreshParent() {
+		InventoryHandler invHandler = getFilledInventoryHandler(Map.of(0, new ItemStack(Items.IRON_BLOCK, 1), 1, ItemStack.EMPTY, 2, ItemStack.EMPTY), 64);
+		CompressionInventoryPart part = initCompressionInventoryPart(invHandler, new SlotRange(0, 3), () -> getMemorySettings(invHandler, Map.of()));
+		clearInvocations(invHandler);
+
+		try (Transaction tx = Transaction.openRoot()) {
+			part.extract(0, ItemResource.of(Items.IRON_BLOCK), 1, tx, (slot, resource, amount, transaction) -> amount);
+		}
+
+		verify(invHandler, never()).onFilterItemsChanged();
+		assertCalculatedStacks(Map.of(
+				0, new ItemStack(Items.IRON_BLOCK, 1),
+				1, new ItemStack(Items.IRON_INGOT, 9),
+				2, new ItemStack(Items.IRON_NUGGET, 81)
+		), 0, part);
 	}
 
 	@Test
