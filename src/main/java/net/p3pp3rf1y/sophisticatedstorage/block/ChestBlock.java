@@ -179,8 +179,9 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 	public BlockState getStateForPlacement(BlockPlaceContext context) {
 		FluidState fluidstate = context.getLevel().getFluidState(context.getClickedPos());
 		ItemStack chestBeingPlaced = context.getItemInHand();
+		boolean isDoubleChest = ChestBlockItem.isDoubleChest(chestBeingPlaced);
 
-		if (ChestBlockItem.isDoubleChest(chestBeingPlaced)) {
+		if (isDoubleChest) {
 			BlockPos otherPartPos = context.getClickedPos().relative(context.getHorizontalDirection().getClockWise());
 			Level level = context.getLevel();
 			if (!level.getBlockState(otherPartPos).canBeReplaced(context) || !level.getWorldBorder().isWithinBounds(otherPartPos)) {
@@ -194,14 +195,15 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 				StorageBlockItem.getMainColorFromComponentHolder(chestBeingPlaced).orElse(-1),
 				StorageBlockItem.getAccentColorFromComponentHolder(chestBeingPlaced).orElse(-1),
 				WoodStorageBlockItem.getWoodType(chestBeingPlaced).orElse(WoodType.ACACIA),
-				!wrapper.hasContents() || ResourceHandlerUtil.isEmpty((ResourceHandler<ItemResource>) wrapper.getUpgradeHandler()));
+				!wrapper.hasContents() || ResourceHandlerUtil.isEmpty(wrapper.getUpgradeHandler()),
+				isDoubleChest);
 	}
 
-	private BlockState getStateForPlacement(BlockPlaceContext context, Direction direction, FluidState fluidstate, int mainColor, int accentColor, WoodType woodType, boolean itemHasNoUpgrades) {
+	private BlockState getStateForPlacement(BlockPlaceContext context, Direction direction, FluidState fluidstate, int mainColor, int accentColor, WoodType woodType, boolean itemHasNoUpgrades, boolean isDoubleChest) {
 		ChestType chestType = ChestType.SINGLE;
 		Direction clickedFace = context.getClickedFace();
 		boolean isHoldingSneak = context.isSecondaryUseActive();
-		if (clickedFace.getAxis().isHorizontal() && isHoldingSneak) {
+		if (!isDoubleChest && clickedFace.getAxis().isHorizontal() && isHoldingSneak) {
 			Direction partnerFacing = candidatePartnerFacing(context, clickedFace.getOpposite(), mainColor, accentColor, woodType, itemHasNoUpgrades);
 			if (partnerFacing != null && partnerFacing.getAxis() != clickedFace.getAxis()) {
 				direction = partnerFacing;
@@ -209,7 +211,7 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 			}
 		}
 
-		if (chestType == ChestType.SINGLE && !isHoldingSneak) {
+		if (!isDoubleChest && chestType == ChestType.SINGLE && !isHoldingSneak) {
 			if (direction == candidatePartnerFacing(context, direction.getClockWise(), mainColor, accentColor, woodType, itemHasNoUpgrades)) {
 				chestType = ChestType.LEFT;
 			} else if (direction == candidatePartnerFacing(context, direction.getCounterClockWise(), mainColor, accentColor, woodType, itemHasNoUpgrades)) {
