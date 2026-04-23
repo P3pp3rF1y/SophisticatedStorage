@@ -86,7 +86,6 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 
 	private boolean isDestroyedByPlayer = false;
 	public void joinWithChest(ChestBlockEntity mainBE) {
-		setMainPos(mainBE.getBlockPos());
 		expandAndMoveItemsAndSettings(mainBE);
 		removeFromController();
 		setNotLinked();
@@ -96,11 +95,6 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 
 	public ChestLidController getChestLidController() {
 		return chestLidController;
-	}
-
-	public void setMainPos(BlockPos doubleMainPos) {
-		this.doubleMainPos = doubleMainPos;
-		setChanged();
 	}
 
 	private void expandAndMoveItemsAndSettings(ChestBlockEntity mainBE) {
@@ -183,7 +177,7 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 	@Override
 	public void dropContents() {
 		if (isDestroyedByPlayer && getBlockState().getValue(ChestBlock.TYPE) != ChestType.SINGLE) {
-			if (doubleMainPos != null) {
+			if (!isMainChest()) {
 				moveMyStacksFromMain();
 			} else {
 				moveOtherPartStacksToIt();
@@ -203,7 +197,6 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 
 	private void moveOtherPartStacksToIt() {
 		runOnTheOtherPart(level, getBlockPos(), (be, pos) -> {
-			be.removeDoubleMainPos();
 			InventoryHandler mainInventoryHandler = getStorageWrapper().getInventoryHandler();
 			int firstIndex = mainInventoryHandler.getSlots() / 2;
 
@@ -221,7 +214,12 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 	}
 
 	private void moveMyStacksFromMain() {
-		level.getBlockEntity(doubleMainPos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get()).ifPresent(mainBE -> {
+		BlockPos mainPos = getMainPos();
+		if (mainPos.equals(worldPosition)) {
+			return;
+		}
+
+		level.getBlockEntity(mainPos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get()).ifPresent(mainBE -> {
 			StorageWrapper mainStorageWrapper = mainBE.getStorageWrapper();
 			InventoryHandler mainInventoryHandler = mainStorageWrapper.getInventoryHandler();
 			int firstIndex = mainInventoryHandler.getSlots() / 2;
@@ -326,39 +324,22 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 				.ifPresent(chestBlockEntity -> execute.accept(chestBlockEntity, neighborPos));
 	}
 
-	public void removeDoubleMainPos() {
-		doubleMainPos = null;
-	}
-
 	@Override
 	public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) {
 		if (level == null) {
 			return LazyOptional.empty();
 		}
 
-		if (doubleMainPos != null) {
-			return level.getBlockEntity(doubleMainPos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get()).map(be -> be.getCapability(cap, side)).orElseGet(LazyOptional::empty);
+		BlockPos mainPos = getMainPos();
+		if (!mainPos.equals(worldPosition)) {
+			return level.getBlockEntity(mainPos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get()).map(be -> be.getCapability(cap, side)).orElseGet(LazyOptional::empty);
 		}
 
 		return super.getCapability(cap, side);
 	}
 
 	public boolean isMainChest() {
-		return doubleMainPos == null;
-	}
-
-	@Override
-	public void loadSynchronizedData(CompoundTag tag) {
-		super.loadSynchronizedData(tag);
-		doubleMainPos = NBTHelper.getLong(tag, DOUBLE_CHEST_MAIN_POS_TAG).map(BlockPos::of).orElse(null);
-	}
-
-	@Override
-	protected void saveSynchronizedData(CompoundTag tag) {
-		super.saveSynchronizedData(tag);
-		if (doubleMainPos != null) {
-			tag.putLong(DOUBLE_CHEST_MAIN_POS_TAG, doubleMainPos.asLong());
-		}
+		return getMainPos().equals(worldPosition);
 	}
 
 	@Override
@@ -378,16 +359,22 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 	}
 
 	public StorageWrapper getMainStorageWrapper() {
-		if (doubleMainPos != null) {
-			return level.getBlockEntity(doubleMainPos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get()).map(StorageBlockEntity::getStorageWrapper).orElseGet(this::getStorageWrapper);
+		if (level != null) {
+			BlockPos mainPos = getMainPos();
+			if (!mainPos.equals(worldPosition)) {
+				return level.getBlockEntity(mainPos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get()).map(StorageBlockEntity::getStorageWrapper).orElseGet(this::getStorageWrapper);
+			}
 		}
 		return getStorageWrapper();
 	}
 
 	@Nullable
 	public ChestBlockEntity getMainChestBlockEntity() {
-		if (doubleMainPos != null) {
-			return level.getBlockEntity(doubleMainPos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get()).orElse(null);
+		if (level != null) {
+			BlockPos mainPos = getMainPos();
+			if (!mainPos.equals(worldPosition)) {
+				return level.getBlockEntity(mainPos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get()).orElse(null);
+			}
 		}
 		return this;
 	}
@@ -402,6 +389,7 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 
 			if (!slotStack.isEmpty()) {
 				dropItems.add(slotStack.copy());
+				invHandler.setStackInSlot(slot, ItemStack.EMPTY);
 			}
 		}
 
@@ -432,9 +420,6 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 					&& getStorageWrapper().getInventoryHandler().getSlots() > chestBlock.getNumberOfInventorySlots()) {
 				dropSecondPartContents(chestBlock, worldPosition);
 			}
-			if (!isMainChest()) {
-				removeDoubleMainPos();
-			}
 		}
 	}
 
@@ -454,7 +439,21 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 	}
 
 	public BlockPos getMainPos() {
-		return doubleMainPos != null ? doubleMainPos : worldPosition;
+		BlockState state = getBlockState();
+		if (state.getValue(ChestBlock.TYPE) != ChestType.LEFT || level == null) {
+			return worldPosition;
+		}
+
+		BlockPos mainPos = worldPosition.relative(ChestBlock.getConnectedDirection(state));
+		BlockState mainState = level.getBlockState(mainPos);
+		if (mainState.is(state.getBlock())
+				&& mainState.getValue(ChestBlock.TYPE) == ChestType.RIGHT
+				&& mainState.getValue(ChestBlock.FACING) == state.getValue(ChestBlock.FACING)
+				&& mainPos.relative(ChestBlock.getConnectedDirection(mainState)).equals(worldPosition)) {
+			return mainPos;
+		}
+
+		return worldPosition;
 	}
 
 	@Override
@@ -468,9 +467,15 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 
 	@Override
 	public void linkToController(BlockPos controllerPos) {
-		if (doubleMainPos != null) {
-			level.getBlockEntity(doubleMainPos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get())
-					.ifPresent(be -> be.linkToController(controllerPos));
+		if (level != null) {
+			BlockPos mainPos = getMainPos();
+			if (!mainPos.equals(worldPosition)) {
+				level.getBlockEntity(mainPos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get())
+						.ifPresent(be -> be.linkToController(controllerPos));
+				return;
+			}
+		}
+		if (level == null) {
 			return;
 		}
 		super.linkToController(controllerPos);
@@ -478,9 +483,16 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 
 	@Override
 	public void unlinkFromController() {
-		if (doubleMainPos != null) {
-			level.getBlockEntity(doubleMainPos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get())
-					.ifPresent(ChestBlockEntity::unlinkFromController);
+		if (level != null) {
+			BlockPos mainPos = getMainPos();
+			if (!mainPos.equals(worldPosition)) {
+				level.getBlockEntity(mainPos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get())
+						.ifPresent(ChestBlockEntity::unlinkFromController);
+				return;
+			}
+		}
+
+		if (level == null) {
 			return;
 		}
 
