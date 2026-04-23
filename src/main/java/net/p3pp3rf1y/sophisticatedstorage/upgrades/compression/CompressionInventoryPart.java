@@ -14,6 +14,7 @@ import net.p3pp3rf1y.sophisticatedcore.inventory.IInventoryPartHandler;
 import net.p3pp3rf1y.sophisticatedcore.inventory.IResourceExtractor;
 import net.p3pp3rf1y.sophisticatedcore.inventory.IResourceInserter;
 import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryHandler;
+import net.p3pp3rf1y.sophisticatedcore.inventory.ItemStackKey;
 import net.p3pp3rf1y.sophisticatedcore.settings.memory.MemorySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.util.RecipeHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.SlotRange;
@@ -58,10 +59,12 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 	}
 
 	private void calculateStacks(boolean initial) {
+		long controllerDataFingerprintBefore = captureControllerDataFingerprint();
 		clearCollections();
 		Map<Integer, ItemStack> existingStacks = getExistingStacks();
 
 		if (existingStacks.isEmpty()) {
+			syncControllerDataIfChanged(controllerDataFingerprintBefore);
 			return;
 		}
 
@@ -70,6 +73,7 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 
 		compactInternalSlots();
 		updateCalculatedStacks();
+		syncControllerDataIfChanged(controllerDataFingerprintBefore);
 
 		slotDefinitions.forEach((slot, definition) -> parent.triggerOnChangeListeners(slot));
 	}
@@ -78,8 +82,6 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 		slotDefinitions = definitions;
 		if (initial) {
 			parent.initFilterItems();
-		} else {
-			parent.onFilterItemsChanged();
 		}
 	}
 
@@ -211,7 +213,46 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 		slotDefinitions.clear();
 		calculatedStacks.clear();
 		lastCalculatedCounts.clear();
-		parent.onFilterItemsChanged();
+	}
+
+	private long captureControllerDataFingerprint() {
+		long fingerprint = 1;
+		int accessibleSlots = 0;
+		int firstSlotWithItem = -1;
+		int firstItemHash = 0;
+
+		for (int slot = slotRange.firstSlot(); slot < slotRange.firstSlot() + slotRange.size(); slot++) {
+			SlotDefinition slotDefinition = slotDefinitions.get(slot);
+			if (slotDefinition == null || !slotDefinition.isAccessible()) {
+				fingerprint = 31 * fingerprint;
+				continue;
+			}
+
+			accessibleSlots++;
+			fingerprint = 31 * fingerprint + slotDefinition.itemResource().hashCode();
+
+			ItemStack calculatedStack = getCalculatedStackInSlot(slot);
+			if (calculatedStack.isEmpty()) {
+				fingerprint = 31 * fingerprint + 1;
+			} else {
+				if (firstSlotWithItem < 0) {
+					firstSlotWithItem = slot;
+					firstItemHash = ItemStackKey.of(calculatedStack).hashCode();
+				}
+				fingerprint = 31 * fingerprint + (calculatedStack.getCount() < getCapacity(slot, ItemResource.of(calculatedStack)) ? 2 : 3);
+			}
+		}
+
+		fingerprint = 31 * fingerprint + accessibleSlots;
+		fingerprint = 31 * fingerprint + (firstSlotWithItem + 1);
+		fingerprint = 31 * fingerprint + firstItemHash;
+		return fingerprint;
+	}
+
+	private void syncControllerDataIfChanged(long controllerDataFingerprintBefore) {
+		if (controllerDataFingerprintBefore != captureControllerDataFingerprint()) {
+			parent.onFilterItemsChanged();
+		}
 	}
 
 	private Optional<RecipeHelper.CompactingShape> getCompressionShape(ItemStack stack) {
@@ -329,15 +370,16 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 		return 0;
 	}
 
-	private void removeDefinitionsIfEmpty(int slotTriggeringChange) {
+	private boolean removeDefinitionsIfEmpty(int slotTriggeringChange) {
 		for (int slot = slotRange.firstSlot(); slot < slotRange.firstSlot() + slotRange.size(); slot++) {
 			if (!parent.getInternalStack(slot).isEmpty() || getMemorySettings.get().getSlotFilterStack(slot, false).isPresent()) {
-				return;
+				return false;
 			}
 		}
 
 		clearCollections();
 		parent.triggerOnChangeListeners(slotTriggeringChange);
+		return true;
 	}
 
 	private void extractFromInternal(int slotToStartFrom, int amountToExtract) {
@@ -802,8 +844,9 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 	}
 
 	private record CompressionSnapshot(Map<Integer, SlotDefinition> slotDefinitions,
-									   Map<Integer, ItemStack> calculatedStacks,
-									   Map<Integer, ItemStack> internalStacks) {
+								   Map<Integer, ItemStack> calculatedStacks,
+								   Map<Integer, ItemStack> internalStacks,
+								   long controllerDataFingerprint) {
 	}
 
 	private class CompressionJournal extends SnapshotJournal<CompressionSnapshot> {
@@ -818,14 +861,23 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 			Map<Integer, ItemStack> calculatedStacksCopy = new HashMap<>();
 			CompressionInventoryPart.this.calculatedStacks.forEach((slot, stack) -> calculatedStacksCopy.put(slot, stack.copy()));
 
-			return new CompressionSnapshot(new HashMap<>(CompressionInventoryPart.this.slotDefinitions), calculatedStacksCopy, internalStacks);
+			return new CompressionSnapshot(new HashMap<>(CompressionInventoryPart.this.slotDefinitions), calculatedStacksCopy, internalStacks, captureControllerDataFingerprint());
 		}
 
 		@Override
 		protected void revertToSnapshot(CompressionSnapshot compressionSnapshot) {
 			CompressionInventoryPart.this.slotDefinitions = compressionSnapshot.slotDefinitions;
+			CompressionInventoryPart.this.calculatedStacks.clear();
+			CompressionInventoryPart.this.lastCalculatedCounts.clear();
 			compressionSnapshot.calculatedStacks.forEach(CompressionInventoryPart.this::setCalculatedStack);
 			compressionSnapshot.internalStacks.forEach((slot, stack) -> parent.setStackInSlotInternal(slot, stack.copy()));
+		}
+
+		@Override
+		protected void onRootCommit(CompressionSnapshot originalState) {
+			if (originalState.controllerDataFingerprint != captureControllerDataFingerprint()) {
+				parent.onFilterItemsChanged();
+			}
 		}
 	}
 }
