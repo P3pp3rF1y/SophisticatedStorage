@@ -60,7 +60,7 @@ public class StorageIOBlockEntity extends BlockEntity implements IControllerBoun
 	@Override
 	public void setControllerPos(BlockPos controllerPos) {
 		this.controllerPos = controllerPos;
-		controllerItemHandlerCache = null;
+		invalidateItemHandlerCache();
 		setChanged();
 		WorldHelper.notifyBlockUpdate(this);
 	}
@@ -97,7 +97,7 @@ public class StorageIOBlockEntity extends BlockEntity implements IControllerBoun
 	@Override
 	public void removeControllerPos() {
 		controllerPos = null;
-		controllerItemHandlerCache = null;
+		invalidateItemHandlerCache();
 		setChanged();
 		WorldHelper.notifyBlockUpdate(this);
 	}
@@ -139,8 +139,12 @@ public class StorageIOBlockEntity extends BlockEntity implements IControllerBoun
 
 	public void removeFromController() {
 		if (!level.isClientSide()) {
-			getControllerPos().flatMap(p -> WorldHelper.getBlockEntity(level, p, ControllerBlockEntityBase.class)).ifPresent(c -> c.removeNonConnectingBlock(getBlockPos()));
-			removeControllerPos();
+			if (isLinked()) {
+				unlinkFromController();
+			} else {
+				getControllerPos().flatMap(p -> WorldHelper.getBlockEntity(level, p, ControllerBlockEntityBase.class)).ifPresent(c -> c.removeNonConnectingBlock(getBlockPos()));
+				removeControllerPos();
+			}
 		}
 	}
 
