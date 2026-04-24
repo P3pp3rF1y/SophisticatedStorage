@@ -138,8 +138,12 @@ public class StorageIOBlockEntity extends BlockEntity implements IControllerBoun
 
 	public void removeFromController() {
 		if (!level.isClientSide()) {
-			getControllerPos().flatMap(p -> WorldHelper.getBlockEntity(level, p, ControllerBlockEntityBase.class)).ifPresent(c -> c.removeNonConnectingBlock(getBlockPos()));
-			removeControllerPos();
+			if (isLinked()) {
+				unlinkFromController();
+			} else {
+				getControllerPos().flatMap(p -> WorldHelper.getBlockEntity(level, p, ControllerBlockEntityBase.class)).ifPresent(c -> c.removeNonConnectingBlock(getBlockPos()));
+				removeControllerPos();
+			}
 		}
 	}
 

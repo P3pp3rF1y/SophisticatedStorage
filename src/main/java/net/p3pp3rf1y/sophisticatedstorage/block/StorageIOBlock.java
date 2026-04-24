@@ -14,7 +14,6 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.MapColor;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.TranslationHelper;
-import net.p3pp3rf1y.sophisticatedcore.controller.IControllableStorage;
 import net.p3pp3rf1y.sophisticatedcore.controller.IControllerBoundable;
 import net.p3pp3rf1y.sophisticatedcore.util.BlockBase;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
@@ -55,6 +54,6 @@ public class StorageIOBlock extends BlockBase implements EntityBlock {
 	@Override
 	public void playerWillDestroy(Level pLevel, BlockPos pPos, BlockState pState, Player pPlayer) {
 		super.playerWillDestroy(pLevel, pPos, pState, pPlayer);
-		WorldHelper.getBlockEntity(pLevel, pPos, StorageBlockEntity.class).ifPresent(IControllableStorage::removeFromController);
+		WorldHelper.getBlockEntity(pLevel, pPos, StorageIOBlockEntity.class).ifPresent(StorageIOBlockEntity::removeFromController);
 	}
 }
