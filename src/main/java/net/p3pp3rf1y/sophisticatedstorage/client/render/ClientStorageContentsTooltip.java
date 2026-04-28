@@ -23,9 +23,9 @@ public class ClientStorageContentsTooltip extends ClientStorageContentsTooltipBa
 		lastRequestTime = 0;
 	}
 
-	public void renderImage(Font font, int x, int y, int width, int height, GuiGraphicsExtractor guiGraphics) {
-		//noinspection DataFlowIssue - level definitely exists here
-		extractTooltip(StackStorageWrapper.fromStack(Minecraft.getInstance().level.registryAccess(), storageItem), font, x, y, guiGraphics);
+	@Override
+	public void extractImage(Font font, int x, int y, int w, int h, GuiGraphicsExtractor graphics) {
+		extractTooltip(StackStorageWrapper.fromStack(Minecraft.getInstance().level.registryAccess(), storageItem), font, x, y, graphics);
 	}
 
 	public ClientStorageContentsTooltip(StorageContentsTooltip tooltip) {
