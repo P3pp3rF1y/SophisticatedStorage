@@ -10,7 +10,7 @@ public class ModPayloads {
 	}
 
 	public static void registerPayloads(final RegisterPayloadHandlersEvent event) {
-		final PayloadRegistrar registrar = event.registrar(SophisticatedStorage.MOD_ID).versioned("1.0");
+		final PayloadRegistrar registrar = event.registrar(SophisticatedStorage.MOD_ID).versioned(SophisticatedStorage.getNetworkProtocolVersion());
 		registrar.playToServer(OpenStorageInventoryPayload.TYPE, OpenStorageInventoryPayload.STREAM_CODEC, OpenStorageInventoryPayload::handlePayload);
 		registrar.playToServer(RequestStorageContentsPayload.TYPE, RequestStorageContentsPayload.STREAM_CODEC, RequestStorageContentsPayload::handlePayload);
 		registrar.playToClient(StorageContentsPayload.TYPE, StorageContentsPayload.STREAM_CODEC, StorageContentsPayload::handlePayload);
