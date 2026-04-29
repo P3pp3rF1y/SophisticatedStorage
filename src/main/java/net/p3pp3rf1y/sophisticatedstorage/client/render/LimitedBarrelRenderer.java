@@ -174,7 +174,7 @@ public class LimitedBarrelRenderer extends BarrelRendererBase<LimitedBarrelBlock
 		int barHeight = large ? 14 : 6;
 		poseStack.scale(1 / 16F / 5F * 3, fillLevel * 1 / 16F / 5F * (barHeight * 5 - 2), 1);
 		TextureAtlasSprite sprite = Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS).getSprite(FILL_INDICATORS_TEXTURE);
-		RenderType renderType = translucentRender ? RenderTypes.entityTranslucent(sprite.atlasLocation()) : RenderTypes.itemCutout(sprite.atlasLocation());
+		RenderType renderType = translucentRender ? RenderTypes.entityTranslucent(sprite.atlasLocation()) : RenderTypes.entityCutout(sprite.atlasLocation());
 
 		submitNodeCollector.submitCustomGeometry(poseStack, renderType, (pose, vertexConsumer) -> {
 			Vector3f normal = new Vector3f(0, 1, 0);
