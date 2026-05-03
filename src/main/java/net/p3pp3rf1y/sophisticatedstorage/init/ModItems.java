@@ -339,7 +339,7 @@ public class ModItems {
 			UpgradeGuiManager.registerTab(CRAFTING_TYPE, (CraftingUpgradeContainer uc, Position p, StorageScreenBase<?> s) ->
 					new CraftingUpgradeTab(uc, p, s, StorageButtonDefinitions.SHIFT_CLICK_TARGET, StorageButtonDefinitions.REFILL_CRAFTING_GRID));
 			UpgradeGuiManager.registerTab(STONECUTTER_TYPE, (StonecutterUpgradeContainer upgradeContainer, Position position, StorageScreenBase<?> screen) ->
-					new StonecutterUpgradeTab(upgradeContainer, position, screen, StorageButtonDefinitions.SHIFT_CLICK_TARGET));
+					new StonecutterUpgradeTab(upgradeContainer, position, screen, StorageButtonDefinitions.SHIFT_CLICK_TARGET, StorageButtonDefinitions.REFILL_INPUT));
 			UpgradeGuiManager.registerTab(JUKEBOX_TYPE, JukeboxUpgradeTab.Basic::new);
 			UpgradeGuiManager.registerTab(ADVANCED_JUKEBOX_TYPE, (JukeboxUpgradeContainer uc, Position p, StorageScreenBase<?> s) -> new JukeboxUpgradeTab.Advanced(uc, p, s, Config.SERVER.advancedJukeboxUpgrade.slotsInRow.get()));
 			UpgradeGuiManager.registerTab(TANK_TYPE, TankUpgradeTab::new);
