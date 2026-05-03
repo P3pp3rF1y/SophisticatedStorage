@@ -38,6 +38,14 @@ public class StorageButtonDefinitions {
 							StorageTranslationHelper.INSTANCE.getTranslatedLines(StorageTranslationHelper.INSTANCE.translUpgradeButton("do_not_refill_crafting_grid")))
 			));
 
+	public static final ButtonDefinition.Toggle<Boolean> REFILL_INPUT = net.p3pp3rf1y.sophisticatedcore.client.gui.controls.ButtonDefinitions.createToggleButtonDefinition(
+			Map.of(
+					true, getButtonStateData(new UV(64, 112), Dimension.SQUARE_16, new Position(1, 1),
+							StorageTranslationHelper.INSTANCE.getTranslatedLines(StorageTranslationHelper.INSTANCE.translUpgradeButton("refill_input"))),
+					false, getButtonStateData(new UV(80, 112), Dimension.SQUARE_16, new Position(1, 1),
+							StorageTranslationHelper.INSTANCE.getTranslatedLines(StorageTranslationHelper.INSTANCE.translUpgradeButton("do_not_refill_input")))
+			));
+
 	public static final ButtonDefinition.Toggle<IOMode> IO_MODE = ButtonDefinitions.createToggleButtonDefinition(
 			Map.of(
 					IOMode.PUSH, getButtonStateData(new UV(208, 48), Dimension.SQUARE_16, new Position(1, 1),
