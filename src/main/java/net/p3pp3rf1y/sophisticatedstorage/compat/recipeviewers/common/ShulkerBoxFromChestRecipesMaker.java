@@ -25,12 +25,8 @@ public class ShulkerBoxFromChestRecipesMaker {
 	}
 
 	public static <T extends PropertyBasedSubtypeInterpreter> List<CraftingRecipe> getShapedRecipes(Function<ItemStack, Optional<T>> getSubtypeInterpreter) {
-		return getShapedRecipes(getSubtypeInterpreter, r -> r);
-	}
-
-	public static <R, T extends PropertyBasedSubtypeInterpreter> List<R> getShapedRecipes(Function<ItemStack, Optional<T>> getSubtypeInterpreter, Function<CraftingRecipe, R> transformRecipe) {
 		return ClientRecipeHelper.transformAllRecipesOfTypeIntoMultiple(RecipeType.CRAFTING, ShulkerBoxFromChestRecipe.class, originalRecipe -> {
-			List<R> recipes = new ArrayList<>();
+			List<CraftingRecipe> recipes = new ArrayList<>();
 			getChestItems(originalRecipe).forEach(chestItem -> {
 				CraftingContainer craftinginventory = new TransientCraftingContainer(new AbstractContainerMenu(null, -1) {
 					@Override
@@ -68,7 +64,8 @@ public class ShulkerBoxFromChestRecipesMaker {
 				ItemStack result = ClientRecipeHelper.assemble(originalRecipe, craftinginventory);
 				ResourceLocation newId = new ResourceLocation(SophisticatedStorage.MOD_ID, "shulker_from_"
 						+ getSubtypeInterpreter.apply(chestItem).map(interpreter -> interpreter.getRegistrySanitizedItemString(chestItem)).orElse(""));
-				recipes.add(transformRecipe.apply(new ShapedRecipe(newId, "", CraftingBookCategory.MISC, originalRecipe.getRecipeWidth(), originalRecipe.getRecipeHeight(), ingredientsCopy, result)));
+
+				recipes.add(new ShapedRecipe(newId, "", CraftingBookCategory.MISC, originalRecipe.getWidth(), originalRecipe.getHeight(), ingredientsCopy, result));
 			});
 			return recipes;
 		});

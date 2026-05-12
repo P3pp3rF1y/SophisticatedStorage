@@ -225,11 +225,25 @@ dependencies {
     testImplementation "org.mockito:mockito-core:5.1.+"
 }
 
+def runRecipeViewerRegressionTests = gradle.startParameter.taskNames.any { it == 'recipeViewerRegressionTest' || it == "${project.path}:recipeViewerRegressionTest" } || project.hasProperty('recipeViewerRegression')
 test {
-    useJUnitPlatform()
+    inputs.property('recipeViewerRegressionMode', runRecipeViewerRegressionTests)
+    useJUnitPlatform {
+        if (runRecipeViewerRegressionTests) {
+            includeTags 'recipeViewerRegression'
+        } else {
+            excludeTags 'recipeViewerRegression'
+        }
+    }
     testLogging {
         events "passed", "skipped", "failed"
     }
+}
+
+tasks.register('recipeViewerRegressionTest') {
+    description = 'Runs recipe viewer regression tests.'
+    group = 'verification'
+    dependsOn test
 }
 
 tasks.named('jar', Jar).configure {

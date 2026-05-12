@@ -78,7 +78,7 @@ public class Config {
 
 			showHigherTierTintedVariants = builder.comment("Determines whether JEI and creative tab will show tinted storage items for iron and higher tiers. Can help with easily removing many of these items from there.")
 					.worldRestart().define("showHigherTierTintedVariants", true);
-			showSingleWoodVariantOnly = builder.comment("Determines whether JEI and creative tab will show only single wood variant of storage item per tier. Makes creative tab and .")
+			showSingleWoodVariantOnly = builder.comment("Determines whether JEI and creative tab will show only one wood variant of each storage item tier. Makes creative tab and JEI lists smaller.")
 					.worldRestart().define("showSingleWoodVariantOnly", false);
 
 			builder.pop();
