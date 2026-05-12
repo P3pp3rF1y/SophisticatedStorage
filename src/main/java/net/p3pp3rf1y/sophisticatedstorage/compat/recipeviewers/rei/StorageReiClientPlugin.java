@@ -1,49 +1,56 @@
 package net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.rei;
 
+import dev.architectury.event.EventResult;
 import me.shedaniel.math.Rectangle;
 import me.shedaniel.rei.api.client.plugins.REIClientPlugin;
 import me.shedaniel.rei.api.client.registry.category.CategoryRegistry;
 import me.shedaniel.rei.api.client.registry.display.DisplayRegistry;
+import me.shedaniel.rei.api.client.registry.entry.CollapsibleEntryRegistry;
+import me.shedaniel.rei.api.client.registry.entry.EntryRegistry;
 import me.shedaniel.rei.api.client.registry.screen.ExclusionZones;
 import me.shedaniel.rei.api.client.registry.screen.ScreenRegistry;
 import me.shedaniel.rei.api.client.registry.transfer.TransferHandlerRegistry;
 import me.shedaniel.rei.api.common.category.CategoryIdentifier;
 import me.shedaniel.rei.api.common.display.Display;
 import me.shedaniel.rei.api.common.entry.EntryStack;
+import me.shedaniel.rei.api.common.plugins.PluginManager;
+import me.shedaniel.rei.api.common.registry.ReloadStage;
 import me.shedaniel.rei.api.common.util.EntryStacks;
 import me.shedaniel.rei.forge.REIPluginClient;
 import me.shedaniel.rei.plugin.common.BuiltinPlugin;
+import me.shedaniel.rei.plugin.common.displays.crafting.DefaultCraftingDisplay;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.Rect2i;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.IRecipeViewerDisplayCatalog;
+import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.IRecipeViewerDisplayContext;
+import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.RecipeViewerDisplayCatalog;
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.subtypes.PropertyBasedSubtypeInterpreter;
-import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.rei.ReiCraftingContainerTransferHandler;
-import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.rei.ReiRecipeDisplayGenerator;
-import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.rei.ReiSettingsGhostIngredientHandler;
-import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.rei.ReiStorageGhostIngredientHandler;
+import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.rei.*;
+import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageScreen;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageSettingsScreen;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
-import net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.common.DyeRecipesMaker;
-import net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.common.FlatBarrelRecipesMaker;
-import net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.common.ShulkerBoxFromChestRecipesMaker;
-import net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.common.TierUpgradeRecipesMaker;
+import net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.common.StorageRecipeViewerDisplays;
+import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
+import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 
-import static net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.common.subtypes.SubtypeInterpreters.getSubtypeInterpreter;
 import static net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.common.subtypes.SubtypeInterpreters.getSubtypeInterpreters;
 
 @SuppressWarnings("unused")
 @REIPluginClient
 public class StorageReiClientPlugin implements REIClientPlugin {
-	private static Consumer<WorkstationRegistration> additionalWorkstations = registration -> {
-	};
+	private static Consumer<WorkstationRegistration> additionalWorkstations = registration -> {};
+	private IRecipeViewerDisplayCatalog catalog = null;
+	private boolean catalogCreatedWithoutServer = false;
 
 	public static void addAdditionalWorkstations(Consumer<WorkstationRegistration> additionalWorkstations) {
 		StorageReiClientPlugin.additionalWorkstations = StorageReiClientPlugin.additionalWorkstations.andThen(additionalWorkstations);
@@ -62,17 +69,25 @@ public class StorageReiClientPlugin implements REIClientPlugin {
 	}
 
 	@Override
-	public void registerExclusionZones(ExclusionZones zones) {
-		zones.register(StorageScreen.class, screen -> {
-			List<Rect2i> ret = new ArrayList<>();
-			screen.getUpgradeSlotsRectangle().ifPresent(ret::add);
-			ret.addAll(screen.getUpgradeSettingsControl().getTabRectangles());
-			screen.getSortButtonsRectangle().ifPresent(ret::add);
-			return ret.stream().map(r -> new Rectangle(r.getX(), r.getY(), r.getWidth(), r.getHeight())).toList();
-		});
+	public void preStage(PluginManager<REIClientPlugin> manager, ReloadStage stage) {
+		if (stage == ReloadStage.START) {
+			catalog = null;
+			catalogCreatedWithoutServer = false;
+		}
+	}
+
+    @Override
+    public void registerExclusionZones(ExclusionZones zones) {
+        zones.register(StorageScreen.class, screen -> {
+            List<Rect2i> ret = new ArrayList<>();
+            screen.getUpgradeSlotsRectangle().ifPresent(ret::add);
+            ret.addAll(screen.getUpgradeSettingsControl().getTabRectangles());
+            screen.getSortButtonsRectangle().ifPresent(ret::add);
+            return ret.stream().map(r -> new Rectangle(r.getX(), r.getY(), r.getWidth(), r.getHeight())).toList();
+        });
 
 		zones.register(StorageSettingsScreen.class, screen -> screen.getExtendedControlsRectangles().stream().map(r -> new Rectangle(r.getX(), r.getY(), r.getWidth(), r.getHeight())).toList());
-	}
+    }
 
 	@Override
 	public void registerScreens(ScreenRegistry registry) {
@@ -81,14 +96,58 @@ public class StorageReiClientPlugin implements REIClientPlugin {
 	}
 
 	@Override
-	public void registerDisplays(DisplayRegistry registry) {
-		Map<BlockItem, PropertyBasedSubtypeInterpreter> subtypeInterpreters = getSubtypeInterpreters();
-		ReiRecipeDisplayGenerator generator = new ReiRecipeDisplayGenerator(registry);
+	public void registerEntries(EntryRegistry registry) {
+		ModBlocks.ITEMS.getEntries().stream()
+				.map(holder -> holder.get())
+				.filter(StorageBlockItem.class::isInstance)
+				.map(StorageBlockItem.class::cast)
+				.forEach(storageItem -> getCreativeVariants(storageItem).stream()
+						.filter(stack -> !registry.alreadyContain(EntryStacks.of(stack)))
+						.forEach(stack -> registry.addEntry(EntryStacks.of(stack))));
+	}
 
-		DyeRecipesMaker.addRecipes(generator, stack -> getSubtypeInterpreter(subtypeInterpreters, stack));
-		TierUpgradeRecipesMaker.addRecipes(generator, stack -> getSubtypeInterpreter(subtypeInterpreters, stack));
-		ShulkerBoxFromChestRecipesMaker.addRecipes(generator, stack -> getSubtypeInterpreter(subtypeInterpreters, stack));
-		FlatBarrelRecipesMaker.addRecipes(generator);
+	@Override
+	public void registerCollapsibleEntries(CollapsibleEntryRegistry registry) {
+		ModBlocks.ITEMS.getEntries().stream()
+				.map(holder -> holder.get())
+				.filter(StorageBlockItem.class::isInstance)
+				.map(StorageBlockItem.class::cast)
+				.forEach(storageItem -> {
+					List<ItemStack> variants = getCreativeVariants(storageItem);
+					if (variants.size() > 1) {
+						registry.group(getCollapseId(storageItem), storageItem.getName(storageItem.getDefaultInstance()), variants.stream().map(EntryStacks::of).toList());
+					}
+				});
+	}
+
+	@Override
+	public void registerDisplays(DisplayRegistry registry) {
+		registry.registerGlobalDisplayGenerator(new GroupedCraftingReiDisplayGenerator(this::getCatalog, stack -> true));
+		registry.registerGlobalDisplayGenerator(new CraftingSpecReiDisplayGenerator(this::getCatalog, stack -> true));
+		registry.registerVisibilityPredicate((category, display) -> {
+			if (display instanceof CraftingSpecReiDisplay) {
+				return EventResult.pass();
+			}
+			if (display instanceof DefaultCraftingDisplay craftingDisplay && craftingDisplayReplaced(getCatalog(), craftingDisplay)) {
+				return EventResult.interruptFalse();
+			}
+			return EventResult.pass();
+		});
+	}
+
+	private IRecipeViewerDisplayCatalog getCatalog() {
+		boolean serverAvailable = Minecraft.getInstance().getSingleplayerServer() != null;
+		if (catalog == null || catalogCreatedWithoutServer && serverAvailable) {
+			catalog = createCatalog(getSubtypeInterpreters());
+			catalogCreatedWithoutServer = !serverAvailable;
+		}
+		return catalog;
+	}
+
+	private static boolean craftingDisplayReplaced(IRecipeViewerDisplayCatalog catalog, DefaultCraftingDisplay craftingDisplay) {
+		return craftingDisplay.getDisplayLocation()
+				.map(displayId -> catalog.getCraftingSpecs().stream().anyMatch(spec -> spec.replacedRecipeIds().contains(displayId)))
+				.orElse(false);
 	}
 
 	@Override
@@ -101,5 +160,22 @@ public class StorageReiClientPlugin implements REIClientPlugin {
 	@Override
 	public void registerTransferHandlers(TransferHandlerRegistry registry) {
 		registry.register(ReiCraftingContainerTransferHandler.crafting(StorageContainerMenu.class));
+	}
+
+	private static List<ItemStack> getCreativeVariants(StorageBlockItem storageItem) {
+		List<ItemStack> variants = new ArrayList<>();
+		storageItem.addCreativeTabItems(variants::add);
+		return variants;
+	}
+
+	private static ResourceLocation getCollapseId(StorageBlockItem storageItem) {
+		return ResourceLocation.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "rei_group/" + BuiltInRegistries.ITEM.getKey(storageItem).getPath());
+	}
+
+	private static IRecipeViewerDisplayCatalog createCatalog(Map<BlockItem, PropertyBasedSubtypeInterpreter> subtypeInterpreters) {
+		IRecipeViewerDisplayCatalog catalog = new RecipeViewerDisplayCatalog();
+		IRecipeViewerDisplayContext context = stack -> Optional.ofNullable(subtypeInterpreters.get(stack.getItem()));
+		StorageRecipeViewerDisplays.register(catalog, context);
+		return catalog;
 	}
 }

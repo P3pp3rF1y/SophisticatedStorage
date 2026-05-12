@@ -189,7 +189,7 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 	public void addCreativeTabItems(Consumer<ItemStack> itemConsumer) {
 		itemConsumer.accept(new ItemStack(this));
 
-		if (this == ModBlocks.SHULKER_BOX.get() || !Config.CLIENT_SPEC.isLoaded() || Config.CLIENT.showHigherTierTintedVariants.get()) {
+		if (this == ModBlocks.SHULKER_BOX.get()) {
 			for (DyeColor color : DyeColor.values()) {
 				ItemStack storageStack = getTintedStack(color);
 				itemConsumer.accept(storageStack);
