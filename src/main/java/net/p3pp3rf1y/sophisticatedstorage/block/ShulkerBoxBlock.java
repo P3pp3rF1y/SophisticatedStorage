@@ -48,7 +48,6 @@ import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeHandler;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.ValueIOHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
-import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.client.particle.CustomTintTerrainParticleData;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
@@ -176,7 +175,7 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 	public void addCreativeTabItems(Consumer<ItemStack> itemConsumer) {
 		itemConsumer.accept(new ItemStack(this));
 
-		if (this == ModBlocks.SHULKER_BOX.get() || Boolean.TRUE.equals(!Config.CLIENT_SPEC.isLoaded() || Config.CLIENT.showHigherTierTintedVariants.get())) {
+		if (this == ModBlocks.SHULKER_BOX.get()) {
 			for (DyeColor color : DyeColor.values()) {
 				ItemStack storageStack = getTintedStack(color);
 				itemConsumer.accept(storageStack);
