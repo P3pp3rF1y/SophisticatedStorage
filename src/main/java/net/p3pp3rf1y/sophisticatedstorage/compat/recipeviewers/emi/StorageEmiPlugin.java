@@ -3,45 +3,51 @@ package net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.emi;
 import dev.emi.emi.api.EmiEntrypoint;
 import dev.emi.emi.api.EmiPlugin;
 import dev.emi.emi.api.EmiRegistry;
+import dev.emi.emi.api.recipe.BasicEmiRecipe;
+import dev.emi.emi.api.recipe.EmiRecipe;
 import dev.emi.emi.api.recipe.EmiRecipeCategory;
 import dev.emi.emi.api.recipe.VanillaEmiRecipeCategories;
+import dev.emi.emi.api.render.EmiTexture;
+import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.widget.Bounds;
+import dev.emi.emi.api.widget.WidgetHolder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingRecipe;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.ShapelessRecipe;
 import net.minecraft.world.level.block.Block;
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.ClientRecipeHelper;
+import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.IRecipeViewerDisplayCatalog;
+import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.IRecipeViewerDisplayContext;
+import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.RecipeViewerDisplayCatalog;
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.subtypes.PropertyBasedSubtypeInterpreter;
-import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.emi.EmiGridMenuInfo;
-import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.emi.EmiRecipeDisplayGenerator;
-import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.emi.EmiSettingsGhostDragDropHandler;
-import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.emi.EmiStorageGhostDragDropHandler;
+import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.emi.*;
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.emi.comparison.EmiSubtypeInterpreter;
+import net.p3pp3rf1y.sophisticatedcore.util.RecipeHelper;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.LimitedBarrelScreen;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.LimitedBarrelSettingsScreen;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageScreen;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageSettingsScreen;
-import net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.common.DyeRecipesMaker;
-import net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.common.FlatBarrelRecipesMaker;
-import net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.common.ShulkerBoxFromChestRecipesMaker;
-import net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.common.TierUpgradeRecipesMaker;
-import net.p3pp3rf1y.sophisticatedstorage.crafting.ShulkerBoxFromVanillaShapelessRecipe;
+import net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.common.StorageRecipeViewerDisplays;
+import net.p3pp3rf1y.sophisticatedstorage.crafting.GenericWoodStorageRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.IntPredicate;
+import java.util.stream.Collectors;
 
-import static net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.common.subtypes.SubtypeInterpreters.getSubtypeInterpreter;
 import static net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.common.subtypes.SubtypeInterpreters.getSubtypeInterpreters;
 
 @EmiEntrypoint
 public class StorageEmiPlugin implements EmiPlugin {
-	private static Consumer<WorkstationRegistration> additionalWorkstations = registrar -> {
-	};
-
+	private static Consumer<WorkstationRegistration> additionalWorkstations = registrar -> {};
 	public static void addAdditionalWorkstations(Consumer<WorkstationRegistration> additionalWorkstations) {
 		StorageEmiPlugin.additionalWorkstations = StorageEmiPlugin.additionalWorkstations.andThen(additionalWorkstations);
 	}
@@ -111,13 +117,141 @@ public class StorageEmiPlugin implements EmiPlugin {
 
 	private void registerRecipes(EmiRegistry registry) {
 		Map<BlockItem, PropertyBasedSubtypeInterpreter> subtypeInterpreters = getSubtypeInterpreters();
-		EmiRecipeDisplayGenerator generator = new EmiRecipeDisplayGenerator(registry);
+		IRecipeViewerDisplayCatalog catalog = createCatalog(subtypeInterpreters);
+		Set<?> craftingRecipeIds = catalog.getCraftingRecipes().stream().map(RecipeHolder::id).collect(Collectors.toSet());
+		registry.removeRecipes(recipe -> recipe.getBackingRecipe() != null && (catalog.replacesCraftingRecipe(recipe.getBackingRecipe()) || craftingRecipeIds.contains(recipe.getBackingRecipe().id())));
 
-		DyeRecipesMaker.addRecipes(generator, stack -> getSubtypeInterpreter(subtypeInterpreters, stack));
-		TierUpgradeRecipesMaker.addRecipes(generator, stack -> getSubtypeInterpreter(subtypeInterpreters, stack));
-		ShulkerBoxFromChestRecipesMaker.addRecipes(generator, stack -> getSubtypeInterpreter(subtypeInterpreters, stack));
-		ClientRecipeHelper.addAllRecipesOfType(generator, RecipeType.CRAFTING, ShulkerBoxFromVanillaShapelessRecipe.class);
-		FlatBarrelRecipesMaker.addRecipes(generator);
+		catalog.getGroupedCraftingSpecs().stream()
+				.flatMap(spec -> spec.getAllDisplays().stream())
+				.flatMap(recipeHolder -> GroupedCraftingEmiRecipe.ofGroupedUsageAndFocusedRecipes(recipeHolder).stream())
+				.forEach(registry::addRecipe);
+		catalog.getCraftingRecipes().stream()
+				.filter(recipeHolder -> !catalog.replacesCraftingRecipe(recipeHolder))
+				.flatMap(recipeHolder -> wrapSyntheticCraftingRecipe(recipeHolder).stream())
+				.forEach(registry::addRecipe);
+
+		catalog.getCraftingSpecs().stream()
+				.flatMap(spec -> CraftingSpecEmiRecipe.ofGroupedUsageAndFocusedRecipes(spec).stream())
+				.forEach(registry::addRecipe);
+
+	}
+
+	private static IRecipeViewerDisplayCatalog createCatalog(Map<BlockItem, PropertyBasedSubtypeInterpreter> subtypeInterpreters) {
+		IRecipeViewerDisplayCatalog catalog = new RecipeViewerDisplayCatalog();
+		IRecipeViewerDisplayContext context = stack -> Optional.ofNullable(subtypeInterpreters.get(stack.getItem()));
+		StorageRecipeViewerDisplays.register(catalog, context);
+		return catalog;
+	}
+
+	private static List<EmiRecipe> wrapSyntheticCraftingRecipe(RecipeHolder<CraftingRecipe> recipeHolder) {
+		CraftingRecipe recipe = recipeHolder.value();
+		List<Optional<Ingredient>> ingredients = new ArrayList<>(RecipeHelper.getIngredients(recipe));
+		List<EmiRecipe> recipes = new ArrayList<>();
+		if (hasBroadIngredient(ingredients)) {
+			recipes.add(new SyntheticCraftingRecipe(recipeHolder.id().location(), recipeHolder, getInputIngredients(ingredients), ingredientIndex -> !isBroadIngredient(ingredients, ingredientIndex), true));
+		} else {
+			recipes.add(new SyntheticCraftingRecipe(recipeHolder.id().location(), recipeHolder, getInputIngredients(ingredients), inputIndex -> true, true));
+		}
+		addFocusedInputSyntheticRecipes(recipeHolder, recipes);
+		return recipes;
+	}
+
+	private static boolean hasBroadIngredient(List<Optional<Ingredient>> ingredients) {
+		for (int ingredientIndex = 0; ingredientIndex < ingredients.size(); ingredientIndex++) {
+			if (isBroadIngredient(ingredients, ingredientIndex)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private static boolean isBroadIngredient(List<Optional<Ingredient>> ingredients, int ingredientIndex) {
+		return getIngredientItems(ingredients.get(ingredientIndex)).size() > 1;
+	}
+
+	private static void addFocusedInputSyntheticRecipes(RecipeHolder<CraftingRecipe> recipeHolder, List<EmiRecipe> recipes) {
+		ResourceLocation baseId = recipeHolder.id().location();
+		CraftingRecipe recipe = recipeHolder.value();
+		if (recipe instanceof GenericWoodStorageRecipe) {
+			return;
+		}
+		List<Optional<Ingredient>> ingredients = new ArrayList<>(RecipeHelper.getIngredients(recipe));
+		for (int ingredientIndex = 0; ingredientIndex < ingredients.size(); ingredientIndex++) {
+			List<ItemStack> stacks = getIngredientItems(ingredients.get(ingredientIndex));
+			if (stacks.size() <= 1) {
+				continue;
+			}
+			for (int stackIndex = 0; stackIndex < stacks.size(); stackIndex++) {
+				int focusedIngredientIndex = ingredientIndex;
+				int focusedStackIndex = stackIndex;
+				ResourceLocation id = baseId.withPath(path -> path + "/input/" + focusedIngredientIndex + "/" + focusedStackIndex);
+				recipes.add(new SyntheticCraftingRecipe(id, recipeHolder, getFocusedInputIngredients(ingredients, ingredientIndex, stacks.get(stackIndex)), inputIndex -> true, false));
+			}
+		}
+	}
+
+	private static List<EmiIngredient> getInputIngredients(List<Optional<Ingredient>> ingredients) {
+		List<EmiIngredient> inputIngredients = new ArrayList<>(ingredients.size());
+		for (Optional<Ingredient> ingredient : ingredients) {
+			inputIngredients.add(EmiIngredient.of(getIngredientItems(ingredient).stream().map(EmiStack::of).toList()));
+		}
+		return inputIngredients;
+	}
+
+	private static List<EmiIngredient> getFocusedInputIngredients(List<Optional<Ingredient>> ingredients, int focusedIngredientIndex, ItemStack focusedStack) {
+		List<EmiIngredient> focusedIngredients = new ArrayList<>(ingredients.size());
+		for (int ingredientIndex = 0; ingredientIndex < ingredients.size(); ingredientIndex++) {
+			if (ingredientIndex == focusedIngredientIndex) {
+				focusedIngredients.add(EmiStack.of(focusedStack));
+			} else {
+				focusedIngredients.add(EmiIngredient.of(getIngredientItems(ingredients.get(ingredientIndex)).stream().map(EmiStack::of).toList()));
+			}
+		}
+		return focusedIngredients;
+	}
+
+	private static List<ItemStack> getIngredientItems(Optional<Ingredient> ingredient) {
+		return ingredient.map(value -> value.items().map(ItemStack::new).toList()).orElse(List.of());
+	}
+
+	private static class SyntheticCraftingRecipe extends BasicEmiRecipe {
+		private final RecipeHolder<CraftingRecipe> recipeHolder;
+		private final List<EmiIngredient> displayInputs;
+		private final EmiStack output;
+		private final boolean shapeless;
+
+		private SyntheticCraftingRecipe(ResourceLocation id, RecipeHolder<CraftingRecipe> recipeHolder, List<EmiIngredient> displayInputs, IntPredicate inputIndexFilter, boolean indexOutput) {
+			super(VanillaEmiRecipeCategories.CRAFTING, id.withPath(path -> path.startsWith("/") ? path : "/" + path), 118, 54);
+			this.recipeHolder = recipeHolder;
+			this.displayInputs = displayInputs;
+			output = EmiStack.of(ClientRecipeHelper.getResultItem(recipeHolder.value()));
+			shapeless = recipeHolder.value() instanceof ShapelessRecipe;
+			for (int inputIndex = 0; inputIndex < displayInputs.size(); inputIndex++) {
+				if (inputIndexFilter.test(inputIndex)) {
+					inputs.add(displayInputs.get(inputIndex));
+				}
+			}
+			if (indexOutput) {
+				outputs.add(output);
+			}
+		}
+
+		@Override
+		public void addWidgets(WidgetHolder widgets) {
+			widgets.addTexture(EmiTexture.EMPTY_ARROW, 60, 18);
+			if (shapeless) {
+				widgets.addTexture(EmiTexture.SHAPELESS, 97, 0);
+			}
+			for (int i = 0; i < displayInputs.size(); i++) {
+				widgets.addSlot(displayInputs.get(i), i % 3 * 18, i / 3 * 18);
+			}
+			widgets.addSlot(output, 92, 14).large(true).recipeContext(this);
+		}
+
+		@Override
+		public RecipeHolder<?> getBackingRecipe() {
+			return recipeHolder;
+		}
 	}
 
 	private void registerWorkstations(EmiRegistry registry) {
