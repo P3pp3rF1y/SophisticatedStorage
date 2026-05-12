@@ -73,14 +73,11 @@ public class Config {
 	}
 
 	public static class Client {
-		public final ModConfigSpec.BooleanValue showHigherTierTintedVariants;
 		public final ModConfigSpec.BooleanValue showSingleWoodVariantOnly;
 
 		public Client(ModConfigSpec.Builder builder) {
 			builder.comment("Client-side Settings").push("client");
 
-			showHigherTierTintedVariants = builder.comment("Determines whether JEI and creative tab will show tinted storage items for iron and higher tiers. Can help with easily removing many of these items from there.")
-					.worldRestart().define("showHigherTierTintedVariants", true);
 			showSingleWoodVariantOnly = builder.comment("Determines whether JEI and creative tab will show only one wood variant of each storage item tier. Makes creative tab and JEI lists smaller.")
 					.worldRestart().define("showSingleWoodVariantOnly", false);
 

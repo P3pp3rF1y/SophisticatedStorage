@@ -6,103 +6,123 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.inventory.TransientCraftingContainer;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.*;
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.ClientRecipeHelper;
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.subtypes.PropertyBasedSubtypeInterpreter;
-import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.DoubleChestTierUpgradeRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.DoubleChestTierUpgradeShapelessRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.StorageTierUpgradeRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.StorageTierUpgradeShapelessRecipe;
+import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockBase;
 import net.p3pp3rf1y.sophisticatedstorage.item.ChestBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
+import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public class TierUpgradeRecipesMaker {
 	private TierUpgradeRecipesMaker() {
 	}
 
-	public static <T extends PropertyBasedSubtypeInterpreter> List<RecipeHolder<CraftingRecipe>> getShapedCraftingRecipes(Function<ItemStack, Optional<T>> subtypeInterpreterGetter) {
-		return getShapedCraftingRecipes(subtypeInterpreterGetter, RecipeHolder::new);
+	public static <T extends PropertyBasedSubtypeInterpreter> List<TierUpgradeDisplayRecipe> getGroupedShapedCraftingRecipes(Function<ItemStack, Optional<T>> subtypeInterpreterGetter) {
+		List<TierUpgradeDisplayRecipe> recipes = getGroupedCraftingRecipes(StorageTierUpgradeRecipe.class, TierUpgradeRecipesMaker::getStorageItems, subtypeInterpreterGetter, false);
+		recipes.addAll(getGroupedCraftingRecipes(DoubleChestTierUpgradeRecipe.class, TierUpgradeRecipesMaker::getDoubleChestItems, subtypeInterpreterGetter, false));
+		return recipes;
 	}
 
-	public static <R,T extends PropertyBasedSubtypeInterpreter> List<R> getShapedCraftingRecipes(Function<ItemStack, Optional<T>> subtypeInterpreterGetter, BiFunction<ResourceLocation, CraftingRecipe, R> transformRecipe) {
-		RecipeConstructor<StorageTierUpgradeRecipe> constructRecipe = (originalRecipe, ingredients, result) -> {
-			ShapedRecipePattern pattern = new ShapedRecipePattern(originalRecipe.getWidth(), originalRecipe.getHeight(), ingredients, Optional.empty());
-			return new ShapedRecipe("", CraftingBookCategory.MISC, pattern, result);
-		};
-		List<R> craftingRecipes = getCraftingRecipes(constructRecipe, StorageTierUpgradeRecipe.class, TierUpgradeRecipesMaker::getStorageItems, subtypeInterpreterGetter, transformRecipe);
-		RecipeConstructor<DoubleChestTierUpgradeRecipe> constructDoubleChestRecipe = (originalRecipe, ingredients, result) -> {
-			ShapedRecipePattern pattern = new ShapedRecipePattern(originalRecipe.getWidth(), originalRecipe.getHeight(), ingredients, Optional.empty());
-			return new ShapedRecipe("", CraftingBookCategory.MISC, pattern, result);
-		};
-		craftingRecipes.addAll(getCraftingRecipes(constructDoubleChestRecipe, DoubleChestTierUpgradeRecipe.class, TierUpgradeRecipesMaker::getDoubleChestItems, subtypeInterpreterGetter, transformRecipe));
-		return craftingRecipes;
+	public static <T extends PropertyBasedSubtypeInterpreter> List<TierUpgradeDisplayRecipe> getGroupedShapelessCraftingRecipes(Function<ItemStack, Optional<T>> subtypeInterpreterGetter) {
+		List<TierUpgradeDisplayRecipe> recipes = getGroupedCraftingRecipes(StorageTierUpgradeShapelessRecipe.class, TierUpgradeRecipesMaker::getStorageItems, subtypeInterpreterGetter, true);
+		recipes.addAll(getGroupedCraftingRecipes(DoubleChestTierUpgradeShapelessRecipe.class, TierUpgradeRecipesMaker::getDoubleChestItems, subtypeInterpreterGetter, true));
+		return recipes;
 	}
 
-	public static <T extends PropertyBasedSubtypeInterpreter> List<RecipeHolder<CraftingRecipe>> getShapelessCraftingRecipes(Function<ItemStack, Optional<T>> getSubtypeInterpreter) {
-		return getShapelessCraftingRecipes(getSubtypeInterpreter, RecipeHolder::new);
-	}
-
-	public static <R,T extends PropertyBasedSubtypeInterpreter> List<R> getShapelessCraftingRecipes(Function<ItemStack, Optional<T>> getSubtypeInterpreter, BiFunction<ResourceLocation, CraftingRecipe, R> transformRecipe) {
-		RecipeConstructor<StorageTierUpgradeShapelessRecipe> constructRecipe = (originalRecipe, ingredients, result) -> new ShapelessRecipe("", CraftingBookCategory.MISC, result, ingredients);
-		List<R> craftingRecipes = getCraftingRecipes(constructRecipe, StorageTierUpgradeShapelessRecipe.class, TierUpgradeRecipesMaker::getStorageItems, getSubtypeInterpreter, transformRecipe);
-		RecipeConstructor<DoubleChestTierUpgradeShapelessRecipe> constructDoubleChestRecipe = (originalRecipe, ingredients, result) -> new ShapelessRecipe("", CraftingBookCategory.MISC, result, ingredients);
-		craftingRecipes.addAll(getCraftingRecipes(constructDoubleChestRecipe, DoubleChestTierUpgradeShapelessRecipe.class, TierUpgradeRecipesMaker::getDoubleChestItems, getSubtypeInterpreter, transformRecipe));
-		return craftingRecipes;
-	}
-
-	private static <R, T extends CraftingRecipe, U extends PropertyBasedSubtypeInterpreter> List<R> getCraftingRecipes(RecipeConstructor<T> constructRecipe, Class<T> originalRecipeClass,
-																									Function<CraftingRecipe, List<ItemStack>> getStorageItems,
-																									Function<ItemStack, Optional<U>> getSubtypeInterpreter,
-																									BiFunction<ResourceLocation, CraftingRecipe, R> transformRecipe) {
-		return ClientRecipeHelper.transformAllRecipesOfTypeIntoMultiple(RecipeType.CRAFTING, originalRecipeClass, recipe -> {
-			List<R> itemGroupRecipes = new ArrayList<>();
-			getStorageItems.apply(recipe).forEach(storageItem -> {
-				NonNullList<Ingredient> ingredients = recipe.getIngredients();
-				CraftingContainer craftinginventory = new TransientCraftingContainer(new AbstractContainerMenu(null, -1) {
-					@Override
-					public ItemStack quickMoveStack(Player player, int index) {
-						return ItemStack.EMPTY;
-					}
-
-					public boolean stillValid(Player playerIn) {
-						return false;
-					}
-				}, 3, 3);
-				NonNullList<Ingredient> ingredientsCopy = NonNullList.createWithCapacity(ingredients.size());
-				int i = 0;
-				for (Ingredient ingredient : ingredients) {
-					ItemStack[] ingredientItems = ingredient.getItems();
-					if (ingredientItems.length == 1 && storageItem.getItem() == ingredientItems[0].getItem()) {
-						ingredientsCopy.add(i, Ingredient.of(storageItem));
-						craftinginventory.setItem(i, storageItem.copy());
-					} else {
-						ingredientsCopy.add(i, ingredient);
-						if (!ingredient.isEmpty()) {
-							craftinginventory.setItem(i, ingredientItems[0]);
-						}
-					}
-					i++;
-				}
-				ItemStack result = ClientRecipeHelper.assemble(recipe, craftinginventory.asCraftInput());
-				ResourceLocation id = ResourceLocation.fromNamespaceAndPath(SophisticatedStorage.MOD_ID,
-						"tier_upgrade_"
-								+ getSubtypeInterpreter.apply(storageItem).map(interpreter -> interpreter.getRegistrySanitizedItemString(storageItem)).orElse("")
-								+ "_to_"
-								+ getSubtypeInterpreter.apply(result).map(interpreter -> interpreter.getRegistrySanitizedItemString(result)).orElse("")
-				);
-				itemGroupRecipes.add(transformRecipe.apply(id, constructRecipe.construct(recipe, ingredientsCopy, result)));
-			});
-			return itemGroupRecipes;
+	private static <T extends CraftingRecipe, U extends PropertyBasedSubtypeInterpreter> List<TierUpgradeDisplayRecipe> getGroupedCraftingRecipes(Class<T> originalRecipeClass,
+															 Function<CraftingRecipe, List<ItemStack>> getStorageItems,
+															 Function<ItemStack, Optional<U>> getSubtypeInterpreter,
+															 boolean shapeless) {
+		return ClientRecipeHelper.transformAllRecipeHoldersOfTypeIntoMultiple(RecipeType.CRAFTING, originalRecipeClass, recipeHolder -> {
+			TierUpgradeDisplayRecipe displayRecipe = createDisplayRecipe(recipeHolder, getStorageItems, getSubtypeInterpreter, shapeless);
+			return List.of(displayRecipe);
 		});
+	}
+
+	private static <T extends CraftingRecipe, U extends PropertyBasedSubtypeInterpreter> TierUpgradeDisplayRecipe createDisplayRecipe(RecipeHolder<T> recipeHolder,
+			Function<CraftingRecipe, List<ItemStack>> getStorageItems,
+			Function<ItemStack, Optional<U>> getSubtypeInterpreter,
+			boolean shapeless) {
+		T recipe = recipeHolder.value();
+		CraftingContainer craftingInventory = createCraftingInventory();
+		int storageIngredientIndex = findStorageIngredientIndex(recipe.getIngredients());
+		NonNullList<Ingredient> ingredientsCopy = copyIngredients(recipe.getIngredients());
+		Map<String, TierUpgradeVariantPair> variantPairs = new LinkedHashMap<>();
+		for (ItemStack storageItem : getStorageItems.apply(recipe)) {
+			populateCraftingInventory(recipe.getIngredients(), craftingInventory, storageIngredientIndex, storageItem);
+			ItemStack result = ClientRecipeHelper.assemble(recipe, craftingInventory.asCraftInput());
+			TierUpgradeVariantPair pair = new TierUpgradeVariantPair(storageItem.copy(), result.copy());
+			variantPairs.putIfAbsent(getPairKey(pair, getSubtypeInterpreter), pair);
+		}
+		ResourceLocation id = recipeHolder.id().withPath(path -> "tier_upgrade_grouped/" + path);
+		int width = recipe instanceof ShapedRecipe shapedRecipe ? shapedRecipe.getWidth() : 0;
+		int height = recipe instanceof ShapedRecipe shapedRecipe ? shapedRecipe.getHeight() : 0;
+		RecipeHolder<CraftingRecipe> displayRecipeHolder = new RecipeHolder<>(recipeHolder.id(), shapeless ? new ShapelessRecipe("", CraftingBookCategory.MISC, ClientRecipeHelper.getResultItem(recipe), ingredientsCopy)
+				: new ShapedRecipe("", CraftingBookCategory.MISC, new ShapedRecipePattern(width, height, ingredientsCopy, Optional.empty()), ClientRecipeHelper.getResultItem(recipe)));
+		return new TierUpgradeDisplayRecipe(id, displayRecipeHolder, shapeless, width, height, ingredientsCopy, storageIngredientIndex, List.copyOf(variantPairs.values()));
+	}
+
+	private static CraftingContainer createCraftingInventory() {
+		return new TransientCraftingContainer(new AbstractContainerMenu(null, -1) {
+			@Override
+			public ItemStack quickMoveStack(Player player, int index) {
+				return ItemStack.EMPTY;
+			}
+
+			public boolean stillValid(Player playerIn) {
+				return false;
+			}
+		}, 3, 3);
+	}
+
+	private static NonNullList<Ingredient> copyIngredients(NonNullList<Ingredient> ingredients) {
+		NonNullList<Ingredient> ingredientsCopy = NonNullList.createWithCapacity(ingredients.size());
+		ingredientsCopy.addAll(ingredients);
+		return ingredientsCopy;
+	}
+
+	private static int findStorageIngredientIndex(NonNullList<Ingredient> ingredients) {
+		for (int i = 0; i < ingredients.size(); i++) {
+			for (ItemStack ingredientItem : ingredients.get(i).getItems()) {
+				if (ingredientItem.getItem() instanceof StorageBlockItem) {
+					return i;
+				}
+			}
+		}
+		throw new IllegalStateException("Tier upgrade recipe missing storage ingredient");
+	}
+
+	private static void populateCraftingInventory(NonNullList<Ingredient> ingredients, CraftingContainer craftingInventory, int storageIngredientIndex, ItemStack storageItem) {
+		for (int i = 0; i < ingredients.size(); i++) {
+			if (i == storageIngredientIndex) {
+				craftingInventory.setItem(i, storageItem.copy());
+				continue;
+			}
+			Ingredient ingredient = ingredients.get(i);
+			ItemStack[] ingredientItems = ingredient.getItems();
+			craftingInventory.setItem(i, ingredient.isEmpty() ? ItemStack.EMPTY : ingredientItems[0]);
+		}
+	}
+
+	private static <U extends PropertyBasedSubtypeInterpreter> String getPairKey(TierUpgradeVariantPair pair, Function<ItemStack, Optional<U>> getSubtypeInterpreter) {
+		return getSubtypeInterpreter.apply(pair.source()).map(interpreter -> interpreter.getRegistrySanitizedItemString(pair.source())).orElse(pair.source().toString())
+				+ "->"
+				+ getSubtypeInterpreter.apply(pair.result()).map(interpreter -> interpreter.getRegistrySanitizedItemString(pair.result())).orElse(pair.result().toString());
 	}
 
 	private static List<ItemStack> getDoubleChestItems(CraftingRecipe recipe) {
@@ -113,7 +133,7 @@ public class TierUpgradeRecipesMaker {
 			for (ItemStack ingredientItem : ingredientItems) {
 				Item item = ingredientItem.getItem();
 				if (item instanceof ChestBlockItem chestBlockItem) {
-					chestBlockItem.addCreativeTabItems(stack -> {
+					addRecipeViewerVariants(chestBlockItem).forEach(stack -> {
 						ChestBlockItem.setDoubleChest(stack, true);
 						doubleChestItems.add(stack);
 					});
@@ -132,7 +152,7 @@ public class TierUpgradeRecipesMaker {
 			for (ItemStack ingredientItem : ingredientItems) {
 				Item item = ingredientItem.getItem();
 				if (item instanceof StorageBlockItem storageBlockItem) {
-					storageBlockItem.addCreativeTabItems(storageItems::add);
+					storageItems.addAll(addRecipeViewerVariants(storageBlockItem));
 				}
 			}
 		}
@@ -140,7 +160,23 @@ public class TierUpgradeRecipesMaker {
 		return storageItems;
 	}
 
-	private interface RecipeConstructor<T extends Recipe<?>> {
-		CraftingRecipe construct(T originalRecipe, NonNullList<Ingredient> ingredients, ItemStack result);
+	private static List<ItemStack> addRecipeViewerVariants(StorageBlockItem storageBlockItem) {
+		List<ItemStack> variants = new ArrayList<>();
+		variants.add(new ItemStack(storageBlockItem));
+		if (storageBlockItem instanceof WoodStorageBlockItem) {
+			variants.addAll(DyeRecipesMaker.getWoodStorageStackList((StorageBlockBase) storageBlockItem.getBlock()));
+		}
+		for (DyeColor color : DyeColor.values()) {
+			ItemStack storageStack = new ItemStack(storageBlockItem);
+			storageBlockItem.setMainColor(storageStack, color.getTextureDiffuseColor());
+			storageBlockItem.setAccentColor(storageStack, color.getTextureDiffuseColor());
+			variants.add(storageStack);
+		}
+		ItemStack storageStack = new ItemStack(storageBlockItem);
+		storageBlockItem.setMainColor(storageStack, DyeColor.YELLOW.getTextureDiffuseColor());
+		storageBlockItem.setAccentColor(storageStack, DyeColor.LIME.getTextureDiffuseColor());
+		variants.add(storageStack);
+		return variants;
 	}
+
 }

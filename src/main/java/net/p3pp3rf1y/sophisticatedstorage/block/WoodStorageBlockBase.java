@@ -68,7 +68,7 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 
 	@Override
 	public void onBlockExploded(BlockState state, Level level, BlockPos pos, Explosion explosion) {
-		if (Boolean.TRUE.equals(Config.COMMON.dropPacked.get())) {
+		if (Config.COMMON.dropPacked.get()) {
 			WorldHelper.getBlockEntity(level, pos, WoodStorageBlockEntity.class).ifPresent(wbe -> {
 				if (isNonEmpty(wbe)) {
 					wbe.setPacked(true);
@@ -99,7 +99,7 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 	}
 
 	private static boolean shouldNonEmptyDropPacked(WoodStorageBlockEntity wbe) {
-		if (Boolean.FALSE.equals(Config.COMMON.dropPacked.get())) {
+		if (!Config.COMMON.dropPacked.get()) {
 			return false;
 		}
 
@@ -129,13 +129,13 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 
 	@Override
 	public void addCreativeTabItems(Consumer<ItemStack> itemConsumer) {
-		if (!Config.CLIENT_SPEC.isLoaded() || Boolean.TRUE.equals(Config.CLIENT.showSingleWoodVariantOnly.get())) {
+		if (!Config.CLIENT_SPEC.isLoaded() || Config.CLIENT.showSingleWoodVariantOnly.get()) {
 			itemConsumer.accept(WoodStorageBlockItem.setWoodType(new ItemStack(this), WoodType.ACACIA));
 		} else {
 			CUSTOM_TEXTURE_WOOD_TYPES.keySet().forEach(woodType -> itemConsumer.accept(WoodStorageBlockItem.setWoodType(new ItemStack(this), woodType)));
 		}
 
-		if (isBasicTier() || Boolean.TRUE.equals(!Config.CLIENT_SPEC.isLoaded() || Config.CLIENT.showHigherTierTintedVariants.get())) {
+		if (isBasicTier()) {
 			for (DyeColor color : DyeColor.values()) {
 				ItemStack storageStack = new ItemStack(this);
 				if (storageStack.getItem() instanceof ITintableBlockItem tintableBlockItem) {
@@ -228,7 +228,7 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 		BlockState ret = super.playerWillDestroy(level, pos, state, player);
 		WorldHelper.getBlockEntity(level, pos, WoodStorageBlockEntity.class)
 				.ifPresent(wbe -> {
-					if (Boolean.TRUE.equals(Config.COMMON.dropPacked.get()) && isNonEmpty(wbe)) {
+					if (Config.COMMON.dropPacked.get() && isNonEmpty(wbe)) {
 						wbe.setPacked(true);
 					}
 
@@ -250,7 +250,7 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 	@SuppressWarnings("java:S1172") //parameter is used in override
 	protected boolean tryItemInteraction(Player player, InteractionHand hand, WoodStorageBlockEntity b, ItemStack stackInHand, Direction facing, BlockHitResult hitResult) {
 		if (stackInHand.getItem() instanceof PackingTapeItem) {
-			if (Boolean.TRUE.equals(Config.COMMON.dropPacked.get())) {
+			if (Config.COMMON.dropPacked.get()) {
 				player.displayClientMessage(Component.translatable("gui.sophisticatedstorage.status.packing_tape_disabled"), true);
 			} else {
 				packStorage(player, hand, b, stackInHand);
