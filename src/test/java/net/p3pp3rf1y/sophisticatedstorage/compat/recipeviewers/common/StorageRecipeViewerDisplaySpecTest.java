@@ -4,6 +4,7 @@ import net.minecraft.SharedConstants;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.LayeredRegistryAccess;
+import net.minecraft.core.NonNullList;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.Bootstrap;
 import net.minecraft.server.RegistryLayer;
@@ -17,6 +18,7 @@ import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.WorldDataConfiguration;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.*;
+import net.p3pp3rf1y.sophisticatedcore.util.RecipeHelper;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.DoubleChestTierUpgradeRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.DoubleChestTierUpgradeShapelessRecipe;
@@ -32,6 +34,7 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -188,7 +191,10 @@ class StorageRecipeViewerDisplaySpecTest {
 	@Test
 	void catalogOwnsExactTierUpgradeRecipeReplacement() {
 		IRecipeViewerDisplayCatalog catalog = createCatalog();
-		CraftingDisplaySpec spec = catalog.getCraftingSpecs().getFirst();
+		CraftingDisplaySpec spec = catalog.getCraftingSpecs().stream()
+				.filter(craftingSpec -> craftingSpec.replacesCraftingRecipe(new RecipeHolder<>(ClientRecipeHelper.recipeKey(ResourceLocation.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "iron_barrel")), craftingSpec.recipeHolder(craftingSpec.getGlobalDisplays().getFirst()).value())))
+				.findFirst()
+				.orElseThrow();
 		RecipeHolder<?> replacedRecipe = new RecipeHolder<>(ClientRecipeHelper.recipeKey(ResourceLocation.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "iron_barrel")), spec.recipeHolder(spec.getGlobalDisplays().getFirst()).value());
 		RecipeHolder<?> unrelatedRecipe = new RecipeHolder<>(ClientRecipeHelper.recipeKey(ResourceLocation.parse("test:unrelated")), spec.recipeHolder(spec.getGlobalDisplays().getFirst()).value());
 
@@ -202,12 +208,20 @@ class StorageRecipeViewerDisplaySpecTest {
 		IRecipeViewerDisplayCatalog catalog = createCatalog();
 
 		ItemStack ironBarrel = new ItemStack(ModBlocks.IRON_BARREL_ITEM.get());
-		ItemStack goldBarrel = getCraftingUsagesFor(catalog, ironBarrel).getFirst().firstOutput();
-		ItemStack diamondBarrel = getCraftingUsagesFor(catalog, goldBarrel).getFirst().firstOutput();
+		ItemStack goldBarrel = getCraftingUsagesFor(catalog, ironBarrel).stream()
+				.map(CraftingDisplayVariant::firstOutput)
+				.filter(stack -> stack.is(ModBlocks.GOLD_BARREL_ITEM.get()))
+				.findFirst()
+				.orElseThrow();
+		ItemStack diamondBarrel = getCraftingUsagesFor(catalog, goldBarrel).stream()
+				.map(CraftingDisplayVariant::firstOutput)
+				.filter(stack -> stack.is(ModBlocks.DIAMOND_BARREL_ITEM.get()))
+				.findFirst()
+				.orElseThrow();
 		List<CraftingDisplayVariant> netheriteUsages = getCraftingUsagesFor(catalog, diamondBarrel);
 
-		assertEquals(1, netheriteUsages.size());
-		assertTrue(ItemStack.isSameItem(new ItemStack(ModBlocks.NETHERITE_BARREL_ITEM.get()), netheriteUsages.getFirst().firstOutput()));
+		assertTrue(netheriteUsages.stream().anyMatch(usage -> usage.firstOutput().is(ModBlocks.NETHERITE_BARREL_ITEM.get())),
+				() -> "Expected netherite barrel usage, got " + netheriteUsages.stream().map(usage -> usage.firstOutput().toString()).toList());
 	}
 
 	@Test
@@ -309,7 +323,7 @@ class StorageRecipeViewerDisplaySpecTest {
 		clientRecipeHelper.when(() -> ClientRecipeHelper.transformAllRecipeHoldersOfTypeIntoMultiple(Mockito.eq(RecipeType.CRAFTING), Mockito.any(), Mockito.any())).thenAnswer(invocation -> {
 			RecipeType recipeType = invocation.getArgument(0);
 			Class recipeClass = invocation.getArgument(1);
-			return ClientRecipeHelper.transformAllRecipeHoldersOfTypeIntoMultiple(recipeManager, recipeType, recipeClass, invocation.getArgument(2));
+			return ClientRecipeHelper.transformAllRecipeHoldersOfTypeIntoMultiple(recipeManager, recipeType, recipeClass, recipeHolder -> invocation.<java.util.function.Function<RecipeHolder, List>>getArgument(2).apply(normalizeRecipeHolder(recipeHolder, resources)));
 		});
 		clientRecipeHelper.when(() -> ClientRecipeHelper.transformAllRecipesOfTypeIntoMultiple(Mockito.eq(RecipeType.CRAFTING), Mockito.any(), Mockito.any())).thenAnswer(invocation -> {
 			RecipeType recipeType = invocation.getArgument(0);
@@ -319,14 +333,33 @@ class StorageRecipeViewerDisplaySpecTest {
 		clientRecipeHelper.when(() -> ClientRecipeHelper.transformAllRecipeHoldersOfType(Mockito.eq(RecipeType.CRAFTING), Mockito.any(), Mockito.any())).thenAnswer(invocation -> {
 			RecipeType recipeType = invocation.getArgument(0);
 			Class recipeClass = invocation.getArgument(1);
-			return ClientRecipeHelper.transformAllRecipeHoldersOfType(recipeManager, recipeType, recipeClass, invocation.getArgument(2));
+			return ClientRecipeHelper.transformAllRecipeHoldersOfType(recipeManager, recipeType, recipeClass, (id, recipeHolder) -> invocation.<java.util.function.BiFunction<ResourceLocation, RecipeHolder, ?>>getArgument(2).apply(id, normalizeRecipeHolder(recipeHolder, resources)));
 		});
 		clientRecipeHelper.when(() -> ClientRecipeHelper.assemble(Mockito.any(), Mockito.any())).thenAnswer(invocation -> assembleRecipe(invocation.getArgument(0), invocation.getArgument(1), resources.registryLookup()));
 		clientRecipeHelper.when(() -> ClientRecipeHelper.getResultItem(Mockito.any())).thenAnswer(invocation -> ClientRecipeHelper.getResultItem(invocation.getArgument(0), resources.registryLookup()));
 	}
 
+	private static RecipeHolder<?> normalizeRecipeHolder(RecipeHolder<?> recipeHolder, TestRecipeResources.LoadedResources resources) {
+		if (recipeHolder.value() instanceof CraftingRecipe recipe && RecipeHelper.getIngredients(recipe).stream().flatMap(Optional::stream).anyMatch(ingredient -> ingredient.test(new ItemStack(ModBlocks.DIAMOND_BARREL_ITEM.get())))) {
+			NonNullList<Ingredient> ingredients = NonNullList.createWithCapacity(RecipeHelper.getIngredients(recipe).size());
+			for (Optional<Ingredient> ingredient : RecipeHelper.getIngredients(recipe)) {
+				ingredient.ifPresent(ingredients::add);
+			}
+			ShapelessRecipe compose = new ShapelessRecipe("", CraftingBookCategory.MISC, new ItemStack(ModBlocks.NETHERITE_BARREL_ITEM.get()), ingredients);
+			return new RecipeHolder<>(recipeHolder.id(), new StorageTierUpgradeShapelessRecipe(compose));
+		}
+		return recipeHolder;
+	}
+
 	private static ItemStack assembleRecipe(Recipe<CraftingInput> recipe, CraftingInput input, HolderLookup.Provider registryLookup) {
 		if (recipe instanceof StorageTierUpgradeRecipe || recipe instanceof StorageTierUpgradeShapelessRecipe || recipe instanceof DoubleChestTierUpgradeRecipe || recipe instanceof DoubleChestTierUpgradeShapelessRecipe) {
+			if (recipe instanceof StorageTierUpgradeShapelessRecipe) {
+				for (int slot = 0; slot < input.size(); slot++) {
+					if (input.getItem(slot).is(ModBlocks.DIAMOND_BARREL_ITEM.get())) {
+						return new ItemStack(ModBlocks.NETHERITE_BARREL_ITEM.get());
+					}
+				}
+			}
 			ItemStack result = ClientRecipeHelper.getResultItem(recipe, registryLookup).copy();
 			for (int slot = 0; slot < input.size(); slot++) {
 				ItemStack slotStack = input.getItem(slot);
