@@ -25,7 +25,7 @@ public class ShulkerBoxFromVanillaShapelessRecipe extends ShapelessRecipe implem
 	private final ShapelessRecipe compose;
 
 	public ShulkerBoxFromVanillaShapelessRecipe(ShapelessRecipe compose) {
-		super(compose.getId(), compose.getGroup(), compose.category(), compose.result, compose.getIngredients());
+		super(compose.getId(), compose.getGroup(), compose.category(), compose.getResultItem(null), compose.getIngredients());
 		this.compose = compose;
 		REGISTERED_RECIPES.add(compose.getId());
 	}

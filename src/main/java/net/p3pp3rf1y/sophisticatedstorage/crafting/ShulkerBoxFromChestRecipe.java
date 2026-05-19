@@ -25,7 +25,7 @@ public class ShulkerBoxFromChestRecipe extends ShapedRecipe implements IWrapperR
 	private final ShapedRecipe compose;
 
 	public ShulkerBoxFromChestRecipe(ShapedRecipe compose) {
-		super(compose.getId(), compose.getGroup(), compose.category(), compose.getRecipeWidth(), compose.getRecipeHeight(), compose.getIngredients(), compose.result);
+		super(compose.getId(), compose.getGroup(), compose.category(), compose.getRecipeWidth(), compose.getRecipeHeight(), compose.getIngredients(), compose.getResultItem(null));
 		this.compose = compose;
 		REGISTERED_RECIPES.add(compose.getId());
 	}

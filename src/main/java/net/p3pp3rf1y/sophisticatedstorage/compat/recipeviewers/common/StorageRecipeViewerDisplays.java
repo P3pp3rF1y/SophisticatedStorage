@@ -8,9 +8,14 @@ import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.IRecipeViewer
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.SingleColorDyeRecipeSpec;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.DoubleChestTierUpgradeRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.DoubleChestTierUpgradeShapelessRecipe;
+import net.p3pp3rf1y.sophisticatedstorage.crafting.ShulkerBoxFromChestRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.ShulkerBoxFromVanillaShapelessRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.StorageTierUpgradeRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.StorageTierUpgradeShapelessRecipe;
+import net.p3pp3rf1y.sophisticatedstorage.item.BarrelBlockItem;
+import net.p3pp3rf1y.sophisticatedstorage.item.ChestBlockItem;
+import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
+import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
 
 public class StorageRecipeViewerDisplays {
 	private StorageRecipeViewerDisplays() {
@@ -22,13 +27,14 @@ public class StorageRecipeViewerDisplays {
 		catalog.addCraftingSpecExtensionRecipeClass(StorageTierUpgradeShapelessRecipe.class);
 		catalog.addCraftingSpecExtensionRecipeClass(DoubleChestTierUpgradeRecipe.class);
 		catalog.addCraftingSpecExtensionRecipeClass(DoubleChestTierUpgradeShapelessRecipe.class);
+		catalog.addCraftingSpecExtensionRecipeClass(ShulkerBoxFromChestRecipe.class);
 		TierUpgradeRecipesMaker.getGroupedShapedCraftingRecipes(context::getSubtypeInterpreter).stream()
 				.map(TierUpgradeDisplayRecipe::toSpec)
 				.forEach(catalog::addCraftingSpec);
 		TierUpgradeRecipesMaker.getGroupedShapelessCraftingRecipes(context::getSubtypeInterpreter).stream()
 				.map(TierUpgradeDisplayRecipe::toSpec)
 				.forEach(catalog::addCraftingSpec);
-		ShulkerBoxFromChestRecipesMaker.getShapedRecipes(context::getSubtypeInterpreter).forEach(catalog::addCraftingRecipe);
+		ShulkerBoxFromChestRecipesMaker.getShapedRecipeSpecs(context::getSubtypeInterpreter).forEach(catalog::addCraftingSpec);
 		FlatBarrelRecipesMaker.getShapelessRecipes().forEach(catalog::addCraftingRecipe);
 		ClientRecipeHelper.transformAllRecipesOfType(RecipeType.CRAFTING, ShulkerBoxFromVanillaShapelessRecipe.class, recipe -> recipe)
 				.forEach(catalog::addCraftingRecipe);
@@ -41,6 +47,15 @@ public class StorageRecipeViewerDisplays {
 						.orElse(ItemStack.isSameItemSameTags(recipeResult, focusedOutput))))
 				.forEach(catalog::addGroupedCraftingSpec);
 		DyeRecipesMaker.getMultipleColorsRecipes(context::getSubtypeInterpreter).forEach(catalog::addCraftingRecipe);
+	}
+
+	public static boolean needsComponentSensitiveCraftingDisplay(ItemStack stack) {
+		return stack.getItem() instanceof StorageBlockItem
+				&& (StorageBlockItem.getMainColorFromStack(stack).isPresent()
+						|| StorageBlockItem.getAccentColorFromStack(stack).isPresent()
+						|| WoodStorageBlockItem.getWoodType(stack).isPresent()
+						|| ChestBlockItem.isDoubleChest(stack)
+						|| BarrelBlockItem.isFlatTop(stack));
 	}
 
 }

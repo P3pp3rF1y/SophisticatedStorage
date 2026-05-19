@@ -115,7 +115,8 @@ public class StorageEmiPlugin implements EmiPlugin {
 		registry.removeRecipes(recipe -> recipe.getBackingRecipe() instanceof CraftingRecipe craftingRecipe && catalog.replacesCraftingRecipe(craftingRecipe));
 
 		catalog.getGroupedCraftingSpecs().stream()
-				.flatMap(spec -> GroupedCraftingEmiRecipe.ofGroupedUsageAndFocusedRecipes(spec.recipe()).stream())
+				.flatMap(spec -> spec.getAllDisplays().stream())
+				.flatMap(recipe -> GroupedCraftingEmiRecipe.ofGroupedUsageAndFocusedRecipes(recipe).stream())
 				.forEach(registry::addRecipe);
 		catalog.getCraftingRecipes().stream()
 				.filter(recipe -> !catalog.replacesCraftingRecipe(recipe))

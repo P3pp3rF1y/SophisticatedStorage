@@ -23,7 +23,7 @@ public class GenericWoodStorageRecipe extends ShapedRecipe implements IWrapperRe
 	private final ShapedRecipe compose;
 
 	public GenericWoodStorageRecipe(ShapedRecipe compose) {
-		super(compose.getId(), compose.getGroup(), compose.category(), compose.getRecipeWidth(), compose.getRecipeHeight(), compose.getIngredients(), compose.result);
+		super(compose.getId(), compose.getGroup(), compose.category(), compose.getRecipeWidth(), compose.getRecipeHeight(), compose.getIngredients(), compose.getResultItem(null));
 		this.compose = compose;
 		REGISTERED_RECIPES.add(compose.getId());
 	}

@@ -23,7 +23,7 @@ public class StorageTierUpgradeShapelessRecipe extends ShapelessRecipe implement
 	private final ShapelessRecipe compose;
 
 	public StorageTierUpgradeShapelessRecipe(ShapelessRecipe compose) {
-		super(compose.getId(), compose.getGroup(), compose.category(), compose.result, compose.getIngredients());
+		super(compose.getId(), compose.getGroup(), compose.category(), compose.getResultItem(null), compose.getIngredients());
 		this.compose = compose;
 		REGISTERED_RECIPES.add(compose.getId());
 	}
