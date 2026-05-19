@@ -3,18 +3,26 @@ package net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.emi;
 import dev.emi.emi.api.EmiEntrypoint;
 import dev.emi.emi.api.EmiPlugin;
 import dev.emi.emi.api.EmiRegistry;
+import dev.emi.emi.api.recipe.BasicEmiRecipe;
 import dev.emi.emi.api.recipe.EmiCraftingRecipe;
+import dev.emi.emi.api.recipe.EmiRecipe;
 import dev.emi.emi.api.recipe.EmiRecipeCategory;
 import dev.emi.emi.api.recipe.VanillaEmiRecipeCategories;
+import dev.emi.emi.api.render.EmiTexture;
+import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.widget.Bounds;
+import dev.emi.emi.api.widget.WidgetHolder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingRecipe;
+import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.ShapelessRecipe;
 import net.minecraft.world.level.block.Block;
+import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.ClientRecipeHelper;
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.IRecipeViewerDisplayCatalog;
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.IRecipeViewerDisplayContext;
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.RecipeViewerDisplayCatalog;
@@ -34,9 +42,13 @@ import net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.common.StorageRec
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.IntPredicate;
 
 import static net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.common.subtypes.SubtypeInterpreters.getSubtypeInterpreters;
 
@@ -116,11 +128,12 @@ public class StorageEmiPlugin implements EmiPlugin {
 		registry.removeRecipes(recipe -> recipe.getBackingRecipe() != null && catalog.replacesCraftingRecipe(recipe.getBackingRecipe()));
 
 		catalog.getGroupedCraftingSpecs().stream()
-				.flatMap(spec -> GroupedCraftingEmiRecipe.ofGroupedUsageAndFocusedRecipes(spec.recipeHolder()).stream())
+				.flatMap(spec -> spec.getAllDisplays().stream())
+				.flatMap(recipeHolder -> GroupedCraftingEmiRecipe.ofGroupedUsageAndFocusedRecipes(recipeHolder).stream())
 				.forEach(registry::addRecipe);
 		catalog.getCraftingRecipes().stream()
 				.filter(recipeHolder -> !catalog.replacesCraftingRecipe(recipeHolder))
-				.map(StorageEmiPlugin::wrapSyntheticCraftingRecipe)
+				.flatMap(recipeHolder -> wrapSyntheticCraftingRecipe(recipeHolder).stream())
 				.forEach(registry::addRecipe);
 
 		catalog.getCraftingSpecs().stream()
@@ -136,11 +149,108 @@ public class StorageEmiPlugin implements EmiPlugin {
 		return catalog;
 	}
 
-	private static EmiCraftingRecipe wrapSyntheticCraftingRecipe(RecipeHolder<CraftingRecipe> recipeHolder) {
-		if (recipeHolder.value() instanceof ShapelessRecipe) {
-			return EmiClientRecipeHelper.wrapSyntheticShapelessRecipe(recipeHolder.id(), recipeHolder.value());
+	private static List<EmiRecipe> wrapSyntheticCraftingRecipe(RecipeHolder<CraftingRecipe> recipeHolder) {
+		CraftingRecipe recipe = recipeHolder.value();
+		List<Ingredient> ingredients = recipe.getIngredients();
+		List<EmiRecipe> recipes = new ArrayList<>();
+		if (hasBroadIngredient(ingredients)) {
+			recipes.add(new SyntheticCraftingRecipe(recipeHolder.id(), recipeHolder, getInputIngredients(ingredients), ingredientIndex -> !isBroadIngredient(ingredients, ingredientIndex), true));
+		} else {
+			recipes.add(recipe instanceof ShapelessRecipe ? EmiClientRecipeHelper.wrapSyntheticShapelessRecipe(recipeHolder.id(), recipe) : EmiClientRecipeHelper.wrapSyntheticShapedRecipe(recipeHolder.id(), recipe));
 		}
-		return EmiClientRecipeHelper.wrapSyntheticShapedRecipe(recipeHolder.id(), recipeHolder.value());
+		addFocusedInputSyntheticRecipes(recipeHolder, recipes);
+		return recipes;
+	}
+
+	private static boolean hasBroadIngredient(List<Ingredient> ingredients) {
+		for (int ingredientIndex = 0; ingredientIndex < ingredients.size(); ingredientIndex++) {
+			if (isBroadIngredient(ingredients, ingredientIndex)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private static boolean isBroadIngredient(List<Ingredient> ingredients, int ingredientIndex) {
+		return ingredients.get(ingredientIndex).getItems().length > 1;
+	}
+
+	private static void addFocusedInputSyntheticRecipes(RecipeHolder<CraftingRecipe> recipeHolder, List<EmiRecipe> recipes) {
+		ResourceLocation baseId = recipeHolder.id();
+		CraftingRecipe recipe = recipeHolder.value();
+		List<Ingredient> ingredients = recipe.getIngredients();
+		for (int ingredientIndex = 0; ingredientIndex < ingredients.size(); ingredientIndex++) {
+			ItemStack[] stacks = ingredients.get(ingredientIndex).getItems();
+			if (stacks.length <= 1) {
+				continue;
+			}
+			for (int stackIndex = 0; stackIndex < stacks.length; stackIndex++) {
+				int focusedIngredientIndex = ingredientIndex;
+				int focusedStackIndex = stackIndex;
+				ResourceLocation id = baseId.withPath(path -> path + "/input/" + focusedIngredientIndex + "/" + focusedStackIndex);
+				recipes.add(new SyntheticCraftingRecipe(id, recipeHolder, getFocusedInputIngredients(ingredients, ingredientIndex, stacks[stackIndex]), inputIndex -> true, false));
+			}
+		}
+	}
+
+	private static List<EmiIngredient> getInputIngredients(List<Ingredient> ingredients) {
+		List<EmiIngredient> inputIngredients = new ArrayList<>(ingredients.size());
+		for (Ingredient ingredient : ingredients) {
+			inputIngredients.add(EmiIngredient.of(Arrays.stream(ingredient.getItems()).map(EmiStack::of).toList()));
+		}
+		return inputIngredients;
+	}
+
+	private static List<EmiIngredient> getFocusedInputIngredients(List<Ingredient> ingredients, int focusedIngredientIndex, ItemStack focusedStack) {
+		List<EmiIngredient> focusedIngredients = new ArrayList<>(ingredients.size());
+		for (int ingredientIndex = 0; ingredientIndex < ingredients.size(); ingredientIndex++) {
+			if (ingredientIndex == focusedIngredientIndex) {
+				focusedIngredients.add(EmiStack.of(focusedStack));
+			} else {
+				focusedIngredients.add(EmiIngredient.of(Arrays.stream(ingredients.get(ingredientIndex).getItems()).map(EmiStack::of).toList()));
+			}
+		}
+		return focusedIngredients;
+	}
+
+	private static class SyntheticCraftingRecipe extends BasicEmiRecipe {
+		private final RecipeHolder<CraftingRecipe> recipeHolder;
+		private final List<EmiIngredient> displayInputs;
+		private final EmiStack output;
+		private final boolean shapeless;
+
+		private SyntheticCraftingRecipe(ResourceLocation id, RecipeHolder<CraftingRecipe> recipeHolder, List<EmiIngredient> displayInputs, IntPredicate inputIndexFilter, boolean indexOutput) {
+			super(VanillaEmiRecipeCategories.CRAFTING, id.withPath(path -> path.startsWith("/") ? path : "/" + path), 118, 54);
+			this.recipeHolder = recipeHolder;
+			this.displayInputs = displayInputs;
+			output = EmiStack.of(ClientRecipeHelper.getResultItem(recipeHolder.value()));
+			shapeless = recipeHolder.value() instanceof ShapelessRecipe;
+			for (int inputIndex = 0; inputIndex < displayInputs.size(); inputIndex++) {
+				if (inputIndexFilter.test(inputIndex)) {
+					inputs.add(displayInputs.get(inputIndex));
+				}
+			}
+			if (indexOutput) {
+				outputs.add(output);
+			}
+		}
+
+		@Override
+		public void addWidgets(WidgetHolder widgets) {
+			widgets.addTexture(EmiTexture.EMPTY_ARROW, 60, 18);
+			if (shapeless) {
+				widgets.addTexture(EmiTexture.SHAPELESS, 97, 0);
+			}
+			for (int i = 0; i < displayInputs.size(); i++) {
+				widgets.addSlot(displayInputs.get(i), i % 3 * 18, i / 3 * 18);
+			}
+			widgets.addSlot(output, 92, 14).large(true).recipeContext(this);
+		}
+
+		@Override
+		public RecipeHolder<?> getBackingRecipe() {
+			return recipeHolder;
+		}
 	}
 
 	private void registerWorkstations(EmiRegistry registry) {

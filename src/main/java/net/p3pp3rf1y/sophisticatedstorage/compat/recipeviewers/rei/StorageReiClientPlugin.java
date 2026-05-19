@@ -13,6 +13,8 @@ import me.shedaniel.rei.api.client.registry.transfer.TransferHandlerRegistry;
 import me.shedaniel.rei.api.common.category.CategoryIdentifier;
 import me.shedaniel.rei.api.common.display.Display;
 import me.shedaniel.rei.api.common.entry.EntryStack;
+import me.shedaniel.rei.api.common.plugins.PluginManager;
+import me.shedaniel.rei.api.common.registry.ReloadStage;
 import me.shedaniel.rei.api.common.util.EntryStacks;
 import me.shedaniel.rei.forge.REIPluginClient;
 import me.shedaniel.rei.plugin.common.BuiltinPlugin;
@@ -46,6 +48,8 @@ import static net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.common.sub
 @REIPluginClient
 public class StorageReiClientPlugin implements REIClientPlugin {
 	private static Consumer<WorkstationRegistration> additionalWorkstations = registration -> {};
+	private IRecipeViewerDisplayCatalog catalog = null;
+
 	public static void addAdditionalWorkstations(Consumer<WorkstationRegistration> additionalWorkstations) {
 		StorageReiClientPlugin.additionalWorkstations = StorageReiClientPlugin.additionalWorkstations.andThen(additionalWorkstations);
 	}
@@ -62,8 +66,15 @@ public class StorageReiClientPlugin implements REIClientPlugin {
 		}
 	}
 
-    @Override
-    public void registerExclusionZones(ExclusionZones zones) {
+	@Override
+	public void preStage(PluginManager<REIClientPlugin> manager, ReloadStage stage) {
+		if (stage == ReloadStage.START) {
+			catalog = null;
+		}
+	}
+
+	@Override
+	public void registerExclusionZones(ExclusionZones zones) {
         zones.register(StorageScreen.class, screen -> {
             List<Rect2i> ret = new ArrayList<>();
             screen.getUpgradeSlotsRectangle().ifPresent(ret::add);
@@ -108,22 +119,25 @@ public class StorageReiClientPlugin implements REIClientPlugin {
 
 	@Override
 	public void registerDisplays(DisplayRegistry registry) {
-		Map<BlockItem, PropertyBasedSubtypeInterpreter> subtypeInterpreters = getSubtypeInterpreters();
-		IRecipeViewerDisplayCatalog catalog = createCatalog(subtypeInterpreters);
-		registry.registerGlobalDisplayGenerator(new GroupedCraftingReiDisplayGenerator(() -> catalog, stack -> true));
-		registry.registerGlobalDisplayGenerator(new CraftingSpecReiDisplayGenerator(() -> catalog, stack -> true));
+		registry.registerGlobalDisplayGenerator(new GroupedCraftingReiDisplayGenerator(this::getCatalog, stack -> true));
+		registry.registerGlobalDisplayGenerator(new CraftingSpecReiDisplayGenerator(this::getCatalog, stack -> true));
 		registry.registerVisibilityPredicate((category, display) -> {
 			if (display instanceof CraftingSpecReiDisplay) {
 				return EventResult.pass();
 			}
 			if (display instanceof DefaultCraftingDisplay<?> craftingDisplay && craftingDisplay.getOptionalRecipe().isPresent()
-					&& catalog.replacesCraftingRecipe(craftingDisplay.getOptionalRecipe().get())) {
+					&& getCatalog().replacesCraftingRecipe(craftingDisplay.getOptionalRecipe().get())) {
 				return EventResult.interruptFalse();
 			}
 			return EventResult.pass();
 		});
+	}
 
-		catalog.getCraftingRecipes().forEach(registry::add);
+	private IRecipeViewerDisplayCatalog getCatalog() {
+		if (catalog == null) {
+			catalog = createCatalog(getSubtypeInterpreters());
+		}
+		return catalog;
 	}
 
 	@Override

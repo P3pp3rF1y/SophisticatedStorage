@@ -10,6 +10,7 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.*;
+import net.minecraft.world.level.block.state.properties.WoodType;
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.ClientRecipeHelper;
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.subtypes.PropertyBasedSubtypeInterpreter;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.DoubleChestTierUpgradeRecipe;
@@ -17,6 +18,7 @@ import net.p3pp3rf1y.sophisticatedstorage.crafting.DoubleChestTierUpgradeShapele
 import net.p3pp3rf1y.sophisticatedstorage.crafting.StorageTierUpgradeRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.StorageTierUpgradeShapelessRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockBase;
+import net.p3pp3rf1y.sophisticatedstorage.item.BarrelBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.ChestBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
@@ -164,7 +166,20 @@ public class TierUpgradeRecipesMaker {
 		List<ItemStack> variants = new ArrayList<>();
 		variants.add(new ItemStack(storageBlockItem));
 		if (storageBlockItem instanceof WoodStorageBlockItem) {
-			variants.addAll(DyeRecipesMaker.getWoodStorageStackList((StorageBlockBase) storageBlockItem.getBlock()));
+			List<ItemStack> woodStorageStacks = DyeRecipesMaker.getWoodStorageStackList((StorageBlockBase) storageBlockItem.getBlock());
+			variants.addAll(woodStorageStacks);
+			if (storageBlockItem instanceof BarrelBlockItem) {
+				ItemStack acaciaStack = WoodStorageBlockItem.setWoodType(new ItemStack(storageBlockItem), WoodType.ACACIA);
+				variants.add(acaciaStack);
+				ItemStack flatAcaciaStack = acaciaStack.copy();
+				BarrelBlockItem.setFlatTop(flatAcaciaStack, true);
+				variants.add(flatAcaciaStack);
+				woodStorageStacks.forEach(stack -> {
+					ItemStack flatTopStack = stack.copy();
+					BarrelBlockItem.setFlatTop(flatTopStack, true);
+					variants.add(flatTopStack);
+				});
+			}
 		}
 		for (DyeColor color : DyeColor.values()) {
 			ItemStack storageStack = new ItemStack(storageBlockItem);
