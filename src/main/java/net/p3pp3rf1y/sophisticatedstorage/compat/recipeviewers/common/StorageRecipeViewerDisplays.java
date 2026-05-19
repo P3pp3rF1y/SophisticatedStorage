@@ -10,9 +10,14 @@ import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.IRecipeViewer
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.SingleColorDyeRecipeSpec;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.DoubleChestTierUpgradeRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.DoubleChestTierUpgradeShapelessRecipe;
+import net.p3pp3rf1y.sophisticatedstorage.crafting.ShulkerBoxFromChestRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.ShulkerBoxFromVanillaShapelessRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.StorageTierUpgradeRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.StorageTierUpgradeShapelessRecipe;
+import net.p3pp3rf1y.sophisticatedstorage.item.BarrelBlockItem;
+import net.p3pp3rf1y.sophisticatedstorage.item.ChestBlockItem;
+import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
+import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
 
 public class StorageRecipeViewerDisplays {
 	private StorageRecipeViewerDisplays() {
@@ -24,17 +29,35 @@ public class StorageRecipeViewerDisplays {
 		catalog.addCraftingSpecExtensionRecipeClass(StorageTierUpgradeShapelessRecipe.class);
 		catalog.addCraftingSpecExtensionRecipeClass(DoubleChestTierUpgradeRecipe.class);
 		catalog.addCraftingSpecExtensionRecipeClass(DoubleChestTierUpgradeShapelessRecipe.class);
+		catalog.addCraftingSpecExtensionRecipeClass(ShulkerBoxFromChestRecipe.class);
 		TierUpgradeRecipesMaker.getGroupedShapedCraftingRecipes(context::getSubtypeInterpreter).stream()
 				.map(TierUpgradeDisplayRecipe::toSpec)
 				.forEach(catalog::addCraftingSpec);
 		TierUpgradeRecipesMaker.getGroupedShapelessCraftingRecipes(context::getSubtypeInterpreter).stream()
 				.map(TierUpgradeDisplayRecipe::toSpec)
 				.forEach(catalog::addCraftingSpec);
-		ShulkerBoxFromChestRecipesMaker.getShapedRecipes(context::getSubtypeInterpreter).forEach(catalog::addCraftingRecipe);
+		ShulkerBoxFromChestRecipesMaker.getShapedRecipeSpecs(context::getSubtypeInterpreter).forEach(catalog::addCraftingSpec);
+		ClientRecipeHelper.transformAllRecipeHoldersOfType(RecipeType.CRAFTING, CraftingRecipe.class, (id, recipeHolder) -> recipeHolder).stream()
+				.filter(StorageRecipeViewerDisplays::isBaseStorageRecipe)
+				.forEach(catalog::addCraftingRecipe);
 		FlatBarrelRecipesMaker.getShapelessRecipes().forEach(catalog::addCraftingRecipe);
 		ClientRecipeHelper.transformAllRecipeHoldersOfType(RecipeType.CRAFTING, ShulkerBoxFromVanillaShapelessRecipe.class,
 				(id, recipeHolder) -> new RecipeHolder<CraftingRecipe>(ClientRecipeHelper.recipeKey(id), recipeHolder.value()))
 				.forEach(catalog::addCraftingRecipe);
+	}
+
+	private static boolean isBaseStorageRecipe(RecipeHolder<CraftingRecipe> recipeHolder) {
+		CraftingRecipe recipe = recipeHolder.value();
+		ItemStack result = ClientRecipeHelper.getResultItem(recipe);
+		return recipeHolder.id().location().getNamespace().equals("sophisticatedstorage")
+				&& result.getItem() instanceof StorageBlockItem
+				&& WoodStorageBlockItem.getWoodType(result).isPresent()
+				&& !(recipe instanceof StorageTierUpgradeRecipe)
+				&& !(recipe instanceof StorageTierUpgradeShapelessRecipe)
+				&& !(recipe instanceof DoubleChestTierUpgradeRecipe)
+				&& !(recipe instanceof DoubleChestTierUpgradeShapelessRecipe)
+				&& !(recipe instanceof ShulkerBoxFromChestRecipe)
+				&& !(recipe instanceof ShulkerBoxFromVanillaShapelessRecipe);
 	}
 
 	public static void registerDyeRecipes(IRecipeViewerDisplayCatalog catalog, IRecipeViewerDisplayContext context) {
@@ -44,6 +67,15 @@ public class StorageRecipeViewerDisplays {
 						.orElse(ItemStack.isSameItemSameComponents(recipeResult, focusedOutput))))
 				.forEach(catalog::addGroupedCraftingSpec);
 		DyeRecipesMaker.getMultipleColorsRecipes(context::getSubtypeInterpreter).forEach(catalog::addCraftingRecipe);
+	}
+
+	public static boolean needsComponentSensitiveCraftingDisplay(ItemStack stack) {
+		return stack.getItem() instanceof StorageBlockItem
+				&& (StorageBlockItem.getMainColorFromComponentHolder(stack).isPresent()
+						|| StorageBlockItem.getAccentColorFromComponentHolder(stack).isPresent()
+						|| WoodStorageBlockItem.getWoodType(stack).isPresent()
+						|| ChestBlockItem.isDoubleChest(stack)
+						|| BarrelBlockItem.isFlatTop(stack));
 	}
 
 }

@@ -156,7 +156,9 @@ class StorageRecipeViewerDisplaySpecTest {
 		ItemStack copperShulkerBox = new ItemStack(ModBlocks.COPPER_SHULKER_BOX_ITEM.get());
 		ItemStack ironShulkerBox = new ItemStack(ModBlocks.IRON_SHULKER_BOX_ITEM.get());
 
-		List<CraftingDisplayVariant> recipes = getCraftingRecipesFor(catalog, ironShulkerBox);
+		List<CraftingDisplayVariant> recipes = getCraftingRecipesFor(catalog, ironShulkerBox).stream()
+				.filter(recipe -> !hasInput(recipe, ModBlocks.IRON_CHEST_ITEM.get()))
+				.toList();
 
 		assertEquals(2, recipes.size());
 		assertTrue(recipes.stream().anyMatch(recipe -> ItemStack.isSameItem(shulkerBox, recipe.inputs().get(4))));
@@ -170,11 +172,64 @@ class StorageRecipeViewerDisplaySpecTest {
 		ItemStack ironShulkerBox = new ItemStack(ModBlocks.IRON_SHULKER_BOX_ITEM.get());
 		ItemStack goldShulkerBox = new ItemStack(ModBlocks.GOLD_SHULKER_BOX_ITEM.get());
 
-		List<CraftingDisplayVariant> recipes = getCraftingRecipesFor(catalog, goldShulkerBox);
+		List<CraftingDisplayVariant> recipes = getCraftingRecipesFor(catalog, goldShulkerBox).stream()
+				.filter(recipe -> !hasInput(recipe, ModBlocks.GOLD_CHEST_ITEM.get()))
+				.toList();
 
 		assertEquals(1, recipes.size());
 		assertTrue(ItemStack.isSameItem(ironShulkerBox, recipes.getFirst().inputs().get(4)));
 		assertTrue(ItemStack.isSameItem(goldShulkerBox, recipes.getFirst().firstOutput()));
+	}
+
+	@Test
+	void untintedShulkerBoxFromChestRecipeShowsSingleRotatingWoodTypeDisplay() {
+		IRecipeViewerDisplayCatalog catalog = createCatalog();
+		ItemStack copperShulkerBox = new ItemStack(ModBlocks.COPPER_SHULKER_BOX_ITEM.get());
+
+		List<CraftingDisplayView> chestConversionViews = catalog.getCraftingRecipesFor(copperShulkerBox).stream()
+				.filter(view -> view.variants().stream().anyMatch(variant -> hasInput(variant, ModBlocks.COPPER_CHEST_ITEM.get())))
+				.toList();
+
+		assertEquals(1, chestConversionViews.size());
+		List<CraftingDisplayVariant> variants = chestConversionViews.getFirst().variants();
+		assertTrue(variants.size() > 1);
+		assertTrue(variants.stream().allMatch(variant -> ItemStack.isSameItem(copperShulkerBox, variant.firstOutput()) && !isTinted(variant.firstOutput())));
+		assertTrue(variants.stream().anyMatch(variant -> variant.inputs().stream().anyMatch(stack -> WoodStorageBlockItem.getWoodType(stack).filter(WoodType.OAK::equals).isPresent())));
+		assertTrue(variants.stream().anyMatch(variant -> variant.inputs().stream().anyMatch(stack -> WoodStorageBlockItem.getWoodType(stack).filter(WoodType.SPRUCE::equals).isPresent())));
+		assertTrue(variants.stream().noneMatch(variant -> variant.inputs().stream().anyMatch(StorageRecipeViewerDisplaySpecTest::isTinted)));
+	}
+
+	@Test
+	void shulkerShellUsageShowsSingleRotatingTintedChestConversionDisplay() {
+		IRecipeViewerDisplayCatalog catalog = createCatalog();
+
+		List<CraftingDisplayView> copperShulkerViews = catalog.getCraftingUsagesFor(new ItemStack(Items.SHULKER_SHELL)).stream()
+				.filter(view -> view.variants().stream().anyMatch(variant -> variant.firstOutput().is(ModBlocks.COPPER_SHULKER_BOX_ITEM.get())))
+				.toList();
+
+		assertEquals(1, copperShulkerViews.size());
+		List<CraftingDisplayVariant> variants = copperShulkerViews.getFirst().variants();
+		assertTrue(variants.size() > 1);
+		assertTrue(variants.stream().anyMatch(variant -> hasInputMatching(variant, redStack(ModBlocks.COPPER_CHEST_ITEM.get())) && ItemStack.isSameItemSameComponents(redStack(ModBlocks.COPPER_SHULKER_BOX_ITEM.get()), variant.firstOutput())));
+		assertTrue(variants.stream().anyMatch(variant -> hasInputMatching(variant, blackStack(ModBlocks.COPPER_CHEST_ITEM.get())) && ItemStack.isSameItemSameComponents(blackStack(ModBlocks.COPPER_SHULKER_BOX_ITEM.get()), variant.firstOutput())));
+	}
+
+	@Test
+	void tintedShulkerBoxFromChestRecipeFocusNarrowsToSpecificTint() {
+		IRecipeViewerDisplayCatalog catalog = createCatalog();
+		ItemStack redCopperChest = redStack(ModBlocks.COPPER_CHEST_ITEM.get());
+		ItemStack redCopperShulkerBox = redStack(ModBlocks.COPPER_SHULKER_BOX_ITEM.get());
+
+		List<CraftingDisplayView> chestConversionViews = catalog.getCraftingRecipesFor(redCopperShulkerBox).stream()
+				.filter(view -> view.variants().stream().anyMatch(variant -> hasInputMatching(variant, redCopperChest)))
+				.toList();
+
+		assertEquals(1, chestConversionViews.size());
+		List<CraftingDisplayVariant> variants = chestConversionViews.getFirst().variants();
+		assertEquals(1, variants.size());
+		assertTrue(hasInputMatching(variants.getFirst(), redCopperChest));
+		assertTrue(ItemStack.isSameItemSameComponents(redCopperShulkerBox, variants.getFirst().firstOutput()));
+		assertFalse(hasInputMatching(variants.getFirst(), blackStack(ModBlocks.COPPER_CHEST_ITEM.get())));
 	}
 
 	@Test
@@ -227,6 +282,8 @@ class StorageRecipeViewerDisplaySpecTest {
 	@Test
 	void focusedHigherTierSingleColorDyeRecipeNarrowsDyeInputAndResult() {
 		SingleColorDyeRecipeSpec ironBarrelDyeSpec = createCatalog().getGroupedCraftingSpecs().stream()
+				.filter(SingleColorDyeRecipeSpec.class::isInstance)
+				.map(SingleColorDyeRecipeSpec.class::cast)
 				.filter(spec -> spec.sourceStacks().stream().anyMatch(stack -> stack.is(ModBlocks.IRON_BARREL_ITEM.get())))
 				.findFirst()
 				.orElseThrow();
@@ -251,7 +308,9 @@ class StorageRecipeViewerDisplaySpecTest {
 	void singleChestUsesDoNotShowDoubleChestTierUpgradeRecipes() {
 		IRecipeViewerDisplayCatalog catalog = createChestCatalog();
 
-		List<CraftingDisplayVariant> usages = getCraftingUsagesFor(catalog, singleChest(ModBlocks.CHEST_ITEM.get()));
+		List<CraftingDisplayVariant> usages = getCraftingUsagesFor(catalog, singleChest(ModBlocks.CHEST_ITEM.get())).stream()
+				.filter(usage -> !isShulkerBox(usage.firstOutput()))
+				.toList();
 
 		assertEquals(2, usages.size());
 		assertTrue(usages.stream().allMatch(usage -> !ChestBlockItem.isDoubleChest(usage.inputs().get(4)) && !ChestBlockItem.isDoubleChest(usage.firstOutput())));
@@ -263,7 +322,9 @@ class StorageRecipeViewerDisplaySpecTest {
 	void doubleChestUsesOnlyShowDoubleChestTierUpgradeRecipes() {
 		IRecipeViewerDisplayCatalog catalog = createChestCatalog();
 
-		List<CraftingDisplayVariant> usages = getCraftingUsagesFor(catalog, doubleChest(ModBlocks.CHEST_ITEM.get()));
+		List<CraftingDisplayVariant> usages = getCraftingUsagesFor(catalog, doubleChest(ModBlocks.CHEST_ITEM.get())).stream()
+				.filter(usage -> !isShulkerBox(usage.firstOutput()))
+				.toList();
 
 		assertEquals(2, usages.size());
 		assertTrue(usages.stream().allMatch(usage -> ChestBlockItem.isDoubleChest(usage.inputs().get(4)) && ChestBlockItem.isDoubleChest(usage.firstOutput())));
@@ -291,6 +352,23 @@ class StorageRecipeViewerDisplaySpecTest {
 		if (item instanceof StorageBlockItem storageBlockItem) {
 			storageBlockItem.setMainColor(stack, 0x336699);
 			storageBlockItem.setAccentColor(stack, 0x99CC33);
+		}
+		return stack;
+	}
+
+	private static ItemStack redStack(Item item) {
+		return dyedStack(item, DyeColor.RED);
+	}
+
+	private static ItemStack blackStack(Item item) {
+		return dyedStack(item, DyeColor.BLACK);
+	}
+
+	private static ItemStack dyedStack(Item item, DyeColor color) {
+		ItemStack stack = new ItemStack(item);
+		if (item instanceof StorageBlockItem storageBlockItem) {
+			storageBlockItem.setMainColor(stack, color.getTextureDiffuseColor());
+			storageBlockItem.setAccentColor(stack, color.getTextureDiffuseColor());
 		}
 		return stack;
 	}
@@ -382,6 +460,23 @@ class StorageRecipeViewerDisplaySpecTest {
 
 	private static boolean isTinted(ItemStack stack) {
 		return StorageBlockItem.getMainColorFromComponentHolder(stack).isPresent() || StorageBlockItem.getAccentColorFromComponentHolder(stack).isPresent();
+	}
+
+	private static boolean hasInput(CraftingDisplayVariant variant, Item item) {
+		return variant.inputs().stream().anyMatch(stack -> stack.is(item));
+	}
+
+	private static boolean hasInputMatching(CraftingDisplayVariant variant, ItemStack stack) {
+		return variant.inputs().stream().anyMatch(input -> ItemStack.isSameItemSameComponents(input, stack));
+	}
+
+	private static boolean isShulkerBox(ItemStack stack) {
+		return stack.is(ModBlocks.SHULKER_BOX_ITEM.get())
+				|| stack.is(ModBlocks.COPPER_SHULKER_BOX_ITEM.get())
+				|| stack.is(ModBlocks.IRON_SHULKER_BOX_ITEM.get())
+				|| stack.is(ModBlocks.GOLD_SHULKER_BOX_ITEM.get())
+				|| stack.is(ModBlocks.DIAMOND_SHULKER_BOX_ITEM.get())
+				|| stack.is(ModBlocks.NETHERITE_SHULKER_BOX_ITEM.get());
 	}
 
 	private static ItemStack singleChest(Item item) {

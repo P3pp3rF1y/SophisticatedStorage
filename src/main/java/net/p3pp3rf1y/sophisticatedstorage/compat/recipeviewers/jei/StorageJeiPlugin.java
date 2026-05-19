@@ -13,9 +13,11 @@ import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.SettingsScreen;
+import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.GroupedCraftingRecipe;
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.IRecipeViewerDisplayCatalog;
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.IRecipeViewerDisplayContext;
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.RecipeViewerDisplayCatalog;
@@ -28,10 +30,7 @@ import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageSettingsScreen;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.common.StorageRecipeViewerDisplays;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
-import net.p3pp3rf1y.sophisticatedstorage.item.BarrelBlockItem;
-import net.p3pp3rf1y.sophisticatedstorage.item.ChestBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
-import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -89,31 +88,22 @@ public class StorageJeiPlugin implements IModPlugin {
 	@Override
 	public void registerRecipes(IRecipeRegistration registration) {
 		IRecipeViewerDisplayCatalog catalog = getCatalog();
-		registration.addRecipes(RecipeTypes.CRAFTING, catalog.getGroupedCraftingSpecs().stream()
-				.map(spec -> castCraftingRecipeHolder(spec.recipeHolder()))
+		registration.addRecipes(RecipeTypes.CRAFTING, catalog.getCraftingRecipes().stream()
+				.filter(recipe -> !(recipe.value() instanceof GroupedCraftingRecipe))
+				.filter(recipe -> !recipe.id().location().getPath().contains("_grouped/"))
 				.toList());
-		registration.addRecipes(RecipeTypes.CRAFTING, catalog.getCraftingRecipes());
 	}
 
 	@Override
 	public void registerVanillaCategoryExtensions(IVanillaCategoryExtensionRegistration registration) {
 		GroupedCraftingRecipeCategoryExtension.registerOnce(registration);
-		JeiCraftingSpecExtensionRegistrar.registerCraftingSpecExtensions(registration, this::getCatalog, stack -> stack.getItem() instanceof StorageBlockItem);
+		JeiCraftingSpecExtensionRegistrar.registerCraftingSpecExtensions(registration, this::getCatalog, stack -> stack.getItem() instanceof StorageBlockItem || stack.is(Items.SHULKER_SHELL));
 	}
 
 	@Override
 	public void registerAdvanced(IAdvancedRegistration registration) {
 		registration.addTypedRecipeManagerPlugin(RecipeTypes.CRAFTING, new GroupedCraftingRecipeManagerPlugin(() -> getCatalog().getGroupedCraftingSpecs(), stack -> stack.getItem() instanceof StorageBlockItem));
-		registration.addTypedRecipeManagerPlugin(RecipeTypes.CRAFTING, new CraftingDisplayCatalogRecipeManagerPlugin(this::getCatalog, stack -> stack.getItem() instanceof StorageBlockItem));
-	}
-
-	private static boolean isComponentSensitiveStorageFocus(ItemStack stack) {
-		return stack.getItem() instanceof StorageBlockItem
-				&& (StorageBlockItem.getMainColorFromComponentHolder(stack).isPresent()
-						|| StorageBlockItem.getAccentColorFromComponentHolder(stack).isPresent()
-						|| WoodStorageBlockItem.getWoodType(stack).isPresent()
-						|| ChestBlockItem.isDoubleChest(stack)
-						|| BarrelBlockItem.isFlatTop(stack));
+		registration.addTypedRecipeManagerPlugin(RecipeTypes.CRAFTING, new CraftingDisplayCatalogRecipeManagerPlugin(this::getCatalog, stack -> stack.getItem() instanceof StorageBlockItem || stack.is(Items.SHULKER_SHELL)));
 	}
 
 	private IRecipeViewerDisplayCatalog getCatalog() {
@@ -128,11 +118,6 @@ public class StorageJeiPlugin implements IModPlugin {
 		IRecipeViewerDisplayContext context = stack -> Optional.ofNullable(subtypeInterpreters.get(stack.getItem()));
 		StorageRecipeViewerDisplays.register(catalog, context);
 		return catalog;
-	}
-
-	@SuppressWarnings("unchecked")
-	private static RecipeHolder<CraftingRecipe> castCraftingRecipeHolder(RecipeHolder<? extends CraftingRecipe> recipeHolder) {
-		return (RecipeHolder<CraftingRecipe>) recipeHolder;
 	}
 
 	@Override

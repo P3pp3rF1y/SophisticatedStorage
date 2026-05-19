@@ -5,6 +5,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.ClientRecipeHelper;
+import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.RecipeViewerIngredients;
+import net.neoforged.neoforge.common.crafting.DataComponentIngredient;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.item.BarrelBlockItem;
@@ -24,8 +26,8 @@ public class FlatBarrelRecipesMaker {
 		ItemStack flatBarrel = barrel.copy();
 		BarrelBlockItem.toggleFlatTop(flatBarrel);
 
-		recipes.add(new RecipeHolder<>(ClientRecipeHelper.recipeKey(SophisticatedStorage.getRL("flatten_barrel")), new ShapelessRecipe("", CraftingBookCategory.MISC, flatBarrel, NonNullList.of(Ingredient.of(barrel.getItem())))));
-		recipes.add(new RecipeHolder<>(ClientRecipeHelper.recipeKey(SophisticatedStorage.getRL("unflatten_barrel")), new ShapelessRecipe("", CraftingBookCategory.MISC, barrel, NonNullList.of(Ingredient.of(flatBarrel.getItem())))));
+		recipes.add(new RecipeHolder<>(ClientRecipeHelper.recipeKey(SophisticatedStorage.getRL("flatten_barrel")), new ShapelessRecipe("", CraftingBookCategory.MISC, flatBarrel, NonNullList.of(RecipeViewerIngredients.empty(), DataComponentIngredient.of(false, barrel)))));
+		recipes.add(new RecipeHolder<>(ClientRecipeHelper.recipeKey(SophisticatedStorage.getRL("unflatten_barrel")), new ShapelessRecipe("", CraftingBookCategory.MISC, barrel, NonNullList.of(RecipeViewerIngredients.empty(), DataComponentIngredient.of(false, flatBarrel)))));
 
 		return recipes;
 	}
