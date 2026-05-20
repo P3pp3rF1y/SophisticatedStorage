@@ -26,27 +26,22 @@ import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.IRecipeViewer
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.IRecipeViewerDisplayContext;
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.RecipeViewerDisplayCatalog;
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.subtypes.PropertyBasedSubtypeInterpreter;
-import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.emi.CraftingSpecEmiRecipe;
-import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.emi.EmiGridMenuInfo;
-import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.emi.GroupedCraftingEmiRecipe;
-import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.emi.EmiSettingsGhostDragDropHandler;
-import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.emi.EmiStorageGhostDragDropHandler;
+import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.emi.*;
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.emi.comparison.EmiSubtypeInterpreter;
+import net.p3pp3rf1y.sophisticatedcore.util.RecipeHelper;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.LimitedBarrelScreen;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.LimitedBarrelSettingsScreen;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageScreen;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageSettingsScreen;
 import net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.common.StorageRecipeViewerDisplays;
+import net.p3pp3rf1y.sophisticatedstorage.crafting.GenericWoodStorageRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
-import net.p3pp3rf1y.sophisticatedcore.util.RecipeHelper;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.IntPredicate;
+import java.util.stream.Collectors;
 
 import static net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.common.subtypes.SubtypeInterpreters.getSubtypeInterpreters;
 
@@ -123,7 +118,8 @@ public class StorageEmiPlugin implements EmiPlugin {
 	private void registerRecipes(EmiRegistry registry) {
 		Map<BlockItem, PropertyBasedSubtypeInterpreter> subtypeInterpreters = getSubtypeInterpreters();
 		IRecipeViewerDisplayCatalog catalog = createCatalog(subtypeInterpreters);
-		registry.removeRecipes(recipe -> recipe.getBackingRecipe() != null && catalog.replacesCraftingRecipe(recipe.getBackingRecipe()));
+		Set<?> craftingRecipeIds = catalog.getCraftingRecipes().stream().map(RecipeHolder::id).collect(Collectors.toSet());
+		registry.removeRecipes(recipe -> recipe.getBackingRecipe() != null && (catalog.replacesCraftingRecipe(recipe.getBackingRecipe()) || craftingRecipeIds.contains(recipe.getBackingRecipe().id())));
 
 		catalog.getGroupedCraftingSpecs().stream()
 				.flatMap(spec -> spec.getAllDisplays().stream())
@@ -176,6 +172,9 @@ public class StorageEmiPlugin implements EmiPlugin {
 	private static void addFocusedInputSyntheticRecipes(RecipeHolder<CraftingRecipe> recipeHolder, List<EmiRecipe> recipes) {
 		ResourceLocation baseId = recipeHolder.id().location();
 		CraftingRecipe recipe = recipeHolder.value();
+		if (recipe instanceof GenericWoodStorageRecipe) {
+			return;
+		}
 		List<Optional<Ingredient>> ingredients = new ArrayList<>(RecipeHelper.getIngredients(recipe));
 		for (int ingredientIndex = 0; ingredientIndex < ingredients.size(); ingredientIndex++) {
 			List<ItemStack> stacks = getIngredientItems(ingredients.get(ingredientIndex));
