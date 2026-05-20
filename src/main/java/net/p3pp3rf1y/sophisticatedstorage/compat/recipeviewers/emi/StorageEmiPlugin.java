@@ -18,12 +18,7 @@ import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.IRecipeViewer
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.IRecipeViewerDisplayContext;
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.RecipeViewerDisplayCatalog;
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.subtypes.PropertyBasedSubtypeInterpreter;
-import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.emi.CraftingSpecEmiRecipe;
-import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.emi.EmiClientRecipeHelper;
-import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.emi.EmiGridMenuInfo;
-import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.emi.GroupedCraftingEmiRecipe;
-import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.emi.EmiSettingsGhostDragDropHandler;
-import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.emi.EmiStorageGhostDragDropHandler;
+import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.emi.*;
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.emi.comparison.EmiSubtypeInterpreter;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.LimitedBarrelScreen;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.LimitedBarrelSettingsScreen;
@@ -35,7 +30,9 @@ import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import static net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.common.subtypes.SubtypeInterpreters.getSubtypeInterpreters;
 
@@ -112,7 +109,8 @@ public class StorageEmiPlugin implements EmiPlugin {
 	private void registerRecipes(EmiRegistry registry) {
 		Map<BlockItem, PropertyBasedSubtypeInterpreter> subtypeInterpreters = getSubtypeInterpreters();
 		IRecipeViewerDisplayCatalog catalog = createCatalog(subtypeInterpreters);
-		registry.removeRecipes(recipe -> recipe.getBackingRecipe() instanceof CraftingRecipe craftingRecipe && catalog.replacesCraftingRecipe(craftingRecipe));
+		Set<CraftingRecipe> craftingRecipes = catalog.getCraftingRecipes().stream().collect(Collectors.toSet());
+		registry.removeRecipes(recipe -> recipe.getBackingRecipe() instanceof CraftingRecipe craftingRecipe && (catalog.replacesCraftingRecipe(craftingRecipe) || craftingRecipes.contains(craftingRecipe)));
 
 		catalog.getGroupedCraftingSpecs().stream()
 				.flatMap(spec -> spec.getAllDisplays().stream())
