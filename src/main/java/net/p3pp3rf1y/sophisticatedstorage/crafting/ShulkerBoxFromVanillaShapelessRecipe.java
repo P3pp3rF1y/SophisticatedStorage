@@ -44,7 +44,7 @@ public class ShulkerBoxFromVanillaShapelessRecipe extends CustomShapelessRecipe 
 				wrapper.ensureContentsUuid();
 				InventoryHelper.iterate(itemCap, (slot, stack) -> {
 					if (!stack.isEmpty()) {
-						wrapper.getInventoryHandler().insertItem(stack, false);
+						wrapper.getInventoryHandler().insertItem(stack.copy(), false);
 					}
 				});
 			}
