@@ -338,10 +338,10 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 
 	@Override
 	public int extract(int slot, ItemResource resource, int amount, TransactionContext tx, IResourceExtractor extractSuper) {
-		return extractItem(slot, resource, amount, tx, s -> s.isEmpty() ? 64 : s.getMaxStackSize());
+		return extractItem(slot, resource, amount, tx);
 	}
 
-	private int extractItem(int slot, ItemResource resource, int amount, TransactionContext tx, ToIntFunction<ItemStack> getLimit) {
+	private int extractItem(int slot, ItemResource resource, int amount, TransactionContext tx) {
 		if (!slotDefinitions.containsKey(slot) || !slotDefinitions.get(slot).itemResource.equals(resource)
 				|| !slotDefinitions.get(slot).isAccessible() || !calculatedStacks.containsKey(slot)) {
 			return 0;
@@ -351,7 +351,6 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 		if (extracted > 0) {
 			SlotDefinition slotDefinition = slotDefinitions.get(slot);
 			ItemStack slotStack = parent.getInternalStack(slot);
-			extracted = Math.min(extracted, getLimit.applyAsInt(slotStack));
 
 			journal.updateSnapshots(tx);
 			if (slotDefinition.isCompressible()) {
@@ -676,7 +675,7 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 			if (currentCount < amount) {
 				insertItem(slot, resource, amount - currentCount, tx);
 			} else if (currentCount > amount) {
-				extractItem(slot, slotDefinitions.get(slot).itemResource, currentCount - amount, tx, s -> Integer.MAX_VALUE);
+				extractItem(slot, slotDefinitions.get(slot).itemResource, currentCount - amount, tx);
 			}
 			tx.commit();
 		}
