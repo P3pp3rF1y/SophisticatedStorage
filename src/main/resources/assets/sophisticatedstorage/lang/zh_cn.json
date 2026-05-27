@@ -243,6 +243,8 @@
   "gui.sophisticatedstorage.upgrades.buttons.shift_click_into_inventory": "Shift右击将成品放入\n玩家物品栏",
   "gui.sophisticatedstorage.upgrades.buttons.refill_crafting_grid": "自动重填合成方格",
   "gui.sophisticatedstorage.upgrades.buttons.do_not_refill_crafting_grid": "不自动重填合成方格",
+  "gui.sophisticatedstorage.upgrades.buttons.refill_input": "自动重填输入材料",
+  "gui.sophisticatedstorage.upgrades.buttons.do_not_refill_input": "不自动重填输入材料",
   "gui.sophisticatedstorage.upgrades.buttons.io_mode_push": "输出",
   "gui.sophisticatedstorage.upgrades.buttons.io_mode_pull": "输入",
   "gui.sophisticatedstorage.upgrades.buttons.io_mode_push_pull": "输入 & 输出",
