@@ -13,6 +13,7 @@ import net.minecraft.world.level.storage.DimensionDataStorage;
 import net.neoforged.fml.util.thread.SidedThreadGroups;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
+import net.p3pp3rf1y.sophisticatedstorage.item.LegacyStorageBlockDataMigration;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -53,6 +54,7 @@ public class ItemContentsStorage extends SavedData {
 			CompoundTag uuidContentsPair = (CompoundTag) n;
 			UUID uuid = NbtUtils.loadUUID(Objects.requireNonNull(uuidContentsPair.get("uuid")));
 			CompoundTag contents = uuidContentsPair.getCompound("contents");
+			LegacyStorageBlockDataMigration.normalizeStorageContents(contents);
 			storage.storageContents.put(uuid, contents);
 		}
 	}
@@ -92,6 +94,7 @@ public class ItemContentsStorage extends SavedData {
 	}
 
 	public void setStorageContents(UUID storageUuid, CompoundTag contents) {
+		LegacyStorageBlockDataMigration.normalizeStorageContents(contents);
 		storageContents.put(storageUuid, contents);
 		setDirty();
 	}

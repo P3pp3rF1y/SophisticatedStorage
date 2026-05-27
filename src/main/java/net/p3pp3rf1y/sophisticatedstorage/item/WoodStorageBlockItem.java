@@ -39,7 +39,7 @@ public class WoodStorageBlockItem extends StorageBlockItem {
     }
 
     public static boolean isPacked(ItemStack storageStack) {
-        return storageStack.getOrDefault(ModDataComponents.PACKED, false);
+        return storageStack.getOrDefault(ModDataComponents.PACKED, LegacyStorageBlockDataMigration.getPacked(storageStack).orElse(false));
     }
 
     @Override
@@ -94,7 +94,8 @@ public class WoodStorageBlockItem extends StorageBlockItem {
     }
 
     public static Optional<WoodType> getWoodType(IDataComponentHolderExtension componentHolder) {
-        return Optional.ofNullable(componentHolder.get(ModDataComponents.WOOD_TYPE));
+        return Optional.ofNullable(componentHolder.get(ModDataComponents.WOOD_TYPE))
+                .or(() -> componentHolder instanceof ItemStack storageStack ? LegacyStorageBlockDataMigration.getWoodType(storageStack) : Optional.empty());
     }
 
     public static ItemStack setWoodType(ItemStack storageStack, WoodType woodType) {

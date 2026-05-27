@@ -48,6 +48,7 @@ import net.p3pp3rf1y.sophisticatedstorage.client.particle.CustomTintTerrainParti
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
+import net.p3pp3rf1y.sophisticatedstorage.item.LegacyStorageBlockDataMigration;
 import net.p3pp3rf1y.sophisticatedstorage.item.ShulkerBoxItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageToolItem;
@@ -134,6 +135,7 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 	@Override
 	public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
 		WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).ifPresent(be -> {
+			LegacyStorageBlockDataMigration.normalizeLegacyData(stack);
 			UUID storageUuid = stack.get(ModCoreDataComponents.STORAGE_UUID);
 			if (storageUuid != null) {
 				ItemContentsStorage itemContentsStorage = ItemContentsStorage.get();

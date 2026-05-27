@@ -30,6 +30,7 @@ import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.block.*;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.item.BarrelBlockItem;
+import net.p3pp3rf1y.sophisticatedstorage.item.LegacyStorageBlockDataMigration;
 import net.p3pp3rf1y.sophisticatedstorage.item.ShulkerBoxItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.settings.StorageSettingsHandler;
@@ -83,6 +84,7 @@ public abstract class MovingStorageWrapper implements IStorageWrapper {
 	}
 
 	public static MovingStorageWrapper fromStack(ItemStack stack, Runnable onContentsChanged, Runnable onStackChanged, Function<UUID, IStorageSavedData> getStorageData, BooleanSupplier isLocked, Consumer<Boolean> setLocked, Predicate<ItemStack> isUpgradeRunnable) {
+		LegacyStorageBlockDataMigration.normalizeLegacyData(stack);
 		MovingStorageWrapper movingStorageWrapper = StorageWrapperRepository.getStorageWrapper(stack, MovingStorageWrapper.class, s -> new MovingStorageWrapper(s, onContentsChanged, onStackChanged, getStorageData, isUpgradeRunnable) {
 			@Override
 			public boolean isLocked() {
@@ -175,6 +177,13 @@ public abstract class MovingStorageWrapper implements IStorageWrapper {
 		if (numberOfInventorySlots != null) {
 			return numberOfInventorySlots;
 		}
+		Optional<Integer> legacyNumberOfInventorySlots = LegacyStorageBlockDataMigration.getNumberOfInventorySlots(storageStack);
+		if (legacyNumberOfInventorySlots.isPresent()) {
+			numberOfInventorySlots = legacyNumberOfInventorySlots.get();
+			storageStack.set(ModCoreDataComponents.NUMBER_OF_INVENTORY_SLOTS, numberOfInventorySlots);
+			stackChangeHandler.run();
+			return numberOfInventorySlots;
+		}
 		numberOfInventorySlots = getDefaultNumberOfInventorySlots(storageStack);
 		storageStack.set(ModCoreDataComponents.NUMBER_OF_INVENTORY_SLOTS, numberOfInventorySlots);
 		stackChangeHandler.run();
@@ -258,6 +267,13 @@ public abstract class MovingStorageWrapper implements IStorageWrapper {
 		if (numberOfUpgradeSlots != null) {
 			return numberOfUpgradeSlots;
 		}
+		Optional<Integer> legacyNumberOfUpgradeSlots = LegacyStorageBlockDataMigration.getNumberOfUpgradeSlots(storageStack);
+		if (legacyNumberOfUpgradeSlots.isPresent()) {
+			numberOfUpgradeSlots = legacyNumberOfUpgradeSlots.get();
+			storageStack.set(ModCoreDataComponents.NUMBER_OF_UPGRADE_SLOTS, numberOfUpgradeSlots);
+			stackChangeHandler.run();
+			return numberOfUpgradeSlots;
+		}
 		numberOfUpgradeSlots = getDefaultNumberOfUpgradeSlots(storageStack);
 		storageStack.set(ModCoreDataComponents.NUMBER_OF_UPGRADE_SLOTS, numberOfUpgradeSlots);
 		stackChangeHandler.run();
@@ -272,7 +288,14 @@ public abstract class MovingStorageWrapper implements IStorageWrapper {
 
 	@Nullable
 	private static UUID getContentsUuid(ItemStack storageStack) {
-		return storageStack.get(ModCoreDataComponents.STORAGE_UUID);
+		UUID uuid = storageStack.get(ModCoreDataComponents.STORAGE_UUID);
+		if (uuid != null) {
+			return uuid;
+		}
+		return LegacyStorageBlockDataMigration.getContentsUuid(storageStack).map(legacyUuid -> {
+			storageStack.set(ModCoreDataComponents.STORAGE_UUID, legacyUuid);
+			return legacyUuid;
+		}).orElse(null);
 	}
 
 	public static boolean hasContentsUuid(ItemStack storageStack) {
@@ -314,7 +337,15 @@ public abstract class MovingStorageWrapper implements IStorageWrapper {
 
 	@Override
 	public Optional<Integer> getOpenTabId() {
-		return Optional.ofNullable(storageStack.get(ModCoreDataComponents.OPEN_TAB_ID));
+		Integer openTabId = storageStack.get(ModCoreDataComponents.OPEN_TAB_ID);
+		if (openTabId != null) {
+			return Optional.of(openTabId);
+		}
+		return LegacyStorageBlockDataMigration.getOpenTabId(storageStack).map(legacyOpenTabId -> {
+			storageStack.set(ModCoreDataComponents.OPEN_TAB_ID, legacyOpenTabId);
+			stackChangeHandler.run();
+			return legacyOpenTabId;
+		});
 	}
 
 	@Override
@@ -344,7 +375,15 @@ public abstract class MovingStorageWrapper implements IStorageWrapper {
 
 	@Override
 	public SortBy getSortBy() {
-		return storageStack.getOrDefault(ModCoreDataComponents.SORT_BY, SortBy.NAME);
+		SortBy sortBy = storageStack.get(ModCoreDataComponents.SORT_BY);
+		if (sortBy != null) {
+			return sortBy;
+		}
+		return LegacyStorageBlockDataMigration.getSortBy(storageStack).map(legacySortBy -> {
+			storageStack.set(ModCoreDataComponents.SORT_BY, legacySortBy);
+			stackChangeHandler.run();
+			return legacySortBy;
+		}).orElse(SortBy.NAME);
 	}
 
 	@Override
@@ -503,6 +542,11 @@ public abstract class MovingStorageWrapper implements IStorageWrapper {
 
 		@Override
 		protected Optional<CompoundTag> getRenderInfoTag() {
-			return Optional.ofNullable(storageStack.get(ModCoreDataComponents.RENDER_INFO_TAG.get())).map(CustomData::copyTag);			}
+			return Optional.ofNullable(storageStack.get(ModCoreDataComponents.RENDER_INFO_TAG.get())).map(CustomData::copyTag)
+					.or(() -> LegacyStorageBlockDataMigration.getRenderInfo(storageStack).map(renderInfo -> {
+						storageStack.set(ModCoreDataComponents.RENDER_INFO_TAG, CustomData.of(renderInfo));
+						return renderInfo;
+					}));
+		}
 	}
 }

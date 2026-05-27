@@ -122,6 +122,7 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 
 	public void updateStorageWrapper() {
 		ItemStack storageItem = getSyncedStorageStack();
+		LegacyStorageBlockDataMigration.normalizeLegacyData(storageItem);
 		UUID id = storageItem.get(ModCoreDataComponents.STORAGE_UUID);
 		if (id == null) {
 			id = UUID.randomUUID();
@@ -202,7 +203,11 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 	}
 
 	public CompoundTag getRenderInfoNbt(ItemStack storageItem) {
-		return storageItem.getOrDefault(ModCoreDataComponents.RENDER_INFO_TAG, CustomData.EMPTY).copyTag();
+		CustomData renderInfo = storageItem.get(ModCoreDataComponents.RENDER_INFO_TAG);
+		if (renderInfo != null) {
+			return renderInfo.copyTag();
+		}
+		return LegacyStorageBlockDataMigration.getRenderInfo(storageItem).orElseGet(CompoundTag::new);
 	}
 
 	protected abstract void setSyncedStorageStack(ItemStack storageStack);

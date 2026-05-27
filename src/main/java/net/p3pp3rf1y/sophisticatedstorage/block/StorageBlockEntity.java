@@ -35,6 +35,7 @@ import net.p3pp3rf1y.sophisticatedcore.upgrades.ITickableUpgrade;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
+import net.p3pp3rf1y.sophisticatedstorage.item.LegacyStorageBlockDataMigration;
 import net.p3pp3rf1y.sophisticatedstorage.network.StorageOpennessPayload;
 import net.p3pp3rf1y.sophisticatedstorage.upgrades.INeighborChangeListenerUpgrade;
 
@@ -290,6 +291,7 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 	}
 
 	private void loadStorageWrapper(CompoundTag tag, HolderLookup.Provider registries) {
+		LegacyStorageBlockDataMigration.normalizeBlockEntityTag(tag);
 		NBTHelper.getCompound(tag, STORAGE_WRAPPER_TAG).ifPresent(storageWrapper::load);
 	}
 

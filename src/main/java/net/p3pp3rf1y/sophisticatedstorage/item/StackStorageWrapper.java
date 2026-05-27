@@ -25,6 +25,7 @@ public class StackStorageWrapper extends StorageWrapper {
 	}
 
 	public static StackStorageWrapper fromStack(HolderLookup.Provider registries, ItemStack stack) {
+		LegacyStorageBlockDataMigration.normalizeLegacyData(stack);
 		StackStorageWrapper stackStorageWrapper = StorageWrapperRepository.getStorageWrapper(stack, StackStorageWrapper.class, StackStorageWrapper::new);
 		UUID uuid = stack.get(ModCoreDataComponents.STORAGE_UUID);
 		if (uuid != null) {
@@ -50,7 +51,13 @@ public class StackStorageWrapper extends StorageWrapper {
 
 	@Override
 	public Optional<UUID> getContentsUuid() {
-		return Optional.ofNullable(contentsUuid);
+		if (contentsUuid != null) {
+			return Optional.of(contentsUuid);
+		}
+		return LegacyStorageBlockDataMigration.getContentsUuid(storageStack).map(uuid -> {
+			setContentsUuid(uuid);
+			return uuid;
+		});
 	}
 
 	public boolean hasContents() {
@@ -107,8 +114,8 @@ public class StackStorageWrapper extends StorageWrapper {
 			numberOfInventorySlots = wrapperTag.getInt(StorageWrapper.NUMBER_OF_INVENTORY_SLOTS_TAG);
 			numberOfUpgradeSlots = wrapperTag.getInt(StorageWrapper.NUMBER_OF_UPGRADE_SLOTS_TAG);
 		}, () -> {
-			numberOfInventorySlots = storageStack.getOrDefault(ModCoreDataComponents.NUMBER_OF_INVENTORY_SLOTS, 0);
-			numberOfUpgradeSlots = storageStack.getOrDefault(ModCoreDataComponents.NUMBER_OF_UPGRADE_SLOTS, 0);
+			numberOfInventorySlots = StorageBlockItem.getNumberOfInventorySlots(storageStack);
+			numberOfUpgradeSlots = StorageBlockItem.getNumberOfUpgradeSlots(storageStack);
 		});
 	}
 
@@ -119,6 +126,7 @@ public class StackStorageWrapper extends StorageWrapper {
 
 	protected void setStorageStack(ItemStack storageStack) {
 		this.storageStack = storageStack;
+		LegacyStorageBlockDataMigration.normalizeLegacyData(storageStack);
 	}
 
 	@Override

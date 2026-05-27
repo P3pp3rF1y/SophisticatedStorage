@@ -32,6 +32,7 @@ import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
+import net.p3pp3rf1y.sophisticatedstorage.item.LegacyStorageBlockDataMigration;
 import net.p3pp3rf1y.sophisticatedstorage.item.PackingTapeItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageToolItem;
@@ -179,6 +180,7 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 		}
 
 		WorldHelper.getBlockEntity(level, pos, WoodStorageBlockEntity.class).ifPresent(be -> {
+			LegacyStorageBlockDataMigration.normalizeLegacyData(stack);
 			UUID storageUuid = stack.get(ModCoreDataComponents.STORAGE_UUID);
 			if (storageUuid != null) {
 				ItemContentsStorage itemContentsStorage = ItemContentsStorage.get();
