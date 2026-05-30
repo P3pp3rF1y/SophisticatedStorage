@@ -727,6 +727,11 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 	}
 
 	@Override
+	public boolean shouldRenderInaccessibleSlotOverlay(int slot) {
+		return false;
+	}
+
+	@Override
 	public String getName() {
 		return NAME;
 	}
