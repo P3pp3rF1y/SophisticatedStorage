@@ -31,7 +31,7 @@ import net.p3pp3rf1y.sophisticatedcore.upgrades.alchemy.AlchemyUpgradeContainer;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.alchemy.AlchemyUpgradeItem;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.alchemy.AlchemyUpgradeTab;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.alchemy.AlchemyUpgradeWrapper;
-import net.p3pp3rf1y.sophisticatedcore.upgrades.battery.BatteryInventoryPart;
+import net.p3pp3rf1y.sophisticatedcore.upgrades.battery.BatteryInventoryControl;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.battery.BatteryUpgradeContainer;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.battery.BatteryUpgradeTab;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.battery.BatteryUpgradeWrapper;
@@ -72,7 +72,7 @@ import net.p3pp3rf1y.sophisticatedcore.upgrades.stonecutter.StonecutterUpgradeCo
 import net.p3pp3rf1y.sophisticatedcore.upgrades.stonecutter.StonecutterUpgradeItem;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.stonecutter.StonecutterUpgradeTab;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.stonecutter.StonecutterUpgradeWrapper;
-import net.p3pp3rf1y.sophisticatedcore.upgrades.tank.TankInventoryPart;
+import net.p3pp3rf1y.sophisticatedcore.upgrades.tank.TankInventoryControl;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.tank.TankUpgradeContainer;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.tank.TankUpgradeTab;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.tank.TankUpgradeWrapper;
@@ -344,8 +344,8 @@ public class ModItems {
 			UpgradeGuiManager.registerTab(ADVANCED_JUKEBOX_TYPE, (JukeboxUpgradeContainer uc, Position p, StorageScreenBase<?> s) -> new JukeboxUpgradeTab.Advanced(uc, p, s, Config.SERVER.advancedJukeboxUpgrade.slotsInRow.get()));
 			UpgradeGuiManager.registerTab(TANK_TYPE, TankUpgradeTab::new);
 			UpgradeGuiManager.registerTab(BATTERY_TYPE, BatteryUpgradeTab::new);
-			UpgradeGuiManager.registerInventoryPart(TANK_TYPE, TankInventoryPart::new);
-			UpgradeGuiManager.registerInventoryPart(BATTERY_TYPE, BatteryInventoryPart::new);
+			UpgradeGuiManager.registerInventoryControl(TANK_TYPE, TankInventoryControl::new);
+			UpgradeGuiManager.registerInventoryControl(BATTERY_TYPE, BatteryInventoryControl::new);
 			UpgradeGuiManager.registerTab(PUMP_TYPE, PumpUpgradeTab.Basic::new);
 			UpgradeGuiManager.registerTab(ADVANCED_PUMP_TYPE, PumpUpgradeTab.Advanced::new);
 			UpgradeGuiManager.registerTab(XP_PUMP_TYPE, (XpPumpUpgradeContainer upgradeContainer, Position position, StorageScreenBase<?> screen) ->

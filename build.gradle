@@ -227,6 +227,9 @@ dependencies {
 
 def runRecipeViewerRegressionTests = gradle.startParameter.taskNames.any { it == 'recipeViewerRegressionTest' || it == "${project.path}:recipeViewerRegressionTest" } || project.hasProperty('recipeViewerRegression')
 test {
+    dependsOn = []
+    testClassesDirs = files("$buildDir/classes/java/test")
+    classpath = files("$buildDir/classes/java/test", "$buildDir/resources/test", "$buildDir/classes/java/main", "$buildDir/resources/main", { configurations.testRuntimeClasspath.resolve().toList() })
     inputs.property('recipeViewerRegressionMode', runRecipeViewerRegressionTests)
     useJUnitPlatform {
         if (runRecipeViewerRegressionTests) {

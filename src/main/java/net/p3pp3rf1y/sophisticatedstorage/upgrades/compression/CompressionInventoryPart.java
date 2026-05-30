@@ -676,6 +676,11 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 	}
 
 	@Override
+	public boolean shouldRenderInaccessibleSlotOverlay(int slot) {
+		return false;
+	}
+
+	@Override
 	public int getSlots() {
 		return slotRange.numberOfSlots();
 	}
