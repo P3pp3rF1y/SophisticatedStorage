@@ -143,22 +143,25 @@ public abstract class MovingStorageWrapper implements IStorageWrapper {
 
 	@Override
 	public InventoryHandler getInventoryHandler() {
-		if (inventoryHandler == null) {
-			initInventoryHandler();
+		InventoryHandler handler = inventoryHandler;
+		if (handler == null) {
+			handler = initInventoryHandler();
 		}
-		return inventoryHandler;
+		return handler;
 	}
 
-	private void initInventoryHandler() {
-		inventoryHandler = new InventoryHandler(getNumberOfInventorySlots(), this, getContents(), contentsChangeHandler, StackUpgradeItem.getInventorySlotLimit(this), Config.SERVER.stackUpgrade) {
+	private InventoryHandler initInventoryHandler() {
+		InventoryHandler handler = new InventoryHandler(getNumberOfInventorySlots(), this, getContents(), contentsChangeHandler, StackUpgradeItem.getInventorySlotLimit(this), Config.SERVER.stackUpgrade) {
 			@Override
 			protected boolean isAllowed(ItemResource resource) {
 				return isAllowedInStorage(resource);
 			}
 		};
-		inventoryHandler.addListener(getSettingsHandler().getTypeCategory(ItemDisplaySettingsCategory.class)::itemChanged);
-		inventoryHandler.setShouldInsertIntoEmpty(this::emptyInventorySlotsAcceptItems);
-		inventoryHandler.onInit();
+		inventoryHandler = handler;
+		handler.addListener(getSettingsHandler().getTypeCategory(ItemDisplaySettingsCategory.class)::itemChanged);
+		handler.setShouldInsertIntoEmpty(this::emptyInventorySlotsAcceptItems);
+		handler.onInit();
+		return handler;
 	}
 
 	private boolean emptyInventorySlotsAcceptItems() {
@@ -218,8 +221,9 @@ public abstract class MovingStorageWrapper implements IStorageWrapper {
 
 	@Override
 	public UpgradeHandler getUpgradeHandler() {
-		if (upgradeHandler == null) {
-			upgradeHandler = new UpgradeHandler(getNumberOfUpgradeSlots(), this, getContents(), contentsChangeHandler, () -> {
+		UpgradeHandler handler = upgradeHandler;
+		if (handler == null) {
+			handler = new UpgradeHandler(getNumberOfUpgradeSlots(), this, getContents(), contentsChangeHandler, () -> {
 				if (inventoryHandler != null) {
 					inventoryHandler.clearListeners();
 					inventoryHandler.setBaseSlotLimit(StackUpgradeItem.getInventorySlotLimit(this));
@@ -233,9 +237,10 @@ public abstract class MovingStorageWrapper implements IStorageWrapper {
 					return super.isValid(index, resource) && (resource.isEmpty() || resource.is(ModItems.STORAGE_UPGRADE_TAG));
 				}
 			};
+			upgradeHandler = handler;
 			upgradeDefaultsHandlers.forEach(this::registerUpgradeDefaultsHandlerInUpgradeHandler);
 		}
-		return upgradeHandler;
+		return handler;
 	}
 
 	private <T extends IUpgradeWrapper> void registerUpgradeDefaultsHandlerInUpgradeHandler(Class<T> wrapperClass, Consumer<? extends IUpgradeWrapper> defaultsHandler) {

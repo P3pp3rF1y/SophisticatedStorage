@@ -108,9 +108,10 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 
 	@Override
 	public UpgradeHandler getUpgradeHandler() {
-		if (upgradeHandler == null) {
+		UpgradeHandler handler = upgradeHandler;
+		if (handler == null) {
 			upgradeHandlerInitializing = true;
-			upgradeHandler = new UpgradeHandler(getNumberOfUpgradeSlots(), this, getContents(), getSaveHandler.get(), () -> {
+			handler = new UpgradeHandler(getNumberOfUpgradeSlots(), this, getContents(), getSaveHandler.get(), () -> {
 				if (inventoryHandler != null) {
 					inventoryHandler.clearListeners();
 					inventoryHandler.setBaseSlotLimit(StackUpgradeItem.getInventorySlotLimit(this));
@@ -131,10 +132,11 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 				}
 
 			};
+			upgradeHandler = handler;
 			upgradeDefaultsHandlers.forEach(this::registerUpgradeDefaultsHandlerInUpgradeHandler);
 			upgradeHandlerInitializing = false;
 		}
-		return upgradeHandler;
+		return handler;
 	}
 
 	public boolean isUpgradeHandlerInitializing() {
@@ -281,21 +283,24 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 
 	@Override
 	public InventoryHandler getInventoryHandler() {
-		if (inventoryHandler == null) {
-			initInventoryHandler();
+		InventoryHandler handler = inventoryHandler;
+		if (handler == null) {
+			handler = initInventoryHandler();
 		}
-		return inventoryHandler;
+		return handler;
 	}
 
-	private void initInventoryHandler() {
-		inventoryHandler = new InventoryHandler(getNumberOfInventorySlots(), this, getContents(), getSaveHandler.get(), StackUpgradeItem.getInventorySlotLimit(this), Config.SERVER.stackUpgrade) {
+	private InventoryHandler initInventoryHandler() {
+		InventoryHandler handler = new InventoryHandler(getNumberOfInventorySlots(), this, getContents(), getSaveHandler.get(), StackUpgradeItem.getInventorySlotLimit(this), Config.SERVER.stackUpgrade) {
 			@Override
 			protected boolean isAllowed(ItemResource resource) {
 				return isAllowedInStorage(resource);
 			}
 		};
-		inventoryHandler.addListener(getSettingsHandler().getTypeCategory(ItemDisplaySettingsCategory.class)::itemChanged);
-		inventoryHandler.setShouldInsertIntoEmpty(this::emptyInventorySlotsAcceptItems);
+		inventoryHandler = handler;
+		handler.addListener(getSettingsHandler().getTypeCategory(ItemDisplaySettingsCategory.class)::itemChanged);
+		handler.setShouldInsertIntoEmpty(this::emptyInventorySlotsAcceptItems);
+		return handler;
 	}
 
 	protected boolean emptyInventorySlotsAcceptItems() {
