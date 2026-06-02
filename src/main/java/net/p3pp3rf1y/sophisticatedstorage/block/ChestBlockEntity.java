@@ -250,6 +250,11 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 	}
 
 	@Override
+	public BlockPos getControlledStorageBlockPos() {
+		return getMainPos();
+	}
+
+	@Override
 	public SophisticatedOpenersCounter getOpenersCounter() {
 		return openersCounter;
 	}
