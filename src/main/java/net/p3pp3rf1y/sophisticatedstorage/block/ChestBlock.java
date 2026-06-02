@@ -322,6 +322,25 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 		BlockPos otherPos = pos.relative(getConnectedDirection(state));
 		joinChests(level, pos, otherPos, chestType);
 		state.updateNeighbourShapes(level, pos, 3);
+		normalizeDoubleChestControllerRegistration(level, pos, otherPos);
+	}
+
+	private static void normalizeDoubleChestControllerRegistration(Level level, BlockPos pos, BlockPos otherPos) {
+		if (level.isClientSide()) {
+			return;
+		}
+
+		level.getBlockEntity(pos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get()).ifPresent(be -> normalizeDoubleChestPartControllerRegistration(be));
+		level.getBlockEntity(otherPos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get()).ifPresent(be -> normalizeDoubleChestPartControllerRegistration(be));
+	}
+
+	private static void normalizeDoubleChestPartControllerRegistration(ChestBlockEntity be) {
+		if (be.hasStorageData()) {
+			return;
+		}
+
+		be.removeFromController();
+		be.tryToAddToController();
 	}
 
 	private static void joinChests(LevelAccessor level, BlockPos pos, BlockPos otherPos, ChestType currentChestType) {
