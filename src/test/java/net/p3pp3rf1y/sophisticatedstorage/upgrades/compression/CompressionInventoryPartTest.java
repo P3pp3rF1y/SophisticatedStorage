@@ -7,6 +7,7 @@ import net.minecraft.server.Bootstrap;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.p3pp3rf1y.sophisticatedcore.inventory.ISlotTracker;
 import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryHandler;
 import net.p3pp3rf1y.sophisticatedcore.settings.memory.MemorySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.util.MathHelper;
@@ -90,6 +91,8 @@ public class CompressionInventoryPartTest {
 
 	private InventoryHandler getFilledInventoryHandler(Map<Integer, ItemStack> slotStacks, int baseSlotLimit) {
 		InventoryHandler inventoryHandler = Mockito.mock(InventoryHandler.class);
+		ISlotTracker slotTracker = Mockito.mock(ISlotTracker.class);
+		when(inventoryHandler.getSlotTracker()).thenReturn(slotTracker);
 		when(inventoryHandler.getBaseStackLimit(any(ItemStack.class))).thenAnswer(i -> {
 			ItemStack stack = i.getArgument(0);
 			int maxStackSize = stack.isEmpty() ? 64 : stack.getMaxStackSize();
@@ -348,6 +351,20 @@ public class CompressionInventoryPartTest {
 						Map.of(0, new ItemStack(Items.IRON_INGOT, 1), 1, new ItemStack(Items.IRON_NUGGET, 13), 2, ItemStack.EMPTY)
 				}
 		};
+	}
+
+	@Test
+	void extractingFromCompressedSlotRefreshesCalculatedSlotsInSlotTracker() {
+		InventoryHandler invHandler = getFilledInventoryHandler(Map.of(0, new ItemStack(Items.IRON_BLOCK, 3), 1, new ItemStack(Items.IRON_INGOT, 4), 2, new ItemStack(Items.IRON_NUGGET, 5)), 64);
+		CompressionInventoryPart part = initCompressionInventoryPart(invHandler, new SlotRange(0, 3), () -> getMemorySettings(invHandler, Map.of()));
+		ISlotTracker slotTracker = invHandler.getSlotTracker();
+		clearInvocations(invHandler);
+		clearInvocations(slotTracker);
+
+		part.extractItem(0, 1, false);
+
+		verify(slotTracker).removeAndSetSlotIndexes(eq(invHandler), eq(1), argThat(stack -> stack.is(Items.IRON_INGOT)));
+		verify(slotTracker).removeAndSetSlotIndexes(eq(invHandler), eq(2), argThat(stack -> stack.is(Items.IRON_NUGGET)));
 	}
 
 	private static void assertStackEquals(ItemStack expected, ItemStack actual, Object message) {
