@@ -311,6 +311,7 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 				if (slotDefinition.isCompressible()) {
 					extractFromCalculated(slot, toExtract);
 					extractFromInternal(slot, toExtract);
+					updateSlotTrackerAndListenersForCalculatedStacks();
 				} else {
 					slotStack.shrink(toExtract);
 					setCalculatedStack(slot, slotStack.copy());
@@ -323,6 +324,13 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 		}
 
 		return ItemStack.EMPTY;
+	}
+
+	private void updateSlotTrackerAndListenersForCalculatedStacks() {
+		calculatedStacks.forEach((slot, stack) -> {
+			parent.getSlotTracker().removeAndSetSlotIndexes(parent, slot, stack);
+			parent.triggerOnChangeListeners(slot);
+		});
 	}
 
 	private void removeDefinitionsIfEmpty(int slotTriggeringChange) {
