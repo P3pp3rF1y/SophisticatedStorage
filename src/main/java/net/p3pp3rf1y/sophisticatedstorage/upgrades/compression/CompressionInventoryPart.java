@@ -356,6 +356,7 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 			if (slotDefinition.isCompressible()) {
 				extractFromCalculated(slot, extracted);
 				extractFromInternal(slot, extracted);
+				updateSlotTrackerAndListenersForCalculatedStacks();
 			} else {
 				slotStack.shrink(extracted);
 				setCalculatedStack(slot, slotStack.copy());
@@ -379,6 +380,13 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 		clearCollections();
 		parent.triggerOnChangeListeners(slotTriggeringChange);
 		return true;
+	}
+
+	private void updateSlotTrackerAndListenersForCalculatedStacks() {
+		calculatedStacks.forEach((slot, stack) -> {
+			parent.getSlotTracker().removeAndSetSlotIndexes(parent, slot, stack);
+			parent.triggerOnChangeListeners(slot);
+		});
 	}
 
 	private void extractFromInternal(int slotToStartFrom, int amountToExtract) {
@@ -875,6 +883,7 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 			CompressionInventoryPart.this.lastCalculatedCounts.clear();
 			compressionSnapshot.calculatedStacks.forEach(CompressionInventoryPart.this::setCalculatedStack);
 			compressionSnapshot.internalStacks.forEach((slot, stack) -> parent.setStackInSlotInternal(slot, stack.copy()));
+			updateSlotTrackerAndListenersForCalculatedStacks();
 		}
 
 		@Override
