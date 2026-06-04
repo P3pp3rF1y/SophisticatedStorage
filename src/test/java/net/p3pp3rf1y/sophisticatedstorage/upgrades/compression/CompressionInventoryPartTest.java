@@ -8,6 +8,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.neoforged.neoforge.transfer.transaction.Transaction;
+import net.p3pp3rf1y.sophisticatedcore.inventory.ISlotTracker;
 import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryHandler;
 import net.p3pp3rf1y.sophisticatedcore.settings.memory.MemorySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.settings.memory.MemorySettingsCategoryData;
@@ -93,6 +94,8 @@ public class CompressionInventoryPartTest {
 
 	private InventoryHandler getFilledInventoryHandler(Map<Integer, ItemStack> slotStacks, int baseSlotLimit) {
 		InventoryHandler inventoryHandler = Mockito.mock(InventoryHandler.class);
+		ISlotTracker slotTracker = Mockito.mock(ISlotTracker.class);
+		when(inventoryHandler.getSlotTracker()).thenReturn(slotTracker);
 		when(inventoryHandler.getBaseCapacity(any(ItemResource.class))).thenAnswer(i -> {
 			ItemResource resource = i.getArgument(0);
 			int maxStackSize = resource.isEmpty() ? baseSlotLimit : resource.getMaxStackSize();
@@ -415,6 +418,41 @@ public class CompressionInventoryPartTest {
 						Map.of(0, ItemStack.EMPTY, 1, new ItemStack(Items.IRON_INGOT, 6), 2, new ItemStack(Items.IRON_NUGGET, 62))
 				)
 		);
+	}
+
+	@Test
+	void extractingFromCompressedSlotRefreshesCalculatedSlotsInSlotTracker() {
+		InventoryHandler invHandler = getFilledInventoryHandler(Map.of(0, new ItemStack(Items.IRON_BLOCK, 3), 1, new ItemStack(Items.IRON_INGOT, 4), 2, new ItemStack(Items.IRON_NUGGET, 5)), 64);
+		CompressionInventoryPart part = initCompressionInventoryPart(invHandler, new SlotRange(0, 3), () -> getMemorySettings(invHandler, Map.of()));
+		ISlotTracker slotTracker = invHandler.getSlotTracker();
+		clearInvocations(invHandler);
+		clearInvocations(slotTracker);
+
+		try (Transaction tx = Transaction.openRoot()) {
+			part.extract(0, ItemResource.of(Items.IRON_BLOCK), 1, tx, (slot, resource, amount, transaction) -> amount);
+			tx.commit();
+		}
+
+		verify(slotTracker).removeAndSetSlotIndexes(eq(invHandler), eq(1), argThat(stack -> stack.is(Items.IRON_INGOT)));
+		verify(slotTracker).removeAndSetSlotIndexes(eq(invHandler), eq(2), argThat(stack -> stack.is(Items.IRON_NUGGET)));
+	}
+
+	@Test
+	void rollingBackExtractFromCompressedSlotRestoresCalculatedSlotsInSlotTracker() {
+		InventoryHandler invHandler = getFilledInventoryHandler(Map.of(0, new ItemStack(Items.IRON_BLOCK, 64), 1, new ItemStack(Items.IRON_INGOT, 64), 2, new ItemStack(Items.IRON_NUGGET, 64)), 64);
+		CompressionInventoryPart part = initCompressionInventoryPart(invHandler, new SlotRange(0, 3), () -> getMemorySettings(invHandler, Map.of()));
+		ISlotTracker slotTracker = invHandler.getSlotTracker();
+		clearInvocations(invHandler);
+		clearInvocations(slotTracker);
+
+		try (Transaction tx = Transaction.openRoot()) {
+			part.extract(0, ItemResource.of(Items.IRON_BLOCK), 1, tx, (slot, resource, amount, transaction) -> amount);
+		}
+
+		assertStackEquals(new ItemStack(Items.IRON_INGOT, 640), part.getStackInSlot(1, s -> ItemStack.EMPTY), "Rolled back ingot calculated stack does not equal");
+		assertStackEquals(new ItemStack(Items.IRON_NUGGET, 5824), part.getStackInSlot(2, s -> ItemStack.EMPTY), "Rolled back nugget calculated stack does not equal");
+		verify(slotTracker).removeAndSetSlotIndexes(eq(invHandler), eq(1), argThat(stack -> stack.is(Items.IRON_INGOT) && stack.getCount() == 640));
+		verify(slotTracker).removeAndSetSlotIndexes(eq(invHandler), eq(2), argThat(stack -> stack.is(Items.IRON_NUGGET) && stack.getCount() == 5824));
 	}
 
 	private static void assertStackEquals(ItemStack expected, ItemStack actual, Object message) {
