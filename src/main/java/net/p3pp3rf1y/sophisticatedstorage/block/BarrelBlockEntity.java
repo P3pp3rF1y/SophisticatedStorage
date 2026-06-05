@@ -94,7 +94,20 @@ public class BarrelBlockEntity extends WoodStorageBlockEntity implements IMateri
 	@Override
 	public void setMaterials(Map<BarrelMaterial, Identifier> materials) {
 		this.materials = materials;
+		updateOpaqueState();
 		setChanged();
+	}
+
+	private void updateOpaqueState() {
+		if (level == null || level.isClientSide() || !(getBlockState().getBlock() instanceof BarrelBlock)) {
+			return;
+		}
+
+		BlockState state = getBlockState();
+		boolean opaque = BarrelBlock.areMaterialsOpaque(materials);
+		if (state.getValue(BarrelBlock.OPAQUE) != opaque) {
+			level.setBlock(getBlockPos(), state.setValue(BarrelBlock.OPAQUE, opaque), 3);
+		}
 	}
 
 	@Override

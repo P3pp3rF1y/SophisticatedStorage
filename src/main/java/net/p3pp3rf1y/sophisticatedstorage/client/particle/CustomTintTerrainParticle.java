@@ -1,6 +1,5 @@
 package net.p3pp3rf1y.sophisticatedstorage.client.particle;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleProvider;
@@ -8,7 +7,10 @@ import net.minecraft.client.particle.TerrainParticle;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
+import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlock;
+import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlockEntity;
+import net.p3pp3rf1y.sophisticatedstorage.client.render.BarrelBlockStateModelBase;
 import org.jspecify.annotations.Nullable;
 
 public class CustomTintTerrainParticle extends TerrainParticle {
@@ -17,7 +19,14 @@ public class CustomTintTerrainParticle extends TerrainParticle {
 
 		int color;
 		if (state.getBlock() instanceof BarrelBlock) {
-			color = -1;
+			color = WorldHelper.getBlockEntity(level, pos, BarrelBlockEntity.class)
+					.map(be -> BarrelBlockStateModelBase.getMaterialParticleTintColor(be.getMaterials(), level, pos))
+					.orElse(-1);
+			if (color != -1) {
+				rCol = 0.6F;
+				gCol = 0.6F;
+				bCol = 0.6F;
+			}
 		} else {
 			color = -1;
 		}
