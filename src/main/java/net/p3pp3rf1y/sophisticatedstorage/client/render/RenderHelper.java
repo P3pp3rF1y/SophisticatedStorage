@@ -8,6 +8,7 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.BlockModelPart;
 import net.minecraft.client.renderer.block.model.BlockStateModel;
+import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -33,38 +34,41 @@ public class RenderHelper {
 	private RenderHelper() {
 	}
 
-	private static final Cache<Integer, TextureAtlasSprite> SPRITE_CACHE = CacheBuilder.newBuilder().expireAfterAccess(1, TimeUnit.MINUTES).build();
+	private static final Cache<Integer, SpriteData> SPRITE_CACHE = CacheBuilder.newBuilder().expireAfterAccess(1, TimeUnit.MINUTES).build();
 
 	public static TextureAtlasSprite getSprite(ResourceLocation blockName, @Nullable Direction direction, RandomSource rand) {
+		return getSpriteData(blockName, direction, rand).sprite();
+	}
 
+	public static SpriteData getSpriteData(ResourceLocation blockName, @Nullable Direction direction, RandomSource rand) {
 		int hash = blockName.hashCode();
 		hash = hash * 31 + (direction == null ? 0 : direction.hashCode());
 
-		TextureAtlasSprite sprite = SPRITE_CACHE.getIfPresent(hash);
-		if (sprite == null) {
-			sprite = parseSprite(blockName, direction, rand);
-			SPRITE_CACHE.put(hash, sprite);
+		SpriteData spriteData = SPRITE_CACHE.getIfPresent(hash);
+		if (spriteData == null) {
+			spriteData = parseSpriteData(blockName, direction, rand);
+			SPRITE_CACHE.put(hash, spriteData);
 		}
-		return sprite;
+		return spriteData;
 	}
 
-	private static TextureAtlasSprite parseSprite(ResourceLocation blockName, @Nullable Direction direction, RandomSource rand) {
+	private static SpriteData parseSpriteData(ResourceLocation blockName, @Nullable Direction direction, RandomSource rand) {
 		BlockState blockState = getDefaultBlockState(blockName);
 
-		TextureAtlasSprite sprite = parseSpriteFromModel(blockState, direction, rand);
+		SpriteData spriteData = parseSpriteFromModel(blockState, direction, rand);
 
-		if (sprite == null) {
-			sprite = Minecraft.getInstance().getModelManager().getMissingBlockStateModel().particleIcon();
+		if (spriteData == null) {
+			spriteData = new SpriteData(Minecraft.getInstance().getModelManager().getMissingBlockStateModel().particleIcon(), -1, false);
 		}
 
-		return sprite;
+		return spriteData;
 	}
 
 	@SuppressWarnings("java:S1874")
 	//need to call deprecated getQuads here as well just in case it was overriden by mods instead of the main one
 	@Nullable
-	private static TextureAtlasSprite parseSpriteFromModel(BlockState blockState, @Nullable Direction direction, RandomSource rand) {
-		TextureAtlasSprite sprite = null;
+	private static SpriteData parseSpriteFromModel(BlockState blockState, @Nullable Direction direction, RandomSource rand) {
+		SpriteData spriteData = null;
 
 		BlockStateModel blockModel = Minecraft.getInstance().getBlockRenderer().getBlockModel(blockState);
 		ClientLevel level = Minecraft.getInstance().level;
@@ -76,18 +80,20 @@ public class RenderHelper {
 			List<BlockModelPart> parts = blockModel.collectParts(level, BlockPos.ZERO, blockState, rand);
 
 			for (BlockModelPart part : parts) {
+				boolean translucent = part.getRenderType(blockState) == ChunkSectionLayer.TRANSLUCENT;
 				List<BakedQuad> quads = part.getQuads(direction);
 				if (!quads.isEmpty()) {
-					return quads.getFirst().sprite();
+					BakedQuad quad = quads.getFirst();
+					return new SpriteData(quad.sprite(), quad.tintIndex(), translucent);
 				}
 
 				for (BakedQuad quad : part.getQuads(null)) {
-					if (sprite == null) {
-						sprite = quad.sprite();
+					if (spriteData == null) {
+						spriteData = new SpriteData(quad.sprite(), quad.tintIndex(), translucent);
 					}
 
 					if (quad.direction() == direction) {
-						return quad.sprite();
+						return new SpriteData(quad.sprite(), quad.tintIndex(), translucent);
 					}
 				}
 			}
@@ -95,16 +101,18 @@ public class RenderHelper {
 			// NO OP
 		}
 
-		if (sprite == null) {
+		if (spriteData == null) {
 			try {
-				sprite = blockModel.particleIcon(level, BlockPos.ZERO, blockState);
+				spriteData = new SpriteData(blockModel.particleIcon(level, BlockPos.ZERO, blockState), -1, false);
 			} catch (Exception e) {
 				// NO OP
 			}
 		}
 
-		return sprite;
+		return spriteData;
 	}
+
+	public record SpriteData(TextureAtlasSprite sprite, int tintIndex, boolean translucent) {}
 
 	private static BlockState getDefaultBlockState(ResourceLocation blockName) {
 		return BuiltInRegistries.BLOCK.getOptional(blockName).map(Block::defaultBlockState).orElse(Blocks.AIR.defaultBlockState());
