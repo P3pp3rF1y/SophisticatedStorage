@@ -9,7 +9,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.BarrelBlock;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
@@ -139,7 +138,20 @@ public class BarrelBlockEntity extends WoodStorageBlockEntity implements IMateri
 	@Override
 	public void setMaterials(Map<BarrelMaterial, ResourceLocation> materials) {
 		this.materials = materials;
+		updateOpaqueState();
 		setChanged();
+	}
+
+	private void updateOpaqueState() {
+		if (level == null || level.isClientSide || !(getBlockState().getBlock() instanceof BarrelBlock)) {
+			return;
+		}
+
+		BlockState state = getBlockState();
+		boolean opaque = BarrelBlock.areMaterialsOpaque(materials);
+		if (state.getValue(BarrelBlock.OPAQUE) != opaque) {
+			level.setBlock(getBlockPos(), state.setValue(BarrelBlock.OPAQUE, opaque), 3);
+		}
 	}
 
 	@Override

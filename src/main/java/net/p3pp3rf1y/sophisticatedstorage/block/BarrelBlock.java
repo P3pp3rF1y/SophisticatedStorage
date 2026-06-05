@@ -47,6 +47,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.extensions.common.IClientBlockExtensions;
 import net.minecraftforge.network.NetworkHooks;
+import net.minecraftforge.registries.ForgeRegistries;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.client.particle.CustomTintTerrainParticleData;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
@@ -65,10 +66,11 @@ public class BarrelBlock extends WoodStorageBlockBase {
 	public static final DirectionProperty FACING = BlockStateProperties.FACING;
 	public static final BooleanProperty OPEN = BlockStateProperties.OPEN;
 	public static final BooleanProperty FLAT_TOP = BooleanProperty.create("flat_top");
+	public static final BooleanProperty OPAQUE = BooleanProperty.create("opaque");
 	private static final VoxelShape ITEM_ENTITY_COLLISION_SHAPE = box(0.05, 0.05, 0.05, 15.95, 15.95, 15.95);
 
 	public BarrelBlock(Supplier<Integer> numberOfInventorySlotsSupplier, Supplier<Integer> numberOfUpgradeSlotsSupplier, float explosionResistance) {
-		this(numberOfInventorySlotsSupplier, numberOfUpgradeSlotsSupplier, explosionResistance, stateDef -> stateDef.any().setValue(FACING, Direction.NORTH).setValue(OPEN, false).setValue(TICKING, false).setValue(FLAT_TOP, false));
+		this(numberOfInventorySlotsSupplier, numberOfUpgradeSlotsSupplier, explosionResistance, stateDef -> stateDef.any().setValue(FACING, Direction.NORTH).setValue(OPEN, false).setValue(TICKING, false).setValue(FLAT_TOP, false).setValue(OPAQUE, true));
 	}
 
 	public BarrelBlock(Supplier<Integer> numberOfInventorySlotsSupplier, Supplier<Integer> numberOfUpgradeSlotsSupplier, float explosionResistance, Function<StateDefinition<Block, BlockState>, BlockState> getDefaultState) {
@@ -172,7 +174,7 @@ public class BarrelBlock extends WoodStorageBlockBase {
 
 	@Override
 	protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-		builder.add(FACING, OPEN, TICKING, FLAT_TOP);
+		builder.add(FACING, OPEN, TICKING, FLAT_TOP, OPAQUE);
 	}
 
 	@Override
@@ -204,7 +206,8 @@ public class BarrelBlock extends WoodStorageBlockBase {
 	@Nullable
 	@Override
 	public BlockState getStateForPlacement(BlockPlaceContext blockPlaceContext) {
-		return defaultBlockState().setValue(FACING, blockPlaceContext.getNearestLookingDirection().getOpposite()).setValue(FLAT_TOP, BarrelBlockItem.isFlatTop(blockPlaceContext.getItemInHand()));
+		ItemStack stack = blockPlaceContext.getItemInHand();
+		return defaultBlockState().setValue(FACING, blockPlaceContext.getNearestLookingDirection().getOpposite()).setValue(FLAT_TOP, BarrelBlockItem.isFlatTop(stack)).setValue(OPAQUE, areMaterialsOpaque(BarrelBlockItem.getMaterials(stack)));
 	}
 
 	@Override
@@ -239,7 +242,7 @@ public class BarrelBlock extends WoodStorageBlockBase {
 
 	@Override
 	public VoxelShape getOcclusionShape(BlockState pState, BlockGetter pLevel, BlockPos pPos) {
-		return Shapes.block();
+		return pState.getValue(OPAQUE) ? Shapes.block() : Shapes.empty();
 	}
 
 	@Override
@@ -254,6 +257,21 @@ public class BarrelBlock extends WoodStorageBlockBase {
 
 	private static boolean isFlatTop(BlockState state) {
 		return state.getValue(FLAT_TOP);
+	}
+
+	public static boolean areMaterialsOpaque(Map<BarrelMaterial, ResourceLocation> materials) {
+		if (materials.isEmpty()) {
+			return true;
+		}
+
+		Map<BarrelMaterial, ResourceLocation> uncompactedMaterials = new EnumMap<>(materials);
+		BarrelBlockItem.uncompactMaterials(uncompactedMaterials);
+		return uncompactedMaterials.values().stream().allMatch(BarrelBlock::isMaterialOpaque);
+	}
+
+	private static boolean isMaterialOpaque(ResourceLocation materialLocation) {
+		Block block = ForgeRegistries.BLOCKS.getValue(materialLocation);
+		return block == null || block.defaultBlockState().canOcclude();
 	}
 
 	@Override

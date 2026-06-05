@@ -27,54 +27,59 @@ import java.util.concurrent.TimeUnit;
 public class RenderHelper {
 	private RenderHelper() {}
 
-	private static final Cache<Integer, TextureAtlasSprite> SPRITE_CACHE = CacheBuilder.newBuilder().expireAfterAccess(1, TimeUnit.MINUTES).build();
+	private static final Cache<Integer, SpriteData> SPRITE_CACHE = CacheBuilder.newBuilder().expireAfterAccess(1, TimeUnit.MINUTES).build();
 
 	public static TextureAtlasSprite getSprite(ResourceLocation blockName, @Nullable Direction direction, RandomSource rand) {
+		return getSpriteData(blockName, direction, rand).sprite();
+	}
 
+	public static SpriteData getSpriteData(ResourceLocation blockName, @Nullable Direction direction, RandomSource rand) {
 		int hash = blockName.hashCode();
 		hash = hash * 31 + (direction == null ? 0 : direction.hashCode());
 
-		TextureAtlasSprite sprite = SPRITE_CACHE.getIfPresent(hash);
-		if (sprite == null) {
-			sprite = parseSprite(blockName, direction, rand);
-			SPRITE_CACHE.put(hash, sprite);
+		SpriteData spriteData = SPRITE_CACHE.getIfPresent(hash);
+		if (spriteData == null) {
+			spriteData = parseSpriteData(blockName, direction, rand);
+			SPRITE_CACHE.put(hash, spriteData);
 		}
-		return sprite;
+		return spriteData;
 	}
 
-	private static TextureAtlasSprite parseSprite(ResourceLocation blockName, @Nullable Direction direction, RandomSource rand) {
+	private static SpriteData parseSpriteData(ResourceLocation blockName, @Nullable Direction direction, RandomSource rand) {
 		BlockState blockState = getDefaultBlockState(blockName);
 
-		TextureAtlasSprite sprite = parseSpriteFromModel(blockState, direction, rand);
+		SpriteData spriteData = parseSpriteFromModel(blockState, direction, rand);
 
-		if (sprite == null) {
-			sprite = Minecraft.getInstance().getModelManager().getMissingModel().getParticleIcon(ModelData.EMPTY);
+		if (spriteData == null) {
+			spriteData = new SpriteData(Minecraft.getInstance().getModelManager().getMissingModel().getParticleIcon(ModelData.EMPTY), -1, false);
 		}
 
-		return sprite;
+		return spriteData;
 	}
 
 	@SuppressWarnings("java:S1874") //need to call deprecated getQuads here as well just in case it was overriden by mods instead of the main one
 	@Nullable
-	private static TextureAtlasSprite parseSpriteFromModel(BlockState blockState, @Nullable Direction direction, RandomSource rand) {
-		TextureAtlasSprite sprite = null;
+	private static SpriteData parseSpriteFromModel(BlockState blockState, @Nullable Direction direction, RandomSource rand) {
+		SpriteData spriteData = null;
 
 		BakedModel blockModel = Minecraft.getInstance().getBlockRenderer().getBlockModel(blockState);
 		try {
 			for (RenderType layer : blockModel.getRenderTypes(blockState, rand, ModelData.EMPTY)) {
+				boolean translucent = layer == RenderType.translucent();
 				List<BakedQuad> culledQuads = blockModel.getQuads(blockState, direction, rand, ModelData.EMPTY, layer);
 				if (!culledQuads.isEmpty()) {
-					return culledQuads.get(0).getSprite();
+					BakedQuad quad = culledQuads.get(0);
+					return new SpriteData(quad.getSprite(), quad.getTintIndex(), translucent);
 				}
 
 				//noinspection deprecation
 				for (BakedQuad bakedQuad : blockModel.getQuads(blockState, null, rand)) {
-					if (sprite == null) {
-						sprite = bakedQuad.getSprite();
+					if (spriteData == null) {
+						spriteData = new SpriteData(bakedQuad.getSprite(), bakedQuad.getTintIndex(), translucent);
 					}
 
 					if (bakedQuad.getDirection() == direction) {
-						return bakedQuad.getSprite();
+						return new SpriteData(bakedQuad.getSprite(), bakedQuad.getTintIndex(), translucent);
 					}
 				}
 			}
@@ -83,17 +88,19 @@ public class RenderHelper {
 			// NO OP
 		}
 
-		if (sprite == null) {
+		if (spriteData == null) {
 			try {
-				sprite = blockModel.getParticleIcon(ModelData.EMPTY);
+				spriteData = new SpriteData(blockModel.getParticleIcon(ModelData.EMPTY), -1, false);
 			}
 			catch (Exception e) {
 				// NO OP
 			}
 		}
 
-		return sprite;
+		return spriteData;
 	}
+
+	public record SpriteData(TextureAtlasSprite sprite, int tintIndex, boolean translucent) {}
 
 	private static BlockState getDefaultBlockState(ResourceLocation blockName) {
 		Block block = ForgeRegistries.BLOCKS.getValue(blockName);
