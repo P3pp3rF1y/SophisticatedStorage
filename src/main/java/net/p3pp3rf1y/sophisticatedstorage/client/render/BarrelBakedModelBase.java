@@ -32,6 +32,7 @@ import net.minecraft.world.level.block.state.properties.WoodType;
 import net.neoforged.neoforge.client.ChunkRenderTypeSet;
 import net.neoforged.neoforge.client.model.IDynamicBakedModel;
 import net.neoforged.neoforge.client.model.IQuadTransformer;
+import net.neoforged.neoforge.client.model.QuadTransformers;
 import net.neoforged.neoforge.client.model.data.ModelData;
 import net.neoforged.neoforge.client.model.data.ModelProperty;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
@@ -62,6 +63,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 	private static final ModelProperty<Boolean> HAS_MAIN_COLOR = new ModelProperty<>();
 	private static final ModelProperty<Boolean> HAS_ACCENT_COLOR = new ModelProperty<>();
 	private static final ModelProperty<Map<BarrelMaterial, ResourceLocation>> MATERIALS = new ModelProperty<>();
+	private static final ModelProperty<Map<ResourceLocation, Integer>> MATERIAL_TINT_COLORS = new ModelProperty<>();
 	public static final Cache<Integer, List<BakedQuad>> BAKED_QUADS_CACHE = CacheBuilder.newBuilder().expireAfterAccess(15L, TimeUnit.MINUTES).build();
 	private static final Vector3f DEFAULT_ROTATION = new Vector3f(0.0F, 0.0F, 0.0F);
 	private static final ItemTransforms ITEM_TRANSFORMS = createItemTransforms();
@@ -163,6 +165,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 		boolean isPacked;
 		boolean showsTier;
 		Map<BarrelMaterial, ResourceLocation> materials;
+		Map<ResourceLocation, Integer> materialTintColors;
 		if (state != null) {
 			hasMainColor = Boolean.TRUE.equals(extraData.get(HAS_MAIN_COLOR));
 			hasAccentColor = Boolean.TRUE.equals(extraData.get(HAS_ACCENT_COLOR));
@@ -171,6 +174,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 			}
 			isPacked = isPacked(extraData);
 			materials = getMaterials(extraData);
+			materialTintColors = getMaterialTintColors(extraData);
 			showsTier = showsTier(extraData);
 		} else {
 			woodName = this.woodName;
@@ -178,6 +182,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 			hasAccentColor = this.hasAccentColor;
 			isPacked = this.isPacked;
 			materials = barrelMaterials;
+			materialTintColors = getMaterialTintColors(materials, null, null);
 			showsTier = this.showsTier;
 		}
 
@@ -198,10 +203,12 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 
 		addTintableModelQuads(state, side, rand, ret, hasMainColor, hasAccentColor, modelParts, renderType);
 
-		if (isBakedDynamically && (renderType == null || renderType == RenderType.cutout())) {
-			bakeAndAddDynamicQuads(getSpriteSide(state, side), rand, woodName, materials, rendersUsingSplitModel,
+		if (isBakedDynamically && shouldRenderDynamicMaterials(state, renderType)) {
+			Direction spriteSide = getSpriteSide(state, side);
+			Map<ResourceLocation, RenderHelper.SpriteData> materialSpriteData = state != null ? getMaterialSpriteData(spriteSide, rand, materials) : Collections.emptyMap();
+			bakeAndAddDynamicQuads(spriteSide, rand, woodName, materials, rendersUsingSplitModel,
 					!hasMainColor || materialModelParts.contains(BarrelMaterial.MaterialModelPart.CORE), !hasAccentColor || materialModelParts.contains(BarrelMaterial.MaterialModelPart.TRIM))
-					.forEach(bakedModel -> ret.addAll(bakedModel.getQuads(state, side, rand, ModelData.EMPTY, renderType)));
+					.forEach(bakedModel -> addDynamicQuads(state, side, rand, ret, renderType, materialSpriteData, materialTintColors, bakedModel));
 		}
 
 		if (showsTier) {
@@ -256,7 +263,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 	}
 
 	private List<BakedModel> bakeAndAddDynamicQuads(@Nullable Direction spriteSide, RandomSource rand, @Nullable String woodName,
-													Map<BarrelMaterial, ResourceLocation> barrelMaterials, boolean rendersUsingSplitModel, boolean renderCore, boolean renderTrim) {
+											Map<BarrelMaterial, ResourceLocation> barrelMaterials, boolean rendersUsingSplitModel, boolean renderCore, boolean renderTrim) {
 
 		Map<DynamicBarrelBakingData.DynamicPart, DynamicBarrelBakingData> bakingData = woodDynamicBakingData.get(woodName != null ? woodName : WoodType.ACACIA.name());
 
@@ -286,6 +293,42 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 		return models;
 	}
 
+	private static boolean shouldRenderDynamicMaterials(@Nullable BlockState state, @Nullable RenderType renderType) {
+		return renderType == null || renderType == RenderType.cutout() || state != null && renderType == RenderType.translucent();
+	}
+
+	private static Map<ResourceLocation, RenderHelper.SpriteData> getMaterialSpriteData(@Nullable Direction spriteSide, RandomSource rand, Map<BarrelMaterial, ResourceLocation> barrelMaterials) {
+		Map<ResourceLocation, RenderHelper.SpriteData> materialSpriteData = new HashMap<>();
+		for (ResourceLocation blockName : barrelMaterials.values()) {
+			RenderHelper.SpriteData spriteData = RenderHelper.getSpriteData(blockName, spriteSide, rand);
+			materialSpriteData.put(spriteData.sprite().contents().name(), spriteData);
+		}
+		return materialSpriteData;
+	}
+
+	private static void addDynamicQuads(@Nullable BlockState state, @Nullable Direction side, RandomSource rand, List<BakedQuad> ret, @Nullable RenderType renderType,
+										Map<ResourceLocation, RenderHelper.SpriteData> materialSpriteData, Map<ResourceLocation, Integer> materialTintColors, BakedModel bakedModel) {
+		List<BakedQuad> quads = bakedModel.getQuads(state, side, rand, ModelData.EMPTY, renderType);
+		for (BakedQuad quad : quads) {
+			ResourceLocation spriteName = quad.getSprite().contents().name();
+			if (state != null && !shouldRenderDynamicQuad(spriteName, materialSpriteData, renderType)) {
+				continue;
+			}
+
+			Integer tintColor = materialTintColors.get(spriteName);
+			ret.add(tintColor == null ? quad : QuadTransformers.applyingColor(tintColor).process(quad));
+		}
+	}
+
+	private static boolean shouldRenderDynamicQuad(ResourceLocation spriteName, Map<ResourceLocation, RenderHelper.SpriteData> materialSpriteData, @Nullable RenderType renderType) {
+		if (renderType == null) {
+			return true;
+		}
+
+		boolean translucent = Optional.ofNullable(materialSpriteData.get(spriteName)).map(RenderHelper.SpriteData::translucent).orElse(false);
+		return (renderType == RenderType.translucent()) == translucent;
+	}
+
 	private BakedModel getDynamicModel(@Nullable String woodName, Map<DynamicBarrelBakingData.DynamicPart, DynamicBarrelBakingData> bakingData,
 									   Map<String, Material> materials, DynamicBarrelBakingData.DynamicPart dynamicPart) {
 		int hash = Objects.hash(woodName, materials, dynamicPart.name());
@@ -297,12 +340,16 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 		return bakedModel;
 	}
 
-	private BlockState getDefaultBlockState(ResourceLocation blockName) {
+	private static BlockState getDefaultBlockState(ResourceLocation blockName) {
 		return BuiltInRegistries.BLOCK.get(blockName).orElseThrow().value().defaultBlockState();
 	}
 
 	private Map<BarrelMaterial, ResourceLocation> getMaterials(ModelData extraData) {
 		return extraData.has(MATERIALS) ? Objects.requireNonNull(extraData.get(MATERIALS)) : Collections.emptyMap();
+	}
+
+	private Map<ResourceLocation, Integer> getMaterialTintColors(ModelData extraData) {
+		return extraData.has(MATERIAL_TINT_COLORS) ? Objects.requireNonNull(extraData.get(MATERIAL_TINT_COLORS)) : Collections.emptyMap();
 	}
 
 	private BakedModel compileAndBakeModel(Map<String, Material> textures, DynamicBarrelBakingData bakingData) {
@@ -371,6 +418,8 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 		hash = hash * 31 + (state.getValue(BarrelBlock.FLAT_TOP) ? 1 : 0);
 		//noinspection ConstantConditions
 		hash = hash * 31 + (data.has(MATERIALS) ? data.get(MATERIALS).hashCode() : 0);
+		//noinspection ConstantConditions
+		hash = hash * 31 + (data.has(MATERIAL_TINT_COLORS) ? data.get(MATERIAL_TINT_COLORS).hashCode() : 0);
 		return hash;
 	}
 
@@ -477,10 +526,14 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 	@Override
 	public ModelData getModelData(BlockAndTintGetter world, BlockPos pos, BlockState state, ModelData tileData) {
 		return WorldHelper.getBlockEntity(world, pos, BarrelBlockEntity.class)
-				.map(BarrelBakedModelBase::getModelDataFromBlockEntity).orElse(ModelData.EMPTY);
+				.map(be -> getModelDataFromBlockEntity(be, world, pos)).orElse(ModelData.EMPTY);
 	}
 
 	public static ModelData getModelDataFromBlockEntity(BarrelBlockEntity be) {
+		return getModelDataFromBlockEntity(be, null, null);
+	}
+
+	private static ModelData getModelDataFromBlockEntity(BarrelBlockEntity be, @Nullable BlockAndTintGetter world, @Nullable BlockPos pos) {
 		ModelData.Builder builder = ModelData.builder();
 		boolean hasMainColor = be.getStorageWrapper().hasMainColor();
 		builder.with(HAS_MAIN_COLOR, hasMainColor);
@@ -497,8 +550,45 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 		Map<BarrelMaterial, ResourceLocation> materials = be.getMaterials();
 		if (!materials.isEmpty()) {
 			builder.with(MATERIALS, materials);
+			Map<ResourceLocation, Integer> materialTintColors = getMaterialTintColors(materials, world, pos);
+			if (!materialTintColors.isEmpty()) {
+				builder.with(MATERIAL_TINT_COLORS, materialTintColors);
+			}
 		}
 		return builder.build();
+	}
+
+	private static Map<ResourceLocation, Integer> getMaterialTintColors(Map<BarrelMaterial, ResourceLocation> materials, @Nullable BlockAndTintGetter world, @Nullable BlockPos pos) {
+		Map<ResourceLocation, Integer> materialTintColors = new HashMap<>();
+		RandomSource rand = RandomSource.create();
+		for (ResourceLocation blockName : materials.values()) {
+			BlockState blockState = getDefaultBlockState(blockName);
+			for (Direction direction : Direction.values()) {
+				RenderHelper.SpriteData spriteData = RenderHelper.getSpriteData(blockName, direction, rand);
+				if (spriteData.tintIndex() >= 0) {
+					int tintColor = Minecraft.getInstance().getBlockColors().getColor(blockState, world, pos, spriteData.tintIndex());
+					if (tintColor != -1) {
+						materialTintColors.put(spriteData.sprite().contents().name(), 0xFF000000 | (tintColor & 0xFFFFFF));
+					}
+				}
+			}
+		}
+		return Map.copyOf(materialTintColors);
+	}
+
+	public static int getMaterialParticleTintColor(Map<BarrelMaterial, ResourceLocation> materials, @Nullable BlockAndTintGetter world, @Nullable BlockPos pos) {
+		for (BarrelMaterial barrelMaterial : PARTICLE_ICON_MATERIAL_PRIORITY) {
+			ResourceLocation material = materials.get(barrelMaterial);
+			if (material == null) {
+				continue;
+			}
+
+			int tintColor = Minecraft.getInstance().getBlockColors().getColor(getDefaultBlockState(material), world, pos, 0);
+			if (tintColor != -1) {
+				return tintColor;
+			}
+		}
+		return -1;
 	}
 
 	@Override
