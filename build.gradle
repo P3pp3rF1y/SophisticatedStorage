@@ -83,7 +83,7 @@ repositories {
         }
     }
     maven {
-        url = "https://maven.octo-studios.com/#/releases"
+        url = "https://maven.theillusivec4.top/"
         content {
             includeGroup 'top.theillusivec4.curios'
         }
