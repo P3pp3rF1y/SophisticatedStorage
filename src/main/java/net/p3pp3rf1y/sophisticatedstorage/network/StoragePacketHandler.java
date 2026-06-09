@@ -4,10 +4,10 @@ import net.p3pp3rf1y.sophisticatedcore.network.PacketHandler;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 
 public class StoragePacketHandler extends PacketHandler {
-	public static final StoragePacketHandler INSTANCE = new StoragePacketHandler(SophisticatedStorage.MOD_ID);
+	public static final StoragePacketHandler INSTANCE = new StoragePacketHandler(SophisticatedStorage.MOD_ID, SophisticatedStorage.getNetworkProtocolVersion());
 
-	private StoragePacketHandler(String modId) {
-		super(modId);
+	private StoragePacketHandler(String modId, String protocol) {
+		super(modId, protocol);
 	}
 
 	@Override
