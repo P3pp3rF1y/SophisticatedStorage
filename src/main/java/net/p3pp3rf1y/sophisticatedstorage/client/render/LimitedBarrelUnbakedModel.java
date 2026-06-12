@@ -5,7 +5,6 @@ import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.geometry.QuadCollection;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.state.BlockState;
-import net.p3pp3rf1y.sophisticatedstorage.block.LimitedBarrelBlock;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Map;
@@ -28,16 +27,6 @@ public class LimitedBarrelUnbakedModel extends BarrelUnbakedModelBase {
 		@Override
 		protected BarrelModelPart getBasePart(@Nullable BlockState state) {
 			return BarrelModelPart.BASE;
-		}
-
-		@Override
-		protected int createHash(@Nullable BlockState state) {
-			int hash = super.createHash(state);
-			if (state != null && state.hasProperty(LimitedBarrelBlock.HORIZONTAL_FACING) && state.hasProperty(LimitedBarrelBlock.VERTICAL_FACING)) {
-				hash = hash * 31 + state.getValue(LimitedBarrelBlock.HORIZONTAL_FACING).get2DDataValue();
-				hash = hash * 31 + state.getValue(LimitedBarrelBlock.VERTICAL_FACING).getIndex();
-			}
-			return hash;
 		}
 
 		@Override

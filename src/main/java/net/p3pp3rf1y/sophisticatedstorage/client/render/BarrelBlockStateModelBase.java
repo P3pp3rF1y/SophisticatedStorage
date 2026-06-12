@@ -56,8 +56,8 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 		}
 	});
 	private static final Cache<Integer, Transformation> DIRECTION_MOVE_BACK_TO_SIDE = CacheBuilder.newBuilder().expireAfterAccess(10L, TimeUnit.MINUTES).build();
-	public static final Cache<Integer, List<BlockStateModelPart>> BAKED_PARTS_CACHE = CacheBuilder.newBuilder().expireAfterAccess(15L, TimeUnit.MINUTES).build();
-	public static final Cache<Integer, List<BakedQuad>> BAKED_QUADS_CACHE = CacheBuilder.newBuilder().expireAfterAccess(15L, TimeUnit.MINUTES).build();
+	private static final Cache<BarrelRenderCacheKey, List<BlockStateModelPart>> BAKED_PARTS_CACHE = CacheBuilder.newBuilder().expireAfterAccess(15L, TimeUnit.MINUTES).build();
+	private static final Cache<BarrelItemRenderCacheKey, List<BakedQuad>> BAKED_QUADS_CACHE = CacheBuilder.newBuilder().expireAfterAccess(15L, TimeUnit.MINUTES).build();
 	private static final List<BarrelMaterial> PARTICLE_ICON_MATERIAL_PRIORITY = List.of(BarrelMaterial.ALL, BarrelMaterial.ALL_BUT_TRIM, BarrelMaterial.TOP_ALL, BarrelMaterial.TOP);
 	private boolean showsLock;
 
@@ -159,8 +159,8 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 	public List<BakedQuad> getQuads(RandomSource rand) {
 		showsLock = false;
 
-		int hash = createItemHash();
-		List<BakedQuad> cachedQuads = BAKED_QUADS_CACHE.getIfPresent(hash);
+		BarrelItemRenderCacheKey cacheKey = createItemCacheKey();
+		List<BakedQuad> cachedQuads = BAKED_QUADS_CACHE.getIfPresent(cacheKey);
 		if (cachedQuads != null) {
 			return cachedQuads;
 		}
@@ -174,7 +174,7 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 			bakedQuads.addAll(part.getQuads(null));
 		}
 
-		BAKED_QUADS_CACHE.put(hash, bakedQuads);
+		BAKED_QUADS_CACHE.put(cacheKey, bakedQuads);
 
 		return bakedQuads;
 	}
@@ -199,14 +199,14 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 			showsTier = be.shouldShowTier();
 		}
 
-		int hash = createHash(state);
-		List<BlockStateModelPart> cachedParts = BAKED_PARTS_CACHE.getIfPresent(hash);
+		BarrelRenderCacheKey cacheKey = createCacheKey(state);
+		List<BlockStateModelPart> cachedParts = BAKED_PARTS_CACHE.getIfPresent(cacheKey);
 		if (cachedParts != null) {
 			parts.addAll(cachedParts);
 			return;
 		}
 		List<BlockStateModelPart> partsToCache = getParts(state, rand);
-		BAKED_PARTS_CACHE.put(hash, partsToCache);
+		BAKED_PARTS_CACHE.put(cacheKey, partsToCache);
 
 		parts.addAll(partsToCache);
 	}
@@ -396,25 +396,50 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 
 	protected abstract BarrelModelPart getBasePart(@Nullable BlockState state);
 
-	public int createItemHash() {
-		return barrelItem.hashCode() * 31 + createHash(null);
+	private BarrelItemRenderCacheKey createItemCacheKey() {
+		return new BarrelItemRenderCacheKey(barrelItem, createCacheKey(null));
 	}
 
-	protected int createHash(@Nullable BlockState state) {
-		int hash = state != null ? state.getBlock().hashCode() : 0;
+	private BarrelRenderCacheKey createCacheKey(@Nullable BlockState state) {
+		return new BarrelRenderCacheKey(this, state, woodName, hasMainColor, hasAccentColor, isPacked, showsLock, showsTier, flatTop, Map.copyOf(materials), Map.copyOf(materialTintColors));
+	}
 
-		if (woodName != null) {
-			hash = hash * 31 + woodName.hashCode() + 1;
+	private record BarrelItemRenderCacheKey(Item barrelItem, BarrelRenderCacheKey renderCacheKey) {}
+
+	private record BarrelRenderCacheKey(BarrelBlockStateModelBase model, @Nullable BlockState state, @Nullable String woodName,
+											   boolean hasMainColor, boolean hasAccentColor, boolean isPacked, boolean showsLock, boolean showsTier, boolean flatTop,
+											   Map<BarrelMaterial, Identifier> materials, Map<Identifier, Integer> materialTintColors) {
+		@Override
+		public boolean equals(Object obj) {
+			return obj instanceof BarrelRenderCacheKey other
+					&& model == other.model
+					&& Objects.equals(state, other.state)
+					&& Objects.equals(woodName, other.woodName)
+					&& hasMainColor == other.hasMainColor
+					&& hasAccentColor == other.hasAccentColor
+					&& isPacked == other.isPacked
+					&& showsLock == other.showsLock
+					&& showsTier == other.showsTier
+					&& flatTop == other.flatTop
+					&& Objects.equals(materials, other.materials)
+					&& Objects.equals(materialTintColors, other.materialTintColors);
 		}
-		hash = hash * 31 + (hasMainColor ? 1 : 0);
-		hash = hash * 31 + (hasAccentColor ? 1 : 0);
-		hash = hash * 31 + (isPacked ? 1 : 0);
-		hash = hash * 31 + (showsLock ? 1 : 0);
-		hash = hash * 31 + (showsTier ? 1 : 0);
-		hash = hash * 31 + (flatTop ? 1 : 0);
-		hash = hash * 31 + materials.hashCode();
-		hash = hash * 31 + materialTintColors.hashCode();
-		return hash;
+
+		@Override
+		public int hashCode() {
+			int hash = System.identityHashCode(model);
+			hash = 31 * hash + Objects.hashCode(state);
+			hash = 31 * hash + Objects.hashCode(woodName);
+			hash = 31 * hash + Boolean.hashCode(hasMainColor);
+			hash = 31 * hash + Boolean.hashCode(hasAccentColor);
+			hash = 31 * hash + Boolean.hashCode(isPacked);
+			hash = 31 * hash + Boolean.hashCode(showsLock);
+			hash = 31 * hash + Boolean.hashCode(showsTier);
+			hash = 31 * hash + Boolean.hashCode(flatTop);
+			hash = 31 * hash + materials.hashCode();
+			hash = 31 * hash + materialTintColors.hashCode();
+			return hash;
+		}
 	}
 
 	private void addTintableModelQuads(QuadCollection.Builder builder, @Nullable BlockState state, Map<BarrelModelPart, QuadCollection> modelParts) {
