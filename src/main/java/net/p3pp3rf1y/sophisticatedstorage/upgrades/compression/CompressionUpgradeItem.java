@@ -87,7 +87,12 @@ public class CompressionUpgradeItem extends UpgradeItemBase<CompressionUpgradeIt
                         if (compactingShape == RecipeHelper.CompactingShape.TWO_BY_TWO_UNCRAFTABLE || compactingShape == RecipeHelper.CompactingShape.THREE_BY_THREE_UNCRAFTABLE) {
                             nextItemToMatch = RecipeHelper.getCompactingResult(stackToMatch, compactingShape).getResult();
                         } else {
-                            allRemainingSlotsMustBeEmpty = true;
+                            Optional<CompressionUpgradeConfig.CompressionResult> compressionResult = Config.SERVER.compressionUpgrade.getCompressionResult(stackToMatch);
+                            if (compressionResult.isPresent()) {
+                                nextItemToMatch = compressionResult.get().result();
+                            } else {
+                                allRemainingSlotsMustBeEmpty = true;
+                            }
                         }
                     }
                 }
