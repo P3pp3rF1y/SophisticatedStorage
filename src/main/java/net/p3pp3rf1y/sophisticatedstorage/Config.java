@@ -10,6 +10,7 @@ import net.p3pp3rf1y.sophisticatedcore.upgrades.FilteredUpgradeConfig;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.IUpgradeCountLimitConfig;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeGroup;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.alchemy.AlchemyUpgradeConfig;
+import net.p3pp3rf1y.sophisticatedcore.upgrades.compacting.CompactingUpgradeConfig;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.cooking.AutoCookingUpgradeConfig;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.cooking.CookingUpgradeConfig;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.cooking.ICookingUpgrade;
@@ -137,7 +138,7 @@ public class Config {
 		public final ShulkerBoxDisallowedItems shulkerBoxDisallowedItems;
 
 		public final StackUpgradeConfig stackUpgrade;
-		public final FilteredUpgradeConfig compactingUpgrade;
+		public final CompactingUpgradeConfig compactingUpgrade;
 		public final FilteredUpgradeConfig advancedCompactingUpgrade;
 		public final FilteredUpgradeConfig depositUpgrade;
 		public final FilteredUpgradeConfig advancedDepositUpgrade;
@@ -189,6 +190,7 @@ public class Config {
 
 		private void clearCache() {
 			stackUpgrade.clearNonStackableItems();
+			compactingUpgrade.clearCache();
 			maxUpgradesPerStorage.clearCache();
 			compressionUpgrade.clearCache();
 		}
@@ -247,7 +249,7 @@ public class Config {
 			shulkerBoxDisallowedItems = new ShulkerBoxDisallowedItems(builder);
 
 			stackUpgrade = new StackUpgradeConfig(builder);
-			compactingUpgrade = new FilteredUpgradeConfig(builder, "Compacting Upgrade", "compactingUpgrade", 9, 3);
+			compactingUpgrade = new CompactingUpgradeConfig(builder, "Compacting Upgrade", "compactingUpgrade", 9, 3);
 			advancedCompactingUpgrade = new FilteredUpgradeConfig(builder, "Advanced Compacting Upgrade", "advancedCompactingUpgrade", 16, 4);
 			depositUpgrade = new FilteredUpgradeConfig(builder, "Deposit Upgrade", "depositUpgrade", 9, 3);
 			advancedDepositUpgrade = new FilteredUpgradeConfig(builder, "Advanced Deposit Upgrade", "advancedDepositUpgrade", 16, 4);

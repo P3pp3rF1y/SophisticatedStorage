@@ -32,6 +32,8 @@ import java.util.function.Supplier;
 
 import static org.junit.jupiter.api.AssertionFailureBuilder.assertionFailure;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
 public class CompressionInventoryPartTest {
@@ -147,8 +149,22 @@ public class CompressionInventoryPartTest {
 	private CompressionInventoryPart initCompressionInventoryPart(InventoryHandler invHandler, SlotRange slotRange, Supplier<MemorySettingsCategory> getMemorySettings) {
 		CompressionInventoryPart spiedPart = spy(new CompressionInventoryPart(invHandler, slotRange, getMemorySettings));
 		doReturn(Optional.empty()).when(spiedPart).getDecompressionResultFromConfig(any(Item.class));
+		doReturn(Optional.empty()).when(spiedPart).getCompressionResultFromConfig(any(ItemStack.class));
 		spiedPart.onInit();
 		return spiedPart;
+	}
+
+	@Test
+	void inaccessibleSlotsRenderOverlay() {
+		Map<Integer, ItemStack> slotStacks = Map.of(0, new ItemStack(Items.CLAY, 10), 1, ItemStack.EMPTY, 2, ItemStack.EMPTY);
+		InventoryHandler invHandler = getFilledInventoryHandler(slotStacks, 64);
+
+		CompressionInventoryPart part = initCompressionInventoryPart(invHandler, new SlotRange(0, 3), () -> getMemorySettings(invHandler, Map.of()));
+
+		assertTrue(part.isSlotAccessible(0));
+		assertFalse(part.shouldRenderInaccessibleSlotOverlay(0));
+		assertFalse(part.isSlotAccessible(1));
+		assertTrue(part.shouldRenderInaccessibleSlotOverlay(1));
 	}
 
 	private static void assertInternalStacks(Map<Integer, ItemStack> slotStacksModified, InventoryHandler invHandler) {
@@ -842,6 +858,53 @@ public class CompressionInventoryPartTest {
 						Map.of(0, new ItemStack(Items.SAND, 256))
 				)
 		);
+	}
+
+	@Test
+	void configuredEightItemDecompressionCalculatesLowerSlotCount() {
+		Map<Integer, ItemStack> slotStacks = Map.of(0, new ItemStack(Items.COAL), 1, ItemStack.EMPTY);
+		CompressionUpgradeConfig.DecompressionResult configuredDecompression = new CompressionUpgradeConfig.DecompressionResult(new ItemStack(Items.CHARCOAL), 8);
+		InventoryHandler invHandler = getFilledInventoryHandler(slotStacks, 64);
+
+		CompressionInventoryPart part = initCompressionInventoryPartWithConfiguredDecompression(invHandler, Items.COAL, configuredDecompression);
+
+		assertCalculatedStacks(Map.of(0, new ItemStack(Items.COAL), 1, new ItemStack(Items.CHARCOAL, 8)), 0, part);
+	}
+
+	@Test
+	void recipeBackedConfiguredEightItemDecompressionCalculatesLowerSlotCount() {
+		Map<Integer, ItemStack> slotStacks = Map.of(0, new ItemStack(Items.ECHO_SHARD), 1, ItemStack.EMPTY);
+		CompressionUpgradeConfig.DecompressionResult recipeBackedDecompression = new CompressionUpgradeConfig.DecompressionResult(new ItemStack(Items.POISONOUS_POTATO), 8);
+		InventoryHandler invHandler = getFilledInventoryHandler(slotStacks, 64);
+
+		CompressionInventoryPart part = initCompressionInventoryPartWithConfiguredDecompression(invHandler, Items.ECHO_SHARD, recipeBackedDecompression);
+
+		assertCalculatedStacks(Map.of(0, new ItemStack(Items.ECHO_SHARD), 1, new ItemStack(Items.POISONOUS_POTATO, 8)), 0, part);
+	}
+
+	@Test
+	void configuredEightItemCompressionCompactsInsertedItems() {
+		Map<Integer, ItemStack> slotStacks = Map.of(0, ItemStack.EMPTY, 1, ItemStack.EMPTY);
+		CompressionUpgradeConfig.CompressionResult configuredCompression = new CompressionUpgradeConfig.CompressionResult(new ItemStack(Items.COAL), 8);
+		ItemStack stackToInsert = new ItemStack(Items.CHARCOAL, 16);
+		InventoryHandler invHandler = getFilledInventoryHandler(slotStacks, 64);
+		CompressionInventoryPart part = initCompressionInventoryPart(invHandler, new SlotRange(0, 2), () -> getMemorySettings(invHandler, Map.of()));
+		doReturn(Optional.of(configuredCompression)).when(part).getCompressionResultFromConfig(argThat(stack -> stack.is(Items.CHARCOAL)));
+
+		ItemStack remainder = part.insertItem(1, stackToInsert, false, (slot, itemStack, simulate) -> ItemStack.EMPTY);
+
+		assertStackEquals(ItemStack.EMPTY, remainder, "Insert result doesn't match");
+		assertCalculatedStacks(Map.of(0, new ItemStack(Items.COAL, 2), 1, new ItemStack(Items.CHARCOAL, 16)), 0, part);
+		assertInternalStacks(Map.of(0, new ItemStack(Items.COAL, 2)), invHandler);
+	}
+
+	private CompressionInventoryPart initCompressionInventoryPartWithConfiguredDecompression(InventoryHandler invHandler, Item item, CompressionUpgradeConfig.DecompressionResult decompressionResult) {
+		CompressionInventoryPart spiedPart = spy(new CompressionInventoryPart(invHandler, new SlotRange(0, 2), () -> getMemorySettings(invHandler, Map.of())));
+		doReturn(Optional.empty()).when(spiedPart).getDecompressionResultFromConfig(any(Item.class));
+		doReturn(Optional.empty()).when(spiedPart).getCompressionResultFromConfig(any(ItemStack.class));
+		doReturn(Optional.of(decompressionResult)).when(spiedPart).getDecompressionResultFromConfig(item);
+		spiedPart.onInit();
+		return spiedPart;
 	}
 
 	@ParameterizedTest

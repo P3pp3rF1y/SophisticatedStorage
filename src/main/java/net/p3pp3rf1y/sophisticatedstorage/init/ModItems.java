@@ -131,9 +131,9 @@ public class ModItems {
 	public static final RegistryObject<FeedingUpgradeItem> ADVANCED_FEEDING_UPGRADE = ITEMS.register("advanced_feeding_upgrade",
 			() -> new FeedingUpgradeItem(Config.SERVER.advancedFeedingUpgrade.filterSlots::get, Config.SERVER.maxUpgradesPerStorage));
 	public static final RegistryObject<CompactingUpgradeItem> COMPACTING_UPGRADE = ITEMS.register("compacting_upgrade",
-			() -> new StorageCompactingUpgradeItem(false, Config.SERVER.compactingUpgrade.filterSlots::get, Config.SERVER.maxUpgradesPerStorage));
+			() -> new StorageCompactingUpgradeItem(false, Config.SERVER.compactingUpgrade.filterSlots::get, Config.SERVER.maxUpgradesPerStorage, Config.SERVER.compactingUpgrade::getCompactingResult));
 	public static final RegistryObject<CompactingUpgradeItem> ADVANCED_COMPACTING_UPGRADE = ITEMS.register("advanced_compacting_upgrade",
-			() -> new StorageCompactingUpgradeItem(true, Config.SERVER.advancedCompactingUpgrade.filterSlots::get, Config.SERVER.maxUpgradesPerStorage));
+			() -> new StorageCompactingUpgradeItem(true, Config.SERVER.advancedCompactingUpgrade.filterSlots::get, Config.SERVER.maxUpgradesPerStorage, Config.SERVER.compactingUpgrade::getCompactingResult));
 	public static final RegistryObject<VoidUpgradeItem> VOID_UPGRADE = ITEMS.register("void_upgrade",
 			() -> new VoidUpgradeItem(Config.SERVER.voidUpgrade, Config.SERVER.maxUpgradesPerStorage));
 	public static final RegistryObject<VoidUpgradeItem> ADVANCED_VOID_UPGRADE = ITEMS.register("advanced_void_upgrade",
@@ -360,8 +360,8 @@ public class ModItems {
 	private static class StorageCompactingUpgradeItem extends CompactingUpgradeItem {
 		public static final List<UpgradeConflictDefinition> UPGRADE_CONFLICT_DEFINITIONS = List.of(new UpgradeConflictDefinition(CompressionUpgradeItem.class::isInstance, 0, StorageTranslationHelper.INSTANCE.translError("add.compression_exists")));
 
-		public StorageCompactingUpgradeItem(boolean shouldCompactThreeByThree, IntSupplier filterSlotCount, IUpgradeCountLimitConfig upgradeCountLimitConfig) {
-			super(shouldCompactThreeByThree, filterSlotCount, upgradeCountLimitConfig);
+		public StorageCompactingUpgradeItem(boolean shouldCompactThreeByThree, IntSupplier filterSlotCount, IUpgradeCountLimitConfig upgradeCountLimitConfig, ConfiguredCompactingResultProvider configuredCompactingResultProvider) {
+			super(shouldCompactThreeByThree, filterSlotCount, upgradeCountLimitConfig, configuredCompactingResultProvider);
 		}
 
 		@Override

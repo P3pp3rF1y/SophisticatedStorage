@@ -101,11 +101,11 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 				ret.clear(); //clearing any compressible definition added before as the compression should no longer compress if there are incompatible items present
 				break;
 			} else {
-				Optional<RecipeHelper.CompactingShape> compressionShape = getCompressionShape(prevItem);
-				if (compressionShape.isPresent()) {
-					RecipeHelper.CompactingShape shape = compressionShape.get();
-					ret.put(slot, new SlotDefinition(prevItem, shape.getNumberOfIngredients(), true));
-					prevItem = RecipeHelper.getCompactingResult(prevItem, shape).getResult();
+				Optional<CompressionDefinition> compressionDefinition = getCompressionDefinition(prevItem);
+				if (compressionDefinition.isPresent()) {
+					CompressionDefinition definition = compressionDefinition.get();
+					ret.put(slot, new SlotDefinition(prevItem, definition.count(), true));
+					prevItem = definition.result();
 				} else {
 					ret.put(slot, new SlotDefinition(prevItem, 1, true));
 					break;
@@ -211,21 +211,35 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 		parent.onFilterItemsChanged();
 	}
 
-	private Optional<RecipeHelper.CompactingShape> getCompressionShape(ItemStack stack) {
+	private Optional<CompressionDefinition> getCompressionDefinition(ItemStack stack) {
 		Set<RecipeHelper.CompactingShape> compactingShapes = RecipeHelper.getItemCompactingShapes(stack);
 
 		if (compactingShapes.contains(RecipeHelper.CompactingShape.THREE_BY_THREE_UNCRAFTABLE)) {
-			return Optional.of(RecipeHelper.CompactingShape.THREE_BY_THREE_UNCRAFTABLE);
+			return getCompressionDefinition(stack, RecipeHelper.CompactingShape.THREE_BY_THREE_UNCRAFTABLE);
 		} else if (compactingShapes.contains(RecipeHelper.CompactingShape.TWO_BY_TWO_UNCRAFTABLE)) {
-			return Optional.of(RecipeHelper.CompactingShape.TWO_BY_TWO_UNCRAFTABLE);
-		} else if (compactingShapes.contains(RecipeHelper.CompactingShape.THREE_BY_THREE)) {
-			Item compressedItem = RecipeHelper.getCompactingResult(stack, RecipeHelper.CompactingShape.THREE_BY_THREE).getResult().getItem();
-			return getDecompressionResultFromConfig(compressedItem).isPresent() ? Optional.of(RecipeHelper.CompactingShape.THREE_BY_THREE_UNCRAFTABLE) : Optional.empty();
-		} else if (compactingShapes.contains(RecipeHelper.CompactingShape.TWO_BY_TWO)) {
-			Item compressedItem = RecipeHelper.getCompactingResult(stack, RecipeHelper.CompactingShape.TWO_BY_TWO).getResult().getItem();
-			return getDecompressionResultFromConfig(compressedItem).isPresent() ? Optional.of(RecipeHelper.CompactingShape.TWO_BY_TWO_UNCRAFTABLE) : Optional.empty();
+			return getCompressionDefinition(stack, RecipeHelper.CompactingShape.TWO_BY_TWO_UNCRAFTABLE);
 		}
-		return Optional.empty();
+
+		Optional<CompressionDefinition> compressionDefinition = Optional.empty();
+		if (compactingShapes.contains(RecipeHelper.CompactingShape.THREE_BY_THREE)) {
+			RecipeHelper.CompactingResult compactingResult = RecipeHelper.getCompactingResult(stack, RecipeHelper.CompactingShape.THREE_BY_THREE);
+			compressionDefinition = getDecompressionResultFromConfig(compactingResult.getResult().getItem()).filter(decompressionResult -> decompressionResult.matches(stack, RecipeHelper.CompactingShape.THREE_BY_THREE.getNumberOfIngredients()))
+					.map(decompressionResult -> new CompressionDefinition(compactingResult.getResult(), decompressionResult.count()));
+		}
+		if (compressionDefinition.isEmpty() && compactingShapes.contains(RecipeHelper.CompactingShape.TWO_BY_TWO)) {
+			RecipeHelper.CompactingResult compactingResult = RecipeHelper.getCompactingResult(stack, RecipeHelper.CompactingShape.TWO_BY_TWO);
+			compressionDefinition = getDecompressionResultFromConfig(compactingResult.getResult().getItem()).filter(decompressionResult -> decompressionResult.matches(stack, RecipeHelper.CompactingShape.TWO_BY_TWO.getNumberOfIngredients()))
+					.map(decompressionResult -> new CompressionDefinition(compactingResult.getResult(), decompressionResult.count()));
+		}
+		if (compressionDefinition.isPresent()) {
+			return compressionDefinition;
+		}
+		return getCompressionResultFromConfig(stack).map(compressionResult -> new CompressionDefinition(compressionResult.result(), compressionResult.count()));
+	}
+
+	private Optional<CompressionDefinition> getCompressionDefinition(ItemStack stack, RecipeHelper.CompactingShape shape) {
+		RecipeHelper.CompactingResult compactingResult = RecipeHelper.getCompactingResult(stack, shape);
+		return compactingResult.getResult().isEmpty() ? Optional.empty() : Optional.of(new CompressionDefinition(compactingResult.getResult(), shape.getNumberOfIngredients()));
 	}
 
 
@@ -233,20 +247,30 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 		ItemStack currentItem = firstFilledItem;
 		for (int slot = firstFilledSlot + 1; slot < slotRange.firstSlot() + slotRange.numberOfSlots(); slot++) {
 			RecipeHelper.UncompactingResult uncompactingResult = RecipeHelper.getUncompactingResult(currentItem);
+			ItemStack result;
+			int count;
 			if (uncompactingResult.getCompactUsingShape() == RecipeHelper.CompactingShape.NONE) {
-				Optional<RecipeHelper.UncompactingResult> decompressionResult = getDecompressionResultFromConfig(currentItem.getItem());
-				if ((currentItem.getTag() != null && !currentItem.getTag().isEmpty()) || decompressionResult.isEmpty()) {
+				Optional<CompressionUpgradeConfig.DecompressionResult> decompressionResult = getDecompressionResultFromConfig(currentItem.getItem());
+				if (decompressionResult.isEmpty()) {
 					break;
 				}
-				uncompactingResult = decompressionResult.get();
+				result = decompressionResult.get().result();
+				count = decompressionResult.get().count();
+			} else {
+				result = uncompactingResult.getResult();
+				count = uncompactingResult.getCompactUsingShape().getNumberOfIngredients();
 			}
-			slotDefinitions.put(slot, new SlotDefinition(uncompactingResult.getResult(), uncompactingResult.getCompactUsingShape() == RecipeHelper.CompactingShape.TWO_BY_TWO_UNCRAFTABLE ? 4 : 9, true));
-			currentItem = uncompactingResult.getResult();
+			slotDefinitions.put(slot, new SlotDefinition(result, count, true));
+			currentItem = result;
 		}
 	}
 
-	Optional<RecipeHelper.UncompactingResult> getDecompressionResultFromConfig(Item currentItem) {
+	Optional<CompressionUpgradeConfig.DecompressionResult> getDecompressionResultFromConfig(Item currentItem) {
 		return Config.SERVER.compressionUpgrade.getDecompressionResult(currentItem);
+	}
+
+	Optional<CompressionUpgradeConfig.CompressionResult> getCompressionResultFromConfig(ItemStack stack) {
+		return Config.SERVER.compressionUpgrade.getCompressionResult(stack);
 	}
 
 	private Map<Integer, ItemStack> getExistingStacks() {
@@ -685,7 +709,7 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 
 	@Override
 	public boolean shouldRenderInaccessibleSlotOverlay(int slot) {
-		return false;
+		return !isSlotAccessible(slot);
 	}
 
 	@Override
@@ -800,6 +824,12 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 					", isAccessible=" + isAccessible +
 					", isCompressible=" + isCompressible +
 					'}';
+		}
+	}
+
+	private record CompressionDefinition(ItemStack result, int count) {
+		private CompressionDefinition {
+			result = result.copyWithCount(1);
 		}
 	}
 }

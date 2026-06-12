@@ -85,11 +85,16 @@ public class CompressionUpgradeItem extends UpgradeItemBase<CompressionUpgradeIt
 
 					boolean hasSlotBeforeThisOne = slot - 1 >= slotRange.firstSlot();
 					if (hasSlotBeforeThisOne) {
-                        RecipeHelper.CompactingShape compactingShape = RecipeHelper.getItemCompactingShapes(stackToMatch).stream().filter(RecipeHelper.CompactingShape::isUncraftable).findFirst().orElse(RecipeHelper.CompactingShape.NONE);
+						RecipeHelper.CompactingShape compactingShape = RecipeHelper.getItemCompactingShapes(stackToMatch).stream().filter(RecipeHelper.CompactingShape::isUncraftable).findFirst().orElse(RecipeHelper.CompactingShape.NONE);
 						if (compactingShape == RecipeHelper.CompactingShape.TWO_BY_TWO_UNCRAFTABLE || compactingShape == RecipeHelper.CompactingShape.THREE_BY_THREE_UNCRAFTABLE) {
-                            nextItemToMatch = RecipeHelper.getCompactingResult(stackToMatch, compactingShape).getResult();
+							nextItemToMatch = RecipeHelper.getCompactingResult(stackToMatch, compactingShape).getResult();
 						} else {
-							allRemainingSlotsMustBeEmpty = true;
+							Optional<CompressionUpgradeConfig.CompressionResult> compressionResult = Config.SERVER.compressionUpgrade.getCompressionResult(stackToMatch);
+							if (compressionResult.isPresent()) {
+								nextItemToMatch = compressionResult.get().result();
+							} else {
+								allRemainingSlotsMustBeEmpty = true;
+							}
 						}
 					}
 				}
