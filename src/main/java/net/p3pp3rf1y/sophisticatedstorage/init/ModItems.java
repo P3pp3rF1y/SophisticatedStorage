@@ -111,9 +111,9 @@ public class ModItems {
 	public static final DeferredHolder<Item, FeedingUpgradeItem> ADVANCED_FEEDING_UPGRADE = ITEMS.registerItem("advanced_feeding_upgrade",
 			properties -> new FeedingUpgradeItem(Config.SERVER.advancedFeedingUpgrade.filterSlots::get, Config.SERVER.maxUpgradesPerStorage, properties));
 	public static final DeferredHolder<Item, CompactingUpgradeItem> COMPACTING_UPGRADE = ITEMS.registerItem("compacting_upgrade",
-			properties -> new StorageCompactingUpgradeItem(false, Config.SERVER.compactingUpgrade.filterSlots::get, Config.SERVER.maxUpgradesPerStorage, properties));
+			properties -> new StorageCompactingUpgradeItem(false, Config.SERVER.compactingUpgrade.filterSlots::get, Config.SERVER.maxUpgradesPerStorage, properties, Config.SERVER.compactingUpgrade::getCompactingResult));
 	public static final DeferredHolder<Item, CompactingUpgradeItem> ADVANCED_COMPACTING_UPGRADE = ITEMS.registerItem("advanced_compacting_upgrade",
-			properties -> new StorageCompactingUpgradeItem(true, Config.SERVER.advancedCompactingUpgrade.filterSlots::get, Config.SERVER.maxUpgradesPerStorage, properties));
+			properties -> new StorageCompactingUpgradeItem(true, Config.SERVER.advancedCompactingUpgrade.filterSlots::get, Config.SERVER.maxUpgradesPerStorage, properties, Config.SERVER.compactingUpgrade::getCompactingResult));
 	public static final DeferredHolder<Item, VoidUpgradeItem> VOID_UPGRADE = ITEMS.registerItem("void_upgrade",
 			properties -> new VoidUpgradeItem(Config.SERVER.voidUpgrade, Config.SERVER.maxUpgradesPerStorage, properties));
 	public static final DeferredHolder<Item, VoidUpgradeItem> ADVANCED_VOID_UPGRADE = ITEMS.registerItem("advanced_void_upgrade",
@@ -289,8 +289,8 @@ public class ModItems {
 	private static class StorageCompactingUpgradeItem extends CompactingUpgradeItem {
 		public static final List<UpgradeConflictDefinition> UPGRADE_CONFLICT_DEFINITIONS = List.of(new UpgradeConflictDefinition(CompressionUpgradeItem.class::isInstance, 0, StorageTranslationHelper.INSTANCE.translError("add.compression_exists")));
 
-		public StorageCompactingUpgradeItem(boolean shouldCompactThreeByThree, IntSupplier filterSlotCount, IUpgradeCountLimitConfig upgradeCountLimitConfig, Properties properties) {
-			super(shouldCompactThreeByThree, filterSlotCount, upgradeCountLimitConfig, properties);
+		public StorageCompactingUpgradeItem(boolean shouldCompactThreeByThree, IntSupplier filterSlotCount, IUpgradeCountLimitConfig upgradeCountLimitConfig, Properties properties, ConfiguredCompactingResultProvider configuredCompactingResultProvider) {
+			super(shouldCompactThreeByThree, filterSlotCount, upgradeCountLimitConfig, properties, configuredCompactingResultProvider);
 		}
 
 		@Override
