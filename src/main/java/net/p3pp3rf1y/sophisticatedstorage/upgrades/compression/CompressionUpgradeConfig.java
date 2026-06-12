@@ -6,7 +6,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.neoforged.neoforge.common.ModConfigSpec;
-import net.p3pp3rf1y.sophisticatedcore.util.RecipeHelper;
+import net.p3pp3rf1y.sophisticatedstorage.Config;
 import org.jspecify.annotations.Nullable;
 
 import javax.annotation.Nonnull;
@@ -23,7 +23,7 @@ public class CompressionUpgradeConfig {
 	public final ModConfigSpec.ConfigValue<List<? extends String>> additionalDecompressibleItems;
 
 	@Nullable
-	private Map<Item, RecipeHelper.UncompactingResult> additionalDecompressibleItemsMap = null;
+	private Map<Item, DecompressionResult> additionalDecompressibleItemsMap = null;
 
 	public CompressionUpgradeConfig(ModConfigSpec.Builder builder) {
 		builder.comment("Compression Upgrade Settings").push("compressionUpgrade");
@@ -54,7 +54,7 @@ public class CompressionUpgradeConfig {
 		return BuiltInRegistries.ITEM.getKey(fromItem) + "=" + count + "x" + BuiltInRegistries.ITEM.getKey(toItem);
 	}
 
-	public Optional<RecipeHelper.UncompactingResult> getDecompressionResult(Item item) {
+	public Optional<DecompressionResult> getDecompressionResult(Item item) {
 		if (additionalDecompressibleItemsMap == null) {
 			additionalDecompressibleItemsMap = new HashMap<>();
 			Pattern pattern = Pattern.compile(DECOMPRESSIBLE_MATCHER);
@@ -64,16 +64,39 @@ public class CompressionUpgradeConfig {
 					Item fromItem = BuiltInRegistries.ITEM.getValue(Identifier.parse(matcher.group(1)));
 					int count = Integer.parseInt(matcher.group(2));
 					Item toItem = BuiltInRegistries.ITEM.getValue(Identifier.parse(matcher.group(3)));
-					if (fromItem != Items.AIR && toItem != Items.AIR && (count == 4 || count == 9)) {
-						additionalDecompressibleItemsMap.put(fromItem, new RecipeHelper.UncompactingResult(new ItemStack(toItem), count == 4 ? RecipeHelper.CompactingShape.TWO_BY_TWO_UNCRAFTABLE : RecipeHelper.CompactingShape.THREE_BY_THREE_UNCRAFTABLE));
+					if (fromItem != Items.AIR && toItem != Items.AIR && count > 1) {
+						additionalDecompressibleItemsMap.put(fromItem, new DecompressionResult(new ItemStack(toItem), count));
 					}
 				}
 			});
 		}
-		return Optional.ofNullable(additionalDecompressibleItemsMap.get(item));
+		return Optional.ofNullable(additionalDecompressibleItemsMap.get(item))
+				.or(() -> Config.SERVER.compactingUpgrade.getUncompactingResult(new ItemStack(item), 3, 3)
+						.map(uncompactingResult -> new DecompressionResult(uncompactingResult.result(), uncompactingResult.count())));
+	}
+
+	public Optional<CompressionResult> getCompressionResult(ItemStack stack) {
+		return Config.SERVER.compactingUpgrade.getCompactingResult(stack, 3, 3, (result, count) -> getDecompressionResult(result.getItem()).filter(decompressionResult -> decompressionResult.matches(stack, count)).isPresent())
+				.map(compactingResult -> new CompressionResult(compactingResult.result().getResult(), compactingResult.count()));
 	}
 
 	public void clearCache() {
 		additionalDecompressibleItemsMap = null;
+	}
+
+	public record DecompressionResult(ItemStack result, int count) {
+		public DecompressionResult {
+			result = result.copyWithCount(1);
+		}
+
+		public boolean matches(ItemStack stack, int count) {
+			return this.count == count && result.getItem() == stack.getItem();
+		}
+	}
+
+	public record CompressionResult(ItemStack result, int count) {
+		public CompressionResult {
+			result = result.copyWithCount(1);
+		}
 	}
 }
