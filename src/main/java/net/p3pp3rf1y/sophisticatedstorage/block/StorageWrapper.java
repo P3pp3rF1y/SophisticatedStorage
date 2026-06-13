@@ -239,6 +239,25 @@ public abstract class StorageWrapper implements IStorageWrapper {
 	protected void loadSlotNumbers(CompoundTag tag) {
 		numberOfInventorySlots = NBTHelper.getInt(tag, NUMBER_OF_INVENTORY_SLOTS_TAG).orElse(0);
 		numberOfUpgradeSlots = NBTHelper.getInt(tag, NUMBER_OF_UPGRADE_SLOTS_TAG).orElse(-1);
+		if (promoteSlotNumbersToDefaults()) {
+			save();
+		}
+	}
+
+	protected boolean promoteSlotNumbersToDefaults() {
+		boolean changed = false;
+		int defaultNumberOfInventorySlots = getDefaultNumberOfInventorySlots();
+		if (numberOfInventorySlots < defaultNumberOfInventorySlots) {
+			numberOfInventorySlots = defaultNumberOfInventorySlots;
+			changed = true;
+		}
+
+		int defaultNumberOfUpgradeSlots = getDefaultNumberOfUpgradeSlots();
+		if (numberOfUpgradeSlots < defaultNumberOfUpgradeSlots) {
+			numberOfUpgradeSlots = defaultNumberOfUpgradeSlots;
+			changed = true;
+		}
+		return changed;
 	}
 
 	private void loadContents(CompoundTag tag) {
@@ -321,7 +340,7 @@ public abstract class StorageWrapper implements IStorageWrapper {
 	}
 
 	private int getNumberOfUpgradeSlots() {
-		if (numberOfUpgradeSlots >= getDefaultNumberOfUpgradeSlots()) {
+		if (numberOfUpgradeSlots >= 0) {
 			return numberOfUpgradeSlots;
 		}
 		numberOfUpgradeSlots = getDefaultNumberOfUpgradeSlots();

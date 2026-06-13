@@ -23,7 +23,6 @@ import net.p3pp3rf1y.sophisticatedcore.upgrades.IUpgradeWrapper;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeHandler;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.stack.StackUpgradeItem;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.voiding.VoidUpgradeWrapper;
-import net.p3pp3rf1y.sophisticatedcore.util.BlockItemBase;
 import net.p3pp3rf1y.sophisticatedcore.util.InventorySorter;
 import net.p3pp3rf1y.sophisticatedcore.util.NoopStorageWrapper;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
@@ -45,6 +44,8 @@ public abstract class MovingStorageWrapper implements IStorageWrapper {
 	private final Runnable stackChangeHandler;
 	private final ItemStack storageStack;
 	private final Runnable contentsChangeHandler;
+	private int numberOfInventorySlots = -1;
+	private int numberOfUpgradeSlots = -1;
 
 	@Nullable
 	private InventoryHandler inventoryHandler = null;
@@ -76,6 +77,7 @@ public abstract class MovingStorageWrapper implements IStorageWrapper {
 		if (isLimitedBarrel(storageStack)) {
 			registerUpgradeDefaultsHandler(VoidUpgradeWrapper.class, LimitedBarrelBlockEntity.VOID_UPGRADE_VOIDING_OVERFLOW_OF_EVERYTHING_BY_DEFAULT);
 		}
+		cacheSlotNumbers();
 	}
 
 	private static int getNumberOfDisplayItems(ItemStack stack) {
@@ -174,14 +176,9 @@ public abstract class MovingStorageWrapper implements IStorageWrapper {
 	}
 
 	public int getNumberOfInventorySlots() {
-		Integer numberOfInventorySlots = storageStack.get(ModCoreDataComponents.NUMBER_OF_INVENTORY_SLOTS);
-		if (numberOfInventorySlots != null) {
-			return numberOfInventorySlots;
+		if (numberOfInventorySlots < 0) {
+			cacheSlotNumbers();
 		}
-		numberOfInventorySlots = getDefaultNumberOfInventorySlots(storageStack);
-		storageStack.set(ModCoreDataComponents.NUMBER_OF_INVENTORY_SLOTS, numberOfInventorySlots);
-		stackChangeHandler.run();
-
 		return numberOfInventorySlots;
 	}
 
@@ -259,15 +256,35 @@ public abstract class MovingStorageWrapper implements IStorageWrapper {
 	}
 
 	public int getNumberOfUpgradeSlots() {
-		@Nullable Integer numberOfUpgradeSlots = storageStack.get(ModCoreDataComponents.NUMBER_OF_UPGRADE_SLOTS);
-		if (numberOfUpgradeSlots != null) {
-			return numberOfUpgradeSlots;
+		if (numberOfUpgradeSlots < 0) {
+			cacheSlotNumbers();
 		}
-		numberOfUpgradeSlots = getDefaultNumberOfUpgradeSlots(storageStack);
-		storageStack.set(ModCoreDataComponents.NUMBER_OF_UPGRADE_SLOTS, numberOfUpgradeSlots);
-		stackChangeHandler.run();
-
 		return numberOfUpgradeSlots;
+	}
+
+	private void cacheSlotNumbers() {
+		numberOfInventorySlots = cacheNumberOfInventorySlots();
+		numberOfUpgradeSlots = cacheNumberOfUpgradeSlots();
+	}
+
+	private int cacheNumberOfInventorySlots() {
+		Integer storedNumberOfInventorySlots = storageStack.get(ModCoreDataComponents.NUMBER_OF_INVENTORY_SLOTS);
+		int resolvedNumberOfInventorySlots = StorageBlockItem.getNumberOfInventorySlots(storageStack);
+		if (!Objects.equals(storedNumberOfInventorySlots, resolvedNumberOfInventorySlots)) {
+			StorageBlockItem.setNumberOfInventorySlots(storageStack, resolvedNumberOfInventorySlots);
+			stackChangeHandler.run();
+		}
+		return resolvedNumberOfInventorySlots;
+	}
+
+	private int cacheNumberOfUpgradeSlots() {
+		Integer storedNumberOfUpgradeSlots = storageStack.get(ModCoreDataComponents.NUMBER_OF_UPGRADE_SLOTS);
+		int resolvedNumberOfUpgradeSlots = StorageBlockItem.getNumberOfUpgradeSlots(storageStack);
+		if (!Objects.equals(storedNumberOfUpgradeSlots, resolvedNumberOfUpgradeSlots)) {
+			StorageBlockItem.setNumberOfUpgradeSlots(storageStack, resolvedNumberOfUpgradeSlots);
+			stackChangeHandler.run();
+		}
+		return resolvedNumberOfUpgradeSlots;
 	}
 
 	@Override
@@ -418,11 +435,11 @@ public abstract class MovingStorageWrapper implements IStorageWrapper {
 	}
 
 	public static int getDefaultNumberOfInventorySlots(ItemStack storageStack) {
-		return storageStack.getItem() instanceof BlockItemBase blockItem && blockItem.getBlock() instanceof IStorageBlock storageBlock ? storageBlock.getNumberOfInventorySlots() : 0;
+		return StorageBlockItem.getDefaultNumberOfInventorySlots(storageStack);
 	}
 
 	public static int getDefaultNumberOfUpgradeSlots(ItemStack storageStack) {
-		return storageStack.getItem() instanceof BlockItemBase blockItem && blockItem.getBlock() instanceof IStorageBlock storageBlock ? storageBlock.getNumberOfUpgradeSlots() : 0;
+		return StorageBlockItem.getDefaultNumberOfUpgradeSlots(storageStack);
 	}
 
 	private boolean isAllowedInStorage(ItemStack stack) {
@@ -468,11 +485,13 @@ public abstract class MovingStorageWrapper implements IStorageWrapper {
 	}
 
 	public void setNumberOfInventorySlots(int numberOfInventorySlots) {
+		this.numberOfInventorySlots = numberOfInventorySlots;
 		storageStack.set(ModCoreDataComponents.NUMBER_OF_INVENTORY_SLOTS, numberOfInventorySlots);
 		stackChangeHandler.run();
 	}
 
 	public void setNumberOfUpgradeSlots(int numberOfUpgradeSlots) {
+		this.numberOfUpgradeSlots = numberOfUpgradeSlots;
 		storageStack.set(ModCoreDataComponents.NUMBER_OF_UPGRADE_SLOTS, numberOfUpgradeSlots);
 		stackChangeHandler.run();
 	}
