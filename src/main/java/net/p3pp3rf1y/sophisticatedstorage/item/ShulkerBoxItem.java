@@ -19,12 +19,10 @@ import net.minecraft.world.level.block.Block;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.p3pp3rf1y.sophisticatedcore.api.IStashStorageItem;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.TranslationHelper;
-import net.p3pp3rf1y.sophisticatedcore.init.ModCoreDataComponents;
 import net.p3pp3rf1y.sophisticatedcore.settings.memory.MemorySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 
 import java.util.Optional;
-import java.util.UUID;
 import java.util.function.Consumer;
 
 public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageItem {
@@ -99,16 +97,6 @@ public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageIte
 		}
 
 		return StashResult.SPACE;
-	}
-
-	public int getNumberOfInventorySlots(HolderLookup.Provider registries, ItemStack shulkerBoxStack) {
-		int defaultNumberOfInventorySlots = StackStorageWrapper.fromStack(registries, shulkerBoxStack).getDefaultNumberOfInventorySlots();
-		return Math.max(shulkerBoxStack.getOrDefault(ModCoreDataComponents.NUMBER_OF_INVENTORY_SLOTS, defaultNumberOfInventorySlots), defaultNumberOfInventorySlots);
-	}
-
-	public int getNumberOfUpgradeSlots(HolderLookup.Provider registries, ItemStack shulkerBoxStack) {
-		int defaultNumberOfUpgradeSlots = StackStorageWrapper.fromStack(registries, shulkerBoxStack).getDefaultNumberOfUpgradeSlots();
-		return Math.max(shulkerBoxStack.getOrDefault(ModCoreDataComponents.NUMBER_OF_UPGRADE_SLOTS, defaultNumberOfUpgradeSlots), defaultNumberOfUpgradeSlots);
 	}
 
 	@Override
