@@ -242,6 +242,25 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 	protected void loadSlotNumbers(ValueInput in) {
 		numberOfInventorySlots = in.getIntOr(NUMBER_OF_INVENTORY_SLOTS, 0);
 		numberOfUpgradeSlots = in.getIntOr(NUMBER_OF_UPGRADE_SLOTS, -1);
+		if (promoteSlotNumbersToDefaults()) {
+			save();
+		}
+	}
+
+	protected boolean promoteSlotNumbersToDefaults() {
+		boolean changed = false;
+		int defaultNumberOfInventorySlots = getDefaultNumberOfInventorySlots();
+		if (numberOfInventorySlots < defaultNumberOfInventorySlots) {
+			numberOfInventorySlots = defaultNumberOfInventorySlots;
+			changed = true;
+		}
+
+		int defaultNumberOfUpgradeSlots = getDefaultNumberOfUpgradeSlots();
+		if (numberOfUpgradeSlots < defaultNumberOfUpgradeSlots) {
+			numberOfUpgradeSlots = defaultNumberOfUpgradeSlots;
+			changed = true;
+		}
+		return changed;
 	}
 
 	private void loadContents(ValueInput in) {
@@ -325,7 +344,7 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 	}
 
 	private int getNumberOfUpgradeSlots() {
-		if (numberOfUpgradeSlots >= getDefaultNumberOfUpgradeSlots()) {
+		if (numberOfUpgradeSlots >= 0) {
 			return numberOfUpgradeSlots;
 		}
 		numberOfUpgradeSlots = getDefaultNumberOfUpgradeSlots();
