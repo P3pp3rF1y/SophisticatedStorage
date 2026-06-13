@@ -13,7 +13,6 @@ import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.p3pp3rf1y.sophisticatedcore.init.ModCoreDataComponents;
 import net.p3pp3rf1y.sophisticatedcore.inventory.ContainerContents;
 import net.p3pp3rf1y.sophisticatedcore.inventory.StorageWrapperRepository;
-import net.p3pp3rf1y.sophisticatedcore.util.BlockItemBase;
 import net.p3pp3rf1y.sophisticatedcore.util.ValueIOHelper;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.block.*;
@@ -110,18 +109,20 @@ public class StackStorageWrapper extends StorageWrapper {
 
 	@Override
 	public int getDefaultNumberOfInventorySlots() {
-		return storageStack.getItem() instanceof BlockItemBase blockItem && blockItem.getBlock() instanceof IStorageBlock storageBlock ? storageBlock.getNumberOfInventorySlots() : 0;
+		return StorageBlockItem.getDefaultNumberOfInventorySlots(storageStack);
 	}
 
 	@Override
 	protected void loadSlotNumbers(ValueInput in) {
-		numberOfInventorySlots = storageStack.getOrDefault(ModCoreDataComponents.NUMBER_OF_INVENTORY_SLOTS, 0);
-		numberOfUpgradeSlots = storageStack.getOrDefault(ModCoreDataComponents.NUMBER_OF_UPGRADE_SLOTS, 0);
+		numberOfInventorySlots = Math.max(in.getIntOr(StorageWrapper.NUMBER_OF_INVENTORY_SLOTS, StorageBlockItem.getNumberOfInventorySlots(storageStack)), getDefaultNumberOfInventorySlots());
+		numberOfUpgradeSlots = Math.max(in.getIntOr(StorageWrapper.NUMBER_OF_UPGRADE_SLOTS, StorageBlockItem.getNumberOfUpgradeSlots(storageStack)), getDefaultNumberOfUpgradeSlots());
+		StorageBlockItem.setNumberOfInventorySlots(storageStack, numberOfInventorySlots);
+		StorageBlockItem.setNumberOfUpgradeSlots(storageStack, numberOfUpgradeSlots);
 	}
 
 	@Override
 	public int getDefaultNumberOfUpgradeSlots() {
-		return storageStack.getItem() instanceof BlockItemBase blockItem && blockItem.getBlock() instanceof IStorageBlock storageBlock ? storageBlock.getNumberOfUpgradeSlots() : 0;
+		return StorageBlockItem.getDefaultNumberOfUpgradeSlots(storageStack);
 	}
 
 	protected void setStorageStack(ItemStack storageStack) {
