@@ -7,7 +7,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.p3pp3rf1y.sophisticatedcore.init.ModCoreDataComponents;
 import net.p3pp3rf1y.sophisticatedcore.inventory.StorageWrapperRepository;
-import net.p3pp3rf1y.sophisticatedcore.util.BlockItemBase;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.block.*;
 
@@ -105,7 +104,7 @@ public class StackStorageWrapper extends StorageWrapper {
 
 	@Override
 	public int getDefaultNumberOfInventorySlots() {
-		return storageStack.getItem() instanceof BlockItemBase blockItem && blockItem.getBlock() instanceof IStorageBlock storageBlock ? storageBlock.getNumberOfInventorySlots() : 0;
+		return StorageBlockItem.getDefaultNumberOfInventorySlots(storageStack);
 	}
 
 	@Override
@@ -113,6 +112,9 @@ public class StackStorageWrapper extends StorageWrapper {
 		StorageBlockItem.getEntityWrapperTagFromStack(storageStack).ifPresentOrElse(wrapperTag -> {
 			numberOfInventorySlots = wrapperTag.getInt(StorageWrapper.NUMBER_OF_INVENTORY_SLOTS_TAG);
 			numberOfUpgradeSlots = wrapperTag.getInt(StorageWrapper.NUMBER_OF_UPGRADE_SLOTS_TAG);
+			promoteSlotNumbersToDefaults();
+			StorageBlockItem.setNumberOfInventorySlots(storageStack, numberOfInventorySlots);
+			StorageBlockItem.setNumberOfUpgradeSlots(storageStack, numberOfUpgradeSlots);
 		}, () -> {
 			numberOfInventorySlots = StorageBlockItem.getNumberOfInventorySlots(storageStack);
 			numberOfUpgradeSlots = StorageBlockItem.getNumberOfUpgradeSlots(storageStack);
@@ -121,7 +123,7 @@ public class StackStorageWrapper extends StorageWrapper {
 
 	@Override
 	public int getDefaultNumberOfUpgradeSlots() {
-		return storageStack.getItem() instanceof BlockItemBase blockItem && blockItem.getBlock() instanceof IStorageBlock storageBlock ? storageBlock.getNumberOfUpgradeSlots() : 0;
+		return StorageBlockItem.getDefaultNumberOfUpgradeSlots(storageStack);
 	}
 
 	protected void setStorageStack(ItemStack storageStack) {

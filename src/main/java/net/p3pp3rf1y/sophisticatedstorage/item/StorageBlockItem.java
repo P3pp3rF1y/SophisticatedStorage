@@ -8,6 +8,7 @@ import net.minecraft.world.level.block.Block;
 import net.neoforged.neoforge.common.extensions.IDataComponentHolderExtension;
 import net.p3pp3rf1y.sophisticatedcore.init.ModCoreDataComponents;
 import net.p3pp3rf1y.sophisticatedcore.util.BlockItemBase;
+import net.p3pp3rf1y.sophisticatedstorage.block.IStorageBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.ITintableBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageWrapper;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModDataComponents;
@@ -60,25 +61,69 @@ public class StorageBlockItem extends BlockItemBase implements ITintableBlockIte
 	}
 
 	public static int getNumberOfInventorySlots(ItemStack storageStack) {
-		Integer numberOfInventorySlots = storageStack.get(ModCoreDataComponents.NUMBER_OF_INVENTORY_SLOTS);
-		if (numberOfInventorySlots != null) {
-			return numberOfInventorySlots;
+		int defaultNumberOfInventorySlots = getDefaultNumberOfInventorySlots(storageStack);
+		int numberOfInventorySlots = Math.max(getStoredNumberOfInventorySlots(storageStack).orElse(defaultNumberOfInventorySlots), defaultNumberOfInventorySlots);
+		Integer storedNumberOfInventorySlots = storageStack.get(ModCoreDataComponents.NUMBER_OF_INVENTORY_SLOTS);
+		if (storedNumberOfInventorySlots == null || storedNumberOfInventorySlots < numberOfInventorySlots) {
+			storageStack.set(ModCoreDataComponents.NUMBER_OF_INVENTORY_SLOTS, numberOfInventorySlots);
 		}
-		return LegacyStorageBlockDataMigration.getNumberOfInventorySlots(storageStack).map(slots -> {
-			storageStack.set(ModCoreDataComponents.NUMBER_OF_INVENTORY_SLOTS, slots);
-			return slots;
-		}).orElse(0);
+		return numberOfInventorySlots;
+	}
+
+	public static int getDefaultNumberOfInventorySlots(ItemStack storageStack) {
+		return storageStack.getItem() instanceof BlockItemBase blockItem && blockItem.getBlock() instanceof IStorageBlock storageBlock ? storageBlock.getNumberOfInventorySlots() : 0;
+	}
+
+	private static Optional<Integer> getStoredNumberOfInventorySlots(ItemStack storageStack) {
+		Optional<Integer> numberOfInventorySlotsFromWrapperTag = getEntityWrapperTagFromStack(storageStack)
+				.flatMap(tag -> tag.contains(StorageWrapper.NUMBER_OF_INVENTORY_SLOTS_TAG) ? Optional.of(tag.getInt(StorageWrapper.NUMBER_OF_INVENTORY_SLOTS_TAG)) : Optional.empty());
+		Integer numberOfInventorySlots = storageStack.get(ModCoreDataComponents.NUMBER_OF_INVENTORY_SLOTS);
+		Optional<Integer> legacyNumberOfInventorySlots = LegacyStorageBlockDataMigration.getNumberOfInventorySlots(storageStack);
+		if (numberOfInventorySlotsFromWrapperTag.isEmpty() && numberOfInventorySlots == null) {
+			return legacyNumberOfInventorySlots;
+		}
+
+		int storedNumberOfInventorySlots = numberOfInventorySlotsFromWrapperTag.orElse(numberOfInventorySlots == null ? 0 : numberOfInventorySlots);
+		if (numberOfInventorySlots != null) {
+			storedNumberOfInventorySlots = Math.max(storedNumberOfInventorySlots, numberOfInventorySlots);
+		}
+		if (legacyNumberOfInventorySlots.isPresent()) {
+			storedNumberOfInventorySlots = Math.max(storedNumberOfInventorySlots, legacyNumberOfInventorySlots.get());
+		}
+		return Optional.of(storedNumberOfInventorySlots);
 	}
 
 	public static int getNumberOfUpgradeSlots(ItemStack storageStack) {
-		Integer numberOfUpgradeSlots = storageStack.get(ModCoreDataComponents.NUMBER_OF_UPGRADE_SLOTS);
-		if (numberOfUpgradeSlots != null) {
-			return numberOfUpgradeSlots;
+		int defaultNumberOfUpgradeSlots = getDefaultNumberOfUpgradeSlots(storageStack);
+		int numberOfUpgradeSlots = Math.max(getStoredNumberOfUpgradeSlots(storageStack).orElse(defaultNumberOfUpgradeSlots), defaultNumberOfUpgradeSlots);
+		Integer storedNumberOfUpgradeSlots = storageStack.get(ModCoreDataComponents.NUMBER_OF_UPGRADE_SLOTS);
+		if (storedNumberOfUpgradeSlots == null || storedNumberOfUpgradeSlots < numberOfUpgradeSlots) {
+			storageStack.set(ModCoreDataComponents.NUMBER_OF_UPGRADE_SLOTS, numberOfUpgradeSlots);
 		}
-		return LegacyStorageBlockDataMigration.getNumberOfUpgradeSlots(storageStack).map(slots -> {
-			storageStack.set(ModCoreDataComponents.NUMBER_OF_UPGRADE_SLOTS, slots);
-			return slots;
-		}).orElse(0);
+		return numberOfUpgradeSlots;
+	}
+
+	public static int getDefaultNumberOfUpgradeSlots(ItemStack storageStack) {
+		return storageStack.getItem() instanceof BlockItemBase blockItem && blockItem.getBlock() instanceof IStorageBlock storageBlock ? storageBlock.getNumberOfUpgradeSlots() : 0;
+	}
+
+	private static Optional<Integer> getStoredNumberOfUpgradeSlots(ItemStack storageStack) {
+		Optional<Integer> numberOfUpgradeSlotsFromWrapperTag = getEntityWrapperTagFromStack(storageStack)
+				.flatMap(tag -> tag.contains(StorageWrapper.NUMBER_OF_UPGRADE_SLOTS_TAG) ? Optional.of(tag.getInt(StorageWrapper.NUMBER_OF_UPGRADE_SLOTS_TAG)) : Optional.empty());
+		Integer numberOfUpgradeSlots = storageStack.get(ModCoreDataComponents.NUMBER_OF_UPGRADE_SLOTS);
+		Optional<Integer> legacyNumberOfUpgradeSlots = LegacyStorageBlockDataMigration.getNumberOfUpgradeSlots(storageStack);
+		if (numberOfUpgradeSlotsFromWrapperTag.isEmpty() && numberOfUpgradeSlots == null) {
+			return legacyNumberOfUpgradeSlots;
+		}
+
+		int storedNumberOfUpgradeSlots = numberOfUpgradeSlotsFromWrapperTag.orElse(numberOfUpgradeSlots == null ? 0 : numberOfUpgradeSlots);
+		if (numberOfUpgradeSlots != null) {
+			storedNumberOfUpgradeSlots = Math.max(storedNumberOfUpgradeSlots, numberOfUpgradeSlots);
+		}
+		if (legacyNumberOfUpgradeSlots.isPresent()) {
+			storedNumberOfUpgradeSlots = Math.max(storedNumberOfUpgradeSlots, legacyNumberOfUpgradeSlots.get());
+		}
+		return Optional.of(storedNumberOfUpgradeSlots);
 	}
 
 	public static boolean isLocked(ItemStack stack) {
