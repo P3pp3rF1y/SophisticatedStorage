@@ -25,7 +25,6 @@ import net.p3pp3rf1y.sophisticatedcore.upgrades.IUpgradeWrapper;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeHandler;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.stack.StackUpgradeItem;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.voiding.VoidUpgradeWrapper;
-import net.p3pp3rf1y.sophisticatedcore.util.BlockItemBase;
 import net.p3pp3rf1y.sophisticatedcore.util.InventorySorter;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.NoopStorageWrapper;
@@ -49,6 +48,8 @@ public abstract class MovingStorageWrapper implements IStorageWrapper {
 	private final Runnable stackChangeHandler;
 	private final ItemStack storageStack;
 	private final Runnable contentsChangeHandler;
+	private int numberOfInventorySlots = -1;
+	private int numberOfUpgradeSlots = -1;
 
 	@Nullable
 	private InventoryHandler inventoryHandler = null;
@@ -80,6 +81,7 @@ public abstract class MovingStorageWrapper implements IStorageWrapper {
 		if (isLimitedBarrel(storageStack)) {
 			registerUpgradeDefaultsHandler(VoidUpgradeWrapper.class, LimitedBarrelBlockEntity.VOID_UPGRADE_VOIDING_OVERFLOW_OF_EVERYTHING_BY_DEFAULT);
 		}
+		cacheSlotNumbers();
 	}
 
 	private static int getNumberOfDisplayItems(ItemStack stack) {
@@ -175,12 +177,10 @@ public abstract class MovingStorageWrapper implements IStorageWrapper {
 	}
 
 	public int getNumberOfInventorySlots() {
-		return NBTHelper.getInt(storageStack, StorageWrapper.NUMBER_OF_INVENTORY_SLOTS_TAG).orElseGet(() -> {
-			int defaultNumberOfInventorySlots = getDefaultNumberOfInventorySlots(storageStack);
-			NBTHelper.setInteger(storageStack, StorageWrapper.NUMBER_OF_INVENTORY_SLOTS_TAG, defaultNumberOfInventorySlots);
-			stackChangeHandler.run();
-			return defaultNumberOfInventorySlots;
-		});
+		if (numberOfInventorySlots < 0) {
+			cacheSlotNumbers();
+		}
+		return numberOfInventorySlots;
 	}
 
 	@Override
@@ -257,12 +257,35 @@ public abstract class MovingStorageWrapper implements IStorageWrapper {
 	}
 
 	public int getNumberOfUpgradeSlots() {
-		return NBTHelper.getInt(storageStack, StorageWrapper.NUMBER_OF_UPGRADE_SLOTS_TAG).orElseGet(() -> {
-			int defaultNumberOfUpgradeSlots = getDefaultNumberOfUpgradeSlots(storageStack);
-			NBTHelper.setInteger(storageStack, StorageWrapper.NUMBER_OF_UPGRADE_SLOTS_TAG, defaultNumberOfUpgradeSlots);
+		if (numberOfUpgradeSlots < 0) {
+			cacheSlotNumbers();
+		}
+		return numberOfUpgradeSlots;
+	}
+
+	private void cacheSlotNumbers() {
+		numberOfInventorySlots = cacheNumberOfInventorySlots();
+		numberOfUpgradeSlots = cacheNumberOfUpgradeSlots();
+	}
+
+	private int cacheNumberOfInventorySlots() {
+		Optional<Integer> storedNumberOfInventorySlots = NBTHelper.getInt(storageStack, StorageWrapper.NUMBER_OF_INVENTORY_SLOTS_TAG);
+		int resolvedNumberOfInventorySlots = StorageBlockItem.getNumberOfInventorySlots(storageStack);
+		if (storedNumberOfInventorySlots.isEmpty() || storedNumberOfInventorySlots.get() != resolvedNumberOfInventorySlots) {
+			StorageBlockItem.setNumberOfInventorySlots(storageStack, resolvedNumberOfInventorySlots);
 			stackChangeHandler.run();
-			return defaultNumberOfUpgradeSlots;
-		});
+		}
+		return resolvedNumberOfInventorySlots;
+	}
+
+	private int cacheNumberOfUpgradeSlots() {
+		Optional<Integer> storedNumberOfUpgradeSlots = NBTHelper.getInt(storageStack, StorageWrapper.NUMBER_OF_UPGRADE_SLOTS_TAG);
+		int resolvedNumberOfUpgradeSlots = StorageBlockItem.getNumberOfUpgradeSlots(storageStack);
+		if (storedNumberOfUpgradeSlots.isEmpty() || storedNumberOfUpgradeSlots.get() != resolvedNumberOfUpgradeSlots) {
+			StorageBlockItem.setNumberOfUpgradeSlots(storageStack, resolvedNumberOfUpgradeSlots);
+			stackChangeHandler.run();
+		}
+		return resolvedNumberOfUpgradeSlots;
 	}
 
 	@Override
@@ -410,11 +433,11 @@ public abstract class MovingStorageWrapper implements IStorageWrapper {
 	}
 
 	public static int getDefaultNumberOfInventorySlots(ItemStack storageStack) {
-		return storageStack.getItem() instanceof BlockItemBase blockItem && blockItem.getBlock() instanceof IStorageBlock storageBlock ? storageBlock.getNumberOfInventorySlots() : 0;
+		return StorageBlockItem.getDefaultNumberOfInventorySlots(storageStack);
 	}
 
 	public static int getDefaultNumberOfUpgradeSlots(ItemStack storageStack) {
-		return storageStack.getItem() instanceof BlockItemBase blockItem && blockItem.getBlock() instanceof IStorageBlock storageBlock ? storageBlock.getNumberOfUpgradeSlots() : 0;
+		return StorageBlockItem.getDefaultNumberOfUpgradeSlots(storageStack);
 	}
 
 	private boolean isAllowedInStorage(ItemStack stack) {
@@ -460,11 +483,13 @@ public abstract class MovingStorageWrapper implements IStorageWrapper {
 	}
 
 	public void setNumberOfInventorySlots(int numberOfInventorySlots) {
+		this.numberOfInventorySlots = numberOfInventorySlots;
 		NBTHelper.setInteger(storageStack, StorageWrapper.NUMBER_OF_INVENTORY_SLOTS_TAG, numberOfInventorySlots);
 		stackChangeHandler.run();
 	}
 
 	public void setNumberOfUpgradeSlots(int numberOfUpgradeSlots) {
+		this.numberOfUpgradeSlots = numberOfUpgradeSlots;
 		NBTHelper.setInteger(storageStack, StorageWrapper.NUMBER_OF_UPGRADE_SLOTS_TAG, numberOfUpgradeSlots);
 		stackChangeHandler.run();
 	}

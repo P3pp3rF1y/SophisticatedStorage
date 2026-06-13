@@ -5,7 +5,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.p3pp3rf1y.sophisticatedcore.util.BlockItemBase;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
+import net.p3pp3rf1y.sophisticatedstorage.block.IStorageBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.ITintableBlockItem;
+import net.p3pp3rf1y.sophisticatedstorage.block.StorageWrapper;
 import net.p3pp3rf1y.sophisticatedstorage.entity.StorageHolderBase;
 
 import java.util.Optional;
@@ -37,16 +39,66 @@ public class StorageBlockItem extends BlockItemBase implements ITintableBlockIte
 		NBTHelper.setInteger(storageStack, StackStorageWrapper.NUMBER_OF_INVENTORY_SLOTS_TAG, numberOfInventorySlots);
 	}
 
-	public static  void setNumberOfUpgradeSlots(ItemStack storageStack, int numberOfUpgradeSlots) {
+	public static void setNumberOfUpgradeSlots(ItemStack storageStack, int numberOfUpgradeSlots) {
 		NBTHelper.setInteger(storageStack, StackStorageWrapper.NUMBER_OF_UPGRADE_SLOTS_TAG, numberOfUpgradeSlots);
 	}
 
 	public static int getNumberOfInventorySlots(ItemStack storageStack) {
-		return NBTHelper.getInt(storageStack, StackStorageWrapper.NUMBER_OF_INVENTORY_SLOTS_TAG).orElse(0);
+		int defaultNumberOfInventorySlots = getDefaultNumberOfInventorySlots(storageStack);
+		int numberOfInventorySlots = Math.max(getStoredNumberOfInventorySlots(storageStack).orElse(defaultNumberOfInventorySlots), defaultNumberOfInventorySlots);
+		Optional<Integer> storedNumberOfInventorySlots = NBTHelper.getInt(storageStack, StackStorageWrapper.NUMBER_OF_INVENTORY_SLOTS_TAG);
+		if (storedNumberOfInventorySlots.isEmpty() || storedNumberOfInventorySlots.get() < numberOfInventorySlots) {
+			setNumberOfInventorySlots(storageStack, numberOfInventorySlots);
+		}
+		return numberOfInventorySlots;
+	}
+
+	public static int getDefaultNumberOfInventorySlots(ItemStack storageStack) {
+		return storageStack.getItem() instanceof BlockItemBase blockItem && blockItem.getBlock() instanceof IStorageBlock storageBlock ? storageBlock.getNumberOfInventorySlots() : 0;
+	}
+
+	private static Optional<Integer> getStoredNumberOfInventorySlots(ItemStack storageStack) {
+		Optional<Integer> numberOfInventorySlotsFromWrapperTag = getEntityWrapperTagFromStack(storageStack)
+				.flatMap(tag -> tag.contains(StorageWrapper.NUMBER_OF_INVENTORY_SLOTS_TAG) ? Optional.of(tag.getInt(StorageWrapper.NUMBER_OF_INVENTORY_SLOTS_TAG)) : Optional.empty());
+		Optional<Integer> numberOfInventorySlots = NBTHelper.getInt(storageStack, StackStorageWrapper.NUMBER_OF_INVENTORY_SLOTS_TAG);
+		if (numberOfInventorySlotsFromWrapperTag.isEmpty()) {
+			return numberOfInventorySlots;
+		}
+
+		int storedNumberOfInventorySlots = numberOfInventorySlotsFromWrapperTag.get();
+		if (numberOfInventorySlots.isPresent()) {
+			storedNumberOfInventorySlots = Math.max(storedNumberOfInventorySlots, numberOfInventorySlots.get());
+		}
+		return Optional.of(storedNumberOfInventorySlots);
 	}
 
 	public static int getNumberOfUpgradeSlots(ItemStack storageStack) {
-		return NBTHelper.getInt(storageStack, StackStorageWrapper.NUMBER_OF_UPGRADE_SLOTS_TAG).orElse(0);
+		int defaultNumberOfUpgradeSlots = getDefaultNumberOfUpgradeSlots(storageStack);
+		int numberOfUpgradeSlots = Math.max(getStoredNumberOfUpgradeSlots(storageStack).orElse(defaultNumberOfUpgradeSlots), defaultNumberOfUpgradeSlots);
+		Optional<Integer> storedNumberOfUpgradeSlots = NBTHelper.getInt(storageStack, StackStorageWrapper.NUMBER_OF_UPGRADE_SLOTS_TAG);
+		if (storedNumberOfUpgradeSlots.isEmpty() || storedNumberOfUpgradeSlots.get() < numberOfUpgradeSlots) {
+			setNumberOfUpgradeSlots(storageStack, numberOfUpgradeSlots);
+		}
+		return numberOfUpgradeSlots;
+	}
+
+	public static int getDefaultNumberOfUpgradeSlots(ItemStack storageStack) {
+		return storageStack.getItem() instanceof BlockItemBase blockItem && blockItem.getBlock() instanceof IStorageBlock storageBlock ? storageBlock.getNumberOfUpgradeSlots() : 0;
+	}
+
+	private static Optional<Integer> getStoredNumberOfUpgradeSlots(ItemStack storageStack) {
+		Optional<Integer> numberOfUpgradeSlotsFromWrapperTag = getEntityWrapperTagFromStack(storageStack)
+				.flatMap(tag -> tag.contains(StorageWrapper.NUMBER_OF_UPGRADE_SLOTS_TAG) ? Optional.of(tag.getInt(StorageWrapper.NUMBER_OF_UPGRADE_SLOTS_TAG)) : Optional.empty());
+		Optional<Integer> numberOfUpgradeSlots = NBTHelper.getInt(storageStack, StackStorageWrapper.NUMBER_OF_UPGRADE_SLOTS_TAG);
+		if (numberOfUpgradeSlotsFromWrapperTag.isEmpty()) {
+			return numberOfUpgradeSlots;
+		}
+
+		int storedNumberOfUpgradeSlots = numberOfUpgradeSlotsFromWrapperTag.get();
+		if (numberOfUpgradeSlots.isPresent()) {
+			storedNumberOfUpgradeSlots = Math.max(storedNumberOfUpgradeSlots, numberOfUpgradeSlots.get());
+		}
+		return Optional.of(storedNumberOfUpgradeSlots);
 	}
 
 	public static boolean isLocked(ItemStack stack) {

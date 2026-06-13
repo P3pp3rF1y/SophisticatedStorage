@@ -140,8 +140,8 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 				storageWrapper.setColors(shulkerBoxItem.getMainColor(stack).orElse(-1), shulkerBoxItem.getAccentColor(stack).orElse(-1));
 				InventoryHandler inventoryHandler = storageWrapper.getInventoryHandler();
 				UpgradeHandler upgradeHandler = storageWrapper.getUpgradeHandler();
-				storageWrapper.changeSize(shulkerBoxItem.getNumberOfInventorySlotsOrDefault(stack) - inventoryHandler.getSlots(),
-						shulkerBoxItem.getNumberOfUpgradeSlotsOrDefault(stack) - upgradeHandler.getSlots());
+				storageWrapper.changeSize(StorageBlockItem.getNumberOfInventorySlots(stack) - inventoryHandler.getSlots(),
+						StorageBlockItem.getNumberOfUpgradeSlots(stack) - upgradeHandler.getSlots());
 			}
 
 			be.getStorageWrapper().onInit(level);
