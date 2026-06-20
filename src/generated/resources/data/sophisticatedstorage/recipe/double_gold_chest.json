@@ -6,7 +6,6 @@
     }
   ],
   "type": "sophisticatedstorage:double_chest_tier_upgrade",
-  "category": "misc",
   "key": {
     "B": "#c:storage_blocks/gold",
     "G": "#c:ingots/gold",

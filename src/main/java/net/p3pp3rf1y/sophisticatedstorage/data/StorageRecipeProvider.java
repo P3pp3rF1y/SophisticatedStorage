@@ -511,22 +511,22 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.unlockedBy("has_shulker_box", has(Items.SHULKER_BOX))
 				.save(recipeOutput, "shulker_box_from_vanilla_shulker_box");
 
-		tintedShulkerBoxRecipe(recipeOutput, Blocks.BLACK_SHULKER_BOX, DyeColor.BLACK);
-		tintedShulkerBoxRecipe(recipeOutput, Blocks.BLUE_SHULKER_BOX, DyeColor.BLUE);
-		tintedShulkerBoxRecipe(recipeOutput, Blocks.BROWN_SHULKER_BOX, DyeColor.BROWN);
-		tintedShulkerBoxRecipe(recipeOutput, Blocks.CYAN_SHULKER_BOX, DyeColor.CYAN);
-		tintedShulkerBoxRecipe(recipeOutput, Blocks.GRAY_SHULKER_BOX, DyeColor.GRAY);
-		tintedShulkerBoxRecipe(recipeOutput, Blocks.GREEN_SHULKER_BOX, DyeColor.GREEN);
-		tintedShulkerBoxRecipe(recipeOutput, Blocks.LIGHT_BLUE_SHULKER_BOX, DyeColor.LIGHT_BLUE);
-		tintedShulkerBoxRecipe(recipeOutput, Blocks.LIGHT_GRAY_SHULKER_BOX, DyeColor.LIGHT_GRAY);
-		tintedShulkerBoxRecipe(recipeOutput, Blocks.LIME_SHULKER_BOX, DyeColor.LIME);
-		tintedShulkerBoxRecipe(recipeOutput, Blocks.MAGENTA_SHULKER_BOX, DyeColor.MAGENTA);
-		tintedShulkerBoxRecipe(recipeOutput, Blocks.ORANGE_SHULKER_BOX, DyeColor.ORANGE);
-		tintedShulkerBoxRecipe(recipeOutput, Blocks.PINK_SHULKER_BOX, DyeColor.PINK);
-		tintedShulkerBoxRecipe(recipeOutput, Blocks.PURPLE_SHULKER_BOX, DyeColor.PURPLE);
-		tintedShulkerBoxRecipe(recipeOutput, Blocks.RED_SHULKER_BOX, DyeColor.RED);
-		tintedShulkerBoxRecipe(recipeOutput, Blocks.WHITE_SHULKER_BOX, DyeColor.WHITE);
-		tintedShulkerBoxRecipe(recipeOutput, Blocks.YELLOW_SHULKER_BOX, DyeColor.YELLOW);
+		tintedShulkerBoxRecipe(recipeOutput, Blocks.DYED_SHULKER_BOX.black(), DyeColor.BLACK);
+		tintedShulkerBoxRecipe(recipeOutput, Blocks.DYED_SHULKER_BOX.blue(), DyeColor.BLUE);
+		tintedShulkerBoxRecipe(recipeOutput, Blocks.DYED_SHULKER_BOX.brown(), DyeColor.BROWN);
+		tintedShulkerBoxRecipe(recipeOutput, Blocks.DYED_SHULKER_BOX.cyan(), DyeColor.CYAN);
+		tintedShulkerBoxRecipe(recipeOutput, Blocks.DYED_SHULKER_BOX.gray(), DyeColor.GRAY);
+		tintedShulkerBoxRecipe(recipeOutput, Blocks.DYED_SHULKER_BOX.green(), DyeColor.GREEN);
+		tintedShulkerBoxRecipe(recipeOutput, Blocks.DYED_SHULKER_BOX.lightBlue(), DyeColor.LIGHT_BLUE);
+		tintedShulkerBoxRecipe(recipeOutput, Blocks.DYED_SHULKER_BOX.lightGray(), DyeColor.LIGHT_GRAY);
+		tintedShulkerBoxRecipe(recipeOutput, Blocks.DYED_SHULKER_BOX.lime(), DyeColor.LIME);
+		tintedShulkerBoxRecipe(recipeOutput, Blocks.DYED_SHULKER_BOX.magenta(), DyeColor.MAGENTA);
+		tintedShulkerBoxRecipe(recipeOutput, Blocks.DYED_SHULKER_BOX.orange(), DyeColor.ORANGE);
+		tintedShulkerBoxRecipe(recipeOutput, Blocks.DYED_SHULKER_BOX.pink(), DyeColor.PINK);
+		tintedShulkerBoxRecipe(recipeOutput, Blocks.DYED_SHULKER_BOX.purple(), DyeColor.PURPLE);
+		tintedShulkerBoxRecipe(recipeOutput, Blocks.DYED_SHULKER_BOX.red(), DyeColor.RED);
+		tintedShulkerBoxRecipe(recipeOutput, Blocks.DYED_SHULKER_BOX.white(), DyeColor.WHITE);
+		tintedShulkerBoxRecipe(recipeOutput, Blocks.DYED_SHULKER_BOX.yellow(), DyeColor.YELLOW);
 
 		ShapeBasedRecipeBuilder.shaped(items, ModBlocks.SHULKER_BOX_ITEM.get(), ShulkerBoxFromChestRecipe::new)
 				.pattern("S")

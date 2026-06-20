@@ -6,7 +6,6 @@
     }
   ],
   "type": "sophisticatedstorage:storage_tier_upgrade_shapeless",
-  "category": "misc",
   "ingredients": [
     "sophisticatedstorage:diamond_shulker_box",
     "#c:ingots/netherite"

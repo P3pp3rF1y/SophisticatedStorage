@@ -10,7 +10,6 @@
     }
   ],
   "type": "minecraft:crafting_shaped",
-  "category": "misc",
   "key": {
     "L": "#c:leathers",
     "S": "sophisticatedstorage:stack_upgrade_tier_2",

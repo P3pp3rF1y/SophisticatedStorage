@@ -6,7 +6,6 @@
     }
   ],
   "type": "minecraft:crafting_shapeless",
-  "category": "misc",
   "ingredients": [
     "sophisticatedstorage:storage_output"
   ],

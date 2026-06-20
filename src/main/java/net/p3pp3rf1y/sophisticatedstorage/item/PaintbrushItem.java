@@ -196,11 +196,11 @@ public class PaintbrushItem extends ItemBase {
 
 			Item dyeItem;
 			if (part == Tags.Items.DYES_RED) {
-				dyeItem = Items.RED_DYE;
+				dyeItem = Items.DYE.red();
 			} else if (part == Tags.Items.DYES_GREEN) {
-				dyeItem = Items.GREEN_DYE;
+				dyeItem = Items.DYE.green();
 			} else if (part == Tags.Items.DYES_BLUE) {
-				dyeItem = Items.BLUE_DYE;
+				dyeItem = Items.DYE.blue();
 			} else {
 				continue;
 			}

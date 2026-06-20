@@ -6,7 +6,6 @@
     }
   ],
   "type": "sophisticatedstorage:storage_tier_upgrade",
-  "category": "misc",
   "key": {
     "D": "#c:gems/diamond",
     "S": "sophisticatedstorage:limited_gold_barrel_3"

@@ -230,7 +230,7 @@ class StorageRecipeViewerDisplaySpecTest {
 		assertEquals(1, focusedRecipe.getVariants().size());
 		assertEquals(2, focusedRecipe.getInputSlots().size());
 		assertEquals(1, focusedRecipe.getInputSlots().get(1).size());
-		assertSameStack(new ItemStack(Items.RED_DYE), focusedRecipe.getInputSlots().get(1).getFirst());
+		assertSameStack(new ItemStack(Items.DYE.red()), focusedRecipe.getInputSlots().get(1).getFirst());
 		assertSameStack(redIronBarrel, focusedRecipe.getResultStacks().getFirst());
 	}
 

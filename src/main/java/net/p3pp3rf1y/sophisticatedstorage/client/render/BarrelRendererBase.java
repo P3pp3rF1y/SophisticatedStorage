@@ -3,7 +3,6 @@ package net.p3pp3rf1y.sophisticatedstorage.client.render;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.QuadInstance;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
 import net.minecraft.client.resources.model.geometry.BakedQuad;
@@ -19,6 +18,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.util.LightCoordsUtil;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlockEntity;
 import org.jspecify.annotations.Nullable;
@@ -84,7 +84,7 @@ public abstract class BarrelRendererBase<T extends BarrelBlockEntity, R extends 
 		BlockState blockState = blockEntity.getBlockState();
 		if (blockState.getBlock() instanceof BarrelBlock storageBlock && blockEntity.getLevel() != null && pos != BlockPos.ZERO) {
 			Direction facing = storageBlock.getFacing(blockState);
-			renderState.lightCoords = LevelRenderer.getLightCoords(blockEntity.getLevel(), pos.relative(facing));
+			renderState.lightCoords = LightCoordsUtil.getLightCoords(blockEntity.getLevel(), pos.relative(facing));
 		}
 		renderState.flatTop = blockState.getValue(BarrelBlock.FLAT_TOP);
 

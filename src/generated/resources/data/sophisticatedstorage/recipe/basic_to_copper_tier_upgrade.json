@@ -6,7 +6,6 @@
     }
   ],
   "type": "minecraft:crafting_shaped",
-  "category": "misc",
   "key": {
     "C": "#c:ingots/copper",
     "L": "minecraft:lever"

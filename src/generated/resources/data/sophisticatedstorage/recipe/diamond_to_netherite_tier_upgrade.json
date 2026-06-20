@@ -6,7 +6,6 @@
     }
   ],
   "type": "minecraft:crafting_shapeless",
-  "category": "misc",
   "ingredients": [
     "minecraft:lever",
     "#c:ingots/netherite"

@@ -1,6 +1,7 @@
 
 package net.p3pp3rf1y.sophisticatedstorage.client.gui;
 
+import com.mojang.datafixers.util.Pair;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -21,7 +22,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
@@ -273,21 +273,21 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 	}
 
 	private static void addPartCountInfo(Map<Identifier, Integer> partCounts, List<Component> tooltip, Function<Identifier, ChatFormatting> getPartFormatting) {
-		Map<ItemStack, Tuple<Identifier, Integer>> itemCounts = new LinkedHashMap<>();
+		Map<ItemStack, Pair<Identifier, Integer>> itemCounts = new LinkedHashMap<>();
 		partCounts.forEach((part, count) -> {
 			if (BuiltInRegistries.ITEM.containsKey(part)) {
 				Item item = BuiltInRegistries.ITEM.getValue(part);
-				itemCounts.put(new ItemStack(item), new Tuple<>(part, count));
+				itemCounts.put(new ItemStack(item), Pair.of(part, count));
 			} else {
 				BuiltInRegistries.ITEM.get(TagKey.create(Registries.ITEM, part))
-						.flatMap(set -> set.stream().findFirst()).ifPresent(dye -> itemCounts.put(new ItemStack(dye), new Tuple<>(part, count)));
+						.flatMap(set -> set.stream().findFirst()).ifPresent(dye -> itemCounts.put(new ItemStack(dye), Pair.of(part, count)));
 			}
 		});
 
 		itemCounts.entrySet().stream().sorted(Comparator.comparing(entry -> entry.getKey().getHoverName().getString())).forEach(entry -> {
 			ItemStack itemStack = entry.getKey();
-			Identifier location = entry.getValue().getA();
-			int count = entry.getValue().getB();
+			Identifier location = entry.getValue().getFirst();
+			int count = entry.getValue().getSecond();
 			MutableComponent partCountText = Component.literal(count + "/" + DecorationHelper.BLOCK_TOTAL_PARTS + " (" + String.format("%.0f%%", (float) count / DecorationHelper.BLOCK_TOTAL_PARTS * 100) + ") of ");
 			tooltip.add(partCountText.append(itemStack.getHoverName()).withStyle(getPartFormatting.apply(location)));
 		});

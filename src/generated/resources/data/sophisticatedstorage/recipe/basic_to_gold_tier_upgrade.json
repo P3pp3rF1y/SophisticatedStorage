@@ -6,7 +6,6 @@
     }
   ],
   "type": "minecraft:crafting_shaped",
-  "category": "misc",
   "key": {
     "G": "#c:ingots/gold",
     "T": "sophisticatedstorage:basic_to_iron_tier_upgrade"

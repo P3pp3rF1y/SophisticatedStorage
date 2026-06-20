@@ -6,7 +6,6 @@
     }
   ],
   "type": "minecraft:crafting_shaped",
-  "category": "misc",
   "key": {
     "B": "#c:storage_blocks/copper",
     "C": "#c:ingots/copper",

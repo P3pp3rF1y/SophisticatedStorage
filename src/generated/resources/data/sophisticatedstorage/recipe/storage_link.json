@@ -6,7 +6,6 @@
     }
   ],
   "type": "minecraft:crafting_shaped",
-  "category": "misc",
   "key": {
     "E": "#c:ender_pearls",
     "P": "#minecraft:planks",

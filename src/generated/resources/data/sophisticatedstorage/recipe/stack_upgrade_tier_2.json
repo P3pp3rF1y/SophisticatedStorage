@@ -6,7 +6,6 @@
     }
   ],
   "type": "minecraft:crafting_shaped",
-  "category": "misc",
   "key": {
     "B": "#c:storage_blocks/iron",
     "I": "#c:ingots/iron",

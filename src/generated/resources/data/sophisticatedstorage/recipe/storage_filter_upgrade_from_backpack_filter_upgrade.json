@@ -10,7 +10,6 @@
     }
   ],
   "type": "minecraft:crafting_shaped",
-  "category": "misc",
   "key": {
     "P": "#minecraft:planks",
     "U": "sophisticatedbackpacks:filter_upgrade"

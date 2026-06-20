@@ -6,7 +6,6 @@
     }
   ],
   "type": "sophisticatedstorage:generic_wood_storage",
-  "category": "misc",
   "key": {
     "L": "minecraft:lever",
     "P": "#minecraft:planks"

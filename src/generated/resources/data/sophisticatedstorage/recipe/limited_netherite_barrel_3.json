@@ -6,7 +6,6 @@
     }
   ],
   "type": "sophisticatedstorage:storage_tier_upgrade_shapeless",
-  "category": "misc",
   "ingredients": [
     "sophisticatedstorage:limited_diamond_barrel_3",
     "#c:ingots/netherite"

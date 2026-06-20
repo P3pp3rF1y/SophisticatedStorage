@@ -6,7 +6,6 @@
     }
   ],
   "type": "sophisticatedstorage:storage_tier_upgrade",
-  "category": "misc",
   "key": {
     "C": "#c:ingots/copper",
     "S": "sophisticatedstorage:chest"

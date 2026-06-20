@@ -5,6 +5,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.tags.TagAppender;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.Item;
 import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.common.data.ItemTagsProvider;
@@ -26,25 +27,29 @@ public class ItemTagProvider extends ItemTagsProvider {
 
 	@Override
 	protected void addTags(HolderLookup.Provider registries) {
-		tag(BASE_TIER_WOODEN_STORAGE_TAG).add(ModBlocks.BARREL_ITEM.get(), ModBlocks.CHEST_ITEM.get());
+		tag(BASE_TIER_WOODEN_STORAGE_TAG).add(key(ModBlocks.BARREL_ITEM.get()), key(ModBlocks.CHEST_ITEM.get()));
 
-		TagAppender<Item, Item> allStorageTag = tag(ModBlocks.ALL_STORAGE_TAG);
-		BuiltInRegistries.ITEM.stream().filter(item -> item instanceof StorageBlockItem).forEach(allStorageTag::add);
+		TagAppender<Item> allStorageTag = tag(ModBlocks.ALL_STORAGE_TAG);
+		BuiltInRegistries.ITEM.stream().filter(item -> item instanceof StorageBlockItem).map(ItemTagProvider::key).forEach(allStorageTag::add);
 
-		TagAppender<Item, Item> upgradeTag = tag(ModItems.STORAGE_UPGRADE_TAG);
+		TagAppender<Item> upgradeTag = tag(ModItems.STORAGE_UPGRADE_TAG);
 		BuiltInRegistries.ITEM.entrySet().stream()
 				.filter(entry -> entry.getKey().identifier().getNamespace().equals(SophisticatedStorage.MOD_ID) && entry.getValue() instanceof UpgradeItemBase)
 				.map(Map.Entry::getValue).forEach(item -> {
 					Identifier location = BuiltInRegistries.ITEM.getKey(item);
 					if (location.getPath().contains("/")) {
-						upgradeTag.addOptional(item);
+						upgradeTag.addOptional(key(item));
 					} else {
-						upgradeTag.add(item);
+						upgradeTag.add(key(item));
 					}
 				});
 
-		tag(Tags.Items.CHESTS).add(ModBlocks.CHEST_ITEM.get(), ModBlocks.COPPER_CHEST_ITEM.get(), ModBlocks.IRON_CHEST_ITEM.get(), ModBlocks.GOLD_CHEST_ITEM.get(), ModBlocks.DIAMOND_CHEST_ITEM.get(), ModBlocks.NETHERITE_CHEST_ITEM.get());
-		tag(Tags.Items.BARRELS).add(ModBlocks.BARREL_ITEM.get(), ModBlocks.COPPER_BARREL_ITEM.get(), ModBlocks.IRON_BARREL_ITEM.get(), ModBlocks.GOLD_BARREL_ITEM.get(), ModBlocks.DIAMOND_BARREL_ITEM.get(), ModBlocks.NETHERITE_BARREL_ITEM.get());
-		tag(Tags.Items.BARRELS_WOODEN).add(ModBlocks.BARREL_ITEM.get());
+		tag(Tags.Items.CHESTS).add(key(ModBlocks.CHEST_ITEM.get()), key(ModBlocks.COPPER_CHEST_ITEM.get()), key(ModBlocks.IRON_CHEST_ITEM.get()), key(ModBlocks.GOLD_CHEST_ITEM.get()), key(ModBlocks.DIAMOND_CHEST_ITEM.get()), key(ModBlocks.NETHERITE_CHEST_ITEM.get()));
+		tag(Tags.Items.BARRELS).add(key(ModBlocks.BARREL_ITEM.get()), key(ModBlocks.COPPER_BARREL_ITEM.get()), key(ModBlocks.IRON_BARREL_ITEM.get()), key(ModBlocks.GOLD_BARREL_ITEM.get()), key(ModBlocks.DIAMOND_BARREL_ITEM.get()), key(ModBlocks.NETHERITE_BARREL_ITEM.get()));
+		tag(Tags.Items.BARRELS_WOODEN).add(key(ModBlocks.BARREL_ITEM.get()));
+	}
+
+	private static ResourceKey<Item> key(Item item) {
+		return item.builtInRegistryHolder().key();
 	}
 }

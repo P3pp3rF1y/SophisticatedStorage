@@ -6,7 +6,6 @@
     }
   ],
   "type": "sophisticatedcore:upgrade_next_tier",
-  "category": "misc",
   "key": {
     "A": "sophisticatedstorage:alchemy_upgrade",
     "D": "#c:gems/diamond",

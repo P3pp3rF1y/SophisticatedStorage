@@ -6,7 +6,6 @@
     }
   ],
   "type": "sophisticatedstorage:shulker_box_from_chest",
-  "category": "misc",
   "key": {
     "C": "sophisticatedstorage:copper_chest",
     "S": "minecraft:shulker_shell"

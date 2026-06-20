@@ -1,11 +1,9 @@
 package net.p3pp3rf1y.sophisticatedstorage.client;
 
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.render.pip.OversizedItemRenderer;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.ShapeRenderer;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.gui.pip.OversizedItemRenderState;
 import net.minecraft.core.BlockPos;
@@ -28,6 +26,8 @@ import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import net.p3pp3rf1y.sophisticatedcore.client.render.BlockHighlightRenderHelper;
+import net.p3pp3rf1y.sophisticatedcore.util.VoxelOutliner;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.*;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.PaintbrushOverlay;
@@ -45,6 +45,9 @@ import net.p3pp3rf1y.sophisticatedstorage.network.RequestPlayerSettingsPayload;
 import net.p3pp3rf1y.sophisticatedstorage.network.ScrolledToolPayload;
 
 public class ClientEventHandler {
+	private static final int PAINTBRUSH_CAN_APPLY_HIGHLIGHT_COLOR = 0x69c53b;
+	private static final int PAINTBRUSH_MISSING_ITEMS_HIGHLIGHT_COLOR = 0xc53b3b;
+
 	private ClientEventHandler() {
 	}
 
@@ -114,7 +117,7 @@ public class ClientEventHandler {
 	private static void onExtractBlockOutline(ExtractBlockOutlineRenderStateEvent event) {
 		Minecraft minecraft = Minecraft.getInstance();
 		LocalPlayer player = minecraft.player;
-		if (player == null || minecraft.screen != null) {
+		if (player == null || minecraft.gui.screen() != null) {
 			return;
 		}
 
@@ -126,12 +129,12 @@ public class ClientEventHandler {
 			Level level = player.level();
 			BlockState blockState = level.getBlockState(otherPos);
 			if (!blockState.isAir() && level.getWorldBorder().isWithinBounds(otherPos)) {
-				event.addCustomRenderer((blockOutlineRenderState, bufferSource, poseStack, b, levelRenderState) -> {
-					VertexConsumer vertexConsumer = bufferSource.getBuffer(RenderTypes.lines());
+				event.addCustomRenderer((blockOutlineRenderState, submitNodeCollector, poseStack, levelRenderState) -> {
 					Vec3 cameraPos = levelRenderState.cameraRenderState.pos;
-					ShapeRenderer.renderShape(poseStack, vertexConsumer, blockState.getShape(level, otherPos, collisionContext),
-							otherPos.getX() - cameraPos.x, otherPos.getY() - cameraPos.y, otherPos.getZ() - cameraPos.z, ARGB.colorFromFloat(0.4F, 0, 0, 0),
-							minecraft.getWindow().getAppropriateLineWidth());
+					poseStack.pushPose();
+					poseStack.translate(otherPos.getX() - cameraPos.x, otherPos.getY() - cameraPos.y, otherPos.getZ() - cameraPos.z);
+					submitNodeCollector.submitShapeOutline(poseStack, blockState.getShape(level, otherPos, collisionContext), RenderTypes.lines(), ARGB.colorFromFloat(0.4F, 0, 0, 0), minecraft.getWindow().getAppropriateLineWidth(), blockOutlineRenderState.isTranslucent());
+					poseStack.popPose();
 					return false;
 				});
 			}
@@ -145,14 +148,13 @@ public class ClientEventHandler {
 
 			if (blockState.getBlock() instanceof StorageBlockBase || blockState.getBlock() == ModBlocks.CONTROLLER.get()) {
 				PaintbrushOverlay.getItemRequirementsFor(stack, player, level, pos).ifPresent(itemRequirements -> {
-					event.addCustomRenderer((blockOutlineRenderState, bufferSource, poseStack, b, levelRenderState) -> {
-						float red = !itemRequirements.itemsMissing().isEmpty() ? 1 : 0;
-						float green = itemRequirements.itemsMissing().isEmpty() ? 1 : 0;
-						VertexConsumer vertexConsumer = bufferSource.getBuffer(RenderTypes.lines());
+					event.addCustomRenderer((blockOutlineRenderState, submitNodeCollector, poseStack, levelRenderState) -> {
+						int color = itemRequirements.itemsMissing().isEmpty() ? PAINTBRUSH_CAN_APPLY_HIGHLIGHT_COLOR : PAINTBRUSH_MISSING_ITEMS_HIGHLIGHT_COLOR;
 						Vec3 cameraPos = levelRenderState.cameraRenderState.pos;
-						ShapeRenderer.renderShape(poseStack, vertexConsumer, blockState.getShape(level, pos, collisionContext),
-								pos.getX() - cameraPos.x, pos.getY() - cameraPos.y, pos.getZ() - cameraPos.z, ARGB.colorFromFloat(1, red, green, 0),
-								minecraft.getWindow().getAppropriateLineWidth());
+						poseStack.pushPose();
+						poseStack.translate(pos.getX() - cameraPos.x, pos.getY() - cameraPos.y, pos.getZ() - cameraPos.z);
+						BlockHighlightRenderHelper.submitThickEdges(submitNodeCollector, poseStack, color, VoxelOutliner.linesFromVoxelShapeSimplified(blockState.getShape(level, pos, collisionContext), pos), pos);
+						poseStack.popPose();
 						return true;
 					});
 				});
@@ -162,7 +164,7 @@ public class ClientEventHandler {
 
 	private static void onMouseScrolled(InputEvent.MouseScrollingEvent evt) {
 		Minecraft mc = Minecraft.getInstance();
-		if (mc.screen != null) {
+		if (mc.gui.screen() != null) {
 			return;
 		}
 		LocalPlayer player = mc.player;

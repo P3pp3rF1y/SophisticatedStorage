@@ -6,7 +6,6 @@
     }
   ],
   "type": "sophisticatedstorage:storage_tier_upgrade",
-  "category": "misc",
   "key": {
     "G": "#c:ingots/gold",
     "S": "sophisticatedstorage:limited_iron_barrel_2"
