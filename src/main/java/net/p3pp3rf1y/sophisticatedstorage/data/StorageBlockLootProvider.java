@@ -83,14 +83,14 @@ public class StorageBlockLootProvider extends LootTableProvider {
 			add(ModBlocks.DIAMOND_SHULKER_BOX.get(), dropStorageWithContents(ModBlocks.DIAMOND_SHULKER_BOX_ITEM.get()));
 			add(ModBlocks.NETHERITE_SHULKER_BOX.get(), dropStorageWithContents(ModBlocks.NETHERITE_SHULKER_BOX_ITEM.get()));
 
-			add(ModBlocks.CONTROLLER.get(), dropBlock(ModBlocks.CONTROLLER_ITEM.get()));
-			add(ModBlocks.STORAGE_LINK.get(), dropBlock(ModBlocks.STORAGE_LINK_ITEM.get()));
-			add(ModBlocks.STORAGE_IO.get(), dropBlock(ModBlocks.STORAGE_IO_ITEM.get()));
-			add(ModBlocks.STORAGE_INPUT.get(), dropBlock(ModBlocks.STORAGE_INPUT_ITEM.get()));
-			add(ModBlocks.STORAGE_OUTPUT.get(), dropBlock(ModBlocks.STORAGE_OUTPUT_ITEM.get()));
+			add(ModBlocks.CONTROLLER.get(), dropSimpleMaterialBlock(ModBlocks.CONTROLLER_ITEM.get()));
+			add(ModBlocks.STORAGE_LINK.get(), dropSimpleMaterialBlock(ModBlocks.STORAGE_LINK_ITEM.get()));
+			add(ModBlocks.STORAGE_IO.get(), dropSimpleMaterialBlock(ModBlocks.STORAGE_IO_ITEM.get()));
+			add(ModBlocks.STORAGE_INPUT.get(), dropSimpleMaterialBlock(ModBlocks.STORAGE_INPUT_ITEM.get()));
+			add(ModBlocks.STORAGE_OUTPUT.get(), dropSimpleMaterialBlock(ModBlocks.STORAGE_OUTPUT_ITEM.get()));
 
 			ModBlocks.STORAGE_CONNECTOR_BLOCKS.forEach((woodType, blockSupplier) ->
-					add(blockSupplier.get(), dropBlock(ModBlocks.STORAGE_CONNECTOR_ITEMS.get(woodType).get()))
+					add(blockSupplier.get(), dropSimpleMaterialBlock(ModBlocks.STORAGE_CONNECTOR_ITEMS.get(woodType).get()))
 			);
 
 			add(ModBlocks.DECORATION_TABLE.get(), dropBlock(ModBlocks.DECORATION_TABLE_ITEM.get()));
@@ -114,6 +114,11 @@ public class StorageBlockLootProvider extends LootTableProvider {
 
 		public LootTable.Builder dropBlock(ItemLike item) {
 			return LootTable.lootTable().withPool(applyExplosionCondition(item, LootPool.lootPool().name("main").setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(item))));
+		}
+
+		private LootTable.Builder dropSimpleMaterialBlock(ItemLike item) {
+			return LootTable.lootTable().withPool(applyExplosionCondition(item, LootPool.lootPool().name("main").setRolls(ConstantValue.exactly(1.0F))
+					.add(LootItem.lootTableItem(item).apply(CopyStorageDataFunction.builder()))));
 		}
 	}
 }

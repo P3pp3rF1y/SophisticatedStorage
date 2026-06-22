@@ -51,6 +51,8 @@ public class ControllerRenderer implements BlockEntityRenderer<ControllerBlockEn
 
 	@Override
 	public void render(ControllerBlockEntity controller, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, Vec3 cameraPos) {
+		SimpleMaterialOverlayRenderer.renderHiddenOverlay(controller, poseStack, bufferSource, packedLight, packedOverlay);
+
 		LocalPlayer player = Minecraft.getInstance().player;
 		if (player == null) {
 			return;
