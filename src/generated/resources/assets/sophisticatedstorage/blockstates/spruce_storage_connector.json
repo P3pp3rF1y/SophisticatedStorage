@@ -1,6 +1,11 @@
 {
   "variants": {
-    "": {
+    "opaque=false": {
+      "type": "sophisticatedstorage:simple_material_blockstate_model_loader",
+      "model": "sophisticatedstorage:block/spruce_storage_connector"
+    },
+    "opaque=true": {
+      "type": "sophisticatedstorage:simple_material_blockstate_model_loader",
       "model": "sophisticatedstorage:block/spruce_storage_connector"
     }
   }

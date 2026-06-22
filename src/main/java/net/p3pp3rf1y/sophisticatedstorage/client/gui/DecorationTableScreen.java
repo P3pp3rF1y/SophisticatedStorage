@@ -31,6 +31,7 @@ import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.*;
 import net.p3pp3rf1y.sophisticatedcore.util.Easing;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.DecorationTableBlockEntity;
+import net.p3pp3rf1y.sophisticatedstorage.common.gui.DecorationTableInputSlotPreview;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.DecorationTableMenu;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.util.DecorationHelper;
@@ -40,6 +41,7 @@ import org.joml.Vector3f;
 
 import javax.annotation.Nullable;
 import java.util.*;
+import java.util.function.BooleanSupplier;
 import java.util.function.Function;
 import java.util.function.IntConsumer;
 import java.util.function.Supplier;
@@ -47,37 +49,40 @@ import java.util.function.Supplier;
 public class DecorationTableScreen extends AbstractContainerScreen<DecorationTableMenu> {
 	public static final ResourceLocation GUI_BACKGROUND = SophisticatedStorage.getRL("textures/gui/decoration_table.png");
 	public static final ResourceLocation GUI_DECORATION_TABLE_ELEMENTS = SophisticatedStorage.getRL("textures/gui/decoration_table_elements.png");
-	public static final Dimension SQUARE_64 = new Dimension(64, 64);
+	public static final Dimension DECORATION_TABLE_ELEMENTS = new Dimension(128, 64);
 	public static final Dimension SQUARE_8 = new Dimension(8, 8);
-	public static final TextureBlitData TOP_INNER_TRIM_HIGHLIGHT = new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, SQUARE_64, new UV(0, 0), Dimension.SQUARE_16);
-	public static final TextureBlitData TOP_TRIM_HIGHLIGHT = new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, SQUARE_64, new UV(0, 16), Dimension.SQUARE_16);
-	public static final TextureBlitData SIDE_TRIM_HIGHLIGHT = new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, SQUARE_64, new UV(0, 32), Dimension.SQUARE_16);
-	public static final TextureBlitData BOTTOM_TRIM_HIGHLIGHT = new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, SQUARE_64, new UV(0, 48), Dimension.SQUARE_16);
-	public static final TextureBlitData TOP_CORE_HIGHLIGHT = new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, SQUARE_64, new UV(16, 16), Dimension.SQUARE_16);
-	public static final TextureBlitData SIDE_CORE_HIGHLIGHT = new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, SQUARE_64, new UV(16, 32), Dimension.SQUARE_16);
-	public static final TextureBlitData BOTTOM_CORE_HIGHLIGHT = new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, SQUARE_64, new UV(16, 48), Dimension.SQUARE_16);
-	public static final TextureBlitData ACCENT_TINT_HIGHLIGHT = new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, SQUARE_64, new UV(32, 48), Dimension.SQUARE_16);
-	public static final TextureBlitData MAIN_TINT_HIGHLIGHT = new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, SQUARE_64, new UV(48, 48), Dimension.SQUARE_16);
-	public static final TextureBlitData STORAGE_INFO = new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, SQUARE_64, new UV(32, 16), Dimension.SQUARE_16);
+	private static final int DISABLED_TEXTURE_U_OFFSET = 64;
+	private static final long INPUT_SLOT_PREVIEW_ROTATION_INTERVAL_MS = 1_500;
+	public static final TextureBlitData TOP_INNER_TRIM_HIGHLIGHT = new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, DECORATION_TABLE_ELEMENTS, new UV(0, 0), Dimension.SQUARE_16);
+	public static final TextureBlitData TOP_TRIM_HIGHLIGHT = new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, DECORATION_TABLE_ELEMENTS, new UV(0, 16), Dimension.SQUARE_16);
+	public static final TextureBlitData SIDE_TRIM_HIGHLIGHT = new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, DECORATION_TABLE_ELEMENTS, new UV(0, 32), Dimension.SQUARE_16);
+	public static final TextureBlitData BOTTOM_TRIM_HIGHLIGHT = new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, DECORATION_TABLE_ELEMENTS, new UV(0, 48), Dimension.SQUARE_16);
+	public static final TextureBlitData TOP_CORE_HIGHLIGHT = new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, DECORATION_TABLE_ELEMENTS, new UV(16, 16), Dimension.SQUARE_16);
+	public static final TextureBlitData SIDE_CORE_HIGHLIGHT = new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, DECORATION_TABLE_ELEMENTS, new UV(16, 32), Dimension.SQUARE_16);
+	public static final TextureBlitData BOTTOM_CORE_HIGHLIGHT = new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, DECORATION_TABLE_ELEMENTS, new UV(16, 48), Dimension.SQUARE_16);
+	public static final TextureBlitData ACCENT_TINT_HIGHLIGHT = new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, DECORATION_TABLE_ELEMENTS, new UV(32, 48), Dimension.SQUARE_16);
+	public static final TextureBlitData MAIN_TINT_HIGHLIGHT = new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, DECORATION_TABLE_ELEMENTS, new UV(48, 48), Dimension.SQUARE_16);
+	public static final TextureBlitData STORAGE_INFO = new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, DECORATION_TABLE_ELEMENTS, new UV(32, 16), Dimension.SQUARE_16);
 
-	private static final TextureBlitData VERTICAL_ARROW_BACKGROUND = new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, SQUARE_64, new UV(56, 0), SQUARE_8);
-	private static final TextureBlitData VERTICAL_ARROW_HOVERED_BACKGROUND = new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, SQUARE_64, new UV(48, 0), SQUARE_8);
-	private static final TextureBlitData HORIZONTAL_ARROW_BACKGROUND = new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, SQUARE_64, new UV(56, 8), SQUARE_8);
-	private static final TextureBlitData HORIZONTAL_ARROW_HOVERED_BACKGROUND = new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, SQUARE_64, new UV(48, 8), SQUARE_8);
+	private static final TextureBlitData VERTICAL_ARROW_BACKGROUND = new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, DECORATION_TABLE_ELEMENTS, new UV(56, 0), SQUARE_8);
+	private static final TextureBlitData VERTICAL_ARROW_HOVERED_BACKGROUND = new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, DECORATION_TABLE_ELEMENTS, new UV(48, 0), SQUARE_8);
+	private static final TextureBlitData HORIZONTAL_ARROW_BACKGROUND = new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, DECORATION_TABLE_ELEMENTS, new UV(56, 8), SQUARE_8);
+	private static final TextureBlitData HORIZONTAL_ARROW_HOVERED_BACKGROUND = new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, DECORATION_TABLE_ELEMENTS, new UV(48, 8), SQUARE_8);
 
 	private static final ButtonDefinition.Toggle<Boolean> VERTICAL_INHERITANCE_ARROW = new ButtonDefinition.Toggle<>(SQUARE_8, VERTICAL_ARROW_BACKGROUND, Map.of(
-			true, new ToggleButton.StateData(new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, SQUARE_64, new UV(32, 0), SQUARE_8),
+			true, new ToggleButton.StateData(new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, DECORATION_TABLE_ELEMENTS, new UV(32, 0), SQUARE_8),
 					Component.translatable(StorageTranslationHelper.INSTANCE.translButton("decoration_inheritance_on"))),
-			false, new ToggleButton.StateData(new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, SQUARE_64, new UV(40, 0), SQUARE_8),
+			false, new ToggleButton.StateData(new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, DECORATION_TABLE_ELEMENTS, new UV(40, 0), SQUARE_8),
 					Component.translatable(StorageTranslationHelper.INSTANCE.translButton("decoration_inheritance_off")))
 	), VERTICAL_ARROW_HOVERED_BACKGROUND);
 
 	private static final ButtonDefinition.Toggle<Boolean> HORIZONTAL_INHERITANCE_ARROW = new ButtonDefinition.Toggle<>(SQUARE_8, HORIZONTAL_ARROW_BACKGROUND, Map.of(
-			true, new ToggleButton.StateData(new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, SQUARE_64, new UV(32, 8), SQUARE_8),
+			true, new ToggleButton.StateData(new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, DECORATION_TABLE_ELEMENTS, new UV(32, 8), SQUARE_8),
 					Component.translatable(StorageTranslationHelper.INSTANCE.translButton("decoration_inheritance_on"))),
-			false, new ToggleButton.StateData(new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, SQUARE_64, new UV(40, 8), SQUARE_8),
+			false, new ToggleButton.StateData(new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, DECORATION_TABLE_ELEMENTS, new UV(40, 8), SQUARE_8),
 					Component.translatable(StorageTranslationHelper.INSTANCE.translButton("decoration_inheritance_off")))
 	), HORIZONTAL_ARROW_HOVERED_BACKGROUND);
+	private static final int DISABLED_CONTROL_OVERLAY_COLOR = 0x66_A0A0A0;
 
 	private BlockPreview blockPreview;
 	private long lastRotationSetTime = 0;
@@ -145,14 +150,90 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 		Slot sideTrimSlot = menu.getSlot(DecorationTableBlockEntity.SIDE_TRIM_SLOT);
 
 		ColorButton mainColorButton = new ColorButton(new Position(leftPos + greenDyeSlot.x - 1, topPos + topTrimSlot.y - 1), new Dimension(18, 18), menu::getMainColor,
-				button -> openColorPicker(menu.getMainColor(), menu::setMainColor), Component.translatable(StorageTranslationHelper.INSTANCE.translButton("pick_color")));
+				button -> openColorPicker(menu.getMainColor(), menu::setMainColor), Component.translatable(StorageTranslationHelper.INSTANCE.translButton("pick_color"))) {
+			@Override
+			protected void renderBg(GuiGraphics guiGraphics, Minecraft minecraft, int mouseX, int mouseY) {
+				if (getMenu().isMainTintActive()) {
+					super.renderBg(guiGraphics, minecraft, mouseX, mouseY);
+				} else {
+					renderDisabledColorButtonBackground(guiGraphics, getX(), getY(), getWidth(), getHeight());
+				}
+			}
+
+			@Override
+			public void renderTooltip(Screen screen, GuiGraphics guiGraphics, int mouseX, int mouseY) {
+				if (getMenu().isMainTintActive()) {
+					super.renderTooltip(screen, guiGraphics, mouseX, mouseY);
+				}
+			}
+
+			@Override
+			public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
+				super.render(guiGraphics, mouseX, mouseY, partialTicks);
+				if (!getMenu().isMainTintActive()) {
+					renderDisabledControlOverlay(guiGraphics, getX(), getY(), getWidth(), getHeight(), DISABLED_CONTROL_OVERLAY_COLOR);
+				}
+			}
+
+			@Override
+			protected void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
+				if (getMenu().isMainTintActive()) {
+					super.renderWidget(guiGraphics, mouseX, mouseY, partialTicks);
+				} else {
+					renderDisabledColorSwatch(guiGraphics, getX(), getY(), getWidth(), getHeight(), getMenu().getMainColor());
+				}
+			}
+
+			@Override
+			public boolean mouseClicked(double mouseX, double mouseY, int button) {
+				return getMenu().isMainTintActive() && super.mouseClicked(mouseX, mouseY, button);
+			}
+		};
 		addRenderableWidget(mainColorButton);
 		ColorButton accentColorButton = new ColorButton(new Position(leftPos + greenDyeSlot.x - 1, topPos + sideTrimSlot.y - 1), new Dimension(18, 18), menu::getAccentColor,
-				button -> openColorPicker(menu.getAccentColor(), menu::setAccentColor), Component.translatable(StorageTranslationHelper.INSTANCE.translButton("pick_color")));
+				button -> openColorPicker(menu.getAccentColor(), menu::setAccentColor), Component.translatable(StorageTranslationHelper.INSTANCE.translButton("pick_color"))) {
+			@Override
+			protected void renderBg(GuiGraphics guiGraphics, Minecraft minecraft, int mouseX, int mouseY) {
+				if (getMenu().isAccentTintActive()) {
+					super.renderBg(guiGraphics, minecraft, mouseX, mouseY);
+				} else {
+					renderDisabledColorButtonBackground(guiGraphics, getX(), getY(), getWidth(), getHeight());
+				}
+			}
+
+			@Override
+			public void renderTooltip(Screen screen, GuiGraphics guiGraphics, int mouseX, int mouseY) {
+				if (getMenu().isAccentTintActive()) {
+					super.renderTooltip(screen, guiGraphics, mouseX, mouseY);
+				}
+			}
+
+			@Override
+			public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
+				super.render(guiGraphics, mouseX, mouseY, partialTicks);
+				if (!getMenu().isAccentTintActive()) {
+					renderDisabledControlOverlay(guiGraphics, getX(), getY(), getWidth(), getHeight(), DISABLED_CONTROL_OVERLAY_COLOR);
+				}
+			}
+
+			@Override
+			protected void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
+				if (getMenu().isAccentTintActive()) {
+					super.renderWidget(guiGraphics, mouseX, mouseY, partialTicks);
+				} else {
+					renderDisabledColorSwatch(guiGraphics, getX(), getY(), getWidth(), getHeight(), getMenu().getAccentColor());
+				}
+			}
+
+			@Override
+			public boolean mouseClicked(double mouseX, double mouseY, int button) {
+				return getMenu().isAccentTintActive() && super.mouseClicked(mouseX, mouseY, button);
+			}
+		};
 		addRenderableWidget(accentColorButton);
 
-		addRenderableWidget(new PartIcon(new Position(mainColorButton.getX() + mainColorButton.getWidth() + 1, mainColorButton.getY() + 1), MAIN_TINT_HIGHLIGHT, Component.translatable(StorageTranslationHelper.INSTANCE.translGui("tint.main"))));
-		addRenderableWidget(new PartIcon(new Position(accentColorButton.getX() + accentColorButton.getWidth() + 1, accentColorButton.getY() + 1), ACCENT_TINT_HIGHLIGHT, Component.translatable(StorageTranslationHelper.INSTANCE.translGui("tint.accent"))));
+		addRenderableWidget(new PartIcon(new Position(mainColorButton.getX() + mainColorButton.getWidth() + 1, mainColorButton.getY() + 1), MAIN_TINT_HIGHLIGHT, Component.translatable(StorageTranslationHelper.INSTANCE.translGui("tint.main")), getMenu()::isMainTintActive));
+		addRenderableWidget(new PartIcon(new Position(accentColorButton.getX() + accentColorButton.getWidth() + 1, accentColorButton.getY() + 1), ACCENT_TINT_HIGHLIGHT, Component.translatable(StorageTranslationHelper.INSTANCE.translGui("tint.accent")), getMenu()::isAccentTintActive));
 	}
 
 	private void openColorPicker(int color, IntConsumer colorSetter) {
@@ -179,14 +260,30 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 					updatePreviewStacks();
 				}, () -> getMenu().isSlotMaterialInherited(partSlot)) {
 			@Override
+			public void renderTooltip(Screen screen, GuiGraphics guiGraphics, int mouseX, int mouseY) {
+				if (getMenu().isInheritanceSlotActive(partSlot.getSlotIndex())) {
+					super.renderTooltip(screen, guiGraphics, mouseX, mouseY);
+				}
+			}
+
+			@Override
 			public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
-				super.render(guiGraphics, mouseX, mouseY, partialTicks);
-				if (isMouseOver(mouseX, mouseY)) {
-					Vec2 rotations = SLOT_PREVIEW_ROTATIONS.get(partSlot);
+				if (!getMenu().isInheritanceSlotActive(partSlot.getSlotIndex())) {
+					super.render(guiGraphics, -1, -1, partialTicks);
+				} else if (isMouseOver(mouseX, mouseY)) {
+					super.render(guiGraphics, mouseX, mouseY, partialTicks);
+					Vec2 rotations = SLOT_PREVIEW_ROTATIONS.get(partSlot.getSlotIndex());
 					if (rotations != null) {
 						setPreviewRotations((int) rotations.x, (int) rotations.y);
 					}
+				} else {
+					super.render(guiGraphics, mouseX, mouseY, partialTicks);
 				}
+			}
+
+			@Override
+			public boolean mouseClicked(double mouseX, double mouseY, int button) {
+				return getMenu().isInheritanceSlotActive(partSlot.getSlotIndex()) && super.mouseClicked(mouseX, mouseY, button);
 			}
 		});
 	}
@@ -203,6 +300,10 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 	}
 
 	private void renderDyeSlotsOverlays(GuiGraphics guiGraphics) {
+		if (!getMenu().areTintsActive()) {
+			return;
+		}
+
 		Matrix3x2fStack pose = guiGraphics.pose();
 		pose.pushMatrix();
 		pose.translate(leftPos, topPos);
@@ -219,9 +320,70 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 		guiGraphics.fill(slot.x, slot.y, slot.x + 16, slot.y + 16, slotColor);
 	}
 
+	private boolean isSlotHighlightDisabled(Slot slot) {
+		if (!slot.getItem().isEmpty()) {
+			return false;
+		}
+
+		for (int slotIndex = DecorationTableBlockEntity.TOP_INNER_TRIM_SLOT; slotIndex <= DecorationTableBlockEntity.BOTTOM_CORE_SLOT; slotIndex++) {
+			if (slot == getMenu().getSlot(slotIndex)) {
+				return !getMenu().isMaterialSlotActive(slotIndex);
+			}
+		}
+
+		for (int slotIndex = getMenu().getDyeSlotRange().firstSlot(); slotIndex < getMenu().getDyeSlotRange().firstSlot() + getMenu().getDyeSlotRange().numberOfSlots(); slotIndex++) {
+			if (slot == getMenu().getSlot(slotIndex)) {
+				return !getMenu().areTintsActive();
+			}
+		}
+
+		return false;
+	}
+
+	private static void renderDisabledControlOverlay(GuiGraphics guiGraphics, int x, int y, int width, int height, int color) {
+		guiGraphics.fill(x, y, x + width, y + height, color);
+	}
+
+	private static void renderDisabledColorButtonBackground(GuiGraphics guiGraphics, int x, int y, int width, int height) {
+		guiGraphics.fill(x, y, x + width, y + height, 0xFF_A0A0A0);
+	}
+
+	private static void renderDisabledColorSwatch(GuiGraphics guiGraphics, int x, int y, int width, int height, int color) {
+		if (color == -1) {
+			renderDisabledCheckerboard(guiGraphics, x, y, width, height);
+			return;
+		}
+
+		int grayColor = getGrayscaleColor(color);
+		guiGraphics.fill(x + 1, y + 1, x + width - 1, y + height - 1, grayColor);
+	}
+
+	private static void renderDisabledCheckerboard(GuiGraphics guiGraphics, int x, int y, int width, int height) {
+		for (int row = 0; row < height - 2; row++) {
+			for (int column = 0; column < width - 2; column++) {
+				guiGraphics.fill(x + column + 1, y + row + 1, x + column + 2, y + row + 2, ((row + column) % 2 == 0) ? 0xFF_B8B8B8 : 0xFF_8A8A8A);
+			}
+		}
+	}
+
+	private static int getGrayscaleColor(int color) {
+		int red = color >> 16 & 255;
+		int green = color >> 8 & 255;
+		int blue = color & 255;
+		int gray = (int) (red * 0.299f + green * 0.587f + blue * 0.114f);
+		return 0xFF_000000 | gray << 16 | gray << 8 | gray;
+	}
+
 	private void addPartHint(int slotIndex, TextureBlitData texture, String barrelPart) {
 		Slot slot = menu.getSlot(slotIndex);
-		addRenderableWidget(new PartIcon(new Position(leftPos + slot.x + 18, topPos + slot.y), texture, Component.translatable(StorageTranslationHelper.INSTANCE.translGui("barrel_part." + barrelPart))));
+		addRenderableWidget(new PartIcon(new Position(leftPos + slot.x + 18, topPos + slot.y), texture, () -> getMaterialTooltip(slotIndex, barrelPart), () -> getMenu().isMaterialSlotActive(slotIndex)));
+	}
+
+	private Component getMaterialTooltip(int slotIndex, String barrelPart) {
+		if (slotIndex == DecorationTableBlockEntity.TOP_INNER_TRIM_SLOT && getMenu().getMaterialLayout() == DecorationTableBlockEntity.MaterialLayout.SINGLE) {
+			return Component.translatable(StorageTranslationHelper.INSTANCE.translGui("material"));
+		}
+		return Component.translatable(StorageTranslationHelper.INSTANCE.translGui("barrel_part." + barrelPart));
 	}
 
 	@Override
@@ -257,6 +419,26 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 				guiGraphics.blit(RenderPipelines.GUI_TEXTURED, GuiHelper.GUI_CONTROLS, slot.x, slot.y, 77, 0, 16, 16, 256, 256);
 			}
 		}
+		if (slot == getMenu().getStorageSlot() && slot.getItem().isEmpty()) {
+			renderInputSlotPreview(guiGraphics, slot);
+		}
+		if (slot.getItem().isEmpty() && isSlotHighlightDisabled(slot)) {
+			renderStackOverlay(guiGraphics, slot.x, slot.y);
+		}
+	}
+
+	private void renderInputSlotPreview(GuiGraphics guiGraphics, Slot slot) {
+		ItemStack previewStack = DecorationTableInputSlotPreview.getPreviewStack(System.currentTimeMillis(), INPUT_SLOT_PREVIEW_ROTATION_INTERVAL_MS);
+		if (previewStack.isEmpty()) {
+			return;
+		}
+
+		guiGraphics.renderItem(previewStack, slot.x, slot.y);
+		renderStackOverlay(guiGraphics, slot.x, slot.y);
+	}
+
+	private static void renderStackOverlay(GuiGraphics guiGraphics, int x, int y) {
+		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, GuiHelper.GUI_CONTROLS, x, y, 77, 0, 16, 16, 256, 256);
 	}
 
 	@Override
@@ -322,6 +504,10 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 	}
 
 	private void updatePreviewRotationForSlot(int slotIndex, int mouseX, int mouseY, int xAxisRotation, int yAxisRotation) {
+		if (!getMenu().isMaterialSlotActive(slotIndex)) {
+			return;
+		}
+
 		Slot slot = getMenu().getSlot(slotIndex);
 		int slotLeft = leftPos + slot.x;
 		int slotTop = topPos + slot.y;
@@ -391,17 +577,38 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 
 	private static class PartIcon extends WidgetBase {
 		private final TextureBlitData texture;
-		private final Component tooltip;
+		private final TextureBlitData disabledTexture;
+		private final Supplier<Component> tooltip;
+		private final BooleanSupplier isActive;
 
 		protected PartIcon(Position position, TextureBlitData texture, Component tooltip) {
+			this(position, texture, () -> tooltip, () -> true);
+		}
+
+		protected PartIcon(Position position, TextureBlitData texture, Component tooltip, BooleanSupplier isActive) {
+			this(position, texture, () -> tooltip, isActive);
+		}
+
+		protected PartIcon(Position position, TextureBlitData texture, Supplier<Component> tooltip, BooleanSupplier isActive) {
 			super(position, new Dimension(texture.getWidth(), texture.getHeight()));
 			this.texture = texture;
+			disabledTexture = new TextureBlitData(texture.getTextureName(), DECORATION_TABLE_ELEMENTS, new UV(texture.getU() + DISABLED_TEXTURE_U_OFFSET, texture.getV()), new Dimension(texture.getWidth(), texture.getHeight()));
 			this.tooltip = tooltip;
+			this.isActive = isActive;
+		}
+
+		@Override
+		public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
+			super.render(guiGraphics, mouseX, mouseY, partialTicks);
 		}
 
 		@Override
 		protected void renderBg(GuiGraphics guiGraphics, Minecraft minecraft, int mouseX, int mouseY) {
-			GuiHelper.blit(guiGraphics, x, y, texture);
+			if (isActive.getAsBoolean()) {
+				GuiHelper.blit(guiGraphics, x, y, texture);
+			} else {
+				GuiHelper.blit(guiGraphics, x, y, disabledTexture);
+			}
 		}
 
 		@Override
@@ -411,8 +618,8 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 
 		@Override
 		public void renderTooltip(Screen screen, GuiGraphics guiGraphics, int mouseX, int mouseY) {
-			if (isMouseOver(mouseX, mouseY)) {
-				guiGraphics.setTooltipForNextFrame(screen.getMinecraft().font, tooltip, mouseX, mouseY);
+			if (isActive.getAsBoolean() && isMouseOver(mouseX, mouseY)) {
+				guiGraphics.setTooltipForNextFrame(screen.getMinecraft().font, tooltip.get(), mouseX, mouseY);
 			}
 		}
 	}
