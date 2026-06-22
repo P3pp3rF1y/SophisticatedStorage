@@ -40,6 +40,7 @@ import net.p3pp3rf1y.sophisticatedstorage.block.*;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageTranslationHelper;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModDataComponents;
 import net.p3pp3rf1y.sophisticatedstorage.util.DecorationHelper;
+import net.p3pp3rf1y.sophisticatedstorage.util.SimpleMaterialHelper;
 import org.jspecify.annotations.Nullable;
 
 import java.util.*;
@@ -79,18 +80,31 @@ public class PaintbrushItem extends ItemBase {
 
 	private static Optional<ItemRequirements> getMaterialItemRequirements(ItemStack paintbrush, Player player, BlockEntity be, Map<BarrelMaterial, Identifier> materialsToApply) {
 		Map<Identifier, Integer> allPartsNeeded = new HashMap<>();
-		if (be instanceof IMaterialHolder materialHolder) {
-			allPartsNeeded = getMaterialHolderPartsNeeded(materialsToApply, materialHolder);
-		} else if (be instanceof ControllerBlockEntity controllerBe) {
-			for (BlockPos storagePosition : controllerBe.getStoragePositions()) {
-				addStorageMaterialPartsNeeded(materialsToApply, controllerBe, storagePosition, allPartsNeeded);
+		if (be instanceof ControllerBlockEntity controllerBe) {
+			if (player.isCrouching()) {
+				addSimpleMaterialPartsNeeded(materialsToApply, controllerBe, allPartsNeeded);
+			} else {
+				for (BlockPos storagePosition : controllerBe.getStoragePositions()) {
+					addStorageMaterialPartsNeeded(materialsToApply, controllerBe, storagePosition, allPartsNeeded);
+				}
 			}
+		} else if (be instanceof ISimpleMaterialHolder simpleMaterialHolder) {
+			addSimpleMaterialPartsNeeded(materialsToApply, simpleMaterialHolder, allPartsNeeded);
+		} else if (be instanceof IMaterialHolder materialHolder) {
+			allPartsNeeded = getMaterialHolderPartsNeeded(materialsToApply, materialHolder);
 		}
 
 		if (allPartsNeeded.isEmpty()) {
 			return Optional.empty();
 		}
 		return getItemRequirements(paintbrush, player, allPartsNeeded);
+	}
+
+	private static void addSimpleMaterialPartsNeeded(Map<BarrelMaterial, Identifier> materialsToApply, ISimpleMaterialHolder simpleMaterialHolder, Map<Identifier, Integer> allPartsNeeded) {
+		Optional<Identifier> material = SimpleMaterialHelper.getSingleMaterial(materialsToApply);
+		if (material.isPresent()) {
+			allPartsNeeded.putAll(DecorationHelper.getSimpleMaterialPartsNeeded(simpleMaterialHolder.getMaterial(), material.get()));
+		}
 	}
 
 	public static Optional<ItemRequirements> getItemRequirements(ItemStack paintbrush, Player player, Map<Identifier, Integer> allPartsNeeded) {
@@ -230,19 +244,38 @@ public class PaintbrushItem extends ItemBase {
 
 		Level level = context.getLevel();
 		BlockEntity be = level.getBlockEntity(context.getClickedPos());
-		if (be instanceof StorageBlockEntity storageBe) {
-			if (!level.isClientSide()) {
-				paintStorage(context.getPlayer(), paintbrush, storageBe, 1);
+		if (be instanceof ControllerBlockEntity controllerBe) {
+			if (hasBarrelMaterials(paintbrush) && context.getPlayer() != null && context.getPlayer().isCrouching()) {
+				if (!level.isClientSide()) {
+					paintSimpleMaterialHolder(context.getPlayer(), paintbrush, controllerBe, Vec3.atCenterOf(context.getClickedPos()), context.getClickedFace(), level.getBlockState(context.getClickedPos()).getSoundType(level, context.getClickedPos(), context.getPlayer()).getPlaceSound());
+				}
+			} else if (!level.isClientSide()) {
+				paintConnectedStorages(context.getPlayer(), level, paintbrush, controllerBe);
 			}
 			return InteractionResult.SUCCESS;
-		} else if (be instanceof ControllerBlockEntity controllerBe) {
+		} else if (hasBarrelMaterials(paintbrush) && be instanceof ISimpleMaterialHolder simpleMaterialHolder) {
 			if (!level.isClientSide()) {
-				paintConnectedStorages(context.getPlayer(), level, paintbrush, controllerBe);
+				paintSimpleMaterialHolder(context.getPlayer(), paintbrush, simpleMaterialHolder, Vec3.atCenterOf(context.getClickedPos()), context.getClickedFace(), level.getBlockState(context.getClickedPos()).getSoundType(level, context.getClickedPos(), context.getPlayer()).getPlaceSound());
+			}
+			return InteractionResult.SUCCESS;
+		} else if (be instanceof StorageBlockEntity storageBe) {
+			if (!level.isClientSide()) {
+				paintStorage(context.getPlayer(), paintbrush, storageBe, 1);
 			}
 			return InteractionResult.SUCCESS;
 		}
 
 		return InteractionResult.PASS;
+	}
+
+	private static void paintSimpleMaterialHolder(@Nullable Player player, ItemStack paintbrush, ISimpleMaterialHolder simpleMaterialHolder, Vec3 successEffectPos, Direction effectOffsetDirection, SoundEvent placeSound) {
+		if (player == null) {
+			return;
+		}
+
+		if (applySimpleMaterial(player, paintbrush, simpleMaterialHolder)) {
+			playSoundAndParticles(player.level(), successEffectPos, 1f, placeSound, effectOffsetDirection);
+		}
 	}
 
 	private void paintConnectedStorages(@Nullable Player player, Level level, ItemStack paintbrush, ControllerBlockEntity controllerBe) {
@@ -368,6 +401,27 @@ public class PaintbrushItem extends ItemBase {
 
 		BarrelBlockItem.compactMaterials(materialsToApply);
 		materialHolder.setMaterials(materialsToApply);
+		return true;
+	}
+
+	private static boolean applySimpleMaterial(Player player, ItemStack paintbrush, ISimpleMaterialHolder simpleMaterialHolder) {
+		Optional<Identifier> material = SimpleMaterialHelper.getSingleMaterial(getBarrelMaterials(paintbrush));
+		if (material.isEmpty() || simpleMaterialHolder.getMaterial().filter(material.get()::equals).isPresent()) {
+			return false;
+		}
+
+		List<ResourceHandler<ItemResource>> itemHandlers = InventoryHelper.getItemHandlersFromPlayerIncludingContainers(player);
+		Map<Identifier, Integer> remainingParts = new HashMap<>(getRemainingParts(paintbrush));
+		try (Transaction tx = Transaction.openRoot()) {
+			SnapshotJournal<Map<Identifier, Integer>> remainingPartsJournal = createRemainingPartsJournal(paintbrush);
+			if (!DecorationHelper.consumeSimpleMaterial(remainingParts, remainingPartsJournal, itemHandlers, simpleMaterialHolder.getMaterial(), material.get(), tx)) {
+				return false;
+			}
+			tx.commit();
+		}
+
+		setRemainingParts(paintbrush, remainingParts);
+		simpleMaterialHolder.setMaterial(material.get());
 		return true;
 	}
 

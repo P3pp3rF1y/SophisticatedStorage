@@ -10,6 +10,8 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
@@ -159,6 +161,16 @@ public class ControllerRenderer implements BlockEntityRenderer<ControllerBlockEn
 				renderState.controllerEdges = Collections.emptyList();
 			}
 		});
+
+		renderState.hiddenOverlayQuads = Collections.emptyList();
+		if (controller.isOverlayHidden() && SimpleMaterialOverlayRenderer.holdsStorageToolThatShowsHiddenOverlay()) {
+			controller.getMaterial().ifPresent(material -> {
+				BlockStateModel blockModel = Minecraft.getInstance().getBlockRenderer().getBlockModel(controller.getBlockState());
+				if (blockModel instanceof SimpleMaterialModel.SimpleMaterialBlockStateModel simpleMaterialModel) {
+					renderState.hiddenOverlayQuads = simpleMaterialModel.getOverlayOnlyQuads(material, true);
+				}
+			});
+		}
 	}
 
 	@Override
@@ -174,6 +186,7 @@ public class ControllerRenderer implements BlockEntityRenderer<ControllerBlockEn
 		submitControllerOutline(submitNodeCollector, poseStack, controllerRenderState.controllerEdges, controllerPos);
 		submitLinkedBlocks(submitNodeCollector, poseStack, controllerPos, controllerRenderState.linkedBlockEdges, controllerRenderState.linkedBlocks);
 		submitStorageBlocksOutline(submitNodeCollector, poseStack, controllerRenderState.storageBlockEdges, controllerPos);
+		SimpleMaterialOverlayRenderer.submitHiddenOverlayQuads(submitNodeCollector, poseStack, controllerRenderState.lightCoords, controllerRenderState.hiddenOverlayQuads, false);
 	}
 
 	@Override
@@ -193,6 +206,7 @@ public class ControllerRenderer implements BlockEntityRenderer<ControllerBlockEn
 		public List<VoxelOutliner.Edge> storageBlockEdges = Collections.emptyList();
 		public List<LinkedBlockInfo> linkedBlocks = Collections.emptyList();
 		public List<VoxelOutliner.Edge> controllerEdges = Collections.emptyList();
+		public List<BakedQuad> hiddenOverlayQuads = Collections.emptyList();
 
 		public record LinkedBlockInfo(BlockPos pos, Vec3 center) {
 		}

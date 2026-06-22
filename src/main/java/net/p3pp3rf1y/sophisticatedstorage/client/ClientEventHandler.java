@@ -101,6 +101,7 @@ public class ClientEventHandler {
 		event.registerModel(BarrelUnbakedModelBase.UnbakedBlockStateModel.ID, BarrelUnbakedModelBase.UnbakedBlockStateModel.CODEC);
 		event.registerModel(ChestBlockStateModel.Unbaked.ID, ChestBlockStateModel.Unbaked.CODEC);
 		event.registerModel(ShulkerBoxBlockStateModel.Unbaked.ID, ShulkerBoxBlockStateModel.Unbaked.CODEC);
+		event.registerModel(SimpleMaterialModel.UnbakedBlockStateModel.ID, SimpleMaterialModel.UnbakedBlockStateModel.CODEC);
 	}
 
 	private static void registerSpecialModelRenderers(RegisterSpecialModelRendererEvent event) {
@@ -154,7 +155,7 @@ public class ClientEventHandler {
 			BlockPos pos = hitresult.getBlockPos();
 			BlockState blockState = level.getBlockState(pos);
 
-			if (blockState.getBlock() instanceof StorageBlockBase || blockState.getBlock() == ModBlocks.CONTROLLER.get()) {
+			if (blockState.getBlock() instanceof StorageBlockBase || blockState.getBlock() == ModBlocks.CONTROLLER.get() || level.getBlockEntity(pos) instanceof ISimpleMaterialHolder) {
 				PaintbrushOverlay.getItemRequirementsFor(stack, player, level, pos).ifPresent(itemRequirements -> {
 					event.addCustomRenderer((blockOutlineRenderState, bufferSource, poseStack, b, levelRenderState) -> {
 						float red = !itemRequirements.itemsMissing().isEmpty() ? 1 : 0;
@@ -217,6 +218,7 @@ public class ClientEventHandler {
 		event.register(Identifier.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "barrel"), BarrelUnbakedModel.Loader.INSTANCE);
 		event.register(Identifier.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "limited_barrel"), LimitedBarrelUnbakedModel.Loader.INSTANCE);
 		event.register(Identifier.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "simple_composite"), SimpleCompositeUnbakedModel.Loader.INSTANCE);
+		event.register(Identifier.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "simple_material"), SimpleMaterialModel.Loader.INSTANCE);
 	}
 
 	private static void onRegisterReloadListeners(AddClientReloadListenersEvent event) {
@@ -252,6 +254,11 @@ public class ClientEventHandler {
 		event.registerBlockEntityRenderer(ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get(), ChestRenderer::new);
 		event.registerBlockEntityRenderer(ModBlocks.SHULKER_BOX_BLOCK_ENTITY_TYPE.get(), ShulkerBoxRenderer::new);
 		event.registerBlockEntityRenderer(ModBlocks.CONTROLLER_BLOCK_ENTITY_TYPE.get(), context -> new ControllerRenderer());
+		event.registerBlockEntityRenderer(ModBlocks.STORAGE_LINK_BLOCK_ENTITY_TYPE.get(), context -> new SimpleMaterialOverlayRenderer<>());
+		event.registerBlockEntityRenderer(ModBlocks.STORAGE_IO_BLOCK_ENTITY_TYPE.get(), context -> new SimpleMaterialOverlayRenderer<>());
+		event.registerBlockEntityRenderer(ModBlocks.STORAGE_INPUT_BLOCK_ENTITY_TYPE.get(), context -> new SimpleMaterialOverlayRenderer<>());
+		event.registerBlockEntityRenderer(ModBlocks.STORAGE_OUTPUT_BLOCK_ENTITY_TYPE.get(), context -> new SimpleMaterialOverlayRenderer<>());
+		event.registerBlockEntityRenderer(ModBlocks.STORAGE_CONNECTOR_BLOCK_ENTITY_TYPE.get(), context -> new SimpleMaterialOverlayRenderer<>());
 		event.registerBlockEntityRenderer(ModBlocks.DECORATION_TABLE_BLOCK_ENTITY_TYPE.get(), DecorationTableRenderer::new);
 	}
 
@@ -273,5 +280,6 @@ public class ClientEventHandler {
 
 	private static void registerBarrelItemModel(RegisterItemModelsEvent event) {
 		event.register(SophisticatedStorage.getIdentifier("barrel"), BarrelItemModel.Unbaked.MAP_CODEC);
+		event.register(SophisticatedStorage.getIdentifier("simple_material"), SimpleMaterialModel.SimpleMaterialItemModel.Unbaked.MAP_CODEC);
 	}
 }

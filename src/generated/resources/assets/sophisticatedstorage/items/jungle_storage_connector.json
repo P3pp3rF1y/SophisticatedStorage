@@ -1,6 +1,6 @@
 {
   "model": {
-    "type": "minecraft:model",
+    "type": "sophisticatedstorage:simple_material",
     "model": "sophisticatedstorage:block/jungle_storage_connector"
   }
 }
