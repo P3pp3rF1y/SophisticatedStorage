@@ -1,6 +1,6 @@
 {
   "model": {
-    "type": "minecraft:model",
+    "type": "sophisticatedstorage:simple_material",
     "model": "sophisticatedstorage:block/pale_oak_storage_connector"
   }
 }

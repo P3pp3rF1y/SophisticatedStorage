@@ -12,6 +12,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.neoforge.client.gui.GuiLayer;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
+import net.p3pp3rf1y.sophisticatedstorage.block.ISimpleMaterialHolder;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockBase;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
@@ -54,7 +55,7 @@ public class PaintbrushOverlay {
 		}
 
 		BlockPos pos = blockHitResult.getBlockPos();
-		if (!(level.getBlockState(pos).getBlock() instanceof StorageBlockBase) && level.getBlockState(pos).getBlock() != ModBlocks.CONTROLLER.get()) {
+		if (!(level.getBlockState(pos).getBlock() instanceof StorageBlockBase) && level.getBlockState(pos).getBlock() != ModBlocks.CONTROLLER.get() && !(level.getBlockEntity(pos) instanceof ISimpleMaterialHolder)) {
 			return;
 		}
 

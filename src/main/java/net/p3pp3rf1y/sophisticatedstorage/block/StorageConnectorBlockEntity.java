@@ -1,6 +1,12 @@
 package net.p3pp3rf1y.sophisticatedstorage.block;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -8,15 +14,19 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.p3pp3rf1y.sophisticatedcore.controller.ControllerBlockEntityBase;
 import net.p3pp3rf1y.sophisticatedcore.controller.IControllerBoundable;
+import net.p3pp3rf1y.sophisticatedcore.util.ValueIOHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import org.jspecify.annotations.Nullable;
-
+import java.util.Objects;
 import java.util.Optional;
 
-public class StorageConnectorBlockEntity extends BlockEntity implements IControllerBoundable {
+public class StorageConnectorBlockEntity extends BlockEntity implements IControllerBoundable, ISimpleMaterialHolder {
 	@Nullable
 	private BlockPos controllerPos = null;
+	@Nullable
+	private Identifier material = null;
+	private boolean overlayHidden = false;
 	private boolean chunkBeingUnloaded = false;
 
 	public StorageConnectorBlockEntity(BlockPos pos, BlockState blockState) {
@@ -69,12 +79,63 @@ public class StorageConnectorBlockEntity extends BlockEntity implements IControl
 	protected void saveAdditional(ValueOutput out) {
 		super.saveAdditional(out);
 		saveControllerPos(out);
+		saveSimpleMaterialData(out);
 	}
 
 	@Override
 	public void loadAdditional(ValueInput in) {
 		super.loadAdditional(in);
 		loadControllerPos(in);
+		loadSimpleMaterialData(in);
+	}
+
+	@Override
+	public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+		return super.getUpdateTag(registries).merge(ValueIOHelper.collectOutputToTag(registries, this::saveAdditional));
+	}
+
+	@Nullable
+	@Override
+	public Packet<ClientGamePacketListener> getUpdatePacket() {
+		return ClientboundBlockEntityDataPacket.create(this);
+	}
+
+	@Override
+	public Optional<Identifier> getMaterial() {
+		return Optional.ofNullable(material);
+	}
+
+	@Override
+	public void setMaterial(@Nullable Identifier material) {
+		if (Objects.equals(this.material, material)) {
+			SimpleMaterialBlockData.updateOpaqueState(this, getMaterial());
+			return;
+		}
+		this.material = material;
+		SimpleMaterialBlockData.updateOpaqueState(this, getMaterial());
+		setChanged();
+		WorldHelper.notifyBlockUpdate(this);
+	}
+
+	@Override
+	public void onLoad() {
+		super.onLoad();
+		SimpleMaterialBlockData.updateOpaqueState(this, getMaterial());
+	}
+
+	@Override
+	public boolean isOverlayHidden() {
+		return overlayHidden;
+	}
+
+	@Override
+	public void setOverlayHidden(boolean overlayHidden) {
+		if (this.overlayHidden == overlayHidden) {
+			return;
+		}
+		this.overlayHidden = overlayHidden;
+		setChanged();
+		WorldHelper.notifyBlockUpdate(this);
 	}
 
 	@Override
