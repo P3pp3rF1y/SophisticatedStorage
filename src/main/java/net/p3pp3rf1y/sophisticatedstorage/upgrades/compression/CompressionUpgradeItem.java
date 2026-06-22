@@ -13,7 +13,6 @@ import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeItemBase;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeType;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeWrapperBase;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.compacting.CompactingUpgradeItem;
-import net.p3pp3rf1y.sophisticatedcore.util.RecipeHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.SlotRange;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageTranslationHelper;
@@ -58,13 +57,11 @@ public class CompressionUpgradeItem extends UpgradeItemBase<CompressionUpgradeIt
 		return UPGRADE_CONFLICT_DEFINITIONS;
 	}
 
-	private UpgradeSlotChangeResult canUseForCompression(IStorageWrapper storageWrapper, SlotRange slotRange) {
-		boolean allRemainingSlotsMustBeEmpty = false;
-		ItemStack nextItemToMatch = ItemStack.EMPTY;
-		Set<Integer> errorSlots = new LinkedHashSet<>();
+	UpgradeSlotChangeResult canUseForCompression(IStorageWrapper storageWrapper, SlotRange slotRange) {
 		InventoryHandler inventoryHandler = storageWrapper.getInventoryHandler();
 		MemorySettingsCategory memorySettingsCategory = storageWrapper.getSettingsHandler().getTypeCategory(MemorySettingsCategory.class);
-		for (int slot = slotRange.firstSlot() + slotRange.size() - 1; slot >= slotRange.firstSlot(); slot--) {
+		Map<Integer, ItemStack> stacks = new LinkedHashMap<>();
+		for (int slot = slotRange.firstSlot(); slot < slotRange.firstSlot() + slotRange.size(); slot++) {
 			ItemStack stackToMatch;
 			ItemStack slotStack = inventoryHandler.getInternalStack(slot);
 			if (!slotStack.isEmpty()) {
@@ -73,31 +70,11 @@ public class CompressionUpgradeItem extends UpgradeItemBase<CompressionUpgradeIt
 				stackToMatch = memorySettingsCategory.getSlotFilterStack(slot, false).orElse(ItemStack.EMPTY);
 			}
 			if (!stackToMatch.isEmpty()) {
-				if (allRemainingSlotsMustBeEmpty) {
-					errorSlots.add(slot);
-				} else {
-					if (!nextItemToMatch.isEmpty() && !ItemStack.isSameItemSameComponents(nextItemToMatch, stackToMatch)) {
-						errorSlots.add(slot);
-						break;
-					}
-					boolean hasSlotBeforeThisOne = slot - 1 >= slotRange.firstSlot();
-					if (hasSlotBeforeThisOne) {
-						RecipeHelper.CompactingShape compactingShape = RecipeHelper.getItemCompactingShapes(stackToMatch).stream().filter(RecipeHelper.CompactingShape::isUncraftable).findFirst().orElse(RecipeHelper.CompactingShape.NONE);
-						if (compactingShape == RecipeHelper.CompactingShape.TWO_BY_TWO_UNCRAFTABLE || compactingShape == RecipeHelper.CompactingShape.THREE_BY_THREE_UNCRAFTABLE) {
-							nextItemToMatch = RecipeHelper.getCompactingResult(stackToMatch, compactingShape).getResult();
-						} else {
-							Optional<CompressionUpgradeConfig.CompressionResult> compressionResult = Config.SERVER.compressionUpgrade.getCompressionResult(stackToMatch);
-							if (compressionResult.isPresent()) {
-								nextItemToMatch = compressionResult.get().result();
-							} else {
-								allRemainingSlotsMustBeEmpty = true;
-							}
-						}
-					}
-				}
+				stacks.put(slot, stackToMatch);
 			}
 		}
 
+		Set<Integer> errorSlots = CompressionChainHelper.getCompressionChainErrorSlots(slotRange, stacks);
 		return !errorSlots.isEmpty() ? UpgradeSlotChangeResult.fail(StorageTranslationHelper.INSTANCE.translError("add.compression_incompatible_items"), Set.of(), errorSlots, Set.of()) : UpgradeSlotChangeResult.success();
 	}
 
