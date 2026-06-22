@@ -229,7 +229,7 @@
   "gui.sophisticatedstorage.upgrades.hopper.tooltip": "Hopper Settings",
   "gui.sophisticatedstorage.upgrades.advanced_hopper": "Adv. Hopper",
   "gui.sophisticatedstorage.upgrades.advanced_hopper.tooltip": "Advanced Hopper Settings",
-  "gui.sophisticatedstorage.error.add.compression_incompatible_items": "Item(s) in these slots can't be compressed from the previous slot",
+  "gui.sophisticatedstorage.error.add.compression_incompatible_items": "Highlighted slots don't match the compression chain from the previous filled slot. Items must be from the same chain and in order.",
   "gui.sophisticatedstorage.error.add.compression_no_space": "There are no additional slots this compression upgrade can manage",
   "gui.sophisticatedstorage.error.add.compression_exists": "There's already Compression Upgrade in another upgrade slot",
   "gui.sophisticatedstorage.error.add.compacting_exists": "There's already Compacting Upgrade in another upgrade slot",
