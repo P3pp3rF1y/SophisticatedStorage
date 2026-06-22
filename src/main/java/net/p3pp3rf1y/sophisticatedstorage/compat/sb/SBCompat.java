@@ -5,9 +5,11 @@ import net.minecraft.world.item.ItemStack;
 import net.p3pp3rf1y.sophisticatedbackpacks.backpack.BackpackItem;
 import net.p3pp3rf1y.sophisticatedbackpacks.backpack.wrapper.BackpackWrapper;
 import net.p3pp3rf1y.sophisticatedbackpacks.backpack.wrapper.IBackpackWrapper;
+import net.p3pp3rf1y.sophisticatedbackpacks.init.ModItems;
 import net.p3pp3rf1y.sophisticatedcore.compat.ICompat;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelMaterial;
 import net.p3pp3rf1y.sophisticatedstorage.block.DecorationTableBlockEntity;
+import net.p3pp3rf1y.sophisticatedstorage.common.gui.DecorationTableInputSlotPreview;
 import net.p3pp3rf1y.sophisticatedstorage.util.DecorationHelper;
 
 import java.util.Map;
@@ -15,6 +17,8 @@ import java.util.Map;
 public class SBCompat implements ICompat {
 	@Override
 	public void setup() {
+		DecorationTableInputSlotPreview.registerPreviewStack(() -> new ItemStack(ModItems.BACKPACK.get()));
+
 		DecorationTableBlockEntity.registerItemDecorator(stack -> stack.getItem() instanceof BackpackItem, new DecorationTableBlockEntity.IItemDecorator() {
 			@Override
 			public boolean supportsMaterials(ItemStack input) {

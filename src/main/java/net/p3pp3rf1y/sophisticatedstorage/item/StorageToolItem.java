@@ -85,7 +85,7 @@ public class StorageToolItem extends ItemBase {
 				}
 			}
 			case TIER_DISPLAY -> {
-				if (tryToggling(pos, level, ITierDisplay.class, ITierDisplay::toggleTierVisiblity)) {
+				if (tryTogglingOverlay(pos, level) || tryToggling(pos, level, ITierDisplay.class, ITierDisplay::toggleTierVisiblity)) {
 					return InteractionResult.SUCCESS;
 				}
 			}
@@ -101,6 +101,24 @@ public class StorageToolItem extends ItemBase {
 			}
 		}
 		return super.onItemUseFirst(tool, context);
+	}
+
+	private static boolean tryTogglingOverlay(BlockPos pos, Level level) {
+		return WorldHelper.getLoadedBlockEntity(level, pos, ISimpleMaterialHolder.class).map(simpleMaterialHolder -> {
+			if (!canToggleOverlay(simpleMaterialHolder)) {
+				return false;
+			}
+
+			if (!level.isClientSide()) {
+				simpleMaterialHolder.setOverlayHidden(!simpleMaterialHolder.isOverlayHidden());
+			}
+			return true;
+		}).orElse(false);
+	}
+
+	private static boolean canToggleOverlay(ISimpleMaterialHolder simpleMaterialHolder) {
+		return simpleMaterialHolder.getMaterial().isPresent()
+				&& (simpleMaterialHolder instanceof ControllerBlockEntity || simpleMaterialHolder instanceof StorageIOBlockEntity || simpleMaterialHolder instanceof StorageLinkBlockEntity || simpleMaterialHolder instanceof StorageConnectorBlockEntity);
 	}
 
 	private static <T> boolean tryToggling(BlockPos pos, Level level, Class<T> clazz, Consumer<T> toggle) {
