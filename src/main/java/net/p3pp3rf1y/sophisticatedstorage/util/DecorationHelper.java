@@ -128,6 +128,17 @@ public class DecorationHelper {
 				(materialLocation, stack) -> getMaterialLocation(stack.getItem()).map(ml -> ml.equals(materialLocation)).orElse(false), remainingParts, remainingPartsJournal, tx);
 	}
 
+	public static boolean consumeSimpleMaterial(Map<ResourceLocation, Integer> remainingParts, SnapshotJournal<Map<ResourceLocation, Integer>> remainingPartsJournal, List<ResourceHandler<ItemResource>> decorativeBlocks, Optional<ResourceLocation> originalMaterial, ResourceLocation material, TransactionContext tx) {
+		return consumeMaterialPartsNeeded(getSimpleMaterialPartsNeeded(originalMaterial, material), remainingParts, remainingPartsJournal, decorativeBlocks, tx).hasEnough();
+	}
+
+	public static Map<ResourceLocation, Integer> getSimpleMaterialPartsNeeded(Optional<ResourceLocation> originalMaterial, ResourceLocation material) {
+		if (originalMaterial.filter(material::equals).isPresent()) {
+			return Collections.emptyMap();
+		}
+		return Map.of(material, BLOCK_TOTAL_PARTS);
+	}
+
 	public static Map<ResourceLocation, Integer> getMaterialPartsNeeded(Map<BarrelMaterial, ResourceLocation> originalMaterials, Map<BarrelMaterial, ResourceLocation> materialsToApply) {
 		Map<ResourceLocation, Integer> partsNeeded = new HashMap<>();
 		BarrelBlockItem.uncompactMaterials(materialsToApply);
