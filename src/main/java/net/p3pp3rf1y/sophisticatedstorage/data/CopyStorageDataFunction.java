@@ -12,8 +12,10 @@ import net.minecraft.world.level.storage.loot.functions.LootItemFunctionType;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.p3pp3rf1y.sophisticatedstorage.block.IAdditionalDropDataBlock;
+import net.p3pp3rf1y.sophisticatedstorage.block.ISimpleMaterialHolder;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
+import net.p3pp3rf1y.sophisticatedstorage.item.SimpleMaterialBlockItem;
 
 public class CopyStorageDataFunction extends LootItemConditionalFunction {
 	protected CopyStorageDataFunction(LootItemCondition[] conditionsIn) {
@@ -23,11 +25,14 @@ public class CopyStorageDataFunction extends LootItemConditionalFunction {
 	@Override
 	protected ItemStack run(ItemStack stack, LootContext context) {
 		BlockState state = context.getParamOrNull(LootContextParams.BLOCK_STATE);
+		BlockEntity be = context.getParamOrNull(LootContextParams.BLOCK_ENTITY);
 		if (state != null && state.getBlock() instanceof IAdditionalDropDataBlock additionalDropDataBlock) {
-			BlockEntity be = context.getParamOrNull(LootContextParams.BLOCK_ENTITY);
 			if (be instanceof StorageBlockEntity storageBlockEntity) {
 				additionalDropDataBlock.addDropData(stack, storageBlockEntity);
 			}
+		}
+		if (be instanceof ISimpleMaterialHolder simpleMaterialHolder && stack.getItem() instanceof SimpleMaterialBlockItem) {
+			simpleMaterialHolder.getMaterial().ifPresentOrElse(material -> SimpleMaterialBlockItem.setMaterial(stack, material), () -> SimpleMaterialBlockItem.removeMaterial(stack));
 		}
 
 		return stack;

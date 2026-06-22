@@ -2,12 +2,17 @@ package net.p3pp3rf1y.sophisticatedstorage.block;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.p3pp3rf1y.sophisticatedcore.controller.ControllerBlockEntityBase;
 import net.p3pp3rf1y.sophisticatedcore.controller.ILinkable;
+import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 
 import javax.annotation.Nullable;
@@ -16,9 +21,12 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
-public class StorageLinkBlockEntity extends BlockEntity implements ILinkable {
+public class StorageLinkBlockEntity extends BlockEntity implements ILinkable, ISimpleMaterialHolder {
 	@Nullable
 	private BlockPos controllerPos = null;
+	@Nullable
+	private ResourceLocation material = null;
+	private boolean overlayHidden = false;
 
 	private boolean chunkBeingUnloaded = false;
 
@@ -30,12 +38,65 @@ public class StorageLinkBlockEntity extends BlockEntity implements ILinkable {
 	protected void saveAdditional(CompoundTag tag) {
 		super.saveAdditional(tag);
 		saveControllerPos(tag);
+		saveSimpleMaterialData(tag);
 	}
 
 	@Override
 	public void load(CompoundTag tag) {
 		super.load(tag);
 		loadControllerPos(tag);
+		loadSimpleMaterialData(tag);
+	}
+
+	@Override
+	public CompoundTag getUpdateTag() {
+		CompoundTag tag = super.getUpdateTag();
+		saveAdditional(tag);
+		return tag;
+	}
+
+	@Nullable
+	@Override
+	public Packet<ClientGamePacketListener> getUpdatePacket() {
+		return ClientboundBlockEntityDataPacket.create(this);
+	}
+
+	@Override
+	public Optional<ResourceLocation> getMaterial() {
+		return Optional.ofNullable(material);
+	}
+
+	@Override
+	public void setMaterial(@Nullable ResourceLocation material) {
+		if (Objects.equals(this.material, material)) {
+			SimpleMaterialBlockData.updateOpaqueState(this, getMaterial());
+			return;
+		}
+		this.material = material;
+		SimpleMaterialBlockData.updateOpaqueState(this, getMaterial());
+		setChanged();
+		WorldHelper.notifyBlockUpdate(this);
+	}
+
+	@Override
+	public void onLoad() {
+		super.onLoad();
+		SimpleMaterialBlockData.updateOpaqueState(this, getMaterial());
+	}
+
+	@Override
+	public boolean isOverlayHidden() {
+		return overlayHidden;
+	}
+
+	@Override
+	public void setOverlayHidden(boolean overlayHidden) {
+		if (this.overlayHidden == overlayHidden) {
+			return;
+		}
+		this.overlayHidden = overlayHidden;
+		setChanged();
+		WorldHelper.notifyBlockUpdate(this);
 	}
 
 	@Override

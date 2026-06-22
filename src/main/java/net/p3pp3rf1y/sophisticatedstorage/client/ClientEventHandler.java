@@ -30,6 +30,7 @@ import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
+import net.p3pp3rf1y.sophisticatedstorage.block.ISimpleMaterialHolder;
 import net.p3pp3rf1y.sophisticatedstorage.block.LimitedBarrelBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockBase;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.PaintbrushOverlay;
@@ -113,7 +114,7 @@ public class ClientEventHandler {
 			BlockPos pos = hitresult.getBlockPos();
 			BlockState blockState = level.getBlockState(pos);
 
-			if (blockState.getBlock() instanceof StorageBlockBase || blockState.getBlock() == ModBlocks.CONTROLLER.get()) {
+			if (blockState.getBlock() instanceof StorageBlockBase || blockState.getBlock() == ModBlocks.CONTROLLER.get() || level.getBlockEntity(pos) instanceof ISimpleMaterialHolder) {
 				PaintbrushOverlay.getItemRequirementsFor(stack, player, level, pos).ifPresent(itemRequirements -> {
 					float red = !itemRequirements.itemsMissing().isEmpty() ? 1 : 0;
 					float green = itemRequirements.itemsMissing().isEmpty() ? 1 : 0;
@@ -192,6 +193,7 @@ public class ClientEventHandler {
 		event.register("chest", ChestDynamicModel.Loader.INSTANCE);
 		event.register("shulker_box", ShulkerBoxDynamicModel.Loader.INSTANCE);
 		event.register("simple_composite", SimpleCompositeModel.Loader.INSTANCE);
+		event.register("simple_material", SimpleMaterialModel.Loader.INSTANCE);
 	}
 
 	private static void onRegisterReloadListeners(RegisterClientReloadListenersEvent event) {
@@ -222,6 +224,11 @@ public class ClientEventHandler {
 		event.registerBlockEntityRenderer(ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get(), ChestRenderer::new);
 		event.registerBlockEntityRenderer(ModBlocks.SHULKER_BOX_BLOCK_ENTITY_TYPE.get(), ShulkerBoxRenderer::new);
 		event.registerBlockEntityRenderer(ModBlocks.CONTROLLER_BLOCK_ENTITY_TYPE.get(), context -> new ControllerRenderer());
+		event.registerBlockEntityRenderer(ModBlocks.STORAGE_LINK_BLOCK_ENTITY_TYPE.get(), context -> new SimpleMaterialOverlayRenderer<>());
+		event.registerBlockEntityRenderer(ModBlocks.STORAGE_IO_BLOCK_ENTITY_TYPE.get(), context -> new SimpleMaterialOverlayRenderer<>());
+		event.registerBlockEntityRenderer(ModBlocks.STORAGE_INPUT_BLOCK_ENTITY_TYPE.get(), context -> new SimpleMaterialOverlayRenderer<>());
+		event.registerBlockEntityRenderer(ModBlocks.STORAGE_OUTPUT_BLOCK_ENTITY_TYPE.get(), context -> new SimpleMaterialOverlayRenderer<>());
+		event.registerBlockEntityRenderer(ModBlocks.STORAGE_CONNECTOR_BLOCK_ENTITY_TYPE.get(), context -> new SimpleMaterialOverlayRenderer<>());
 		event.registerBlockEntityRenderer(ModBlocks.DECORATION_TABLE_BLOCK_ENTITY_TYPE.get(), DecorationTableRenderer::new);
 	}
 }

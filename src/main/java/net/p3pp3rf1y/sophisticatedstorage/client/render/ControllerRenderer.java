@@ -33,6 +33,8 @@ import java.util.OptionalDouble;
 public class ControllerRenderer implements BlockEntityRenderer<ControllerBlockEntity> {
 	@Override
 	public void render(ControllerBlockEntity controller, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
+		SimpleMaterialOverlayRenderer.renderHiddenOverlay(controller, poseStack, bufferSource, packedLight, packedOverlay);
+
 		LocalPlayer player = Minecraft.getInstance().player;
 		if (player == null) {
 			return;

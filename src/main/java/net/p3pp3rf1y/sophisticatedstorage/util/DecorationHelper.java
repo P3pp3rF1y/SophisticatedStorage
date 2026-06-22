@@ -121,6 +121,17 @@ public class DecorationHelper {
 		return consumeMaterialPartsNeeded(partsNeeded, remainingParts, decorativeBlocks, simulate).hasEnough();
 	}
 
+	public static boolean consumeSimpleMaterial(Map<ResourceLocation, Integer> remainingParts, List<IItemHandler> decorativeBlocks, Optional<ResourceLocation> originalMaterial, ResourceLocation material, boolean simulate) {
+		return consumeMaterialPartsNeeded(getSimpleMaterialPartsNeeded(originalMaterial, material), remainingParts, decorativeBlocks, simulate).hasEnough();
+	}
+
+	public static Map<ResourceLocation, Integer> getSimpleMaterialPartsNeeded(Optional<ResourceLocation> originalMaterial, ResourceLocation material) {
+		if (originalMaterial.filter(material::equals).isPresent()) {
+			return Collections.emptyMap();
+		}
+		return Map.of(material, BLOCK_TOTAL_PARTS);
+	}
+
 	public static ConsumptionResult consumeMaterialPartsNeeded(Map<ResourceLocation, Integer> partsNeeded, Map<ResourceLocation, Integer> remainingParts, List<IItemHandler> decorativeBlocks, boolean simulate) {
 		return consumePartsNeeded(partsNeeded, decorativeBlocks, location -> location,
 				(materialLocation, stack) -> getMaterialLocation(stack).map(ml -> ml.equals(materialLocation)).orElse(false), remainingParts, simulate);

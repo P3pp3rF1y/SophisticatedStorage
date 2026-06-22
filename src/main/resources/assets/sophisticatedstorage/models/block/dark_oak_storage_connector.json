@@ -1,6 +1,15 @@
 {
-    "parent": "minecraft:block/cube_all",
+    "loader": "sophisticatedstorage:simple_material",
     "textures": {
-        "all": "sophisticatedstorage:block/dark_oak_storage_connector"
-    }
+        "all": "sophisticatedstorage:block/dark_oak_storage_connector",
+        "overlay": "sophisticatedstorage:block/storage_connector_overlay",
+        "particle": "sophisticatedstorage:block/dark_oak_storage_connector"
+    },
+    "base": {
+        "parent": "minecraft:block/cube_all",
+        "textures": {
+            "all": "sophisticatedstorage:block/dark_oak_storage_connector"
+        }
+    },
+    "overlay": {"textures": {"all": "sophisticatedstorage:block/storage_connector_overlay"}, "elements": [{"from": [0, 0, 0], "to": [16, 16, 16], "faces": {"down": {"uv": [0, 0, 16, 16], "texture": "#all"}, "up": {"uv": [0, 0, 16, 16], "texture": "#all"}, "north": {"uv": [0, 0, 16, 16], "texture": "#all"}, "south": {"uv": [0, 0, 16, 16], "texture": "#all"}, "west": {"uv": [0, 0, 16, 16], "texture": "#all"}, "east": {"uv": [0, 0, 16, 16], "texture": "#all"}}}]}
 }

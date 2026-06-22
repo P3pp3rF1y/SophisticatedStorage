@@ -3,6 +3,7 @@ package net.p3pp3rf1y.sophisticatedstorage.block;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -18,11 +19,15 @@ import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 
+import javax.annotation.Nullable;
 import java.util.*;
 
-public class ControllerBlockEntity extends ControllerBlockEntityBase implements ILockable, ICountDisplay, ITierDisplay, IUpgradeDisplay, IFillLevelDisplay {
+public class ControllerBlockEntity extends ControllerBlockEntityBase implements ILockable, ICountDisplay, ITierDisplay, IUpgradeDisplay, IFillLevelDisplay, ISimpleMaterialHolder {
 	private long lastDepositTime = -100;
 
+	@Nullable
+	private ResourceLocation material = null;
+	private boolean overlayHidden = false;
 	private List<VoxelOutliner.Edge> cachedStorageEdges = null;
 	private List<VoxelOutliner.Edge> cachedLinkedBlockEdges = null;
 	private List<VoxelOutliner.Edge> cachedControllerEdges = null;
@@ -232,8 +237,60 @@ public class ControllerBlockEntity extends ControllerBlockEntityBase implements 
 	@Override
 	public void load(CompoundTag tag) {
 		super.load(tag);
+		loadSimpleMaterialData(tag);
 		cachedStorageEdges = null;
 		cachedLinkedBlockEdges = null;
+	}
+
+	@Override
+	protected void saveAdditional(CompoundTag tag) {
+		super.saveAdditional(tag);
+		saveSimpleMaterialData(tag);
+	}
+
+	@Override
+	public CompoundTag getUpdateTag() {
+		CompoundTag tag = super.getUpdateTag();
+		saveSimpleMaterialData(tag);
+		return tag;
+	}
+
+	@Override
+	public Optional<ResourceLocation> getMaterial() {
+		return Optional.ofNullable(material);
+	}
+
+	@Override
+	public void setMaterial(@Nullable ResourceLocation material) {
+		if (Objects.equals(this.material, material)) {
+			SimpleMaterialBlockData.updateOpaqueState(this, getMaterial());
+			return;
+		}
+		this.material = material;
+		SimpleMaterialBlockData.updateOpaqueState(this, getMaterial());
+		setChanged();
+		WorldHelper.notifyBlockUpdate(this);
+	}
+
+	@Override
+	public void onLoad() {
+		super.onLoad();
+		SimpleMaterialBlockData.updateOpaqueState(this, getMaterial());
+	}
+
+	@Override
+	public boolean isOverlayHidden() {
+		return overlayHidden;
+	}
+
+	@Override
+	public void setOverlayHidden(boolean overlayHidden) {
+		if (this.overlayHidden == overlayHidden) {
+			return;
+		}
+		this.overlayHidden = overlayHidden;
+		setChanged();
+		WorldHelper.notifyBlockUpdate(this);
 	}
 
 	public List<VoxelOutliner.Edge> getStorageBlockEdges() {

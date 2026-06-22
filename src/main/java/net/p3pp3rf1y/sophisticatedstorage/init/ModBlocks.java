@@ -164,8 +164,8 @@ public class ModBlocks {
 	public static final RegistryObject<ControllerBlock> CONTROLLER = BLOCKS.register(CONTROLLER_REG_NAME, ControllerBlock::new);
 	private static final String STORAGE_LINK_REG_NAME = "storage_link";
 	public static final RegistryObject<StorageLinkBlock> STORAGE_LINK = BLOCKS.register(STORAGE_LINK_REG_NAME, StorageLinkBlock::new);
-	public static final RegistryObject<BlockItem> CONTROLLER_ITEM = ITEMS.register(CONTROLLER_REG_NAME, () -> new BlockItemBase(CONTROLLER.get(), new Item.Properties()));
-	public static final RegistryObject<BlockItem> STORAGE_LINK_ITEM = ITEMS.register(STORAGE_LINK_REG_NAME, () -> new BlockItemBase(STORAGE_LINK.get(), new Item.Properties()));
+	public static final RegistryObject<BlockItem> CONTROLLER_ITEM = ITEMS.register(CONTROLLER_REG_NAME, () -> new SimpleMaterialBlockItem(CONTROLLER.get(), new Item.Properties()));
+	public static final RegistryObject<BlockItem> STORAGE_LINK_ITEM = ITEMS.register(STORAGE_LINK_REG_NAME, () -> new SimpleMaterialBlockItem(STORAGE_LINK.get(), new Item.Properties()));
 	public static final String STORAGE_IO_REG_NAME = "storage_io";
 	public static final RegistryObject<StorageIOBlock> STORAGE_IO = BLOCKS.register(STORAGE_IO_REG_NAME, StorageIOBlock::new);
 	public static final String STORAGE_INPUT_REG_NAME = "storage_input";
@@ -184,9 +184,9 @@ public class ModBlocks {
 	});
 	public static final Map<WoodType, RegistryObject<StorageConnectorBlock>> STORAGE_CONNECTOR_BLOCKS;
 
-	public static final RegistryObject<BlockItem> STORAGE_IO_ITEM = ITEMS.register(STORAGE_IO_REG_NAME, () -> new BlockItemBase(STORAGE_IO.get(), new Item.Properties()));
-	public static final RegistryObject<BlockItem> STORAGE_INPUT_ITEM = ITEMS.register(STORAGE_INPUT_REG_NAME, () -> new BlockItemBase(STORAGE_INPUT.get(), new Item.Properties()));
-	public static final RegistryObject<BlockItem> STORAGE_OUTPUT_ITEM = ITEMS.register(STORAGE_OUTPUT_REG_NAME, () -> new BlockItemBase(STORAGE_OUTPUT.get(), new Item.Properties()));
+	public static final RegistryObject<BlockItem> STORAGE_IO_ITEM = ITEMS.register(STORAGE_IO_REG_NAME, () -> new SimpleMaterialBlockItem(STORAGE_IO.get(), new Item.Properties()));
+	public static final RegistryObject<BlockItem> STORAGE_INPUT_ITEM = ITEMS.register(STORAGE_INPUT_REG_NAME, () -> new SimpleMaterialBlockItem(STORAGE_INPUT.get(), new Item.Properties()));
+	public static final RegistryObject<BlockItem> STORAGE_OUTPUT_ITEM = ITEMS.register(STORAGE_OUTPUT_REG_NAME, () -> new SimpleMaterialBlockItem(STORAGE_OUTPUT.get(), new Item.Properties()));
 	public static final Map<WoodType, RegistryObject<BlockItem>> STORAGE_CONNECTOR_ITEMS;
 
 	static {
@@ -382,6 +382,28 @@ public class ModBlocks {
 		CauldronInteraction.WATER.put(GOLD_SHULKER_BOX_ITEM.get(), StorageCauldronInteraction.INSTANCE);
 		CauldronInteraction.WATER.put(DIAMOND_SHULKER_BOX_ITEM.get(), StorageCauldronInteraction.INSTANCE);
 		CauldronInteraction.WATER.put(NETHERITE_SHULKER_BOX_ITEM.get(), StorageCauldronInteraction.INSTANCE);
+
+		CauldronInteraction.WATER.put(CONTROLLER_ITEM.get(), SimpleMaterialCauldronInteraction.INSTANCE);
+		CauldronInteraction.WATER.put(STORAGE_LINK_ITEM.get(), SimpleMaterialCauldronInteraction.INSTANCE);
+		CauldronInteraction.WATER.put(STORAGE_IO_ITEM.get(), SimpleMaterialCauldronInteraction.INSTANCE);
+		CauldronInteraction.WATER.put(STORAGE_INPUT_ITEM.get(), SimpleMaterialCauldronInteraction.INSTANCE);
+		CauldronInteraction.WATER.put(STORAGE_OUTPUT_ITEM.get(), SimpleMaterialCauldronInteraction.INSTANCE);
+		STORAGE_CONNECTOR_ITEMS.values().forEach(item -> CauldronInteraction.WATER.put(item.get(), SimpleMaterialCauldronInteraction.INSTANCE));
+	}
+
+	@SuppressWarnings("java:S6548") //singleton is correct here
+	public static class SimpleMaterialCauldronInteraction extends StorageCauldronInteraction {
+		private static final SimpleMaterialCauldronInteraction INSTANCE = new SimpleMaterialCauldronInteraction();
+
+		@Override
+		protected boolean canRemovePaint(ItemStack stack) {
+			return stack.getItem() instanceof SimpleMaterialBlockItem && SimpleMaterialBlockItem.getMaterial(stack).isPresent();
+		}
+
+		@Override
+		protected void removePaint(ItemStack stack) {
+			SimpleMaterialBlockItem.removeMaterial(stack);
+		}
 	}
 
 	@SuppressWarnings("java:S6548") //singleton is correct here

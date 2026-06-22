@@ -11,6 +11,11 @@
       "entries": [
         {
           "type": "minecraft:item",
+          "functions": [
+            {
+              "function": "sophisticatedstorage:copy_storage_data"
+            }
+          ],
           "name": "sophisticatedstorage:storage_io"
         }
       ],

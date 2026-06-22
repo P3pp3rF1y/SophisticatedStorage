@@ -23,9 +23,14 @@ import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.block.ICountDisplay;
 import net.p3pp3rf1y.sophisticatedstorage.block.IFillLevelDisplay;
 import net.p3pp3rf1y.sophisticatedstorage.block.ILockable;
+import net.p3pp3rf1y.sophisticatedstorage.block.ISimpleMaterialHolder;
 import net.p3pp3rf1y.sophisticatedstorage.block.ITierDisplay;
 import net.p3pp3rf1y.sophisticatedstorage.block.IUpgradeDisplay;
+import net.p3pp3rf1y.sophisticatedstorage.block.ControllerBlockEntity;
+import net.p3pp3rf1y.sophisticatedstorage.block.StorageConnectorBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
+import net.p3pp3rf1y.sophisticatedstorage.block.StorageIOBlockEntity;
+import net.p3pp3rf1y.sophisticatedstorage.block.StorageLinkBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageTranslationHelper;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 
@@ -92,7 +97,7 @@ public class StorageToolItem extends ItemBase {
 				}
 			}
 			case TIER_DISPLAY -> {
-				if (tryToggling(pos, level, ITierDisplay.class, ITierDisplay::toggleTierVisiblity)) {
+				if (tryTogglingOverlay(pos, level) || tryToggling(pos, level, ITierDisplay.class, ITierDisplay::toggleTierVisiblity)) {
 					return InteractionResult.SUCCESS;
 				}
 			}
@@ -108,6 +113,24 @@ public class StorageToolItem extends ItemBase {
 			}
 		}
 		return super.onItemUseFirst(tool, context);
+	}
+
+	private static boolean tryTogglingOverlay(BlockPos pos, Level level) {
+		return WorldHelper.getLoadedBlockEntity(level, pos, ISimpleMaterialHolder.class).map(simpleMaterialHolder -> {
+			if (!canToggleOverlay(simpleMaterialHolder)) {
+				return false;
+			}
+
+			if (!level.isClientSide()) {
+				simpleMaterialHolder.setOverlayHidden(!simpleMaterialHolder.isOverlayHidden());
+			}
+			return true;
+		}).orElse(false);
+	}
+
+	private static boolean canToggleOverlay(ISimpleMaterialHolder simpleMaterialHolder) {
+		return simpleMaterialHolder.getMaterial().isPresent()
+				&& (simpleMaterialHolder instanceof ControllerBlockEntity || simpleMaterialHolder instanceof StorageIOBlockEntity || simpleMaterialHolder instanceof StorageLinkBlockEntity || simpleMaterialHolder instanceof StorageConnectorBlockEntity);
 	}
 
 	private static <T> boolean tryToggling(BlockPos pos, Level level, Class<T> clazz, Consumer<T> toggle) {

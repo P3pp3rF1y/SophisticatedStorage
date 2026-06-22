@@ -1,3 +1,41 @@
 {
-    "parent": "sophisticatedstorage:block/controller"
+    "loader": "sophisticatedstorage:simple_material",
+    "textures": {
+        "top": "sophisticatedstorage:block/controller_top",
+        "bottom": "sophisticatedstorage:block/controller_top",
+        "side": "sophisticatedstorage:block/controller_side",
+        "overlay_top": "sophisticatedstorage:block/controller_overlay_top",
+        "overlay_side": "sophisticatedstorage:block/controller_overlay_side",
+        "particle": "sophisticatedstorage:block/controller_top"
+    },
+    "base": {
+        "parent": "minecraft:block/cube_bottom_top",
+        "textures": {
+            "top": "sophisticatedstorage:block/controller_top",
+            "bottom": "sophisticatedstorage:block/controller_top",
+            "side": "sophisticatedstorage:block/controller_side"
+        }
+    },
+    "overlay": {
+        "textures": {
+            "top": "sophisticatedstorage:block/controller_overlay_top",
+            "bottom": "sophisticatedstorage:block/controller_overlay_top",
+            "side": "sophisticatedstorage:block/controller_overlay_side",
+            "particle": "sophisticatedstorage:block/controller_overlay_top"
+        },
+        "elements": [
+            {
+                "from": [0, 0, 0],
+                "to": [16, 16, 16],
+                "faces": {
+                    "down": {"uv": [0, 0, 16, 16], "texture": "#bottom"},
+                    "up": {"uv": [0, 0, 16, 16], "texture": "#top"},
+                    "north": {"uv": [0, 0, 16, 16], "texture": "#side"},
+                    "south": {"uv": [0, 0, 16, 16], "texture": "#side"},
+                    "west": {"uv": [0, 0, 16, 16], "texture": "#side"},
+                    "east": {"uv": [0, 0, 16, 16], "texture": "#side"}
+                }
+            }
+        ]
+    }
 }
