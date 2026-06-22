@@ -1,7 +1,6 @@
 package net.p3pp3rf1y.sophisticatedstorage.upgrades.compression;
 
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.items.ItemHandlerHelper;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.UpgradeSlotChangeResult;
 import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryHandler;
@@ -15,7 +14,6 @@ import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeType;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeWrapperBase;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.compacting.CompactingUpgradeItem;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
-import net.p3pp3rf1y.sophisticatedcore.util.RecipeHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.SlotRange;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageTranslationHelper;
@@ -60,46 +58,21 @@ public class CompressionUpgradeItem extends UpgradeItemBase<CompressionUpgradeIt
 		return UPGRADE_CONFLICT_DEFINITIONS;
 	}
 
-    private UpgradeSlotChangeResult canUseForCompression(IStorageWrapper storageWrapper, SlotRange slotRange) {
-		boolean allRemainingSlotsMustBeEmpty = false;
-        ItemStack nextItemToMatch = ItemStack.EMPTY;
+	UpgradeSlotChangeResult canUseForCompression(IStorageWrapper storageWrapper, SlotRange slotRange) {
+		Map<Integer, ItemStack> stacks = new LinkedHashMap<>();
 		Set<Integer> errorSlots = new LinkedHashSet<>();
 		InventoryHandler inventoryHandler = storageWrapper.getInventoryHandler();
 		MemorySettingsCategory memorySettingsCategory = storageWrapper.getSettingsHandler().getTypeCategory(MemorySettingsCategory.class);
-		for (int slot = slotRange.firstSlot() + slotRange.numberOfSlots() - 1; slot >= slotRange.firstSlot(); slot--) {
-            ItemStack stackToMatch;
+		for (int slot = slotRange.firstSlot(); slot < slotRange.firstSlot() + slotRange.numberOfSlots(); slot++) {
+			int finalSlot = slot;
 			ItemStack slotStack = inventoryHandler.getSlotStack(slot);
 			if (!slotStack.isEmpty()) {
-                stackToMatch = slotStack;
+				stacks.put(slot, slotStack);
 			} else {
-                stackToMatch = memorySettingsCategory.getSlotFilterStack(slot, false).orElse(ItemStack.EMPTY);
-			}
-            if (!stackToMatch.isEmpty()) {
-				if (allRemainingSlotsMustBeEmpty) {
-					errorSlots.add(slot);
-				} else {
-                    if (!nextItemToMatch.isEmpty() && !ItemHandlerHelper.canItemStacksStack(nextItemToMatch, stackToMatch)) {
-						errorSlots.add(slot);
-						break;
-					}
-
-					boolean hasSlotBeforeThisOne = slot - 1 >= slotRange.firstSlot();
-					if (hasSlotBeforeThisOne) {
-						RecipeHelper.CompactingShape compactingShape = RecipeHelper.getItemCompactingShapes(stackToMatch).stream().filter(RecipeHelper.CompactingShape::isUncraftable).findFirst().orElse(RecipeHelper.CompactingShape.NONE);
-						if (compactingShape == RecipeHelper.CompactingShape.TWO_BY_TWO_UNCRAFTABLE || compactingShape == RecipeHelper.CompactingShape.THREE_BY_THREE_UNCRAFTABLE) {
-							nextItemToMatch = RecipeHelper.getCompactingResult(stackToMatch, compactingShape).getResult();
-						} else {
-							Optional<CompressionUpgradeConfig.CompressionResult> compressionResult = Config.SERVER.compressionUpgrade.getCompressionResult(stackToMatch);
-							if (compressionResult.isPresent()) {
-								nextItemToMatch = compressionResult.get().result();
-							} else {
-								allRemainingSlotsMustBeEmpty = true;
-							}
-						}
-					}
-				}
+				memorySettingsCategory.getSlotFilterStack(slot, false).ifPresent(stack -> stacks.put(finalSlot, stack));
 			}
 		}
+		errorSlots.addAll(CompressionChainHelper.getCompressionChainErrorSlots(slotRange, stacks));
 
 		return !errorSlots.isEmpty() ? new UpgradeSlotChangeResult.Fail(StorageTranslationHelper.INSTANCE.translError("add.compression_incompatible_items"), Set.of(), errorSlots, Set.of()) : new UpgradeSlotChangeResult.Success();
 	}
