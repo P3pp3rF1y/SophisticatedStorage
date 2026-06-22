@@ -43,8 +43,11 @@ public class ModDataComponents {
     public static final Supplier<DataComponentType<Boolean>> FLAT_TOP = DATA_COMPONENT_TYPES.register("flat_top",
             () -> new DataComponentType.Builder<Boolean>().persistent(Codec.BOOL).networkSynchronized(ByteBufCodecs.BOOL).build());
 
-    public static final Supplier<DataComponentType<Map<BarrelMaterial, ResourceLocation>>> BARREL_MATERIALS = DATA_COMPONENT_TYPES.register("barrel_materials",
-            () -> new DataComponentType.Builder<Map<BarrelMaterial, ResourceLocation>>().persistent(BarrelBlockItem.MATERIALS_CODEC).networkSynchronized(BarrelBlockItem.MATERIALS_STREAM_CODEC).build());
+	public static final Supplier<DataComponentType<Map<BarrelMaterial, ResourceLocation>>> BARREL_MATERIALS = DATA_COMPONENT_TYPES.register("barrel_materials",
+			() -> new DataComponentType.Builder<Map<BarrelMaterial, ResourceLocation>>().persistent(BarrelBlockItem.MATERIALS_CODEC).networkSynchronized(BarrelBlockItem.MATERIALS_STREAM_CODEC).build());
+
+	public static final Supplier<DataComponentType<ResourceLocation>> SIMPLE_MATERIAL = DATA_COMPONENT_TYPES.register("simple_material",
+			() -> new DataComponentType.Builder<ResourceLocation>().persistent(ResourceLocation.CODEC).networkSynchronized(ResourceLocation.STREAM_CODEC).build());
 
 	public static final Supplier<DataComponentType<Map<ResourceLocation, Integer>>> REMAINING_PARTS = DATA_COMPONENT_TYPES.register("remaining_parts",
 			() -> new DataComponentType.Builder<Map<ResourceLocation, Integer>>().persistent(PaintbrushItem.REMAINING_PARTS_CODEC).networkSynchronized(PaintbrushItem.REMAINING_PARTS_STREAM_CODEC).build());
