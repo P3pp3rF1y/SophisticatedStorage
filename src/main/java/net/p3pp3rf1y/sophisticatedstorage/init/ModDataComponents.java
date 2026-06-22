@@ -46,6 +46,9 @@ public class ModDataComponents {
 	public static final Supplier<DataComponentType<Map<BarrelMaterial, Identifier>>> BARREL_MATERIALS = DATA_COMPONENT_TYPES.register("barrel_materials",
 			() -> new DataComponentType.Builder<Map<BarrelMaterial, Identifier>>().persistent(BarrelBlockItem.MATERIALS_CODEC).networkSynchronized(BarrelBlockItem.MATERIALS_STREAM_CODEC).build());
 
+	public static final Supplier<DataComponentType<Identifier>> SIMPLE_MATERIAL = DATA_COMPONENT_TYPES.register("simple_material",
+			() -> new DataComponentType.Builder<Identifier>().persistent(Identifier.CODEC).networkSynchronized(Identifier.STREAM_CODEC).build());
+
 	public static final Supplier<DataComponentType<Map<Identifier, Integer>>> REMAINING_PARTS = DATA_COMPONENT_TYPES.register("remaining_parts",
 			() -> new DataComponentType.Builder<Map<Identifier, Integer>>().persistent(PaintbrushItem.REMAINING_PARTS_CODEC).networkSynchronized(PaintbrushItem.REMAINING_PARTS_STREAM_CODEC).build());
 

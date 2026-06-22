@@ -287,6 +287,31 @@ public class DecorationTableMenu extends AbstractContainerMenu implements ISynce
 		return getInheritedResource(DecorationTableBlockEntity.PartSlot.fromSlotIndex(slotIndex));
 	}
 
+	public boolean isMaterialSlotActive(int slot) {
+		return blockEntity.isMaterialSlotActive(slot);
+	}
+
+	public boolean isInheritanceSlotActive(int slotIndex) {
+		DecorationTableBlockEntity.PartSlot slot = DecorationTableBlockEntity.PartSlot.fromSlotIndex(slotIndex);
+		return blockEntity.getMaterialLayout() == DecorationTableBlockEntity.MaterialLayout.BARREL && blockEntity.isMaterialSlotActive(slotIndex) && blockEntity.getSlotInheritedFrom(slot) != null;
+	}
+
+	public boolean areTintsActive() {
+		return blockEntity.areTintsActive();
+	}
+
+	public boolean isMainTintActive() {
+		return blockEntity.isMainTintActive();
+	}
+
+	public boolean isAccentTintActive() {
+		return blockEntity.isAccentTintActive();
+	}
+
+	public DecorationTableBlockEntity.MaterialLayout getMaterialLayout() {
+		return blockEntity.getMaterialLayout();
+	}
+
 	public ItemResource getInheritedResource(DecorationTableBlockEntity.PartSlot childSlot) {
 		return blockEntity.getInheritedItem(childSlot);
 	}

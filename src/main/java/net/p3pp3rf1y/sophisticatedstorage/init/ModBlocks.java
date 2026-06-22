@@ -166,13 +166,13 @@ public class ModBlocks {
 	public static final Supplier<ControllerBlock> CONTROLLER = BLOCKS.registerBlock(CONTROLLER_REG_NAME, ControllerBlock::new);
 	private static final String STORAGE_LINK_REG_NAME = "storage_link";
 	public static final Supplier<StorageLinkBlock> STORAGE_LINK = BLOCKS.registerBlock(STORAGE_LINK_REG_NAME, StorageLinkBlock::new);
-	public static final DeferredHolder<Item, BlockItem> CONTROLLER_ITEM = ITEMS.registerItem(CONTROLLER_REG_NAME, properties -> new BlockItemBase(CONTROLLER.get(), properties.useBlockDescriptionPrefix()) {
+	public static final DeferredHolder<Item, BlockItem> CONTROLLER_ITEM = ITEMS.registerItem(CONTROLLER_REG_NAME, properties -> new SimpleMaterialBlockItem(CONTROLLER.get(), properties.useBlockDescriptionPrefix()) {
 		@Override
 		public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay tooltipDisplay, Consumer<Component> tooltipAdder, TooltipFlag flag) {
 			StorageTranslationHelper.INSTANCE.getTranslatedLines(stack.getItem().getDescriptionId() + TranslationHelper.TOOLTIP_SUFFIX, null, ChatFormatting.DARK_GRAY).forEach(tooltipAdder);
 		}
 	});
-	public static final Supplier<BlockItem> STORAGE_LINK_ITEM = ITEMS.registerItem(STORAGE_LINK_REG_NAME, properties -> new BlockItemBase(STORAGE_LINK.get(), properties.useBlockDescriptionPrefix()) {
+	public static final Supplier<BlockItem> STORAGE_LINK_ITEM = ITEMS.registerItem(STORAGE_LINK_REG_NAME, properties -> new SimpleMaterialBlockItem(STORAGE_LINK.get(), properties.useBlockDescriptionPrefix()) {
 		@Override
 		public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay tooltipDisplay, Consumer<Component> tooltipAdder, TooltipFlag flag) {
 			super.appendHoverText(stack, context, tooltipDisplay, tooltipAdder, flag);
@@ -197,19 +197,19 @@ public class ModBlocks {
 	});
 	public static final Map<WoodType, Supplier<StorageConnectorBlock>> STORAGE_CONNECTOR_BLOCKS;
 
-	public static final Supplier<BlockItem> STORAGE_IO_ITEM = ITEMS.registerItem(STORAGE_IO_REG_NAME, properties -> new BlockItemBase(STORAGE_IO.get(), properties.useBlockDescriptionPrefix()) {
+	public static final Supplier<BlockItem> STORAGE_IO_ITEM = ITEMS.registerItem(STORAGE_IO_REG_NAME, properties -> new SimpleMaterialBlockItem(STORAGE_IO.get(), properties.useBlockDescriptionPrefix()) {
 		@Override
 		public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay tooltipDisplay, Consumer<Component> tooltipAdder, TooltipFlag flag) {
 			StorageTranslationHelper.INSTANCE.getTranslatedLines(stack.getItem().getDescriptionId() + TranslationHelper.TOOLTIP_SUFFIX, null, ChatFormatting.DARK_GRAY).forEach(tooltipAdder);
 		}
 	});
-	public static final Supplier<BlockItem> STORAGE_INPUT_ITEM = ITEMS.registerItem(STORAGE_INPUT_REG_NAME, properties -> new BlockItemBase(STORAGE_INPUT.get(), properties.useBlockDescriptionPrefix()) {
+	public static final Supplier<BlockItem> STORAGE_INPUT_ITEM = ITEMS.registerItem(STORAGE_INPUT_REG_NAME, properties -> new SimpleMaterialBlockItem(STORAGE_INPUT.get(), properties.useBlockDescriptionPrefix()) {
 		@Override
 		public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay tooltipDisplay, Consumer<Component> tooltipAdder, TooltipFlag flag) {
 			StorageTranslationHelper.INSTANCE.getTranslatedLines(stack.getItem().getDescriptionId() + TranslationHelper.TOOLTIP_SUFFIX, null, ChatFormatting.DARK_GRAY).forEach(tooltipAdder);
 		}
 	});
-	public static final Supplier<BlockItem> STORAGE_OUTPUT_ITEM = ITEMS.registerItem(STORAGE_OUTPUT_REG_NAME, properties -> new BlockItemBase(STORAGE_OUTPUT.get(), properties.useBlockDescriptionPrefix()) {
+	public static final Supplier<BlockItem> STORAGE_OUTPUT_ITEM = ITEMS.registerItem(STORAGE_OUTPUT_REG_NAME, properties -> new SimpleMaterialBlockItem(STORAGE_OUTPUT.get(), properties.useBlockDescriptionPrefix()) {
 		@Override
 		public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay tooltipDisplay, Consumer<Component> tooltipAdder, TooltipFlag flag) {
 			StorageTranslationHelper.INSTANCE.getTranslatedLines(stack.getItem().getDescriptionId() + TranslationHelper.TOOLTIP_SUFFIX, null, ChatFormatting.DARK_GRAY).forEach(tooltipAdder);
@@ -392,6 +392,28 @@ public class ModBlocks {
 		CauldronInteractions.WATER.put(GOLD_SHULKER_BOX_ITEM.get(), StorageCauldronInteraction.INSTANCE);
 		CauldronInteractions.WATER.put(DIAMOND_SHULKER_BOX_ITEM.get(), StorageCauldronInteraction.INSTANCE);
 		CauldronInteractions.WATER.put(NETHERITE_SHULKER_BOX_ITEM.get(), StorageCauldronInteraction.INSTANCE);
+
+		CauldronInteractions.WATER.put(CONTROLLER_ITEM.get(), SimpleMaterialCauldronInteraction.INSTANCE);
+		CauldronInteractions.WATER.put(STORAGE_LINK_ITEM.get(), SimpleMaterialCauldronInteraction.INSTANCE);
+		CauldronInteractions.WATER.put(STORAGE_IO_ITEM.get(), SimpleMaterialCauldronInteraction.INSTANCE);
+		CauldronInteractions.WATER.put(STORAGE_INPUT_ITEM.get(), SimpleMaterialCauldronInteraction.INSTANCE);
+		CauldronInteractions.WATER.put(STORAGE_OUTPUT_ITEM.get(), SimpleMaterialCauldronInteraction.INSTANCE);
+		STORAGE_CONNECTOR_ITEMS.values().forEach(item -> CauldronInteractions.WATER.put(item.get(), SimpleMaterialCauldronInteraction.INSTANCE));
+	}
+
+	@SuppressWarnings("java:S6548") //singleton is correct here
+	public static class SimpleMaterialCauldronInteraction extends StorageCauldronInteraction {
+		private static final SimpleMaterialCauldronInteraction INSTANCE = new SimpleMaterialCauldronInteraction();
+
+		@Override
+		protected boolean canRemovePaint(ItemStack stack) {
+			return stack.getItem() instanceof SimpleMaterialBlockItem && SimpleMaterialBlockItem.getMaterial(stack).isPresent();
+		}
+
+		@Override
+		protected void removePaint(ItemStack stack) {
+			SimpleMaterialBlockItem.removeMaterial(stack);
+		}
 	}
 
 	@SuppressWarnings("java:S6548") //singleton is correct here
