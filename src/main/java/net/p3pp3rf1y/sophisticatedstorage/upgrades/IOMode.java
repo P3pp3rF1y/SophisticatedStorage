@@ -6,11 +6,7 @@ import net.minecraft.util.StringRepresentable;
 import java.util.Map;
 
 public enum IOMode implements StringRepresentable {
-	PUSH("push"),
-	PULL("pull"),
-	PUSH_PULL("push_pull"),
-	OFF("off"),
-	DISABLED("disabled");
+	PUSH("push"), PULL("pull"), PUSH_PULL("push_pull"), OFF("off"), DISABLED("disabled");
 
 	private final String name;
 

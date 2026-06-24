@@ -28,11 +28,13 @@ public class StorageBlockItem extends BlockItemBase implements ITintableBlockIte
 	}
 
 	public static Optional<Integer> getMainColorFromStack(ItemStack barrelStack) {
-		return getEntityWrapperTagFromStack(barrelStack).map(tag -> NBTHelper.getInt(tag, MAIN_COLOR_TAG)).orElse(NBTHelper.getInt(barrelStack, MAIN_COLOR_TAG));
+		return getEntityWrapperTagFromStack(barrelStack).map(tag -> NBTHelper.getInt(tag, MAIN_COLOR_TAG))
+				.orElse(NBTHelper.getInt(barrelStack, MAIN_COLOR_TAG));
 	}
 
 	public static Optional<Integer> getAccentColorFromStack(ItemStack barrelStack) {
-		return getEntityWrapperTagFromStack(barrelStack).map(tag -> NBTHelper.getInt(tag, ACCENT_COLOR_TAG)).orElse(NBTHelper.getInt(barrelStack, ACCENT_COLOR_TAG));
+		return getEntityWrapperTagFromStack(barrelStack).map(tag -> NBTHelper.getInt(tag, ACCENT_COLOR_TAG))
+				.orElse(NBTHelper.getInt(barrelStack, ACCENT_COLOR_TAG));
 	}
 
 	public static void setNumberOfInventorySlots(ItemStack storageStack, int numberOfInventorySlots) {
@@ -45,7 +47,8 @@ public class StorageBlockItem extends BlockItemBase implements ITintableBlockIte
 
 	public static int getNumberOfInventorySlots(ItemStack storageStack) {
 		int defaultNumberOfInventorySlots = getDefaultNumberOfInventorySlots(storageStack);
-		int numberOfInventorySlots = Math.max(getStoredNumberOfInventorySlots(storageStack).orElse(defaultNumberOfInventorySlots), defaultNumberOfInventorySlots);
+		int numberOfInventorySlots = Math.max(getStoredNumberOfInventorySlots(storageStack).orElse(defaultNumberOfInventorySlots),
+				defaultNumberOfInventorySlots);
 		Optional<Integer> storedNumberOfInventorySlots = NBTHelper.getInt(storageStack, StackStorageWrapper.NUMBER_OF_INVENTORY_SLOTS_TAG);
 		if (storedNumberOfInventorySlots.isEmpty() || storedNumberOfInventorySlots.get() < numberOfInventorySlots) {
 			setNumberOfInventorySlots(storageStack, numberOfInventorySlots);
@@ -54,12 +57,16 @@ public class StorageBlockItem extends BlockItemBase implements ITintableBlockIte
 	}
 
 	public static int getDefaultNumberOfInventorySlots(ItemStack storageStack) {
-		return storageStack.getItem() instanceof BlockItemBase blockItem && blockItem.getBlock() instanceof IStorageBlock storageBlock ? storageBlock.getNumberOfInventorySlots() : 0;
+		return storageStack.getItem() instanceof BlockItemBase blockItem && blockItem.getBlock() instanceof IStorageBlock storageBlock
+				? storageBlock.getNumberOfInventorySlots()
+				: 0;
 	}
 
 	private static Optional<Integer> getStoredNumberOfInventorySlots(ItemStack storageStack) {
 		Optional<Integer> numberOfInventorySlotsFromWrapperTag = getEntityWrapperTagFromStack(storageStack)
-				.flatMap(tag -> tag.contains(StorageWrapper.NUMBER_OF_INVENTORY_SLOTS_TAG) ? Optional.of(tag.getInt(StorageWrapper.NUMBER_OF_INVENTORY_SLOTS_TAG)) : Optional.empty());
+				.flatMap(tag -> tag.contains(StorageWrapper.NUMBER_OF_INVENTORY_SLOTS_TAG)
+						? Optional.of(tag.getInt(StorageWrapper.NUMBER_OF_INVENTORY_SLOTS_TAG))
+						: Optional.empty());
 		Optional<Integer> numberOfInventorySlots = NBTHelper.getInt(storageStack, StackStorageWrapper.NUMBER_OF_INVENTORY_SLOTS_TAG);
 		if (numberOfInventorySlotsFromWrapperTag.isEmpty()) {
 			return numberOfInventorySlots;
@@ -83,12 +90,16 @@ public class StorageBlockItem extends BlockItemBase implements ITintableBlockIte
 	}
 
 	public static int getDefaultNumberOfUpgradeSlots(ItemStack storageStack) {
-		return storageStack.getItem() instanceof BlockItemBase blockItem && blockItem.getBlock() instanceof IStorageBlock storageBlock ? storageBlock.getNumberOfUpgradeSlots() : 0;
+		return storageStack.getItem() instanceof BlockItemBase blockItem && blockItem.getBlock() instanceof IStorageBlock storageBlock
+				? storageBlock.getNumberOfUpgradeSlots()
+				: 0;
 	}
 
 	private static Optional<Integer> getStoredNumberOfUpgradeSlots(ItemStack storageStack) {
 		Optional<Integer> numberOfUpgradeSlotsFromWrapperTag = getEntityWrapperTagFromStack(storageStack)
-				.flatMap(tag -> tag.contains(StorageWrapper.NUMBER_OF_UPGRADE_SLOTS_TAG) ? Optional.of(tag.getInt(StorageWrapper.NUMBER_OF_UPGRADE_SLOTS_TAG)) : Optional.empty());
+				.flatMap(tag -> tag.contains(StorageWrapper.NUMBER_OF_UPGRADE_SLOTS_TAG)
+						? Optional.of(tag.getInt(StorageWrapper.NUMBER_OF_UPGRADE_SLOTS_TAG))
+						: Optional.empty());
 		Optional<Integer> numberOfUpgradeSlots = NBTHelper.getInt(storageStack, StackStorageWrapper.NUMBER_OF_UPGRADE_SLOTS_TAG);
 		if (numberOfUpgradeSlotsFromWrapperTag.isEmpty()) {
 			return numberOfUpgradeSlots;

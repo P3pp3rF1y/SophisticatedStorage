@@ -8,13 +8,11 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
-public record DynamicBarrelBakingData(BarrelDynamicModelBase.BarrelModelPartDefinition modelPartDefinition, ModelState modelState, ResourceLocation modelLocation) {
+public record DynamicBarrelBakingData(BarrelDynamicModelBase.BarrelModelPartDefinition modelPartDefinition, ModelState modelState,
+		ResourceLocation modelLocation) {
 
 	public enum DynamicPart {
-		WHOLE,
-		TRIM,
-		CORE,
-		PARTITIONED;
+		WHOLE, TRIM, CORE, PARTITIONED;
 
 		private static final Map<String, DynamicPart> NAME_TO_PART;
 

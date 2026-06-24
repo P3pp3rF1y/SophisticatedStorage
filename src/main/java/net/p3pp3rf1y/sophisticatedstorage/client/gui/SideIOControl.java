@@ -17,6 +17,7 @@ import net.p3pp3rf1y.sophisticatedstorage.common.gui.SideIOContainer;
 import net.p3pp3rf1y.sophisticatedstorage.upgrades.IOMode;
 
 import javax.annotation.Nullable;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
@@ -37,17 +38,18 @@ public class SideIOControl extends CompositeWidgetBase<WidgetBase> {
 	}
 
 	private void addSideIOButton(SideIOContainer container, Position position1, BlockSide side) {
-		addChild(new SideIOToggleButton(position1, StorageButtonDefinitions.IO_MODE, button -> container.toggleSideIO(side), () -> container.getSideIOMode(side), side, container::toDirection));
+		addChild(new SideIOToggleButton(position1, StorageButtonDefinitions.IO_MODE, button -> container.toggleSideIO(side),
+				() -> container.getSideIOMode(side), side, container::toDirection));
 	}
 
 	@Override
 	protected void renderBg(GuiGraphics guiGraphics, Minecraft minecraft, int mouseX, int mouseY) {
-		//noop
+		// noop
 	}
 
 	@Override
 	public void updateNarration(NarrationElementOutput pNarrationElementOutput) {
-		//noop
+		// noop
 	}
 
 	private static class SideIOToggleButton extends ToggleButton<IOMode> {
@@ -57,8 +59,10 @@ public class SideIOControl extends CompositeWidgetBase<WidgetBase> {
 		private final BlockSide side;
 		private final Function<BlockSide, Direction> getDirection;
 
-		public SideIOToggleButton(Position position, ButtonDefinition.Toggle<IOMode> buttonDefinition, IntConsumer onClick, Supplier<IOMode> getState, BlockSide side, Function<BlockSide, Direction> getDirection) {
-			super(position, buttonDefinition, button -> {}, getState);
+		public SideIOToggleButton(Position position, ButtonDefinition.Toggle<IOMode> buttonDefinition, IntConsumer onClick, Supplier<IOMode> getState,
+				BlockSide side, Function<BlockSide, Direction> getDirection) {
+			super(position, buttonDefinition, button -> {
+			}, getState);
 			this.side = side;
 			this.getDirection = getDirection;
 			setOnClick(button -> {
@@ -72,10 +76,13 @@ public class SideIOControl extends CompositeWidgetBase<WidgetBase> {
 			if (tooltip == null) {
 				tooltip = new ArrayList<>();
 				tooltip.addAll(data.getTooltip());
-				tooltip.add(Component.translatable(StorageTranslationHelper.INSTANCE.translUpgradeButton("io_mode_side_info"),
-								Component.translatable(StorageTranslationHelper.INSTANCE.translGui("block_side." + side.getSerializedName())),
-								Component.translatable(StorageTranslationHelper.INSTANCE.translGui("direction." + getDirection.apply(side).getSerializedName())))
-						.withStyle(ChatFormatting.DARK_GRAY));
+				tooltip.add(
+						Component
+								.translatable(StorageTranslationHelper.INSTANCE.translUpgradeButton("io_mode_side_info"),
+										Component.translatable(StorageTranslationHelper.INSTANCE.translGui("block_side." + side.getSerializedName())),
+										Component.translatable(
+												StorageTranslationHelper.INSTANCE.translGui("direction." + getDirection.apply(side).getSerializedName())))
+								.withStyle(ChatFormatting.DARK_GRAY));
 			}
 			return tooltip;
 		}

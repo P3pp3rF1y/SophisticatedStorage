@@ -23,7 +23,8 @@ public class ChestBlockItem extends WoodStorageBlockItem {
 	@Override
 	public void initializeClient(Consumer<IClientItemExtensions> consumer) {
 		consumer.accept(new IClientItemExtensions() {
-			private final NonNullLazy<BlockEntityWithoutLevelRenderer> ister = NonNullLazy.of(() -> new ChestItemRenderer(Minecraft.getInstance().getBlockEntityRenderDispatcher(), Minecraft.getInstance().getEntityModels()));
+			private final NonNullLazy<BlockEntityWithoutLevelRenderer> ister = NonNullLazy
+					.of(() -> new ChestItemRenderer(Minecraft.getInstance().getBlockEntityRenderDispatcher(), Minecraft.getInstance().getEntityModels()));
 
 			@Override
 			public BlockEntityWithoutLevelRenderer getCustomRenderer() {

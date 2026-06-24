@@ -26,6 +26,7 @@ import net.p3pp3rf1y.sophisticatedstorage.block.StorageWrapper;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -53,14 +54,14 @@ public class WoodStorageBlockItem extends StorageBlockItem {
 		super.appendHoverText(stack, worldIn, tooltip, flagIn);
 		if (isPacked(stack)) {
 			if (flagIn == TooltipFlag.ADVANCED) {
-				stack.getCapability(CapabilityStorageWrapper.getCapabilityInstance())
-						.ifPresent(w -> w.getContentsUuid().ifPresent(uuid -> tooltip.add(Component.literal("UUID: " + uuid).withStyle(ChatFormatting.DARK_GRAY))));
+				stack.getCapability(CapabilityStorageWrapper.getCapabilityInstance()).ifPresent(
+						w -> w.getContentsUuid().ifPresent(uuid -> tooltip.add(Component.literal("UUID: " + uuid).withStyle(ChatFormatting.DARK_GRAY))));
 			}
 			if (!Screen.hasShiftDown()) {
-				tooltip.add(Component.translatable(
-						TranslationHelper.INSTANCE.translItemTooltip("storage") + ".press_for_contents",
-						Component.translatable(TranslationHelper.INSTANCE.translItemTooltip("storage") + ".shift").withStyle(ChatFormatting.AQUA)
-				).withStyle(ChatFormatting.GRAY));
+				tooltip.add(Component
+						.translatable(TranslationHelper.INSTANCE.translItemTooltip("storage") + ".press_for_contents",
+								Component.translatable(TranslationHelper.INSTANCE.translItemTooltip("storage") + ".shift").withStyle(ChatFormatting.AQUA))
+						.withStyle(ChatFormatting.GRAY));
 			}
 		}
 	}
@@ -102,8 +103,7 @@ public class WoodStorageBlockItem extends StorageBlockItem {
 	}
 
 	public static Optional<WoodType> getWoodType(ItemStack storageStack) {
-		return NBTHelper.getString(storageStack, WOOD_TYPE_TAG)
-				.flatMap(woodType -> WoodType.values().filter(wt -> wt.name().equals(woodType)).findFirst());
+		return NBTHelper.getString(storageStack, WOOD_TYPE_TAG).flatMap(woodType -> WoodType.values().filter(wt -> wt.name().equals(woodType)).findFirst());
 	}
 
 	@Override
@@ -126,9 +126,11 @@ public class WoodStorageBlockItem extends StorageBlockItem {
 					UUID uuid = getContentsUuid(stack).orElse(null);
 					StorageWrapper storageWrapper = new StackStorageWrapper(stack);
 					if (uuid != null) {
-						CompoundTag compoundtag = ItemContentsStorage.get().getOrCreateStorageContents(uuid).getCompound(StorageBlockEntity.STORAGE_WRAPPER_TAG);
+						CompoundTag compoundtag = ItemContentsStorage.get().getOrCreateStorageContents(uuid)
+								.getCompound(StorageBlockEntity.STORAGE_WRAPPER_TAG);
 						storageWrapper.load(compoundtag);
-						storageWrapper.setContentsUuid(uuid); //setting here because client side the uuid isn't in contentsnbt before this data is synced from server and it would create a new one otherwise
+						storageWrapper.setContentsUuid(uuid); // setting here because client side the uuid isn't in contentsnbt before this data is synced from
+																// server and it would create a new one otherwise
 					}
 					wrapper = storageWrapper;
 				}

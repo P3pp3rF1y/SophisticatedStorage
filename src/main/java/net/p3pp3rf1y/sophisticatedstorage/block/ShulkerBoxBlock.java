@@ -54,10 +54,12 @@ import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageToolItem;
 
 import javax.annotation.Nullable;
+
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+@SuppressWarnings("PMD.UnnecessaryImport")
 public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDropDataBlock {
 	public static final EnumProperty<Direction> FACING = DirectionalBlock.FACING;
 	private static final VoxelShape ITEM_ENTITY_COLLISION_SHAPE = box(0.05, 0.05, 0.05, 15.95, 15.95, 15.95);
@@ -79,7 +81,8 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 				return shulkerboxblockentity.isClosed();
 			}
 		};
-		return BlockBehaviour.Properties.of().strength(2.0F, explosionResistance).forceSolidOn().dynamicShape().noOcclusion().isSuffocating(statePredicate).isViewBlocking(statePredicate).pushReaction(PushReaction.DESTROY).mapColor(DyeColor.PURPLE);
+		return BlockBehaviour.Properties.of().strength(2.0F, explosionResistance).forceSolidOn().dynamicShape().noOcclusion().isSuffocating(statePredicate)
+				.isViewBlocking(statePredicate).pushReaction(PushReaction.DESTROY).mapColor(DyeColor.PURPLE);
 	}
 
 	@Override
@@ -112,14 +115,17 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 			}
 
 			player.awardStat(Stats.CUSTOM.get(Stats.OPEN_SHULKER_BOX));
-			NetworkHooks.openScreen((ServerPlayer) player, new SimpleMenuProvider((w, p, pl) -> new StorageContainerMenu(w, pl, pos),
-					WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).map(StorageBlockEntity::getDisplayName).orElse(Component.empty())), pos);
+			NetworkHooks.openScreen((ServerPlayer) player,
+					new SimpleMenuProvider((w, p, pl) -> new StorageContainerMenu(w, pl, pos),
+							WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).map(StorageBlockEntity::getDisplayName).orElse(Component.empty())),
+					pos);
 			PiglinAi.angerNearbyPiglins(player, true);
 			return InteractionResult.CONSUME;
 		}).orElse(InteractionResult.PASS);
 	}
 
-	private boolean tryItemInteraction(Player player, InteractionHand hand, StorageBlockEntity b, ItemStack itemInHand, Direction facing, BlockHitResult hitResult) {
+	private boolean tryItemInteraction(Player player, InteractionHand hand, StorageBlockEntity b, ItemStack itemInHand, Direction facing,
+			BlockHitResult hitResult) {
 		return tryAddUpgrade(player, hand, b, itemInHand, facing, hitResult);
 	}
 
@@ -196,7 +202,8 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 	@Override
 	public void playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
 		BlockEntity blockentity = level.getBlockEntity(pos);
-		if (blockentity instanceof ShulkerBoxBlockEntity shulkerBoxBlockEntity && !level.isClientSide && player.isCreative() && hasAnyItems(shulkerBoxBlockEntity)) {
+		if (blockentity instanceof ShulkerBoxBlockEntity shulkerBoxBlockEntity && !level.isClientSide && player.isCreative()
+				&& hasAnyItems(shulkerBoxBlockEntity)) {
 			ItemStack shulkerBoxDrop = new ItemStack(this);
 			addShulkerContentsToStack(shulkerBoxDrop, shulkerBoxBlockEntity);
 
@@ -209,7 +216,8 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 	}
 
 	private boolean hasAnyItems(ShulkerBoxBlockEntity shulkerBoxBlockEntity) {
-		return !InventoryHelper.isEmpty(shulkerBoxBlockEntity.getStorageWrapper().getInventoryHandler()) || !InventoryHelper.isEmpty(shulkerBoxBlockEntity.getStorageWrapper().getUpgradeHandler());
+		return !InventoryHelper.isEmpty(shulkerBoxBlockEntity.getStorageWrapper().getInventoryHandler())
+				|| !InventoryHelper.isEmpty(shulkerBoxBlockEntity.getStorageWrapper().getUpgradeHandler());
 	}
 
 	@Override
@@ -280,7 +288,7 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 
 	@Override
 	public void setTicking(Level level, BlockPos pos, BlockState currentState, boolean ticking) {
-		//noop as shulker box is always ticking due to calculation of animation and related bounding box size on server
+		// noop as shulker box is always ticking due to calculation of animation and related bounding box size on server
 	}
 
 	@SuppressWarnings("deprecation")
@@ -317,7 +325,9 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 	@SuppressWarnings("deprecation")
 	@Override
 	public VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-		return context instanceof EntityCollisionContext entityCollisionContext && entityCollisionContext.getEntity() instanceof ItemEntity ? ITEM_ENTITY_COLLISION_SHAPE : super.getCollisionShape(state, level, pos, context);
+		return context instanceof EntityCollisionContext entityCollisionContext && entityCollisionContext.getEntity() instanceof ItemEntity
+				? ITEM_ENTITY_COLLISION_SHAPE
+				: super.getCollisionShape(state, level, pos, context);
 	}
 
 	@SuppressWarnings("deprecation")
@@ -328,16 +338,16 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 
 	@Override
 	public boolean addLandingEffects(BlockState state1, ServerLevel level, BlockPos pos, BlockState state2, LivingEntity entity, int numberOfParticles) {
-		level.sendParticles(new CustomTintTerrainParticleData(state1, pos), entity.getX(), entity.getY(), entity.getZ(), numberOfParticles, 0.0D, 0.0D, 0.0D, 0.15D);
+		level.sendParticles(new CustomTintTerrainParticleData(state1, pos), entity.getX(), entity.getY(), entity.getZ(), numberOfParticles, 0.0D, 0.0D, 0.0D,
+				0.15D);
 		return true;
 	}
 
 	@Override
 	public boolean addRunningEffects(BlockState state, Level level, BlockPos pos, Entity entity) {
 		Vec3 vec3 = entity.getDeltaMovement();
-		level.addParticle(new CustomTintTerrainParticleData(state, pos),
-				entity.getX() + (level.random.nextDouble() - 0.5D) * entity.getBbWidth(), entity.getY() + 0.1D, entity.getZ() + (level.random.nextDouble() - 0.5D) * entity.getBbWidth(),
-				vec3.x * -4.0D, 1.5D, vec3.z * -4.0D);
+		level.addParticle(new CustomTintTerrainParticleData(state, pos), entity.getX() + (level.random.nextDouble() - 0.5D) * entity.getBbWidth(),
+				entity.getY() + 0.1D, entity.getZ() + (level.random.nextDouble() - 0.5D) * entity.getBbWidth(), vec3.x * -4.0D, 1.5D, vec3.z * -4.0D);
 		return true;
 	}
 }

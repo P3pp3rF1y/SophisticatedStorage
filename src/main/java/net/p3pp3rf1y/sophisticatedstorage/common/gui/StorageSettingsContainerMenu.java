@@ -31,12 +31,13 @@ public class StorageSettingsContainerMenu extends SettingsContainerMenu<IStorage
 	}
 
 	private static IStorageWrapper getWrapper(Level level, BlockPos pos) {
-		return WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).map(be -> (IStorageWrapper) be.getStorageWrapper()).orElse(NoopStorageWrapper.INSTANCE);
+		return WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).map(be -> (IStorageWrapper) be.getStorageWrapper())
+				.orElse(NoopStorageWrapper.INSTANCE);
 	}
 
 	@Override
 	public void detectSettingsChangeAndReload() {
-		//noop
+		// noop
 	}
 
 	public static StorageSettingsContainerMenu fromBuffer(int windowId, Inventory playerInventory, FriendlyByteBuf packetBuffer) {

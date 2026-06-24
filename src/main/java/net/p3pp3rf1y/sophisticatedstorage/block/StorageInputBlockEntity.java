@@ -22,7 +22,7 @@ public class StorageInputBlockEntity extends StorageIOBlockEntity {
 	@Override
 	protected <T> Direction getAdjustedCapabilitySide(Capability<T> cap, @Nullable Direction side) {
 		if (cap == ForgeCapabilities.ITEM_HANDLER) {
-			return null; //passing null side to not get the cache failed handler from controller
+			return null; // passing null side to not get the cache failed handler from controller
 		}
 
 		return super.getAdjustedCapabilitySide(cap, side);

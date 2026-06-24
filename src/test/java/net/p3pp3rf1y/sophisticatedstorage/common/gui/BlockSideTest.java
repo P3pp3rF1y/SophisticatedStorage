@@ -12,14 +12,15 @@ class BlockSideTest {
 	@ParameterizedTest
 	@MethodSource("fromDirectionConvertsCorrectly")
 	public void fromDirectionConvertsCorrectly(FromDirectionParams fromDirectionParams) {
-		Assertions.assertEquals(fromDirectionParams.expectedSide, BlockSide.fromDirection(fromDirectionParams.direction, fromDirectionParams.baseHorizontalDirection, fromDirectionParams.baseVerticalFacing));
+		Assertions.assertEquals(fromDirectionParams.expectedSide,
+				BlockSide.fromDirection(fromDirectionParams.direction, fromDirectionParams.baseHorizontalDirection, fromDirectionParams.baseVerticalFacing));
 	}
 
-	record FromDirectionParams(Direction direction, Direction baseHorizontalDirection, VerticalFacing baseVerticalFacing, BlockSide expectedSide) {}
+	record FromDirectionParams(Direction direction, Direction baseHorizontalDirection, VerticalFacing baseVerticalFacing, BlockSide expectedSide) {
+	}
 
 	private static List<FromDirectionParams> fromDirectionConvertsCorrectly() {
-		return List.of(
-				new FromDirectionParams(Direction.UP, Direction.NORTH, VerticalFacing.NO, BlockSide.TOP),
+		return List.of(new FromDirectionParams(Direction.UP, Direction.NORTH, VerticalFacing.NO, BlockSide.TOP),
 				new FromDirectionParams(Direction.DOWN, Direction.NORTH, VerticalFacing.NO, BlockSide.BOTTOM),
 				new FromDirectionParams(Direction.NORTH, Direction.NORTH, VerticalFacing.NO, BlockSide.FRONT),
 				new FromDirectionParams(Direction.SOUTH, Direction.NORTH, VerticalFacing.NO, BlockSide.BACK),
@@ -59,22 +60,21 @@ class BlockSideTest {
 				new FromDirectionParams(Direction.NORTH, Direction.EAST, VerticalFacing.DOWN, BlockSide.RIGHT),
 				new FromDirectionParams(Direction.SOUTH, Direction.EAST, VerticalFacing.DOWN, BlockSide.LEFT),
 				new FromDirectionParams(Direction.WEST, Direction.EAST, VerticalFacing.DOWN, BlockSide.BOTTOM),
-				new FromDirectionParams(Direction.EAST, Direction.EAST, VerticalFacing.DOWN, BlockSide.TOP)
-		);
+				new FromDirectionParams(Direction.EAST, Direction.EAST, VerticalFacing.DOWN, BlockSide.TOP));
 	}
-
 
 	@ParameterizedTest
 	@MethodSource("toDirectionConvertsCorrectly")
 	public void toDirectionConvertsCorrectly(ToDirectionParams toDirectionParams) {
-		Assertions.assertEquals(toDirectionParams.expectedDirection, toDirectionParams.side.toDirection(toDirectionParams.baseHorizontalDirection, toDirectionParams.baseVerticalFacing));
+		Assertions.assertEquals(toDirectionParams.expectedDirection,
+				toDirectionParams.side.toDirection(toDirectionParams.baseHorizontalDirection, toDirectionParams.baseVerticalFacing));
 	}
 
-	private record ToDirectionParams(BlockSide side, Direction baseHorizontalDirection, VerticalFacing baseVerticalFacing, Direction expectedDirection) {}
+	private record ToDirectionParams(BlockSide side, Direction baseHorizontalDirection, VerticalFacing baseVerticalFacing, Direction expectedDirection) {
+	}
 
 	private static List<ToDirectionParams> toDirectionConvertsCorrectly() {
-		return List.of(
-				new ToDirectionParams(BlockSide.TOP, Direction.NORTH, VerticalFacing.NO, Direction.UP),
+		return List.of(new ToDirectionParams(BlockSide.TOP, Direction.NORTH, VerticalFacing.NO, Direction.UP),
 				new ToDirectionParams(BlockSide.BOTTOM, Direction.NORTH, VerticalFacing.NO, Direction.DOWN),
 				new ToDirectionParams(BlockSide.FRONT, Direction.NORTH, VerticalFacing.NO, Direction.NORTH),
 				new ToDirectionParams(BlockSide.BACK, Direction.NORTH, VerticalFacing.NO, Direction.SOUTH),
@@ -128,7 +128,6 @@ class BlockSideTest {
 				new ToDirectionParams(BlockSide.FRONT, Direction.EAST, VerticalFacing.DOWN, Direction.DOWN),
 				new ToDirectionParams(BlockSide.BACK, Direction.EAST, VerticalFacing.DOWN, Direction.UP),
 				new ToDirectionParams(BlockSide.RIGHT, Direction.EAST, VerticalFacing.DOWN, Direction.NORTH),
-				new ToDirectionParams(BlockSide.LEFT, Direction.EAST, VerticalFacing.DOWN, Direction.SOUTH)
-		);
+				new ToDirectionParams(BlockSide.LEFT, Direction.EAST, VerticalFacing.DOWN, Direction.SOUTH));
 	}
 }

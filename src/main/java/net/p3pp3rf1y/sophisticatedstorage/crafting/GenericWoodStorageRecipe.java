@@ -23,7 +23,8 @@ public class GenericWoodStorageRecipe extends ShapedRecipe implements IWrapperRe
 	private final ShapedRecipe compose;
 
 	public GenericWoodStorageRecipe(ShapedRecipe compose) {
-		super(compose.getId(), compose.getGroup(), compose.category(), compose.getRecipeWidth(), compose.getRecipeHeight(), compose.getIngredients(), compose.getResultItem(null));
+		super(compose.getId(), compose.getGroup(), compose.category(), compose.getRecipeWidth(), compose.getRecipeHeight(), compose.getIngredients(),
+				compose.getResultItem(null));
 		this.compose = compose;
 		REGISTERED_RECIPES.add(compose.getId());
 	}
@@ -38,7 +39,8 @@ public class GenericWoodStorageRecipe extends ShapedRecipe implements IWrapperRe
 		return super.matches(inv, level) && hasMixedOrNonCustomWood(inv);
 	}
 
-	private record TopLeftCornerCoords(int left, int top) {}
+	private record TopLeftCornerCoords(int left, int top) {
+	}
 
 	private TopLeftCornerCoords getTopLeftCornerCoords(CraftingContainer inv) {
 		if (getHeight() * getWidth() == inv.getContainerSize()) {

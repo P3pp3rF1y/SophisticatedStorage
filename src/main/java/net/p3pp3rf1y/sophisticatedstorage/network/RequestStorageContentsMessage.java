@@ -6,6 +6,7 @@ import net.minecraftforge.network.NetworkEvent;
 import net.p3pp3rf1y.sophisticatedstorage.block.ItemContentsStorage;
 
 import javax.annotation.Nullable;
+
 import java.util.UUID;
 import java.util.function.Supplier;
 
@@ -35,6 +36,7 @@ public class RequestStorageContentsMessage {
 			return;
 		}
 
-		StoragePacketHandler.INSTANCE.sendToClient(player, new StorageContentsMessage(msg.storageUuid, ItemContentsStorage.get().getOrCreateStorageContents(msg.storageUuid)));
+		StoragePacketHandler.INSTANCE.sendToClient(player,
+				new StorageContentsMessage(msg.storageUuid, ItemContentsStorage.get().getOrCreateStorageContents(msg.storageUuid)));
 	}
 }

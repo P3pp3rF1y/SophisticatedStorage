@@ -21,6 +21,7 @@ import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 
 import javax.annotation.Nullable;
+
 import java.util.*;
 
 public class StorageIOBlockEntity extends BlockEntity implements IControllerBoundable, ILinkable, ISimpleMaterialHolder {
@@ -96,10 +97,10 @@ public class StorageIOBlockEntity extends BlockEntity implements IControllerBoun
 		WorldHelper.notifyBlockUpdate(this);
 	}
 
-	@SuppressWarnings("java:S1640") //can't use EnumMap because one of keys is null
+	@SuppressWarnings("java:S1640") // can't use EnumMap because one of keys is null
 	private void invalidateAllCapabilityCache() {
 		capabilitySideCache.forEach((cap, map) -> {
-			HashMap<Direction, LazyOptional<?>> copy = new HashMap<>(map); //to prevent concurrent modification exception
+			HashMap<Direction, LazyOptional<?>> copy = new HashMap<>(map); // to prevent concurrent modification exception
 			copy.forEach((side, lazyOptional) -> lazyOptional.invalidate());
 		});
 		capabilitySideCache.clear();
@@ -145,7 +146,8 @@ public class StorageIOBlockEntity extends BlockEntity implements IControllerBoun
 			if (isLinked()) {
 				unlinkFromController();
 			} else {
-				getControllerPos().flatMap(p -> WorldHelper.getBlockEntity(level, p, ControllerBlockEntityBase.class)).ifPresent(c -> c.removeNonConnectingBlock(getBlockPos()));
+				getControllerPos().flatMap(p -> WorldHelper.getBlockEntity(level, p, ControllerBlockEntityBase.class))
+						.ifPresent(c -> c.removeNonConnectingBlock(getBlockPos()));
 				removeControllerPos();
 			}
 		}
@@ -221,7 +223,7 @@ public class StorageIOBlockEntity extends BlockEntity implements IControllerBoun
 	}
 
 	@Override
-	@SuppressWarnings("java:S1640") //can't use EnumMap because one of keys is null
+	@SuppressWarnings("java:S1640") // can't use EnumMap because one of keys is null
 	public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) {
 		if (getControllerPos().isEmpty()) {
 			return super.getCapability(cap, side);
@@ -229,8 +231,7 @@ public class StorageIOBlockEntity extends BlockEntity implements IControllerBoun
 
 		if (!capabilitySideCache.containsKey(cap) || !capabilitySideCache.get(cap).containsKey(side)) {
 			LazyOptional<T> lazyOptional = getControllerPos().flatMap(p -> WorldHelper.getLoadedBlockEntity(getLevel(), p, ControllerBlockEntity.class))
-					.map(c -> getControllerCapability(cap, side, c))
-					.orElseGet(() -> super.getCapability(cap, side));
+					.map(c -> getControllerCapability(cap, side, c)).orElseGet(() -> super.getCapability(cap, side));
 			capabilitySideCache.computeIfAbsent(cap, k -> new HashMap<>()).put(side, lazyOptional);
 		}
 

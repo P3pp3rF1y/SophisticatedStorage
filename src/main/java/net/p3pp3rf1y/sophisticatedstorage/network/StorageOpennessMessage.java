@@ -32,8 +32,7 @@ public record StorageOpennessMessage(BlockPos pos, boolean shouldBeOpen) {
 			return;
 		}
 
-		WorldHelper.getLoadedBlockEntity(player.level(), msg.pos, StorageBlockEntity.class).ifPresent(
-				storageBlockEntity -> storageBlockEntity.setShouldBeOpen(msg.shouldBeOpen)
-		);
+		WorldHelper.getLoadedBlockEntity(player.level(), msg.pos, StorageBlockEntity.class)
+				.ifPresent(storageBlockEntity -> storageBlockEntity.setShouldBeOpen(msg.shouldBeOpen));
 	}
 }

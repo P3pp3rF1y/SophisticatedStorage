@@ -49,8 +49,10 @@ import net.p3pp3rf1y.sophisticatedstorage.network.StoragePacketHandler;
 
 import java.util.Map;
 
+@SuppressWarnings("PMD.UnnecessaryImport")
 public class ClientEventHandler {
-	private ClientEventHandler() {}
+	private ClientEventHandler() {
+	}
 
 	private static final ResourceLocation CHEST_RL = new ResourceLocation(SophisticatedStorage.MOD_ID, "chest");
 	private static final ResourceLocation CHEST_LEFT_RL = new ResourceLocation(SophisticatedStorage.MOD_ID, "chest_left");
@@ -103,8 +105,9 @@ public class ClientEventHandler {
 			if (!blockState.isAir() && level.getWorldBorder().isWithinBounds(otherPos)) {
 				VertexConsumer vertexConsumer = event.getMultiBufferSource().getBuffer(RenderType.lines());
 				Vec3 cameraPos = event.getCamera().getPosition();
-				LevelRenderer.renderShape(event.getPoseStack(), vertexConsumer, blockState.getShape(level, otherPos, CollisionContext.of(event.getCamera().getEntity())),
-						otherPos.getX() - cameraPos.x, otherPos.getY() - cameraPos.y, otherPos.getZ() - cameraPos.z, 0.0F, 0.0F, 0.0F, 0.4F);
+				LevelRenderer.renderShape(event.getPoseStack(), vertexConsumer,
+						blockState.getShape(level, otherPos, CollisionContext.of(event.getCamera().getEntity())), otherPos.getX() - cameraPos.x,
+						otherPos.getY() - cameraPos.y, otherPos.getZ() - cameraPos.z, 0.0F, 0.0F, 0.0F, 0.4F);
 			}
 		}
 
@@ -114,7 +117,8 @@ public class ClientEventHandler {
 			BlockPos pos = hitresult.getBlockPos();
 			BlockState blockState = level.getBlockState(pos);
 
-			if (blockState.getBlock() instanceof StorageBlockBase || blockState.getBlock() == ModBlocks.CONTROLLER.get() || level.getBlockEntity(pos) instanceof ISimpleMaterialHolder) {
+			if (blockState.getBlock() instanceof StorageBlockBase || blockState.getBlock() == ModBlocks.CONTROLLER.get()
+					|| level.getBlockEntity(pos) instanceof ISimpleMaterialHolder) {
 				PaintbrushOverlay.getItemRequirementsFor(stack, player, level, pos).ifPresent(itemRequirements -> {
 					float red = !itemRequirements.itemsMissing().isEmpty() ? 1 : 0;
 					float green = itemRequirements.itemsMissing().isEmpty() ? 1 : 0;
@@ -134,7 +138,8 @@ public class ClientEventHandler {
 	}
 
 	private static void addBarrelPartModelsToBake(ModelEvent.RegisterAdditional event) {
-		Map<ResourceLocation, Resource> models = Minecraft.getInstance().getResourceManager().listResources("models/block/barrel_part", fileName -> fileName.getPath().endsWith(".json"));
+		Map<ResourceLocation, Resource> models = Minecraft.getInstance().getResourceManager().listResources("models/block/barrel_part",
+				fileName -> fileName.getPath().endsWith(".json"));
 		models.forEach((modelName, resource) -> {
 			if (modelName.getNamespace().equals(SophisticatedStorage.MOD_ID)) {
 				event.register(new ResourceLocation(modelName.getNamespace(), modelName.getPath().substring("models/".length()).replace(".json", "")));

@@ -70,11 +70,9 @@ public class CustomTintTerrainParticleData extends ParticleType<CustomTintTerrai
 		}
 	};
 
-	private final Codec<CustomTintTerrainParticleData> codec = RecordCodecBuilder.create(
-			particleDataInstance -> particleDataInstance.group(
-					BlockState.CODEC.fieldOf("state").forGetter(data -> data.state),
-					BlockPos.CODEC.fieldOf("pos").forGetter(data -> data.pos)
-			).apply(particleDataInstance, CustomTintTerrainParticleData::new));
+	private final Codec<CustomTintTerrainParticleData> codec = RecordCodecBuilder.create(particleDataInstance -> particleDataInstance
+			.group(BlockState.CODEC.fieldOf("state").forGetter(data -> data.state), BlockPos.CODEC.fieldOf("pos").forGetter(data -> data.pos))
+			.apply(particleDataInstance, CustomTintTerrainParticleData::new));
 
 	@Override
 	public Codec<CustomTintTerrainParticleData> codec() {

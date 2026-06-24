@@ -4,9 +4,7 @@ import java.util.Locale;
 import java.util.Optional;
 
 public enum BarrelFace {
-	TOP,
-	BOTTOM,
-	SIDE;
+	TOP, BOTTOM, SIDE;
 
 	public static Optional<BarrelFace> fromString(String faceName) {
 		for (BarrelFace value : values()) {

@@ -102,8 +102,10 @@ class StorageRecipeViewerDisplaySpecTest {
 
 		assertEquals(2, usages.size());
 		assertTrue(usages.stream().allMatch(usage -> ItemStack.isSameItemSameTags(spruceBasicBarrel, usage.inputs().get(4))));
-		assertTrue(usages.stream().anyMatch(usage -> ItemStack.isSameItemSameTags(woodStorageStack(ModBlocks.COPPER_BARREL_ITEM.get(), WoodType.SPRUCE), usage.firstOutput())));
-		assertTrue(usages.stream().anyMatch(usage -> ItemStack.isSameItemSameTags(woodStorageStack(ModBlocks.IRON_BARREL_ITEM.get(), WoodType.SPRUCE), usage.firstOutput())));
+		assertTrue(usages.stream()
+				.anyMatch(usage -> ItemStack.isSameItemSameTags(woodStorageStack(ModBlocks.COPPER_BARREL_ITEM.get(), WoodType.SPRUCE), usage.firstOutput())));
+		assertTrue(usages.stream()
+				.anyMatch(usage -> ItemStack.isSameItemSameTags(woodStorageStack(ModBlocks.IRON_BARREL_ITEM.get(), WoodType.SPRUCE), usage.firstOutput())));
 	}
 
 	@Test
@@ -114,8 +116,10 @@ class StorageRecipeViewerDisplaySpecTest {
 		List<CraftingDisplayVariant> recipes = getCraftingRecipesFor(catalog, spruceIronBarrel);
 
 		assertEquals(2, recipes.size());
-		assertTrue(recipes.stream().anyMatch(recipe -> ItemStack.isSameItemSameTags(woodStorageStack(ModBlocks.BARREL_ITEM.get(), WoodType.SPRUCE), recipe.inputs().get(4))));
-		assertTrue(recipes.stream().anyMatch(recipe -> ItemStack.isSameItemSameTags(woodStorageStack(ModBlocks.COPPER_BARREL_ITEM.get(), WoodType.SPRUCE), recipe.inputs().get(4))));
+		assertTrue(recipes.stream()
+				.anyMatch(recipe -> ItemStack.isSameItemSameTags(woodStorageStack(ModBlocks.BARREL_ITEM.get(), WoodType.SPRUCE), recipe.inputs().get(4))));
+		assertTrue(recipes.stream().anyMatch(
+				recipe -> ItemStack.isSameItemSameTags(woodStorageStack(ModBlocks.COPPER_BARREL_ITEM.get(), WoodType.SPRUCE), recipe.inputs().get(4))));
 		assertTrue(recipes.stream().allMatch(recipe -> ItemStack.isSameItemSameTags(spruceIronBarrel, recipe.firstOutput())));
 	}
 
@@ -181,8 +185,7 @@ class StorageRecipeViewerDisplaySpecTest {
 		ItemStack ironShulkerBox = new ItemStack(ModBlocks.IRON_SHULKER_BOX_ITEM.get());
 
 		List<CraftingDisplayVariant> recipes = getCraftingRecipesFor(catalog, ironShulkerBox).stream()
-				.filter(recipe -> recipe.inputs().size() > 4 && !(recipe.inputs().get(4).getItem() instanceof ChestBlockItem))
-				.toList();
+				.filter(recipe -> recipe.inputs().size() > 4 && !(recipe.inputs().get(4).getItem() instanceof ChestBlockItem)).toList();
 
 		assertEquals(2, recipes.size());
 		assertTrue(recipes.stream().anyMatch(recipe -> ItemStack.isSameItem(shulkerBox, recipe.inputs().get(4))));
@@ -197,8 +200,7 @@ class StorageRecipeViewerDisplaySpecTest {
 		ItemStack goldShulkerBox = new ItemStack(ModBlocks.GOLD_SHULKER_BOX_ITEM.get());
 
 		List<CraftingDisplayVariant> recipes = getCraftingRecipesFor(catalog, goldShulkerBox).stream()
-				.filter(recipe -> recipe.inputs().size() > 4 && !(recipe.inputs().get(4).getItem() instanceof ChestBlockItem))
-				.toList();
+				.filter(recipe -> recipe.inputs().size() > 4 && !(recipe.inputs().get(4).getItem() instanceof ChestBlockItem)).toList();
 
 		assertEquals(1, recipes.size());
 		assertTrue(ItemStack.isSameItem(ironShulkerBox, recipes.get(0).inputs().get(4)));
@@ -244,12 +246,9 @@ class StorageRecipeViewerDisplaySpecTest {
 
 	@Test
 	void focusedHigherTierSingleColorDyeRecipeNarrowsDyeInputAndResult() {
-		SingleColorDyeRecipeSpec ironBarrelDyeSpec = createCatalog().getGroupedCraftingSpecs().stream()
-				.filter(SingleColorDyeRecipeSpec.class::isInstance)
+		SingleColorDyeRecipeSpec ironBarrelDyeSpec = createCatalog().getGroupedCraftingSpecs().stream().filter(SingleColorDyeRecipeSpec.class::isInstance)
 				.map(SingleColorDyeRecipeSpec.class::cast)
-				.filter(spec -> spec.sourceStacks().stream().anyMatch(stack -> stack.is(ModBlocks.IRON_BARREL_ITEM.get())))
-				.findFirst()
-				.orElseThrow();
+				.filter(spec -> spec.sourceStacks().stream().anyMatch(stack -> stack.is(ModBlocks.IRON_BARREL_ITEM.get()))).findFirst().orElseThrow();
 		ItemStack redIronBarrel = new ItemStack(ModBlocks.IRON_BARREL_ITEM.get());
 		if (ModBlocks.IRON_BARREL_ITEM.get() instanceof StorageBlockItem storageBlockItem) {
 			int color = ColorHelper.getColor(DyeColor.RED.getTextureDiffuseColors());
@@ -275,7 +274,8 @@ class StorageRecipeViewerDisplaySpecTest {
 		List<CraftingDisplayVariant> usages = getCraftingUsagesFor(catalog, singleChest(ModBlocks.CHEST_ITEM.get()));
 
 		assertTrue(usages.size() >= 2);
-		assertTrue(usages.stream().allMatch(usage -> usage.inputs().stream().noneMatch(ChestBlockItem::isDoubleChest) && !ChestBlockItem.isDoubleChest(usage.firstOutput())));
+		assertTrue(usages.stream()
+				.allMatch(usage -> usage.inputs().stream().noneMatch(ChestBlockItem::isDoubleChest) && !ChestBlockItem.isDoubleChest(usage.firstOutput())));
 		assertTrue(usages.stream().anyMatch(usage -> ItemStack.isSameItem(new ItemStack(ModBlocks.COPPER_CHEST_ITEM.get()), usage.firstOutput())));
 		assertTrue(usages.stream().anyMatch(usage -> ItemStack.isSameItem(new ItemStack(ModBlocks.IRON_CHEST_ITEM.get()), usage.firstOutput())));
 	}
@@ -298,13 +298,14 @@ class StorageRecipeViewerDisplaySpecTest {
 
 		List<CraftingDisplayVariant> usages = getCraftingUsagesFor(catalog, new ItemStack(Items.IRON_INGOT));
 		List<net.minecraft.world.item.crafting.CraftingRecipe> recipes = catalog.getCraftingUsagesFor(new ItemStack(Items.IRON_INGOT)).stream()
-				.flatMap(view -> view.variants().stream().map(view.spec()::recipe))
-				.toList();
+				.flatMap(view -> view.variants().stream().map(view.spec()::recipe)).toList();
 
 		assertEquals(16, usages.size());
 		assertEquals(16, recipes.size());
-		assertTrue(usages.stream().anyMatch(variant -> !ChestBlockItem.isDoubleChest(variant.inputs().get(4)) && !ChestBlockItem.isDoubleChest(variant.firstOutput())));
-		assertTrue(usages.stream().anyMatch(variant -> ChestBlockItem.isDoubleChest(variant.inputs().get(4)) && ChestBlockItem.isDoubleChest(variant.firstOutput())));
+		assertTrue(usages.stream()
+				.anyMatch(variant -> !ChestBlockItem.isDoubleChest(variant.inputs().get(4)) && !ChestBlockItem.isDoubleChest(variant.firstOutput())));
+		assertTrue(usages.stream()
+				.anyMatch(variant -> ChestBlockItem.isDoubleChest(variant.inputs().get(4)) && ChestBlockItem.isDoubleChest(variant.firstOutput())));
 	}
 
 	private static ItemStack tintedStack(Item item) {
@@ -322,7 +323,8 @@ class StorageRecipeViewerDisplaySpecTest {
 
 	private static IRecipeViewerDisplayCatalog createCatalog() {
 		IRecipeViewerDisplayCatalog catalog = new RecipeViewerDisplayCatalog();
-		try (TestRecipeResources.LoadedResources resources = TestRecipeResources.load(); MockedStatic<ClientRecipeHelper> clientRecipeHelper = Mockito.mockStatic(ClientRecipeHelper.class, Mockito.CALLS_REAL_METHODS)) {
+		try (TestRecipeResources.LoadedResources resources = TestRecipeResources.load();
+				MockedStatic<ClientRecipeHelper> clientRecipeHelper = Mockito.mockStatic(ClientRecipeHelper.class, Mockito.CALLS_REAL_METHODS)) {
 			mockClientRecipeHelper(clientRecipeHelper, resources);
 			StorageRecipeViewerDisplays.register(catalog, IRecipeViewerDisplayContext.empty());
 		}
@@ -331,7 +333,8 @@ class StorageRecipeViewerDisplaySpecTest {
 
 	private static IRecipeViewerDisplayCatalog createChestCatalog() {
 		IRecipeViewerDisplayCatalog catalog = new RecipeViewerDisplayCatalog();
-		try (TestRecipeResources.LoadedResources resources = TestRecipeResources.load(); MockedStatic<ClientRecipeHelper> clientRecipeHelper = Mockito.mockStatic(ClientRecipeHelper.class, Mockito.CALLS_REAL_METHODS)) {
+		try (TestRecipeResources.LoadedResources resources = TestRecipeResources.load();
+				MockedStatic<ClientRecipeHelper> clientRecipeHelper = Mockito.mockStatic(ClientRecipeHelper.class, Mockito.CALLS_REAL_METHODS)) {
 			mockClientRecipeHelper(clientRecipeHelper, resources);
 			StorageRecipeViewerDisplays.register(catalog, IRecipeViewerDisplayContext.empty());
 		}
@@ -341,22 +344,27 @@ class StorageRecipeViewerDisplaySpecTest {
 	@SuppressWarnings({"unchecked", "rawtypes"})
 	private static void mockClientRecipeHelper(MockedStatic<ClientRecipeHelper> clientRecipeHelper, TestRecipeResources.LoadedResources resources) {
 		RecipeManager recipeManager = resources.recipeManager();
-		clientRecipeHelper.when(() -> ClientRecipeHelper.transformAllRecipesOfTypeIntoMultiple(Mockito.eq(RecipeType.CRAFTING), Mockito.any(), Mockito.any())).thenAnswer(invocation -> {
-			RecipeType recipeType = invocation.getArgument(0);
-			Class recipeClass = invocation.getArgument(1);
-			return ClientRecipeHelper.transformAllRecipesOfTypeIntoMultiple(recipeManager, recipeType, recipeClass, invocation.getArgument(2));
-		});
-		clientRecipeHelper.when(() -> ClientRecipeHelper.transformAllRecipesOfType(Mockito.eq(RecipeType.CRAFTING), Mockito.any(), Mockito.any())).thenAnswer(invocation -> {
-			RecipeType recipeType = invocation.getArgument(0);
-			Class recipeClass = invocation.getArgument(1);
-			return ClientRecipeHelper.transformAllRecipesOfType(recipeManager, recipeType, recipeClass, invocation.getArgument(2));
-		});
-		clientRecipeHelper.when(() -> ClientRecipeHelper.assemble(Mockito.any(), Mockito.any())).thenAnswer(invocation -> assembleRecipe(invocation.getArgument(0), invocation.getArgument(1), resources.registryLookup()));
-		clientRecipeHelper.when(() -> ClientRecipeHelper.getResultItem(Mockito.any())).thenAnswer(invocation -> ClientRecipeHelper.getResultItem(invocation.getArgument(0), resources.registryLookup()));
+		clientRecipeHelper.when(() -> ClientRecipeHelper.transformAllRecipesOfTypeIntoMultiple(Mockito.eq(RecipeType.CRAFTING), Mockito.any(), Mockito.any()))
+				.thenAnswer(invocation -> {
+					RecipeType recipeType = invocation.getArgument(0);
+					Class recipeClass = invocation.getArgument(1);
+					return ClientRecipeHelper.transformAllRecipesOfTypeIntoMultiple(recipeManager, recipeType, recipeClass, invocation.getArgument(2));
+				});
+		clientRecipeHelper.when(() -> ClientRecipeHelper.transformAllRecipesOfType(Mockito.eq(RecipeType.CRAFTING), Mockito.any(), Mockito.any()))
+				.thenAnswer(invocation -> {
+					RecipeType recipeType = invocation.getArgument(0);
+					Class recipeClass = invocation.getArgument(1);
+					return ClientRecipeHelper.transformAllRecipesOfType(recipeManager, recipeType, recipeClass, invocation.getArgument(2));
+				});
+		clientRecipeHelper.when(() -> ClientRecipeHelper.assemble(Mockito.any(), Mockito.any()))
+				.thenAnswer(invocation -> assembleRecipe(invocation.getArgument(0), invocation.getArgument(1), resources.registryLookup()));
+		clientRecipeHelper.when(() -> ClientRecipeHelper.getResultItem(Mockito.any()))
+				.thenAnswer(invocation -> ClientRecipeHelper.getResultItem(invocation.getArgument(0), resources.registryLookup()));
 	}
 
 	private static ItemStack assembleRecipe(Recipe<CraftingContainer> recipe, CraftingContainer input, RegistryAccess registryLookup) {
-		if (recipe instanceof StorageTierUpgradeRecipe || recipe instanceof StorageTierUpgradeShapelessRecipe || recipe instanceof DoubleChestTierUpgradeRecipe || recipe instanceof DoubleChestTierUpgradeShapelessRecipe) {
+		if (recipe instanceof StorageTierUpgradeRecipe || recipe instanceof StorageTierUpgradeShapelessRecipe || recipe instanceof DoubleChestTierUpgradeRecipe
+				|| recipe instanceof DoubleChestTierUpgradeShapelessRecipe) {
 			ItemStack result = ClientRecipeHelper.getResultItem(recipe, registryLookup).copy();
 			for (int slot = 0; slot < input.getContainerSize(); slot++) {
 				ItemStack slotStack = input.getItem(slot);
@@ -380,7 +388,8 @@ class StorageRecipeViewerDisplaySpecTest {
 	}
 
 	private static CraftingRecipe recipeWithId(CraftingDisplaySpec spec, CraftingRecipe displayRecipe, ResourceLocation id) {
-		return spec.shapeless() ? new ShapelessRecipe(id, "", CraftingBookCategory.MISC, displayRecipe.getResultItem(null), spec.baseIngredients())
+		return spec.shapeless()
+				? new ShapelessRecipe(id, "", CraftingBookCategory.MISC, displayRecipe.getResultItem(null), spec.baseIngredients())
 				: new ShapedRecipe(id, "", CraftingBookCategory.MISC, spec.width(), spec.height(), spec.baseIngredients(), displayRecipe.getResultItem(null));
 	}
 
@@ -419,13 +428,9 @@ class StorageRecipeViewerDisplaySpecTest {
 				WorldLoader.PackConfig packConfig = new WorldLoader.PackConfig(packRepository, WorldDataConfiguration.DEFAULT, false, false);
 				WorldLoader.InitConfig initConfig = new WorldLoader.InitConfig(packConfig, Commands.CommandSelection.INTEGRATED, 0);
 
-				return WorldLoader.load(
-						initConfig,
-						context -> new WorldLoader.DataLoadOutput<>(UnitCookie.INSTANCE, context.datapackDimensions()),
-						(resourceManager, resources, registries, cookie) -> new LoadedResources(resourceManager, resources, registries),
-						backgroundExecutor,
-						gameExecutor
-				).join();
+				return WorldLoader.load(initConfig, context -> new WorldLoader.DataLoadOutput<>(UnitCookie.INSTANCE, context.datapackDimensions()),
+						(resourceManager, resources, registries, cookie) -> new LoadedResources(resourceManager, resources, registries), backgroundExecutor,
+						gameExecutor).join();
 			} finally {
 				backgroundExecutor.shutdown();
 			}
@@ -509,7 +514,8 @@ class StorageRecipeViewerDisplaySpecTest {
 				}
 
 				String workerId = System.getProperty("org.gradle.test.worker", "main");
-				Path mergedResources = moduleRoot.resolve(Path.of("build", "recipe-viewer-test-resources", StorageRecipeViewerDisplaySpecTest.class.getSimpleName() + "-" + workerId, modId));
+				Path mergedResources = moduleRoot.resolve(
+						Path.of("build", "recipe-viewer-test-resources", StorageRecipeViewerDisplaySpecTest.class.getSimpleName() + "-" + workerId, modId));
 				try {
 					deleteRecursively(mergedResources);
 					Files.createDirectories(mergedResources);
@@ -560,7 +566,7 @@ class StorageRecipeViewerDisplaySpecTest {
 
 			@SuppressWarnings("unchecked")
 			private static <T> T proxy(Class<T> type, InvocationHandler handler) {
-				return (T) Proxy.newProxyInstance(type.getClassLoader(), new Class<?>[] {type}, (proxy, method, args) -> {
+				return (T) Proxy.newProxyInstance(type.getClassLoader(), new Class<?>[]{type}, (proxy, method, args) -> {
 					if (method.getDeclaringClass() == Object.class) {
 						return switch (method.getName()) {
 							case "toString" -> type.getSimpleName() + " test proxy";
@@ -626,7 +632,8 @@ class StorageRecipeViewerDisplaySpecTest {
 					DeferredRegister<T> deferredRegister = (DeferredRegister<T>) field.get(null);
 					Field entriesField = DeferredRegister.class.getDeclaredField("entries");
 					entriesField.setAccessible(true);
-					Map<RegistryObject<T>, java.util.function.Supplier<? extends T>> entries = (Map<RegistryObject<T>, java.util.function.Supplier<? extends T>>) entriesField.get(deferredRegister);
+					Map<RegistryObject<T>, java.util.function.Supplier<? extends T>> entries = (Map<RegistryObject<T>, java.util.function.Supplier<? extends T>>) entriesField
+							.get(deferredRegister);
 
 					for (Map.Entry<RegistryObject<T>, java.util.function.Supplier<? extends T>> entry : entries.entrySet()) {
 						RegistryObject<T> registryObject = entry.getKey();
@@ -725,7 +732,8 @@ class StorageRecipeViewerDisplaySpecTest {
 			INSTANCE
 		}
 
-		private record LoadedResources(CloseableResourceManager resourceManager, ReloadableServerResources serverResources, LayeredRegistryAccess<RegistryLayer> registries) implements AutoCloseable {
+		private record LoadedResources(CloseableResourceManager resourceManager, ReloadableServerResources serverResources,
+				LayeredRegistryAccess<RegistryLayer> registries) implements AutoCloseable {
 			private RecipeManager recipeManager() {
 				return serverResources.getRecipeManager();
 			}

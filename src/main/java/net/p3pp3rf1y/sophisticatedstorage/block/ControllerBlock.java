@@ -30,6 +30,7 @@ import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageTranslationHelper;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageTierUpgradeItem;
 
 import javax.annotation.Nullable;
+
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -51,7 +52,8 @@ public class ControllerBlock extends BlockBase implements ISneakItemInteractionB
 
 	@Override
 	public void appendHoverText(ItemStack stack, @Nullable BlockGetter level, List<Component> tooltipComponents, TooltipFlag flag) {
-		tooltipComponents.addAll(StorageTranslationHelper.INSTANCE.getTranslatedLines(stack.getItem().getDescriptionId() + TranslationHelper.TOOLTIP_SUFFIX, null, ChatFormatting.DARK_GRAY));
+		tooltipComponents.addAll(StorageTranslationHelper.INSTANCE.getTranslatedLines(stack.getItem().getDescriptionId() + TranslationHelper.TOOLTIP_SUFFIX,
+				null, ChatFormatting.DARK_GRAY));
 	}
 
 	@Nullable
@@ -103,8 +105,8 @@ public class ControllerBlock extends BlockBase implements ISneakItemInteractionB
 					ItemStack itemInHand = player.getItemInHand(hand);
 					if (storageblock.tryAddSingleUpgrade(player, hand, be, itemInHand)) {
 						appliedUpgrade.set(true);
-					} else if (itemInHand.getItem() instanceof StorageTierUpgradeItem storageTierUpgradeItem
-							&& storageTierUpgradeItem.tryUpgradeStorage(itemInHand, level, storagePos, be.getBlockState(), player) == InteractionResult.SUCCESS) {
+					} else if (itemInHand.getItem() instanceof StorageTierUpgradeItem storageTierUpgradeItem && storageTierUpgradeItem
+							.tryUpgradeStorage(itemInHand, level, storagePos, be.getBlockState(), player) == InteractionResult.SUCCESS) {
 						appliedUpgrade.set(true);
 					}
 				}
@@ -126,7 +128,8 @@ public class ControllerBlock extends BlockBase implements ISneakItemInteractionB
 	}
 
 	@Override
-	public boolean trySneakItemInteraction(Player player, InteractionHand hand, BlockState state, Level level, BlockPos pos, BlockHitResult hitVec, ItemStack itemInHand) {
+	public boolean trySneakItemInteraction(Player player, InteractionHand hand, BlockState state, Level level, BlockPos pos, BlockHitResult hitVec,
+			ItemStack itemInHand) {
 		if (level.isClientSide()) {
 			return false;
 		}
@@ -135,8 +138,8 @@ public class ControllerBlock extends BlockBase implements ISneakItemInteractionB
 			AtomicBoolean result = new AtomicBoolean(false);
 			controller.getStoragePositions().forEach(storagePos -> {
 				Block block = level.getBlockState(storagePos).getBlock();
-				if (block instanceof StorageBlockBase storageblock &&
-						storageblock.tryFillUpgrades(player, hand, level, storagePos, player.getItemInHand(hand))) {
+				if (block instanceof StorageBlockBase storageblock
+						&& storageblock.tryFillUpgrades(player, hand, level, storagePos, player.getItemInHand(hand))) {
 					result.set(true);
 				}
 			});

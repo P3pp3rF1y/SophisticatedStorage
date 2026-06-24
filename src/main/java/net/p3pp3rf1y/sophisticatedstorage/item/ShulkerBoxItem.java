@@ -37,6 +37,7 @@ import net.p3pp3rf1y.sophisticatedstorage.client.render.ShulkerBoxItemRenderer;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -55,7 +56,8 @@ public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageIte
 	@Override
 	public void initializeClient(Consumer<IClientItemExtensions> consumer) {
 		consumer.accept(new IClientItemExtensions() {
-			private final NonNullLazy<BlockEntityWithoutLevelRenderer> ister = NonNullLazy.of(() -> new ShulkerBoxItemRenderer(Minecraft.getInstance().getBlockEntityRenderDispatcher(), Minecraft.getInstance().getEntityModels()));
+			private final NonNullLazy<BlockEntityWithoutLevelRenderer> ister = NonNullLazy
+					.of(() -> new ShulkerBoxItemRenderer(Minecraft.getInstance().getBlockEntityRenderDispatcher(), Minecraft.getInstance().getEntityModels()));
 
 			@Override
 			public BlockEntityWithoutLevelRenderer getCustomRenderer() {
@@ -72,10 +74,10 @@ public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageIte
 					.ifPresent(w -> w.getContentsUuid().ifPresent(uuid -> tooltip.add(Component.literal("UUID: " + uuid).withStyle(ChatFormatting.DARK_GRAY))));
 		}
 		if (!Screen.hasShiftDown()) {
-			tooltip.add(Component.translatable(
-					TranslationHelper.INSTANCE.translItemTooltip("storage") + ".press_for_contents",
-					Component.translatable(TranslationHelper.INSTANCE.translItemTooltip("storage") + ".shift").withStyle(ChatFormatting.AQUA)
-			).withStyle(ChatFormatting.GRAY));
+			tooltip.add(Component
+					.translatable(TranslationHelper.INSTANCE.translItemTooltip("storage") + ".press_for_contents",
+							Component.translatable(TranslationHelper.INSTANCE.translItemTooltip("storage") + ".shift").withStyle(ChatFormatting.AQUA))
+					.withStyle(ChatFormatting.GRAY));
 		}
 	}
 
@@ -129,9 +131,11 @@ public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageIte
 					UUID uuid = getContentsUuid(stack).orElse(null);
 					StorageWrapper storageWrapper = new StackStorageWrapper(stack);
 					if (uuid != null) {
-						CompoundTag compoundtag = ItemContentsStorage.get().getOrCreateStorageContents(uuid).getCompound(StorageBlockEntity.STORAGE_WRAPPER_TAG);
+						CompoundTag compoundtag = ItemContentsStorage.get().getOrCreateStorageContents(uuid)
+								.getCompound(StorageBlockEntity.STORAGE_WRAPPER_TAG);
 						storageWrapper.load(compoundtag);
-						storageWrapper.setContentsUuid(uuid); //setting here because client side the uuid isn't in contentsnbt before this data is synced from server and it would create a new one otherwise
+						storageWrapper.setContentsUuid(uuid); // setting here because client side the uuid isn't in contentsnbt before this data is synced from
+																// server and it would create a new one otherwise
 					}
 					wrapper = storageWrapper;
 				}
@@ -159,7 +163,8 @@ public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageIte
 			if (wrapper.getInventoryForUpgradeProcessing().insertItem(stack, true).getCount() == stack.getCount()) {
 				return StashResult.NO_SPACE;
 			}
-			if (wrapper.getInventoryHandler().getSlotTracker().getItems().contains(stack.getItem()) || wrapper.getSettingsHandler().getTypeCategory(MemorySettingsCategory.class).matchesFilter(stack)) {
+			if (wrapper.getInventoryHandler().getSlotTracker().getItems().contains(stack.getItem())
+					|| wrapper.getSettingsHandler().getTypeCategory(MemorySettingsCategory.class).matchesFilter(stack)) {
 				return StashResult.MATCH_AND_SPACE;
 			}
 
@@ -169,7 +174,8 @@ public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageIte
 
 	@Override
 	public boolean overrideStackedOnOther(ItemStack storageStack, Slot slot, ClickAction action, Player player) {
-		if (hasCreativeScreenContainerOpen(player) || storageStack.getCount() > 1 || !slot.mayPickup(player) || slot.getItem().isEmpty() || action != ClickAction.SECONDARY) {
+		if (hasCreativeScreenContainerOpen(player) || storageStack.getCount() > 1 || !slot.mayPickup(player) || slot.getItem().isEmpty()
+				|| action != ClickAction.SECONDARY) {
 			return super.overrideStackedOnOther(storageStack, slot, action, player);
 		}
 
@@ -186,7 +192,8 @@ public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageIte
 	}
 
 	@Override
-	public boolean overrideOtherStackedOnMe(ItemStack storageStack, ItemStack otherStack, Slot slot, ClickAction action, Player player, SlotAccess carriedAccess) {
+	public boolean overrideOtherStackedOnMe(ItemStack storageStack, ItemStack otherStack, Slot slot, ClickAction action, Player player,
+			SlotAccess carriedAccess) {
 		if (hasCreativeScreenContainerOpen(player) || storageStack.getCount() > 1 || !slot.mayPlace(storageStack) || action != ClickAction.SECONDARY) {
 			return super.overrideOtherStackedOnMe(storageStack, otherStack, slot, action, player, carriedAccess);
 		}

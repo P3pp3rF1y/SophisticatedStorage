@@ -18,7 +18,7 @@ import java.util.Optional;
 import java.util.Set;
 
 public record TierUpgradeDisplayRecipe(ResourceLocation id, CraftingRecipe recipe, boolean shapeless, int width, int height,
-									   NonNullList<Ingredient> ingredients, int storageIngredientIndex, List<TierUpgradeVariantPair> variantPairs) {
+		NonNullList<Ingredient> ingredients, int storageIngredientIndex, List<TierUpgradeVariantPair> variantPairs) {
 	public Optional<TierUpgradeVariantPair> findBySource(ItemStack stack) {
 		return variantPairs.stream().filter(pair -> ItemStack.isSameItemSameTags(pair.source(), stack)).findFirst();
 	}
@@ -54,16 +54,16 @@ public record TierUpgradeDisplayRecipe(ResourceLocation id, CraftingRecipe recip
 	}
 
 	public CraftingDisplaySpec toSpec() {
-		return new CraftingDisplaySpec(id, shapeless, width, height, ingredients, variantPairs.stream().map(this::toVariant).toList(), getGlobalVariants(), Set.of(recipe.getId()),
-				new SourceResultFocusBehavior(storageIngredientIndex, this::focusSource, this::focusResult));
+		return new CraftingDisplaySpec(id, shapeless, width, height, ingredients, variantPairs.stream().map(this::toVariant).toList(), getGlobalVariants(),
+				Set.of(recipe.getId()), new SourceResultFocusBehavior(storageIngredientIndex, this::focusSource, this::focusResult));
 	}
 
 	private List<CraftingDisplayVariant> getGlobalVariants() {
 		return variantPairs.stream()
-				.filter(pair -> StorageBlockItem.getMainColorFromStack(pair.source()).isEmpty() && StorageBlockItem.getAccentColorFromStack(pair.source()).isEmpty()
-						&& StorageBlockItem.getMainColorFromStack(pair.result()).isEmpty() && StorageBlockItem.getAccentColorFromStack(pair.result()).isEmpty())
-				.map(this::toVariant)
-				.toList();
+				.filter(pair -> StorageBlockItem.getMainColorFromStack(pair.source()).isEmpty()
+						&& StorageBlockItem.getAccentColorFromStack(pair.source()).isEmpty() && StorageBlockItem.getMainColorFromStack(pair.result()).isEmpty()
+						&& StorageBlockItem.getAccentColorFromStack(pair.result()).isEmpty())
+				.map(this::toVariant).toList();
 	}
 
 	private CraftingDisplayVariant toVariant(TierUpgradeVariantPair pair) {
@@ -80,10 +80,8 @@ public record TierUpgradeDisplayRecipe(ResourceLocation id, CraftingRecipe recip
 		if (exactPair.isPresent()) {
 			return exactPair.filter(pair -> ItemStack.isSameItemSameTags(source, pair.source())).map(this::toVariant);
 		}
-		return findBySourceItem(focusedInput)
-				.filter(pair -> ItemStack.isSameItemSameTags(source, pair.source()))
-				.map(pair -> withComponentsFromSource(pair, focusedInput))
-				.map(this::toVariant);
+		return findBySourceItem(focusedInput).filter(pair -> ItemStack.isSameItemSameTags(source, pair.source()))
+				.map(pair -> withComponentsFromSource(pair, focusedInput)).map(this::toVariant);
 	}
 
 	private Optional<CraftingDisplayVariant> focusResult(CraftingDisplayVariant variant, ItemStack focusedOutput) {
@@ -91,10 +89,8 @@ public record TierUpgradeDisplayRecipe(ResourceLocation id, CraftingRecipe recip
 		if (exactPair.isPresent()) {
 			return exactPair.filter(pair -> ItemStack.isSameItemSameTags(variant.firstOutput(), pair.result())).map(this::toVariant);
 		}
-		return findByResultItem(focusedOutput)
-				.filter(pair -> ItemStack.isSameItemSameTags(variant.firstOutput(), pair.result()))
-				.map(pair -> withComponentsFromResult(pair, focusedOutput))
-				.map(this::toVariant);
+		return findByResultItem(focusedOutput).filter(pair -> ItemStack.isSameItemSameTags(variant.firstOutput(), pair.result()))
+				.map(pair -> withComponentsFromResult(pair, focusedOutput)).map(this::toVariant);
 	}
 
 	private static ItemStack getSource(CraftingDisplayVariant variant) {

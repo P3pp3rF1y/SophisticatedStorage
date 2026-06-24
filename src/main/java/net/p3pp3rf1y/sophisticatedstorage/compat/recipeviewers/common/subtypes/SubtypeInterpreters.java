@@ -20,23 +20,24 @@ public class SubtypeInterpreters {
 	private static final PropertyBasedSubtypeInterpreter shulkerBoxSubtypeInterpreter = new ShulkerBoxSubtypeInterpreter();
 
 	public static Map<BlockItem, PropertyBasedSubtypeInterpreter> getSubtypeInterpreters() {
-		return new HashMap<>(){{
-			ModBlocks.ITEMS.getEntries().stream()
-					.filter(holder -> holder.get() instanceof StorageBlockItem)
-					.forEach(item -> {
-						Item i = item.get();
-						if (i instanceof BarrelBlockItem blockItem) {
-							put(blockItem, barrelSubtypeInterpreter);
-						} else if (i instanceof ChestBlockItem blockItem) {
-							put(blockItem, chestSubtypeInterpreter);
-						} else if (i instanceof ShulkerBoxItem blockItem) {
-							put(blockItem, shulkerBoxSubtypeInterpreter);
-						}
-					});
-		}};
+		return new HashMap<>() {
+			{
+				ModBlocks.ITEMS.getEntries().stream().filter(holder -> holder.get() instanceof StorageBlockItem).forEach(item -> {
+					Item i = item.get();
+					if (i instanceof BarrelBlockItem blockItem) {
+						put(blockItem, barrelSubtypeInterpreter);
+					} else if (i instanceof ChestBlockItem blockItem) {
+						put(blockItem, chestSubtypeInterpreter);
+					} else if (i instanceof ShulkerBoxItem blockItem) {
+						put(blockItem, shulkerBoxSubtypeInterpreter);
+					}
+				});
+			}
+		};
 	}
 
-	public static Optional<PropertyBasedSubtypeInterpreter> getSubtypeInterpreter(Map<BlockItem, PropertyBasedSubtypeInterpreter> subtypeInterpreters, ItemStack stack) {
+	public static Optional<PropertyBasedSubtypeInterpreter> getSubtypeInterpreter(Map<BlockItem, PropertyBasedSubtypeInterpreter> subtypeInterpreters,
+			ItemStack stack) {
 		if (!(stack.getItem() instanceof BlockItem blockItem)) {
 			return Optional.empty();
 		}

@@ -31,6 +31,7 @@ import net.p3pp3rf1y.sophisticatedcore.util.NoopStorageWrapper;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.*;
+import net.p3pp3rf1y.sophisticatedstorage.block.StorageWrapper;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.item.BarrelBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.ShulkerBoxItem;
@@ -38,12 +39,14 @@ import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.settings.StorageSettingsHandler;
 
 import javax.annotation.Nullable;
+
 import java.util.*;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+@SuppressWarnings("PMD.UnnecessaryImport")
 public abstract class MovingStorageWrapper implements IStorageWrapper {
 	private final Runnable stackChangeHandler;
 	private final ItemStack storageStack;
@@ -70,7 +73,8 @@ public abstract class MovingStorageWrapper implements IStorageWrapper {
 	private final Map<Class<? extends IUpgradeWrapper>, Consumer<? extends IUpgradeWrapper>> upgradeDefaultsHandlers = new HashMap<>();
 	private final Predicate<ItemStack> isUpgradeRunnable;
 
-	private MovingStorageWrapper(ItemStack storageStack, Runnable onContentsChanged, Runnable onStackChanged, Function<UUID, IStorageSavedData> getStorageData, Predicate<ItemStack> isUpgradeRunnable) {
+	private MovingStorageWrapper(ItemStack storageStack, Runnable onContentsChanged, Runnable onStackChanged, Function<UUID, IStorageSavedData> getStorageData,
+			Predicate<ItemStack> isUpgradeRunnable) {
 		this.storageStack = storageStack;
 		contentsChangeHandler = onContentsChanged;
 		stackChangeHandler = onStackChanged;
@@ -88,7 +92,8 @@ public abstract class MovingStorageWrapper implements IStorageWrapper {
 		return stack.getItem() instanceof BarrelBlockItem ? 4 : 1;
 	}
 
-	public static MovingStorageWrapper fromStack(ItemStack stack, Runnable onContentsChanged, Runnable onStackChanged, Function<UUID, IStorageSavedData> getStorageData, BooleanSupplier isLocked, Consumer<Boolean> setLocked, Predicate<ItemStack> isUpgradeRunnable) {
+	public static MovingStorageWrapper fromStack(ItemStack stack, Runnable onContentsChanged, Runnable onStackChanged,
+			Function<UUID, IStorageSavedData> getStorageData, BooleanSupplier isLocked, Consumer<Boolean> setLocked, Predicate<ItemStack> isUpgradeRunnable) {
 		MovingStorageWrapper movingStorageWrapper = new MovingStorageWrapper(stack, onContentsChanged, onStackChanged, getStorageData, isUpgradeRunnable) {
 			@Override
 			public boolean isLocked() {
@@ -100,7 +105,7 @@ public abstract class MovingStorageWrapper implements IStorageWrapper {
 				setLocked.accept(locked);
 			}
 		};
-		//setting here because client side the uuid isn't in contentsnbt before this data is synced from server and it would create a new one otherwise
+		// setting here because client side the uuid isn't in contentsnbt before this data is synced from server and it would create a new one otherwise
 		NBTHelper.getUniqueId(stack, StorageWrapper.UUID_TAG).ifPresent(movingStorageWrapper::setContentsUuid);
 		return movingStorageWrapper;
 	}
@@ -131,7 +136,7 @@ public abstract class MovingStorageWrapper implements IStorageWrapper {
 
 	@Override
 	public void setContentsChangeHandler(Runnable contentsChangeHandler) {
-		//noop
+		// noop
 	}
 
 	@Override
@@ -155,7 +160,8 @@ public abstract class MovingStorageWrapper implements IStorageWrapper {
 	}
 
 	private InventoryHandler initInventoryHandler() {
-		InventoryHandler handler = new InventoryHandler(getNumberOfInventorySlots(), this, getContentsNbt(), contentsChangeHandler, StackUpgradeItem.getInventorySlotLimit(this), Config.SERVER.stackUpgrade) {
+		InventoryHandler handler = new InventoryHandler(getNumberOfInventorySlots(), this, getContentsNbt(), contentsChangeHandler,
+				StackUpgradeItem.getInventorySlotLimit(this), Config.SERVER.stackUpgrade) {
 			@Override
 			protected boolean isAllowed(ItemStack stack) {
 				return isAllowedInStorage(stack);
@@ -187,7 +193,8 @@ public abstract class MovingStorageWrapper implements IStorageWrapper {
 	public ITrackedContentsItemHandler getInventoryForInputOutput() {
 		if (isLocked() && allowsEmptySlotsMatchingItemInsertsWhenLocked()) {
 			if (contentsFilteredItemHandler == null) {
-				contentsFilteredItemHandler = new ContentsFilteredItemHandler(this::getInventoryIOHandler, () -> getInventoryHandler().getSlotTracker(), () -> getSettingsHandler().getTypeCategory(MemorySettingsCategory.class));
+				contentsFilteredItemHandler = new ContentsFilteredItemHandler(this::getInventoryIOHandler, () -> getInventoryHandler().getSlotTracker(),
+						() -> getSettingsHandler().getTypeCategory(MemorySettingsCategory.class));
 			}
 			return contentsFilteredItemHandler;
 		}
@@ -238,11 +245,14 @@ public abstract class MovingStorageWrapper implements IStorageWrapper {
 				}
 				getInventoryHandler().addListener(getSettingsHandler().getTypeCategory(ItemDisplaySettingsCategory.class)::itemChanged);
 				inventoryIOHandler = null;
-				getSettingsHandler().getTypeCategory(ItemDisplaySettingsCategory.class).itemsChanged(); //in case stack upgrade changed need to send updated fill ratios to client
+				getSettingsHandler().getTypeCategory(ItemDisplaySettingsCategory.class).itemsChanged(); // in case stack upgrade changed need to send updated
+																										// fill ratios to client
 			}) {
 				@Override
 				public boolean isItemValid(int slot, ItemStack stack) {
-					return super.isItemValid(slot, stack) && (stack.isEmpty() || SophisticatedStorage.MOD_ID.equals(ForgeRegistries.ITEMS.getKey(stack.getItem()).getNamespace()) || stack.is(ModItems.STORAGE_UPGRADE_TAG));
+					return super.isItemValid(slot, stack)
+							&& (stack.isEmpty() || SophisticatedStorage.MOD_ID.equals(ForgeRegistries.ITEMS.getKey(stack.getItem()).getNamespace())
+									|| stack.is(ModItems.STORAGE_UPGRADE_TAG));
 				}
 			};
 			upgradeHandler = handler;
@@ -251,8 +261,9 @@ public abstract class MovingStorageWrapper implements IStorageWrapper {
 		return handler;
 	}
 
-	private <T extends IUpgradeWrapper> void registerUpgradeDefaultsHandlerInUpgradeHandler(Class<T> wrapperClass, Consumer<? extends IUpgradeWrapper> defaultsHandler) {
-		//noinspection DataFlowIssue, unchecked - only called after upgradeHandler is initialized
+	private <T extends IUpgradeWrapper> void registerUpgradeDefaultsHandlerInUpgradeHandler(Class<T> wrapperClass,
+			Consumer<? extends IUpgradeWrapper> defaultsHandler) {
+		// noinspection DataFlowIssue, unchecked - only called after upgradeHandler is initialized
 		upgradeHandler.registerUpgradeDefaultsHandler(wrapperClass, (Consumer<T>) defaultsHandler);
 	}
 
@@ -311,7 +322,7 @@ public abstract class MovingStorageWrapper implements IStorageWrapper {
 	private CompoundTag getContentsNbt() {
 		UUID storageId = getContentsUuid().orElseGet(this::getNewUuid);
 		IStorageSavedData storageData = getStorageData.apply(storageId);
-		//MovingStorageData storageData = MovingStorageData.get(storageId);
+		// MovingStorageData storageData = MovingStorageData.get(storageId);
 		CompoundTag baseContentsNbt = storageData.getContents();
 		if (!baseContentsNbt.contains(StorageWrapper.CONTENTS_TAG)) {
 			baseContentsNbt.put(StorageWrapper.CONTENTS_TAG, new CompoundTag());
@@ -404,12 +415,12 @@ public abstract class MovingStorageWrapper implements IStorageWrapper {
 
 	@Override
 	public void setPersistent(boolean persistent) {
-		//noop
+		// noop
 	}
 
 	@Override
 	public void fillWithLoot(Player playerEntity) {
-		//noop
+		// noop
 	}
 
 	@Override
@@ -419,7 +430,7 @@ public abstract class MovingStorageWrapper implements IStorageWrapper {
 
 	@Override
 	public void setColumnsTaken(int columnsTaken, boolean hasChanged) {
-		//noop - would require a change if there ever was support for this in storage which is not a plan
+		// noop - would require a change if there ever was support for this in storage which is not a plan
 	}
 
 	@Override
@@ -446,7 +457,8 @@ public abstract class MovingStorageWrapper implements IStorageWrapper {
 		}
 
 		Block block = Block.byItem(stack.getItem());
-		return !(block instanceof ShulkerBoxBlock) && !(block instanceof net.minecraft.world.level.block.ShulkerBoxBlock) && !Config.SERVER.shulkerBoxDisallowedItems.isItemDisallowed(stack.getItem());
+		return !(block instanceof ShulkerBoxBlock) && !(block instanceof net.minecraft.world.level.block.ShulkerBoxBlock)
+				&& !Config.SERVER.shulkerBoxDisallowedItems.isItemDisallowed(stack.getItem());
 	}
 
 	@Override
@@ -505,10 +517,12 @@ public abstract class MovingStorageWrapper implements IStorageWrapper {
 
 	@Override
 	public int getBaseStackSizeMultiplier() {
-		return storageStack.getItem() instanceof BlockItem blockItem && blockItem.getBlock() instanceof IStorageBlock storageBlock ? storageBlock.getBaseStackSizeMultiplier() : 1;
+		return storageStack.getItem() instanceof BlockItem blockItem && blockItem.getBlock() instanceof IStorageBlock storageBlock
+				? storageBlock.getBaseStackSizeMultiplier()
+				: 1;
 	}
 
-	public static boolean isLimitedBarrel(ItemStack storageItem) { //TODO better place for this method
+	public static boolean isLimitedBarrel(ItemStack storageItem) { // TODO better place for this method
 		return storageItem.getItem() instanceof BlockItem blockItem && blockItem.getBlock() instanceof LimitedBarrelBlock;
 	}
 

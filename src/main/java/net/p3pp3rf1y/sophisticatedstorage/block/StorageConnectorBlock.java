@@ -30,10 +30,12 @@ import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageTranslationHelper;
 
 import javax.annotation.Nullable;
+
 import java.util.List;
 
 public class StorageConnectorBlock extends BlockBase implements EntityBlock {
-	public static final String TOOLTIP_TRANSLATION_KEY = Util.makeDescriptionId("block", SophisticatedStorage.getRL("storage_connector")) + TranslationHelper.TOOLTIP_SUFFIX;
+	public static final String TOOLTIP_TRANSLATION_KEY = Util.makeDescriptionId("block", SophisticatedStorage.getRL("storage_connector"))
+			+ TranslationHelper.TOOLTIP_SUFFIX;
 
 	public StorageConnectorBlock() {
 		super(BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(2.5F).sound(SoundType.WOOD));

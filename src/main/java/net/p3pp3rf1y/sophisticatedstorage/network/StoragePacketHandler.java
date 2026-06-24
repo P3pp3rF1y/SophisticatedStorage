@@ -12,11 +12,14 @@ public class StoragePacketHandler extends PacketHandler {
 
 	@Override
 	public void registerMessages() {
-		registerMessage(OpenStorageInventoryMessage.class, OpenStorageInventoryMessage::encode, OpenStorageInventoryMessage::decode, OpenStorageInventoryMessage::onMessage);
-		registerMessage(RequestStorageContentsMessage.class, RequestStorageContentsMessage::encode, RequestStorageContentsMessage::decode, RequestStorageContentsMessage::onMessage);
+		registerMessage(OpenStorageInventoryMessage.class, OpenStorageInventoryMessage::encode, OpenStorageInventoryMessage::decode,
+				OpenStorageInventoryMessage::onMessage);
+		registerMessage(RequestStorageContentsMessage.class, RequestStorageContentsMessage::encode, RequestStorageContentsMessage::decode,
+				RequestStorageContentsMessage::onMessage);
 		registerMessage(StorageContentsMessage.class, StorageContentsMessage::encode, StorageContentsMessage::decode, StorageContentsMessage::onMessage);
 		registerMessage(ScrolledToolMessage.class, ScrolledToolMessage::encode, ScrolledToolMessage::decode, ScrolledToolMessage::onMessage);
 		registerMessage(StorageOpennessMessage.class, StorageOpennessMessage::encode, StorageOpennessMessage::decode, StorageOpennessMessage::onMessage);
-		registerMessage(RequestControllerTargetHighlightsMessage.class, RequestControllerTargetHighlightsMessage::encode, RequestControllerTargetHighlightsMessage::decode, RequestControllerTargetHighlightsMessage::onMessage);
+		registerMessage(RequestControllerTargetHighlightsMessage.class, RequestControllerTargetHighlightsMessage::encode,
+				RequestControllerTargetHighlightsMessage::decode, RequestControllerTargetHighlightsMessage::onMessage);
 	}
 }

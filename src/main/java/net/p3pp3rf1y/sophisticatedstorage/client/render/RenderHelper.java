@@ -21,11 +21,13 @@ import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 import javax.annotation.Nullable;
+
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class RenderHelper {
-	private RenderHelper() {}
+	private RenderHelper() {
+	}
 
 	private static final Cache<Integer, SpriteData> SPRITE_CACHE = CacheBuilder.newBuilder().expireAfterAccess(1, TimeUnit.MINUTES).build();
 
@@ -57,7 +59,7 @@ public class RenderHelper {
 		return spriteData;
 	}
 
-	@SuppressWarnings("java:S1874") //need to call deprecated getQuads here as well just in case it was overriden by mods instead of the main one
+	@SuppressWarnings("java:S1874") // need to call deprecated getQuads here as well just in case it was overriden by mods instead of the main one
 	@Nullable
 	private static SpriteData parseSpriteFromModel(BlockState blockState, @Nullable Direction direction, RandomSource rand) {
 		SpriteData spriteData = null;
@@ -72,7 +74,7 @@ public class RenderHelper {
 					return new SpriteData(quad.getSprite(), quad.getTintIndex(), translucent);
 				}
 
-				//noinspection deprecation
+				// noinspection deprecation
 				for (BakedQuad bakedQuad : blockModel.getQuads(blockState, null, rand)) {
 					if (spriteData == null) {
 						spriteData = new SpriteData(bakedQuad.getSprite(), bakedQuad.getTintIndex(), translucent);
@@ -83,16 +85,14 @@ public class RenderHelper {
 					}
 				}
 			}
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			// NO OP
 		}
 
 		if (spriteData == null) {
 			try {
 				spriteData = new SpriteData(blockModel.getParticleIcon(ModelData.EMPTY), -1, false);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				// NO OP
 			}
 		}
@@ -100,7 +100,8 @@ public class RenderHelper {
 		return spriteData;
 	}
 
-	public record SpriteData(TextureAtlasSprite sprite, int tintIndex, boolean translucent) {}
+	public record SpriteData(TextureAtlasSprite sprite, int tintIndex, boolean translucent) {
+	}
 
 	private static BlockState getDefaultBlockState(ResourceLocation blockName) {
 		Block block = ForgeRegistries.BLOCKS.getValue(blockName);
@@ -110,7 +111,8 @@ public class RenderHelper {
 	static void renderQuad(VertexConsumer consumer, Matrix4f pose, Vector3f normal, int packedOverlay, int packedLight, float alpha) {
 		renderQuad(consumer, pose, normal, packedOverlay, packedLight, alpha, 0, 0, 1, 1);
 	}
-	static void renderQuad(VertexConsumer consumer, Matrix4f pose, Vector3f normal, int packedOverlay, int packedLight, float alpha, float minU, float minV, float maxU, float maxV) {
+	static void renderQuad(VertexConsumer consumer, Matrix4f pose, Vector3f normal, int packedOverlay, int packedLight, float alpha, float minU, float minV,
+			float maxU, float maxV) {
 		int minX = 0;
 		int minY = 0;
 		int maxY = 1;
@@ -122,7 +124,8 @@ public class RenderHelper {
 		addVertex(pose, normal, consumer, maxY, maxX, packedOverlay, packedLight, minU, minV, alpha);
 	}
 
-	private static void addVertex(Matrix4f pose, Vector3f normal, VertexConsumer pConsumer, int pY, float pX, int packedOverlay, int packedLight, float u, float v, float alpha) {
+	private static void addVertex(Matrix4f pose, Vector3f normal, VertexConsumer pConsumer, int pY, float pX, int packedOverlay, int packedLight, float u,
+			float v, float alpha) {
 		Vector4f pos = new Vector4f(pX, pY, 0, 1.0F);
 		pose.transform(pos);
 		pConsumer.vertex(pos.x(), pos.y(), pos.z(), 1, 1, 1, alpha, u, v, packedOverlay, packedLight, normal.x(), normal.y(), normal.z());

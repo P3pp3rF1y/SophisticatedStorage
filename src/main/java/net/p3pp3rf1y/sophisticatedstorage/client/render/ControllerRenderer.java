@@ -32,7 +32,8 @@ import java.util.OptionalDouble;
 
 public class ControllerRenderer implements BlockEntityRenderer<ControllerBlockEntity> {
 	@Override
-	public void render(ControllerBlockEntity controller, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
+	public void render(ControllerBlockEntity controller, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight,
+			int packedOverlay) {
 		SimpleMaterialOverlayRenderer.renderHiddenOverlay(controller, poseStack, bufferSource, packedLight, packedOverlay);
 
 		LocalPlayer player = Minecraft.getInstance().player;
@@ -45,7 +46,8 @@ public class ControllerRenderer implements BlockEntityRenderer<ControllerBlockEn
 			return;
 		}
 
-		InventoryHelper.getItemFromEitherHand(player, ModItems.DEBUG_TOOL.get()).ifPresent(storageTool -> renderConnectedStorageBlocksInfo(controller, Direction.orderedByNearest(player)[0].getOpposite(), poseStack, bufferSource));
+		InventoryHelper.getItemFromEitherHand(player, ModItems.DEBUG_TOOL.get()).ifPresent(
+				storageTool -> renderConnectedStorageBlocksInfo(controller, Direction.orderedByNearest(player)[0].getOpposite(), poseStack, bufferSource));
 		InventoryHelper.getItemFromEitherHand(player, ModItems.STORAGE_TOOL.get()).ifPresent(storageTool -> {
 			if (StorageToolItem.getMode(storageTool) != StorageToolItem.Mode.LINK) {
 				return;
@@ -59,7 +61,8 @@ public class ControllerRenderer implements BlockEntityRenderer<ControllerBlockEn
 		});
 	}
 
-	private void renderConnectedStorageBlocksInfo(ControllerBlockEntity controller, Direction playerLookDirection, PoseStack poseStack, MultiBufferSource bufferSource) {
+	private void renderConnectedStorageBlocksInfo(ControllerBlockEntity controller, Direction playerLookDirection, PoseStack poseStack,
+			MultiBufferSource bufferSource) {
 		Font fontRenderer = Minecraft.getInstance().font;
 		double zScale = 0.001;
 		float scale = 0.015f;
@@ -79,9 +82,11 @@ public class ControllerRenderer implements BlockEntityRenderer<ControllerBlockEn
 			poseStack.translate(-0.45f, 0.45f, 0);
 
 			poseStack.scale(scale, -scale, (float) zScale);
-			fontRenderer.drawInBatch("Order: " + storageOrder, 0, 0, DyeColor.WHITE.getTextColor(), false, poseStack.last().pose(), bufferSource, Font.DisplayMode.SEE_THROUGH, 0, 15728880);
+			fontRenderer.drawInBatch("Order: " + storageOrder, 0, 0, DyeColor.WHITE.getTextColor(), false, poseStack.last().pose(), bufferSource,
+					Font.DisplayMode.SEE_THROUGH, 0, 15728880);
 			poseStack.translate(0, 10, 0);
-			fontRenderer.drawInBatch("Slots: " + controller.getSlots(storageOrder - 1), 0, 0, DyeColor.WHITE.getTextColor(), false, poseStack.last().pose(), bufferSource, Font.DisplayMode.SEE_THROUGH, 0, 15728880);
+			fontRenderer.drawInBatch("Slots: " + controller.getSlots(storageOrder - 1), 0, 0, DyeColor.WHITE.getTextColor(), false, poseStack.last().pose(),
+					bufferSource, Font.DisplayMode.SEE_THROUGH, 0, 15728880);
 			poseStack.popPose();
 
 			storageOrder++;
@@ -94,14 +99,16 @@ public class ControllerRenderer implements BlockEntityRenderer<ControllerBlockEn
 			VoxelShape shape = state.getShape(level, pos, CollisionContext.empty());
 			renderLineBetweenBlocks(controller.getBlockPos(), pos, shape, poseStack, bufferSource, DyeColor.LIME.getTextureDiffuseColors());
 		});
-		BlockHighlightRenderHelper.renderThickEdges(poseStack, bufferSource, DyeColor.LIME.getTextColor(), controller.getLinkedBlockEdges(), controller.getBlockPos());
+		BlockHighlightRenderHelper.renderThickEdges(poseStack, bufferSource, DyeColor.LIME.getTextColor(), controller.getLinkedBlockEdges(),
+				controller.getBlockPos());
 	}
 
 	private void renderStorageBlocksOutline(ControllerBlockEntity controller, PoseStack poseStack, MultiBufferSource bufferSource) {
 		BlockHighlightRenderHelper.renderThickEdges(poseStack, bufferSource, 0x69c53b, controller.getStorageBlockEdges(), controller.getBlockPos());
 	}
 
-	private void renderLineBetweenBlocks(BlockPos initialPos, BlockPos pos, VoxelShape shape, PoseStack poseStack, MultiBufferSource bufferSource, float[] color) {
+	private void renderLineBetweenBlocks(BlockPos initialPos, BlockPos pos, VoxelShape shape, PoseStack poseStack, MultiBufferSource bufferSource,
+			float[] color) {
 		if (shape.isEmpty()) {
 			return;
 		}
@@ -119,10 +126,9 @@ public class ControllerRenderer implements BlockEntityRenderer<ControllerBlockEn
 		float normalX = (float) (pos.getX() - initialPos.getX() + (0.5F - center.x()));
 		float normalY = (float) (pos.getY() - initialPos.getY() + (0.5F - center.y()));
 		float normalZ = (float) (pos.getZ() - initialPos.getZ() + (0.5F - center.z()));
-		buffer.vertex(matrix4f, 0.5F, 0.5F, 0.5F).color(red, green, blue, 255)
-				.normal(matrix3f, normalX, normalY, normalZ).endVertex();
-		buffer.vertex(matrix4f, (float) (pos.getX() - initialPos.getX() + center.x()), (float) (pos.getY() - initialPos.getY() + center.y()), (float) (pos.getZ() - initialPos.getZ() + center.z())).color(red, green, blue, 255)
-				.normal(matrix3f, normalX, normalY, normalZ).endVertex();
+		buffer.vertex(matrix4f, 0.5F, 0.5F, 0.5F).color(red, green, blue, 255).normal(matrix3f, normalX, normalY, normalZ).endVertex();
+		buffer.vertex(matrix4f, (float) (pos.getX() - initialPos.getX() + center.x()), (float) (pos.getY() - initialPos.getY() + center.y()),
+				(float) (pos.getZ() - initialPos.getZ() + center.z())).color(red, green, blue, 255).normal(matrix3f, normalX, normalY, normalZ).endVertex();
 	}
 
 	private void renderControllerOutline(ControllerBlockEntity controller, PoseStack poseStack, MultiBufferSource bufferSource) {
@@ -135,22 +141,13 @@ public class ControllerRenderer implements BlockEntityRenderer<ControllerBlockEn
 	}
 
 	private static class RenderTypes extends RenderType {
-		private static final RenderType LINES = create(
-				"storage_lines",
-				DefaultVertexFormat.POSITION_COLOR_NORMAL,
-				VertexFormat.Mode.LINES,
-				256,
-				false,
-				false,
-				CompositeState.builder()
-						.setShaderState(RENDERTYPE_LINES_SHADER)
-						.setDepthTestState(NO_DEPTH_TEST)
-						.setLineState(new LineStateShard(OptionalDouble.empty()))
-						.setLayeringState(VIEW_OFFSET_Z_LAYERING)
-						.setCullState(NO_CULL)
+		private static final RenderType LINES = create("storage_lines", DefaultVertexFormat.POSITION_COLOR_NORMAL, VertexFormat.Mode.LINES, 256, false, false,
+				CompositeState.builder().setShaderState(RENDERTYPE_LINES_SHADER).setDepthTestState(NO_DEPTH_TEST)
+						.setLineState(new LineStateShard(OptionalDouble.empty())).setLayeringState(VIEW_OFFSET_Z_LAYERING).setCullState(NO_CULL)
 						.createCompositeState(false));
 
-		public RenderTypes(String pName, VertexFormat pFormat, VertexFormat.Mode pMode, int pBufferSize, boolean pAffectsCrumbling, boolean pSortOnUpload, Runnable pSetupState, Runnable pClearState) {
+		public RenderTypes(String pName, VertexFormat pFormat, VertexFormat.Mode pMode, int pBufferSize, boolean pAffectsCrumbling, boolean pSortOnUpload,
+				Runnable pSetupState, Runnable pClearState) {
 			super(pName, pFormat, pMode, pBufferSize, pAffectsCrumbling, pSortOnUpload, pSetupState, pClearState);
 		}
 

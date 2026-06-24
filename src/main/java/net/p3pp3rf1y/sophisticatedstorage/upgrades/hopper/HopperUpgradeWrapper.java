@@ -36,12 +36,15 @@ import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.upgrades.INeighborChangeListenerUpgrade;
 
 import javax.annotation.Nullable;
+
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 public class HopperUpgradeWrapper extends UpgradeWrapperBase<HopperUpgradeWrapper, HopperUpgradeItem>
-		implements ITickableUpgrade, INeighborChangeListenerUpgrade {
+		implements
+			ITickableUpgrade,
+			INeighborChangeListenerUpgrade {
 
 	private Set<Direction> pullDirections = new LinkedHashSet<>();
 	private Set<Direction> pushDirections = new LinkedHashSet<>();
@@ -56,8 +59,8 @@ public class HopperUpgradeWrapper extends UpgradeWrapperBase<HopperUpgradeWrappe
 		super(storageWrapper, upgrade, upgradeSaveHandler);
 		inputFilterLogic = new ContentsFilterLogic(upgrade, upgradeSaveHandler, upgradeItem.getInputFilterSlotCount(), storageWrapper::getInventoryHandler,
 				storageWrapper.getSettingsHandler().getTypeCategory(MemorySettingsCategory.class), "inputFilter");
-		outputFilterLogic = new TargetContentsFilterLogic(upgrade, upgradeSaveHandler, upgradeItem.getOutputFilterSlotCount(), storageWrapper::getInventoryHandler,
-				storageWrapper.getSettingsHandler().getTypeCategory(MemorySettingsCategory.class), "outputFilter");
+		outputFilterLogic = new TargetContentsFilterLogic(upgrade, upgradeSaveHandler, upgradeItem.getOutputFilterSlotCount(),
+				storageWrapper::getInventoryHandler, storageWrapper.getSettingsHandler().getTypeCategory(MemorySettingsCategory.class), "outputFilter");
 
 		deserialize();
 	}
@@ -123,11 +126,13 @@ public class HopperUpgradeWrapper extends UpgradeWrapperBase<HopperUpgradeWrappe
 
 	private Optional<Container> getEntityContainer(Level level, BlockPos pos, Direction direction, @Nullable Entity entity) {
 		BlockState storageState = level.getBlockState(pos);
-		List<BlockPos> offsetPositions = entity == null && storageState.getBlock() instanceof StorageBlockBase storageBlock ? storageBlock.getNeighborPos(storageState, pos, direction) : List.of(pos.relative(direction));
+		List<BlockPos> offsetPositions = entity == null && storageState.getBlock() instanceof StorageBlockBase storageBlock
+				? storageBlock.getNeighborPos(storageState, pos, direction)
+				: List.of(pos.relative(direction));
 
 		List<Entity> entities = new ArrayList<>();
 		for (BlockPos offsetPosition : offsetPositions) {
-			entities.addAll(level.getEntities((Entity)null, new AABB(offsetPosition), e -> e != entity && EntitySelector.CONTAINER_ENTITY_SELECTOR.test(e)));
+			entities.addAll(level.getEntities((Entity) null, new AABB(offsetPosition), e -> e != entity && EntitySelector.CONTAINER_ENTITY_SELECTOR.test(e)));
 		}
 		if (!entities.isEmpty()) {
 			Collections.shuffle(entities);
@@ -143,7 +148,8 @@ public class HopperUpgradeWrapper extends UpgradeWrapperBase<HopperUpgradeWrappe
 		for (int slot = 0; slot < fromHandler.getSlots(); slot++) {
 			ItemStack slotStack = fromHandler.getStackInSlot(slot);
 			if (!slotStack.isEmpty() && outputFilterLogic.matchesFilter(slotStack)) {
-				ItemStack extractedStack = fromHandler.extractItem(slot, Math.min(worldlyContainer.getMaxStackSize(), upgradeItem.getMaxTransferStackSize()), true);
+				ItemStack extractedStack = fromHandler.extractItem(slot, Math.min(worldlyContainer.getMaxStackSize(), upgradeItem.getMaxTransferStackSize()),
+						true);
 				if (!extractedStack.isEmpty() && pushStackToContainer(worldlyContainer, face, extractedStack, fromHandler, slot)) {
 					return true;
 				}
@@ -153,10 +159,13 @@ public class HopperUpgradeWrapper extends UpgradeWrapperBase<HopperUpgradeWrappe
 		return false;
 	}
 
-	private boolean pushStackToContainer(Container container, Direction face, ItemStack extractedStack, ITrackedContentsItemHandler fromHandler, int slotToExtractFrom) {
+	private boolean pushStackToContainer(Container container, Direction face, ItemStack extractedStack, ITrackedContentsItemHandler fromHandler,
+			int slotToExtractFrom) {
 		for (int containerSlot = 0; containerSlot < container.getContainerSize(); containerSlot++) {
 
-			boolean canPlaceItem = container instanceof WorldlyContainer worldlyContainer ? worldlyContainer.canPlaceItemThroughFace(containerSlot, extractedStack, face) : container.canPlaceItem(containerSlot, extractedStack);
+			boolean canPlaceItem = container instanceof WorldlyContainer worldlyContainer
+					? worldlyContainer.canPlaceItemThroughFace(containerSlot, extractedStack, face)
+					: container.canPlaceItem(containerSlot, extractedStack);
 
 			if (canPlaceItem) {
 				ItemStack existingStack = container.getItem(containerSlot);
@@ -187,9 +196,8 @@ public class HopperUpgradeWrapper extends UpgradeWrapperBase<HopperUpgradeWrappe
 			if (stackToInsert.getCount() > upgradeItem.getMaxTransferStackSize()) {
 				stackToInsert.setCount(upgradeItem.getMaxTransferStackSize());
 			}
-			if (!stackToInsert.isEmpty()
-					&& (!(container instanceof WorldlyContainer worldlyContainer) || worldlyContainer.canTakeItemThroughFace(containerSlot, stackToInsert, face))
-					&& inputFilterLogic.matchesFilter(stackToInsert)) {
+			if (!stackToInsert.isEmpty() && (!(container instanceof WorldlyContainer worldlyContainer)
+					|| worldlyContainer.canTakeItemThroughFace(containerSlot, stackToInsert, face)) && inputFilterLogic.matchesFilter(stackToInsert)) {
 				ItemStack remainingStack = InventoryHelper.insertIntoInventory(stackToInsert, toHandler, false);
 
 				if (remainingStack.getCount() < stackToInsert.getCount()) {
@@ -221,7 +229,9 @@ public class HopperUpgradeWrapper extends UpgradeWrapperBase<HopperUpgradeWrappe
 
 	private List<WorldlyContainer> getWorldlyContainers(Level level, BlockPos pos, Direction direction) {
 		BlockState storageState = level.getBlockState(pos);
-		List<BlockPos> offsetPositions = storageState.getBlock() instanceof StorageBlockBase storageBlock ? storageBlock.getNeighborPos(storageState, pos, direction) : List.of(pos.relative(direction));
+		List<BlockPos> offsetPositions = storageState.getBlock() instanceof StorageBlockBase storageBlock
+				? storageBlock.getNeighborPos(storageState, pos, direction)
+				: List.of(pos.relative(direction));
 		List<WorldlyContainer> worldlyContainers = new ArrayList<>();
 		offsetPositions.forEach(offsetPos -> {
 			BlockState state = level.getBlockState(offsetPos);
@@ -249,7 +259,8 @@ public class HopperUpgradeWrapper extends UpgradeWrapperBase<HopperUpgradeWrappe
 				if (!extractedStack.isEmpty()) {
 					ItemStack remainder = InventoryHelper.insertIntoInventory(extractedStack, toHandler, true);
 					if (remainder.getCount() < extractedStack.getCount()) {
-						InventoryHelper.insertIntoInventory(fromHandler.extractItem(slot, extractedStack.getCount() - remainder.getCount(), false), toHandler, false);
+						InventoryHelper.insertIntoInventory(fromHandler.extractItem(slot, extractedStack.getCount() - remainder.getCount(), false), toHandler,
+								false);
 						return true;
 					}
 				}
@@ -260,8 +271,7 @@ public class HopperUpgradeWrapper extends UpgradeWrapperBase<HopperUpgradeWrappe
 
 	@Override
 	public void onNeighborChange(Level level, BlockPos pos, Direction direction) {
-		if (!level.isClientSide() && (pushDirections.contains(direction) || pullDirections.contains(direction))
-				&& needsCacheUpdate(level, pos, direction)) {
+		if (!level.isClientSide() && (pushDirections.contains(direction) || pullDirections.contains(direction)) && needsCacheUpdate(level, pos, direction)) {
 			updateCacheOnSide(level, pos, direction);
 		}
 	}
@@ -290,22 +300,23 @@ public class HopperUpgradeWrapper extends UpgradeWrapperBase<HopperUpgradeWrappe
 		}
 
 		BlockState storageState = level.getBlockState(pos);
-		List<BlockPos> offsetPositions = storageState.getBlock() instanceof StorageBlockBase storageBlock ? storageBlock.getNeighborPos(storageState, pos, direction) : List.of(pos.relative(direction));
+		List<BlockPos> offsetPositions = storageState.getBlock() instanceof StorageBlockBase storageBlock
+				? storageBlock.getNeighborPos(storageState, pos, direction)
+				: List.of(pos.relative(direction));
 		List<LazyOptional<IItemHandler>> caches = new ArrayList<>();
 		AtomicBoolean refreshOnEveryNeighborChange = new AtomicBoolean(false);
-		offsetPositions.forEach(offsetPos ->
-				WorldHelper.getLoadedBlockEntity(level, offsetPos).ifPresent(blockEntity -> {
-					if (blockEntity instanceof StorageInputBlockEntity input) {
-						refreshOnEveryNeighborChange.set(true);
-						blockEntity = input.getControllerPos().map(level::getBlockEntity).orElse(blockEntity);
-					}
+		offsetPositions.forEach(offsetPos -> WorldHelper.getLoadedBlockEntity(level, offsetPos).ifPresent(blockEntity -> {
+			if (blockEntity instanceof StorageInputBlockEntity input) {
+				refreshOnEveryNeighborChange.set(true);
+				blockEntity = input.getControllerPos().map(level::getBlockEntity).orElse(blockEntity);
+			}
 
-					LazyOptional<IItemHandler> lazyOptional = blockEntity.getCapability(ForgeCapabilities.ITEM_HANDLER, direction.getOpposite());
-					if (lazyOptional.isPresent()) {
-						lazyOptional.addListener(l -> updateCacheOnSide(level, pos, direction));
-						caches.add(lazyOptional);
-					}
-				}));
+			LazyOptional<IItemHandler> lazyOptional = blockEntity.getCapability(ForgeCapabilities.ITEM_HANDLER, direction.getOpposite());
+			if (lazyOptional.isPresent()) {
+				lazyOptional.addListener(l -> updateCacheOnSide(level, pos, direction));
+				caches.add(lazyOptional);
+			}
+		}));
 		handlerCache.put(direction, new ItemHandlerHolder(caches, refreshOnEveryNeighborChange.get()));
 	}
 
@@ -366,8 +377,10 @@ public class HopperUpgradeWrapper extends UpgradeWrapperBase<HopperUpgradeWrappe
 		pullDirections.clear();
 		pushDirections.clear();
 		if (upgrade.hasTag()) {
-			pullDirections = NBTHelper.getCollection(upgrade.getOrCreateTag(), "pullDirections", Tag.TAG_STRING, t -> Optional.ofNullable(Direction.byName(t.getAsString())), HashSet::new).orElseGet(HashSet::new);
-			pushDirections = NBTHelper.getCollection(upgrade.getOrCreateTag(), "pushDirections", Tag.TAG_STRING, t -> Optional.ofNullable(Direction.byName(t.getAsString())), HashSet::new).orElseGet(HashSet::new);
+			pullDirections = NBTHelper.getCollection(upgrade.getOrCreateTag(), "pullDirections", Tag.TAG_STRING,
+					t -> Optional.ofNullable(Direction.byName(t.getAsString())), HashSet::new).orElseGet(HashSet::new);
+			pushDirections = NBTHelper.getCollection(upgrade.getOrCreateTag(), "pushDirections", Tag.TAG_STRING,
+					t -> Optional.ofNullable(Direction.byName(t.getAsString())), HashSet::new).orElseGet(HashSet::new);
 		}
 	}
 

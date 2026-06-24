@@ -19,13 +19,15 @@ import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageTranslationHelper;
 
 import javax.annotation.Nullable;
+
 import java.util.*;
 import java.util.function.Consumer;
 
 public class CompressionUpgradeItem extends UpgradeItemBase<CompressionUpgradeItem.Wrapper> {
 	public static final UpgradeType<CompressionUpgradeItem.Wrapper> TYPE = new UpgradeType<>(CompressionUpgradeItem.Wrapper::new);
 	private static final String FIRST_INVENTORY_SLOT_TAG = "firstInventorySlot";
-	public static final List<UpgradeConflictDefinition> UPGRADE_CONFLICT_DEFINITIONS = List.of(new UpgradeConflictDefinition(CompactingUpgradeItem.class::isInstance, 0, StorageTranslationHelper.INSTANCE.translError("add.compacting_exists")));
+	public static final List<UpgradeConflictDefinition> UPGRADE_CONFLICT_DEFINITIONS = List.of(
+			new UpgradeConflictDefinition(CompactingUpgradeItem.class::isInstance, 0, StorageTranslationHelper.INSTANCE.translError("add.compacting_exists")));
 
 	public CompressionUpgradeItem() {
 		super(Config.SERVER.maxUpgradesPerStorage);
@@ -38,14 +40,17 @@ public class CompressionUpgradeItem extends UpgradeItemBase<CompressionUpgradeIt
 	}
 
 	private UpgradeSlotChangeResult checkCompressionSpace(IStorageWrapper storageWrapper) {
-        Optional<SlotRange> slotRange = storageWrapper.getInventoryHandler().getInventoryPartitioner().getFirstSpace(Config.SERVER.compressionUpgrade.maxNumberOfSlots.get());
+		Optional<SlotRange> slotRange = storageWrapper.getInventoryHandler().getInventoryPartitioner()
+				.getFirstSpace(Config.SERVER.compressionUpgrade.maxNumberOfSlots.get());
 
 		return slotRange.map(range -> canUseForCompression(storageWrapper, range))
-				.orElseGet(() -> new UpgradeSlotChangeResult.Fail(StorageTranslationHelper.INSTANCE.translError("add.compression_no_space"), Collections.emptySet(), Collections.emptySet(), Collections.emptySet()));
+				.orElseGet(() -> new UpgradeSlotChangeResult.Fail(StorageTranslationHelper.INSTANCE.translError("add.compression_no_space"),
+						Collections.emptySet(), Collections.emptySet(), Collections.emptySet()));
 	}
 
 	@Override
-	public UpgradeSlotChangeResult checkExtraInsertConditions(ItemStack upgradeStack, IStorageWrapper storageWrapper, boolean isClientSide, @Nullable IUpgradeItem<?> upgradeInSlot) {
+	public UpgradeSlotChangeResult checkExtraInsertConditions(ItemStack upgradeStack, IStorageWrapper storageWrapper, boolean isClientSide,
+			@Nullable IUpgradeItem<?> upgradeInSlot) {
 		if (isClientSide) {
 			return new UpgradeSlotChangeResult.Success();
 		}
@@ -74,7 +79,10 @@ public class CompressionUpgradeItem extends UpgradeItemBase<CompressionUpgradeIt
 		}
 		errorSlots.addAll(CompressionChainHelper.getCompressionChainErrorSlots(slotRange, stacks));
 
-		return !errorSlots.isEmpty() ? new UpgradeSlotChangeResult.Fail(StorageTranslationHelper.INSTANCE.translError("add.compression_incompatible_items"), Set.of(), errorSlots, Set.of()) : new UpgradeSlotChangeResult.Success();
+		return !errorSlots.isEmpty()
+				? new UpgradeSlotChangeResult.Fail(StorageTranslationHelper.INSTANCE.translError("add.compression_incompatible_items"), Set.of(), errorSlots,
+						Set.of())
+				: new UpgradeSlotChangeResult.Success();
 	}
 
 	@Override
@@ -91,7 +99,9 @@ public class CompressionUpgradeItem extends UpgradeItemBase<CompressionUpgradeIt
 			InventoryPartitioner inventoryPartitioner = storageWrapper.getInventoryHandler().getInventoryPartitioner();
 			inventoryPartitioner.getFirstSpace(Config.SERVER.compressionUpgrade.maxNumberOfSlots.get()).ifPresent(slotRange -> {
 				setFirstInventorySlot(slotRange.firstSlot());
-				inventoryPartitioner.addInventoryPart(slotRange.firstSlot(), slotRange.numberOfSlots(), new CompressionInventoryPart(storageWrapper.getInventoryHandler(), slotRange, () -> storageWrapper.getSettingsHandler().getTypeCategory(MemorySettingsCategory.class)));
+				inventoryPartitioner.addInventoryPart(slotRange.firstSlot(), slotRange.numberOfSlots(),
+						new CompressionInventoryPart(storageWrapper.getInventoryHandler(), slotRange,
+								() -> storageWrapper.getSettingsHandler().getTypeCategory(MemorySettingsCategory.class)));
 			});
 			storageWrapper.getSettingsHandler().getTypeCategory(ItemDisplaySettingsCategory.class).itemsChanged();
 		}

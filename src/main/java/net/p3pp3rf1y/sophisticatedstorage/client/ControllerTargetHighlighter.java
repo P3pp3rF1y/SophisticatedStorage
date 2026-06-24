@@ -28,7 +28,9 @@ public class ControllerTargetHighlighter {
 		}
 		highlightCooldown = HIGHLIGHT_CHECK_INTERVAL;
 		if (player.getOffhandItem().getItem() == ModItems.STORAGE_TOOL.get() && !player.getMainHandItem().isEmpty()) {
-			List<BlockPos> controllerPositions = WorldHelper.getBlockEntitiesInRange(player.level(), player.blockPosition(), Config.SERVER.controllerRange.get(), ControllerBlockEntity.class).stream().map(ControllerBlockEntity::getBlockPos).toList();
+			List<BlockPos> controllerPositions = WorldHelper
+					.getBlockEntitiesInRange(player.level(), player.blockPosition(), Config.SERVER.controllerRange.get(), ControllerBlockEntity.class).stream()
+					.map(ControllerBlockEntity::getBlockPos).toList();
 			StoragePacketHandler.INSTANCE.sendToServer(new RequestControllerTargetHighlightsMessage(player.getMainHandItem(), controllerPositions));
 			lastHighlightedStack = player.getMainHandItem();
 		}

@@ -21,8 +21,10 @@ import net.p3pp3rf1y.sophisticatedstorage.upgrades.IOMode;
 import javax.annotation.Nullable;
 
 public class HopperUpgradeContainer extends UpgradeContainerBase<HopperUpgradeWrapper, HopperUpgradeContainer> {
-	public static final Pair<ResourceLocation, ResourceLocation> EMPTY_INPUT_FILTER_SLOT_BACKGROUND = new Pair<>(InventoryMenu.BLOCK_ATLAS, SophisticatedStorage.getRL("item/empty_input_filter_slot"));
-	public static final Pair<ResourceLocation, ResourceLocation> EMPTY_OUTPUT_FILTER_SLOT_BACKGROUND = new Pair<>(InventoryMenu.BLOCK_ATLAS, SophisticatedStorage.getRL("item/empty_output_filter_slot"));
+	public static final Pair<ResourceLocation, ResourceLocation> EMPTY_INPUT_FILTER_SLOT_BACKGROUND = new Pair<>(InventoryMenu.BLOCK_ATLAS,
+			SophisticatedStorage.getRL("item/empty_input_filter_slot"));
+	public static final Pair<ResourceLocation, ResourceLocation> EMPTY_OUTPUT_FILTER_SLOT_BACKGROUND = new Pair<>(InventoryMenu.BLOCK_ATLAS,
+			SophisticatedStorage.getRL("item/empty_output_filter_slot"));
 	private final ContentsFilterLogicContainer inputFilterLogicContainer;
 
 	private final ContentsFilterLogicContainer outputFilterLogicContainer;
@@ -33,13 +35,15 @@ public class HopperUpgradeContainer extends UpgradeContainerBase<HopperUpgradeWr
 	@Nullable
 	private VerticalFacing verticalFacing;
 
-	public HopperUpgradeContainer(Player player, int upgradeContainerId, HopperUpgradeWrapper upgradeWrapper, UpgradeContainerType<HopperUpgradeWrapper, HopperUpgradeContainer> type) {
+	public HopperUpgradeContainer(Player player, int upgradeContainerId, HopperUpgradeWrapper upgradeWrapper,
+			UpgradeContainerType<HopperUpgradeWrapper, HopperUpgradeContainer> type) {
 		super(player, upgradeContainerId, upgradeWrapper, type);
 
 		inputFilterLogicContainer = new ContentsFilterLogicContainer(upgradeWrapper::getInputFilterLogic, this, this::addInputFilterSlot);
 		outputFilterLogicContainer = new ContentsFilterLogicContainer(upgradeWrapper::getOutputFilterLogic, this, this::addOutputFilterSlot);
 
-		sideIOContainer = new SideIOContainer(this, this::getHorizontalDirection, this::getVerticalFacing, this::getDirectionIOMode, this::setDirectionIOMode, false);
+		sideIOContainer = new SideIOContainer(this, this::getHorizontalDirection, this::getVerticalFacing, this::getDirectionIOMode, this::setDirectionIOMode,
+				false);
 	}
 
 	private void addInputFilterSlot(Slot slot) {
@@ -82,19 +86,19 @@ public class HopperUpgradeContainer extends UpgradeContainerBase<HopperUpgradeWr
 
 	private void setDirectionIOMode(Direction direction, IOMode ioMode) {
 		switch (ioMode) {
-			case OFF:
+			case OFF :
 				upgradeWrapper.setPullingFrom(direction, false);
 				upgradeWrapper.setPushingTo(direction, false);
 				break;
-			case PUSH:
+			case PUSH :
 				upgradeWrapper.setPullingFrom(direction, false);
 				upgradeWrapper.setPushingTo(direction, true);
 				break;
-			case PULL:
+			case PULL :
 				upgradeWrapper.setPullingFrom(direction, true);
 				upgradeWrapper.setPushingTo(direction, false);
 				break;
-			case PUSH_PULL:
+			case PUSH_PULL :
 				upgradeWrapper.setPullingFrom(direction, true);
 				upgradeWrapper.setPushingTo(direction, true);
 				break;

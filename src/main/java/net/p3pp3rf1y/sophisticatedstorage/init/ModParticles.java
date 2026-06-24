@@ -9,11 +9,13 @@ import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.client.particle.CustomTintTerrainParticleData;
 
 public class ModParticles {
-	private ModParticles() {}
+	private ModParticles() {
+	}
 
 	private static final DeferredRegister<ParticleType<?>> PARTICLES = DeferredRegister.create(ForgeRegistries.PARTICLE_TYPES, SophisticatedStorage.MOD_ID);
 
-	public static final RegistryObject<CustomTintTerrainParticleData> TERRAIN_PARTICLE = PARTICLES.register("terrain_particle", CustomTintTerrainParticleData::new);
+	public static final RegistryObject<CustomTintTerrainParticleData> TERRAIN_PARTICLE = PARTICLES.register("terrain_particle",
+			CustomTintTerrainParticleData::new);
 
 	public static void registerParticles(IEventBus modBus) {
 		PARTICLES.register(modBus);

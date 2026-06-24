@@ -7,6 +7,7 @@ import net.p3pp3rf1y.sophisticatedcore.util.BlockItemBase;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
 
 import javax.annotation.Nullable;
+
 import java.util.Optional;
 
 public class SimpleMaterialBlockItem extends BlockItemBase {

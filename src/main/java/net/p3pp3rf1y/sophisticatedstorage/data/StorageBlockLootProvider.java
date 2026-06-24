@@ -23,11 +23,7 @@ import java.util.Set;
 
 public class StorageBlockLootProvider extends LootTableProvider {
 	StorageBlockLootProvider(PackOutput packOutput) {
-		super(packOutput, Set.of(),
-				List.of(
-						new SubProviderEntry(SubProvider::new, LootContextParamSets.BLOCK)
-				)
-		);
+		super(packOutput, Set.of(), List.of(new SubProviderEntry(SubProvider::new, LootContextParamSets.BLOCK)));
 	}
 
 	private static class SubProvider extends BlockLootSubProvider {
@@ -86,31 +82,27 @@ public class StorageBlockLootProvider extends LootTableProvider {
 			add(ModBlocks.STORAGE_INPUT.get(), dropSimpleMaterialBlock(ModBlocks.STORAGE_INPUT_ITEM.get()));
 			add(ModBlocks.STORAGE_OUTPUT.get(), dropSimpleMaterialBlock(ModBlocks.STORAGE_OUTPUT_ITEM.get()));
 
-			ModBlocks.STORAGE_CONNECTOR_BLOCKS.forEach((woodType, blockSupplier) ->
-					add(blockSupplier.get(), dropSimpleMaterialBlock(ModBlocks.STORAGE_CONNECTOR_ITEMS.get(woodType).get()))
-			);
+			ModBlocks.STORAGE_CONNECTOR_BLOCKS.forEach(
+					(woodType, blockSupplier) -> add(blockSupplier.get(), dropSimpleMaterialBlock(ModBlocks.STORAGE_CONNECTOR_ITEMS.get(woodType).get())));
 
 			add(ModBlocks.DECORATION_TABLE.get(), dropBlock(ModBlocks.DECORATION_TABLE_ITEM.get()));
 		}
 
 		@Override
 		protected Iterable<Block> getKnownBlocks() {
-			return ForgeRegistries.BLOCKS.getEntries().stream()
-					.filter(e -> e.getKey().location().getNamespace().equals(SophisticatedStorage.MOD_ID))
-					.map(Map.Entry::getValue)
-					.toList();
+			return ForgeRegistries.BLOCKS.getEntries().stream().filter(e -> e.getKey().location().getNamespace().equals(SophisticatedStorage.MOD_ID))
+					.map(Map.Entry::getValue).toList();
 		}
 
 		private static LootTable.Builder dropStorageWithContents(Item storageItem) {
-			LootPool.Builder pool = LootPool.lootPool().name("main").setRolls(ConstantValue.exactly(1))
-					.add(LootItem.lootTableItem(storageItem))
-					.apply(CopyNameFunction.copyName(CopyNameFunction.NameSource.BLOCK_ENTITY))
-					.apply(CopyStorageDataFunction.builder());
+			LootPool.Builder pool = LootPool.lootPool().name("main").setRolls(ConstantValue.exactly(1)).add(LootItem.lootTableItem(storageItem))
+					.apply(CopyNameFunction.copyName(CopyNameFunction.NameSource.BLOCK_ENTITY)).apply(CopyStorageDataFunction.builder());
 			return LootTable.lootTable().withPool(pool);
 		}
 
 		public LootTable.Builder dropBlock(ItemLike pItem) {
-			return LootTable.lootTable().withPool(applyExplosionCondition(pItem, LootPool.lootPool().name("main").setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(pItem))));
+			return LootTable.lootTable().withPool(
+					applyExplosionCondition(pItem, LootPool.lootPool().name("main").setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(pItem))));
 		}
 
 		private LootTable.Builder dropSimpleMaterialBlock(ItemLike item) {

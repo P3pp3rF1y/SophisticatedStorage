@@ -15,7 +15,7 @@ import java.util.UUID;
 public class ClientStorageContentsTooltip extends ClientStorageContentsTooltipBase {
 	private final ItemStack storageItem;
 
-	@SuppressWarnings("unused") //parameter needs to be there so that addListener logic would know which event this method listens to
+	@SuppressWarnings("unused") // parameter needs to be there so that addListener logic would know which event this method listens to
 	public static void onWorldLoad(LevelEvent.Load event) {
 		refreshContents();
 		lastRequestTime = 0;
@@ -23,7 +23,8 @@ public class ClientStorageContentsTooltip extends ClientStorageContentsTooltipBa
 
 	@Override
 	public void renderImage(Font font, int leftX, int topY, GuiGraphics guiGraphics) {
-		storageItem.getCapability(CapabilityStorageWrapper.getCapabilityInstance()).ifPresent(wrapper -> renderTooltip(wrapper, font, leftX, topY, guiGraphics));
+		storageItem.getCapability(CapabilityStorageWrapper.getCapabilityInstance())
+				.ifPresent(wrapper -> renderTooltip(wrapper, font, leftX, topY, guiGraphics));
 	}
 
 	public ClientStorageContentsTooltip(StorageContentsTooltip tooltip) {

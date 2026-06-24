@@ -32,7 +32,8 @@ public class ShulkerBoxFromVanillaShapelessRecipe extends ShapelessRecipe implem
 
 	@Override
 	public boolean matches(CraftingContainer inventory, Level level) {
-		return super.matches(inventory, level) && getVanillaShulkerBox(inventory).map(storage -> !(storage.getItem() instanceof WoodStorageBlockItem) || !WoodStorageBlockItem.isPacked(storage)).orElse(false);
+		return super.matches(inventory, level) && getVanillaShulkerBox(inventory)
+				.map(storage -> !(storage.getItem() instanceof WoodStorageBlockItem) || !WoodStorageBlockItem.isPacked(storage)).orElse(false);
 	}
 
 	@Override

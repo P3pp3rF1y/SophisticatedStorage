@@ -7,9 +7,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.BlastingRecipe;
-import net.minecraft.world.item.crafting.SmeltingRecipe;
-import net.minecraft.world.item.crafting.SmokingRecipe;
+import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunctionType;
 import net.minecraftforge.api.distmarker.Dist;
@@ -88,8 +86,12 @@ import net.p3pp3rf1y.sophisticatedcore.util.BlockItemBase;
 import net.p3pp3rf1y.sophisticatedcore.util.ItemBase;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
+import net.p3pp3rf1y.sophisticatedstorage.block.*;
+import net.p3pp3rf1y.sophisticatedstorage.client.gui.*;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageButtonDefinitions;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageTranslationHelper;
+import net.p3pp3rf1y.sophisticatedstorage.common.gui.*;
+import net.p3pp3rf1y.sophisticatedstorage.crafting.*;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.DropPackedDisabledCondition;
 import net.p3pp3rf1y.sophisticatedstorage.data.CopyStorageDataFunction;
 import net.p3pp3rf1y.sophisticatedstorage.item.*;
@@ -102,13 +104,16 @@ import net.p3pp3rf1y.sophisticatedstorage.upgrades.hopper.HopperUpgradeWrapper;
 import java.util.List;
 import java.util.function.IntSupplier;
 
+@SuppressWarnings("PMD.UnnecessaryImport")
 public class ModItems {
 	private ModItems() {
 	}
 
 	public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, SophisticatedStorage.MOD_ID);
-	public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB.location(), SophisticatedStorage.MOD_ID);
-	public static final DeferredRegister<LootItemFunctionType> LOOT_FUNCTION_TYPES = DeferredRegister.create(Registries.LOOT_FUNCTION_TYPE.location(), SophisticatedStorage.MOD_ID);
+	public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB.location(),
+			SophisticatedStorage.MOD_ID);
+	public static final DeferredRegister<LootItemFunctionType> LOOT_FUNCTION_TYPES = DeferredRegister.create(Registries.LOOT_FUNCTION_TYPE.location(),
+			SophisticatedStorage.MOD_ID);
 
 	public static final ResourceLocation STORAGE_UPGRADE_TAG_NAME = new ResourceLocation(SophisticatedStorage.MOD_ID, "upgrade");
 
@@ -123,17 +128,21 @@ public class ModItems {
 	public static final RegistryObject<FilterUpgradeItem> ADVANCED_FILTER_UPGRADE = ITEMS.register("advanced_filter_upgrade",
 			() -> new FilterUpgradeItem(Config.SERVER.advancedFilterUpgrade.filterSlots::get, Config.SERVER.maxUpgradesPerStorage));
 	public static final RegistryObject<MagnetUpgradeItem> MAGNET_UPGRADE = ITEMS.register("magnet_upgrade",
-			() -> new MagnetUpgradeItem(Config.SERVER.magnetUpgrade.magnetRange::get, Config.SERVER.magnetUpgrade.filterSlots::get, Config.SERVER.maxUpgradesPerStorage));
+			() -> new MagnetUpgradeItem(Config.SERVER.magnetUpgrade.magnetRange::get, Config.SERVER.magnetUpgrade.filterSlots::get,
+					Config.SERVER.maxUpgradesPerStorage));
 	public static final RegistryObject<MagnetUpgradeItem> ADVANCED_MAGNET_UPGRADE = ITEMS.register("advanced_magnet_upgrade",
-			() -> new MagnetUpgradeItem(Config.SERVER.advancedMagnetUpgrade.magnetRange::get, Config.SERVER.advancedMagnetUpgrade.filterSlots::get, Config.SERVER.maxUpgradesPerStorage));
+			() -> new MagnetUpgradeItem(Config.SERVER.advancedMagnetUpgrade.magnetRange::get, Config.SERVER.advancedMagnetUpgrade.filterSlots::get,
+					Config.SERVER.maxUpgradesPerStorage));
 	public static final RegistryObject<FeedingUpgradeItem> FEEDING_UPGRADE = ITEMS.register("feeding_upgrade",
 			() -> new FeedingUpgradeItem(Config.SERVER.feedingUpgrade.filterSlots::get, Config.SERVER.maxUpgradesPerStorage));
 	public static final RegistryObject<FeedingUpgradeItem> ADVANCED_FEEDING_UPGRADE = ITEMS.register("advanced_feeding_upgrade",
 			() -> new FeedingUpgradeItem(Config.SERVER.advancedFeedingUpgrade.filterSlots::get, Config.SERVER.maxUpgradesPerStorage));
 	public static final RegistryObject<CompactingUpgradeItem> COMPACTING_UPGRADE = ITEMS.register("compacting_upgrade",
-			() -> new StorageCompactingUpgradeItem(false, Config.SERVER.compactingUpgrade.filterSlots::get, Config.SERVER.maxUpgradesPerStorage, Config.SERVER.compactingUpgrade::getCompactingResult));
+			() -> new StorageCompactingUpgradeItem(false, Config.SERVER.compactingUpgrade.filterSlots::get, Config.SERVER.maxUpgradesPerStorage,
+					Config.SERVER.compactingUpgrade::getCompactingResult));
 	public static final RegistryObject<CompactingUpgradeItem> ADVANCED_COMPACTING_UPGRADE = ITEMS.register("advanced_compacting_upgrade",
-			() -> new StorageCompactingUpgradeItem(true, Config.SERVER.advancedCompactingUpgrade.filterSlots::get, Config.SERVER.maxUpgradesPerStorage, Config.SERVER.compactingUpgrade::getCompactingResult));
+			() -> new StorageCompactingUpgradeItem(true, Config.SERVER.advancedCompactingUpgrade.filterSlots::get, Config.SERVER.maxUpgradesPerStorage,
+					Config.SERVER.compactingUpgrade::getCompactingResult));
 	public static final RegistryObject<VoidUpgradeItem> VOID_UPGRADE = ITEMS.register("void_upgrade",
 			() -> new VoidUpgradeItem(Config.SERVER.voidUpgrade, Config.SERVER.maxUpgradesPerStorage));
 	public static final RegistryObject<VoidUpgradeItem> ADVANCED_VOID_UPGRADE = ITEMS.register("advanced_void_upgrade",
@@ -150,59 +159,89 @@ public class ModItems {
 			() -> new BlastingUpgradeItem(Config.SERVER.blastingUpgrade, Config.SERVER.maxUpgradesPerStorage));
 	public static final RegistryObject<AutoBlastingUpgradeItem> AUTO_BLASTING_UPGRADE = ITEMS.register("auto_blasting_upgrade",
 			() -> new AutoBlastingUpgradeItem(Config.SERVER.autoBlastingUpgrade, Config.SERVER.maxUpgradesPerStorage));
-	public static final RegistryObject<CraftingUpgradeItem> CRAFTING_UPGRADE = ITEMS.register("crafting_upgrade", () -> new CraftingUpgradeItem(Config.SERVER.maxUpgradesPerStorage));
-	public static final RegistryObject<StonecutterUpgradeItem> STONECUTTER_UPGRADE = ITEMS.register("stonecutter_upgrade", () -> new StonecutterUpgradeItem(Config.SERVER.maxUpgradesPerStorage));
-	public static final RegistryObject<StackUpgradeItem> STACK_UPGRADE_TIER_1 = ITEMS.register("stack_upgrade_tier_1", () ->
-			new StackUpgradeItem(2, Config.SERVER.maxUpgradesPerStorage));
-	public static final RegistryObject<StackUpgradeItem> STACK_UPGRADE_TIER_1_PLUS = ITEMS.register("stack_upgrade_tier_1_plus", () ->
-			new StackUpgradeItem(3, Config.SERVER.maxUpgradesPerStorage));
-	public static final RegistryObject<StackUpgradeItem> STACK_UPGRADE_TIER_2 = ITEMS.register("stack_upgrade_tier_2", () ->
-			new StackUpgradeItem(4, Config.SERVER.maxUpgradesPerStorage));
-	public static final RegistryObject<StackUpgradeItem> STACK_UPGRADE_TIER_3 = ITEMS.register("stack_upgrade_tier_3", () ->
-			new StackUpgradeItem(8, Config.SERVER.maxUpgradesPerStorage));
-	public static final RegistryObject<StackUpgradeItem> STACK_UPGRADE_TIER_4 = ITEMS.register("stack_upgrade_tier_4", () ->
-			new StackUpgradeItem(16, Config.SERVER.maxUpgradesPerStorage));
-	public static final RegistryObject<StackUpgradeItem> STACK_UPGRADE_TIER_5 = ITEMS.register("stack_upgrade_tier_5", () ->
-			new StackUpgradeItem(32, Config.SERVER.maxUpgradesPerStorage));
-	public static final RegistryObject<StackUpgradeItem> STACK_DOWNGRADE_TIER_1 = ITEMS.register("stack_downgrade_tier_1", () ->
-			new StackUpgradeItem(0.125, Config.SERVER.maxUpgradesPerStorage));
-	public static final RegistryObject<StackUpgradeItem> STACK_DOWNGRADE_TIER_2 = ITEMS.register("stack_downgrade_tier_2", () ->
-			new StackUpgradeItem(0.0625, Config.SERVER.maxUpgradesPerStorage));
-	public static final RegistryObject<StackUpgradeItem> STACK_DOWNGRADE_TIER_3 = ITEMS.register("stack_downgrade_tier_3", () ->
-			new StackUpgradeItem(0.03125, Config.SERVER.maxUpgradesPerStorage));
-	public static final RegistryObject<StackUpgradeItem> STACK_UPGRADE_OMEGA_TIER = ITEMS.register("stack_upgrade_omega_tier", () ->
-			new StackUpgradeItem(Integer.MAX_VALUE, Config.SERVER.maxUpgradesPerStorage));
-	public static final RegistryObject<JukeboxUpgradeItem> JUKEBOX_UPGRADE = ITEMS.register("jukebox_upgrade", () -> new JukeboxUpgradeItem(Config.SERVER.maxUpgradesPerStorage, () -> 1, () -> 1));
-	public static final RegistryObject<JukeboxUpgradeItem> ADVANCED_JUKEBOX_UPGRADE = ITEMS.register("advanced_jukebox_upgrade", () -> new JukeboxUpgradeItem(Config.SERVER.maxUpgradesPerStorage, Config.SERVER.advancedJukeboxUpgrade.numberOfSlots::get, Config.SERVER.advancedJukeboxUpgrade.slotsInRow::get));
-	public static final RegistryObject<PumpUpgradeItem> PUMP_UPGRADE = ITEMS.register("pump_upgrade", () -> new PumpUpgradeItem(false, false, true, Config.SERVER.pumpUpgrade, Config.SERVER.maxUpgradesPerStorage));
-	public static final RegistryObject<PumpUpgradeItem> ADVANCED_PUMP_UPGRADE = ITEMS.register("advanced_pump_upgrade", () -> new PumpUpgradeItem(true, false, true, Config.SERVER.pumpUpgrade, Config.SERVER.maxUpgradesPerStorage));
-	public static final RegistryObject<XpPumpUpgradeItem> XP_PUMP_UPGRADE = ITEMS.register("xp_pump_upgrade", () -> new XpPumpUpgradeItem(Config.SERVER.xpPumpUpgrade, Config.SERVER.maxUpgradesPerStorage));
+	public static final RegistryObject<CraftingUpgradeItem> CRAFTING_UPGRADE = ITEMS.register("crafting_upgrade",
+			() -> new CraftingUpgradeItem(Config.SERVER.maxUpgradesPerStorage));
+	public static final RegistryObject<StonecutterUpgradeItem> STONECUTTER_UPGRADE = ITEMS.register("stonecutter_upgrade",
+			() -> new StonecutterUpgradeItem(Config.SERVER.maxUpgradesPerStorage));
+	public static final RegistryObject<StackUpgradeItem> STACK_UPGRADE_TIER_1 = ITEMS.register("stack_upgrade_tier_1",
+			() -> new StackUpgradeItem(2, Config.SERVER.maxUpgradesPerStorage));
+	public static final RegistryObject<StackUpgradeItem> STACK_UPGRADE_TIER_1_PLUS = ITEMS.register("stack_upgrade_tier_1_plus",
+			() -> new StackUpgradeItem(3, Config.SERVER.maxUpgradesPerStorage));
+	public static final RegistryObject<StackUpgradeItem> STACK_UPGRADE_TIER_2 = ITEMS.register("stack_upgrade_tier_2",
+			() -> new StackUpgradeItem(4, Config.SERVER.maxUpgradesPerStorage));
+	public static final RegistryObject<StackUpgradeItem> STACK_UPGRADE_TIER_3 = ITEMS.register("stack_upgrade_tier_3",
+			() -> new StackUpgradeItem(8, Config.SERVER.maxUpgradesPerStorage));
+	public static final RegistryObject<StackUpgradeItem> STACK_UPGRADE_TIER_4 = ITEMS.register("stack_upgrade_tier_4",
+			() -> new StackUpgradeItem(16, Config.SERVER.maxUpgradesPerStorage));
+	public static final RegistryObject<StackUpgradeItem> STACK_UPGRADE_TIER_5 = ITEMS.register("stack_upgrade_tier_5",
+			() -> new StackUpgradeItem(32, Config.SERVER.maxUpgradesPerStorage));
+	public static final RegistryObject<StackUpgradeItem> STACK_DOWNGRADE_TIER_1 = ITEMS.register("stack_downgrade_tier_1",
+			() -> new StackUpgradeItem(0.125, Config.SERVER.maxUpgradesPerStorage));
+	public static final RegistryObject<StackUpgradeItem> STACK_DOWNGRADE_TIER_2 = ITEMS.register("stack_downgrade_tier_2",
+			() -> new StackUpgradeItem(0.0625, Config.SERVER.maxUpgradesPerStorage));
+	public static final RegistryObject<StackUpgradeItem> STACK_DOWNGRADE_TIER_3 = ITEMS.register("stack_downgrade_tier_3",
+			() -> new StackUpgradeItem(0.03125, Config.SERVER.maxUpgradesPerStorage));
+	public static final RegistryObject<StackUpgradeItem> STACK_UPGRADE_OMEGA_TIER = ITEMS.register("stack_upgrade_omega_tier",
+			() -> new StackUpgradeItem(Integer.MAX_VALUE, Config.SERVER.maxUpgradesPerStorage));
+	public static final RegistryObject<JukeboxUpgradeItem> JUKEBOX_UPGRADE = ITEMS.register("jukebox_upgrade",
+			() -> new JukeboxUpgradeItem(Config.SERVER.maxUpgradesPerStorage, () -> 1, () -> 1));
+	public static final RegistryObject<JukeboxUpgradeItem> ADVANCED_JUKEBOX_UPGRADE = ITEMS.register("advanced_jukebox_upgrade",
+			() -> new JukeboxUpgradeItem(Config.SERVER.maxUpgradesPerStorage, Config.SERVER.advancedJukeboxUpgrade.numberOfSlots::get,
+					Config.SERVER.advancedJukeboxUpgrade.slotsInRow::get));
+	public static final RegistryObject<PumpUpgradeItem> PUMP_UPGRADE = ITEMS.register("pump_upgrade",
+			() -> new PumpUpgradeItem(false, false, true, Config.SERVER.pumpUpgrade, Config.SERVER.maxUpgradesPerStorage));
+	public static final RegistryObject<PumpUpgradeItem> ADVANCED_PUMP_UPGRADE = ITEMS.register("advanced_pump_upgrade",
+			() -> new PumpUpgradeItem(true, false, true, Config.SERVER.pumpUpgrade, Config.SERVER.maxUpgradesPerStorage));
+	public static final RegistryObject<XpPumpUpgradeItem> XP_PUMP_UPGRADE = ITEMS.register("xp_pump_upgrade",
+			() -> new XpPumpUpgradeItem(Config.SERVER.xpPumpUpgrade, Config.SERVER.maxUpgradesPerStorage));
 	public static final RegistryObject<CompressionUpgradeItem> COMPRESSION_UPGRADE = ITEMS.register("compression_upgrade", CompressionUpgradeItem::new);
-	public static final RegistryObject<HopperUpgradeItem> HOPPER_UPGRADE = ITEMS.register("hopper_upgrade", () ->
-			new HopperUpgradeItem(Config.SERVER.hopperUpgrade.inputFilterSlots::get, Config.SERVER.hopperUpgrade.outputFilterSlots::get, Config.SERVER.hopperUpgrade.transferSpeedTicks::get, Config.SERVER.hopperUpgrade.maxTransferStackSize::get));
-	public static final RegistryObject<HopperUpgradeItem> ADVANCED_HOPPER_UPGRADE = ITEMS.register("advanced_hopper_upgrade", () ->
-			new HopperUpgradeItem(Config.SERVER.advancedHopperUpgrade.inputFilterSlots::get, Config.SERVER.advancedHopperUpgrade.outputFilterSlots::get, Config.SERVER.advancedHopperUpgrade.transferSpeedTicks::get, Config.SERVER.advancedHopperUpgrade.maxTransferStackSize::get));
-    public static final RegistryObject<InfinityUpgradeItem> INFINITY_UPGRADE = ITEMS.register("infinity_upgrade", () -> new InfinityUpgradeItem(Config.SERVER.maxUpgradesPerStorage, true));
-    public static final RegistryObject<InfinityUpgradeItem> SURVIVAL_INFINITY_UPGRADE = ITEMS.register("survival_infinity_upgrade", () -> new InfinityUpgradeItem(Config.SERVER.maxUpgradesPerStorage, false));
-	public static final RegistryObject<AlchemyUpgradeItem> ALCHEMY_UPGRADE = ITEMS.register("alchemy_upgrade", () -> new AlchemyUpgradeItem(Config.SERVER.alchemyUpgrade.filterSlots::get, Config.SERVER.maxUpgradesPerStorage));
-	public static final RegistryObject<AlchemyUpgradeItem> ADVANCED_ALCHEMY_UPGRADE = ITEMS.register("advanced_alchemy_upgrade", () -> new AlchemyUpgradeItem(Config.SERVER.advancedAlchemyUpgrade.filterSlots::get, Config.SERVER.maxUpgradesPerStorage));
+	public static final RegistryObject<HopperUpgradeItem> HOPPER_UPGRADE = ITEMS.register("hopper_upgrade",
+			() -> new HopperUpgradeItem(Config.SERVER.hopperUpgrade.inputFilterSlots::get, Config.SERVER.hopperUpgrade.outputFilterSlots::get,
+					Config.SERVER.hopperUpgrade.transferSpeedTicks::get, Config.SERVER.hopperUpgrade.maxTransferStackSize::get));
+	public static final RegistryObject<HopperUpgradeItem> ADVANCED_HOPPER_UPGRADE = ITEMS.register("advanced_hopper_upgrade",
+			() -> new HopperUpgradeItem(Config.SERVER.advancedHopperUpgrade.inputFilterSlots::get, Config.SERVER.advancedHopperUpgrade.outputFilterSlots::get,
+					Config.SERVER.advancedHopperUpgrade.transferSpeedTicks::get, Config.SERVER.advancedHopperUpgrade.maxTransferStackSize::get));
+	public static final RegistryObject<InfinityUpgradeItem> INFINITY_UPGRADE = ITEMS.register("infinity_upgrade",
+			() -> new InfinityUpgradeItem(Config.SERVER.maxUpgradesPerStorage, true));
+	public static final RegistryObject<InfinityUpgradeItem> SURVIVAL_INFINITY_UPGRADE = ITEMS.register("survival_infinity_upgrade",
+			() -> new InfinityUpgradeItem(Config.SERVER.maxUpgradesPerStorage, false));
+	public static final RegistryObject<AlchemyUpgradeItem> ALCHEMY_UPGRADE = ITEMS.register("alchemy_upgrade",
+			() -> new AlchemyUpgradeItem(Config.SERVER.alchemyUpgrade.filterSlots::get, Config.SERVER.maxUpgradesPerStorage));
+	public static final RegistryObject<AlchemyUpgradeItem> ADVANCED_ALCHEMY_UPGRADE = ITEMS.register("advanced_alchemy_upgrade",
+			() -> new AlchemyUpgradeItem(Config.SERVER.advancedAlchemyUpgrade.filterSlots::get, Config.SERVER.maxUpgradesPerStorage));
 
-	public static final RegistryObject<StorageTierUpgradeItem> BASIC_TIER_UPGRADE = ITEMS.register("basic_tier_upgrade", () -> new StorageTierUpgradeItem(StorageTierUpgradeItem.TierUpgrade.BASIC, true));
-	public static final RegistryObject<StorageTierUpgradeItem> BASIC_TO_COPPER_TIER_UPGRADE = ITEMS.register("basic_to_copper_tier_upgrade", () -> new StorageTierUpgradeItem(StorageTierUpgradeItem.TierUpgrade.BASIC_TO_COPPER));
-	public static final RegistryObject<StorageTierUpgradeItem> BASIC_TO_IRON_TIER_UPGRADE = ITEMS.register("basic_to_iron_tier_upgrade", () -> new StorageTierUpgradeItem(StorageTierUpgradeItem.TierUpgrade.BASIC_TO_IRON));
-	public static final RegistryObject<StorageTierUpgradeItem> BASIC_TO_GOLD_TIER_UPGRADE = ITEMS.register("basic_to_gold_tier_upgrade", () -> new StorageTierUpgradeItem(StorageTierUpgradeItem.TierUpgrade.BASIC_TO_GOLD));
-	public static final RegistryObject<StorageTierUpgradeItem> BASIC_TO_DIAMOND_TIER_UPGRADE = ITEMS.register("basic_to_diamond_tier_upgrade", () -> new StorageTierUpgradeItem(StorageTierUpgradeItem.TierUpgrade.BASIC_TO_DIAMOND));
-	public static final RegistryObject<StorageTierUpgradeItem> BASIC_TO_NETHERITE_TIER_UPGRADE = ITEMS.register("basic_to_netherite_tier_upgrade", () -> new StorageTierUpgradeItem(StorageTierUpgradeItem.TierUpgrade.BASIC_TO_NETHERITE));
-	public static final RegistryObject<StorageTierUpgradeItem> COPPER_TO_IRON_TIER_UPGRADE = ITEMS.register("copper_to_iron_tier_upgrade", () -> new StorageTierUpgradeItem(StorageTierUpgradeItem.TierUpgrade.COPPER_TO_IRON));
-	public static final RegistryObject<StorageTierUpgradeItem> COPPER_TO_GOLD_TIER_UPGRADE = ITEMS.register("copper_to_gold_tier_upgrade", () -> new StorageTierUpgradeItem(StorageTierUpgradeItem.TierUpgrade.COPPER_TO_GOLD));
-	public static final RegistryObject<StorageTierUpgradeItem> COPPER_TO_DIAMOND_TIER_UPGRADE = ITEMS.register("copper_to_diamond_tier_upgrade", () -> new StorageTierUpgradeItem(StorageTierUpgradeItem.TierUpgrade.COPPER_TO_DIAMOND));
-	public static final RegistryObject<StorageTierUpgradeItem> COPPER_TO_NETHERITE_TIER_UPGRADE = ITEMS.register("copper_to_netherite_tier_upgrade", () -> new StorageTierUpgradeItem(StorageTierUpgradeItem.TierUpgrade.COPPER_TO_NETHERITE));
-	public static final RegistryObject<StorageTierUpgradeItem> IRON_TO_GOLD_TIER_UPGRADE = ITEMS.register("iron_to_gold_tier_upgrade", () -> new StorageTierUpgradeItem(StorageTierUpgradeItem.TierUpgrade.IRON_TO_GOLD));
-	public static final RegistryObject<StorageTierUpgradeItem> IRON_TO_DIAMOND_TIER_UPGRADE = ITEMS.register("iron_to_diamond_tier_upgrade", () -> new StorageTierUpgradeItem(StorageTierUpgradeItem.TierUpgrade.IRON_TO_DIAMOND));
-	public static final RegistryObject<StorageTierUpgradeItem> IRON_TO_NETHERITE_TIER_UPGRADE = ITEMS.register("iron_to_netherite_tier_upgrade", () -> new StorageTierUpgradeItem(StorageTierUpgradeItem.TierUpgrade.IRON_TO_NETHERITE));
-	public static final RegistryObject<StorageTierUpgradeItem> GOLD_TO_DIAMOND_TIER_UPGRADE = ITEMS.register("gold_to_diamond_tier_upgrade", () -> new StorageTierUpgradeItem(StorageTierUpgradeItem.TierUpgrade.GOLD_TO_DIAMOND));
-	public static final RegistryObject<StorageTierUpgradeItem> GOLD_TO_NETHERITE_TIER_UPGRADE = ITEMS.register("gold_to_netherite_tier_upgrade", () -> new StorageTierUpgradeItem(StorageTierUpgradeItem.TierUpgrade.GOLD_TO_NETHERITE));
-	public static final RegistryObject<StorageTierUpgradeItem> DIAMOND_TO_NETHERITE_TIER_UPGRADE = ITEMS.register("diamond_to_netherite_tier_upgrade", () -> new StorageTierUpgradeItem(StorageTierUpgradeItem.TierUpgrade.DIAMOND_TO_NETHERITE));
+	public static final RegistryObject<StorageTierUpgradeItem> BASIC_TIER_UPGRADE = ITEMS.register("basic_tier_upgrade",
+			() -> new StorageTierUpgradeItem(StorageTierUpgradeItem.TierUpgrade.BASIC, true));
+	public static final RegistryObject<StorageTierUpgradeItem> BASIC_TO_COPPER_TIER_UPGRADE = ITEMS.register("basic_to_copper_tier_upgrade",
+			() -> new StorageTierUpgradeItem(StorageTierUpgradeItem.TierUpgrade.BASIC_TO_COPPER));
+	public static final RegistryObject<StorageTierUpgradeItem> BASIC_TO_IRON_TIER_UPGRADE = ITEMS.register("basic_to_iron_tier_upgrade",
+			() -> new StorageTierUpgradeItem(StorageTierUpgradeItem.TierUpgrade.BASIC_TO_IRON));
+	public static final RegistryObject<StorageTierUpgradeItem> BASIC_TO_GOLD_TIER_UPGRADE = ITEMS.register("basic_to_gold_tier_upgrade",
+			() -> new StorageTierUpgradeItem(StorageTierUpgradeItem.TierUpgrade.BASIC_TO_GOLD));
+	public static final RegistryObject<StorageTierUpgradeItem> BASIC_TO_DIAMOND_TIER_UPGRADE = ITEMS.register("basic_to_diamond_tier_upgrade",
+			() -> new StorageTierUpgradeItem(StorageTierUpgradeItem.TierUpgrade.BASIC_TO_DIAMOND));
+	public static final RegistryObject<StorageTierUpgradeItem> BASIC_TO_NETHERITE_TIER_UPGRADE = ITEMS.register("basic_to_netherite_tier_upgrade",
+			() -> new StorageTierUpgradeItem(StorageTierUpgradeItem.TierUpgrade.BASIC_TO_NETHERITE));
+	public static final RegistryObject<StorageTierUpgradeItem> COPPER_TO_IRON_TIER_UPGRADE = ITEMS.register("copper_to_iron_tier_upgrade",
+			() -> new StorageTierUpgradeItem(StorageTierUpgradeItem.TierUpgrade.COPPER_TO_IRON));
+	public static final RegistryObject<StorageTierUpgradeItem> COPPER_TO_GOLD_TIER_UPGRADE = ITEMS.register("copper_to_gold_tier_upgrade",
+			() -> new StorageTierUpgradeItem(StorageTierUpgradeItem.TierUpgrade.COPPER_TO_GOLD));
+	public static final RegistryObject<StorageTierUpgradeItem> COPPER_TO_DIAMOND_TIER_UPGRADE = ITEMS.register("copper_to_diamond_tier_upgrade",
+			() -> new StorageTierUpgradeItem(StorageTierUpgradeItem.TierUpgrade.COPPER_TO_DIAMOND));
+	public static final RegistryObject<StorageTierUpgradeItem> COPPER_TO_NETHERITE_TIER_UPGRADE = ITEMS.register("copper_to_netherite_tier_upgrade",
+			() -> new StorageTierUpgradeItem(StorageTierUpgradeItem.TierUpgrade.COPPER_TO_NETHERITE));
+	public static final RegistryObject<StorageTierUpgradeItem> IRON_TO_GOLD_TIER_UPGRADE = ITEMS.register("iron_to_gold_tier_upgrade",
+			() -> new StorageTierUpgradeItem(StorageTierUpgradeItem.TierUpgrade.IRON_TO_GOLD));
+	public static final RegistryObject<StorageTierUpgradeItem> IRON_TO_DIAMOND_TIER_UPGRADE = ITEMS.register("iron_to_diamond_tier_upgrade",
+			() -> new StorageTierUpgradeItem(StorageTierUpgradeItem.TierUpgrade.IRON_TO_DIAMOND));
+	public static final RegistryObject<StorageTierUpgradeItem> IRON_TO_NETHERITE_TIER_UPGRADE = ITEMS.register("iron_to_netherite_tier_upgrade",
+			() -> new StorageTierUpgradeItem(StorageTierUpgradeItem.TierUpgrade.IRON_TO_NETHERITE));
+	public static final RegistryObject<StorageTierUpgradeItem> GOLD_TO_DIAMOND_TIER_UPGRADE = ITEMS.register("gold_to_diamond_tier_upgrade",
+			() -> new StorageTierUpgradeItem(StorageTierUpgradeItem.TierUpgrade.GOLD_TO_DIAMOND));
+	public static final RegistryObject<StorageTierUpgradeItem> GOLD_TO_NETHERITE_TIER_UPGRADE = ITEMS.register("gold_to_netherite_tier_upgrade",
+			() -> new StorageTierUpgradeItem(StorageTierUpgradeItem.TierUpgrade.GOLD_TO_NETHERITE));
+	public static final RegistryObject<StorageTierUpgradeItem> DIAMOND_TO_NETHERITE_TIER_UPGRADE = ITEMS.register("diamond_to_netherite_tier_upgrade",
+			() -> new StorageTierUpgradeItem(StorageTierUpgradeItem.TierUpgrade.DIAMOND_TO_NETHERITE));
 
 	public static final RegistryObject<ItemBase> UPGRADE_BASE = ITEMS.register("upgrade_base", () -> new ItemBase(new Item.Properties().stacksTo(16)));
 
@@ -212,16 +251,17 @@ public class ModItems {
 	public static final RegistryObject<ItemBase> DEBUG_TOOL = ITEMS.register("debug_tool", () -> new ItemBase(new Item.Properties().stacksTo(1)));
 	public static final RegistryObject<ItemBase> PAINTBRUSH = ITEMS.register("paintbrush", PaintbrushItem::new);
 	public static final RegistryObject<Item> INACCESSIBLE_SLOT = ITEMS.register("inaccessible_slot", () -> new Item(new Item.Properties().stacksTo(1)));
-	public static final RegistryObject<LootItemFunctionType> COPY_STORAGE_DATA = LOOT_FUNCTION_TYPES.register("copy_storage_data", () -> new LootItemFunctionType(new CopyStorageDataFunction.Serializer()));
+	public static final RegistryObject<LootItemFunctionType> COPY_STORAGE_DATA = LOOT_FUNCTION_TYPES.register("copy_storage_data",
+			() -> new LootItemFunctionType(new CopyStorageDataFunction.Serializer()));
 
-	public static RegistryObject<CreativeModeTab> CREATIVE_TAB = CREATIVE_MODE_TABS.register("main", () ->
-			CreativeModeTab.builder().icon(() -> WoodStorageBlockItem.setWoodType(new ItemStack(ModBlocks.GOLD_BARREL_ITEM.get()), WoodType.SPRUCE))
-					.title(Component.translatable("itemGroup.sophisticatedstorage"))
-					.displayItems((featureFlags, output) -> {
-						ITEMS.getEntries().stream().filter(i -> i.get() instanceof ItemBase).forEach(i -> ((ItemBase) i.get()).addCreativeTabItems(output::accept));
-						ModBlocks.ITEMS.getEntries().stream().filter(i -> i.get() instanceof BlockItemBase).forEach(i -> ((BlockItemBase) i.get()).addCreativeTabItems(output::accept));
-					})
-					.build());
+	public static RegistryObject<CreativeModeTab> CREATIVE_TAB = CREATIVE_MODE_TABS.register("main",
+			() -> CreativeModeTab.builder().icon(() -> WoodStorageBlockItem.setWoodType(new ItemStack(ModBlocks.GOLD_BARREL_ITEM.get()), WoodType.SPRUCE))
+					.title(Component.translatable("itemGroup.sophisticatedstorage")).displayItems((featureFlags, output) -> {
+						ITEMS.getEntries().stream().filter(i -> i.get() instanceof ItemBase)
+								.forEach(i -> ((ItemBase) i.get()).addCreativeTabItems(output::accept));
+						ModBlocks.ITEMS.getEntries().stream().filter(i -> i.get() instanceof BlockItemBase)
+								.forEach(i -> ((BlockItemBase) i.get()).addCreativeTabItems(output::accept));
+					}).build());
 
 	public static void registerHandlers(IEventBus modBus) {
 		ITEMS.register(modBus);
@@ -237,35 +277,61 @@ public class ModItems {
 		}
 	}
 
-	private static final UpgradeContainerType<PickupUpgradeWrapper, ContentsFilteredUpgradeContainer<PickupUpgradeWrapper>> PICKUP_BASIC_TYPE = new UpgradeContainerType<>(ContentsFilteredUpgradeContainer::new);
-	private static final UpgradeContainerType<PickupUpgradeWrapper, ContentsFilteredUpgradeContainer<PickupUpgradeWrapper>> PICKUP_ADVANCED_TYPE = new UpgradeContainerType<>(ContentsFilteredUpgradeContainer::new);
-	private static final UpgradeContainerType<MagnetUpgradeWrapper, MagnetUpgradeContainer> MAGNET_BASIC_TYPE = new UpgradeContainerType<>(MagnetUpgradeContainer::new);
-	private static final UpgradeContainerType<MagnetUpgradeWrapper, MagnetUpgradeContainer> MAGNET_ADVANCED_TYPE = new UpgradeContainerType<>(MagnetUpgradeContainer::new);
-	private static final UpgradeContainerType<FeedingUpgradeWrapper, FeedingUpgradeContainer> FEEDING_TYPE = new UpgradeContainerType<>(FeedingUpgradeContainer::new);
-	private static final UpgradeContainerType<FeedingUpgradeWrapper, FeedingUpgradeContainer> ADVANCED_FEEDING_TYPE = new UpgradeContainerType<>(FeedingUpgradeContainer::new);
-	private static final UpgradeContainerType<CompactingUpgradeWrapper, CompactingUpgradeContainer> COMPACTING_TYPE = new UpgradeContainerType<>(CompactingUpgradeContainer::new);
-	private static final UpgradeContainerType<CompactingUpgradeWrapper, CompactingUpgradeContainer> ADVANCED_COMPACTING_TYPE = new UpgradeContainerType<>(CompactingUpgradeContainer::new);
+	private static final UpgradeContainerType<PickupUpgradeWrapper, ContentsFilteredUpgradeContainer<PickupUpgradeWrapper>> PICKUP_BASIC_TYPE = new UpgradeContainerType<>(
+			ContentsFilteredUpgradeContainer::new);
+	private static final UpgradeContainerType<PickupUpgradeWrapper, ContentsFilteredUpgradeContainer<PickupUpgradeWrapper>> PICKUP_ADVANCED_TYPE = new UpgradeContainerType<>(
+			ContentsFilteredUpgradeContainer::new);
+	private static final UpgradeContainerType<MagnetUpgradeWrapper, MagnetUpgradeContainer> MAGNET_BASIC_TYPE = new UpgradeContainerType<>(
+			MagnetUpgradeContainer::new);
+	private static final UpgradeContainerType<MagnetUpgradeWrapper, MagnetUpgradeContainer> MAGNET_ADVANCED_TYPE = new UpgradeContainerType<>(
+			MagnetUpgradeContainer::new);
+	private static final UpgradeContainerType<FeedingUpgradeWrapper, FeedingUpgradeContainer> FEEDING_TYPE = new UpgradeContainerType<>(
+			FeedingUpgradeContainer::new);
+	private static final UpgradeContainerType<FeedingUpgradeWrapper, FeedingUpgradeContainer> ADVANCED_FEEDING_TYPE = new UpgradeContainerType<>(
+			FeedingUpgradeContainer::new);
+	private static final UpgradeContainerType<CompactingUpgradeWrapper, CompactingUpgradeContainer> COMPACTING_TYPE = new UpgradeContainerType<>(
+			CompactingUpgradeContainer::new);
+	private static final UpgradeContainerType<CompactingUpgradeWrapper, CompactingUpgradeContainer> ADVANCED_COMPACTING_TYPE = new UpgradeContainerType<>(
+			CompactingUpgradeContainer::new);
 	private static final UpgradeContainerType<VoidUpgradeWrapper, VoidUpgradeContainer> VOID_TYPE = new UpgradeContainerType<>(VoidUpgradeContainer::new);
-	private static final UpgradeContainerType<VoidUpgradeWrapper, VoidUpgradeContainer> ADVANCED_VOID_TYPE = new UpgradeContainerType<>(VoidUpgradeContainer::new);
-	private static final UpgradeContainerType<CookingUpgradeWrapper.SmeltingUpgradeWrapper, CookingUpgradeContainer<SmeltingRecipe, CookingUpgradeWrapper.SmeltingUpgradeWrapper>> SMELTING_TYPE = new UpgradeContainerType<>(CookingUpgradeContainer::new);
-	private static final UpgradeContainerType<AutoCookingUpgradeWrapper.AutoSmeltingUpgradeWrapper, AutoCookingUpgradeContainer<SmeltingRecipe, AutoCookingUpgradeWrapper.AutoSmeltingUpgradeWrapper>> AUTO_SMELTING_TYPE = new UpgradeContainerType<>(AutoCookingUpgradeContainer::new);
-	private static final UpgradeContainerType<CookingUpgradeWrapper.SmokingUpgradeWrapper, CookingUpgradeContainer<SmokingRecipe, CookingUpgradeWrapper.SmokingUpgradeWrapper>> SMOKING_TYPE = new UpgradeContainerType<>(CookingUpgradeContainer::new);
-	private static final UpgradeContainerType<AutoCookingUpgradeWrapper.AutoSmokingUpgradeWrapper, AutoCookingUpgradeContainer<SmokingRecipe, AutoCookingUpgradeWrapper.AutoSmokingUpgradeWrapper>> AUTO_SMOKING_TYPE = new UpgradeContainerType<>(AutoCookingUpgradeContainer::new);
-	private static final UpgradeContainerType<CookingUpgradeWrapper.BlastingUpgradeWrapper, CookingUpgradeContainer<BlastingRecipe, CookingUpgradeWrapper.BlastingUpgradeWrapper>> BLASTING_TYPE = new UpgradeContainerType<>(CookingUpgradeContainer::new);
-	private static final UpgradeContainerType<AutoCookingUpgradeWrapper.AutoBlastingUpgradeWrapper, AutoCookingUpgradeContainer<BlastingRecipe, AutoCookingUpgradeWrapper.AutoBlastingUpgradeWrapper>> AUTO_BLASTING_TYPE = new UpgradeContainerType<>(AutoCookingUpgradeContainer::new);
-	private static final UpgradeContainerType<CraftingUpgradeWrapper, CraftingUpgradeContainer> CRAFTING_TYPE = new UpgradeContainerType<>(CraftingUpgradeContainer::new);
-	private static final UpgradeContainerType<StonecutterUpgradeWrapper, StonecutterUpgradeContainer> STONECUTTER_TYPE = new UpgradeContainerType<>(StonecutterUpgradeContainer::new);
-	private static final UpgradeContainerType<JukeboxUpgradeWrapper, JukeboxUpgradeContainer> JUKEBOX_TYPE = new UpgradeContainerType<>(JukeboxUpgradeContainer::new);
-	private static final UpgradeContainerType<JukeboxUpgradeWrapper, JukeboxUpgradeContainer> ADVANCED_JUKEBOX_TYPE = new UpgradeContainerType<>(JukeboxUpgradeContainer::new);
+	private static final UpgradeContainerType<VoidUpgradeWrapper, VoidUpgradeContainer> ADVANCED_VOID_TYPE = new UpgradeContainerType<>(
+			VoidUpgradeContainer::new);
+	private static final UpgradeContainerType<CookingUpgradeWrapper.SmeltingUpgradeWrapper, CookingUpgradeContainer<SmeltingRecipe, CookingUpgradeWrapper.SmeltingUpgradeWrapper>> SMELTING_TYPE = new UpgradeContainerType<>(
+			CookingUpgradeContainer::new);
+	private static final UpgradeContainerType<AutoCookingUpgradeWrapper.AutoSmeltingUpgradeWrapper, AutoCookingUpgradeContainer<SmeltingRecipe, AutoCookingUpgradeWrapper.AutoSmeltingUpgradeWrapper>> AUTO_SMELTING_TYPE = new UpgradeContainerType<>(
+			AutoCookingUpgradeContainer::new);
+	private static final UpgradeContainerType<CookingUpgradeWrapper.SmokingUpgradeWrapper, CookingUpgradeContainer<SmokingRecipe, CookingUpgradeWrapper.SmokingUpgradeWrapper>> SMOKING_TYPE = new UpgradeContainerType<>(
+			CookingUpgradeContainer::new);
+	private static final UpgradeContainerType<AutoCookingUpgradeWrapper.AutoSmokingUpgradeWrapper, AutoCookingUpgradeContainer<SmokingRecipe, AutoCookingUpgradeWrapper.AutoSmokingUpgradeWrapper>> AUTO_SMOKING_TYPE = new UpgradeContainerType<>(
+			AutoCookingUpgradeContainer::new);
+	private static final UpgradeContainerType<CookingUpgradeWrapper.BlastingUpgradeWrapper, CookingUpgradeContainer<BlastingRecipe, CookingUpgradeWrapper.BlastingUpgradeWrapper>> BLASTING_TYPE = new UpgradeContainerType<>(
+			CookingUpgradeContainer::new);
+	private static final UpgradeContainerType<AutoCookingUpgradeWrapper.AutoBlastingUpgradeWrapper, AutoCookingUpgradeContainer<BlastingRecipe, AutoCookingUpgradeWrapper.AutoBlastingUpgradeWrapper>> AUTO_BLASTING_TYPE = new UpgradeContainerType<>(
+			AutoCookingUpgradeContainer::new);
+	private static final UpgradeContainerType<CraftingUpgradeWrapper, CraftingUpgradeContainer> CRAFTING_TYPE = new UpgradeContainerType<>(
+			CraftingUpgradeContainer::new);
+	private static final UpgradeContainerType<StonecutterUpgradeWrapper, StonecutterUpgradeContainer> STONECUTTER_TYPE = new UpgradeContainerType<>(
+			StonecutterUpgradeContainer::new);
+	private static final UpgradeContainerType<JukeboxUpgradeWrapper, JukeboxUpgradeContainer> JUKEBOX_TYPE = new UpgradeContainerType<>(
+			JukeboxUpgradeContainer::new);
+	private static final UpgradeContainerType<JukeboxUpgradeWrapper, JukeboxUpgradeContainer> ADVANCED_JUKEBOX_TYPE = new UpgradeContainerType<>(
+			JukeboxUpgradeContainer::new);
 	private static final UpgradeContainerType<TankUpgradeWrapper, TankUpgradeContainer> TANK_TYPE = new UpgradeContainerType<>(TankUpgradeContainer::new);
-	private static final UpgradeContainerType<BatteryUpgradeWrapper, BatteryUpgradeContainer> BATTERY_TYPE = new UpgradeContainerType<>(BatteryUpgradeContainer::new);
+	private static final UpgradeContainerType<BatteryUpgradeWrapper, BatteryUpgradeContainer> BATTERY_TYPE = new UpgradeContainerType<>(
+			BatteryUpgradeContainer::new);
 	private static final UpgradeContainerType<PumpUpgradeWrapper, PumpUpgradeContainer> PUMP_TYPE = new UpgradeContainerType<>(PumpUpgradeContainer::new);
-	private static final UpgradeContainerType<PumpUpgradeWrapper, PumpUpgradeContainer> ADVANCED_PUMP_TYPE = new UpgradeContainerType<>(PumpUpgradeContainer::new);
-	private static final UpgradeContainerType<XpPumpUpgradeWrapper, XpPumpUpgradeContainer> XP_PUMP_TYPE = new UpgradeContainerType<>(XpPumpUpgradeContainer::new);
-	private static final UpgradeContainerType<HopperUpgradeWrapper, HopperUpgradeContainer> HOPPER_TYPE = new UpgradeContainerType<>(HopperUpgradeContainer::new);
-	private static final UpgradeContainerType<HopperUpgradeWrapper, HopperUpgradeContainer> ADVANCED_HOPPER_TYPE = new UpgradeContainerType<>(HopperUpgradeContainer::new);
-	public static final UpgradeContainerType<AlchemyUpgradeWrapper, AlchemyUpgradeContainer> ALCHEMY_TYPE = new UpgradeContainerType<>(AlchemyUpgradeContainer::new);
-	public static final UpgradeContainerType<AlchemyUpgradeWrapper, AlchemyUpgradeContainer> ADVANCED_ALCHEMY_TYPE = new UpgradeContainerType<>(AlchemyUpgradeContainer::new);
+	private static final UpgradeContainerType<PumpUpgradeWrapper, PumpUpgradeContainer> ADVANCED_PUMP_TYPE = new UpgradeContainerType<>(
+			PumpUpgradeContainer::new);
+	private static final UpgradeContainerType<XpPumpUpgradeWrapper, XpPumpUpgradeContainer> XP_PUMP_TYPE = new UpgradeContainerType<>(
+			XpPumpUpgradeContainer::new);
+	private static final UpgradeContainerType<HopperUpgradeWrapper, HopperUpgradeContainer> HOPPER_TYPE = new UpgradeContainerType<>(
+			HopperUpgradeContainer::new);
+	private static final UpgradeContainerType<HopperUpgradeWrapper, HopperUpgradeContainer> ADVANCED_HOPPER_TYPE = new UpgradeContainerType<>(
+			HopperUpgradeContainer::new);
+	public static final UpgradeContainerType<AlchemyUpgradeWrapper, AlchemyUpgradeContainer> ALCHEMY_TYPE = new UpgradeContainerType<>(
+			AlchemyUpgradeContainer::new);
+	public static final UpgradeContainerType<AlchemyUpgradeWrapper, AlchemyUpgradeContainer> ADVANCED_ALCHEMY_TYPE = new UpgradeContainerType<>(
+			AlchemyUpgradeContainer::new);
 
 	public static void registerContainers(RegisterEvent event) {
 		if (!event.getRegistryKey().equals(ForgeRegistries.Keys.MENU_TYPES)) {
@@ -303,53 +369,68 @@ public class ModItems {
 		UpgradeContainerRegistry.register(ADVANCED_ALCHEMY_UPGRADE.getId(), ADVANCED_ALCHEMY_TYPE);
 
 		DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
-			UpgradeGuiManager.registerTab(FEEDING_TYPE, (FeedingUpgradeContainer uc, Position p, StorageScreenBase<?> s) ->
-					new FeedingUpgradeTab.Basic(uc, p, s, Config.SERVER.feedingUpgrade.slotsInRow.get()));
-			UpgradeGuiManager.registerTab(ADVANCED_FEEDING_TYPE, (FeedingUpgradeContainer uc, Position p, StorageScreenBase<?> s) ->
-					new FeedingUpgradeTab.Advanced(uc, p, s, Config.SERVER.advancedFeedingUpgrade.slotsInRow.get()));
-			UpgradeGuiManager.registerTab(PICKUP_BASIC_TYPE, (ContentsFilteredUpgradeContainer<PickupUpgradeWrapper> uc, Position p, StorageScreenBase<?> s) ->
-					new PickupUpgradeTab.Basic(uc, p, s, Config.SERVER.pickupUpgrade.slotsInRow.get(), StorageButtonDefinitions.STORAGE_CONTENTS_FILTER_TYPE));
-			UpgradeGuiManager.registerTab(PICKUP_ADVANCED_TYPE, (ContentsFilteredUpgradeContainer<PickupUpgradeWrapper> uc, Position p, StorageScreenBase<?> s) ->
-					new PickupUpgradeTab.Advanced(uc, p, s, Config.SERVER.advancedPickupUpgrade.slotsInRow.get(), StorageButtonDefinitions.STORAGE_CONTENTS_FILTER_TYPE));
-			UpgradeGuiManager.registerTab(FilterUpgradeContainer.BASIC_TYPE, (FilterUpgradeContainer uc, Position p, StorageScreenBase<?> s) ->
-					new FilterUpgradeTab.Basic(uc, p, s, Config.SERVER.filterUpgrade.slotsInRow.get(), StorageButtonDefinitions.STORAGE_CONTENTS_FILTER_TYPE));
-			UpgradeGuiManager.registerTab(FilterUpgradeContainer.ADVANCED_TYPE, (FilterUpgradeContainer uc, Position p, StorageScreenBase<?> s) ->
-					new FilterUpgradeTab.Advanced(uc, p, s, Config.SERVER.advancedFilterUpgrade.slotsInRow.get(), StorageButtonDefinitions.STORAGE_CONTENTS_FILTER_TYPE));
-			UpgradeGuiManager.registerTab(MAGNET_BASIC_TYPE, (MagnetUpgradeContainer uc, Position p, StorageScreenBase<?> s) ->
-					new MagnetUpgradeTab.Basic(uc, p, s, Config.SERVER.magnetUpgrade.slotsInRow.get(), StorageButtonDefinitions.STORAGE_CONTENTS_FILTER_TYPE));
-			UpgradeGuiManager.registerTab(MAGNET_ADVANCED_TYPE, (MagnetUpgradeContainer uc, Position p, StorageScreenBase<?> s) ->
-					new MagnetUpgradeTab.Advanced(uc, p, s, Config.SERVER.advancedMagnetUpgrade.slotsInRow.get(), StorageButtonDefinitions.STORAGE_CONTENTS_FILTER_TYPE));
-			UpgradeGuiManager.registerTab(COMPACTING_TYPE, (CompactingUpgradeContainer uc, Position p, StorageScreenBase<?> s) ->
-					new CompactingUpgradeTab.Basic(uc, p, s, Config.SERVER.compactingUpgrade.slotsInRow.get()));
-			UpgradeGuiManager.registerTab(ADVANCED_COMPACTING_TYPE, (CompactingUpgradeContainer uc, Position p, StorageScreenBase<?> s) ->
-					new CompactingUpgradeTab.Advanced(uc, p, s, Config.SERVER.advancedCompactingUpgrade.slotsInRow.get()));
-			UpgradeGuiManager.registerTab(VOID_TYPE, (VoidUpgradeContainer uc, Position p, StorageScreenBase<?> s) ->
-					new VoidUpgradeTab.Basic(uc, p, s, Config.SERVER.voidUpgrade.slotsInRow.get()));
-			UpgradeGuiManager.registerTab(ADVANCED_VOID_TYPE, (VoidUpgradeContainer uc, Position p, StorageScreenBase<?> s) ->
-					new VoidUpgradeTab.Advanced(uc, p, s, Config.SERVER.advancedVoidUpgrade.slotsInRow.get()));
+			UpgradeGuiManager.registerTab(FEEDING_TYPE, (FeedingUpgradeContainer uc, Position p, StorageScreenBase<?> s) -> new FeedingUpgradeTab.Basic(uc, p,
+					s, Config.SERVER.feedingUpgrade.slotsInRow.get()));
+			UpgradeGuiManager.registerTab(ADVANCED_FEEDING_TYPE, (FeedingUpgradeContainer uc, Position p,
+					StorageScreenBase<?> s) -> new FeedingUpgradeTab.Advanced(uc, p, s, Config.SERVER.advancedFeedingUpgrade.slotsInRow.get()));
+			UpgradeGuiManager.registerTab(PICKUP_BASIC_TYPE,
+					(ContentsFilteredUpgradeContainer<PickupUpgradeWrapper> uc, Position p, StorageScreenBase<?> s) -> new PickupUpgradeTab.Basic(uc, p, s,
+							Config.SERVER.pickupUpgrade.slotsInRow.get(), StorageButtonDefinitions.STORAGE_CONTENTS_FILTER_TYPE));
+			UpgradeGuiManager.registerTab(PICKUP_ADVANCED_TYPE,
+					(ContentsFilteredUpgradeContainer<PickupUpgradeWrapper> uc, Position p, StorageScreenBase<?> s) -> new PickupUpgradeTab.Advanced(uc, p, s,
+							Config.SERVER.advancedPickupUpgrade.slotsInRow.get(), StorageButtonDefinitions.STORAGE_CONTENTS_FILTER_TYPE));
+			UpgradeGuiManager.registerTab(FilterUpgradeContainer.BASIC_TYPE,
+					(FilterUpgradeContainer uc, Position p, StorageScreenBase<?> s) -> new FilterUpgradeTab.Basic(uc, p, s,
+							Config.SERVER.filterUpgrade.slotsInRow.get(), StorageButtonDefinitions.STORAGE_CONTENTS_FILTER_TYPE));
+			UpgradeGuiManager.registerTab(FilterUpgradeContainer.ADVANCED_TYPE,
+					(FilterUpgradeContainer uc, Position p, StorageScreenBase<?> s) -> new FilterUpgradeTab.Advanced(uc, p, s,
+							Config.SERVER.advancedFilterUpgrade.slotsInRow.get(), StorageButtonDefinitions.STORAGE_CONTENTS_FILTER_TYPE));
+			UpgradeGuiManager.registerTab(MAGNET_BASIC_TYPE, (MagnetUpgradeContainer uc, Position p, StorageScreenBase<?> s) -> new MagnetUpgradeTab.Basic(uc,
+					p, s, Config.SERVER.magnetUpgrade.slotsInRow.get(), StorageButtonDefinitions.STORAGE_CONTENTS_FILTER_TYPE));
+			UpgradeGuiManager.registerTab(MAGNET_ADVANCED_TYPE,
+					(MagnetUpgradeContainer uc, Position p, StorageScreenBase<?> s) -> new MagnetUpgradeTab.Advanced(uc, p, s,
+							Config.SERVER.advancedMagnetUpgrade.slotsInRow.get(), StorageButtonDefinitions.STORAGE_CONTENTS_FILTER_TYPE));
+			UpgradeGuiManager.registerTab(COMPACTING_TYPE, (CompactingUpgradeContainer uc, Position p,
+					StorageScreenBase<?> s) -> new CompactingUpgradeTab.Basic(uc, p, s, Config.SERVER.compactingUpgrade.slotsInRow.get()));
+			UpgradeGuiManager.registerTab(ADVANCED_COMPACTING_TYPE, (CompactingUpgradeContainer uc, Position p,
+					StorageScreenBase<?> s) -> new CompactingUpgradeTab.Advanced(uc, p, s, Config.SERVER.advancedCompactingUpgrade.slotsInRow.get()));
+			UpgradeGuiManager.registerTab(VOID_TYPE, (VoidUpgradeContainer uc, Position p, StorageScreenBase<?> s) -> new VoidUpgradeTab.Basic(uc, p, s,
+					Config.SERVER.voidUpgrade.slotsInRow.get()));
+			UpgradeGuiManager.registerTab(ADVANCED_VOID_TYPE, (VoidUpgradeContainer uc, Position p, StorageScreenBase<?> s) -> new VoidUpgradeTab.Advanced(uc,
+					p, s, Config.SERVER.advancedVoidUpgrade.slotsInRow.get()));
 			UpgradeGuiManager.registerTab(SMELTING_TYPE, CookingUpgradeTab.SmeltingUpgradeTab::new);
-			UpgradeGuiManager.registerTab(AUTO_SMELTING_TYPE, (AutoCookingUpgradeContainer<SmeltingRecipe, AutoCookingUpgradeWrapper.AutoSmeltingUpgradeWrapper> uc, Position p, StorageScreenBase<?> s) ->
-					new AutoCookingUpgradeTab.AutoSmeltingUpgradeTab(uc, p, s, Config.SERVER.autoSmeltingUpgrade.inputFilterSlotsInRow.get(), Config.SERVER.autoSmeltingUpgrade.fuelFilterSlotsInRow.get()));
+			UpgradeGuiManager.registerTab(AUTO_SMELTING_TYPE,
+					(AutoCookingUpgradeContainer<SmeltingRecipe, AutoCookingUpgradeWrapper.AutoSmeltingUpgradeWrapper> uc, Position p,
+							StorageScreenBase<?> s) -> new AutoCookingUpgradeTab.AutoSmeltingUpgradeTab(uc, p, s,
+									Config.SERVER.autoSmeltingUpgrade.inputFilterSlotsInRow.get(),
+									Config.SERVER.autoSmeltingUpgrade.fuelFilterSlotsInRow.get()));
 			UpgradeGuiManager.registerTab(SMOKING_TYPE, CookingUpgradeTab.SmokingUpgradeTab::new);
-			UpgradeGuiManager.registerTab(AUTO_SMOKING_TYPE, (AutoCookingUpgradeContainer<SmokingRecipe, AutoCookingUpgradeWrapper.AutoSmokingUpgradeWrapper> uc, Position p, StorageScreenBase<?> s) ->
-					new AutoCookingUpgradeTab.AutoSmokingUpgradeTab(uc, p, s, Config.SERVER.autoSmokingUpgrade.inputFilterSlotsInRow.get(), Config.SERVER.autoSmokingUpgrade.fuelFilterSlotsInRow.get()));
+			UpgradeGuiManager.registerTab(AUTO_SMOKING_TYPE,
+					(AutoCookingUpgradeContainer<SmokingRecipe, AutoCookingUpgradeWrapper.AutoSmokingUpgradeWrapper> uc, Position p,
+							StorageScreenBase<?> s) -> new AutoCookingUpgradeTab.AutoSmokingUpgradeTab(uc, p, s,
+									Config.SERVER.autoSmokingUpgrade.inputFilterSlotsInRow.get(), Config.SERVER.autoSmokingUpgrade.fuelFilterSlotsInRow.get()));
 			UpgradeGuiManager.registerTab(BLASTING_TYPE, CookingUpgradeTab.BlastingUpgradeTab::new);
-			UpgradeGuiManager.registerTab(AUTO_BLASTING_TYPE, (AutoCookingUpgradeContainer<BlastingRecipe, AutoCookingUpgradeWrapper.AutoBlastingUpgradeWrapper> uc, Position p, StorageScreenBase<?> s) ->
-					new AutoCookingUpgradeTab.AutoBlastingUpgradeTab(uc, p, s, Config.SERVER.autoBlastingUpgrade.inputFilterSlotsInRow.get(), Config.SERVER.autoBlastingUpgrade.fuelFilterSlotsInRow.get()));
-			UpgradeGuiManager.registerTab(CRAFTING_TYPE, (CraftingUpgradeContainer uc, Position p, StorageScreenBase<?> s) ->
-					new CraftingUpgradeTab(uc, p, s, StorageButtonDefinitions.SHIFT_CLICK_TARGET, StorageButtonDefinitions.REFILL_CRAFTING_GRID));
-			UpgradeGuiManager.registerTab(STONECUTTER_TYPE, (StonecutterUpgradeContainer upgradeContainer, Position position, StorageScreenBase<?> screen) ->
-					new StonecutterUpgradeTab(upgradeContainer, position, screen, StorageButtonDefinitions.SHIFT_CLICK_TARGET, StorageButtonDefinitions.REFILL_INPUT));
+			UpgradeGuiManager.registerTab(AUTO_BLASTING_TYPE,
+					(AutoCookingUpgradeContainer<BlastingRecipe, AutoCookingUpgradeWrapper.AutoBlastingUpgradeWrapper> uc, Position p,
+							StorageScreenBase<?> s) -> new AutoCookingUpgradeTab.AutoBlastingUpgradeTab(uc, p, s,
+									Config.SERVER.autoBlastingUpgrade.inputFilterSlotsInRow.get(),
+									Config.SERVER.autoBlastingUpgrade.fuelFilterSlotsInRow.get()));
+			UpgradeGuiManager.registerTab(CRAFTING_TYPE, (CraftingUpgradeContainer uc, Position p, StorageScreenBase<?> s) -> new CraftingUpgradeTab(uc, p, s,
+					StorageButtonDefinitions.SHIFT_CLICK_TARGET, StorageButtonDefinitions.REFILL_CRAFTING_GRID));
+			UpgradeGuiManager.registerTab(STONECUTTER_TYPE,
+					(StonecutterUpgradeContainer upgradeContainer, Position position, StorageScreenBase<?> screen) -> new StonecutterUpgradeTab(
+							upgradeContainer, position, screen, StorageButtonDefinitions.SHIFT_CLICK_TARGET, StorageButtonDefinitions.REFILL_INPUT));
 			UpgradeGuiManager.registerTab(JUKEBOX_TYPE, JukeboxUpgradeTab.Basic::new);
-			UpgradeGuiManager.registerTab(ADVANCED_JUKEBOX_TYPE, (JukeboxUpgradeContainer uc, Position p, StorageScreenBase<?> s) -> new JukeboxUpgradeTab.Advanced(uc, p, s, Config.SERVER.advancedJukeboxUpgrade.slotsInRow.get()));
+			UpgradeGuiManager.registerTab(ADVANCED_JUKEBOX_TYPE, (JukeboxUpgradeContainer uc, Position p,
+					StorageScreenBase<?> s) -> new JukeboxUpgradeTab.Advanced(uc, p, s, Config.SERVER.advancedJukeboxUpgrade.slotsInRow.get()));
 			UpgradeGuiManager.registerTab(TANK_TYPE, TankUpgradeTab::new);
 			UpgradeGuiManager.registerTab(BATTERY_TYPE, BatteryUpgradeTab::new);
 			UpgradeGuiManager.registerInventoryControl(TANK_TYPE, TankInventoryControl::new);
 			UpgradeGuiManager.registerInventoryControl(BATTERY_TYPE, BatteryInventoryControl::new);
 			UpgradeGuiManager.registerTab(PUMP_TYPE, PumpUpgradeTab.Basic::new);
 			UpgradeGuiManager.registerTab(ADVANCED_PUMP_TYPE, PumpUpgradeTab.Advanced::new);
-			UpgradeGuiManager.registerTab(XP_PUMP_TYPE, (XpPumpUpgradeContainer upgradeContainer, Position position, StorageScreenBase<?> screen) ->
-					new XpPumpUpgradeTab(upgradeContainer, position, screen, Config.SERVER.xpPumpUpgrade.mendingOn.get()));
+			UpgradeGuiManager.registerTab(XP_PUMP_TYPE, (XpPumpUpgradeContainer upgradeContainer, Position position,
+					StorageScreenBase<?> screen) -> new XpPumpUpgradeTab(upgradeContainer, position, screen, Config.SERVER.xpPumpUpgrade.mendingOn.get()));
 			UpgradeGuiManager.registerTab(HOPPER_TYPE, HopperUpgradeTab.Basic::new);
 			UpgradeGuiManager.registerTab(ADVANCED_HOPPER_TYPE, HopperUpgradeTab.Advanced::new);
 			UpgradeGuiManager.registerTab(ALCHEMY_TYPE, AlchemyUpgradeTab.Basic::new);
@@ -358,9 +439,11 @@ public class ModItems {
 	}
 
 	private static class StorageCompactingUpgradeItem extends CompactingUpgradeItem {
-		public static final List<UpgradeConflictDefinition> UPGRADE_CONFLICT_DEFINITIONS = List.of(new UpgradeConflictDefinition(CompressionUpgradeItem.class::isInstance, 0, StorageTranslationHelper.INSTANCE.translError("add.compression_exists")));
+		public static final List<UpgradeConflictDefinition> UPGRADE_CONFLICT_DEFINITIONS = List.of(new UpgradeConflictDefinition(
+				CompressionUpgradeItem.class::isInstance, 0, StorageTranslationHelper.INSTANCE.translError("add.compression_exists")));
 
-		public StorageCompactingUpgradeItem(boolean shouldCompactThreeByThree, IntSupplier filterSlotCount, IUpgradeCountLimitConfig upgradeCountLimitConfig, ConfiguredCompactingResultProvider configuredCompactingResultProvider) {
+		public StorageCompactingUpgradeItem(boolean shouldCompactThreeByThree, IntSupplier filterSlotCount, IUpgradeCountLimitConfig upgradeCountLimitConfig,
+				ConfiguredCompactingResultProvider configuredCompactingResultProvider) {
 			super(shouldCompactThreeByThree, filterSlotCount, upgradeCountLimitConfig, configuredCompactingResultProvider);
 		}
 

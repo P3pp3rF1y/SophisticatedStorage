@@ -4,9 +4,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.util.StringRepresentable;
 
 public enum VerticalFacing implements StringRepresentable {
-	NO("no", Direction.NORTH, 0),
-	UP("up", Direction.UP, 1),
-	DOWN("down", Direction.DOWN, 2);
+	NO("no", Direction.NORTH, 0), UP("up", Direction.UP, 1), DOWN("down", Direction.DOWN, 2);
 
 	private final String serializedName;
 

@@ -7,6 +7,7 @@ import net.p3pp3rf1y.sophisticatedstorage.item.StorageToolItem;
 
 import java.util.function.Consumer;
 
+@SuppressWarnings("PMD.UnnecessaryImport")
 public class StorageHolderToolHandler {
 	public static InteractionResult tryStorageToolInteract(ItemStack storageTool, StorageHolderBase storageHolder) {
 		StorageToolItem.Mode mode = StorageToolItem.getMode(storageTool);

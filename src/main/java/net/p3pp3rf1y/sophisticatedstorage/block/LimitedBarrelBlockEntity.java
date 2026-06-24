@@ -155,7 +155,7 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 	}
 
 	public boolean depositItem(Player player, InteractionHand hand, ItemStack stackInHand, int slot) {
-		//noinspection ConstantConditions
+		// noinspection ConstantConditions
 		long gameTime = getLevel().getGameTime();
 		boolean doubleClick = gameTime - lastDepositTime < 10;
 		lastDepositTime = gameTime;
@@ -197,12 +197,14 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 		return false;
 	}
 
-	private boolean depositFromAllOfPlayersInventory(Player player, int slot, InventoryHandler invHandler, ItemStack stackInSlot, MemorySettingsCategory memorySettings) {
+	private boolean depositFromAllOfPlayersInventory(Player player, int slot, InventoryHandler invHandler, ItemStack stackInSlot,
+			MemorySettingsCategory memorySettings) {
 		AtomicBoolean success = new AtomicBoolean(false);
 		Predicate<ItemStack> memoryItemMatches = itemStack -> memorySettings.isSlotSelected(slot) && memorySettings.matchesFilter(slot, itemStack);
-		player.getCapability(ForgeCapabilities.ITEM_HANDLER, null).ifPresent(
-				playerInventory -> InventoryHelper.iterate(playerInventory, (playerSlot, playerStack) -> {
-					if ((stackInSlot.isEmpty() && (memoryItemMatches.test(playerStack) || invHandler.isFilterItem(playerStack.getItem())) || (!playerStack.isEmpty() && ItemHandlerHelper.canItemStacksStack(stackInSlot, playerStack)))) {
+		player.getCapability(ForgeCapabilities.ITEM_HANDLER, null)
+				.ifPresent(playerInventory -> InventoryHelper.iterate(playerInventory, (playerSlot, playerStack) -> {
+					if ((stackInSlot.isEmpty() && (memoryItemMatches.test(playerStack) || invHandler.isFilterItem(playerStack.getItem()))
+							|| (!playerStack.isEmpty() && ItemHandlerHelper.canItemStacksStack(stackInSlot, playerStack)))) {
 
 						ItemStack result = invHandler.insertItemOnlyToSlot(slot, playerStack, true);
 						if (result.getCount() < playerStack.getCount()) {
@@ -228,8 +230,9 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 		ItemStack stackTaken = inventoryHandler.extractItem(slot, countToTake, false);
 
 		if (player.getInventory().add(stackTaken)) {
-			//noinspection ConstantConditions
-			getLevel().playSound(null, getBlockPos(), SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, .2f, (RandHelper.getRandomMinusOneToOne(getLevel().random) * .7f + 1) * 2);
+			// noinspection ConstantConditions
+			getLevel().playSound(null, getBlockPos(), SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, .2f,
+					(RandHelper.getRandomMinusOneToOne(getLevel().random) * .7f + 1) * 2);
 		} else {
 			player.drop(stackTaken, false);
 		}
@@ -238,7 +241,7 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 
 	@Override
 	void updateOpenBlockState(BlockState state, boolean open) {
-		//noop
+		// noop
 	}
 
 	public void onLoad() {
@@ -248,7 +251,7 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 		settingsHandler.getTypeCategory(MemorySettingsCategory.class).setIgnoreNbt(false);
 		setFixedSettings(getStorageWrapper(), getStorageWrapper().getNumberOfInventorySlots());
 
-		//TODO remove in the future when this is not needed - updates legacy limited barrel counts and fill levels
+		// TODO remove in the future when this is not needed - updates legacy limited barrel counts and fill levels
 		settingsHandler.getTypeCategory(ItemDisplaySettingsCategory.class).itemsChanged();
 	}
 
@@ -257,7 +260,8 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 		super.loadSynchronizedData(tag);
 		showCounts = NBTHelper.getBoolean(tag, "showCounts").orElse(true);
 		showFillLevels = NBTHelper.getBoolean(tag, "showFillLevels").orElse(false);
-		slotColors = NBTHelper.getMap(tag, "slotColors", Integer::valueOf, (tagName, t) -> Optional.of(DyeColor.byId(((IntTag) t).getAsInt()))).orElseGet(HashMap::new);
+		slotColors = NBTHelper.getMap(tag, "slotColors", Integer::valueOf, (tagName, t) -> Optional.of(DyeColor.byId(((IntTag) t).getAsInt())))
+				.orElseGet(HashMap::new);
 	}
 
 	@Override

@@ -24,14 +24,15 @@ public class ItemContentsStorage extends SavedData {
 	private final Map<UUID, CompoundTag> storageContents = new HashMap<>();
 	private static final ItemContentsStorage clientStorageCopy = new ItemContentsStorage();
 
-	private ItemContentsStorage() {}
+	private ItemContentsStorage() {
+	}
 
 	public static ItemContentsStorage get() {
 		if (Thread.currentThread().getThreadGroup() == SidedThreadGroups.SERVER) {
 			MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
 			if (server != null) {
 				ServerLevel overworld = server.getLevel(Level.OVERWORLD);
-				//noinspection ConstantConditions - by this time overworld is loaded
+				// noinspection ConstantConditions - by this time overworld is loaded
 				DimensionDataStorage storage = overworld.getDataStorage();
 				return storage.computeIfAbsent(ItemContentsStorage::load, ItemContentsStorage::new, SAVED_DATA_NAME);
 			}
@@ -46,7 +47,7 @@ public class ItemContentsStorage extends SavedData {
 	}
 
 	private static void readStorageContents(CompoundTag nbt, ItemContentsStorage storage) {
-		ListTag storageContents =  nbt.getList(nbt.contains("shulkerBoxContents") ? "shulkerBoxContents" : "storageContents", Tag.TAG_COMPOUND);
+		ListTag storageContents = nbt.getList(nbt.contains("shulkerBoxContents") ? "shulkerBoxContents" : "storageContents", Tag.TAG_COMPOUND);
 		for (Tag n : storageContents) {
 			CompoundTag uuidContentsPair = (CompoundTag) n;
 			UUID uuid = NbtUtils.loadUUID(Objects.requireNonNull(uuidContentsPair.get("uuid")));

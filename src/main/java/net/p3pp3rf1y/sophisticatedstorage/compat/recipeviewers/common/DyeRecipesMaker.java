@@ -22,11 +22,13 @@ import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
 import java.util.*;
 import java.util.function.Function;
 
+@SuppressWarnings("PMD.UnnecessaryImport")
 public class DyeRecipesMaker {
 	private DyeRecipesMaker() {
 	}
 
-	public static <T extends PropertyBasedSubtypeInterpreter> List<CraftingRecipe> getMultipleColorsRecipes(Function<ItemStack, Optional<T>> getSubtypeInterpreter) {
+	public static <T extends PropertyBasedSubtypeInterpreter> List<CraftingRecipe> getMultipleColorsRecipes(
+			Function<ItemStack, Optional<T>> getSubtypeInterpreter) {
 		List<CraftingRecipe> recipes = new ArrayList<>();
 
 		Map<Item, ItemStack[]> blocks = getDyeableItems();
@@ -35,7 +37,8 @@ public class DyeRecipesMaker {
 		return recipes;
 	}
 
-	public static <T extends PropertyBasedSubtypeInterpreter> List<SingleColorDyeRecipeSpec> getSingleColorRecipeSpecs(Function<ItemStack, Optional<T>> getSubtypeInterpreter) {
+	public static <T extends PropertyBasedSubtypeInterpreter> List<SingleColorDyeRecipeSpec> getSingleColorRecipeSpecs(
+			Function<ItemStack, Optional<T>> getSubtypeInterpreter) {
 		return getSingleColorRecipeSpecs(getDyeableItems(), getSubtypeInterpreter);
 	}
 
@@ -92,11 +95,13 @@ public class DyeRecipesMaker {
 
 	static List<ItemStack> getWoodStorageStackList(StorageBlockBase woodStorageBlock) {
 		Set<ItemStack> ret = new HashSet<>();
-		WoodStorageBlockBase.CUSTOM_TEXTURE_WOOD_TYPES.keySet().forEach(woodType -> ret.add(WoodStorageBlockItem.setWoodType(new ItemStack(woodStorageBlock), woodType)));
+		WoodStorageBlockBase.CUSTOM_TEXTURE_WOOD_TYPES.keySet()
+				.forEach(woodType -> ret.add(WoodStorageBlockItem.setWoodType(new ItemStack(woodStorageBlock), woodType)));
 		return List.copyOf(ret);
 	}
 
-	private static <T extends PropertyBasedSubtypeInterpreter> void addMultipleColorsRecipe(List<CraftingRecipe> recipes, Map<Item, ItemStack[]> items, Function<ItemStack, Optional<T>> getSubtypeInterpreter) {
+	private static <T extends PropertyBasedSubtypeInterpreter> void addMultipleColorsRecipe(List<CraftingRecipe> recipes, Map<Item, ItemStack[]> items,
+			Function<ItemStack, Optional<T>> getSubtypeInterpreter) {
 		items.forEach((block, stacks) -> {
 			NonNullList<Ingredient> ingredients = NonNullList.create();
 			ingredients.add(Ingredient.of(DyeColor.YELLOW.getTag()));
@@ -108,12 +113,14 @@ public class DyeRecipesMaker {
 				tintableBlockItem.setMainColor(result, ColorHelper.getColor(DyeColor.YELLOW.getTextureDiffuseColors()));
 				tintableBlockItem.setAccentColor(result, ColorHelper.getColor(DyeColor.LIME.getTextureDiffuseColors()));
 			}
-			ResourceLocation id = new ResourceLocation(SophisticatedStorage.MOD_ID, getSubtypeInterpreter.apply(result).map(i -> i.getRegistrySanitizedItemString(result)).orElse("multiple_color"));
+			ResourceLocation id = new ResourceLocation(SophisticatedStorage.MOD_ID,
+					getSubtypeInterpreter.apply(result).map(i -> i.getRegistrySanitizedItemString(result)).orElse("multiple_color"));
 			recipes.add(new ShapedRecipe(id, "", CraftingBookCategory.MISC, 3, 1, ingredients, result));
 		});
 	}
 
-	private static <T extends PropertyBasedSubtypeInterpreter> List<SingleColorDyeRecipeSpec> getSingleColorRecipeSpecs(Map<Item, ItemStack[]> items, Function<ItemStack, Optional<T>> getSubtypeInterpreter) {
+	private static <T extends PropertyBasedSubtypeInterpreter> List<SingleColorDyeRecipeSpec> getSingleColorRecipeSpecs(Map<Item, ItemStack[]> items,
+			Function<ItemStack, Optional<T>> getSubtypeInterpreter) {
 		List<SingleColorDyeRecipeSpec> recipes = new ArrayList<>();
 		items.forEach((block, stacks) -> {
 			List<DyeVariantPair> variants = new ArrayList<>();
@@ -127,7 +134,8 @@ public class DyeRecipesMaker {
 				variants.add(new DyeVariantPair(new ItemStack(DyeItem.byColor(color)), result));
 			}
 			ItemStack idStack = variants.get(0).result();
-			ResourceLocation id = new ResourceLocation(SophisticatedStorage.MOD_ID, getSubtypeInterpreter.apply(idStack).map(i -> i.getRegistrySanitizedItemString(idStack)).orElse("single_color_" + BuiltInRegistries.ITEM.getKey(block).getPath()));
+			ResourceLocation id = new ResourceLocation(SophisticatedStorage.MOD_ID, getSubtypeInterpreter.apply(idStack)
+					.map(i -> i.getRegistrySanitizedItemString(idStack)).orElse("single_color_" + BuiltInRegistries.ITEM.getKey(block).getPath()));
 			recipes.add(new SingleColorDyeRecipeSpec(id.withSuffix("_grouped"), List.of(stacks), variants));
 		});
 		return recipes;

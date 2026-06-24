@@ -35,7 +35,8 @@ public class StorageContainerMenu extends StorageContainerMenuBase<IStorageWrapp
 	}
 	public StorageContainerMenu(MenuType<?> menuType, int containerId, Player player, BlockPos pos) {
 		super(menuType, containerId, player, getWrapper(player.level(), pos), NoopStorageWrapper.INSTANCE, -1, false);
-		storageBlockEntity = WorldHelper.getBlockEntity(player.level(), pos, StorageBlockEntity.class).orElseThrow(() -> new IllegalArgumentException("Incorrect block entity at " + pos + " exptected to find StorageBlockEntity"));
+		storageBlockEntity = WorldHelper.getBlockEntity(player.level(), pos, StorageBlockEntity.class)
+				.orElseThrow(() -> new IllegalArgumentException("Incorrect block entity at " + pos + " exptected to find StorageBlockEntity"));
 		if (!player.level().isClientSide()) {
 			storageBlockEntity.startOpen(player);
 		}
@@ -54,7 +55,8 @@ public class StorageContainerMenu extends StorageContainerMenuBase<IStorageWrapp
 	}
 
 	private static IStorageWrapper getWrapper(Level level, BlockPos pos) {
-		return WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).map(be -> (IStorageWrapper) be.getStorageWrapper()).orElse(NoopStorageWrapper.INSTANCE);
+		return WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).map(be -> (IStorageWrapper) be.getStorageWrapper())
+				.orElse(NoopStorageWrapper.INSTANCE);
 	}
 
 	public static StorageContainerMenu fromBuffer(int windowId, Inventory playerInventory, FriendlyByteBuf packetBuffer) {
@@ -90,8 +92,12 @@ public class StorageContainerMenu extends StorageContainerMenuBase<IStorageWrapp
 			sendToServer(data -> data.putString(ACTION_TAG, "openSettings"));
 			return;
 		}
-		getBlockPosition().ifPresent(pos -> NetworkHooks.openScreen((ServerPlayer) player, new SimpleMenuProvider((w, p, pl) -> instantiateSettingsContainerMenu(w, pl, pos),
-				Component.translatable(StorageTranslationHelper.INSTANCE.translGui("settings.title"))), storageBlockEntity.getBlockPos()));
+		getBlockPosition()
+				.ifPresent(
+						pos -> NetworkHooks.openScreen((ServerPlayer) player,
+								new SimpleMenuProvider((w, p, pl) -> instantiateSettingsContainerMenu(w, pl, pos),
+										Component.translatable(StorageTranslationHelper.INSTANCE.translGui("settings.title"))),
+								storageBlockEntity.getBlockPos()));
 	}
 
 	protected StorageSettingsContainerMenu instantiateSettingsContainerMenu(int windowId, Player player, BlockPos pos) {
@@ -100,7 +106,7 @@ public class StorageContainerMenu extends StorageContainerMenuBase<IStorageWrapp
 
 	@Override
 	protected boolean storageItemHasChanged() {
-		return false; //storage blocks never have the issue of needing to close gui when item has moved in inventory
+		return false; // storage blocks never have the issue of needing to close gui when item has moved in inventory
 	}
 
 	@Override
@@ -112,8 +118,7 @@ public class StorageContainerMenu extends StorageContainerMenuBase<IStorageWrapp
 	public boolean stillValid(Player player) {
 		BlockPos pos = storageBlockEntity.getBlockPos();
 		BlockEntity be = player.level().getBlockEntity(pos);
-		return be instanceof StorageBlockEntity
-				&& (player.distanceToSqr(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D) <= 64.0D)
+		return be instanceof StorageBlockEntity && (player.distanceToSqr(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D) <= 64.0D)
 				&& (!(be instanceof WoodStorageBlockEntity woodStorageBlockEntity) || !woodStorageBlockEntity.isPacked());
 	}
 

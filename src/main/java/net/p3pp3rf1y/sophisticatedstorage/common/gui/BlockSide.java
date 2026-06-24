@@ -8,12 +8,7 @@ import net.p3pp3rf1y.sophisticatedstorage.block.VerticalFacing;
 import java.util.Map;
 
 public enum BlockSide implements StringRepresentable {
-	TOP("top"),
-	BOTTOM("bottom"),
-	FRONT("front"),
-	BACK("back"),
-	LEFT("left"),
-	RIGHT("right");
+	TOP("top"), BOTTOM("bottom"), FRONT("front"), BACK("back"), LEFT("left"), RIGHT("right");
 
 	private final String name;
 
@@ -105,8 +100,12 @@ public enum BlockSide implements StringRepresentable {
 			}
 			case FRONT -> baseVerticalFacing == VerticalFacing.NO ? baseHorizontalDirection : baseVerticalFacing.getDirection();
 			case BACK -> baseVerticalFacing == VerticalFacing.NO ? baseHorizontalDirection.getOpposite() : baseVerticalFacing.getDirection().getOpposite();
-			case LEFT -> baseVerticalFacing == VerticalFacing.NO && baseHorizontalDirection.getAxis() == Direction.Axis.Y ? Direction.EAST : baseHorizontalDirection.getClockWise();
-			case RIGHT -> baseVerticalFacing == VerticalFacing.NO && baseHorizontalDirection.getAxis() == Direction.Axis.Y ? Direction.WEST : baseHorizontalDirection.getCounterClockWise();
+			case LEFT -> baseVerticalFacing == VerticalFacing.NO && baseHorizontalDirection.getAxis() == Direction.Axis.Y
+					? Direction.EAST
+					: baseHorizontalDirection.getClockWise();
+			case RIGHT -> baseVerticalFacing == VerticalFacing.NO && baseHorizontalDirection.getAxis() == Direction.Axis.Y
+					? Direction.WEST
+					: baseHorizontalDirection.getCounterClockWise();
 		};
 	}
 }

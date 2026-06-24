@@ -19,6 +19,7 @@ import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.item.PaintbrushItem;
 
 import javax.annotation.Nullable;
+
 import java.util.Optional;
 
 public class PaintbrushOverlay {
@@ -55,7 +56,8 @@ public class PaintbrushOverlay {
 		}
 
 		BlockPos pos = blockHitResult.getBlockPos();
-		if (!(level.getBlockState(pos).getBlock() instanceof StorageBlockBase) && level.getBlockState(pos).getBlock() != ModBlocks.CONTROLLER.get() && !(level.getBlockEntity(pos) instanceof ISimpleMaterialHolder)) {
+		if (!(level.getBlockState(pos).getBlock() instanceof StorageBlockBase) && level.getBlockState(pos).getBlock() != ModBlocks.CONTROLLER.get()
+				&& !(level.getBlockEntity(pos) instanceof ISimpleMaterialHolder)) {
 			return;
 		}
 
@@ -70,7 +72,7 @@ public class PaintbrushOverlay {
 					int i = font.width(missingItems);
 					int x = (gui.screenWidth - i) / 2;
 					int y = gui.screenHeight - 75 - 10;
-					guiGraphics.drawString(font, missingItems,  x + 1, y, DyeColor.WHITE.getTextColor());
+					guiGraphics.drawString(font, missingItems, x + 1, y, DyeColor.WHITE.getTextColor());
 
 					x = (gui.screenWidth - itemRequirements.itemsMissing().size() * 18) / 2;
 					for (ItemStack missingItem : itemRequirements.itemsMissing()) {

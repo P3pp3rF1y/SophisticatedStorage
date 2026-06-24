@@ -15,14 +15,14 @@ import net.p3pp3rf1y.sophisticatedstorage.client.render.BarrelBakedModelBase;
 import javax.annotation.Nullable;
 
 public class CustomTintTerrainParticle extends TerrainParticle {
-	public CustomTintTerrainParticle(ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed, BlockState state, BlockPos pos) {
+	public CustomTintTerrainParticle(ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed, BlockState state,
+			BlockPos pos) {
 		super(level, x, y, z, xSpeed, ySpeed, zSpeed, state);
 
 		int color;
 		if (state.getBlock() instanceof BarrelBlock) {
 			color = WorldHelper.getBlockEntity(level, pos, BarrelBlockEntity.class)
-					.map(be -> BarrelBakedModelBase.getMaterialParticleTintColor(be.getMaterials(), level, pos))
-					.orElse(-1);
+					.map(be -> BarrelBakedModelBase.getMaterialParticleTintColor(be.getMaterials(), level, pos)).orElse(-1);
 			if (color == -1) {
 				color = Minecraft.getInstance().getBlockColors().getColor(state, level, pos, 1000);
 			}
@@ -42,7 +42,8 @@ public class CustomTintTerrainParticle extends TerrainParticle {
 	public static class Factory implements ParticleProvider<CustomTintTerrainParticleData> {
 		@Nullable
 		@Override
-		public Particle createParticle(CustomTintTerrainParticleData type, ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed) {
+		public Particle createParticle(CustomTintTerrainParticleData type, ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed,
+				double zSpeed) {
 			BlockPos pos = type.getPos();
 			BlockState state = type.getState();
 			CustomTintTerrainParticle particle = new CustomTintTerrainParticle(level, x, y, z, xSpeed, ySpeed, zSpeed, state, pos);

@@ -37,8 +37,10 @@ import java.util.stream.Collectors;
 import static net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.common.subtypes.SubtypeInterpreters.getSubtypeInterpreters;
 
 @EmiEntrypoint
+@SuppressWarnings("PMD.UnnecessaryImport")
 public class StorageEmiPlugin implements EmiPlugin {
-	private static Consumer<WorkstationRegistration> additionalWorkstations = registrar -> {};
+	private static Consumer<WorkstationRegistration> additionalWorkstations = registrar -> {
+	};
 	public static void addAdditionalWorkstations(Consumer<WorkstationRegistration> additionalWorkstations) {
 		StorageEmiPlugin.additionalWorkstations = StorageEmiPlugin.additionalWorkstations.andThen(additionalWorkstations);
 	}
@@ -73,11 +75,10 @@ public class StorageEmiPlugin implements EmiPlugin {
 	}
 
 	private void registerDefaultComparisons(EmiRegistry registry) {
-		getSubtypeInterpreters()
-				.forEach((item, comparator) -> registry.setDefaultComparison(item, EmiSubtypeInterpreter.of(comparator)));
+		getSubtypeInterpreters().forEach((item, comparator) -> registry.setDefaultComparison(item, EmiSubtypeInterpreter.of(comparator)));
 	}
 
-    private void registerGuiHandlers(EmiRegistry registry) {
+	private void registerGuiHandlers(EmiRegistry registry) {
 		registry.addExclusionArea(StorageScreen.class, StorageEmiPlugin::addStorageExclusionArea);
 		registry.addExclusionArea(LimitedBarrelScreen.class, StorageEmiPlugin::addStorageExclusionArea);
 		registry.addExclusionArea(StorageSettingsScreen.class, StorageEmiPlugin::addSettingsExclusionArea);
@@ -97,7 +98,7 @@ public class StorageEmiPlugin implements EmiPlugin {
 	}
 
 	private static void addStorageExclusionArea(StorageScreen screen, Consumer<Bounds> consumer) {
-		//noinspection ConstantValue
+		// noinspection ConstantValue
 		if (screen == null || screen.getUpgradeSettingsControl() == null) {
 			return;
 		}
@@ -110,20 +111,15 @@ public class StorageEmiPlugin implements EmiPlugin {
 		Map<BlockItem, PropertyBasedSubtypeInterpreter> subtypeInterpreters = getSubtypeInterpreters();
 		IRecipeViewerDisplayCatalog catalog = createCatalog(subtypeInterpreters);
 		Set<CraftingRecipe> craftingRecipes = catalog.getCraftingRecipes().stream().collect(Collectors.toSet());
-		registry.removeRecipes(recipe -> recipe.getBackingRecipe() instanceof CraftingRecipe craftingRecipe && (catalog.replacesCraftingRecipe(craftingRecipe) || craftingRecipes.contains(craftingRecipe)));
+		registry.removeRecipes(recipe -> recipe.getBackingRecipe() instanceof CraftingRecipe craftingRecipe
+				&& (catalog.replacesCraftingRecipe(craftingRecipe) || craftingRecipes.contains(craftingRecipe)));
 
-		catalog.getGroupedCraftingSpecs().stream()
-				.flatMap(spec -> spec.getAllDisplays().stream())
-				.flatMap(recipe -> GroupedCraftingEmiRecipe.ofGroupedUsageAndFocusedRecipes(recipe).stream())
-				.forEach(registry::addRecipe);
-		catalog.getCraftingRecipes().stream()
-				.filter(recipe -> !catalog.replacesCraftingRecipe(recipe))
-				.map(StorageEmiPlugin::wrapSyntheticCraftingRecipe)
+		catalog.getGroupedCraftingSpecs().stream().flatMap(spec -> spec.getAllDisplays().stream())
+				.flatMap(recipe -> GroupedCraftingEmiRecipe.ofGroupedUsageAndFocusedRecipes(recipe).stream()).forEach(registry::addRecipe);
+		catalog.getCraftingRecipes().stream().filter(recipe -> !catalog.replacesCraftingRecipe(recipe)).map(StorageEmiPlugin::wrapSyntheticCraftingRecipe)
 				.forEach(registry::addRecipe);
 
-		catalog.getCraftingSpecs().stream()
-				.flatMap(spec -> CraftingSpecEmiRecipe.ofGroupedUsageAndFocusedRecipes(spec).stream())
-				.forEach(registry::addRecipe);
+		catalog.getCraftingSpecs().stream().flatMap(spec -> CraftingSpecEmiRecipe.ofGroupedUsageAndFocusedRecipes(spec).stream()).forEach(registry::addRecipe);
 
 	}
 

@@ -9,15 +9,20 @@ import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.block.*;
 
 import javax.annotation.Nullable;
+
 import java.util.Optional;
 import java.util.UUID;
 
+@SuppressWarnings("PMD.UnnecessaryImport")
 public class StackStorageWrapper extends StorageWrapper {
 	private static final String CONTENTS_TAG = "contents";
 	private final ItemStack storageStack;
 
 	public StackStorageWrapper(ItemStack storageStack) {
-		super(() -> () -> {}, () -> {}, () -> {});
+		super(() -> () -> {
+		}, () -> {
+		}, () -> {
+		});
 		this.storageStack = storageStack;
 	}
 
@@ -65,13 +70,14 @@ public class StackStorageWrapper extends StorageWrapper {
 			if (contentsUuid == null) {
 				contentsUuid = getNewUuid();
 			}
-			return ItemContentsStorage.get().getOrCreateStorageContents(contentsUuid).getCompound(StorageBlockEntity.STORAGE_WRAPPER_TAG).getCompound(CONTENTS_TAG);
+			return ItemContentsStorage.get().getOrCreateStorageContents(contentsUuid).getCompound(StorageBlockEntity.STORAGE_WRAPPER_TAG)
+					.getCompound(CONTENTS_TAG);
 		});
 	}
 
 	@Override
 	protected void onUpgradeRefresh() {
-		//noop - there should be no upgrade refresh happening here
+		// noop - there should be no upgrade refresh happening here
 	}
 
 	@Override
@@ -108,12 +114,12 @@ public class StackStorageWrapper extends StorageWrapper {
 
 	@Override
 	public String getStorageType() {
-		return "irrelevant"; //because this is only used when determining upgrade errors in gui which storage stacks can't have open
+		return "irrelevant"; // because this is only used when determining upgrade errors in gui which storage stacks can't have open
 	}
 
 	@Override
 	public Component getDisplayName() {
-		return Component.empty(); //because this is only used when determining upgrade errors in gui which storage stacks can't have open
+		return Component.empty(); // because this is only used when determining upgrade errors in gui which storage stacks can't have open
 	}
 
 	@Override
@@ -123,7 +129,8 @@ public class StackStorageWrapper extends StorageWrapper {
 		}
 
 		Block block = Block.byItem(stack.getItem());
-		return !(block instanceof ShulkerBoxBlock) && !(block instanceof net.minecraft.world.level.block.ShulkerBoxBlock) && !Config.SERVER.shulkerBoxDisallowedItems.isItemDisallowed(stack.getItem());
+		return !(block instanceof ShulkerBoxBlock) && !(block instanceof net.minecraft.world.level.block.ShulkerBoxBlock)
+				&& !Config.SERVER.shulkerBoxDisallowedItems.isItemDisallowed(stack.getItem());
 	}
 
 	@Override
@@ -137,7 +144,6 @@ public class StackStorageWrapper extends StorageWrapper {
 	public int getMainColor() {
 		return NBTHelper.getInt(storageStack, StorageWrapper.MAIN_COLOR_TAG).orElse(-1);
 	}
-
 
 	@Override
 	public boolean hasMainColor() {

@@ -40,10 +40,11 @@ import java.util.function.Consumer;
 
 import static net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.common.subtypes.SubtypeInterpreters.getSubtypeInterpreters;
 
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "PMD.UnnecessaryImport"})
 @JeiPlugin
 public class StorageJeiPlugin implements IModPlugin {
-	private static Consumer<IRecipeCatalystRegistration> additionalCatalystRegistrar = registration -> {};
+	private static Consumer<IRecipeCatalystRegistration> additionalCatalystRegistrar = registration -> {
+	};
 	private IRecipeViewerDisplayCatalog catalog = null;
 
 	public StorageJeiPlugin() {
@@ -98,13 +99,16 @@ public class StorageJeiPlugin implements IModPlugin {
 	@Override
 	public void registerVanillaCategoryExtensions(IVanillaCategoryExtensionRegistration registration) {
 		GroupedCraftingRecipeCategoryExtension.registerOnce(registration);
-		JeiCraftingSpecExtensionRegistrar.registerCraftingSpecExtensions(registration, this::getCatalog, stack -> stack.getItem() instanceof StorageBlockItem || stack.is(Items.SHULKER_SHELL));
+		JeiCraftingSpecExtensionRegistrar.registerCraftingSpecExtensions(registration, this::getCatalog,
+				stack -> stack.getItem() instanceof StorageBlockItem || stack.is(Items.SHULKER_SHELL));
 	}
 
 	@Override
 	public void registerAdvanced(IAdvancedRegistration registration) {
-		registration.addTypedRecipeManagerPlugin(RecipeTypes.CRAFTING, new GroupedCraftingRecipeManagerPlugin(() -> getCatalog().getGroupedCraftingSpecs(), stack -> stack.getItem() instanceof StorageBlockItem));
-		registration.addTypedRecipeManagerPlugin(RecipeTypes.CRAFTING, new CraftingDisplayCatalogRecipeManagerPlugin(this::getCatalog, stack -> stack.getItem() instanceof StorageBlockItem || stack.is(Items.SHULKER_SHELL)));
+		registration.addTypedRecipeManagerPlugin(RecipeTypes.CRAFTING,
+				new GroupedCraftingRecipeManagerPlugin(() -> getCatalog().getGroupedCraftingSpecs(), stack -> stack.getItem() instanceof StorageBlockItem));
+		registration.addTypedRecipeManagerPlugin(RecipeTypes.CRAFTING, new CraftingDisplayCatalogRecipeManagerPlugin(this::getCatalog,
+				stack -> stack.getItem() instanceof StorageBlockItem || stack.is(Items.SHULKER_SHELL)));
 	}
 
 	private IRecipeViewerDisplayCatalog getCatalog() {
@@ -136,17 +140,18 @@ public class StorageJeiPlugin implements IModPlugin {
 	public void registerRecipeTransferHandlers(IRecipeTransferRegistration registration) {
 		IRecipeTransferHandlerHelper handlerHelper = registration.getTransferHelper();
 		IStackHelper stackHelper = registration.getJeiHelpers().getStackHelper();
-		registration.addRecipeTransferHandler(new JeiCraftingContainerRecipeTransferHandlerBase<StorageContainerMenu, CraftingRecipe>(handlerHelper, stackHelper) {
-			@Override
-			public Class<StorageContainerMenu> getContainerClass() {
-				return StorageContainerMenu.class;
-			}
+		registration
+				.addRecipeTransferHandler(new JeiCraftingContainerRecipeTransferHandlerBase<StorageContainerMenu, CraftingRecipe>(handlerHelper, stackHelper) {
+					@Override
+					public Class<StorageContainerMenu> getContainerClass() {
+						return StorageContainerMenu.class;
+					}
 
-			@Override
-			public RecipeType<CraftingRecipe> getRecipeType() {
-				return RecipeTypes.CRAFTING;
-			}
-		}, RecipeTypes.CRAFTING);
+					@Override
+					public RecipeType<CraftingRecipe> getRecipeType() {
+						return RecipeTypes.CRAFTING;
+					}
+				}, RecipeTypes.CRAFTING);
 	}
 
 }

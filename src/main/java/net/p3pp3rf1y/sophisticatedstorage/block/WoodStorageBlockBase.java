@@ -37,6 +37,7 @@ import net.p3pp3rf1y.sophisticatedstorage.item.StorageToolItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
 
 import javax.annotation.Nullable;
+
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -44,18 +45,11 @@ import java.util.function.Supplier;
 
 public abstract class WoodStorageBlockBase extends StorageBlockBase implements IAdditionalDropDataBlock {
 	public static final Map<WoodType, BlockFamily> CUSTOM_TEXTURE_WOOD_TYPES = ImmutableMap.<WoodType, BlockFamily>builder()
-			.put(WoodType.ACACIA, BlockFamilies.ACACIA_PLANKS)
-			.put(WoodType.BIRCH, BlockFamilies.BIRCH_PLANKS)
-			.put(WoodType.CRIMSON, BlockFamilies.CRIMSON_PLANKS)
-			.put(WoodType.DARK_OAK, BlockFamilies.DARK_OAK_PLANKS)
-			.put(WoodType.JUNGLE, BlockFamilies.JUNGLE_PLANKS)
-			.put(WoodType.OAK, BlockFamilies.OAK_PLANKS)
-			.put(WoodType.SPRUCE, BlockFamilies.SPRUCE_PLANKS)
-			.put(WoodType.WARPED, BlockFamilies.WARPED_PLANKS)
-			.put(WoodType.MANGROVE, BlockFamilies.MANGROVE_PLANKS)
-			.put(WoodType.CHERRY, BlockFamilies.CHERRY_PLANKS)
-			.put(WoodType.BAMBOO, BlockFamilies.BAMBOO_PLANKS)
-			.build();
+			.put(WoodType.ACACIA, BlockFamilies.ACACIA_PLANKS).put(WoodType.BIRCH, BlockFamilies.BIRCH_PLANKS)
+			.put(WoodType.CRIMSON, BlockFamilies.CRIMSON_PLANKS).put(WoodType.DARK_OAK, BlockFamilies.DARK_OAK_PLANKS)
+			.put(WoodType.JUNGLE, BlockFamilies.JUNGLE_PLANKS).put(WoodType.OAK, BlockFamilies.OAK_PLANKS).put(WoodType.SPRUCE, BlockFamilies.SPRUCE_PLANKS)
+			.put(WoodType.WARPED, BlockFamilies.WARPED_PLANKS).put(WoodType.MANGROVE, BlockFamilies.MANGROVE_PLANKS)
+			.put(WoodType.CHERRY, BlockFamilies.CHERRY_PLANKS).put(WoodType.BAMBOO, BlockFamilies.BAMBOO_PLANKS).build();
 
 	protected WoodStorageBlockBase(Properties properties, Supplier<Integer> numberOfInventorySlotsSupplier, Supplier<Integer> numberOfUpgradeSlotsSupplier) {
 		super(properties, numberOfInventorySlotsSupplier, numberOfUpgradeSlotsSupplier);
@@ -153,9 +147,8 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 	}
 
 	private boolean isBasicTier() {
-		return this == ModBlocks.BARREL.get() || this == ModBlocks.CHEST.get()
-				|| this == ModBlocks.LIMITED_BARREL_1.get() || this == ModBlocks.LIMITED_BARREL_2.get()
-				|| this == ModBlocks.LIMITED_BARREL_3.get() || this == ModBlocks.LIMITED_BARREL_4.get();
+		return this == ModBlocks.BARREL.get() || this == ModBlocks.CHEST.get() || this == ModBlocks.LIMITED_BARREL_1.get()
+				|| this == ModBlocks.LIMITED_BARREL_2.get() || this == ModBlocks.LIMITED_BARREL_3.get() || this == ModBlocks.LIMITED_BARREL_4.get();
 	}
 
 	@Override
@@ -222,28 +215,27 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 	@Override
 	public void playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
 		super.playerWillDestroy(level, pos, state, player);
-		WorldHelper.getBlockEntity(level, pos, WoodStorageBlockEntity.class)
-				.ifPresent(wbe -> {
-					if (Config.COMMON.dropPacked.get() && isNonEmpty(wbe)) {
-						wbe.setPacked(true);
-					}
+		WorldHelper.getBlockEntity(level, pos, WoodStorageBlockEntity.class).ifPresent(wbe -> {
+			if (Config.COMMON.dropPacked.get() && isNonEmpty(wbe)) {
+				wbe.setPacked(true);
+			}
 
-					if (wbe.isPacked()) {
-						if (player.isCreative() && (
-								!InventoryHelper.isEmpty(wbe.getStorageWrapper().getInventoryHandler()) || !InventoryHelper.isEmpty(wbe.getStorageWrapper().getUpgradeHandler())
-						)) {
-							ItemStack drop = new ItemStack(this);
-							addDropData(drop, wbe);
-							ItemEntity itementity = new ItemEntity(level, pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, drop);
-							itementity.setDefaultPickUpDelay();
-							level.addFreshEntity(itementity);
-						}
-					}
-				});
+			if (wbe.isPacked()) {
+				if (player.isCreative() && (!InventoryHelper.isEmpty(wbe.getStorageWrapper().getInventoryHandler())
+						|| !InventoryHelper.isEmpty(wbe.getStorageWrapper().getUpgradeHandler()))) {
+					ItemStack drop = new ItemStack(this);
+					addDropData(drop, wbe);
+					ItemEntity itementity = new ItemEntity(level, pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, drop);
+					itementity.setDefaultPickUpDelay();
+					level.addFreshEntity(itementity);
+				}
+			}
+		});
 	}
 
-	@SuppressWarnings("java:S1172") //parameter is used in override
-	protected boolean tryItemInteraction(Player player, InteractionHand hand, WoodStorageBlockEntity b, ItemStack stackInHand, Direction facing, BlockHitResult hitResult) {
+	@SuppressWarnings("java:S1172") // parameter is used in override
+	protected boolean tryItemInteraction(Player player, InteractionHand hand, WoodStorageBlockEntity b, ItemStack stackInHand, Direction facing,
+			BlockHitResult hitResult) {
 		if (stackInHand.getItem() instanceof PackingTapeItem) {
 			if (Config.COMMON.dropPacked.get()) {
 				player.displayClientMessage(Component.translatable("gui.sophisticatedstorage.status.packing_tape_disabled"), true);

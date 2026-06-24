@@ -20,21 +20,22 @@ import net.p3pp3rf1y.sophisticatedcore.util.ItemBase;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.RegistryHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
+import net.p3pp3rf1y.sophisticatedstorage.block.ControllerBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.block.ICountDisplay;
 import net.p3pp3rf1y.sophisticatedstorage.block.IFillLevelDisplay;
 import net.p3pp3rf1y.sophisticatedstorage.block.ILockable;
 import net.p3pp3rf1y.sophisticatedstorage.block.ISimpleMaterialHolder;
 import net.p3pp3rf1y.sophisticatedstorage.block.ITierDisplay;
 import net.p3pp3rf1y.sophisticatedstorage.block.IUpgradeDisplay;
-import net.p3pp3rf1y.sophisticatedstorage.block.ControllerBlockEntity;
-import net.p3pp3rf1y.sophisticatedstorage.block.StorageConnectorBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
+import net.p3pp3rf1y.sophisticatedstorage.block.StorageConnectorBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageIOBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageLinkBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageTranslationHelper;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 
 import javax.annotation.Nullable;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -50,10 +51,13 @@ public class StorageToolItem extends ItemBase {
 
 	@Override
 	public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltipComponents, TooltipFlag flag) {
-		tooltipComponents.addAll(StorageTranslationHelper.INSTANCE.getTranslatedLines(stack.getItem().getDescriptionId() + TranslationHelper.TOOLTIP_SUFFIX, null, ChatFormatting.DARK_GRAY));
+		tooltipComponents.addAll(StorageTranslationHelper.INSTANCE.getTranslatedLines(stack.getItem().getDescriptionId() + TranslationHelper.TOOLTIP_SUFFIX,
+				null, ChatFormatting.DARK_GRAY));
 		String itemName = RegistryHelper.getItemKey(stack.getItem()).getPath();
-		tooltipComponents.add(Component.translatable(StorageTranslationHelper.INSTANCE.translItemTooltip(itemName) + ".controls",
-				Component.translatable(StorageTranslationHelper.INSTANCE.translItemTooltip(itemName) + ".controls.combination").withStyle(ChatFormatting.AQUA)).withStyle(ChatFormatting.GRAY));
+		tooltipComponents.add(Component
+				.translatable(StorageTranslationHelper.INSTANCE.translItemTooltip(itemName) + ".controls", Component
+						.translatable(StorageTranslationHelper.INSTANCE.translItemTooltip(itemName) + ".controls.combination").withStyle(ChatFormatting.AQUA))
+				.withStyle(ChatFormatting.GRAY));
 	}
 
 	public static void useOffHandOnPlaced(ItemStack tool, StorageBlockEntity be) {
@@ -130,7 +134,8 @@ public class StorageToolItem extends ItemBase {
 
 	private static boolean canToggleOverlay(ISimpleMaterialHolder simpleMaterialHolder) {
 		return simpleMaterialHolder.getMaterial().isPresent()
-				&& (simpleMaterialHolder instanceof ControllerBlockEntity || simpleMaterialHolder instanceof StorageIOBlockEntity || simpleMaterialHolder instanceof StorageLinkBlockEntity || simpleMaterialHolder instanceof StorageConnectorBlockEntity);
+				&& (simpleMaterialHolder instanceof ControllerBlockEntity || simpleMaterialHolder instanceof StorageIOBlockEntity
+						|| simpleMaterialHolder instanceof StorageLinkBlockEntity || simpleMaterialHolder instanceof StorageConnectorBlockEntity);
 	}
 
 	private static <T> boolean tryToggling(BlockPos pos, Level level, Class<T> clazz, Consumer<T> toggle) {
@@ -184,9 +189,10 @@ public class StorageToolItem extends ItemBase {
 		Mode mode = getMode(tool);
 		Item item = tool.getItem();
 		return switch (mode) {
-			case LINK ->
-					getControllerLink(tool).map(controllerPos -> StorageTranslationHelper.INSTANCE.translItemOverlayMessage(item, "linking", controllerPos.getX(), controllerPos.getY(), controllerPos.getZ()))
-							.orElseGet(() -> StorageTranslationHelper.INSTANCE.translItemOverlayMessage(item, "unlinking"));
+			case LINK -> getControllerLink(tool)
+					.map(controllerPos -> StorageTranslationHelper.INSTANCE.translItemOverlayMessage(item, "linking", controllerPos.getX(),
+							controllerPos.getY(), controllerPos.getZ()))
+					.orElseGet(() -> StorageTranslationHelper.INSTANCE.translItemOverlayMessage(item, "unlinking"));
 			case LOCK -> StorageTranslationHelper.INSTANCE.translItemOverlayMessage(item, "toggling_lock");
 			case LOCK_DISPLAY -> StorageTranslationHelper.INSTANCE.translItemOverlayMessage(item, "toggling_lock_display");
 			case COUNT_DISPLAY -> StorageTranslationHelper.INSTANCE.translItemOverlayMessage(item, "toggling_count_display");
@@ -205,13 +211,7 @@ public class StorageToolItem extends ItemBase {
 	}
 
 	public enum Mode implements StringRepresentable {
-		LINK,
-		LOCK,
-		COUNT_DISPLAY,
-		LOCK_DISPLAY,
-		TIER_DISPLAY,
-		UPGRADES_DISPLAY,
-		FILL_LEVEL_DISPLAY;
+		LINK, LOCK, COUNT_DISPLAY, LOCK_DISPLAY, TIER_DISPLAY, UPGRADES_DISPLAY, FILL_LEVEL_DISPLAY;
 
 		public Mode next() {
 			return values()[(ordinal() + 1) % values().length];

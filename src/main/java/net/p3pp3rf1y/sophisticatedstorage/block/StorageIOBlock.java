@@ -26,6 +26,7 @@ import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageTranslationHelper;
 
 import javax.annotation.Nullable;
+
 import java.util.List;
 
 public class StorageIOBlock extends BlockBase implements EntityBlock {
@@ -53,7 +54,8 @@ public class StorageIOBlock extends BlockBase implements EntityBlock {
 	@SuppressWarnings({"java:S1874"})
 	@Override
 	public void appendHoverText(ItemStack stack, @Nullable BlockGetter level, List<Component> tooltip, TooltipFlag flag) {
-		tooltip.addAll(StorageTranslationHelper.INSTANCE.getTranslatedLines(stack.getItem().getDescriptionId() + TranslationHelper.TOOLTIP_SUFFIX, null, ChatFormatting.DARK_GRAY));
+		tooltip.addAll(StorageTranslationHelper.INSTANCE.getTranslatedLines(stack.getItem().getDescriptionId() + TranslationHelper.TOOLTIP_SUFFIX, null,
+				ChatFormatting.DARK_GRAY));
 	}
 
 	@Override

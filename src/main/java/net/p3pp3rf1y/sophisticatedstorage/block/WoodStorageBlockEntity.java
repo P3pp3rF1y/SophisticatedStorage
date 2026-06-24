@@ -19,6 +19,7 @@ import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+
 import java.util.Objects;
 import java.util.Optional;
 

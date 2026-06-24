@@ -21,6 +21,7 @@ import net.minecraftforge.client.model.ElementsModel;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 
 import javax.annotation.Nullable;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -37,7 +38,8 @@ public class CompositeElementsModel extends BlockModel {
 	}
 
 	@Override
-	public BakedModel bake(ModelBaker modelBaker, BlockModel owner, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelState, ResourceLocation modelLocation, boolean guiLight3d) {
+	public BakedModel bake(ModelBaker modelBaker, BlockModel owner, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelState,
+			ResourceLocation modelLocation, boolean guiLight3d) {
 		if (getRootModel() == ModelBakery.BLOCK_ENTITY_MARKER) {
 			var particleSprite = spriteGetter.apply(getMaterial("particle"));
 			return new BuiltInModel(getTransforms(), getOverrides(modelBaker, owner, spriteGetter), particleSprite, getGuiLight().lightLikeBlock());
@@ -47,7 +49,7 @@ public class CompositeElementsModel extends BlockModel {
 		return elementsModel.bake(customData, modelBaker, spriteGetter, modelState, getOverrides(modelBaker, owner, spriteGetter), modelLocation);
 	}
 
-	@SuppressWarnings({"java:S1874", "deprecation"}) //overriding getElements here
+	@SuppressWarnings({"java:S1874", "deprecation"}) // overriding getElements here
 	@Override
 	public List<BlockElement> getElements() {
 		return elements;
@@ -61,7 +63,7 @@ public class CompositeElementsModel extends BlockModel {
 		copyTexturesFromAllIncludedModels();
 	}
 
-	@SuppressWarnings({"java:S1874", "deprecation"}) //need to call getElements even though deprecated
+	@SuppressWarnings({"java:S1874", "deprecation"}) // need to call getElements even though deprecated
 	private void copyElementsFromAllIncludedModels() {
 		if (parent != null) {
 			elements.addAll(parent.getElements());
@@ -71,7 +73,7 @@ public class CompositeElementsModel extends BlockModel {
 		}
 	}
 
-	@SuppressWarnings("java:S5803") //need to call textureMap here even though only visible for testing
+	@SuppressWarnings("java:S5803") // need to call textureMap here even though only visible for testing
 	private void copyTexturesFromAllIncludedModels() {
 		if (parent != null) {
 			parent.textureMap.forEach(textureMap::putIfAbsent);
@@ -99,7 +101,8 @@ public class CompositeElementsModel extends BlockModel {
 
 			if (visitedTextureReferences.contains(textureName)) {
 				String finalTextureName = textureName;
-				SophisticatedStorage.LOGGER.warn("Unable to resolve texture due to reference chain {}->{} in {}", () -> Joiner.on("->").join(visitedTextureReferences), () -> finalTextureName, () -> name);
+				SophisticatedStorage.LOGGER.warn("Unable to resolve texture due to reference chain {}->{} in {}",
+						() -> Joiner.on("->").join(visitedTextureReferences), () -> finalTextureName, () -> name);
 				return new Material(InventoryMenu.BLOCK_ATLAS, MissingTextureAtlasSprite.getLocation());
 			}
 

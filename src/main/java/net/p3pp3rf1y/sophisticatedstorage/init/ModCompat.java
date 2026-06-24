@@ -12,13 +12,15 @@ import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException
 import org.apache.maven.artifact.versioning.VersionRange;
 
 import javax.annotation.Nullable;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.function.Supplier;
 
 public class ModCompat {
-	private ModCompat() {}
+	private ModCompat() {
+	}
 
 	private static final String RUBIDIUM_MOD_ID = "rubidium";
 	private static final String SB_MOD_ID = "sophisticatedbackpacks";
@@ -42,8 +44,7 @@ public class ModCompat {
 	private static VersionRange fromSpec(String spec) {
 		try {
 			return VersionRange.createFromVersionSpec(spec);
-		}
-		catch (InvalidVersionSpecificationException e) {
+		} catch (InvalidVersionSpecificationException e) {
 			return null;
 		}
 	}
@@ -53,8 +54,7 @@ public class ModCompat {
 			if (entry.getKey().isLoaded()) {
 				try {
 					loadedCompats.put(entry.getKey(), entry.getValue().get().call());
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					SophisticatedStorage.LOGGER.error("Error instantiating compatibility ", e);
 				}
 			}

@@ -21,7 +21,8 @@ public class SideIOContainer {
 	private final boolean canSideIOBeDisabled;
 	private final IServerUpdater serverUpdater;
 
-	public SideIOContainer(IServerUpdater serverUpdater, Supplier<Direction> horizontalDirection, Supplier<VerticalFacing> verticalFacing, Function<Direction, IOMode> getDirectionIOMode, BiConsumer<Direction, IOMode> setDirectionIOMode, boolean canSideIOBeDisabled) {
+	public SideIOContainer(IServerUpdater serverUpdater, Supplier<Direction> horizontalDirection, Supplier<VerticalFacing> verticalFacing,
+			Function<Direction, IOMode> getDirectionIOMode, BiConsumer<Direction, IOMode> setDirectionIOMode, boolean canSideIOBeDisabled) {
 		this.serverUpdater = serverUpdater;
 		this.horizontalDirection = horizontalDirection;
 		this.verticalFacing = verticalFacing;

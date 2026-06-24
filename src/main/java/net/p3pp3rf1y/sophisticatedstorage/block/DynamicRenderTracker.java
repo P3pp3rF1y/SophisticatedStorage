@@ -110,7 +110,7 @@ public class DynamicRenderTracker implements IDynamicRenderTracker {
 	}
 
 	private Level getLevel() {
-		//noinspection ConstantConditions - level is not null at the point this tracker is running
+		// noinspection ConstantConditions - level is not null at the point this tracker is running
 		return storageBlockEntity.getLevel();
 	}
 

@@ -42,11 +42,14 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity> {
 
 	public ChestRenderer(BlockEntityRendererProvider.Context context) {
 		ModelPart modelpart = context.bakeLayer(ClientEventHandler.CHEST_LAYER);
-		ChestSubRenderer singleChestRenderer = new ChestSubRenderer(ChestType.SINGLE, modelpart.getChild(LID), modelpart.getChild(BOTTOM), modelpart.getChild(LOCK));
+		ChestSubRenderer singleChestRenderer = new ChestSubRenderer(ChestType.SINGLE, modelpart.getChild(LID), modelpart.getChild(BOTTOM),
+				modelpart.getChild(LOCK));
 		modelpart = context.bakeLayer(ClientEventHandler.CHEST_RIGHT_LAYER);
-		ChestSubRenderer doubleChestRightRenderer = new ChestSubRenderer(ChestType.RIGHT, modelpart.getChild(LID), modelpart.getChild(BOTTOM), modelpart.getChild(LOCK));
+		ChestSubRenderer doubleChestRightRenderer = new ChestSubRenderer(ChestType.RIGHT, modelpart.getChild(LID), modelpart.getChild(BOTTOM),
+				modelpart.getChild(LOCK));
 		modelpart = context.bakeLayer(ClientEventHandler.CHEST_LEFT_LAYER);
-		ChestSubRenderer doubleChestLeftRenderer = new ChestSubRenderer(ChestType.LEFT, modelpart.getChild(LID), modelpart.getChild(BOTTOM), modelpart.getChild(LOCK));
+		ChestSubRenderer doubleChestLeftRenderer = new ChestSubRenderer(ChestType.LEFT, modelpart.getChild(LID), modelpart.getChild(BOTTOM),
+				modelpart.getChild(LOCK));
 		chestSubRenderers = Map.of(ChestType.SINGLE, singleChestRenderer, ChestType.RIGHT, doubleChestRightRenderer, ChestType.LEFT, doubleChestLeftRenderer);
 	}
 
@@ -54,9 +57,11 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity> {
 		MeshDefinition meshDefinition = new MeshDefinition();
 		PartDefinition partDefinition = meshDefinition.getRoot();
 		partDefinition.addOrReplaceChild(BOTTOM, CubeListBuilder.create().texOffs(0, 19).addBox(1.0F, 0.0F, 1.0F, 14.0F, 10.0F, 14.0F), PartPose.ZERO);
-		partDefinition.addOrReplaceChild(LID, CubeListBuilder.create().texOffs(0, 0).addBox(1.0F, 0.0F, 0.0F, 14.0F, 5.0F, 14.0F), PartPose.offset(0.0F, 9.0F, 1.0F));
+		partDefinition.addOrReplaceChild(LID, CubeListBuilder.create().texOffs(0, 0).addBox(1.0F, 0.0F, 0.0F, 14.0F, 5.0F, 14.0F),
+				PartPose.offset(0.0F, 9.0F, 1.0F));
 		if (addLock) {
-			partDefinition.addOrReplaceChild(LOCK, CubeListBuilder.create().texOffs(0, 0).addBox(7.0F, -1.0F, 15.0F, 2.0F, 4.0F, 1.0F), PartPose.offset(0.0F, 8.0F, 0.0F));
+			partDefinition.addOrReplaceChild(LOCK, CubeListBuilder.create().texOffs(0, 0).addBox(7.0F, -1.0F, 15.0F, 2.0F, 4.0F, 1.0F),
+					PartPose.offset(0.0F, 8.0F, 0.0F));
 		}
 		return LayerDefinition.create(meshDefinition, 64, 64);
 	}
@@ -65,8 +70,10 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity> {
 		MeshDefinition meshDefinition = new MeshDefinition();
 		PartDefinition partDefinition = meshDefinition.getRoot();
 		partDefinition.addOrReplaceChild(BOTTOM, CubeListBuilder.create().texOffs(0, 19).addBox(1.0F, 0.0F, 1.0F, 15.0F, 10.0F, 14.0F), PartPose.ZERO);
-		partDefinition.addOrReplaceChild(LID, CubeListBuilder.create().texOffs(0, 0).addBox(1.0F, 0.0F, 0.0F, 15.0F, 5.0F, 14.0F), PartPose.offset(0.0F, 9.0F, 1.0F));
-		partDefinition.addOrReplaceChild(LOCK, CubeListBuilder.create().texOffs(0, 0).addBox(15.0F, -2.0F, 14.0F, 1.0F, 4.0F, 1.0F), PartPose.offset(0.0F, 9.0F, 1.0F));
+		partDefinition.addOrReplaceChild(LID, CubeListBuilder.create().texOffs(0, 0).addBox(1.0F, 0.0F, 0.0F, 15.0F, 5.0F, 14.0F),
+				PartPose.offset(0.0F, 9.0F, 1.0F));
+		partDefinition.addOrReplaceChild(LOCK, CubeListBuilder.create().texOffs(0, 0).addBox(15.0F, -2.0F, 14.0F, 1.0F, 4.0F, 1.0F),
+				PartPose.offset(0.0F, 9.0F, 1.0F));
 		return LayerDefinition.create(meshDefinition, 64, 64);
 	}
 
@@ -74,12 +81,15 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity> {
 		MeshDefinition meshDefinition = new MeshDefinition();
 		PartDefinition partDefinition = meshDefinition.getRoot();
 		partDefinition.addOrReplaceChild(BOTTOM, CubeListBuilder.create().texOffs(0, 19).addBox(0.0F, 0.0F, 1.0F, 15.0F, 10.0F, 14.0F), PartPose.ZERO);
-		partDefinition.addOrReplaceChild(LID, CubeListBuilder.create().texOffs(0, 0).addBox(0.0F, 0.0F, 0.0F, 15.0F, 5.0F, 14.0F), PartPose.offset(0.0F, 9.0F, 1.0F));
-		partDefinition.addOrReplaceChild(LOCK, CubeListBuilder.create().texOffs(0, 0).addBox(0.0F, -2.0F, 14.0F, 1.0F, 4.0F, 1.0F), PartPose.offset(0.0F, 9.0F, 1.0F));
+		partDefinition.addOrReplaceChild(LID, CubeListBuilder.create().texOffs(0, 0).addBox(0.0F, 0.0F, 0.0F, 15.0F, 5.0F, 14.0F),
+				PartPose.offset(0.0F, 9.0F, 1.0F));
+		partDefinition.addOrReplaceChild(LOCK, CubeListBuilder.create().texOffs(0, 0).addBox(0.0F, -2.0F, 14.0F, 1.0F, 4.0F, 1.0F),
+				PartPose.offset(0.0F, 9.0F, 1.0F));
 		return LayerDefinition.create(meshDefinition, 64, 64);
 	}
 
-	public void render(ChestBlockEntity chestEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
+	public void render(ChestBlockEntity chestEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight,
+			int packedOverlay) {
 		BlockState blockstate = chestEntity.getBlockState();
 		Optional<WoodType> woodType = chestEntity.getWoodType();
 		ChestType chestType = blockstate.getValue(ChestBlock.TYPE);
@@ -106,10 +116,12 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity> {
 			subRenderer.renderBottomAndLid(poseStack, bufferSource, lidAngle, packedLight, packedOverlay, StorageTextureManager.ChestMaterial.BASE);
 		}
 		if (hasMainColor) {
-			subRenderer.renderBottomAndLidWithTint(poseStack, bufferSource, lidAngle, packedLight, packedOverlay, storageWrapper.getMainColor(), StorageTextureManager.ChestMaterial.TINTABLE_MAIN);
+			subRenderer.renderBottomAndLidWithTint(poseStack, bufferSource, lidAngle, packedLight, packedOverlay, storageWrapper.getMainColor(),
+					StorageTextureManager.ChestMaterial.TINTABLE_MAIN);
 		}
 		if (hasAccentColor) {
-			subRenderer.renderBottomAndLidWithTint(poseStack, bufferSource, lidAngle, packedLight, packedOverlay, storageWrapper.getAccentColor(), StorageTextureManager.ChestMaterial.TINTABLE_ACCENT);
+			subRenderer.renderBottomAndLidWithTint(poseStack, bufferSource, lidAngle, packedLight, packedOverlay, storageWrapper.getAccentColor(),
+					StorageTextureManager.ChestMaterial.TINTABLE_ACCENT);
 		}
 		if (chestEntity.shouldShowTier()) {
 			subRenderer.renderTier(poseStack, bufferSource, lidAngle, packedLight, packedOverlay);
@@ -144,16 +156,17 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity> {
 
 				if (chestEntity.showUpgradesOnTop) {
 					if (lidAngle > 0) {
-						poseStack.translate(0, 9/16D, 14/16D);
+						poseStack.translate(0, 9 / 16D, 14 / 16D);
 						poseStack.mulPose(Axis.XP.rotationDegrees(lidAngle * 90));
-						poseStack.translate(0, -9/16D, -14/16D);
+						poseStack.translate(0, -9 / 16D, -14 / 16D);
 					}
 					poseStack.translate(0.5, 0.5, (0.5 - 1 / 16f));
 					poseStack.mulPose(Axis.XP.rotationDegrees(90));
-					poseStack.translate(-0.5, -(0.5 - 1/16f),  -(0.5 - 2 / 16f));
+					poseStack.translate(-0.5, -(0.5 - 1 / 16f), -(0.5 - 2 / 16f));
 				}
 
-				displayItemRenderer.renderUpgradeItems(chestEntity, poseStack, bufferSource, packedLight, packedOverlay, holdsItemThatShowsUpgrades(), shouldShowDisabledUpgradesDisplay(chestEntity));
+				displayItemRenderer.renderUpgradeItems(chestEntity, poseStack, bufferSource, packedLight, packedOverlay, holdsItemThatShowsUpgrades(),
+						shouldShowDisabledUpgradesDisplay(chestEntity));
 				poseStack.popPose();
 			}
 
@@ -170,7 +183,8 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity> {
 		poseStack.popPose();
 	}
 
-	private void renderDisplayItem(RenderInfo.DisplayItem displayItem, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, ChestType chestType) {
+	private void renderDisplayItem(RenderInfo.DisplayItem displayItem, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay,
+			ChestType chestType) {
 		DisplaySide displaySide = displayItem.getDisplaySide();
 
 		if (displaySide == DisplaySide.LEFT) {
@@ -195,12 +209,13 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity> {
 		displayItemRenderer.renderDisplayItem(poseStack, bufferSource, packedLight, packedOverlay, displayItem);
 	}
 
-	private void renderLocked(ChestBlockEntity chestEntity, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, ChestType chestType, float lidAngle) {
+	private void renderLocked(ChestBlockEntity chestEntity, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay,
+			ChestType chestType, float lidAngle) {
 		poseStack.pushPose();
 		if (lidAngle > 0) {
-			poseStack.translate(0, 9/16D, 14/16D);
+			poseStack.translate(0, 9 / 16D, 14 / 16D);
 			poseStack.mulPose(Axis.XP.rotationDegrees(lidAngle * 90));
-			poseStack.translate(0, -9/16D, -14/16D);
+			poseStack.translate(0, -9 / 16D, -14 / 16D);
 		}
 		if (chestType == ChestType.LEFT) {
 			poseStack.translate(0.5, 0, 0);
@@ -251,7 +266,8 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity> {
 			poseStack.popPose();
 		}
 
-		private void renderBottomAndLid(PoseStack poseStack, MultiBufferSource bufferSource, float lidAngle, int packedLight, int packedOverlay, StorageTextureManager.ChestMaterial chestMaterial) {
+		private void renderBottomAndLid(PoseStack poseStack, MultiBufferSource bufferSource, float lidAngle, int packedLight, int packedOverlay,
+				StorageTextureManager.ChestMaterial chestMaterial) {
 			VertexConsumer consumer = chestMaterials.get(chestMaterial).buffer(bufferSource, RenderType::entityCutout);
 			renderBottomAndLid(poseStack, lidAngle, packedLight, packedOverlay, consumer);
 		}
@@ -262,7 +278,8 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity> {
 			bottomPart.render(poseStack, consumer, packedLight, packedOverlay);
 		}
 
-		private void renderBottomAndLidWithTint(PoseStack poseStack, MultiBufferSource bufferSource, float lidAngle, int packedLight, int packedOverlay, int tint, StorageTextureManager.ChestMaterial chestMaterial) {
+		private void renderBottomAndLidWithTint(PoseStack poseStack, MultiBufferSource bufferSource, float lidAngle, int packedLight, int packedOverlay,
+				int tint, StorageTextureManager.ChestMaterial chestMaterial) {
 			float tintRed = (tint >> 16 & 255) / 255.0F;
 			float tingGreen = (tint >> 8 & 255) / 255.0F;
 			float tintBlue = (tint & 255) / 255.0F;

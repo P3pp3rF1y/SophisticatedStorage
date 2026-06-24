@@ -41,6 +41,7 @@ import net.p3pp3rf1y.sophisticatedstorage.block.ISimpleMaterialHolder;
 import net.p3pp3rf1y.sophisticatedstorage.item.SimpleMaterialBlockItem;
 
 import javax.annotation.Nullable;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
@@ -62,7 +63,9 @@ public class SimpleMaterialModel implements IUnbakedGeometry<SimpleMaterialModel
 	}
 
 	@Override
-	public BakedModel bake(IGeometryBakingContext context, ModelBaker baker, Function<net.minecraft.client.resources.model.Material, TextureAtlasSprite> spriteGetter, ModelState modelState, ItemOverrides overrides, ResourceLocation modelLocation) {
+	public BakedModel bake(IGeometryBakingContext context, ModelBaker baker,
+			Function<net.minecraft.client.resources.model.Material, TextureAtlasSprite> spriteGetter, ModelState modelState, ItemOverrides overrides,
+			ResourceLocation modelLocation) {
 		BakedModel base = baseModel.bake(baker, baseModel, spriteGetter, modelState, modelLocation, true);
 		BakedModel overlay = overlayModel == null ? null : overlayModel.bake(baker, overlayModel, spriteGetter, modelState, modelLocation, true);
 		return new Baked(base, overlay);
@@ -89,10 +92,13 @@ public class SimpleMaterialModel implements IUnbakedGeometry<SimpleMaterialModel
 		}
 
 		@Override
-		public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, RandomSource rand, ModelData data, @Nullable RenderType renderType) {
+		public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, RandomSource rand, ModelData data,
+				@Nullable RenderType renderType) {
 			ResourceLocation material = getMaterial(data);
 			if (isOverlayOnly(data)) {
-				return overlay != null && material != null && shouldRenderOverlay(renderType) ? getOverlayQuads(state, side, rand, isOverlayExpanded(data)) : List.of();
+				return overlay != null && material != null && shouldRenderOverlay(renderType)
+						? getOverlayQuads(state, side, rand, isOverlayExpanded(data))
+						: List.of();
 			}
 
 			if (material == null) {
@@ -234,8 +240,7 @@ public class SimpleMaterialModel implements IUnbakedGeometry<SimpleMaterialModel
 
 		@Override
 		public List<BakedModel> getRenderPasses(ItemStack itemStack, boolean fabulous) {
-			return SimpleMaterialBlockItem.getMaterial(itemStack)
-					.<List<BakedModel>>map(material -> List.of(new ResolvedModel(this, material)))
+			return SimpleMaterialBlockItem.getMaterial(itemStack).<List<BakedModel>>map(material -> List.of(new ResolvedModel(this, material)))
 					.orElseGet(() -> base.getRenderPasses(itemStack, fabulous));
 		}
 
@@ -259,12 +264,8 @@ public class SimpleMaterialModel implements IUnbakedGeometry<SimpleMaterialModel
 				float v = remapV(oldSprite, newSprite, Float.intBitsToFloat(vertices[baseIndex + IQuadTransformer.UV0 + 1]));
 				int packedLight = vertices[baseIndex + IQuadTransformer.UV2];
 
-				quadBuilder.vertex(x, y, z)
-						.color(255, 255, 255, 255)
-						.uv(u, v)
-						.uv2(packedLight & 0xFFFF, (packedLight >>> 16) & 0xFFFF)
-						.normal(normal.getX(), normal.getY(), normal.getZ())
-						.endVertex();
+				quadBuilder.vertex(x, y, z).color(255, 255, 255, 255).uv(u, v).uv2(packedLight & 0xFFFF, (packedLight >>> 16) & 0xFFFF)
+						.normal(normal.getX(), normal.getY(), normal.getZ()).endVertex();
 			}
 
 			return quadBuilder.getQuad();
@@ -279,9 +280,12 @@ public class SimpleMaterialModel implements IUnbakedGeometry<SimpleMaterialModel
 
 			for (int vertexIndex = 0; vertexIndex < 4; vertexIndex++) {
 				int baseIndex = vertexIndex * IQuadTransformer.STRIDE;
-				vertices[baseIndex + IQuadTransformer.POSITION] = Float.floatToRawIntBits(Float.intBitsToFloat(vertices[baseIndex + IQuadTransformer.POSITION]) + xOffset);
-				vertices[baseIndex + IQuadTransformer.POSITION + 1] = Float.floatToRawIntBits(Float.intBitsToFloat(vertices[baseIndex + IQuadTransformer.POSITION + 1]) + yOffset);
-				vertices[baseIndex + IQuadTransformer.POSITION + 2] = Float.floatToRawIntBits(Float.intBitsToFloat(vertices[baseIndex + IQuadTransformer.POSITION + 2]) + zOffset);
+				vertices[baseIndex + IQuadTransformer.POSITION] = Float
+						.floatToRawIntBits(Float.intBitsToFloat(vertices[baseIndex + IQuadTransformer.POSITION]) + xOffset);
+				vertices[baseIndex + IQuadTransformer.POSITION + 1] = Float
+						.floatToRawIntBits(Float.intBitsToFloat(vertices[baseIndex + IQuadTransformer.POSITION + 1]) + yOffset);
+				vertices[baseIndex + IQuadTransformer.POSITION + 2] = Float
+						.floatToRawIntBits(Float.intBitsToFloat(vertices[baseIndex + IQuadTransformer.POSITION + 2]) + zOffset);
 			}
 
 			return new BakedQuad(vertices, quad.getTintIndex(), quad.getDirection(), quad.getSprite(), quad.isShade(), quad.hasAmbientOcclusion());
@@ -316,9 +320,7 @@ public class SimpleMaterialModel implements IUnbakedGeometry<SimpleMaterialModel
 		@Nullable
 		@Override
 		public BakedModel resolve(BakedModel model, ItemStack stack, @Nullable ClientLevel level, @Nullable LivingEntity entity, int seed) {
-			return SimpleMaterialBlockItem.getMaterial(stack)
-					.<BakedModel>map(material -> new ResolvedModel(simpleMaterialModel, material))
-					.orElse(model);
+			return SimpleMaterialBlockItem.getMaterial(stack).<BakedModel>map(material -> new ResolvedModel(simpleMaterialModel, material)).orElse(model);
 		}
 	}
 
@@ -336,7 +338,8 @@ public class SimpleMaterialModel implements IUnbakedGeometry<SimpleMaterialModel
 		}
 
 		@Override
-		public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, RandomSource rand, ModelData extraData, @Nullable RenderType renderType) {
+		public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, RandomSource rand, ModelData extraData,
+				@Nullable RenderType renderType) {
 			return super.getQuads(state, side, rand, getMaterialModelData(), renderType);
 		}
 

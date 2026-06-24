@@ -11,6 +11,7 @@ import net.p3pp3rf1y.sophisticatedcore.util.BlockItemBase;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 
 import javax.annotation.Nullable;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
@@ -55,8 +56,7 @@ public class BaseTierWoodenStorageIngredient extends Ingredient {
 		return Serializer.INSTANCE;
 	}
 
-	public static class Serializer implements IIngredientSerializer<BaseTierWoodenStorageIngredient>
-	{
+	public static class Serializer implements IIngredientSerializer<BaseTierWoodenStorageIngredient> {
 		public static final Serializer INSTANCE = new Serializer();
 
 		@Override
@@ -71,7 +71,7 @@ public class BaseTierWoodenStorageIngredient extends Ingredient {
 
 		@Override
 		public void write(FriendlyByteBuf buffer, BaseTierWoodenStorageIngredient ingredient) {
-			//noop
+			// noop
 		}
 	}
 }

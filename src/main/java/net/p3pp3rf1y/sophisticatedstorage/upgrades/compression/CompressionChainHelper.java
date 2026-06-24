@@ -53,7 +53,9 @@ final class CompressionChainHelper {
 		return Optional.empty();
 	}
 
-	static Optional<CompressionDefinition> getCompressionDefinition(ItemStack stack, Function<Item, Optional<CompressionUpgradeConfig.DecompressionResult>> decompressionResultProvider, Function<ItemStack, Optional<CompressionUpgradeConfig.CompressionResult>> compressionResultProvider) {
+	static Optional<CompressionDefinition> getCompressionDefinition(ItemStack stack,
+			Function<Item, Optional<CompressionUpgradeConfig.DecompressionResult>> decompressionResultProvider,
+			Function<ItemStack, Optional<CompressionUpgradeConfig.CompressionResult>> compressionResultProvider) {
 		Set<RecipeHelper.CompactingShape> compactingShapes = RecipeHelper.getItemCompactingShapes(stack);
 
 		if (compactingShapes.contains(RecipeHelper.CompactingShape.THREE_BY_THREE_UNCRAFTABLE)) {
@@ -65,29 +67,36 @@ final class CompressionChainHelper {
 		Optional<CompressionDefinition> compressionDefinition = Optional.empty();
 		if (compactingShapes.contains(RecipeHelper.CompactingShape.THREE_BY_THREE)) {
 			RecipeHelper.CompactingResult compactingResult = RecipeHelper.getCompactingResult(stack, RecipeHelper.CompactingShape.THREE_BY_THREE);
-			compressionDefinition = decompressionResultProvider.apply(compactingResult.getResult().getItem()).filter(decompressionResult -> decompressionResult.matches(stack, RecipeHelper.CompactingShape.THREE_BY_THREE.getNumberOfIngredients()))
+			compressionDefinition = decompressionResultProvider.apply(compactingResult.getResult().getItem())
+					.filter(decompressionResult -> decompressionResult.matches(stack, RecipeHelper.CompactingShape.THREE_BY_THREE.getNumberOfIngredients()))
 					.map(decompressionResult -> new CompressionDefinition(compactingResult.getResult(), decompressionResult.count()));
 		}
 		if (compressionDefinition.isEmpty() && compactingShapes.contains(RecipeHelper.CompactingShape.TWO_BY_TWO)) {
 			RecipeHelper.CompactingResult compactingResult = RecipeHelper.getCompactingResult(stack, RecipeHelper.CompactingShape.TWO_BY_TWO);
-			compressionDefinition = decompressionResultProvider.apply(compactingResult.getResult().getItem()).filter(decompressionResult -> decompressionResult.matches(stack, RecipeHelper.CompactingShape.TWO_BY_TWO.getNumberOfIngredients()))
+			compressionDefinition = decompressionResultProvider.apply(compactingResult.getResult().getItem())
+					.filter(decompressionResult -> decompressionResult.matches(stack, RecipeHelper.CompactingShape.TWO_BY_TWO.getNumberOfIngredients()))
 					.map(decompressionResult -> new CompressionDefinition(compactingResult.getResult(), decompressionResult.count()));
 		}
 		if (compressionDefinition.isPresent()) {
 			return compressionDefinition;
 		}
-		return compressionResultProvider.apply(stack).map(compressionResult -> new CompressionDefinition(compressionResult.result(), compressionResult.count()));
+		return compressionResultProvider.apply(stack)
+				.map(compressionResult -> new CompressionDefinition(compressionResult.result(), compressionResult.count()));
 	}
 
 	private static Optional<CompressionDefinition> getCompressionDefinition(ItemStack stack, RecipeHelper.CompactingShape shape) {
 		RecipeHelper.CompactingResult compactingResult = RecipeHelper.getCompactingResult(stack, shape);
-		return compactingResult.getResult().isEmpty() ? Optional.empty() : Optional.of(new CompressionDefinition(compactingResult.getResult(), shape.getNumberOfIngredients()));
+		return compactingResult.getResult().isEmpty()
+				? Optional.empty()
+				: Optional.of(new CompressionDefinition(compactingResult.getResult(), shape.getNumberOfIngredients()));
 	}
 
-	static Optional<DecompressionDefinition> getDecompressionDefinition(ItemStack stack, Function<Item, Optional<CompressionUpgradeConfig.DecompressionResult>> decompressionResultProvider) {
+	static Optional<DecompressionDefinition> getDecompressionDefinition(ItemStack stack,
+			Function<Item, Optional<CompressionUpgradeConfig.DecompressionResult>> decompressionResultProvider) {
 		RecipeHelper.UncompactingResult uncompactingResult = RecipeHelper.getUncompactingResult(stack);
 		if (uncompactingResult.getCompactUsingShape() == RecipeHelper.CompactingShape.NONE) {
-			return decompressionResultProvider.apply(stack.getItem()).map(decompressionResult -> new DecompressionDefinition(decompressionResult.result(), decompressionResult.count()));
+			return decompressionResultProvider.apply(stack.getItem())
+					.map(decompressionResult -> new DecompressionDefinition(decompressionResult.result(), decompressionResult.count()));
 		}
 		return Optional.of(new DecompressionDefinition(uncompactingResult.getResult(), uncompactingResult.getCompactUsingShape().getNumberOfIngredients()));
 	}

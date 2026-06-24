@@ -25,7 +25,7 @@ public class DropPackedDisabledCondition implements ICondition {
 
 		@Override
 		public void write(JsonObject json, DropPackedDisabledCondition value) {
-			//noop
+			// noop
 		}
 
 		@Override

@@ -32,7 +32,8 @@ public class CopyStorageDataFunction extends LootItemConditionalFunction {
 			}
 		}
 		if (be instanceof ISimpleMaterialHolder simpleMaterialHolder && stack.getItem() instanceof SimpleMaterialBlockItem) {
-			simpleMaterialHolder.getMaterial().ifPresentOrElse(material -> SimpleMaterialBlockItem.setMaterial(stack, material), () -> SimpleMaterialBlockItem.removeMaterial(stack));
+			simpleMaterialHolder.getMaterial().ifPresentOrElse(material -> SimpleMaterialBlockItem.setMaterial(stack, material),
+					() -> SimpleMaterialBlockItem.removeMaterial(stack));
 		}
 
 		return stack;
@@ -42,7 +43,6 @@ public class CopyStorageDataFunction extends LootItemConditionalFunction {
 	public LootItemFunctionType getType() {
 		return ModItems.COPY_STORAGE_DATA.get();
 	}
-
 
 	public static CopyStorageDataFunction.Builder builder() {
 		return new CopyStorageDataFunction.Builder();

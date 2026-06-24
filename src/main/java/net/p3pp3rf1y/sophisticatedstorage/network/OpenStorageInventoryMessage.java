@@ -15,12 +15,15 @@ import net.p3pp3rf1y.sophisticatedstorage.common.gui.LimitedBarrelContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
 
 import javax.annotation.Nullable;
+
 import java.util.function.Supplier;
 
 public class OpenStorageInventoryMessage {
 	private final BlockPos pos;
 
-	public OpenStorageInventoryMessage(BlockPos pos) {this.pos = pos;}
+	public OpenStorageInventoryMessage(BlockPos pos) {
+		this.pos = pos;
+	}
 
 	public static void encode(OpenStorageInventoryMessage msg, FriendlyByteBuf packetBuffer) {
 		packetBuffer.writeBlockPos(msg.pos);
@@ -41,8 +44,10 @@ public class OpenStorageInventoryMessage {
 			return;
 		}
 
-		NetworkHooks.openScreen(player, new SimpleMenuProvider((w, p, pl) -> instantiateContainerMenu(msg, w, pl),
-				WorldHelper.getBlockEntity(player.level(), msg.pos, StorageBlockEntity.class).map(StorageBlockEntity::getDisplayName).orElse(Component.empty())), msg.pos);
+		NetworkHooks.openScreen(player,
+				new SimpleMenuProvider((w, p, pl) -> instantiateContainerMenu(msg, w, pl), WorldHelper
+						.getBlockEntity(player.level(), msg.pos, StorageBlockEntity.class).map(StorageBlockEntity::getDisplayName).orElse(Component.empty())),
+				msg.pos);
 	}
 
 	private static StorageContainerMenu instantiateContainerMenu(OpenStorageInventoryMessage msg, int windowId, Player player) {

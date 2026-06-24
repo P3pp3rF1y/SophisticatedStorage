@@ -28,11 +28,9 @@ public class StorageRecipeViewerDisplays {
 		catalog.addCraftingSpecExtensionRecipeClass(DoubleChestTierUpgradeRecipe.class);
 		catalog.addCraftingSpecExtensionRecipeClass(DoubleChestTierUpgradeShapelessRecipe.class);
 		catalog.addCraftingSpecExtensionRecipeClass(ShulkerBoxFromChestRecipe.class);
-		TierUpgradeRecipesMaker.getGroupedShapedCraftingRecipes(context::getSubtypeInterpreter).stream()
-				.map(TierUpgradeDisplayRecipe::toSpec)
+		TierUpgradeRecipesMaker.getGroupedShapedCraftingRecipes(context::getSubtypeInterpreter).stream().map(TierUpgradeDisplayRecipe::toSpec)
 				.forEach(catalog::addCraftingSpec);
-		TierUpgradeRecipesMaker.getGroupedShapelessCraftingRecipes(context::getSubtypeInterpreter).stream()
-				.map(TierUpgradeDisplayRecipe::toSpec)
+		TierUpgradeRecipesMaker.getGroupedShapelessCraftingRecipes(context::getSubtypeInterpreter).stream().map(TierUpgradeDisplayRecipe::toSpec)
 				.forEach(catalog::addCraftingSpec);
 		ShulkerBoxFromChestRecipesMaker.getShapedRecipeSpecs(context::getSubtypeInterpreter).forEach(catalog::addCraftingSpec);
 		FlatBarrelRecipesMaker.getShapelessRecipes().forEach(catalog::addCraftingRecipe);
@@ -42,20 +40,19 @@ public class StorageRecipeViewerDisplays {
 
 	public static void registerDyeRecipes(IRecipeViewerDisplayCatalog catalog, IRecipeViewerDisplayContext context) {
 		DyeRecipesMaker.getSingleColorRecipeSpecs(context::getSubtypeInterpreter).stream()
-				.map(spec -> new SingleColorDyeRecipeSpec(spec.id(), spec.sourceStacks(), spec.variantPairs(), (recipeResult, focusedOutput) -> context.getSubtypeInterpreter(focusedOutput)
-						.map(interpreter -> recipeResult.is(focusedOutput.getItem()) && interpreter.getComparableData(recipeResult).equals(interpreter.getComparableData(focusedOutput)))
-						.orElse(ItemStack.isSameItemSameTags(recipeResult, focusedOutput))))
+				.map(spec -> new SingleColorDyeRecipeSpec(spec.id(), spec.sourceStacks(), spec.variantPairs(),
+						(recipeResult, focusedOutput) -> context.getSubtypeInterpreter(focusedOutput)
+								.map(interpreter -> recipeResult.is(focusedOutput.getItem())
+										&& interpreter.getComparableData(recipeResult).equals(interpreter.getComparableData(focusedOutput)))
+								.orElse(ItemStack.isSameItemSameTags(recipeResult, focusedOutput))))
 				.forEach(catalog::addGroupedCraftingSpec);
 		DyeRecipesMaker.getMultipleColorsRecipes(context::getSubtypeInterpreter).forEach(catalog::addCraftingRecipe);
 	}
 
 	public static boolean needsComponentSensitiveCraftingDisplay(ItemStack stack) {
 		return stack.getItem() instanceof StorageBlockItem
-				&& (StorageBlockItem.getMainColorFromStack(stack).isPresent()
-						|| StorageBlockItem.getAccentColorFromStack(stack).isPresent()
-						|| WoodStorageBlockItem.getWoodType(stack).isPresent()
-						|| ChestBlockItem.isDoubleChest(stack)
-						|| BarrelBlockItem.isFlatTop(stack));
+				&& (StorageBlockItem.getMainColorFromStack(stack).isPresent() || StorageBlockItem.getAccentColorFromStack(stack).isPresent()
+						|| WoodStorageBlockItem.getWoodType(stack).isPresent() || ChestBlockItem.isDoubleChest(stack) || BarrelBlockItem.isFlatTop(stack));
 	}
 
 }

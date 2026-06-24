@@ -43,11 +43,13 @@ public class BarrelBlockItem extends WoodStorageBlockItem {
 	}
 
 	public static void setMaterials(ItemStack barrel, Map<BarrelMaterial, ResourceLocation> materials) {
-		NBTHelper.putMap(barrel.getOrCreateTag(), MATERIALS_TAG, materials, BarrelMaterial::getSerializedName, resourceLocation -> StringTag.valueOf(resourceLocation.toString()));
+		NBTHelper.putMap(barrel.getOrCreateTag(), MATERIALS_TAG, materials, BarrelMaterial::getSerializedName,
+				resourceLocation -> StringTag.valueOf(resourceLocation.toString()));
 	}
 
 	public static Map<BarrelMaterial, ResourceLocation> getMaterials(ItemStack barrel) {
-		return NBTHelper.getMap(barrel, MATERIALS_TAG, BarrelMaterial::fromName, (bm, tag) -> Optional.of(new ResourceLocation(tag.getAsString()))).orElse(Map.of());
+		return NBTHelper.getMap(barrel, MATERIALS_TAG, BarrelMaterial::fromName, (bm, tag) -> Optional.of(new ResourceLocation(tag.getAsString())))
+				.orElse(Map.of());
 	}
 
 	public static void removeMaterials(ItemStack stack) {
@@ -73,7 +75,7 @@ public class BarrelBlockItem extends WoodStorageBlockItem {
 	public static void compactMaterials(Map<BarrelMaterial, ResourceLocation> materials) {
 		for (BarrelMaterial material : BarrelMaterial.values()) {
 			if (!material.isLeaf()) {
-				//if all children have the same texture remove them and convert to the parent
+				// if all children have the same texture remove them and convert to the parent
 				ResourceLocation firstChildTexture = null;
 				boolean allChildrenHaveSameTexture = true;
 				for (BarrelMaterial child : material.getChildren()) {

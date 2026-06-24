@@ -28,9 +28,11 @@ import net.minecraftforge.client.model.geometry.IUnbakedGeometry;
 import net.minecraftforge.common.util.ConcatenatedListView;
 
 import javax.annotation.Nullable;
+
 import java.util.*;
 import java.util.function.Function;
 
+@SuppressWarnings("PMD.UnnecessaryImport")
 public class SimpleCompositeModel implements IUnbakedGeometry<SimpleCompositeModel> {
 
 	private static final String PARTICLE_MATERIAL = "particle";
@@ -41,7 +43,8 @@ public class SimpleCompositeModel implements IUnbakedGeometry<SimpleCompositeMod
 	}
 
 	@Override
-	public BakedModel bake(IGeometryBakingContext context, ModelBaker baker, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelState, ItemOverrides overrides, ResourceLocation modelLocation) {
+	public BakedModel bake(IGeometryBakingContext context, ModelBaker baker, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelState,
+			ItemOverrides overrides, ResourceLocation modelLocation) {
 		Material particleLocation = context.getMaterial(PARTICLE_MATERIAL);
 		TextureAtlasSprite particle = spriteGetter.apply(particleLocation);
 
@@ -63,10 +66,11 @@ public class SimpleCompositeModel implements IUnbakedGeometry<SimpleCompositeMod
 
 		var itemPassesBuilder = ImmutableList.<BakedModel>builder();
 
-		return new Baked(context.isGui3d(), context.useBlockLight(), context.useAmbientOcclusion(), particle, context.getTransforms(), overrides, bakedParts, itemPassesBuilder.build());
+		return new Baked(context.isGui3d(), context.useBlockLight(), context.useAmbientOcclusion(), particle, context.getTransforms(), overrides, bakedParts,
+				itemPassesBuilder.build());
 	}
 
-	@SuppressWarnings("java:S5803") //need to access textureMap here to get textures
+	@SuppressWarnings("java:S5803") // need to access textureMap here to get textures
 	public Map<String, Either<Material, String>> getTextures() {
 		HashMap<String, Either<Material, String>> textures = new HashMap<>();
 		children.values().forEach(childModel -> {
@@ -86,12 +90,12 @@ public class SimpleCompositeModel implements IUnbakedGeometry<SimpleCompositeMod
 		children.values().forEach(childModel -> childModel.resolveParents(modelGetter));
 	}
 
-	@SuppressWarnings("java:S1874") //need to get elements from the model so actually need to call getElements here
+	@SuppressWarnings("java:S1874") // need to get elements from the model so actually need to call getElements here
 	public List<BlockElement> getElements() {
 		List<BlockElement> elements = new ArrayList<>();
 
 		children.forEach((name, model) -> {
-			//noinspection deprecation
+			// noinspection deprecation
 			elements.addAll(model.getElements());
 			if (model.customData.hasCustomGeometry() && model.customData.getCustomGeometry() instanceof SimpleCompositeModel compositeModel) {
 				elements.addAll(compositeModel.getElements());
@@ -116,7 +120,8 @@ public class SimpleCompositeModel implements IUnbakedGeometry<SimpleCompositeMod
 		private final ImmutableMap<String, BakedModel> children;
 		private final ImmutableList<BakedModel> itemPasses;
 
-		public Baked(boolean isGui3d, boolean isSideLit, boolean isAmbientOcclusion, TextureAtlasSprite particle, ItemTransforms transforms, ItemOverrides overrides, ImmutableMap<String, BakedModel> children, ImmutableList<BakedModel> itemPasses) {
+		public Baked(boolean isGui3d, boolean isSideLit, boolean isAmbientOcclusion, TextureAtlasSprite particle, ItemTransforms transforms,
+				ItemOverrides overrides, ImmutableMap<String, BakedModel> children, ImmutableList<BakedModel> itemPasses) {
 			this.children = children;
 			this.isAmbientOcclusion = isAmbientOcclusion;
 			this.isGui3d = isGui3d;
@@ -128,7 +133,8 @@ public class SimpleCompositeModel implements IUnbakedGeometry<SimpleCompositeMod
 		}
 
 		@Override
-		public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, RandomSource rand, ModelData data, @Nullable RenderType renderType) {
+		public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, RandomSource rand, ModelData data,
+				@Nullable RenderType renderType) {
 			List<List<BakedQuad>> quadLists = new ArrayList<>();
 			for (Map.Entry<String, BakedModel> entry : children.entrySet()) {
 				quadLists.add(entry.getValue().getQuads(state, side, rand, ModelData.EMPTY, renderType));

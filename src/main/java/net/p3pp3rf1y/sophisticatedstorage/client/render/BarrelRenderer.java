@@ -41,7 +41,8 @@ public class BarrelRenderer<T extends BarrelBlockEntity> extends StorageRenderer
 		renderHiddenLock(blockEntity, poseStack, bufferSource, packedLight, packedOverlay);
 	}
 
-	private void renderFrontFace(T blockEntity, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, boolean flatTop, BlockState blockState) {
+	private void renderFrontFace(T blockEntity, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, boolean flatTop,
+			BlockState blockState) {
 		if ((!blockEntity.hasDynamicRenderer() && !holdsItemThatShowsUpgrades() && !blockEntity.shouldShowUpgrades())) {
 			return;
 		}
@@ -57,17 +58,21 @@ public class BarrelRenderer<T extends BarrelBlockEntity> extends StorageRenderer
 		boolean holdsItemThatShowsUpgrades = holdsItemThatShowsUpgrades();
 		if (blockEntity.shouldShowUpgrades() || holdsItemThatShowsUpgrades) {
 			if (flatTop) {
-				flatDisplayItemRenderer.renderUpgradeItems(blockEntity, poseStack, bufferSource, packedLight, packedOverlay, holdsItemThatShowsUpgrades, shouldShowDisabledUpgradesDisplay(blockEntity));
+				flatDisplayItemRenderer.renderUpgradeItems(blockEntity, poseStack, bufferSource, packedLight, packedOverlay, holdsItemThatShowsUpgrades,
+						shouldShowDisabledUpgradesDisplay(blockEntity));
 			} else {
-				displayItemRenderer.renderUpgradeItems(blockEntity, poseStack, bufferSource, packedLight, packedOverlay, holdsItemThatShowsUpgrades(), shouldShowDisabledUpgradesDisplay(blockEntity));
+				displayItemRenderer.renderUpgradeItems(blockEntity, poseStack, bufferSource, packedLight, packedOverlay, holdsItemThatShowsUpgrades(),
+						shouldShowDisabledUpgradesDisplay(blockEntity));
 			}
 		}
 
 		if (blockEntity.hasDynamicRenderer()) {
 			if (flatTop) {
-				flatDisplayItemRenderer.renderDisplayItems(blockEntity, poseStack, bufferSource, packedLight, packedOverlay, !blockEntity.hasFullyDynamicRenderer());
+				flatDisplayItemRenderer.renderDisplayItems(blockEntity, poseStack, bufferSource, packedLight, packedOverlay,
+						!blockEntity.hasFullyDynamicRenderer());
 			} else {
-				displayItemRenderer.renderDisplayItems(blockEntity, poseStack, bufferSource, packedLight, packedOverlay, !blockEntity.hasFullyDynamicRenderer());
+				displayItemRenderer.renderDisplayItems(blockEntity, poseStack, bufferSource, packedLight, packedOverlay,
+						!blockEntity.hasFullyDynamicRenderer());
 			}
 		}
 
@@ -91,7 +96,8 @@ public class BarrelRenderer<T extends BarrelBlockEntity> extends StorageRenderer
 		}
 	}
 
-	private void renderTranslucentQuads(T blockEntity, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, GetQuadsFunction getQuads) {
+	private void renderTranslucentQuads(T blockEntity, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay,
+			GetQuadsFunction getQuads) {
 		String woodName = blockEntity.getWoodType().orElse(WoodType.ACACIA).name();
 		BlockState state = blockEntity.getBlockState();
 		BakedModel blockModel = Minecraft.getInstance().getBlockRenderer().getBlockModel(state);
@@ -104,7 +110,8 @@ public class BarrelRenderer<T extends BarrelBlockEntity> extends StorageRenderer
 
 		if (blockModel instanceof BarrelBakedModelBase barrelBakedModel) {
 			VertexConsumer vertexConsumer = TranslucentVertexConsumer.getVertexConsumer(bufferSource, 128);
-			getQuads.apply(barrelBakedModel, state, random, woodName, RenderType.cutout()).forEach(quad -> vertexConsumer.putBulkData(poseStack.last(), quad, 1, 1, 1, packedLight, packedOverlay));
+			getQuads.apply(barrelBakedModel, state, random, woodName, RenderType.cutout())
+					.forEach(quad -> vertexConsumer.putBulkData(poseStack.last(), quad, 1, 1, 1, packedLight, packedOverlay));
 		}
 		poseStack.popPose();
 	}

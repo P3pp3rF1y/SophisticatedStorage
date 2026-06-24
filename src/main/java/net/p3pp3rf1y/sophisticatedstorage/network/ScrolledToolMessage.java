@@ -8,6 +8,7 @@ import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageToolItem;
 
 import javax.annotation.Nullable;
+
 import java.util.function.Supplier;
 
 public class ScrolledToolMessage {

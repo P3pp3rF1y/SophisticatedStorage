@@ -52,13 +52,15 @@ public class SBCompat implements ICompat {
 					int originalAccentColor = backpackWrapper.getAccentColor();
 
 					backpackWrapper.setColors(mainColorToSet, accentColorToSet);
-					return new DecorationTableBlockEntity.TintDecorationResult(result, DecorationHelper.getDyePartsNeeded(mainColorToSet, accentColorToSet, originalMainColor, originalAccentColor, 20, 4));
+					return new DecorationTableBlockEntity.TintDecorationResult(result,
+							DecorationHelper.getDyePartsNeeded(mainColorToSet, accentColorToSet, originalMainColor, originalAccentColor, 20, 4));
 				}).orElse(DecorationTableBlockEntity.TintDecorationResult.EMPTY);
 			}
 
 			private boolean colorsTransparentOrSameAs(ItemStack backpack, int mainColorToSet, int accentColorToSet) {
 				return backpack.getCapability(CapabilityBackpackWrapper.getCapabilityInstance())
-						.map(backpackWrapper -> (mainColorToSet == -1 || mainColorToSet == backpackWrapper.getMainColor()) && (accentColorToSet == -1 || accentColorToSet == backpackWrapper.getAccentColor()))
+						.map(backpackWrapper -> (mainColorToSet == -1 || mainColorToSet == backpackWrapper.getMainColor())
+								&& (accentColorToSet == -1 || accentColorToSet == backpackWrapper.getAccentColor()))
 						.orElse(true);
 			}
 		});
