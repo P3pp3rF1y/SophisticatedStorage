@@ -74,13 +74,12 @@ public class DecorationTableMenu extends AbstractContainerMenu implements ISynce
 
 	private void addStorageSlots() {
 		ItemStacksResourceHandler storageBlock = blockEntity.getStorageBlock();
-		storageSlot = new ResourceHandlerSlot(storageBlock,
-				(index, resource, amount) -> {
-					storageBlock.set(index, resource, amount);
-					if (slotChangedListener != null) {
-						slotChangedListener.run();
-					}
-				}, 0, getSlot(dyeSlotRange.firstSlot()).x, getSlot(DecorationTableBlockEntity.BOTTOM_TRIM_SLOT).y);
+		storageSlot = new ResourceHandlerSlot(storageBlock, (index, resource, amount) -> {
+			storageBlock.set(index, resource, amount);
+			if (slotChangedListener != null) {
+				slotChangedListener.run();
+			}
+		}, 0, getSlot(dyeSlotRange.firstSlot()).x, getSlot(DecorationTableBlockEntity.BOTTOM_TRIM_SLOT).y);
 		addSlot(storageSlot);
 
 		storageSlotRange = new SlotRange(dyeSlotRange.firstSlot() + dyeSlotRange.size(), 1);
@@ -155,13 +154,12 @@ public class DecorationTableMenu extends AbstractContainerMenu implements ISynce
 	}
 
 	private int addDecorationSlot(ItemStacksResourceHandler itemHandler, int slotIndex, int xOffset, int y, int yPadding) {
-		addSlot(new ResourceHandlerSlot(itemHandler,
-				(index, resource, amount) -> {
-					itemHandler.set(index, resource, amount);
-					if (slotChangedListener != null) {
-						slotChangedListener.run();
-					}
-				}, slotIndex, xOffset, y).setBackground(EMPTY_MATERIAL_SLOT_BACKGROUND));
+		addSlot(new ResourceHandlerSlot(itemHandler, (index, resource, amount) -> {
+			itemHandler.set(index, resource, amount);
+			if (slotChangedListener != null) {
+				slotChangedListener.run();
+			}
+		}, slotIndex, xOffset, y).setBackground(EMPTY_MATERIAL_SLOT_BACKGROUND));
 		y += 18;
 		y += yPadding;
 		return y;
@@ -195,11 +193,9 @@ public class DecorationTableMenu extends AbstractContainerMenu implements ISynce
 			if (blockEntity.getDecorativeBlocks().isValid(decorationSlotRange.firstSlot(), resource)
 					&& !moveItemStackTo(slotStack, decorationSlotRange, false)) {
 				return ItemStack.EMPTY;
-			} else if (isValidDye(slotStack)
-					&& !moveItemStackTo(slotStack, dyeSlotRange, false)) {
+			} else if (isValidDye(slotStack) && !moveItemStackTo(slotStack, dyeSlotRange, false)) {
 				return ItemStack.EMPTY;
-			} else if (blockEntity.getStorageBlock().isValid(0, resource)
-					&& !moveItemStackTo(slotStack, storageSlotRange, false)) {
+			} else if (blockEntity.getStorageBlock().isValid(0, resource) && !moveItemStackTo(slotStack, storageSlotRange, false)) {
 				return ItemStack.EMPTY;
 			}
 		} else {
@@ -288,7 +284,8 @@ public class DecorationTableMenu extends AbstractContainerMenu implements ISynce
 
 	public boolean isInheritanceSlotActive(int slotIndex) {
 		DecorationTableBlockEntity.PartSlot slot = DecorationTableBlockEntity.PartSlot.fromSlotIndex(slotIndex);
-		return blockEntity.getMaterialLayout() == DecorationTableBlockEntity.MaterialLayout.BARREL && blockEntity.isMaterialSlotActive(slotIndex) && blockEntity.getSlotInheritedFrom(slot) != null;
+		return blockEntity.getMaterialLayout() == DecorationTableBlockEntity.MaterialLayout.BARREL && blockEntity.isMaterialSlotActive(slotIndex)
+				&& blockEntity.getSlotInheritedFrom(slot) != null;
 	}
 
 	public boolean areTintsActive() {

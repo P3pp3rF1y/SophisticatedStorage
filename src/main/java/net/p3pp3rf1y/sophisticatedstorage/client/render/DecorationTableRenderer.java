@@ -33,7 +33,8 @@ public class DecorationTableRenderer implements BlockEntityRenderer<DecorationTa
 	}
 
 	@Override
-	public void extractRenderState(DecorationTableBlockEntity blockEntity, DecorationTableRenderState renderState, float partialTick, Vec3 cameraPos, ModelFeatureRenderer.@Nullable CrumblingOverlay crumblingOverlay) {
+	public void extractRenderState(DecorationTableBlockEntity blockEntity, DecorationTableRenderState renderState, float partialTick, Vec3 cameraPos,
+			ModelFeatureRenderer.@Nullable CrumblingOverlay crumblingOverlay) {
 		BlockEntityRenderer.super.extractRenderState(blockEntity, renderState, partialTick, cameraPos, crumblingOverlay);
 
 		ItemStack result = blockEntity.getResult();
@@ -44,7 +45,8 @@ public class DecorationTableRenderer implements BlockEntityRenderer<DecorationTa
 	}
 
 	@Override
-	public void submit(DecorationTableRenderState renderState, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState cameraRenderState) {
+	public void submit(DecorationTableRenderState renderState, PoseStack poseStack, SubmitNodeCollector submitNodeCollector,
+			CameraRenderState cameraRenderState) {
 		if (renderState.result.isEmpty()) {
 			return;
 		}

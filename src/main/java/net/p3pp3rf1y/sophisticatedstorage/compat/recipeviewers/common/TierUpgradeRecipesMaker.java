@@ -29,31 +29,35 @@ public class TierUpgradeRecipesMaker {
 	private TierUpgradeRecipesMaker() {
 	}
 
-	public static <T extends PropertyBasedSubtypeInterpreter> List<TierUpgradeDisplayRecipe> getGroupedShapedCraftingRecipes(Function<ItemStack, Optional<T>> subtypeInterpreterGetter) {
-		List<TierUpgradeDisplayRecipe> recipes = getGroupedCraftingRecipes(StorageTierUpgradeRecipe.class, TierUpgradeRecipesMaker::getStorageItems, subtypeInterpreterGetter, false);
-		recipes.addAll(getGroupedCraftingRecipes(DoubleChestTierUpgradeRecipe.class, TierUpgradeRecipesMaker::getDoubleChestItems, subtypeInterpreterGetter, false));
+	public static <T extends PropertyBasedSubtypeInterpreter> List<TierUpgradeDisplayRecipe> getGroupedShapedCraftingRecipes(
+			Function<ItemStack, Optional<T>> subtypeInterpreterGetter) {
+		List<TierUpgradeDisplayRecipe> recipes = getGroupedCraftingRecipes(StorageTierUpgradeRecipe.class, TierUpgradeRecipesMaker::getStorageItems,
+				subtypeInterpreterGetter, false);
+		recipes.addAll(
+				getGroupedCraftingRecipes(DoubleChestTierUpgradeRecipe.class, TierUpgradeRecipesMaker::getDoubleChestItems, subtypeInterpreterGetter, false));
 		return recipes;
 	}
 
-	public static <T extends PropertyBasedSubtypeInterpreter> List<TierUpgradeDisplayRecipe> getGroupedShapelessCraftingRecipes(Function<ItemStack, Optional<T>> subtypeInterpreterGetter) {
-		List<TierUpgradeDisplayRecipe> recipes = getGroupedCraftingRecipes(StorageTierUpgradeShapelessRecipe.class, TierUpgradeRecipesMaker::getStorageItems, subtypeInterpreterGetter, true);
-		recipes.addAll(getGroupedCraftingRecipes(DoubleChestTierUpgradeShapelessRecipe.class, TierUpgradeRecipesMaker::getDoubleChestItems, subtypeInterpreterGetter, true));
+	public static <T extends PropertyBasedSubtypeInterpreter> List<TierUpgradeDisplayRecipe> getGroupedShapelessCraftingRecipes(
+			Function<ItemStack, Optional<T>> subtypeInterpreterGetter) {
+		List<TierUpgradeDisplayRecipe> recipes = getGroupedCraftingRecipes(StorageTierUpgradeShapelessRecipe.class, TierUpgradeRecipesMaker::getStorageItems,
+				subtypeInterpreterGetter, true);
+		recipes.addAll(getGroupedCraftingRecipes(DoubleChestTierUpgradeShapelessRecipe.class, TierUpgradeRecipesMaker::getDoubleChestItems,
+				subtypeInterpreterGetter, true));
 		return recipes;
 	}
 
-	private static <T extends CraftingRecipe, U extends PropertyBasedSubtypeInterpreter> List<TierUpgradeDisplayRecipe> getGroupedCraftingRecipes(Class<T> originalRecipeClass,
-															 Function<CraftingRecipe, List<ItemStack>> getStorageItems,
-															 Function<ItemStack, Optional<U>> getSubtypeInterpreter,
-															 boolean shapeless) {
+	private static <T extends CraftingRecipe, U extends PropertyBasedSubtypeInterpreter> List<TierUpgradeDisplayRecipe> getGroupedCraftingRecipes(
+			Class<T> originalRecipeClass, Function<CraftingRecipe, List<ItemStack>> getStorageItems, Function<ItemStack, Optional<U>> getSubtypeInterpreter,
+			boolean shapeless) {
 		return ClientRecipeHelper.transformAllRecipeHoldersOfTypeIntoMultiple(RecipeType.CRAFTING, originalRecipeClass, recipeHolder -> {
 			TierUpgradeDisplayRecipe displayRecipe = createDisplayRecipe(recipeHolder, getStorageItems, getSubtypeInterpreter, shapeless);
 			return List.of(displayRecipe);
 		});
 	}
 
-	private static <T extends CraftingRecipe, U extends PropertyBasedSubtypeInterpreter> TierUpgradeDisplayRecipe createDisplayRecipe(RecipeHolder<T> recipeHolder,
-			Function<CraftingRecipe, List<ItemStack>> getStorageItems,
-			Function<ItemStack, Optional<U>> getSubtypeInterpreter,
+	private static <T extends CraftingRecipe, U extends PropertyBasedSubtypeInterpreter> TierUpgradeDisplayRecipe createDisplayRecipe(
+			RecipeHolder<T> recipeHolder, Function<CraftingRecipe, List<ItemStack>> getStorageItems, Function<ItemStack, Optional<U>> getSubtypeInterpreter,
 			boolean shapeless) {
 		T recipe = recipeHolder.value();
 		CraftingContainer craftingInventory = createCraftingInventory();
@@ -71,9 +75,13 @@ public class TierUpgradeRecipesMaker {
 		int width = recipe instanceof ShapedRecipe shapedRecipe ? shapedRecipe.getWidth() : 0;
 		int height = recipe instanceof ShapedRecipe shapedRecipe ? shapedRecipe.getHeight() : 0;
 		List<Optional<Ingredient>> shapedIngredients = ingredientsCopy.stream().map(Optional::of).toList();
-		RecipeHolder<CraftingRecipe> displayRecipeHolder = new RecipeHolder<>(recipeHolder.id(), shapeless ? new ShapelessRecipe("", CraftingBookCategory.MISC, ClientRecipeHelper.getResultItem(recipe), ingredientsCopy)
-				: new ShapedRecipe("", CraftingBookCategory.MISC, new ShapedRecipePattern(width, height, shapedIngredients, Optional.empty()), ClientRecipeHelper.getResultItem(recipe)));
-		return new TierUpgradeDisplayRecipe(id, displayRecipeHolder, shapeless, width, height, ingredientsCopy, storageIngredientIndex, List.copyOf(variantPairs.values()));
+		RecipeHolder<CraftingRecipe> displayRecipeHolder = new RecipeHolder<>(recipeHolder.id(),
+				shapeless
+						? new ShapelessRecipe("", CraftingBookCategory.MISC, ClientRecipeHelper.getResultItem(recipe), ingredientsCopy)
+						: new ShapedRecipe("", CraftingBookCategory.MISC, new ShapedRecipePattern(width, height, shapedIngredients, Optional.empty()),
+								ClientRecipeHelper.getResultItem(recipe)));
+		return new TierUpgradeDisplayRecipe(id, displayRecipeHolder, shapeless, width, height, ingredientsCopy, storageIngredientIndex,
+				List.copyOf(variantPairs.values()));
 	}
 
 	private static NonNullList<Ingredient> getIngredients(CraftingRecipe recipe) {
@@ -112,7 +120,8 @@ public class TierUpgradeRecipesMaker {
 		throw new IllegalStateException("Tier upgrade recipe missing storage ingredient");
 	}
 
-	private static void populateCraftingInventory(List<Optional<Ingredient>> ingredients, CraftingContainer craftingInventory, int storageIngredientIndex, ItemStack storageItem) {
+	private static void populateCraftingInventory(List<Optional<Ingredient>> ingredients, CraftingContainer craftingInventory, int storageIngredientIndex,
+			ItemStack storageItem) {
 		for (int i = 0; i < ingredients.size(); i++) {
 			if (i == storageIngredientIndex) {
 				craftingInventory.setItem(i, storageItem.copy());
@@ -123,10 +132,12 @@ public class TierUpgradeRecipesMaker {
 		}
 	}
 
-	private static <U extends PropertyBasedSubtypeInterpreter> String getPairKey(TierUpgradeVariantPair pair, Function<ItemStack, Optional<U>> getSubtypeInterpreter) {
-		return getSubtypeInterpreter.apply(pair.source()).map(interpreter -> interpreter.getRegistrySanitizedItemString(pair.source())).orElse(pair.source().toString())
-				+ "->"
-				+ getSubtypeInterpreter.apply(pair.result()).map(interpreter -> interpreter.getRegistrySanitizedItemString(pair.result())).orElse(pair.result().toString());
+	private static <U extends PropertyBasedSubtypeInterpreter> String getPairKey(TierUpgradeVariantPair pair,
+			Function<ItemStack, Optional<U>> getSubtypeInterpreter) {
+		return getSubtypeInterpreter.apply(pair.source()).map(interpreter -> interpreter.getRegistrySanitizedItemString(pair.source()))
+				.orElse(pair.source().toString()) + "->"
+				+ getSubtypeInterpreter.apply(pair.result()).map(interpreter -> interpreter.getRegistrySanitizedItemString(pair.result()))
+						.orElse(pair.result().toString());
 	}
 
 	private static List<ItemStack> getDoubleChestItems(CraftingRecipe recipe) {

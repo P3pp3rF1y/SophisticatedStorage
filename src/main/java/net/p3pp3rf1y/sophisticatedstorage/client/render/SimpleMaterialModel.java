@@ -5,11 +5,9 @@ import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.client.model.geom.builders.UVPair;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.block.model.*;
@@ -25,7 +23,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
-import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
@@ -45,6 +42,7 @@ import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
 import javax.annotation.Nullable;
+
 import java.util.*;
 import java.util.function.Supplier;
 
@@ -64,9 +62,7 @@ public class SimpleMaterialModel extends AbstractUnbakedModel {
 				new ItemTransform(new Vector3f(30, 225, 0), new Vector3f(0, 0, 0), new Vector3f(0.625f, 0.625f, 0.625f), DEFAULT_ROTATION),
 				new ItemTransform(new Vector3f(0, 0, 0), new Vector3f(0, 3 / 16f, 0), new Vector3f(0.25f, 0.25f, 0.25f), DEFAULT_ROTATION),
 				new ItemTransform(new Vector3f(0, 0, 0), new Vector3f(0, 0, 0), new Vector3f(0.5f, 0.5f, 0.5f), DEFAULT_ROTATION),
-				new ItemTransform(new Vector3f(0, 0, 0), new Vector3f(0, 0, 0), new Vector3f(1, 1, 1), DEFAULT_ROTATION),
-				ImmutableMap.of()
-		);
+				new ItemTransform(new Vector3f(0, 0, 0), new Vector3f(0, 0, 0), new Vector3f(1, 1, 1), DEFAULT_ROTATION), ImmutableMap.of());
 	}
 
 	private final UnbakedModel baseModel;
@@ -134,7 +130,8 @@ public class SimpleMaterialModel extends AbstractUnbakedModel {
 		private final TextureAtlasSprite particleIcon;
 		private final boolean ambientOcclusion;
 
-		private SimpleMaterialBlockStateModel(QuadCollection baseQuads, QuadCollection overlayQuads, TextureAtlasSprite particleIcon, boolean ambientOcclusion) {
+		private SimpleMaterialBlockStateModel(QuadCollection baseQuads, QuadCollection overlayQuads, TextureAtlasSprite particleIcon,
+				boolean ambientOcclusion) {
 			this.baseQuads = baseQuads;
 			this.overlayQuads = overlayQuads;
 			this.particleIcon = particleIcon;
@@ -165,10 +162,8 @@ public class SimpleMaterialModel extends AbstractUnbakedModel {
 
 		@Override
 		public TextureAtlasSprite particleIcon(BlockAndTintGetter level, BlockPos pos, BlockState state) {
-			return WorldHelper.getBlockEntity(level, pos, ISimpleMaterialHolder.class)
-					.flatMap(ISimpleMaterialHolder::getMaterial)
-					.map(material -> RenderHelper.getSprite(material, null, RandomSource.create(0)))
-					.orElse(particleIcon);
+			return WorldHelper.getBlockEntity(level, pos, ISimpleMaterialHolder.class).flatMap(ISimpleMaterialHolder::getMaterial)
+					.map(material -> RenderHelper.getSprite(material, null, RandomSource.create(0))).orElse(particleIcon);
 		}
 
 		public List<BakedQuad> getItemQuads(Identifier material, RandomSource rand) {
@@ -268,10 +263,8 @@ public class SimpleMaterialModel extends AbstractUnbakedModel {
 			float u = remapU(oldSprite, newSprite, UVPair.unpackU(packedUv));
 			float v = remapV(oldSprite, newSprite, UVPair.unpackV(packedUv));
 
-			quadBuilder.addVertex(position.x(), position.y(), position.z())
-					.setColor(255, 255, 255, 255)
-					.setUv(u, v)
-					.setNormal(normal.getStepX(), normal.getStepY(), normal.getStepZ());
+			quadBuilder.addVertex(position.x(), position.y(), position.z()).setColor(255, 255, 255, 255).setUv(u, v).setNormal(normal.getStepX(),
+					normal.getStepY(), normal.getStepZ());
 		}
 
 		return quadBuilder.bakeQuad();
@@ -283,15 +276,10 @@ public class SimpleMaterialModel extends AbstractUnbakedModel {
 		float yOffset = normal.getStepY() * offset;
 		float zOffset = normal.getStepZ() * offset;
 
-		return new BakedQuad(
-				offsetPosition(quad.position0(), xOffset, yOffset, zOffset),
-				offsetPosition(quad.position1(), xOffset, yOffset, zOffset),
-				offsetPosition(quad.position2(), xOffset, yOffset, zOffset),
-				offsetPosition(quad.position3(), xOffset, yOffset, zOffset),
-				quad.packedUV0(), quad.packedUV1(), quad.packedUV2(), quad.packedUV3(),
-				quad.tintIndex(), quad.direction(), quad.sprite(), quad.shade(), quad.lightEmission(),
-				quad.bakedNormals(), quad.bakedColors(), quad.hasAmbientOcclusion()
-		);
+		return new BakedQuad(offsetPosition(quad.position0(), xOffset, yOffset, zOffset), offsetPosition(quad.position1(), xOffset, yOffset, zOffset),
+				offsetPosition(quad.position2(), xOffset, yOffset, zOffset), offsetPosition(quad.position3(), xOffset, yOffset, zOffset), quad.packedUV0(),
+				quad.packedUV1(), quad.packedUV2(), quad.packedUV3(), quad.tintIndex(), quad.direction(), quad.sprite(), quad.shade(), quad.lightEmission(),
+				quad.bakedNormals(), quad.bakedColors(), quad.hasAmbientOcclusion());
 	}
 
 	private static Vector3f offsetPosition(Vector3fc position, float xOffset, float yOffset, float zOffset) {
@@ -316,13 +304,15 @@ public class SimpleMaterialModel extends AbstractUnbakedModel {
 		return newSprite.getV0() + ratio * (newSprite.getV1() - newSprite.getV0());
 	}
 
-	public record SimpleMaterialItemModel(SimpleMaterialBlockStateModel model, Supplier<Vector3fc[]> extents, ModelRenderProperties properties) implements ItemModel {
+	public record SimpleMaterialItemModel(SimpleMaterialBlockStateModel model, Supplier<Vector3fc[]> extents,
+			ModelRenderProperties properties) implements ItemModel {
 		private SimpleMaterialItemModel(SimpleMaterialBlockStateModel model, ModelRenderProperties properties) {
 			this(model, Suppliers.memoize(() -> BlockModelWrapper.computeExtents(model.baseQuads.getAll())), properties);
 		}
 
 		@Override
-		public void update(ItemStackRenderState state, ItemStack stack, ItemModelResolver itemModelResolver, ItemDisplayContext itemDisplayContext, @Nullable ClientLevel clientLevel, @Nullable ItemOwner itemOwner, int seed) {
+		public void update(ItemStackRenderState state, ItemStack stack, ItemModelResolver itemModelResolver, ItemDisplayContext itemDisplayContext,
+				@Nullable ClientLevel clientLevel, @Nullable ItemOwner itemOwner, int seed) {
 			state.appendModelIdentityElement(this);
 			SimpleMaterialBlockItem.getMaterial(stack).ifPresentOrElse(material -> {
 				state.appendModelIdentityElement(material);
@@ -347,9 +337,8 @@ public class SimpleMaterialModel extends AbstractUnbakedModel {
 		}
 
 		public record Unbaked(Identifier model) implements ItemModel.Unbaked {
-			public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-					Identifier.CODEC.fieldOf("model").forGetter(Unbaked::model)
-			).apply(instance, Unbaked::new));
+			public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder
+					.mapCodec(instance -> instance.group(Identifier.CODEC.fieldOf("model").forGetter(Unbaked::model)).apply(instance, Unbaked::new));
 
 			@Override
 			public MapCodec<? extends ItemModel.Unbaked> type() {
@@ -362,7 +351,8 @@ public class SimpleMaterialModel extends AbstractUnbakedModel {
 				if (resolvedModel.wrapped() instanceof SimpleMaterialModel simpleMaterialModel) {
 					TextureSlots textureSlots = resolvedModel.getTopTextureSlots();
 					ModelRenderProperties properties = ModelRenderProperties.fromResolvedModel(context.blockModelBaker(), resolvedModel, textureSlots);
-					return new SimpleMaterialItemModel(simpleMaterialModel.bakeBlockStateModel(context.blockModelBaker(), resolvedModel, BlockModelRotation.IDENTITY), properties);
+					return new SimpleMaterialItemModel(
+							simpleMaterialModel.bakeBlockStateModel(context.blockModelBaker(), resolvedModel, BlockModelRotation.IDENTITY), properties);
 				}
 				throw new IllegalStateException("Expected SimpleMaterialModel for " + model + ", got " + resolvedModel.wrapped().getClass().getName());
 			}
@@ -384,7 +374,8 @@ public class SimpleMaterialModel extends AbstractUnbakedModel {
 			if (resolvedModel.wrapped() instanceof SimpleMaterialModel simpleMaterialModel) {
 				return simpleMaterialModel.bakeBlockStateModel(modelBaker, resolvedModel, variant.modelState().asModelState());
 			}
-			throw new IllegalStateException("Expected SimpleMaterialModel for " + variant.modelLocation() + ", got " + resolvedModel.wrapped().getClass().getName());
+			throw new IllegalStateException(
+					"Expected SimpleMaterialModel for " + variant.modelLocation() + ", got " + resolvedModel.wrapped().getClass().getName());
 		}
 
 		@Override

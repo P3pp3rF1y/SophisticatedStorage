@@ -65,7 +65,7 @@ public class RenderHelper {
 	}
 
 	@SuppressWarnings("java:S1874")
-	//need to call deprecated getQuads here as well just in case it was overriden by mods instead of the main one
+	// need to call deprecated getQuads here as well just in case it was overriden by mods instead of the main one
 	@Nullable
 	private static SpriteData parseSpriteFromModel(BlockState blockState, @Nullable Direction direction, RandomSource rand) {
 		SpriteData spriteData = null;
@@ -112,17 +112,20 @@ public class RenderHelper {
 		return spriteData;
 	}
 
-	public record SpriteData(TextureAtlasSprite sprite, int tintIndex, boolean translucent) {}
+	public record SpriteData(TextureAtlasSprite sprite, int tintIndex, boolean translucent) {
+	}
 
 	private static BlockState getDefaultBlockState(Identifier blockName) {
 		return BuiltInRegistries.BLOCK.getOptional(blockName).map(Block::defaultBlockState).orElse(Blocks.AIR.defaultBlockState());
 	}
 
-	static void renderQuad(VertexConsumer consumer, Matrix4f pose, Vector3f normal, int packedOverlay, int packedLight, float alpha, TextureAtlasSprite sprite) {
+	static void renderQuad(VertexConsumer consumer, Matrix4f pose, Vector3f normal, int packedOverlay, int packedLight, float alpha,
+			TextureAtlasSprite sprite) {
 		renderQuad(consumer, pose, normal, packedOverlay, packedLight, alpha, 0, 0, 1, 1, sprite);
 	}
 
-	static void renderQuad(VertexConsumer consumer, Matrix4f pose, Vector3f normal, int packedOverlay, int packedLight, float alpha, float minU, float minV, float maxU, float maxV, TextureAtlasSprite sprite) {
+	static void renderQuad(VertexConsumer consumer, Matrix4f pose, Vector3f normal, int packedOverlay, int packedLight, float alpha, float minU, float minV,
+			float maxU, float maxV, TextureAtlasSprite sprite) {
 		VertexConsumer spriteConsumer = sprite.wrap(consumer);
 		int minX = 0;
 		int minY = 0;
@@ -135,7 +138,8 @@ public class RenderHelper {
 		addVertex(pose, normal, spriteConsumer, maxY, maxX, packedOverlay, packedLight, minU, minV, alpha);
 	}
 
-	private static void addVertex(Matrix4f pose, Vector3f normal, VertexConsumer consumer, int pY, float pX, int packedOverlay, int packedLight, float u, float v, float alpha) {
+	private static void addVertex(Matrix4f pose, Vector3f normal, VertexConsumer consumer, int pY, float pX, int packedOverlay, int packedLight, float u,
+			float v, float alpha) {
 		Vector4f pos = new Vector4f(pX, pY, 0, 1.0F);
 		pose.transform(pos);
 		int color = ((int) (alpha * 255)) << 24 | 255 << 16 | 255 << 8 | 255;

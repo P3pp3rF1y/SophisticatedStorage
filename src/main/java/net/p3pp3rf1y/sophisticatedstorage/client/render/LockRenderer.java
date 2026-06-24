@@ -20,16 +20,17 @@ public class LockRenderer {
 
 	public static final Material LOCK_TEXTURE = new Material(TextureAtlas.LOCATION_BLOCKS, SophisticatedStorage.getIdentifier("block/lock"));
 
-	public static void submitLock(SubmitNodeCollector submitNodeCollector, StorageRenderState renderState, PoseStack poseStack, float yOffset, BooleanSupplier holdsCorrectItem, MaterialSet materialSet) {
+	public static void submitLock(SubmitNodeCollector submitNodeCollector, StorageRenderState renderState, PoseStack poseStack, float yOffset,
+			BooleanSupplier holdsCorrectItem, MaterialSet materialSet) {
 		if (!renderState.isLocked || (!holdsCorrectItem.getAsBoolean() && !renderState.showsLock)) {
 			return;
 		}
 		RenderType renderType;
 		boolean translucentRender = !renderState.showsLock && holdsCorrectItem.getAsBoolean();
 		if (translucentRender) {
-			renderType = RenderTypes.entityTranslucent(LockRenderer.LOCK_TEXTURE.atlasLocation());
+			renderType = RenderTypes.entityTranslucent(LOCK_TEXTURE.atlasLocation());
 		} else {
-			renderType = RenderTypes.entitySmoothCutout(LockRenderer.LOCK_TEXTURE.atlasLocation());
+			renderType = RenderTypes.entitySmoothCutout(LOCK_TEXTURE.atlasLocation());
 		}
 
 		poseStack.pushPose();
@@ -39,7 +40,8 @@ public class LockRenderer {
 		submitNodeCollector.submitCustomGeometry(poseStack, renderType, (pose, vertexConsumer) -> {
 			Vector3f normal = new Vector3f(0, 1, 0);
 			pose.normal().transform(normal);
-			RenderHelper.renderQuad(vertexConsumer, pose.pose(), normal, OverlayTexture.NO_OVERLAY, renderState.lightCoords, translucentRender ? 0.5F : 1, sprite);
+			RenderHelper.renderQuad(vertexConsumer, pose.pose(), normal, OverlayTexture.NO_OVERLAY, renderState.lightCoords, translucentRender ? 0.5F : 1,
+					sprite);
 		});
 		poseStack.popPose();
 	}

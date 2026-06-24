@@ -55,35 +55,53 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 	public static final Dimension SQUARE_8 = new Dimension(8, 8);
 	private static final int DISABLED_TEXTURE_U_OFFSET = 64;
 	private static final long INPUT_SLOT_PREVIEW_ROTATION_INTERVAL_MS = 1_500;
-	public static final TextureBlitData TOP_INNER_TRIM_HIGHLIGHT = new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, DECORATION_TABLE_ELEMENTS, new UV(0, 0), Dimension.SQUARE_16);
-	public static final TextureBlitData TOP_TRIM_HIGHLIGHT = new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, DECORATION_TABLE_ELEMENTS, new UV(0, 16), Dimension.SQUARE_16);
-	public static final TextureBlitData SIDE_TRIM_HIGHLIGHT = new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, DECORATION_TABLE_ELEMENTS, new UV(0, 32), Dimension.SQUARE_16);
-	public static final TextureBlitData BOTTOM_TRIM_HIGHLIGHT = new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, DECORATION_TABLE_ELEMENTS, new UV(0, 48), Dimension.SQUARE_16);
-	public static final TextureBlitData TOP_CORE_HIGHLIGHT = new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, DECORATION_TABLE_ELEMENTS, new UV(16, 16), Dimension.SQUARE_16);
-	public static final TextureBlitData SIDE_CORE_HIGHLIGHT = new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, DECORATION_TABLE_ELEMENTS, new UV(16, 32), Dimension.SQUARE_16);
-	public static final TextureBlitData BOTTOM_CORE_HIGHLIGHT = new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, DECORATION_TABLE_ELEMENTS, new UV(16, 48), Dimension.SQUARE_16);
-	public static final TextureBlitData ACCENT_TINT_HIGHLIGHT = new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, DECORATION_TABLE_ELEMENTS, new UV(32, 48), Dimension.SQUARE_16);
-	public static final TextureBlitData MAIN_TINT_HIGHLIGHT = new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, DECORATION_TABLE_ELEMENTS, new UV(48, 48), Dimension.SQUARE_16);
-	public static final TextureBlitData STORAGE_INFO = new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, DECORATION_TABLE_ELEMENTS, new UV(32, 16), Dimension.SQUARE_16);
+	public static final TextureBlitData TOP_INNER_TRIM_HIGHLIGHT = new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, DECORATION_TABLE_ELEMENTS, new UV(0, 0),
+			Dimension.SQUARE_16);
+	public static final TextureBlitData TOP_TRIM_HIGHLIGHT = new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, DECORATION_TABLE_ELEMENTS, new UV(0, 16),
+			Dimension.SQUARE_16);
+	public static final TextureBlitData SIDE_TRIM_HIGHLIGHT = new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, DECORATION_TABLE_ELEMENTS, new UV(0, 32),
+			Dimension.SQUARE_16);
+	public static final TextureBlitData BOTTOM_TRIM_HIGHLIGHT = new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, DECORATION_TABLE_ELEMENTS, new UV(0, 48),
+			Dimension.SQUARE_16);
+	public static final TextureBlitData TOP_CORE_HIGHLIGHT = new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, DECORATION_TABLE_ELEMENTS, new UV(16, 16),
+			Dimension.SQUARE_16);
+	public static final TextureBlitData SIDE_CORE_HIGHLIGHT = new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, DECORATION_TABLE_ELEMENTS, new UV(16, 32),
+			Dimension.SQUARE_16);
+	public static final TextureBlitData BOTTOM_CORE_HIGHLIGHT = new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, DECORATION_TABLE_ELEMENTS, new UV(16, 48),
+			Dimension.SQUARE_16);
+	public static final TextureBlitData ACCENT_TINT_HIGHLIGHT = new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, DECORATION_TABLE_ELEMENTS, new UV(32, 48),
+			Dimension.SQUARE_16);
+	public static final TextureBlitData MAIN_TINT_HIGHLIGHT = new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, DECORATION_TABLE_ELEMENTS, new UV(48, 48),
+			Dimension.SQUARE_16);
+	public static final TextureBlitData STORAGE_INFO = new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, DECORATION_TABLE_ELEMENTS, new UV(32, 16),
+			Dimension.SQUARE_16);
 
-	private static final TextureBlitData VERTICAL_ARROW_BACKGROUND = new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, DECORATION_TABLE_ELEMENTS, new UV(56, 0), SQUARE_8);
-	private static final TextureBlitData VERTICAL_ARROW_HOVERED_BACKGROUND = new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, DECORATION_TABLE_ELEMENTS, new UV(48, 0), SQUARE_8);
-	private static final TextureBlitData HORIZONTAL_ARROW_BACKGROUND = new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, DECORATION_TABLE_ELEMENTS, new UV(56, 8), SQUARE_8);
-	private static final TextureBlitData HORIZONTAL_ARROW_HOVERED_BACKGROUND = new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, DECORATION_TABLE_ELEMENTS, new UV(48, 8), SQUARE_8);
+	private static final TextureBlitData VERTICAL_ARROW_BACKGROUND = new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, DECORATION_TABLE_ELEMENTS,
+			new UV(56, 0), SQUARE_8);
+	private static final TextureBlitData VERTICAL_ARROW_HOVERED_BACKGROUND = new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, DECORATION_TABLE_ELEMENTS,
+			new UV(48, 0), SQUARE_8);
+	private static final TextureBlitData HORIZONTAL_ARROW_BACKGROUND = new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, DECORATION_TABLE_ELEMENTS,
+			new UV(56, 8), SQUARE_8);
+	private static final TextureBlitData HORIZONTAL_ARROW_HOVERED_BACKGROUND = new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, DECORATION_TABLE_ELEMENTS,
+			new UV(48, 8), SQUARE_8);
 
-	private static final ButtonDefinition.Toggle<Boolean> VERTICAL_INHERITANCE_ARROW = new ButtonDefinition.Toggle<>(SQUARE_8, VERTICAL_ARROW_BACKGROUND, Map.of(
-			true, new ToggleButton.StateData(new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, DECORATION_TABLE_ELEMENTS, new UV(32, 0), SQUARE_8),
-					Component.translatable(StorageTranslationHelper.INSTANCE.translButton("decoration_inheritance_on"))),
-			false, new ToggleButton.StateData(new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, DECORATION_TABLE_ELEMENTS, new UV(40, 0), SQUARE_8),
-					Component.translatable(StorageTranslationHelper.INSTANCE.translButton("decoration_inheritance_off")))
-	), VERTICAL_ARROW_HOVERED_BACKGROUND);
+	private static final ButtonDefinition.Toggle<Boolean> VERTICAL_INHERITANCE_ARROW = new ButtonDefinition.Toggle<>(SQUARE_8, VERTICAL_ARROW_BACKGROUND,
+			Map.of(true,
+					new ToggleButton.StateData(new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, DECORATION_TABLE_ELEMENTS, new UV(32, 0), SQUARE_8),
+							Component.translatable(StorageTranslationHelper.INSTANCE.translButton("decoration_inheritance_on"))),
+					false,
+					new ToggleButton.StateData(new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, DECORATION_TABLE_ELEMENTS, new UV(40, 0), SQUARE_8),
+							Component.translatable(StorageTranslationHelper.INSTANCE.translButton("decoration_inheritance_off")))),
+			VERTICAL_ARROW_HOVERED_BACKGROUND);
 
-	private static final ButtonDefinition.Toggle<Boolean> HORIZONTAL_INHERITANCE_ARROW = new ButtonDefinition.Toggle<>(SQUARE_8, HORIZONTAL_ARROW_BACKGROUND, Map.of(
-			true, new ToggleButton.StateData(new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, DECORATION_TABLE_ELEMENTS, new UV(32, 8), SQUARE_8),
-					Component.translatable(StorageTranslationHelper.INSTANCE.translButton("decoration_inheritance_on"))),
-			false, new ToggleButton.StateData(new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, DECORATION_TABLE_ELEMENTS, new UV(40, 8), SQUARE_8),
-					Component.translatable(StorageTranslationHelper.INSTANCE.translButton("decoration_inheritance_off")))
-	), HORIZONTAL_ARROW_HOVERED_BACKGROUND);
+	private static final ButtonDefinition.Toggle<Boolean> HORIZONTAL_INHERITANCE_ARROW = new ButtonDefinition.Toggle<>(SQUARE_8, HORIZONTAL_ARROW_BACKGROUND,
+			Map.of(true,
+					new ToggleButton.StateData(new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, DECORATION_TABLE_ELEMENTS, new UV(32, 8), SQUARE_8),
+							Component.translatable(StorageTranslationHelper.INSTANCE.translButton("decoration_inheritance_on"))),
+					false,
+					new ToggleButton.StateData(new TextureBlitData(GUI_DECORATION_TABLE_ELEMENTS, DECORATION_TABLE_ELEMENTS, new UV(40, 8), SQUARE_8),
+							Component.translatable(StorageTranslationHelper.INSTANCE.translButton("decoration_inheritance_off")))),
+			HORIZONTAL_ARROW_HOVERED_BACKGROUND);
 	private static final int DISABLED_CONTROL_OVERLAY_COLOR = 0x66_A0A0A0;
 
 	private BlockPreview blockPreview;
@@ -115,7 +133,8 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 		int lastDyeSlotIndex = getMenu().getDyeSlotRange().firstSlot() + getMenu().getDyeSlotRange().size() - 1;
 		Slot lastDyeSlot = getMenu().getSlot(lastDyeSlotIndex);
 		Slot resultSlot = menu.getResultSlot();
-		blockPreview = new BlockPreview(new Position(leftPos + lastDyeSlot.x + 16 + 1 + 8 + 1, topPos + lastDyeSlot.y), new Dimension(80, resultSlot.y - lastDyeSlot.y + 16 + 4));
+		blockPreview = new BlockPreview(new Position(leftPos + lastDyeSlot.x + 16 + 1 + 8 + 1, topPos + lastDyeSlot.y),
+				new Dimension(80, resultSlot.y - lastDyeSlot.y + 16 + 4));
 		updatePreviewStacks();
 
 		addRenderableWidget(blockPreview);
@@ -142,7 +161,8 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 		addDyeElements();
 
 		if (colorPicker != null) {
-			colorPicker.setPosition(new Position(leftPos + (imageWidth - ColorPicker.DIMENSIONS.width()) / 2, topPos + (imageHeight - ColorPicker.DIMENSIONS.height()) / 2));
+			colorPicker.setPosition(
+					new Position(leftPos + (imageWidth - ColorPicker.DIMENSIONS.width()) / 2, topPos + (imageHeight - ColorPicker.DIMENSIONS.height()) / 2));
 		}
 	}
 
@@ -151,8 +171,9 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 		Slot topTrimSlot = menu.getSlot(DecorationTableBlockEntity.TOP_TRIM_SLOT);
 		Slot sideTrimSlot = menu.getSlot(DecorationTableBlockEntity.SIDE_TRIM_SLOT);
 
-		ColorButton mainColorButton = new ColorButton(new Position(leftPos + greenDyeSlot.x - 1, topPos + topTrimSlot.y - 1), new Dimension(18, 18), menu::getMainColor,
-				button -> openColorPicker(menu.getMainColor(), menu::setMainColor), Component.translatable(StorageTranslationHelper.INSTANCE.translButton("pick_color"))) {
+		ColorButton mainColorButton = new ColorButton(new Position(leftPos + greenDyeSlot.x - 1, topPos + topTrimSlot.y - 1), new Dimension(18, 18),
+				menu::getMainColor, button -> openColorPicker(menu.getMainColor(), menu::setMainColor),
+				Component.translatable(StorageTranslationHelper.INSTANCE.translButton("pick_color"))) {
 			@Override
 			protected void renderBg(GuiGraphics guiGraphics, Minecraft minecraft, int mouseX, int mouseY) {
 				if (getMenu().isMainTintActive()) {
@@ -192,8 +213,9 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 			}
 		};
 		addRenderableWidget(mainColorButton);
-		ColorButton accentColorButton = new ColorButton(new Position(leftPos + greenDyeSlot.x - 1, topPos + sideTrimSlot.y - 1), new Dimension(18, 18), menu::getAccentColor,
-				button -> openColorPicker(menu.getAccentColor(), menu::setAccentColor), Component.translatable(StorageTranslationHelper.INSTANCE.translButton("pick_color"))) {
+		ColorButton accentColorButton = new ColorButton(new Position(leftPos + greenDyeSlot.x - 1, topPos + sideTrimSlot.y - 1), new Dimension(18, 18),
+				menu::getAccentColor, button -> openColorPicker(menu.getAccentColor(), menu::setAccentColor),
+				Component.translatable(StorageTranslationHelper.INSTANCE.translButton("pick_color"))) {
 			@Override
 			protected void renderBg(GuiGraphics guiGraphics, Minecraft minecraft, int mouseX, int mouseY) {
 				if (getMenu().isAccentTintActive()) {
@@ -234,18 +256,21 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 		};
 		addRenderableWidget(accentColorButton);
 
-		addRenderableWidget(new PartIcon(new Position(mainColorButton.getX() + mainColorButton.getWidth() + 1, mainColorButton.getY() + 1), MAIN_TINT_HIGHLIGHT, Component.translatable(StorageTranslationHelper.INSTANCE.translGui("tint.main")), getMenu()::isMainTintActive));
-		addRenderableWidget(new PartIcon(new Position(accentColorButton.getX() + accentColorButton.getWidth() + 1, accentColorButton.getY() + 1), ACCENT_TINT_HIGHLIGHT, Component.translatable(StorageTranslationHelper.INSTANCE.translGui("tint.accent")), getMenu()::isAccentTintActive));
+		addRenderableWidget(new PartIcon(new Position(mainColorButton.getX() + mainColorButton.getWidth() + 1, mainColorButton.getY() + 1), MAIN_TINT_HIGHLIGHT,
+				Component.translatable(StorageTranslationHelper.INSTANCE.translGui("tint.main")), getMenu()::isMainTintActive));
+		addRenderableWidget(new PartIcon(new Position(accentColorButton.getX() + accentColorButton.getWidth() + 1, accentColorButton.getY() + 1),
+				ACCENT_TINT_HIGHLIGHT, Component.translatable(StorageTranslationHelper.INSTANCE.translGui("tint.accent")), getMenu()::isAccentTintActive));
 	}
 
 	private void openColorPicker(int color, IntConsumer colorSetter) {
-		colorPicker = new ColorPicker(this, new Position(leftPos + (imageWidth - ColorPicker.DIMENSIONS.width()) / 2, topPos + (imageHeight - ColorPicker.DIMENSIONS.height()) / 2),
-				color, c -> {
-			colorSetter.accept(c);
-			colorPicker = null;
-			blockPreview.setVisible(true);
-			updatePreviewStacks();
-		});
+		colorPicker = new ColorPicker(this,
+				new Position(leftPos + (imageWidth - ColorPicker.DIMENSIONS.width()) / 2, topPos + (imageHeight - ColorPicker.DIMENSIONS.height()) / 2), color,
+				c -> {
+					colorSetter.accept(c);
+					colorPicker = null;
+					blockPreview.setVisible(true);
+					updatePreviewStacks();
+				});
 		blockPreview.setVisible(false);
 	}
 
@@ -255,12 +280,11 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 
 	private void addInheritanceArrow(DecorationTableBlockEntity.PartSlot partSlot, int xOffset, int yOffset, ButtonDefinition.Toggle<Boolean> arrowDefinition) {
 		Slot slot = menu.getSlot(partSlot.getSlotIndex());
-		addRenderableWidget(new ToggleButton<>(new Position(leftPos + slot.x + xOffset, topPos + slot.y + yOffset), arrowDefinition,
-				button -> {
-					resultPartsNeededTooltip.clear();
-					getMenu().setSlotMaterialInheritance(partSlot, !getMenu().isSlotMaterialInherited(partSlot));
-					updatePreviewStacks();
-				}, () -> getMenu().isSlotMaterialInherited(partSlot)) {
+		addRenderableWidget(new ToggleButton<>(new Position(leftPos + slot.x + xOffset, topPos + slot.y + yOffset), arrowDefinition, button -> {
+			resultPartsNeededTooltip.clear();
+			getMenu().setSlotMaterialInheritance(partSlot, !getMenu().isSlotMaterialInherited(partSlot));
+			updatePreviewStacks();
+		}, () -> getMenu().isSlotMaterialInherited(partSlot)) {
 			@Override
 			public void renderTooltip(Screen screen, GuiGraphics guiGraphics, int mouseX, int mouseY) {
 				if (getMenu().isInheritanceSlotActive(partSlot.getSlotIndex())) {
@@ -333,7 +357,8 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 			}
 		}
 
-		for (int slotIndex = getMenu().getDyeSlotRange().firstSlot(); slotIndex < getMenu().getDyeSlotRange().firstSlot() + getMenu().getDyeSlotRange().size(); slotIndex++) {
+		for (int slotIndex = getMenu().getDyeSlotRange().firstSlot(); slotIndex < getMenu().getDyeSlotRange().firstSlot()
+				+ getMenu().getDyeSlotRange().size(); slotIndex++) {
 			if (slot == getMenu().getSlot(slotIndex)) {
 				return !getMenu().areTintsActive();
 			}
@@ -378,7 +403,8 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 
 	private void addPartHint(int slotIndex, TextureBlitData texture, String barrelPart) {
 		Slot slot = menu.getSlot(slotIndex);
-		addRenderableWidget(new PartIcon(new Position(leftPos + slot.x + 18, topPos + slot.y), texture, () -> getMaterialTooltip(slotIndex, barrelPart), () -> getMenu().isMaterialSlotActive(slotIndex)));
+		addRenderableWidget(new PartIcon(new Position(leftPos + slot.x + 18, topPos + slot.y), texture, () -> getMaterialTooltip(slotIndex, barrelPart),
+				() -> getMenu().isMaterialSlotActive(slotIndex)));
 	}
 
 	private Component getMaterialTooltip(int slotIndex, String barrelPart) {
@@ -460,7 +486,8 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 		}
 
 		Map<Identifier, Integer> partsNeeded = getMenu().getPartsNeeded();
-		addPartCountInfo(partsNeeded, resultPartsNeededTooltip, location -> getMenu().getMissingDyes().contains(location) ? ChatFormatting.RED : ChatFormatting.DARK_GRAY);
+		addPartCountInfo(partsNeeded, resultPartsNeededTooltip,
+				location -> getMenu().getMissingDyes().contains(location) ? ChatFormatting.RED : ChatFormatting.DARK_GRAY);
 		return resultPartsNeededTooltip;
 	}
 
@@ -471,8 +498,8 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 				Item item = BuiltInRegistries.ITEM.getValue(part);
 				itemCounts.put(new ItemStack(item), new Tuple<>(part, count));
 			} else {
-				BuiltInRegistries.ITEM.get(TagKey.create(Registries.ITEM, part))
-						.flatMap(set -> set.stream().findFirst()).ifPresent(dye -> itemCounts.put(new ItemStack(dye), new Tuple<>(part, count)));
+				BuiltInRegistries.ITEM.get(TagKey.create(Registries.ITEM, part)).flatMap(set -> set.stream().findFirst())
+						.ifPresent(dye -> itemCounts.put(new ItemStack(dye), new Tuple<>(part, count)));
 			}
 		});
 
@@ -480,25 +507,17 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 			ItemStack itemStack = entry.getKey();
 			Identifier location = entry.getValue().getA();
 			int count = entry.getValue().getB();
-			MutableComponent partCountText = Component.literal(count + "/" + DecorationHelper.BLOCK_TOTAL_PARTS + " (" + String.format("%.0f%%", (float) count / DecorationHelper.BLOCK_TOTAL_PARTS * 100) + ") of ");
+			MutableComponent partCountText = Component.literal(count + "/" + DecorationHelper.BLOCK_TOTAL_PARTS + " ("
+					+ String.format("%.0f%%", (float) count / DecorationHelper.BLOCK_TOTAL_PARTS * 100) + ") of ");
 			tooltip.add(partCountText.append(itemStack.getHoverName()).withStyle(getPartFormatting.apply(location)));
 		});
 	}
 
-	private static final Map<Integer, Vec2> SLOT_PREVIEW_ROTATIONS = Map.of(
-			0, new Vec2(90, 180),
-			1, new Vec2(90, 180),
-			4, new Vec2(90, 180),
-			2, new Vec2(0, 180),
-			5, new Vec2(0, 180),
-			3, new Vec2(-90, 180),
-			6, new Vec2(-90, 180)
-	);
+	private static final Map<Integer, Vec2> SLOT_PREVIEW_ROTATIONS = Map.of(0, new Vec2(90, 180), 1, new Vec2(90, 180), 4, new Vec2(90, 180), 2,
+			new Vec2(0, 180), 5, new Vec2(0, 180), 3, new Vec2(-90, 180), 6, new Vec2(-90, 180));
 
 	private void updatePreviewRotation(int mouseX, int mouseY) {
-		SLOT_PREVIEW_ROTATIONS.forEach(
-				(slotIndex, rotation) -> updatePreviewRotationForSlot(slotIndex, mouseX, mouseY, (int) rotation.x, (int) rotation.y)
-		);
+		SLOT_PREVIEW_ROTATIONS.forEach((slotIndex, rotation) -> updatePreviewRotationForSlot(slotIndex, mouseX, mouseY, (int) rotation.x, (int) rotation.y));
 		if (lastRotationSetTime != 0 && System.currentTimeMillis() - lastRotationSetTime > 1000) {
 			blockPreview.resetToDefaultRotation();
 			lastRotationSetTime = 0;
@@ -594,7 +613,8 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 		protected PartIcon(Position position, TextureBlitData texture, Supplier<Component> tooltip, BooleanSupplier isActive) {
 			super(position, new Dimension(texture.getWidth(), texture.getHeight()));
 			this.texture = texture;
-			disabledTexture = new TextureBlitData(texture.getTextureName(), DECORATION_TABLE_ELEMENTS, new UV(texture.getU() + DISABLED_TEXTURE_U_OFFSET, texture.getV()), new Dimension(texture.getWidth(), texture.getHeight()));
+			disabledTexture = new TextureBlitData(texture.getTextureName(), DECORATION_TABLE_ELEMENTS,
+					new UV(texture.getU() + DISABLED_TEXTURE_U_OFFSET, texture.getV()), new Dimension(texture.getWidth(), texture.getHeight()));
 			this.tooltip = tooltip;
 			this.isActive = isActive;
 		}
@@ -615,7 +635,7 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 
 		@Override
 		protected void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
-			//noop
+			// noop
 		}
 
 		@Override
@@ -650,7 +670,7 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 
 		@Override
 		protected void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
-			//noop
+			// noop
 		}
 
 		@Override
@@ -672,13 +692,14 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 			}
 
 			partStorageTooltip.add(Component.translatable(StorageTranslationHelper.INSTANCE.translGuiTooltip("parts_stored")));
-			DecorationTableScreen.addPartCountInfo(getPartsStored.get(), partStorageTooltip, location -> ChatFormatting.GRAY);
+			addPartCountInfo(getPartsStored.get(), partStorageTooltip, location -> ChatFormatting.GRAY);
 			return partStorageTooltip;
 		}
 	}
 
 	private static class StackButton extends ButtonBase {
-		private static final TextureBlitData BUTTON_HOVER = new TextureBlitData(GuiHelper.GUI_CONTROLS, Dimension.SQUARE_256, new UV(63, 42), Dimension.SQUARE_18);
+		private static final TextureBlitData BUTTON_HOVER = new TextureBlitData(GuiHelper.GUI_CONTROLS, Dimension.SQUARE_256, new UV(63, 42),
+				Dimension.SQUARE_18);
 		private final Supplier<ItemStack> stackSupplier;
 
 		protected StackButton(Position position, IntConsumer onClick, Supplier<ItemStack> stackSupplier) {
@@ -815,11 +836,7 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 			renderState.appendModelIdentityElement(xAxisRotation);
 			renderState.appendModelIdentityElement(yAxisRotation);
 			guiGraphics.submitPictureInPictureRenderState(new OversizedItemRenderState(new GuiItemRenderState(previewStack.getItem().getName().toString(),
-					new Matrix3x2f(guiGraphics.pose()),
-					renderState,
-					x,
-					y,
-					guiGraphics.peekScissorStack()), x, y, x + getWidth(), y + getHeight()));
+					new Matrix3x2f(guiGraphics.pose()), renderState, x, y, guiGraphics.peekScissorStack()), x, y, x + getWidth(), y + getHeight()));
 		}
 
 		private void updateRotations() {

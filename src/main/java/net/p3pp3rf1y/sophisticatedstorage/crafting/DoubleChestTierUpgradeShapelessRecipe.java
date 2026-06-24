@@ -70,7 +70,7 @@ public class DoubleChestTierUpgradeShapelessRecipe extends CustomShapelessRecipe
 
 	public static class Serializer extends RecipeWrapperSerializer<ShapelessRecipe, DoubleChestTierUpgradeShapelessRecipe> {
 		public Serializer() {
-			super(DoubleChestTierUpgradeShapelessRecipe::new, RecipeSerializer.SHAPELESS_RECIPE);
+			super(DoubleChestTierUpgradeShapelessRecipe::new, SHAPELESS_RECIPE);
 		}
 	}
 }

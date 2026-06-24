@@ -13,19 +13,13 @@ import java.util.List;
 import java.util.Map;
 
 public enum BarrelMaterial implements StringRepresentable {
-	SIDE("side", MaterialModelPart.CORE),
-	SIDE_TRIM("side_trim", MaterialModelPart.TRIM),
-	BOTTOM("bottom", MaterialModelPart.CORE),
-	BOTTOM_TRIM("bottom_trim", MaterialModelPart.TRIM),
-	TOP("top", MaterialModelPart.CORE),
-	TOP_TRIM("top_trim", MaterialModelPart.TRIM),
-	TOP_INNER_TRIM("top_inner_trim", MaterialModelPart.TRIM),
-	ALL("all", MaterialModelPart.BOTH, SIDE, SIDE_TRIM, BOTTOM, BOTTOM_TRIM, TOP, TOP_TRIM, TOP_INNER_TRIM),
-	ALL_TRIM("all_trim", MaterialModelPart.TRIM, SIDE_TRIM, BOTTOM_TRIM, TOP_TRIM, TOP_INNER_TRIM),
-	ALL_BUT_TRIM("all_but_trim", MaterialModelPart.CORE, SIDE, BOTTOM, TOP),
-	TOP_ALL("top_all", MaterialModelPart.BOTH, TOP, TOP_TRIM, TOP_INNER_TRIM),
-	SIDE_ALL("side_all", MaterialModelPart.BOTH, SIDE, SIDE_TRIM),
-	BOTTOM_ALL("bottom_all", MaterialModelPart.BOTH, BOTTOM, BOTTOM_TRIM);
+	SIDE("side", MaterialModelPart.CORE), SIDE_TRIM("side_trim", MaterialModelPart.TRIM), BOTTOM("bottom", MaterialModelPart.CORE), BOTTOM_TRIM("bottom_trim",
+			MaterialModelPart.TRIM), TOP("top", MaterialModelPart.CORE), TOP_TRIM("top_trim", MaterialModelPart.TRIM), TOP_INNER_TRIM("top_inner_trim",
+					MaterialModelPart.TRIM), ALL("all", MaterialModelPart.BOTH, SIDE, SIDE_TRIM, BOTTOM, BOTTOM_TRIM, TOP, TOP_TRIM, TOP_INNER_TRIM), ALL_TRIM(
+							"all_trim", MaterialModelPart.TRIM, SIDE_TRIM, BOTTOM_TRIM, TOP_TRIM, TOP_INNER_TRIM), ALL_BUT_TRIM("all_but_trim",
+									MaterialModelPart.CORE, SIDE, BOTTOM,
+									TOP), TOP_ALL("top_all", MaterialModelPart.BOTH, TOP, TOP_TRIM, TOP_INNER_TRIM), SIDE_ALL("side_all",
+											MaterialModelPart.BOTH, SIDE, SIDE_TRIM), BOTTOM_ALL("bottom_all", MaterialModelPart.BOTH, BOTTOM, BOTTOM_TRIM);
 
 	public static final Codec<BarrelMaterial> CODEC = StringRepresentable.fromEnum(BarrelMaterial::values);
 	public static final StreamCodec<FriendlyByteBuf, BarrelMaterial> STREAM_CODEC = NeoForgeStreamCodecs.enumCodec(BarrelMaterial.class);
@@ -51,7 +45,7 @@ public enum BarrelMaterial implements StringRepresentable {
 	}
 
 	public BarrelMaterial[] getChildren() {
-		return children.length > 0 ? children : new BarrelMaterial[] {this};
+		return children.length > 0 ? children : new BarrelMaterial[]{this};
 	}
 
 	@Nullable
@@ -75,7 +69,7 @@ public enum BarrelMaterial implements StringRepresentable {
 
 	static {
 		ImmutableMap.Builder<String, BarrelMaterial> builder = new ImmutableMap.Builder<>();
-		for (BarrelMaterial value : BarrelMaterial.values()) {
+		for (BarrelMaterial value : values()) {
 			builder.put(value.getSerializedName(), value);
 		}
 		NAME_VALUES = builder.build();
@@ -99,8 +93,6 @@ public enum BarrelMaterial implements StringRepresentable {
 	}
 
 	public enum MaterialModelPart {
-		BOTH,
-		TRIM,
-		CORE
+		BOTH, TRIM, CORE
 	}
 }

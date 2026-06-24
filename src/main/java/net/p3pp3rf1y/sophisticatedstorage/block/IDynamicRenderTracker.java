@@ -3,7 +3,8 @@ package net.p3pp3rf1y.sophisticatedstorage.block;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderDataHandler;
 
 public interface IDynamicRenderTracker {
-	default void onRenderDataUpdated(RenderDataHandler ri) {}
+	default void onRenderDataUpdated(RenderDataHandler ri) {
+	}
 
 	default boolean isDynamicRenderer() {
 		return false;
@@ -13,5 +14,6 @@ public interface IDynamicRenderTracker {
 		return false;
 	}
 
-	IDynamicRenderTracker NOOP = new IDynamicRenderTracker() {};
+	IDynamicRenderTracker NOOP = new IDynamicRenderTracker() {
+	};
 }

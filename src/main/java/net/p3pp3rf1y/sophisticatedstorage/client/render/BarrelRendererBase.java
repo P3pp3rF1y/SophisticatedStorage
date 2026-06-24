@@ -66,7 +66,8 @@ public abstract class BarrelRendererBase<T extends BarrelBlockEntity, R extends 
 	}
 
 	@Override
-	public void extractRenderState(T blockEntity, R renderState, float partialTick, Vec3 cameraPos, ModelFeatureRenderer.@Nullable CrumblingOverlay crumblingOverlay) {
+	public void extractRenderState(T blockEntity, R renderState, float partialTick, Vec3 cameraPos,
+			ModelFeatureRenderer.@Nullable CrumblingOverlay crumblingOverlay) {
 		super.extractRenderState(blockEntity, renderState, partialTick, cameraPos, crumblingOverlay);
 
 		renderState.packed = blockEntity.isPacked();

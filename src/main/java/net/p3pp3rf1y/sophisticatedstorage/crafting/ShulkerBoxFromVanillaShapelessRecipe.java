@@ -34,14 +34,16 @@ public class ShulkerBoxFromVanillaShapelessRecipe extends CustomShapelessRecipe 
 
 	@Override
 	public boolean matches(CraftingInput input, Level level) {
-		return super.matches(input, level) && getVanillaShulkerBox(input).map(storage -> !(storage.getItem() instanceof WoodStorageBlockItem) || !WoodStorageBlockItem.isPacked(storage)).orElse(false);
+		return super.matches(input, level) && getVanillaShulkerBox(input)
+				.map(storage -> !(storage.getItem() instanceof WoodStorageBlockItem) || !WoodStorageBlockItem.isPacked(storage)).orElse(false);
 	}
 
 	@Override
 	public ItemStack assemble(CraftingInput input, HolderLookup.Provider registries) {
 		ItemStack upgradedStorage = super.assemble(input, registries);
 		getVanillaShulkerBox(input).ifPresent(vanillaShulkerBox -> {
-			@Nullable ResourceHandler<ItemResource> itemCap = vanillaShulkerBox.getCapability(Capabilities.Item.ITEM, ItemAccess.forStack(vanillaShulkerBox));
+			@Nullable
+			ResourceHandler<ItemResource> itemCap = vanillaShulkerBox.getCapability(Capabilities.Item.ITEM, ItemAccess.forStack(vanillaShulkerBox));
 			if (itemCap != null) {
 				StackStorageWrapper wrapper = StackStorageWrapper.fromStack(registries, upgradedStorage);
 				wrapper.ensureContentsUuid();
@@ -81,7 +83,7 @@ public class ShulkerBoxFromVanillaShapelessRecipe extends CustomShapelessRecipe 
 
 	public static class Serializer extends RecipeWrapperSerializer<ShapelessRecipe, ShulkerBoxFromVanillaShapelessRecipe> {
 		public Serializer() {
-			super(ShulkerBoxFromVanillaShapelessRecipe::new, RecipeSerializer.SHAPELESS_RECIPE);
+			super(ShulkerBoxFromVanillaShapelessRecipe::new, SHAPELESS_RECIPE);
 		}
 	}
 }

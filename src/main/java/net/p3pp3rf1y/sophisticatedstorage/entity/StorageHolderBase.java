@@ -129,7 +129,8 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 			setStorageItem(storageItem);
 		}
 
-		storageWrapper = MovingStorageWrapper.fromStack(storageItem, this::onContentsChanged, this::onStackChanged, this::getStorageData, this::isLocked, this::setLocked, this::isUpgradeRunnable);
+		storageWrapper = MovingStorageWrapper.fromStack(storageItem, this::onContentsChanged, this::onStackChanged, this::getStorageData, this::isLocked,
+				this::setLocked, this::isUpgradeRunnable);
 	}
 
 	protected boolean isUpgradeRunnable(ItemStack upgrade) {
@@ -144,7 +145,8 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 		}
 
 		ItemStack storageItem = getSyncedStorageStack();
-		@Nullable UUID storageId = storageItem.get(ModCoreDataComponents.STORAGE_UUID);
+		@Nullable
+		UUID storageId = storageItem.get(ModCoreDataComponents.STORAGE_UUID);
 		if (storageId == null) {
 			return;
 		}
@@ -153,7 +155,7 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 
 	public void setStorageItem(ItemStack storageItem) {
 		setSyncedStorageStack(storageItem);
-		storageWrapper = NoopStorageWrapper.INSTANCE; //reset storage wrapper to force update when it's next requested
+		storageWrapper = NoopStorageWrapper.INSTANCE; // reset storage wrapper to force update when it's next requested
 		updateRenderAttributes = true;
 	}
 
@@ -251,7 +253,8 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 				renderBlockEntity.toggleUpgradesVisiblity();
 			}
 			if (storageItem.getItem() instanceof ITintableBlockItem tintableBlockItem) {
-				renderBlockEntity.getStorageWrapper().setColors(tintableBlockItem.getMainColor(storageItem).orElse(-1), tintableBlockItem.getAccentColor(storageItem).orElse(-1));
+				renderBlockEntity.getStorageWrapper().setColors(tintableBlockItem.getMainColor(storageItem).orElse(-1),
+						tintableBlockItem.getAccentColor(storageItem).orElse(-1));
 			}
 			if (renderBlockEntity instanceof WoodStorageBlockEntity woodStorage) {
 				WoodStorageBlockItem.getWoodType(storageItem).ifPresent(woodType -> {
@@ -343,7 +346,8 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 	}
 
 	protected void runTickableUpgrades(Level level) {
-		getStorageWrapper().getUpgradeHandler().getWrappersThatImplement(ITickableUpgrade.class).forEach(upgrade -> upgrade.tick(getEntity(), level, new BlockPos((int) getPosition().x(), (int) getPosition().y(), (int) getPosition().z())));
+		getStorageWrapper().getUpgradeHandler().getWrappersThatImplement(ITickableUpgrade.class)
+				.forEach(upgrade -> upgrade.tick(getEntity(), level, new BlockPos((int) getPosition().x(), (int) getPosition().y(), (int) getPosition().z())));
 	}
 
 	private void clientTick(Level level) {
@@ -369,8 +373,9 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 				.ifPresent(renderer -> clientTickUpgrade(renderer, level, rand, type, data)));
 	}
 
-	private <T extends IUpgradeClientData> void clientTickUpgrade(IUpgradeClientTickHandler<T> renderer, Level level, RandomSource rand, UpgradeClientDataType<?> type, IUpgradeClientData data) {
-		//noinspection unchecked
+	private <T extends IUpgradeClientData> void clientTickUpgrade(IUpgradeClientTickHandler<T> renderer, Level level, RandomSource rand,
+			UpgradeClientDataType<?> type, IUpgradeClientData data) {
+		// noinspection unchecked
 		type.cast(data).ifPresent(clientData -> renderer.onClientTick(level, rand, getUpgradeRenderPosition(), (T) clientData));
 	}
 
@@ -440,7 +445,8 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 
 		if (memorizesItemsWhenLocked()) {
 			if (locked) {
-				getStorageWrapper().getSettingsHandler().getTypeCategory(MemorySettingsCategory.class).selectSlots(0, getStorageWrapper().getInventoryHandler().size());
+				getStorageWrapper().getSettingsHandler().getTypeCategory(MemorySettingsCategory.class).selectSlots(0,
+						getStorageWrapper().getInventoryHandler().size());
 			} else {
 				getStorageWrapper().getSettingsHandler().getTypeCategory(MemorySettingsCategory.class).unselectAllSlots();
 				ItemDisplaySettingsCategory itemDisplaySettings = getStorageWrapper().getSettingsHandler().getTypeCategory(ItemDisplaySettingsCategory.class);
@@ -491,7 +497,9 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 
 	@Override
 	public List<Integer> getSlotCounts() {
-		return MovingStorageWrapper.isLimitedBarrel(getSyncedStorageStack()) ? getStorageWrapper().getRenderDataHandler().getDisplayData().slotCounts() : List.of();
+		return MovingStorageWrapper.isLimitedBarrel(getSyncedStorageStack())
+				? getStorageWrapper().getRenderDataHandler().getDisplayData().slotCounts()
+				: List.of();
 	}
 
 	@Override
@@ -508,7 +516,9 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 
 	@Override
 	public List<Float> getSlotFillLevels() {
-		return MovingStorageWrapper.isLimitedBarrel(getSyncedStorageStack()) ? getStorageWrapper().getRenderDataHandler().getDisplayData().slotFillRatios() : List.of();
+		return MovingStorageWrapper.isLimitedBarrel(getSyncedStorageStack())
+				? getStorageWrapper().getRenderDataHandler().getDisplayData().slotFillRatios()
+				: List.of();
 	}
 
 	@Override

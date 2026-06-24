@@ -13,50 +13,48 @@ import java.util.Map;
 import static net.p3pp3rf1y.sophisticatedcore.client.gui.utils.GuiHelper.getButtonStateData;
 
 public class StorageButtonDefinitions {
-	public static final ButtonDefinition.Toggle<ContentsFilterType> STORAGE_CONTENTS_FILTER_TYPE = ButtonDefinitions.createToggleButtonDefinition(
-			Map.of(
-					ContentsFilterType.ALLOW, getButtonStateData(new UV(0, 0), StorageTranslationHelper.INSTANCE.translUpgradeButton("allow"), Dimension.SQUARE_16, new Position(1, 1)),
-					ContentsFilterType.BLOCK, getButtonStateData(new UV(16, 0), StorageTranslationHelper.INSTANCE.translUpgradeButton("block"), Dimension.SQUARE_16, new Position(1, 1)),
-					ContentsFilterType.STORAGE, getButtonStateData(new UV(64, 16), StorageTranslationHelper.INSTANCE.translUpgradeButton("match_storage_contents"), Dimension.SQUARE_16, new Position(1, 1))
-			));
+	public static final ButtonDefinition.Toggle<ContentsFilterType> STORAGE_CONTENTS_FILTER_TYPE = ButtonDefinitions
+			.createToggleButtonDefinition(Map.of(ContentsFilterType.ALLOW,
+					getButtonStateData(new UV(0, 0), StorageTranslationHelper.INSTANCE.translUpgradeButton("allow"), Dimension.SQUARE_16, new Position(1, 1)),
+					ContentsFilterType.BLOCK,
+					getButtonStateData(new UV(16, 0), StorageTranslationHelper.INSTANCE.translUpgradeButton("block"), Dimension.SQUARE_16, new Position(1, 1)),
+					ContentsFilterType.STORAGE, getButtonStateData(new UV(64, 16),
+							StorageTranslationHelper.INSTANCE.translUpgradeButton("match_storage_contents"), Dimension.SQUARE_16, new Position(1, 1))));
 
-	private StorageButtonDefinitions() {}
+	private StorageButtonDefinitions() {
+	}
 
-	public static final ButtonDefinition.Toggle<Boolean> SHIFT_CLICK_TARGET = ButtonDefinitions.createToggleButtonDefinition(
-			Map.of(
-					true, getButtonStateData(new UV(32, 48), Dimension.SQUARE_16, new Position(1, 1),
-							StorageTranslationHelper.INSTANCE.getTranslatedLines(StorageTranslationHelper.INSTANCE.translUpgradeButton("shift_click_into_storage"), null)),
-					false, getButtonStateData(new UV(48, 48), Dimension.SQUARE_16, new Position(1, 1),
-							StorageTranslationHelper.INSTANCE.getTranslatedLines(StorageTranslationHelper.INSTANCE.translUpgradeButton("shift_click_into_inventory")))
-			));
+	public static final ButtonDefinition.Toggle<Boolean> SHIFT_CLICK_TARGET = ButtonDefinitions.createToggleButtonDefinition(Map.of(true,
+			getButtonStateData(new UV(32, 48), Dimension.SQUARE_16, new Position(1, 1),
+					StorageTranslationHelper.INSTANCE.getTranslatedLines(StorageTranslationHelper.INSTANCE.translUpgradeButton("shift_click_into_storage"),
+							null)),
+			false, getButtonStateData(new UV(48, 48), Dimension.SQUARE_16, new Position(1, 1), StorageTranslationHelper.INSTANCE
+					.getTranslatedLines(StorageTranslationHelper.INSTANCE.translUpgradeButton("shift_click_into_inventory")))));
 
-	public static final ButtonDefinition.Toggle<Boolean> REFILL_CRAFTING_GRID = net.p3pp3rf1y.sophisticatedcore.client.gui.controls.ButtonDefinitions.createToggleButtonDefinition(
-			Map.of(
-					true, getButtonStateData(new UV(32, 112), Dimension.SQUARE_16, new Position(1, 1),
-							StorageTranslationHelper.INSTANCE.getTranslatedLines(StorageTranslationHelper.INSTANCE.translUpgradeButton("refill_crafting_grid"))),
-					false, getButtonStateData(new UV(48, 112), Dimension.SQUARE_16, new Position(1, 1),
-							StorageTranslationHelper.INSTANCE.getTranslatedLines(StorageTranslationHelper.INSTANCE.translUpgradeButton("do_not_refill_crafting_grid")))
-			));
+	public static final ButtonDefinition.Toggle<Boolean> REFILL_CRAFTING_GRID = ButtonDefinitions.createToggleButtonDefinition(Map.of(true,
+			getButtonStateData(new UV(32, 112), Dimension.SQUARE_16, new Position(1, 1),
+					StorageTranslationHelper.INSTANCE.getTranslatedLines(StorageTranslationHelper.INSTANCE.translUpgradeButton("refill_crafting_grid"))),
+			false, getButtonStateData(new UV(48, 112), Dimension.SQUARE_16, new Position(1, 1), StorageTranslationHelper.INSTANCE
+					.getTranslatedLines(StorageTranslationHelper.INSTANCE.translUpgradeButton("do_not_refill_crafting_grid")))));
 
-	public static final ButtonDefinition.Toggle<Boolean> REFILL_INPUT = net.p3pp3rf1y.sophisticatedcore.client.gui.controls.ButtonDefinitions.createToggleButtonDefinition(
-			Map.of(
-					true, getButtonStateData(new UV(64, 112), Dimension.SQUARE_16, new Position(1, 1),
-							StorageTranslationHelper.INSTANCE.getTranslatedLines(StorageTranslationHelper.INSTANCE.translUpgradeButton("refill_input"))),
-					false, getButtonStateData(new UV(80, 112), Dimension.SQUARE_16, new Position(1, 1),
-							StorageTranslationHelper.INSTANCE.getTranslatedLines(StorageTranslationHelper.INSTANCE.translUpgradeButton("do_not_refill_input")))
-			));
+	public static final ButtonDefinition.Toggle<Boolean> REFILL_INPUT = ButtonDefinitions.createToggleButtonDefinition(Map.of(true,
+			getButtonStateData(new UV(64, 112), Dimension.SQUARE_16, new Position(1, 1),
+					StorageTranslationHelper.INSTANCE.getTranslatedLines(StorageTranslationHelper.INSTANCE.translUpgradeButton("refill_input"))),
+			false, getButtonStateData(new UV(80, 112), Dimension.SQUARE_16, new Position(1, 1),
+					StorageTranslationHelper.INSTANCE.getTranslatedLines(StorageTranslationHelper.INSTANCE.translUpgradeButton("do_not_refill_input")))));
 
-	public static final ButtonDefinition.Toggle<IOMode> IO_MODE = ButtonDefinitions.createToggleButtonDefinition(
-			Map.of(
-					IOMode.PUSH, getButtonStateData(new UV(208, 48), Dimension.SQUARE_16, new Position(1, 1),
-							StorageTranslationHelper.INSTANCE.getTranslatedLines(StorageTranslationHelper.INSTANCE.translUpgradeButton("io_mode_push"), null)),
-					IOMode.PULL, getButtonStateData(new UV(192, 48), Dimension.SQUARE_16, new Position(1, 1),
-							StorageTranslationHelper.INSTANCE.getTranslatedLines(StorageTranslationHelper.INSTANCE.translUpgradeButton("io_mode_pull"))),
-					IOMode.PUSH_PULL, getButtonStateData(new UV(176, 48), Dimension.SQUARE_16, new Position(1, 1),
-							StorageTranslationHelper.INSTANCE.getTranslatedLines(StorageTranslationHelper.INSTANCE.translUpgradeButton("io_mode_push_pull"))),
-					IOMode.OFF, getButtonStateData(new UV(160, 48), Dimension.SQUARE_16, new Position(1, 1),
-							StorageTranslationHelper.INSTANCE.getTranslatedLines(StorageTranslationHelper.INSTANCE.translUpgradeButton("io_mode_off"))),
-					IOMode.DISABLED, getButtonStateData(new UV(224, 48), Dimension.SQUARE_16, new Position(1, 1),
-							StorageTranslationHelper.INSTANCE.getTranslatedLines(StorageTranslationHelper.INSTANCE.translUpgradeButton("io_mode_disabled")))
-			));
+	public static final ButtonDefinition.Toggle<IOMode> IO_MODE = ButtonDefinitions.createToggleButtonDefinition(Map.of(IOMode.PUSH,
+			getButtonStateData(new UV(208, 48), Dimension.SQUARE_16, new Position(1, 1),
+					StorageTranslationHelper.INSTANCE.getTranslatedLines(StorageTranslationHelper.INSTANCE.translUpgradeButton("io_mode_push"), null)),
+			IOMode.PULL,
+			getButtonStateData(new UV(192, 48), Dimension.SQUARE_16, new Position(1, 1),
+					StorageTranslationHelper.INSTANCE.getTranslatedLines(StorageTranslationHelper.INSTANCE.translUpgradeButton("io_mode_pull"))),
+			IOMode.PUSH_PULL,
+			getButtonStateData(new UV(176, 48), Dimension.SQUARE_16, new Position(1, 1),
+					StorageTranslationHelper.INSTANCE.getTranslatedLines(StorageTranslationHelper.INSTANCE.translUpgradeButton("io_mode_push_pull"))),
+			IOMode.OFF,
+			getButtonStateData(new UV(160, 48), Dimension.SQUARE_16, new Position(1, 1),
+					StorageTranslationHelper.INSTANCE.getTranslatedLines(StorageTranslationHelper.INSTANCE.translUpgradeButton("io_mode_off"))),
+			IOMode.DISABLED, getButtonStateData(new UV(224, 48), Dimension.SQUARE_16, new Position(1, 1),
+					StorageTranslationHelper.INSTANCE.getTranslatedLines(StorageTranslationHelper.INSTANCE.translUpgradeButton("io_mode_disabled")))));
 }

@@ -23,9 +23,12 @@ import java.util.function.IntFunction;
 public class LimitedBarrelScreen extends StorageScreen {
 	public static final Identifier GUI_BACKGROUNDS = SophisticatedStorage.getIdentifier("textures/gui/limited_barrels.png");
 	public static final TextureBlitData LIMITED_I_BACKGROUND = new TextureBlitData(GUI_BACKGROUNDS, Dimension.SQUARE_256, new UV(0, 0), new Dimension(84, 82));
-	public static final TextureBlitData LIMITED_II_BACKGROUND = new TextureBlitData(GUI_BACKGROUNDS, Dimension.SQUARE_256, new UV(84, 0), new Dimension(84, 82));
-	public static final TextureBlitData LIMITED_III_BACKGROUND = new TextureBlitData(GUI_BACKGROUNDS, Dimension.SQUARE_256, new UV(0, 82), new Dimension(84, 82));
-	public static final TextureBlitData LIMITED_IV_BACKGROUND = new TextureBlitData(GUI_BACKGROUNDS, Dimension.SQUARE_256, new UV(84, 82), new Dimension(84, 82));
+	public static final TextureBlitData LIMITED_II_BACKGROUND = new TextureBlitData(GUI_BACKGROUNDS, Dimension.SQUARE_256, new UV(84, 0),
+			new Dimension(84, 82));
+	public static final TextureBlitData LIMITED_III_BACKGROUND = new TextureBlitData(GUI_BACKGROUNDS, Dimension.SQUARE_256, new UV(0, 82),
+			new Dimension(84, 82));
+	public static final TextureBlitData LIMITED_IV_BACKGROUND = new TextureBlitData(GUI_BACKGROUNDS, Dimension.SQUARE_256, new UV(84, 82),
+			new Dimension(84, 82));
 	public static final TextureBlitData SMALL_BAR_FILL = new TextureBlitData(GUI_BACKGROUNDS, Dimension.SQUARE_256, new UV(171, 0), new Dimension(3, 28));
 	public static final TextureBlitData LARGE_BAR_FILL = new TextureBlitData(GUI_BACKGROUNDS, Dimension.SQUARE_256, new UV(168, 0), new Dimension(3, 68));
 	public static final int STORAGE_SLOTS_HEIGHT = 82;
@@ -51,10 +54,10 @@ public class LimitedBarrelScreen extends StorageScreen {
 		renderBars(font, imageWidth, getMenu(), guiGraphics, getMenu()::getSlotFillPercentage);
 	}
 
-	public static void renderBars(Font font, int imageWidth, StorageContainerMenuBase<?> menu, GuiGraphics guiGraphics, IntFunction<Float> getSlotFillPercentage) {
+	public static void renderBars(Font font, int imageWidth, StorageContainerMenuBase<?> menu, GuiGraphics guiGraphics,
+			IntFunction<Float> getSlotFillPercentage) {
 		switch (menu.getNumberOfStorageInventorySlots()) {
-			case 1 ->
-					renderBar(font, guiGraphics, imageWidth / 2 + 37, 18 + 6, getSlotFillPercentage.apply(0), LARGE_BAR_FILL, false);
+			case 1 -> renderBar(font, guiGraphics, imageWidth / 2 + 37, 18 + 6, getSlotFillPercentage.apply(0), LARGE_BAR_FILL, false);
 			case 2 -> {
 				renderBar(font, guiGraphics, imageWidth / 2 + 37, 18 + 6, getSlotFillPercentage.apply(0), SMALL_BAR_FILL, false);
 				renderBar(font, guiGraphics, imageWidth / 2 + 37, 18 + 6 + 40, getSlotFillPercentage.apply(1), SMALL_BAR_FILL, false);
@@ -142,7 +145,8 @@ public class LimitedBarrelScreen extends StorageScreen {
 		int barHeight = (int) (barTexture.getHeight() * percentage);
 		int yOffset = barTexture.getHeight() - barHeight;
 
-		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, barTexture.getTextureName(), x, y + yOffset, barTexture.getU(), barTexture.getV() + yOffset, barTexture.getWidth(), barHeight, barTexture.getTextureWidth(), barTexture.getTextureHeight());
+		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, barTexture.getTextureName(), x, y + yOffset, barTexture.getU(), barTexture.getV() + yOffset,
+				barTexture.getWidth(), barHeight, barTexture.getTextureWidth(), barTexture.getTextureHeight());
 
 		String text = (int) (percentage * 100) + "%";
 		int percentageX = x;

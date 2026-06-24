@@ -7,7 +7,7 @@ import snownee.jade.api.IWailaCommonRegistration;
 import snownee.jade.api.IWailaPlugin;
 import snownee.jade.api.WailaPlugin;
 
-@SuppressWarnings("unused") //used by Jade's reflection
+@SuppressWarnings("unused") // used by Jade's reflection
 @WailaPlugin
 public class StorageJadePlugin implements IWailaPlugin {
 	@Override

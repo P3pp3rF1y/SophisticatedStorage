@@ -28,12 +28,13 @@ import org.jspecify.annotations.Nullable;
 import java.util.function.Consumer;
 
 public class ShulkerBoxItemRenderer implements SpecialModelRenderer<ShulkerBoxItemRenderer.ShulkerBoxAttributes> {
-	private final LoadingCache<BlockItem, ShulkerBoxBlockEntity> shulkerBoxBlockEntities = CacheBuilder.newBuilder().maximumSize(512L).weakKeys().build(new CacheLoader<>() {
-		@Override
-		public ShulkerBoxBlockEntity load(BlockItem blockItem) {
-			return new ShulkerBoxBlockEntity(BlockPos.ZERO, blockItem.getBlock().defaultBlockState().setValue(ShulkerBoxBlock.FACING, Direction.SOUTH));
-		}
-	});
+	private final LoadingCache<BlockItem, ShulkerBoxBlockEntity> shulkerBoxBlockEntities = CacheBuilder.newBuilder().maximumSize(512L).weakKeys()
+			.build(new CacheLoader<>() {
+				@Override
+				public ShulkerBoxBlockEntity load(BlockItem blockItem) {
+					return new ShulkerBoxBlockEntity(BlockPos.ZERO, blockItem.getBlock().defaultBlockState().setValue(ShulkerBoxBlock.FACING, Direction.SOUTH));
+				}
+			});
 
 	@Nullable
 	@Override
@@ -52,7 +53,8 @@ public class ShulkerBoxItemRenderer implements SpecialModelRenderer<ShulkerBoxIt
 	}
 
 	@Override
-	public void submit(@Nullable ShulkerBoxAttributes shulkerBoxAttributes, ItemDisplayContext itemDisplayContext, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, int i, int i1, boolean b, int i2) {
+	public void submit(@Nullable ShulkerBoxAttributes shulkerBoxAttributes, ItemDisplayContext itemDisplayContext, PoseStack poseStack,
+			SubmitNodeCollector submitNodeCollector, int i, int i1, boolean b, int i2) {
 		if (shulkerBoxAttributes == null) {
 			return;
 		}
@@ -76,13 +78,15 @@ public class ShulkerBoxItemRenderer implements SpecialModelRenderer<ShulkerBoxIt
 	public void getExtents(Consumer<Vector3fc> consumer) {
 		PoseStack posestack = new PoseStack();
 		ShulkerBoxBlockEntity shulkerBoxItem = shulkerBoxBlockEntities.getUnchecked(ModBlocks.SHULKER_BOX_ITEM.get());
-		BlockEntityRenderer<ShulkerBoxBlockEntity, ShulkerBoxRenderer.ShulkerBoxRenderState> blockentityrenderer = Minecraft.getInstance().getBlockEntityRenderDispatcher().getRenderer(shulkerBoxItem);
+		BlockEntityRenderer<ShulkerBoxBlockEntity, ShulkerBoxRenderer.ShulkerBoxRenderState> blockentityrenderer = Minecraft.getInstance()
+				.getBlockEntityRenderDispatcher().getRenderer(shulkerBoxItem);
 		if (blockentityrenderer instanceof ShulkerBoxRenderer shulkerBoxRenderer) {
 			shulkerBoxRenderer.rootModelPart().getExtentsForGui(posestack, consumer);
 		}
 	}
 
-	public record ShulkerBoxAttributes(BlockItem blockItem, int mainColor, int accentColor, boolean showsTier) {}
+	public record ShulkerBoxAttributes(BlockItem blockItem, int mainColor, int accentColor, boolean showsTier) {
+	}
 
 	public static class Unbaked implements SpecialModelRenderer.Unbaked {
 		public static final MapCodec<Unbaked> MAP_CODEC = MapCodec.unit(new Unbaked());

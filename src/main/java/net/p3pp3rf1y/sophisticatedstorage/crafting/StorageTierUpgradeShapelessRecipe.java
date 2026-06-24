@@ -67,7 +67,7 @@ public class StorageTierUpgradeShapelessRecipe extends CustomShapelessRecipe imp
 
 	public static class Serializer extends RecipeWrapperSerializer<ShapelessRecipe, StorageTierUpgradeShapelessRecipe> {
 		public Serializer() {
-			super(StorageTierUpgradeShapelessRecipe::new, RecipeSerializer.SHAPELESS_RECIPE);
+			super(StorageTierUpgradeShapelessRecipe::new, SHAPELESS_RECIPE);
 		}
 	}
 }

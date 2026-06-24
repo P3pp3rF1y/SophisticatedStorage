@@ -21,14 +21,12 @@ import java.util.UUID;
 //TODO after 1.22 remove support for legacy UUID deserialization via strings
 public class ItemContentsStorage extends SavedData {
 	private static final SavedDataType<ItemContentsStorage> TYPE = new SavedDataType<>(SophisticatedStorage.MOD_ID, ItemContentsStorage::new,
-			RecordCodecBuilder.create(
-					builder -> builder.group(
-							Codec.unboundedMap(CodecHelper.STRING_ENCODED_UUID, ContainerContents.CODEC)
-									.fieldOf("storageContents").forGetter(storage -> storage.storageContents),
-							Codec.unboundedMap(CodecHelper.STRING_ENCODED_UUID, CompoundTag.CODEC)
-									.fieldOf("additionalBeData").forGetter(storage -> storage.additionalBeData)
-					).apply(builder, ItemContentsStorage::new)
-			));
+			RecordCodecBuilder.create(builder -> builder.group(
+					Codec.unboundedMap(CodecHelper.STRING_ENCODED_UUID, ContainerContents.CODEC).fieldOf("storageContents")
+							.forGetter(storage -> storage.storageContents),
+					Codec.unboundedMap(CodecHelper.STRING_ENCODED_UUID, CompoundTag.CODEC).fieldOf("additionalBeData")
+							.forGetter(storage -> storage.additionalBeData))
+					.apply(builder, ItemContentsStorage::new)));
 
 	private final Map<UUID, ContainerContents> storageContents = new HashMap<>();
 	private final Map<UUID, CompoundTag> additionalBeData = new HashMap<>();
@@ -47,7 +45,7 @@ public class ItemContentsStorage extends SavedData {
 			MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
 			if (server != null) {
 				ServerLevel overworld = server.getLevel(Level.OVERWORLD);
-				//noinspection ConstantConditions - by this time overworld is loaded
+				// noinspection ConstantConditions - by this time overworld is loaded
 				DimensionDataStorage storage = overworld.getDataStorage();
 				return storage.computeIfAbsent(TYPE);
 			}

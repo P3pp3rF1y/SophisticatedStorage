@@ -35,13 +35,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public record BarrelItemModel(BarrelBlockStateModelBase model, @Nullable BarrelBlockStateModelBase flatTopModel,
-							  List<ItemTintSource> tints, Supplier<Vector3fc[]> extents) implements ItemModel {
+public record BarrelItemModel(BarrelBlockStateModelBase model, @Nullable BarrelBlockStateModelBase flatTopModel, List<ItemTintSource> tints,
+		Supplier<Vector3fc[]> extents) implements ItemModel {
 	private static final Vector3f DEFAULT_ROTATION = new Vector3f(0.0F, 0.0F, 0.0F);
 	private static final ItemTransforms ITEM_TRANSFORMS = createItemTransforms();
 
 	@SuppressWarnings("java:S4738")
-	//ItemTransforms require Guava ImmutableMap to be passed in so no way to change that to java Map
+	// ItemTransforms require Guava ImmutableMap to be passed in so no way to change that to java Map
 	private static ItemTransforms createItemTransforms() {
 		return new ItemTransforms(
 				new ItemTransform(new Vector3f(75, 45, 0), new Vector3f(0, 2.5f / 16f, 0), new Vector3f(0.375f, 0.375f, 0.375f), DEFAULT_ROTATION),
@@ -52,8 +52,7 @@ public record BarrelItemModel(BarrelBlockStateModelBase model, @Nullable BarrelB
 				new ItemTransform(new Vector3f(30, 225, 0), new Vector3f(0, 0, 0), new Vector3f(0.625f, 0.625f, 0.625f), DEFAULT_ROTATION),
 				new ItemTransform(new Vector3f(0, 0, 0), new Vector3f(0, 3 / 16f, 0), new Vector3f(0.25f, 0.25f, 0.25f), DEFAULT_ROTATION),
 				new ItemTransform(new Vector3f(0, 0, 0), new Vector3f(0, 0, 0), new Vector3f(0.5f, 0.5f, 0.5f), DEFAULT_ROTATION),
-				new ItemTransform(new Vector3f(0, 0, 0), new Vector3f(0, 0, 0), new Vector3f(1f, 1f, 1f), DEFAULT_ROTATION)
-				, ImmutableMap.of());
+				new ItemTransform(new Vector3f(0, 0, 0), new Vector3f(0, 0, 0), new Vector3f(1f, 1f, 1f), DEFAULT_ROTATION), ImmutableMap.of());
 	}
 
 	public BarrelItemModel(BarrelBlockStateModelBase model, @Nullable BarrelBlockStateModelBase flatTopModel, List<ItemTintSource> tints) {
@@ -61,7 +60,8 @@ public record BarrelItemModel(BarrelBlockStateModelBase model, @Nullable BarrelB
 	}
 
 	@Override
-	public void update(ItemStackRenderState state, ItemStack stack, ItemModelResolver itemModelResolver, ItemDisplayContext itemDisplayContext, @Nullable ClientLevel clientLevel, @Nullable ItemOwner itemOwner, int i) {
+	public void update(ItemStackRenderState state, ItemStack stack, ItemModelResolver itemModelResolver, ItemDisplayContext itemDisplayContext,
+			@Nullable ClientLevel clientLevel, @Nullable ItemOwner itemOwner, int i) {
 		state.appendModelIdentityElement(this);
 		boolean flatTop = BarrelBlockItem.isFlatTop(stack);
 		BarrelBlockStateModelBase updatedModel = flatTop && flatTopModel != null ? flatTopModel : model;
@@ -116,16 +116,12 @@ public record BarrelItemModel(BarrelBlockStateModelBase model, @Nullable BarrelB
 		layerState.prepareQuadList().addAll(updatedModel.getQuads(clientLevel != null ? clientLevel.random : Minecraft.getInstance().level.random));
 	}
 
-	public record Unbaked(Identifier model, @Nullable Identifier flatTopModel,
-						  List<ItemTintSource> tints) implements ItemModel.Unbaked {
-		public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec(instance ->
-				instance.group(
-								Identifier.CODEC.fieldOf("model").forGetter(Unbaked::model),
-								Identifier.CODEC.optionalFieldOf("flat_top_model").forGetter(unbaked -> Optional.ofNullable(unbaked.flatTopModel())),
-								ItemTintSources.CODEC.listOf().optionalFieldOf("tints", List.of()).forGetter(Unbaked::tints)
-						)
-						.apply(instance, (model, flatTopModel, tints) -> new Unbaked(model, flatTopModel.orElse(null), tints))
-		);
+	public record Unbaked(Identifier model, @Nullable Identifier flatTopModel, List<ItemTintSource> tints) implements ItemModel.Unbaked {
+		public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> instance
+				.group(Identifier.CODEC.fieldOf("model").forGetter(Unbaked::model),
+						Identifier.CODEC.optionalFieldOf("flat_top_model").forGetter(unbaked -> Optional.ofNullable(unbaked.flatTopModel())),
+						ItemTintSources.CODEC.listOf().optionalFieldOf("tints", List.of()).forGetter(Unbaked::tints))
+				.apply(instance, (model, flatTopModel, tints) -> new Unbaked(model, flatTopModel.orElse(null), tints)));
 
 		@Override
 		public MapCodec<? extends ItemModel.Unbaked> type() {

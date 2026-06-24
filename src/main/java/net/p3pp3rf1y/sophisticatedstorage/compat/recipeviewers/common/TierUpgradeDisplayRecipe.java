@@ -18,7 +18,7 @@ import java.util.Optional;
 import java.util.Set;
 
 public record TierUpgradeDisplayRecipe(Identifier id, RecipeHolder<CraftingRecipe> recipeHolder, boolean shapeless, int width, int height,
-									   NonNullList<Ingredient> ingredients, int storageIngredientIndex, List<TierUpgradeVariantPair> variantPairs) {
+		NonNullList<Ingredient> ingredients, int storageIngredientIndex, List<TierUpgradeVariantPair> variantPairs) {
 	public Optional<TierUpgradeVariantPair> findBySource(ItemStack stack) {
 		return variantPairs.stream().filter(pair -> ItemStack.isSameItemSameComponents(pair.source(), stack)).findFirst();
 	}
@@ -48,16 +48,17 @@ public record TierUpgradeDisplayRecipe(Identifier id, RecipeHolder<CraftingRecip
 	}
 
 	public CraftingDisplaySpec toSpec() {
-		return new CraftingDisplaySpec(id, shapeless, width, height, ingredients, variantPairs.stream().map(this::toVariant).toList(), getGlobalVariants(), Set.of(recipeHolder.id().identifier()),
-				new SourceResultFocusBehavior(storageIngredientIndex, this::focusSource, this::focusResult));
+		return new CraftingDisplaySpec(id, shapeless, width, height, ingredients, variantPairs.stream().map(this::toVariant).toList(), getGlobalVariants(),
+				Set.of(recipeHolder.id().identifier()), new SourceResultFocusBehavior(storageIngredientIndex, this::focusSource, this::focusResult));
 	}
 
 	private List<CraftingDisplayVariant> getGlobalVariants() {
 		return variantPairs.stream()
-				.filter(pair -> StorageBlockItem.getMainColorFromComponentHolder(pair.source()).isEmpty() && StorageBlockItem.getAccentColorFromComponentHolder(pair.source()).isEmpty()
-						&& StorageBlockItem.getMainColorFromComponentHolder(pair.result()).isEmpty() && StorageBlockItem.getAccentColorFromComponentHolder(pair.result()).isEmpty())
-				.map(this::toVariant)
-				.toList();
+				.filter(pair -> StorageBlockItem.getMainColorFromComponentHolder(pair.source()).isEmpty()
+						&& StorageBlockItem.getAccentColorFromComponentHolder(pair.source()).isEmpty()
+						&& StorageBlockItem.getMainColorFromComponentHolder(pair.result()).isEmpty()
+						&& StorageBlockItem.getAccentColorFromComponentHolder(pair.result()).isEmpty())
+				.map(this::toVariant).toList();
 	}
 
 	private CraftingDisplayVariant toVariant(TierUpgradeVariantPair pair) {
@@ -74,10 +75,8 @@ public record TierUpgradeDisplayRecipe(Identifier id, RecipeHolder<CraftingRecip
 		if (exactPair.isPresent()) {
 			return exactPair.filter(pair -> ItemStack.isSameItemSameComponents(source, pair.source())).map(this::toVariant);
 		}
-		return findBySourceItem(focusedInput)
-				.filter(pair -> ItemStack.isSameItemSameComponents(source, pair.source()))
-				.map(pair -> withComponentsFromSource(pair, focusedInput))
-				.map(this::toVariant);
+		return findBySourceItem(focusedInput).filter(pair -> ItemStack.isSameItemSameComponents(source, pair.source()))
+				.map(pair -> withComponentsFromSource(pair, focusedInput)).map(this::toVariant);
 	}
 
 	private Optional<CraftingDisplayVariant> focusResult(CraftingDisplayVariant variant, ItemStack focusedOutput) {
@@ -85,10 +84,8 @@ public record TierUpgradeDisplayRecipe(Identifier id, RecipeHolder<CraftingRecip
 		if (exactPair.isPresent()) {
 			return exactPair.filter(pair -> ItemStack.isSameItemSameComponents(variant.firstOutput(), pair.result())).map(this::toVariant);
 		}
-		return findByResultItem(focusedOutput)
-				.filter(pair -> ItemStack.isSameItemSameComponents(variant.firstOutput(), pair.result()))
-				.map(pair -> withComponentsFromResult(pair, focusedOutput))
-				.map(this::toVariant);
+		return findByResultItem(focusedOutput).filter(pair -> ItemStack.isSameItemSameComponents(variant.firstOutput(), pair.result()))
+				.map(pair -> withComponentsFromResult(pair, focusedOutput)).map(this::toVariant);
 	}
 
 	private static ItemStack getSource(CraftingDisplayVariant variant) {

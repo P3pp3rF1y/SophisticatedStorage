@@ -17,7 +17,7 @@ import org.jspecify.annotations.Nullable;
 import java.util.*;
 import java.util.function.Supplier;
 
-@SuppressWarnings("java:S6548") //singleton is intended here
+@SuppressWarnings("java:S6548") // singleton is intended here
 public class StorageTextureManager extends SimpleJsonResourceReloadListener<JsonElement> {
 	public static final StorageTextureManager INSTANCE = new StorageTextureManager();
 	private static final String PARENT_TAG = "parent";
@@ -50,13 +50,11 @@ public class StorageTextureManager extends SimpleJsonResourceReloadListener<Json
 			if (type.equals("chest") && filePath.endsWith(CHEST_SUFFIX)) {
 				WoodType.values().filter(wt -> wt.name().equals(filePath.substring(0, filePath.lastIndexOf(CHEST_SUFFIX)))).findFirst().ifPresent(wt -> {
 					Map<ChestType, Map<ChestMaterial, Material>> chestMaterials = new EnumMap<>(ChestType.class);
-					definition.getTextures().forEach((chestTypeName, textures) -> textures.forEach((textureName, rl) ->
-							ChestMaterial.fromString(textureName)
-									.ifPresent(cm ->
-											chestMaterials.computeIfAbsent(ChestType.valueOf(chestTypeName.toUpperCase(Locale.ROOT)), t -> new EnumMap<>(ChestMaterial.class))
-													.put(cm, new Material(Sheets.CHEST_SHEET, rl))
-									)
-					));
+					definition.getTextures()
+							.forEach((chestTypeName, textures) -> textures.forEach((textureName, rl) -> ChestMaterial.fromString(textureName)
+									.ifPresent(cm -> chestMaterials
+											.computeIfAbsent(ChestType.valueOf(chestTypeName.toUpperCase(Locale.ROOT)), t -> new EnumMap<>(ChestMaterial.class))
+											.put(cm, new Material(Sheets.CHEST_SHEET, rl)))));
 					woodChestMaterials.put(wt, chestMaterials);
 				});
 			}
@@ -70,17 +68,19 @@ public class StorageTextureManager extends SimpleJsonResourceReloadListener<Json
 
 	@Override
 	protected void apply(Map<Identifier, JsonElement> entries, ResourceManager resourceManager, ProfilerFiller profilerFiller) {
-		//noop as everything is done in prepare due to the need to have it done before TextureStitchEvent fires
+		// noop as everything is done in prepare due to the need to have it done before TextureStitchEvent fires
 	}
 
-	@Nullable //can return null when resources are reloading and this collection was cleared
+	@Nullable // can return null when resources are reloading and this collection was cleared
 	public Map<ChestMaterial, Material> getWoodChestMaterials(ChestType chestType, WoodType woodType) {
-		Map<ChestType, Map<ChestMaterial, Material>> chestTypeMaterials = woodChestMaterials.getOrDefault(woodType, woodChestMaterials.get(defaultChestWoodType));
+		Map<ChestType, Map<ChestMaterial, Material>> chestTypeMaterials = woodChestMaterials.getOrDefault(woodType,
+				woodChestMaterials.get(defaultChestWoodType));
 		return chestTypeMaterials == null ? null : chestTypeMaterials.get(chestType);
 	}
 
-	private Optional<StorageTextureDefinition> loadDefinition(Map<Identifier, StorageTextureDefinition> storageTextureDefinitions, Identifier identifier, JsonElement json, Map<Identifier, JsonElement> fileContents) {
-		//already loaded probably because it is a parent to another definition
+	private Optional<StorageTextureDefinition> loadDefinition(Map<Identifier, StorageTextureDefinition> storageTextureDefinitions, Identifier identifier,
+			JsonElement json, Map<Identifier, JsonElement> fileContents) {
+		// already loaded probably because it is a parent to another definition
 		if (storageTextureDefinitions.containsKey(identifier)) {
 			return Optional.of(storageTextureDefinitions.get(identifier));
 		}
@@ -131,8 +131,9 @@ public class StorageTextureManager extends SimpleJsonResourceReloadListener<Json
 		private final Map<String, Map<String, Map<String, Identifier>>> textures;
 
 		@SuppressWarnings({"unused", "java:S1172"})
-		//ignoring unused parameter bNatcause it's needed due to two constructors with the same erasure
-		public StorageTextureDefinition(String type, Map<String, Map<String, Map<String, Identifier>>> multiplePartTextures, boolean multipleTextureIgnoredParameter) {
+		// ignoring unused parameter bNatcause it's needed due to two constructors with the same erasure
+		public StorageTextureDefinition(String type, Map<String, Map<String, Map<String, Identifier>>> multiplePartTextures,
+				boolean multipleTextureIgnoredParameter) {
 			this.type = type;
 			textures = multiplePartTextures;
 		}
@@ -171,13 +172,11 @@ public class StorageTextureManager extends SimpleJsonResourceReloadListener<Json
 			if (jsonContents.has(TEXTURES_TAG) && jsonContents.get(TEXTURES_TAG).isJsonObject()) {
 				JsonObject jsonTextures = jsonContents.get(TEXTURES_TAG).getAsJsonObject();
 
-				jsonTextures.keySet().forEach(name ->
-						jsonTextures.get(name).getAsJsonObject().entrySet().forEach(entry -> {
-							if (entry.getValue().isJsonPrimitive()) {
-								textures.computeIfAbsent(name, k -> new HashMap<>()).put(entry.getKey(), Identifier.parse(entry.getValue().getAsString()));
-							}
-						})
-				);
+				jsonTextures.keySet().forEach(name -> jsonTextures.get(name).getAsJsonObject().entrySet().forEach(entry -> {
+					if (entry.getValue().isJsonPrimitive()) {
+						textures.computeIfAbsent(name, k -> new HashMap<>()).put(entry.getKey(), Identifier.parse(entry.getValue().getAsString()));
+					}
+				}));
 			}
 
 			return Optional.of(new StorageTextureDefinition(type, textures));
@@ -185,16 +184,7 @@ public class StorageTextureManager extends SimpleJsonResourceReloadListener<Json
 	}
 
 	public enum ChestMaterial {
-		BASE,
-		WOOD_TIER,
-		COPPER_TIER,
-		IRON_TIER,
-		GOLD_TIER,
-		DIAMOND_TIER,
-		NETHERITE_TIER,
-		TINTABLE_MAIN,
-		TINTABLE_ACCENT,
-		PACKED;
+		BASE, WOOD_TIER, COPPER_TIER, IRON_TIER, GOLD_TIER, DIAMOND_TIER, NETHERITE_TIER, TINTABLE_MAIN, TINTABLE_ACCENT, PACKED;
 
 		public static Optional<ChestMaterial> fromString(String materialName) {
 			for (ChestMaterial value : values()) {

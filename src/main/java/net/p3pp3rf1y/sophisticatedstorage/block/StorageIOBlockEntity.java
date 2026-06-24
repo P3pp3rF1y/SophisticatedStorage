@@ -147,7 +147,8 @@ public class StorageIOBlockEntity extends BlockEntity implements IControllerBoun
 			if (isLinked()) {
 				unlinkFromController();
 			} else {
-				getControllerPos().flatMap(p -> WorldHelper.getBlockEntity(level, p, ControllerBlockEntityBase.class)).ifPresent(c -> c.removeNonConnectingBlock(getBlockPos()));
+				getControllerPos().flatMap(p -> WorldHelper.getBlockEntity(level, p, ControllerBlockEntityBase.class))
+						.ifPresent(c -> c.removeNonConnectingBlock(getBlockPos()));
 				removeControllerPos();
 			}
 		}
@@ -226,27 +227,22 @@ public class StorageIOBlockEntity extends BlockEntity implements IControllerBoun
 	}
 
 	@Nullable
-	@SuppressWarnings("java:S1640") //can't use EnumMap because one of keys is null
+	@SuppressWarnings("java:S1640") // can't use EnumMap because one of keys is null
 	public ResourceHandler<ItemResource> getExternalItemResourceHandler(@Nullable Direction side) {
 		if (getControllerPos().isEmpty()) {
 			return null;
 		}
 
 		if (controllerItemHandlerCache == null && level instanceof ServerLevel serverLevel) {
-			controllerItemHandlerCache = BlockCapabilityCache.create(
-					Capabilities.Item.BLOCK,
-					serverLevel,
-					getControllerPos().get(),
-					side,
-					() -> !isRemoved(),
-					this::invalidateItemHandlerCache
-			);
+			controllerItemHandlerCache = BlockCapabilityCache.create(Capabilities.Item.BLOCK, serverLevel, getControllerPos().get(), side, () -> !isRemoved(),
+					this::invalidateItemHandlerCache);
 		}
 
 		if (controllerItemHandlerCache != null) {
 			return controllerItemHandlerCache.getCapability();
 		} else {
-			return WorldHelper.getBlockEntity(getLevel(), getControllerPos().get(), ControllerBlockEntity.class).map(c -> c.getExternalItemResourceHandler()).orElse(null);
+			return WorldHelper.getBlockEntity(getLevel(), getControllerPos().get(), ControllerBlockEntity.class)
+					.map(ControllerBlockEntity::getExternalItemResourceHandler).orElse(null);
 		}
 	}
 

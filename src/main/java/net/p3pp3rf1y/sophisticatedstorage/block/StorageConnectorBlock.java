@@ -21,12 +21,13 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.TranslationHelper;
 import net.p3pp3rf1y.sophisticatedcore.controller.IControllerBoundable;
 import net.p3pp3rf1y.sophisticatedcore.util.BlockBase;
+import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import org.jspecify.annotations.Nullable;
-import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 
 public class StorageConnectorBlock extends BlockBase implements EntityBlock {
-	public static final String TOOLTIP_TRANSLATION_KEY = Util.makeDescriptionId("block", SophisticatedStorage.getIdentifier("storage_connector")) + TranslationHelper.TOOLTIP_SUFFIX;
+	public static final String TOOLTIP_TRANSLATION_KEY = Util.makeDescriptionId("block", SophisticatedStorage.getIdentifier("storage_connector"))
+			+ TranslationHelper.TOOLTIP_SUFFIX;
 
 	public StorageConnectorBlock(Properties properties) {
 		super(properties.mapColor(MapColor.WOOD).strength(2.5F).sound(SoundType.WOOD));
