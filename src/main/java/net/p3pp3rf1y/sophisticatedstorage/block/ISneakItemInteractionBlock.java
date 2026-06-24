@@ -10,5 +10,6 @@ import net.minecraft.world.phys.BlockHitResult;
 
 public interface ISneakItemInteractionBlock {
 
-	boolean trySneakItemInteraction(Player player, InteractionHand hand, BlockState state, Level level, BlockPos pos, BlockHitResult hitVec, ItemStack itemInHand);
+	boolean trySneakItemInteraction(Player player, InteractionHand hand, BlockState state, Level level, BlockPos pos, BlockHitResult hitVec,
+			ItemStack itemInHand);
 }

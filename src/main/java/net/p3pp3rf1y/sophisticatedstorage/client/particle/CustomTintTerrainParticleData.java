@@ -31,17 +31,11 @@ public class CustomTintTerrainParticleData extends ParticleType<CustomTintTerrai
 		return ModParticles.TERRAIN_PARTICLE.get();
 	}
 
-	private final MapCodec<CustomTintTerrainParticleData> codec = RecordCodecBuilder.mapCodec(
-			particleDataInstance -> particleDataInstance.group(
-					BlockState.CODEC.fieldOf("state").forGetter(data -> data.state),
-					BlockPos.CODEC.fieldOf("pos").forGetter(data -> data.pos)
-			).apply(particleDataInstance, CustomTintTerrainParticleData::new));
-	private final StreamCodec<RegistryFriendlyByteBuf, CustomTintTerrainParticleData> streamCodec = StreamCodec.composite(
-			StreamCodecHelper.BLOCKSTATE,
-			CustomTintTerrainParticleData::getState,
-			BlockPos.STREAM_CODEC,
-			CustomTintTerrainParticleData::getPos,
-			CustomTintTerrainParticleData::new);
+	private final MapCodec<CustomTintTerrainParticleData> codec = RecordCodecBuilder.mapCodec(particleDataInstance -> particleDataInstance
+			.group(BlockState.CODEC.fieldOf("state").forGetter(data -> data.state), BlockPos.CODEC.fieldOf("pos").forGetter(data -> data.pos))
+			.apply(particleDataInstance, CustomTintTerrainParticleData::new));
+	private final StreamCodec<RegistryFriendlyByteBuf, CustomTintTerrainParticleData> streamCodec = StreamCodec.composite(StreamCodecHelper.BLOCKSTATE,
+			CustomTintTerrainParticleData::getState, BlockPos.STREAM_CODEC, CustomTintTerrainParticleData::getPos, CustomTintTerrainParticleData::new);
 
 	@Override
 	public MapCodec<CustomTintTerrainParticleData> codec() {

@@ -34,22 +34,20 @@ import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.util.DecorationHelper;
 
 import javax.annotation.Nullable;
+
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class DecorationTableBlockEntity extends BlockEntity implements Clearable {
 	public enum MaterialLayout {
-		NONE,
-		SINGLE,
-		BARREL
+		NONE, SINGLE, BARREL
 	}
 
-	private static final Codec<Map<PartSlot, Boolean>> SLOT_INHERITANCE_CODEC =
-			Codec.unboundedMap(PartSlot.CODEC, Codec.BOOL);
+	private static final Codec<Map<PartSlot, Boolean>> SLOT_INHERITANCE_CODEC = Codec.unboundedMap(PartSlot.CODEC, Codec.BOOL);
 
-	private static final Codec<Map<ResourceLocation, Integer>> REMAINING_PARTS_CODEC =
-			Codec.simpleMap(ResourceLocation.CODEC, Codec.INT, StringRepresentable.keys(PartSlot.values())).codec();
+	private static final Codec<Map<ResourceLocation, Integer>> REMAINING_PARTS_CODEC = Codec
+			.simpleMap(ResourceLocation.CODEC, Codec.INT, StringRepresentable.keys(PartSlot.values())).codec();
 
 	public static final int TOP_INNER_TRIM_SLOT = 0;
 	public static final int TOP_TRIM_SLOT = 1;
@@ -61,8 +59,10 @@ public class DecorationTableBlockEntity extends BlockEntity implements Clearable
 	public static final int RED_DYE_SLOT = 0;
 	public static final int GREEN_DYE_SLOT = 1;
 	public static final int BLUE_DYE_SLOT = 2;
-	public static final Set<Item> STORAGES_WIHOUT_TOP_INNER_TRIM = Set.of(ModBlocks.BARREL_ITEM.get(), ModBlocks.COPPER_BARREL_ITEM.get(), ModBlocks.IRON_BARREL_ITEM.get(), ModBlocks.GOLD_BARREL_ITEM.get(), ModBlocks.DIAMOND_BARREL_ITEM.get(), ModBlocks.NETHERITE_BARREL_ITEM.get(),
-			ModBlocks.LIMITED_BARREL_1_ITEM.get(), ModBlocks.LIMITED_COPPER_BARREL_1_ITEM.get(), ModBlocks.LIMITED_IRON_BARREL_1_ITEM.get(), ModBlocks.LIMITED_GOLD_BARREL_1_ITEM.get(), ModBlocks.LIMITED_DIAMOND_BARREL_1_ITEM.get(), ModBlocks.LIMITED_NETHERITE_BARREL_1_ITEM.get());
+	public static final Set<Item> STORAGES_WIHOUT_TOP_INNER_TRIM = Set.of(ModBlocks.BARREL_ITEM.get(), ModBlocks.COPPER_BARREL_ITEM.get(),
+			ModBlocks.IRON_BARREL_ITEM.get(), ModBlocks.GOLD_BARREL_ITEM.get(), ModBlocks.DIAMOND_BARREL_ITEM.get(), ModBlocks.NETHERITE_BARREL_ITEM.get(),
+			ModBlocks.LIMITED_BARREL_1_ITEM.get(), ModBlocks.LIMITED_COPPER_BARREL_1_ITEM.get(), ModBlocks.LIMITED_IRON_BARREL_1_ITEM.get(),
+			ModBlocks.LIMITED_GOLD_BARREL_1_ITEM.get(), ModBlocks.LIMITED_DIAMOND_BARREL_1_ITEM.get(), ModBlocks.LIMITED_NETHERITE_BARREL_1_ITEM.get());
 
 	private static final Map<Predicate<ItemStack>, IItemDecorator> ITEM_DECORATORS = new LinkedHashMap<>();
 
@@ -258,8 +258,8 @@ public class DecorationTableBlockEntity extends BlockEntity implements Clearable
 			return missingDyes;
 		}
 
-		Map<ResourceLocation, Integer> partsNeeded =
-				requiredDyeParts.entrySet().stream().map(entry -> Map.entry(entry.getKey().location(), entry.getValue())).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+		Map<ResourceLocation, Integer> partsNeeded = requiredDyeParts.entrySet().stream().map(entry -> Map.entry(entry.getKey().location(), entry.getValue()))
+				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
 		for (Map.Entry<ResourceLocation, Integer> entry : partsNeeded.entrySet()) {
 			if (entry.getKey().equals(Tags.Items.DYES_RED.location()) && dyes.getStackInSlot(RED_DYE_SLOT).isEmpty()) {
@@ -282,9 +282,12 @@ public class DecorationTableBlockEntity extends BlockEntity implements Clearable
 	}
 
 	private void setMaterialsFromDecorativeBlocks(Map<BarrelMaterial, ResourceLocation> materials, boolean supportsInnerTrim) {
-		ResourceLocation topInnerTrimMaterialLocation = setMaterialFromBlock(PartSlot.TOP_INNER_TRIM, null, materials, BarrelMaterial.TOP_INNER_TRIM, supportsInnerTrim);
-		ResourceLocation topTrimMaterialLocation = setMaterialFromBlock(PartSlot.TOP_TRIM, topInnerTrimMaterialLocation, materials, BarrelMaterial.TOP_TRIM, true);
-		ResourceLocation sideTrimMaterialLocation = setMaterialFromBlock(PartSlot.SIDE_TRIM, topTrimMaterialLocation, materials, BarrelMaterial.SIDE_TRIM, true);
+		ResourceLocation topInnerTrimMaterialLocation = setMaterialFromBlock(PartSlot.TOP_INNER_TRIM, null, materials, BarrelMaterial.TOP_INNER_TRIM,
+				supportsInnerTrim);
+		ResourceLocation topTrimMaterialLocation = setMaterialFromBlock(PartSlot.TOP_TRIM, topInnerTrimMaterialLocation, materials, BarrelMaterial.TOP_TRIM,
+				true);
+		ResourceLocation sideTrimMaterialLocation = setMaterialFromBlock(PartSlot.SIDE_TRIM, topTrimMaterialLocation, materials, BarrelMaterial.SIDE_TRIM,
+				true);
 		setMaterialFromBlock(PartSlot.BOTTOM_TRIM, sideTrimMaterialLocation, materials, BarrelMaterial.BOTTOM_TRIM, true);
 		ResourceLocation topMaterialLocation = setMaterialFromBlock(PartSlot.TOP_CORE, topTrimMaterialLocation, materials, BarrelMaterial.TOP, true);
 		ResourceLocation sideMaterialLocation = setMaterialFromBlock(PartSlot.SIDE_CORE, topMaterialLocation, materials, BarrelMaterial.SIDE, true);
@@ -292,9 +295,11 @@ public class DecorationTableBlockEntity extends BlockEntity implements Clearable
 	}
 
 	@Nullable
-	private ResourceLocation setMaterialFromBlock(PartSlot slot, @Nullable ResourceLocation defaultMaterialLocation, Map<BarrelMaterial, ResourceLocation> materials, BarrelMaterial material, boolean addToMaterials) {
+	private ResourceLocation setMaterialFromBlock(PartSlot slot, @Nullable ResourceLocation defaultMaterialLocation,
+			Map<BarrelMaterial, ResourceLocation> materials, BarrelMaterial material, boolean addToMaterials) {
 		ItemStack decorativeBlock = decorativeBlocks.getStackInSlot(slot.getSlotIndex());
-		ResourceLocation materialLocation = DecorationHelper.getMaterialLocation(decorativeBlock).orElse(isSlotMaterialInherited(slot) ? defaultMaterialLocation : null);
+		ResourceLocation materialLocation = DecorationHelper.getMaterialLocation(decorativeBlock)
+				.orElse(isSlotMaterialInherited(slot) ? defaultMaterialLocation : null);
 		if (materialLocation != null) {
 			if (addToMaterials) {
 				materials.put(material, materialLocation);
@@ -450,9 +455,11 @@ public class DecorationTableBlockEntity extends BlockEntity implements Clearable
 				DecorationHelper.consumeDyePartsNeeded(decorateWithTints(itemDecorator, input).requiredDyeParts(), List.of(dyes), this.remainingParts, false);
 			} else if (hasMaterials && materialLayout == MaterialLayout.BARREL) {
 				Map<BarrelMaterial, ResourceLocation> originalMaterials = BarrelBlockItem.getUncompactedMaterials(input);
-				DecorationHelper.consumeMaterials(this.remainingParts, List.of(decorativeBlocks), originalMaterials, getMaterialsToApply(!STORAGES_WIHOUT_TOP_INNER_TRIM.contains(input.getItem())), false);
+				DecorationHelper.consumeMaterials(this.remainingParts, List.of(decorativeBlocks), originalMaterials,
+						getMaterialsToApply(!STORAGES_WIHOUT_TOP_INNER_TRIM.contains(input.getItem())), false);
 			} else if (hasMaterials && materialLayout == MaterialLayout.SINGLE) {
-				getSingleMaterialToApply().ifPresent(material -> DecorationHelper.consumeSimpleMaterial(this.remainingParts, List.of(decorativeBlocks), SimpleMaterialBlockItem.getMaterial(input), material, false));
+				getSingleMaterialToApply().ifPresent(material -> DecorationHelper.consumeSimpleMaterial(this.remainingParts, List.of(decorativeBlocks),
+						SimpleMaterialBlockItem.getMaterial(input), material, false));
 			}
 
 			setChanged();
@@ -466,14 +473,16 @@ public class DecorationTableBlockEntity extends BlockEntity implements Clearable
 		ItemStack storageStack = storageBlock.getStackInSlot(0);
 		MaterialLayout materialLayout = getMaterialLayout();
 		Optional<IItemDecorator> itemDecorator = getItemDecorator(storageStack);
-		if ((!hasMaterials() || materialLayout == MaterialLayout.NONE) && itemDecorator.map(decorator -> supportsAnyTint(decorator, storageStack)).orElse(false)) {
-			itemDecorator.map(decorator -> decorateWithTints(decorator, storageStack).requiredDyeParts())
-					.orElse(Collections.emptyMap())
+		if ((!hasMaterials() || materialLayout == MaterialLayout.NONE)
+				&& itemDecorator.map(decorator -> supportsAnyTint(decorator, storageStack)).orElse(false)) {
+			itemDecorator.map(decorator -> decorateWithTints(decorator, storageStack).requiredDyeParts()).orElse(Collections.emptyMap())
 					.forEach((tag, parts) -> partsNeeded.put(tag.location(), parts));
 		} else if (materialLayout == MaterialLayout.BARREL) {
-			partsNeeded.putAll(DecorationHelper.getMaterialPartsNeeded(BarrelBlockItem.getUncompactedMaterials(storageStack), getMaterialsToApply(!STORAGES_WIHOUT_TOP_INNER_TRIM.contains(storageStack.getItem()))));
+			partsNeeded.putAll(DecorationHelper.getMaterialPartsNeeded(BarrelBlockItem.getUncompactedMaterials(storageStack),
+					getMaterialsToApply(!STORAGES_WIHOUT_TOP_INNER_TRIM.contains(storageStack.getItem()))));
 		} else if (materialLayout == MaterialLayout.SINGLE) {
-			getSingleMaterialToApply().ifPresent(material -> partsNeeded.putAll(DecorationHelper.getSimpleMaterialPartsNeeded(SimpleMaterialBlockItem.getMaterial(storageStack), material)));
+			getSingleMaterialToApply().ifPresent(
+					material -> partsNeeded.putAll(DecorationHelper.getSimpleMaterialPartsNeeded(SimpleMaterialBlockItem.getMaterial(storageStack), material)));
 		}
 
 		return partsNeeded;
@@ -484,7 +493,8 @@ public class DecorationTableBlockEntity extends BlockEntity implements Clearable
 	}
 
 	private boolean isValidDecorativeBlock(ItemStack stack) {
-		return stack.getItem() instanceof BlockItem blockItem && !(stack.getItem() instanceof StorageBlockItem) && Block.isShapeFullBlock(blockItem.getBlock().defaultBlockState().getShape(level, BlockPos.ZERO));
+		return stack.getItem() instanceof BlockItem blockItem && !(stack.getItem() instanceof StorageBlockItem)
+				&& Block.isShapeFullBlock(blockItem.getBlock().defaultBlockState().getShape(level, BlockPos.ZERO));
 	}
 
 	private Map<BarrelMaterial, ResourceLocation> getMaterialsToApply(boolean supportsInnerTrim) {
@@ -591,7 +601,8 @@ public class DecorationTableBlockEntity extends BlockEntity implements Clearable
 	}
 
 	private static boolean colorsTransparentOrSameAs(ItemStack storage, int mainColorToSet, int accentColorToSet) {
-		return (mainColorToSet == -1 || mainColorToSet == StorageBlockItem.getMainColorFromComponentHolder(storage).orElse(-1)) && (accentColorToSet == -1 || accentColorToSet == StorageBlockItem.getAccentColorFromComponentHolder(storage).orElse(-1));
+		return (mainColorToSet == -1 || mainColorToSet == StorageBlockItem.getMainColorFromComponentHolder(storage).orElse(-1))
+				&& (accentColorToSet == -1 || accentColorToSet == StorageBlockItem.getAccentColorFromComponentHolder(storage).orElse(-1));
 	}
 
 	public static final IItemDecorator STORAGE_DECORATOR = new IItemDecorator() {
@@ -658,7 +669,8 @@ public class DecorationTableBlockEntity extends BlockEntity implements Clearable
 				}
 			}
 
-			return new TintDecorationResult(result, calculateRequiredDyes(mainColorToSet, accentColorToSet, StorageBlockItem.getMainColorFromComponentHolder(input).orElse(-1), StorageBlockItem.getAccentColorFromComponentHolder(input).orElse(-1)));
+			return new TintDecorationResult(result, calculateRequiredDyes(mainColorToSet, accentColorToSet,
+					StorageBlockItem.getMainColorFromComponentHolder(input).orElse(-1), StorageBlockItem.getAccentColorFromComponentHolder(input).orElse(-1)));
 
 		}
 	};
@@ -745,7 +757,8 @@ public class DecorationTableBlockEntity extends BlockEntity implements Clearable
 
 			@Override
 			public TintDecorationResult decorateWithTints(ItemStack input, int mainColorToSet, int accentColorToSet) {
-				if ((mainColorToSet == -1 && accentColorToSet == -1) || (mainColorToSet == PaintbrushItem.getMainColor(input) && accentColorToSet == PaintbrushItem.getAccentColor(input))) {
+				if ((mainColorToSet == -1 && accentColorToSet == -1)
+						|| (mainColorToSet == PaintbrushItem.getMainColor(input) && accentColorToSet == PaintbrushItem.getAccentColor(input))) {
 					return TintDecorationResult.EMPTY;
 				}
 
@@ -766,7 +779,8 @@ public class DecorationTableBlockEntity extends BlockEntity implements Clearable
 					return List.of(new ItemStack(ModBlocks.LIMITED_BARREL_3_ITEM.get()));
 				}
 
-				return List.of(new ItemStack(ModBlocks.LIMITED_BARREL_3_ITEM.get()), new ItemStack(ModBlocks.CHEST_ITEM.get()), new ItemStack(ModBlocks.SHULKER_BOX_ITEM.get()));
+				return List.of(new ItemStack(ModBlocks.LIMITED_BARREL_3_ITEM.get()), new ItemStack(ModBlocks.CHEST_ITEM.get()),
+						new ItemStack(ModBlocks.SHULKER_BOX_ITEM.get()));
 			}
 		});
 		ITEM_DECORATORS.put(stack -> stack.is(ItemTags.DYEABLE), new IItemDecorator() {
@@ -803,7 +817,8 @@ public class DecorationTableBlockEntity extends BlockEntity implements Clearable
 				}
 
 				ItemStack result = input.copyWithCount(1);
-				result.set(DataComponents.DYED_COLOR, new DyedItemColor(ARGB.color(0, ARGB.red(mainColorToSet), ARGB.green(mainColorToSet), ARGB.blue(mainColorToSet))));
+				result.set(DataComponents.DYED_COLOR,
+						new DyedItemColor(ARGB.color(0, ARGB.red(mainColorToSet), ARGB.green(mainColorToSet), ARGB.blue(mainColorToSet))));
 
 				return new TintDecorationResult(result, DecorationHelper.getDyePartsNeeded(mainColorToSet, -1, currentColor, -1, 24, 0));
 			}
@@ -811,13 +826,9 @@ public class DecorationTableBlockEntity extends BlockEntity implements Clearable
 	}
 
 	public enum PartSlot implements StringRepresentable {
-		TOP_INNER_TRIM("top_inner_trim", TOP_INNER_TRIM_SLOT),
-		TOP_TRIM("top_trim", TOP_TRIM_SLOT),
-		SIDE_TRIM("side_trim", SIDE_TRIM_SLOT),
-		BOTTOM_TRIM("bottom_trim", BOTTOM_TRIM_SLOT),
-		TOP_CORE("top_core", TOP_CORE_SLOT),
-		SIDE_CORE("side_core", SIDE_CORE_SLOT),
-		BOTTOM_CORE("bottom_core", BOTTOM_CORE_SLOT);
+		TOP_INNER_TRIM("top_inner_trim", TOP_INNER_TRIM_SLOT), TOP_TRIM("top_trim", TOP_TRIM_SLOT), SIDE_TRIM("side_trim", SIDE_TRIM_SLOT), BOTTOM_TRIM(
+				"bottom_trim",
+				BOTTOM_TRIM_SLOT), TOP_CORE("top_core", TOP_CORE_SLOT), SIDE_CORE("side_core", SIDE_CORE_SLOT), BOTTOM_CORE("bottom_core", BOTTOM_CORE_SLOT);
 
 		private final String name;
 		private final int slotIndex;
@@ -829,9 +840,9 @@ public class DecorationTableBlockEntity extends BlockEntity implements Clearable
 			this.slotIndex = slotIndex;
 		}
 
-		private static final Map<String, PartSlot> NAME_VALUES = Arrays.stream(PartSlot.values())
+		private static final Map<String, PartSlot> NAME_VALUES = Arrays.stream(values())
 				.collect(Collectors.toMap(PartSlot::getSerializedName, partSlot -> partSlot));
-		private static final Map<Integer, PartSlot> INDEX_VALUES = Arrays.stream(PartSlot.values())
+		private static final Map<Integer, PartSlot> INDEX_VALUES = Arrays.stream(values())
 				.collect(Collectors.toMap(PartSlot::getSlotIndex, partSlot -> partSlot));
 
 		public static PartSlot fromName(String name) {

@@ -17,7 +17,7 @@ public class ClientStorageContentsTooltip extends ClientStorageContentsTooltipBa
 	private final ItemStack storageItem;
 
 	@SuppressWarnings("unused")
-	//parameter needs to be there so that addListener logic would know which event this method listens to
+	// parameter needs to be there so that addListener logic would know which event this method listens to
 	public static void onWorldLoad(LevelEvent.Load event) {
 		refreshContents();
 		lastRequestTime = 0;
@@ -25,7 +25,7 @@ public class ClientStorageContentsTooltip extends ClientStorageContentsTooltipBa
 
 	@Override
 	public void renderImage(Font font, int x, int y, int width, int height, GuiGraphics guiGraphics) {
-		//noinspection DataFlowIssue - level definitely exists here
+		// noinspection DataFlowIssue - level definitely exists here
 		renderTooltip(StackStorageWrapper.fromStack(Minecraft.getInstance().level.registryAccess(), storageItem), font, x, y, guiGraphics);
 	}
 

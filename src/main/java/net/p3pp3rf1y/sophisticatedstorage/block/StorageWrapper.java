@@ -29,6 +29,7 @@ import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.settings.StorageSettingsHandler;
 
 import javax.annotation.Nullable;
+
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -82,7 +83,8 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 		this(getSaveHandler, onSerializeRenderInfo, markContentsDirty, 1, false);
 	}
 
-	protected StorageWrapper(Supplier<Runnable> getSaveHandler, Runnable onSerializeRenderInfo, Runnable markContentsDirty, int numberOfDisplayItems, boolean showsCountsAndFillRatios) {
+	protected StorageWrapper(Supplier<Runnable> getSaveHandler, Runnable onSerializeRenderInfo, Runnable markContentsDirty, int numberOfDisplayItems,
+			boolean showsCountsAndFillRatios) {
 		this.getSaveHandler = getSaveHandler;
 		renderInfo = new RenderInfo(getSaveHandler, showsCountsAndFillRatios) {
 			@Override
@@ -125,7 +127,8 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 				}
 				getInventoryHandler().addListener(getSettingsHandler().getTypeCategory(ItemDisplaySettingsCategory.class)::itemChanged);
 				refreshInventoryForInputOutput();
-				getSettingsHandler().getTypeCategory(ItemDisplaySettingsCategory.class).itemsChanged(); //in case stack upgrade changed need to send updated fill ratios to client
+				getSettingsHandler().getTypeCategory(ItemDisplaySettingsCategory.class).itemsChanged(); // in case stack upgrade changed need to send updated
+																										// fill ratios to client
 			}) {
 				@Override
 				public boolean isItemValid(int slot, ItemStack stack) {
@@ -145,8 +148,9 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 		return handler;
 	}
 
-	private <T extends IUpgradeWrapper> void registerUpgradeDefaultsHandlerInUpgradeHandler(Class<T> wrapperClass, Consumer<? extends IUpgradeWrapper> defaultsHandler) {
-		//noinspection DataFlowIssue, unchecked - only called after upgradeHandler is initialized
+	private <T extends IUpgradeWrapper> void registerUpgradeDefaultsHandlerInUpgradeHandler(Class<T> wrapperClass,
+			Consumer<? extends IUpgradeWrapper> defaultsHandler) {
+		// noinspection DataFlowIssue, unchecked - only called after upgradeHandler is initialized
 		upgradeHandler.registerUpgradeDefaultsHandler(wrapperClass, (Consumer<T>) defaultsHandler);
 	}
 
@@ -264,16 +268,15 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 	}
 
 	private void loadContents(ValueInput in) {
-		in.read(CONTENTS_TAG, CompoundTag.CODEC)
-				.ifPresent(contents -> {
-					contentsNbt = contents;
-					onContentsNbtUpdated();
-				});
+		in.read(CONTENTS_TAG, CompoundTag.CODEC).ifPresent(contents -> {
+			contentsNbt = contents;
+			onContentsNbtUpdated();
+		});
 	}
 
 	@Override
 	public void setContentsChangeHandler(Runnable contentsChangeHandler) {
-		//noop
+		// noop
 	}
 
 	@Override
@@ -291,7 +294,8 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 	}
 
 	private InventoryHandler initInventoryHandler() {
-		InventoryHandler handler = new InventoryHandler(getNumberOfInventorySlots(), this, getContentsNbt(), getSaveHandler.get(), StackUpgradeItem.getInventorySlotLimit(this), Config.SERVER.stackUpgrade) {
+		InventoryHandler handler = new InventoryHandler(getNumberOfInventorySlots(), this, getContentsNbt(), getSaveHandler.get(),
+				StackUpgradeItem.getInventorySlotLimit(this), Config.SERVER.stackUpgrade) {
 			@Override
 			protected boolean isAllowed(ItemStack stack) {
 				return isAllowedInStorage(stack);
@@ -452,12 +456,12 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 
 	@Override
 	public void setPersistent(boolean persistent) {
-		//noop
+		// noop
 	}
 
 	@Override
 	public void fillWithLoot(Player playerEntity) {
-		//noop
+		// noop
 	}
 
 	@Override

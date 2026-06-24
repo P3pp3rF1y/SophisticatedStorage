@@ -108,12 +108,10 @@ public class ClientEventHandler {
 	}
 
 	private static void registerSpecialBlockModelRenderers(RegisterSpecialBlockModelRendererEvent event) {
-		ModBlocks.BLOCKS.getEntries().stream()
-				.filter(b -> b.get() instanceof ChestBlock)
+		ModBlocks.BLOCKS.getEntries().stream().filter(b -> b.get() instanceof ChestBlock)
 				.forEach(b -> event.register(b.get(), new ChestItemRenderer.Unbaked()));
 
-		ModBlocks.BLOCKS.getEntries().stream()
-				.filter(b -> b.get() instanceof ShulkerBoxBlock)
+		ModBlocks.BLOCKS.getEntries().stream().filter(b -> b.get() instanceof ShulkerBoxBlock)
 				.forEach(b -> event.register(b.get(), new ShulkerBoxItemRenderer.Unbaked()));
 	}
 
@@ -137,8 +135,9 @@ public class ClientEventHandler {
 			if (!blockState.isAir() && level.getWorldBorder().isWithinBounds(otherPos)) {
 				VertexConsumer vertexConsumer = event.getMultiBufferSource().getBuffer(RenderType.lines());
 				Vec3 cameraPos = event.getCamera().getPosition();
-				ShapeRenderer.renderShape(event.getPoseStack(), vertexConsumer, blockState.getShape(level, otherPos, CollisionContext.of(event.getCamera().getEntity())),
-						otherPos.getX() - cameraPos.x, otherPos.getY() - cameraPos.y, otherPos.getZ() - cameraPos.z, ARGB.colorFromFloat(0.4F, 0, 0, 0));
+				ShapeRenderer.renderShape(event.getPoseStack(), vertexConsumer,
+						blockState.getShape(level, otherPos, CollisionContext.of(event.getCamera().getEntity())), otherPos.getX() - cameraPos.x,
+						otherPos.getY() - cameraPos.y, otherPos.getZ() - cameraPos.z, ARGB.colorFromFloat(0.4F, 0, 0, 0));
 			}
 		}
 
@@ -148,7 +147,8 @@ public class ClientEventHandler {
 			BlockPos pos = hitresult.getBlockPos();
 			BlockState blockState = level.getBlockState(pos);
 
-			if (blockState.getBlock() instanceof StorageBlockBase || blockState.getBlock() == ModBlocks.CONTROLLER.get() || level.getBlockEntity(pos) instanceof ISimpleMaterialHolder) {
+			if (blockState.getBlock() instanceof StorageBlockBase || blockState.getBlock() == ModBlocks.CONTROLLER.get()
+					|| level.getBlockEntity(pos) instanceof ISimpleMaterialHolder) {
 				PaintbrushOverlay.getItemRequirementsFor(stack, player, level, pos).ifPresent(itemRequirements -> {
 					float red = !itemRequirements.itemsMissing().isEmpty() ? 1 : 0;
 					float green = itemRequirements.itemsMissing().isEmpty() ? 1 : 0;
@@ -232,8 +232,10 @@ public class ClientEventHandler {
 	}
 
 	private static void registerOverlay(RegisterGuiLayersEvent event) {
-		event.registerAbove(VanillaGuiLayers.HOTBAR, ResourceLocation.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "storage_tool_info"), ToolInfoOverlay.HUD_TOOL_INFO);
-		event.registerAbove(VanillaGuiLayers.HOTBAR, ResourceLocation.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "paintbrush_info"), PaintbrushOverlay.HUD_PAINTBRUSH_INFO);
+		event.registerAbove(VanillaGuiLayers.HOTBAR, ResourceLocation.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "storage_tool_info"),
+				ToolInfoOverlay.HUD_TOOL_INFO);
+		event.registerAbove(VanillaGuiLayers.HOTBAR, ResourceLocation.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "paintbrush_info"),
+				PaintbrushOverlay.HUD_PAINTBRUSH_INFO);
 	}
 
 	private static void registerEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {
@@ -251,13 +253,16 @@ public class ClientEventHandler {
 	}
 
 	private static void registerStorageClientExtensions(RegisterClientExtensionsEvent event) {
-		registerBarrelClientExtensions(event,
-				ModBlocks.BARREL.get(), ModBlocks.COPPER_BARREL.get(), ModBlocks.IRON_BARREL.get(), ModBlocks.GOLD_BARREL.get(), ModBlocks.DIAMOND_BARREL.get(), ModBlocks.NETHERITE_BARREL.get(),
-				ModBlocks.LIMITED_BARREL_1.get(), ModBlocks.LIMITED_COPPER_BARREL_1.get(), ModBlocks.LIMITED_IRON_BARREL_1.get(), ModBlocks.LIMITED_GOLD_BARREL_1.get(), ModBlocks.LIMITED_DIAMOND_BARREL_1.get(), ModBlocks.LIMITED_NETHERITE_BARREL_1.get(),
-				ModBlocks.LIMITED_BARREL_2.get(), ModBlocks.LIMITED_COPPER_BARREL_2.get(), ModBlocks.LIMITED_IRON_BARREL_2.get(), ModBlocks.LIMITED_GOLD_BARREL_2.get(), ModBlocks.LIMITED_DIAMOND_BARREL_2.get(), ModBlocks.LIMITED_NETHERITE_BARREL_2.get(),
-				ModBlocks.LIMITED_BARREL_3.get(), ModBlocks.LIMITED_COPPER_BARREL_3.get(), ModBlocks.LIMITED_IRON_BARREL_3.get(), ModBlocks.LIMITED_GOLD_BARREL_3.get(), ModBlocks.LIMITED_DIAMOND_BARREL_3.get(), ModBlocks.LIMITED_NETHERITE_BARREL_3.get(),
-				ModBlocks.LIMITED_BARREL_4.get(), ModBlocks.LIMITED_COPPER_BARREL_4.get(), ModBlocks.LIMITED_IRON_BARREL_4.get(), ModBlocks.LIMITED_GOLD_BARREL_4.get(), ModBlocks.LIMITED_DIAMOND_BARREL_4.get(), ModBlocks.LIMITED_NETHERITE_BARREL_4.get()
-		);
+		registerBarrelClientExtensions(event, ModBlocks.BARREL.get(), ModBlocks.COPPER_BARREL.get(), ModBlocks.IRON_BARREL.get(), ModBlocks.GOLD_BARREL.get(),
+				ModBlocks.DIAMOND_BARREL.get(), ModBlocks.NETHERITE_BARREL.get(), ModBlocks.LIMITED_BARREL_1.get(), ModBlocks.LIMITED_COPPER_BARREL_1.get(),
+				ModBlocks.LIMITED_IRON_BARREL_1.get(), ModBlocks.LIMITED_GOLD_BARREL_1.get(), ModBlocks.LIMITED_DIAMOND_BARREL_1.get(),
+				ModBlocks.LIMITED_NETHERITE_BARREL_1.get(), ModBlocks.LIMITED_BARREL_2.get(), ModBlocks.LIMITED_COPPER_BARREL_2.get(),
+				ModBlocks.LIMITED_IRON_BARREL_2.get(), ModBlocks.LIMITED_GOLD_BARREL_2.get(), ModBlocks.LIMITED_DIAMOND_BARREL_2.get(),
+				ModBlocks.LIMITED_NETHERITE_BARREL_2.get(), ModBlocks.LIMITED_BARREL_3.get(), ModBlocks.LIMITED_COPPER_BARREL_3.get(),
+				ModBlocks.LIMITED_IRON_BARREL_3.get(), ModBlocks.LIMITED_GOLD_BARREL_3.get(), ModBlocks.LIMITED_DIAMOND_BARREL_3.get(),
+				ModBlocks.LIMITED_NETHERITE_BARREL_3.get(), ModBlocks.LIMITED_BARREL_4.get(), ModBlocks.LIMITED_COPPER_BARREL_4.get(),
+				ModBlocks.LIMITED_IRON_BARREL_4.get(), ModBlocks.LIMITED_GOLD_BARREL_4.get(), ModBlocks.LIMITED_DIAMOND_BARREL_4.get(),
+				ModBlocks.LIMITED_NETHERITE_BARREL_4.get());
 	}
 
 	private static void registerBarrelClientExtensions(RegisterClientExtensionsEvent event, BarrelBlock... barrelBlocks) {

@@ -24,7 +24,8 @@ public class RequestPlayerSettingsPayload implements CustomPacketPayload {
 	public static void handlePayload(IPayloadContext context) {
 		String playerTagName = StorageSettingsHandler.SOPHISTICATED_STORAGE_SETTINGS_PLAYER_TAG;
 		if (context.player() instanceof ServerPlayer serverPlayer) {
-			PacketDistributor.sendToPlayer(serverPlayer, new SyncPlayerSettingsPayload(playerTagName, SettingsManager.getPlayerSettingsTag(context.player(), playerTagName)));
+			PacketDistributor.sendToPlayer(serverPlayer,
+					new SyncPlayerSettingsPayload(playerTagName, SettingsManager.getPlayerSettingsTag(context.player(), playerTagName)));
 		}
 	}
 }

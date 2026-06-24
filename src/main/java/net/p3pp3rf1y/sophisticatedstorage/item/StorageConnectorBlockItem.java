@@ -24,7 +24,6 @@ public class StorageConnectorBlockItem extends SimpleMaterialBlockItem {
 		super(block, properties);
 	}
 
-
 	@Override
 	public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay tooltipDisplay, Consumer<Component> tooltipAdder, TooltipFlag flag) {
 		StorageTranslationHelper.INSTANCE.getTranslatedLines(TOOLTIP_TRANSLATION_KEY, null, ChatFormatting.DARK_GRAY).forEach(tooltipAdder);

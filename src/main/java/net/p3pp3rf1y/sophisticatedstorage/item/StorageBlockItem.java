@@ -32,14 +32,12 @@ public class StorageBlockItem extends BlockItemBase implements ITintableBlockIte
 	}
 
 	public static Optional<Integer> getMainColorFromComponentHolder(DataComponentGetter componentHolder) {
-		return getEntityWrapperTagFromStack(componentHolder)
-				.flatMap(tag -> tag.getInt(StorageWrapper.MAIN_COLOR))
+		return getEntityWrapperTagFromStack(componentHolder).flatMap(tag -> tag.getInt(StorageWrapper.MAIN_COLOR))
 				.or(() -> Optional.ofNullable(componentHolder.get(ModCoreDataComponents.MAIN_COLOR)));
 	}
 
 	public static Optional<Integer> getAccentColorFromComponentHolder(DataComponentGetter componentHolder) {
-		return getEntityWrapperTagFromStack(componentHolder)
-				.flatMap(tag -> tag.getInt(StorageWrapper.ACCENT_COLOR))
+		return getEntityWrapperTagFromStack(componentHolder).flatMap(tag -> tag.getInt(StorageWrapper.ACCENT_COLOR))
 				.or(() -> Optional.ofNullable(componentHolder.get(ModCoreDataComponents.ACCENT_COLOR)));
 	}
 
@@ -53,7 +51,8 @@ public class StorageBlockItem extends BlockItemBase implements ITintableBlockIte
 
 	public static int getNumberOfInventorySlots(ItemStack storageStack) {
 		int defaultNumberOfInventorySlots = getDefaultNumberOfInventorySlots(storageStack);
-		int numberOfInventorySlots = Math.max(getStoredNumberOfInventorySlots(storageStack).orElse(defaultNumberOfInventorySlots), defaultNumberOfInventorySlots);
+		int numberOfInventorySlots = Math.max(getStoredNumberOfInventorySlots(storageStack).orElse(defaultNumberOfInventorySlots),
+				defaultNumberOfInventorySlots);
 		Integer storedNumberOfInventorySlots = storageStack.get(ModCoreDataComponents.NUMBER_OF_INVENTORY_SLOTS);
 		if (storedNumberOfInventorySlots == null || storedNumberOfInventorySlots < numberOfInventorySlots) {
 			storageStack.set(ModCoreDataComponents.NUMBER_OF_INVENTORY_SLOTS, numberOfInventorySlots);
@@ -62,7 +61,9 @@ public class StorageBlockItem extends BlockItemBase implements ITintableBlockIte
 	}
 
 	public static int getDefaultNumberOfInventorySlots(ItemStack storageStack) {
-		return storageStack.getItem() instanceof BlockItemBase blockItem && blockItem.getBlock() instanceof IStorageBlock storageBlock ? storageBlock.getNumberOfInventorySlots() : 0;
+		return storageStack.getItem() instanceof BlockItemBase blockItem && blockItem.getBlock() instanceof IStorageBlock storageBlock
+				? storageBlock.getNumberOfInventorySlots()
+				: 0;
 	}
 
 	private static Optional<Integer> getStoredNumberOfInventorySlots(ItemStack storageStack) {
@@ -91,7 +92,9 @@ public class StorageBlockItem extends BlockItemBase implements ITintableBlockIte
 	}
 
 	public static int getDefaultNumberOfUpgradeSlots(ItemStack storageStack) {
-		return storageStack.getItem() instanceof BlockItemBase blockItem && blockItem.getBlock() instanceof IStorageBlock storageBlock ? storageBlock.getNumberOfUpgradeSlots() : 0;
+		return storageStack.getItem() instanceof BlockItemBase blockItem && blockItem.getBlock() instanceof IStorageBlock storageBlock
+				? storageBlock.getNumberOfUpgradeSlots()
+				: 0;
 	}
 
 	private static Optional<Integer> getStoredNumberOfUpgradeSlots(ItemStack storageStack) {
@@ -128,7 +131,7 @@ public class StorageBlockItem extends BlockItemBase implements ITintableBlockIte
 
 	@Override
 	public Optional<Integer> getMainColor(ItemStack storageStack) {
-		return StorageBlockItem.getMainColorFromComponentHolder(storageStack);
+		return getMainColorFromComponentHolder(storageStack);
 	}
 
 	@Override
@@ -148,7 +151,7 @@ public class StorageBlockItem extends BlockItemBase implements ITintableBlockIte
 
 	@Override
 	public Optional<Integer> getAccentColor(ItemStack stack) {
-		return StorageBlockItem.getAccentColorFromComponentHolder(stack);
+		return getAccentColorFromComponentHolder(stack);
 	}
 
 	public static boolean showsTier(ItemStack stack) {

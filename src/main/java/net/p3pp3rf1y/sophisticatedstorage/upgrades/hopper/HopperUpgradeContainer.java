@@ -31,13 +31,15 @@ public class HopperUpgradeContainer extends UpgradeContainerBase<HopperUpgradeWr
 	@Nullable
 	private VerticalFacing verticalFacing;
 
-	public HopperUpgradeContainer(Player player, int upgradeContainerId, HopperUpgradeWrapper upgradeWrapper, UpgradeContainerType<HopperUpgradeWrapper, HopperUpgradeContainer> type) {
+	public HopperUpgradeContainer(Player player, int upgradeContainerId, HopperUpgradeWrapper upgradeWrapper,
+			UpgradeContainerType<HopperUpgradeWrapper, HopperUpgradeContainer> type) {
 		super(player, upgradeContainerId, upgradeWrapper, type);
 
 		inputFilterLogicContainer = new ContentsFilterLogicContainer(upgradeWrapper::getInputFilterLogic, this, this::addInputFilterSlot);
 		outputFilterLogicContainer = new ContentsFilterLogicContainer(upgradeWrapper::getOutputFilterLogic, this, this::addOutputFilterSlot);
 
-		sideIOContainer = new SideIOContainer(this, this::getHorizontalDirection, this::getVerticalFacing, this::getDirectionIOMode, this::setDirectionIOMode, false);
+		sideIOContainer = new SideIOContainer(this, this::getHorizontalDirection, this::getVerticalFacing, this::getDirectionIOMode, this::setDirectionIOMode,
+				false);
 	}
 
 	private void addInputFilterSlot(Slot slot) {
@@ -80,19 +82,19 @@ public class HopperUpgradeContainer extends UpgradeContainerBase<HopperUpgradeWr
 
 	private void setDirectionIOMode(Direction direction, IOMode ioMode) {
 		switch (ioMode) {
-			case OFF:
+			case OFF :
 				upgradeWrapper.setPullingFrom(direction, false);
 				upgradeWrapper.setPushingTo(direction, false);
 				break;
-			case PUSH:
+			case PUSH :
 				upgradeWrapper.setPullingFrom(direction, false);
 				upgradeWrapper.setPushingTo(direction, true);
 				break;
-			case PULL:
+			case PULL :
 				upgradeWrapper.setPullingFrom(direction, true);
 				upgradeWrapper.setPushingTo(direction, false);
 				break;
-			case PUSH_PULL:
+			case PUSH_PULL :
 				upgradeWrapper.setPullingFrom(direction, true);
 				upgradeWrapper.setPushingTo(direction, true);
 				break;

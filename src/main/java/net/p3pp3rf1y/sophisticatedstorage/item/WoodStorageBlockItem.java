@@ -16,6 +16,7 @@ import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.TranslationHelper;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModDataComponents;
 
 import javax.annotation.Nullable;
+
 import java.util.Locale;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -35,20 +36,22 @@ public class WoodStorageBlockItem extends StorageBlockItem {
 	}
 
 	@Override
-	public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay tooltipDisplay, Consumer<Component> tooltipAdder, TooltipFlag tooltipFlag) {
+	public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay tooltipDisplay, Consumer<Component> tooltipAdder,
+			TooltipFlag tooltipFlag) {
 		super.appendHoverText(stack, context, tooltipDisplay, tooltipAdder, tooltipFlag);
 		if (isPacked(stack)) {
 			if (tooltipFlag.isAdvanced()) {
 				HolderLookup.Provider registries = context.registries();
 				if (registries != null) {
-					StackStorageWrapper.fromStack(registries, stack).getContentsUuid().ifPresent(uuid -> tooltipAdder.accept(Component.literal("UUID: " + uuid).withStyle(ChatFormatting.DARK_GRAY)));
+					StackStorageWrapper.fromStack(registries, stack).getContentsUuid()
+							.ifPresent(uuid -> tooltipAdder.accept(Component.literal("UUID: " + uuid).withStyle(ChatFormatting.DARK_GRAY)));
 				}
 			}
 			if (!Screen.hasShiftDown()) {
-				tooltipAdder.accept(Component.translatable(
-						TranslationHelper.INSTANCE.translItemTooltip("storage") + ".press_for_contents",
-						Component.translatable(TranslationHelper.INSTANCE.translItemTooltip("storage") + ".shift").withStyle(ChatFormatting.AQUA)
-				).withStyle(ChatFormatting.GRAY));
+				tooltipAdder.accept(Component
+						.translatable(TranslationHelper.INSTANCE.translItemTooltip("storage") + ".press_for_contents",
+								Component.translatable(TranslationHelper.INSTANCE.translItemTooltip("storage") + ".shift").withStyle(ChatFormatting.AQUA))
+						.withStyle(ChatFormatting.GRAY));
 			}
 		}
 	}
@@ -67,7 +70,7 @@ public class WoodStorageBlockItem extends StorageBlockItem {
 
 	@Override
 	public void setMainColor(ItemStack storageStack, int mainColor) {
-		if (StorageBlockItem.getAccentColorFromComponentHolder(storageStack).isPresent()) {
+		if (getAccentColorFromComponentHolder(storageStack).isPresent()) {
 			removeWoodType(storageStack);
 		}
 		super.setMainColor(storageStack, mainColor);
@@ -75,7 +78,7 @@ public class WoodStorageBlockItem extends StorageBlockItem {
 
 	@Override
 	public void setAccentColor(ItemStack storageStack, int accentColor) {
-		if (StorageBlockItem.getMainColorFromComponentHolder(storageStack).isPresent()) {
+		if (getMainColorFromComponentHolder(storageStack).isPresent()) {
 			removeWoodType(storageStack);
 		}
 		super.setAccentColor(storageStack, accentColor);

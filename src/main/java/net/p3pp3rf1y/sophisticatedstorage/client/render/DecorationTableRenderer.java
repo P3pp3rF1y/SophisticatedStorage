@@ -20,7 +20,8 @@ public class DecorationTableRenderer implements BlockEntityRenderer<DecorationTa
 	}
 
 	@Override
-	public void render(DecorationTableBlockEntity table, float v, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, Vec3 cameraPos) {
+	public void render(DecorationTableBlockEntity table, float v, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay,
+			Vec3 cameraPos) {
 		if (table.getResult().isEmpty() || table.getResult().getItem() == ModItems.PAINTBRUSH.get()) {
 			return;
 		}

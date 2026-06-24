@@ -33,9 +33,11 @@ public class ModDataComponents {
 	private ModDataComponents() {
 	}
 
-	private static final DeferredRegister<DataComponentType<?>> DATA_COMPONENT_TYPES = DeferredRegister.create(BuiltInRegistries.DATA_COMPONENT_TYPE, SophisticatedStorage.MOD_ID);
+	private static final DeferredRegister<DataComponentType<?>> DATA_COMPONENT_TYPES = DeferredRegister.create(BuiltInRegistries.DATA_COMPONENT_TYPE,
+			SophisticatedStorage.MOD_ID);
 	public static final Supplier<DataComponentType<StorageToolItem.Mode>> TOOL_MODE = DATA_COMPONENT_TYPES.register("tool_mode",
-			() -> new DataComponentType.Builder<StorageToolItem.Mode>().persistent(StorageToolItem.Mode.CODEC).networkSynchronized(StorageToolItem.Mode.STREAM_CODEC).build());
+			() -> new DataComponentType.Builder<StorageToolItem.Mode>().persistent(StorageToolItem.Mode.CODEC)
+					.networkSynchronized(StorageToolItem.Mode.STREAM_CODEC).build());
 
 	public static final Supplier<DataComponentType<BlockPos>> CONTROLLER_POS = DATA_COMPONENT_TYPES.register("controller_pos",
 			() -> new DataComponentType.Builder<BlockPos>().persistent(BlockPos.CODEC).networkSynchronized(BlockPos.STREAM_CODEC).build());
@@ -44,13 +46,16 @@ public class ModDataComponents {
 			() -> new DataComponentType.Builder<Boolean>().persistent(Codec.BOOL).networkSynchronized(ByteBufCodecs.BOOL).build());
 
 	public static final Supplier<DataComponentType<Map<BarrelMaterial, ResourceLocation>>> BARREL_MATERIALS = DATA_COMPONENT_TYPES.register("barrel_materials",
-			() -> new DataComponentType.Builder<Map<BarrelMaterial, ResourceLocation>>().persistent(BarrelBlockItem.MATERIALS_CODEC).networkSynchronized(BarrelBlockItem.MATERIALS_STREAM_CODEC).build());
+			() -> new DataComponentType.Builder<Map<BarrelMaterial, ResourceLocation>>().persistent(BarrelBlockItem.MATERIALS_CODEC)
+					.networkSynchronized(BarrelBlockItem.MATERIALS_STREAM_CODEC).build());
 
 	public static final Supplier<DataComponentType<ResourceLocation>> SIMPLE_MATERIAL = DATA_COMPONENT_TYPES.register("simple_material",
-			() -> new DataComponentType.Builder<ResourceLocation>().persistent(ResourceLocation.CODEC).networkSynchronized(ResourceLocation.STREAM_CODEC).build());
+			() -> new DataComponentType.Builder<ResourceLocation>().persistent(ResourceLocation.CODEC).networkSynchronized(ResourceLocation.STREAM_CODEC)
+					.build());
 
 	public static final Supplier<DataComponentType<Map<ResourceLocation, Integer>>> REMAINING_PARTS = DATA_COMPONENT_TYPES.register("remaining_parts",
-			() -> new DataComponentType.Builder<Map<ResourceLocation, Integer>>().persistent(PaintbrushItem.REMAINING_PARTS_CODEC).networkSynchronized(PaintbrushItem.REMAINING_PARTS_STREAM_CODEC).build());
+			() -> new DataComponentType.Builder<Map<ResourceLocation, Integer>>().persistent(PaintbrushItem.REMAINING_PARTS_CODEC)
+					.networkSynchronized(PaintbrushItem.REMAINING_PARTS_STREAM_CODEC).build());
 
 	public static final Supplier<DataComponentType<Boolean>> DOUBLE_CHEST = DATA_COMPONENT_TYPES.register("double_chest",
 			() -> new DataComponentType.Builder<Boolean>().persistent(Codec.BOOL).networkSynchronized(ByteBufCodecs.BOOL).build());
@@ -80,7 +85,8 @@ public class ModDataComponents {
 			() -> new DataComponentType.Builder<Boolean>().persistent(Codec.BOOL).networkSynchronized(ByteBufCodecs.BOOL).build());
 
 	public static final Supplier<DataComponentType<Map<Integer, DyeColor>>> SLOT_COLORS = DATA_COMPONENT_TYPES.register("slot_colors",
-			() -> new DataComponentType.Builder<Map<Integer, DyeColor>>().persistent(LimitedBarrelBlockEntity.SLOT_COLORS_CODEC).networkSynchronized(LimitedBarrelBlockEntity.SLOT_COLORS_STREAM_CODEC).build());
+			() -> new DataComponentType.Builder<Map<Integer, DyeColor>>().persistent(LimitedBarrelBlockEntity.SLOT_COLORS_CODEC)
+					.networkSynchronized(LimitedBarrelBlockEntity.SLOT_COLORS_STREAM_CODEC).build());
 
 	public static final Supplier<DataComponentType<Integer>> FIRST_INVENTORY_SLOT = DATA_COMPONENT_TYPES.register("first_inventory_slot",
 			() -> new DataComponentType.Builder<Integer>().persistent(Codec.INT).networkSynchronized(ByteBufCodecs.INT).build());
@@ -105,8 +111,9 @@ public class ModDataComponents {
 	public static final Supplier<DataComponentType<Set<Direction>>> PUSH_DIRECTIONS = DATA_COMPONENT_TYPES.register("push_directions",
 			() -> new DataComponentType.Builder<Set<Direction>>().persistent(DIRECTION_SET_CODEC).networkSynchronized(DIRECTION_SET_STREAM_CODEC).build());
 
-	public static final DeferredHolder<DataComponentType<?>, DataComponentType<FilterAttributes>> OUTPUT_FILTER_ATTRIBUTES = DATA_COMPONENT_TYPES.register("output_filter_attributes",
-			() -> new DataComponentType.Builder<FilterAttributes>().persistent(FilterAttributes.CODEC).networkSynchronized(FilterAttributes.STREAM_CODEC).build());
+	public static final DeferredHolder<DataComponentType<?>, DataComponentType<FilterAttributes>> OUTPUT_FILTER_ATTRIBUTES = DATA_COMPONENT_TYPES
+			.register("output_filter_attributes", () -> new DataComponentType.Builder<FilterAttributes>().persistent(FilterAttributes.CODEC)
+					.networkSynchronized(FilterAttributes.STREAM_CODEC).build());
 
 	public static void register(IEventBus modBus) {
 		DATA_COMPONENT_TYPES.register(modBus);

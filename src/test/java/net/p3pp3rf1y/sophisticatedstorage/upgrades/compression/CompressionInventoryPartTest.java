@@ -47,29 +47,43 @@ public class CompressionInventoryPartTest {
 
 		recipeHelperMock = Mockito.mockStatic(RecipeHelper.class);
 
-		recipeHelperMock.when(() -> RecipeHelper.getCompactingResult(stackOf(Items.IRON_NUGGET), eq(RecipeHelper.CompactingShape.THREE_BY_THREE_UNCRAFTABLE))).thenReturn(AccessHelper.initCompactingResult(new ItemStack(Items.IRON_INGOT), Collections.emptyList()));
-		recipeHelperMock.when(() -> RecipeHelper.getCompactingResult(stackOf(Items.IRON_INGOT), eq(RecipeHelper.CompactingShape.THREE_BY_THREE_UNCRAFTABLE))).thenReturn(AccessHelper.initCompactingResult(new ItemStack(Items.IRON_BLOCK), Collections.emptyList()));
+		recipeHelperMock.when(() -> RecipeHelper.getCompactingResult(stackOf(Items.IRON_NUGGET), eq(RecipeHelper.CompactingShape.THREE_BY_THREE_UNCRAFTABLE)))
+				.thenReturn(AccessHelper.initCompactingResult(new ItemStack(Items.IRON_INGOT), Collections.emptyList()));
+		recipeHelperMock.when(() -> RecipeHelper.getCompactingResult(stackOf(Items.IRON_INGOT), eq(RecipeHelper.CompactingShape.THREE_BY_THREE_UNCRAFTABLE)))
+				.thenReturn(AccessHelper.initCompactingResult(new ItemStack(Items.IRON_BLOCK), Collections.emptyList()));
 
 		recipeHelperMock.when(() -> RecipeHelper.getItemCompactingShapes(any(ItemStack.class))).thenReturn(Set.of(RecipeHelper.CompactingShape.NONE));
-		recipeHelperMock.when(() -> RecipeHelper.getItemCompactingShapes(stackOf(Items.IRON_NUGGET))).thenReturn(Set.of(RecipeHelper.CompactingShape.THREE_BY_THREE_UNCRAFTABLE));
-		recipeHelperMock.when(() -> RecipeHelper.getItemCompactingShapes(stackOf(Items.IRON_INGOT))).thenReturn(Set.of(RecipeHelper.CompactingShape.THREE_BY_THREE_UNCRAFTABLE));
+		recipeHelperMock.when(() -> RecipeHelper.getItemCompactingShapes(stackOf(Items.IRON_NUGGET)))
+				.thenReturn(Set.of(RecipeHelper.CompactingShape.THREE_BY_THREE_UNCRAFTABLE));
+		recipeHelperMock.when(() -> RecipeHelper.getItemCompactingShapes(stackOf(Items.IRON_INGOT)))
+				.thenReturn(Set.of(RecipeHelper.CompactingShape.THREE_BY_THREE_UNCRAFTABLE));
 
 		recipeHelperMock.when(() -> RecipeHelper.getUncompactingResult(any(ItemStack.class))).thenReturn(RecipeHelper.UncompactingResult.EMPTY);
-		recipeHelperMock.when(() -> RecipeHelper.getUncompactingResult(stackOf(Items.IRON_BLOCK))).thenReturn(new RecipeHelper.UncompactingResult(new ItemStack(Items.IRON_INGOT), RecipeHelper.CompactingShape.THREE_BY_THREE_UNCRAFTABLE));
-		recipeHelperMock.when(() -> RecipeHelper.getUncompactingResult(stackOf(Items.IRON_INGOT))).thenReturn(new RecipeHelper.UncompactingResult(new ItemStack(Items.IRON_NUGGET), RecipeHelper.CompactingShape.THREE_BY_THREE_UNCRAFTABLE));
+		recipeHelperMock.when(() -> RecipeHelper.getUncompactingResult(stackOf(Items.IRON_BLOCK)))
+				.thenReturn(new RecipeHelper.UncompactingResult(new ItemStack(Items.IRON_INGOT), RecipeHelper.CompactingShape.THREE_BY_THREE_UNCRAFTABLE));
+		recipeHelperMock.when(() -> RecipeHelper.getUncompactingResult(stackOf(Items.IRON_INGOT)))
+				.thenReturn(new RecipeHelper.UncompactingResult(new ItemStack(Items.IRON_NUGGET), RecipeHelper.CompactingShape.THREE_BY_THREE_UNCRAFTABLE));
 
-		recipeHelperMock.when(() -> RecipeHelper.getCompactingResult(stackOf(Items.QUARTZ), eq(RecipeHelper.CompactingShape.TWO_BY_TWO_UNCRAFTABLE))).thenReturn(AccessHelper.initCompactingResult(new ItemStack(Items.QUARTZ_BLOCK), Collections.emptyList()));
-		recipeHelperMock.when(() -> RecipeHelper.getCompactingResult(stackOf(Items.QUARTZ_BLOCK), eq(RecipeHelper.CompactingShape.THREE_BY_THREE_UNCRAFTABLE))).thenReturn(AccessHelper.initCompactingResult(new ItemStack(Items.STICK), Collections.emptyList()));
-		recipeHelperMock.when(() -> RecipeHelper.getCompactingResult(stackOf(Items.STICK), eq(RecipeHelper.CompactingShape.THREE_BY_THREE_UNCRAFTABLE))).thenReturn(AccessHelper.initCompactingResult(new ItemStack(Items.DEAD_BUSH), Collections.emptyList()));
+		recipeHelperMock.when(() -> RecipeHelper.getCompactingResult(stackOf(Items.QUARTZ), eq(RecipeHelper.CompactingShape.TWO_BY_TWO_UNCRAFTABLE)))
+				.thenReturn(AccessHelper.initCompactingResult(new ItemStack(Items.QUARTZ_BLOCK), Collections.emptyList()));
+		recipeHelperMock.when(() -> RecipeHelper.getCompactingResult(stackOf(Items.QUARTZ_BLOCK), eq(RecipeHelper.CompactingShape.THREE_BY_THREE_UNCRAFTABLE)))
+				.thenReturn(AccessHelper.initCompactingResult(new ItemStack(Items.STICK), Collections.emptyList()));
+		recipeHelperMock.when(() -> RecipeHelper.getCompactingResult(stackOf(Items.STICK), eq(RecipeHelper.CompactingShape.THREE_BY_THREE_UNCRAFTABLE)))
+				.thenReturn(AccessHelper.initCompactingResult(new ItemStack(Items.DEAD_BUSH), Collections.emptyList()));
 
-		recipeHelperMock.when(() -> RecipeHelper.getItemCompactingShapes(stackOf(Items.QUARTZ))).thenReturn(Set.of(RecipeHelper.CompactingShape.TWO_BY_TWO_UNCRAFTABLE));
-		recipeHelperMock.when(() -> RecipeHelper.getItemCompactingShapes(stackOf(Items.QUARTZ_BLOCK))).thenReturn(Set.of(RecipeHelper.CompactingShape.THREE_BY_THREE_UNCRAFTABLE));
-		recipeHelperMock.when(() -> RecipeHelper.getItemCompactingShapes(stackOf(Items.STICK))).thenReturn(Set.of(RecipeHelper.CompactingShape.THREE_BY_THREE_UNCRAFTABLE));
+		recipeHelperMock.when(() -> RecipeHelper.getItemCompactingShapes(stackOf(Items.QUARTZ)))
+				.thenReturn(Set.of(RecipeHelper.CompactingShape.TWO_BY_TWO_UNCRAFTABLE));
+		recipeHelperMock.when(() -> RecipeHelper.getItemCompactingShapes(stackOf(Items.QUARTZ_BLOCK)))
+				.thenReturn(Set.of(RecipeHelper.CompactingShape.THREE_BY_THREE_UNCRAFTABLE));
+		recipeHelperMock.when(() -> RecipeHelper.getItemCompactingShapes(stackOf(Items.STICK)))
+				.thenReturn(Set.of(RecipeHelper.CompactingShape.THREE_BY_THREE_UNCRAFTABLE));
 
-		recipeHelperMock.when(() -> RecipeHelper.getUncompactingResult(stackOf(Items.DEAD_BUSH))).thenReturn(new RecipeHelper.UncompactingResult(new ItemStack(Items.STICK), RecipeHelper.CompactingShape.THREE_BY_THREE_UNCRAFTABLE));
-		recipeHelperMock.when(() -> RecipeHelper.getUncompactingResult(stackOf(Items.STICK))).thenReturn(new RecipeHelper.UncompactingResult(new ItemStack(Items.QUARTZ_BLOCK), RecipeHelper.CompactingShape.THREE_BY_THREE_UNCRAFTABLE));
-		recipeHelperMock.when(() -> RecipeHelper.getUncompactingResult(stackOf(Items.QUARTZ_BLOCK))).thenReturn(new RecipeHelper.UncompactingResult(new ItemStack(Items.QUARTZ), RecipeHelper.CompactingShape.TWO_BY_TWO_UNCRAFTABLE));
-
+		recipeHelperMock.when(() -> RecipeHelper.getUncompactingResult(stackOf(Items.DEAD_BUSH)))
+				.thenReturn(new RecipeHelper.UncompactingResult(new ItemStack(Items.STICK), RecipeHelper.CompactingShape.THREE_BY_THREE_UNCRAFTABLE));
+		recipeHelperMock.when(() -> RecipeHelper.getUncompactingResult(stackOf(Items.STICK)))
+				.thenReturn(new RecipeHelper.UncompactingResult(new ItemStack(Items.QUARTZ_BLOCK), RecipeHelper.CompactingShape.THREE_BY_THREE_UNCRAFTABLE));
+		recipeHelperMock.when(() -> RecipeHelper.getUncompactingResult(stackOf(Items.QUARTZ_BLOCK)))
+				.thenReturn(new RecipeHelper.UncompactingResult(new ItemStack(Items.QUARTZ), RecipeHelper.CompactingShape.TWO_BY_TWO_UNCRAFTABLE));
 
 		ss = Mockito.mockStatic(SophisticatedStorage.class);
 		ss.when(() -> SophisticatedStorage.getRL(anyString())).thenAnswer(i -> ResourceLocation.parse(i.getArgument(0)));
@@ -124,7 +138,8 @@ public class CompressionInventoryPartTest {
 	private static MemorySettingsCategory getMemorySettings(InventoryHandler invHandler, Map<Integer, ItemStack> slotFilterStacks) {
 		MemorySettingsCategory memorySettingsCategory = Mockito.spy(new MemorySettingsCategory(() -> invHandler, new CompoundTag(), compoundTag -> {
 		}));
-		when(memorySettingsCategory.getSlotFilterStack(anyInt(), anyBoolean())).thenAnswer(i -> Optional.ofNullable(slotFilterStacks.get((int) i.getArgument(0))));
+		when(memorySettingsCategory.getSlotFilterStack(anyInt(), anyBoolean()))
+				.thenAnswer(i -> Optional.ofNullable(slotFilterStacks.get((int) i.getArgument(0))));
 		return memorySettingsCategory;
 	}
 
@@ -139,15 +154,20 @@ public class CompressionInventoryPartTest {
 		assertInternalStacks(slotStacksModified, invHandler);
 	}
 
-	private CompressionInventoryPart initCompressionInventoryPart(Map<Integer, ItemStack> slotStacksInput, InventoryHandler invHandler, Supplier<MemorySettingsCategory> getMemorySettings) {
-		return initCompressionInventoryPart(invHandler, new SlotRange(Collections.min(slotStacksInput.keySet()), Collections.min(slotStacksInput.keySet()) + slotStacksInput.size()), getMemorySettings);
+	private CompressionInventoryPart initCompressionInventoryPart(Map<Integer, ItemStack> slotStacksInput, InventoryHandler invHandler,
+			Supplier<MemorySettingsCategory> getMemorySettings) {
+		return initCompressionInventoryPart(invHandler,
+				new SlotRange(Collections.min(slotStacksInput.keySet()), Collections.min(slotStacksInput.keySet()) + slotStacksInput.size()),
+				getMemorySettings);
 	}
 
 	private CompressionInventoryPart initCompressionInventoryPart(Map<Integer, ItemStack> slotStacksInput, InventoryHandler invHandler, int minSlot) {
-		return initCompressionInventoryPart(invHandler, new SlotRange(minSlot, minSlot + slotStacksInput.size()), () -> getMemorySettings(invHandler, Map.of()));
+		return initCompressionInventoryPart(invHandler, new SlotRange(minSlot, minSlot + slotStacksInput.size()),
+				() -> getMemorySettings(invHandler, Map.of()));
 	}
 
-	private CompressionInventoryPart initCompressionInventoryPart(InventoryHandler invHandler, SlotRange slotRange, Supplier<MemorySettingsCategory> getMemorySettings) {
+	private CompressionInventoryPart initCompressionInventoryPart(InventoryHandler invHandler, SlotRange slotRange,
+			Supplier<MemorySettingsCategory> getMemorySettings) {
 		CompressionInventoryPart spiedPart = spy(new CompressionInventoryPart(invHandler, slotRange, getMemorySettings));
 		doReturn(Optional.empty()).when(spiedPart).getDecompressionResultFromConfig(any(Item.class));
 		doReturn(Optional.empty()).when(spiedPart).getCompressionResultFromConfig(any(ItemStack.class));
@@ -186,31 +206,19 @@ public class CompressionInventoryPartTest {
 		}
 
 		if (!matching) {
-			assertionFailure().message("Calculated stacks don't equal")
-					.expected(slotStacksModified)
-					.actual(updatedInternalStacks)
-					.buildAndThrow();
+			assertionFailure().message("Calculated stacks don't equal").expected(slotStacksModified).actual(updatedInternalStacks).buildAndThrow();
 		}
 	}
 
 	public static Object[][] compactsStacksOnInit() {
 		return new Object[][]{
-				{
-						Map.of(0, ItemStack.EMPTY, 1, new ItemStack(Items.IRON_INGOT, 10), 2, ItemStack.EMPTY),
-						Map.of(0, new ItemStack(Items.IRON_BLOCK, 1), 1, new ItemStack(Items.IRON_INGOT, 1)),
-						64
-				},
-				{
-						Map.of(0, new ItemStack(Items.IRON_BLOCK, 1), 1, new ItemStack(Items.IRON_INGOT, 20), 2, new ItemStack(Items.IRON_NUGGET, 40)),
-						Map.of(0, new ItemStack(Items.IRON_BLOCK, 3), 1, new ItemStack(Items.IRON_INGOT, 6), 2, new ItemStack(Items.IRON_NUGGET, 4)),
-						64
-				},
-				{
-						Map.of(0, new ItemStack(Items.IRON_BLOCK, 4000), 1, new ItemStack(Items.IRON_INGOT, 4000), 2, new ItemStack(Items.IRON_NUGGET, 4000)),
+				{Map.of(0, ItemStack.EMPTY, 1, new ItemStack(Items.IRON_INGOT, 10), 2, ItemStack.EMPTY),
+						Map.of(0, new ItemStack(Items.IRON_BLOCK, 1), 1, new ItemStack(Items.IRON_INGOT, 1)), 64},
+				{Map.of(0, new ItemStack(Items.IRON_BLOCK, 1), 1, new ItemStack(Items.IRON_INGOT, 20), 2, new ItemStack(Items.IRON_NUGGET, 40)),
+						Map.of(0, new ItemStack(Items.IRON_BLOCK, 3), 1, new ItemStack(Items.IRON_INGOT, 6), 2, new ItemStack(Items.IRON_NUGGET, 4)), 64},
+				{Map.of(0, new ItemStack(Items.IRON_BLOCK, 4000), 1, new ItemStack(Items.IRON_INGOT, 4000), 2, new ItemStack(Items.IRON_NUGGET, 4000)),
 						Map.of(0, new ItemStack(Items.IRON_BLOCK, 4096), 1, new ItemStack(Items.IRON_INGOT, 3580), 2, new ItemStack(Items.IRON_NUGGET, 4)),
-						64 * 64
-				}
-		};
+						64 * 64}};
 	}
 
 	@ParameterizedTest
@@ -238,47 +246,35 @@ public class CompressionInventoryPartTest {
 
 	public static Object[][] calculatedStacksCorrectOnInit() {
 		return new Object[][]{
-				{
-						Map.of(0, ItemStack.EMPTY, 1, new ItemStack(Items.IRON_INGOT, 10), 2, ItemStack.EMPTY),
-						Map.of(0, new ItemStack(Items.IRON_BLOCK, 1), 1, new ItemStack(Items.IRON_INGOT, 10), 2, new ItemStack(Items.IRON_NUGGET, 90)),
-						64
-				},
-				{
-						Map.of(0, ItemStack.EMPTY, 1, new ItemStack(Items.CLAY, 10), 2, ItemStack.EMPTY),
-						Map.of(0, ItemStack.EMPTY, 1, new ItemStack(Items.CLAY, 10), 2, ItemStack.EMPTY),
-						64
-				},
-				{
-						Map.of(0, new ItemStack(Items.IRON_BLOCK, 1), 1, new ItemStack(Items.IRON_INGOT, 20), 2, new ItemStack(Items.IRON_NUGGET, 40)),
-						Map.of(0, new ItemStack(Items.IRON_BLOCK, 3), 1, new ItemStack(Items.IRON_INGOT, 33), 2, new ItemStack(Items.IRON_NUGGET, 301)),
-						64
-				},
-				{
-						Map.of(0, new ItemStack(Items.IRON_BLOCK, 4000), 1, new ItemStack(Items.IRON_INGOT, 4000), 2, new ItemStack(Items.IRON_NUGGET, 4000)),
-						Map.of(0, new ItemStack(Items.IRON_BLOCK, 4096), 1, new ItemStack(Items.IRON_INGOT, 40444), 2, new ItemStack(Items.IRON_NUGGET, 364000)),
-						64 * 64
-				},
-				{
-						Map.of(0, new ItemStack(Items.IRON_BLOCK, 4096), 1, new ItemStack(Items.IRON_INGOT, 4096), 2, new ItemStack(Items.IRON_NUGGET, 4096)),
-						Map.of(0, new ItemStack(Items.IRON_BLOCK, 4096), 1, new ItemStack(Items.IRON_INGOT, 40960), 2, new ItemStack(Items.IRON_NUGGET, 372736)),
-						64 * 64
-				},
-				{
-						Map.of(0, new ItemStack(Items.IRON_BLOCK, 1073741824), 1, ItemStack.EMPTY, 2, ItemStack.EMPTY),
-						Map.of(0, new ItemStack(Items.IRON_BLOCK, 1073741824), 1, new ItemStack(Items.IRON_INGOT, Integer.MAX_VALUE - 64), 2, new ItemStack(Items.IRON_NUGGET, Integer.MAX_VALUE - 64)),
-						64 * 64 * 64 * 64 * 64
-				},
-				{
-						Map.of(0, new ItemStack(Items.IRON_BLOCK, 1073741824), 1, new ItemStack(Items.IRON_INGOT, 1073741824 - 48), 2, new ItemStack(Items.IRON_NUGGET, 8)),
-						Map.of(0, new ItemStack(Items.IRON_BLOCK, 1073741824), 1, new ItemStack(Items.IRON_INGOT, Integer.MAX_VALUE - 48), 2, new ItemStack(Items.IRON_NUGGET, Integer.MAX_VALUE - 64)),
-						64 * 64 * 64 * 64 * 64
-				}
-		};
+				{Map.of(0, ItemStack.EMPTY, 1, new ItemStack(Items.IRON_INGOT, 10), 2, ItemStack.EMPTY),
+						Map.of(0, new ItemStack(Items.IRON_BLOCK, 1), 1, new ItemStack(Items.IRON_INGOT, 10), 2, new ItemStack(Items.IRON_NUGGET, 90)), 64},
+				{Map.of(0, ItemStack.EMPTY, 1, new ItemStack(Items.CLAY, 10), 2, ItemStack.EMPTY),
+						Map.of(0, ItemStack.EMPTY, 1, new ItemStack(Items.CLAY, 10), 2, ItemStack.EMPTY), 64},
+				{Map.of(0, new ItemStack(Items.IRON_BLOCK, 1), 1, new ItemStack(Items.IRON_INGOT, 20), 2, new ItemStack(Items.IRON_NUGGET, 40)),
+						Map.of(0, new ItemStack(Items.IRON_BLOCK, 3), 1, new ItemStack(Items.IRON_INGOT, 33), 2, new ItemStack(Items.IRON_NUGGET, 301)), 64},
+				{Map.of(0, new ItemStack(Items.IRON_BLOCK, 4000), 1, new ItemStack(Items.IRON_INGOT, 4000), 2, new ItemStack(Items.IRON_NUGGET, 4000)),
+						Map.of(0, new ItemStack(Items.IRON_BLOCK, 4096), 1, new ItemStack(Items.IRON_INGOT, 40444), 2,
+								new ItemStack(Items.IRON_NUGGET, 364000)),
+						64 * 64},
+				{Map.of(0, new ItemStack(Items.IRON_BLOCK, 4096), 1, new ItemStack(Items.IRON_INGOT, 4096), 2, new ItemStack(Items.IRON_NUGGET, 4096)),
+						Map.of(0, new ItemStack(Items.IRON_BLOCK, 4096), 1, new ItemStack(Items.IRON_INGOT, 40960), 2,
+								new ItemStack(Items.IRON_NUGGET, 372736)),
+						64 * 64},
+				{Map.of(0, new ItemStack(Items.IRON_BLOCK, 1073741824), 1, ItemStack.EMPTY, 2, ItemStack.EMPTY),
+						Map.of(0, new ItemStack(Items.IRON_BLOCK, 1073741824), 1, new ItemStack(Items.IRON_INGOT, Integer.MAX_VALUE - 64), 2,
+								new ItemStack(Items.IRON_NUGGET, Integer.MAX_VALUE - 64)),
+						64 * 64 * 64 * 64 * 64},
+				{Map.of(0, new ItemStack(Items.IRON_BLOCK, 1073741824), 1, new ItemStack(Items.IRON_INGOT, 1073741824 - 48), 2,
+						new ItemStack(Items.IRON_NUGGET, 8)),
+						Map.of(0, new ItemStack(Items.IRON_BLOCK, 1073741824), 1, new ItemStack(Items.IRON_INGOT, Integer.MAX_VALUE - 48), 2,
+								new ItemStack(Items.IRON_NUGGET, Integer.MAX_VALUE - 64)),
+						64 * 64 * 64 * 64 * 64}};
 	}
 
 	@ParameterizedTest
 	@MethodSource("extractItemUpdatesStacks")
-	void extractItemUpdatesStacks(Map<Integer, ItemStack> internalStacksBefore, int baseSlotLimit, int extractSlot, int extractAmount, ItemStack extractResult, Map<Integer, ItemStack> internalStacksUpdated, Map<Integer, ItemStack> calculatedStacksAfter) {
+	void extractItemUpdatesStacks(Map<Integer, ItemStack> internalStacksBefore, int baseSlotLimit, int extractSlot, int extractAmount, ItemStack extractResult,
+			Map<Integer, ItemStack> internalStacksUpdated, Map<Integer, ItemStack> calculatedStacksAfter) {
 		InventoryHandler invHandler = getFilledInventoryHandler(internalStacksBefore, baseSlotLimit);
 		int minSlot = Collections.min(internalStacksBefore.keySet());
 
@@ -293,84 +289,35 @@ public class CompressionInventoryPartTest {
 
 	public static Object[][] extractItemUpdatesStacks() {
 		return new Object[][]{
-				{
-						Map.of(0, new ItemStack(Items.IRON_BLOCK, 1), 1, new ItemStack(Items.IRON_INGOT, 1), 2, ItemStack.EMPTY),
-						64,
-						1,
-						10,
-						new ItemStack(Items.IRON_INGOT, 10),
-						Map.of(0, ItemStack.EMPTY, 1, ItemStack.EMPTY),
-						Map.of(0, ItemStack.EMPTY, 1, ItemStack.EMPTY, 2, ItemStack.EMPTY)
-				},
-				{
-						Map.of(0, new ItemStack(Items.IRON_BLOCK, 3), 1, new ItemStack(Items.IRON_INGOT, 4), 2, new ItemStack(Items.IRON_NUGGET, 5)),
-						64,
-						1,
-						10,
-						new ItemStack(Items.IRON_INGOT, 10),
-						Map.of(0, new ItemStack(Items.IRON_BLOCK, 2), 1, new ItemStack(Items.IRON_INGOT, 3)),
-						Map.of(0, new ItemStack(Items.IRON_BLOCK, 2), 1, new ItemStack(Items.IRON_INGOT, 21), 2, new ItemStack(Items.IRON_NUGGET, 194))
-				},
-				{
-						Map.of(0, new ItemStack(Items.IRON_BLOCK, 61), 1, new ItemStack(Items.IRON_INGOT, 5), 2, new ItemStack(Items.IRON_NUGGET, 3)),
-						64 * 8,
-						0,
-						300,
-						new ItemStack(Items.IRON_BLOCK, 61),
-						Map.of(0, ItemStack.EMPTY),
-						Map.of(0, ItemStack.EMPTY, 1, new ItemStack(Items.IRON_INGOT, 5), 2, new ItemStack(Items.IRON_NUGGET, 48))
-				},
-				{
-						Map.of(0, new ItemStack(Items.IRON_BLOCK, 3), 1, new ItemStack(Items.IRON_INGOT, 4), 2, new ItemStack(Items.IRON_NUGGET, 5)),
-						64,
-						1,
-						5,
-						new ItemStack(Items.IRON_INGOT, 5),
-						Map.of(0, new ItemStack(Items.IRON_BLOCK, 2), 1, new ItemStack(Items.IRON_INGOT, 8)),
-						Map.of(0, new ItemStack(Items.IRON_BLOCK, 2), 1, new ItemStack(Items.IRON_INGOT, 26), 2, new ItemStack(Items.IRON_NUGGET, 239))
-				},
-				{
-						Map.of(0, new ItemStack(Items.IRON_BLOCK, 3), 1, ItemStack.EMPTY, 2, ItemStack.EMPTY),
-						64,
-						2,
-						1,
-						new ItemStack(Items.IRON_NUGGET, 1),
+				{Map.of(0, new ItemStack(Items.IRON_BLOCK, 1), 1, new ItemStack(Items.IRON_INGOT, 1), 2, ItemStack.EMPTY), 64, 1, 10,
+						new ItemStack(Items.IRON_INGOT, 10), Map.of(0, ItemStack.EMPTY, 1, ItemStack.EMPTY),
+						Map.of(0, ItemStack.EMPTY, 1, ItemStack.EMPTY, 2, ItemStack.EMPTY)},
+				{Map.of(0, new ItemStack(Items.IRON_BLOCK, 3), 1, new ItemStack(Items.IRON_INGOT, 4), 2, new ItemStack(Items.IRON_NUGGET, 5)), 64, 1, 10,
+						new ItemStack(Items.IRON_INGOT, 10), Map.of(0, new ItemStack(Items.IRON_BLOCK, 2), 1, new ItemStack(Items.IRON_INGOT, 3)),
+						Map.of(0, new ItemStack(Items.IRON_BLOCK, 2), 1, new ItemStack(Items.IRON_INGOT, 21), 2, new ItemStack(Items.IRON_NUGGET, 194))},
+				{Map.of(0, new ItemStack(Items.IRON_BLOCK, 61), 1, new ItemStack(Items.IRON_INGOT, 5), 2, new ItemStack(Items.IRON_NUGGET, 3)), 64 * 8, 0, 300,
+						new ItemStack(Items.IRON_BLOCK, 61), Map.of(0, ItemStack.EMPTY),
+						Map.of(0, ItemStack.EMPTY, 1, new ItemStack(Items.IRON_INGOT, 5), 2, new ItemStack(Items.IRON_NUGGET, 48))},
+				{Map.of(0, new ItemStack(Items.IRON_BLOCK, 3), 1, new ItemStack(Items.IRON_INGOT, 4), 2, new ItemStack(Items.IRON_NUGGET, 5)), 64, 1, 5,
+						new ItemStack(Items.IRON_INGOT, 5), Map.of(0, new ItemStack(Items.IRON_BLOCK, 2), 1, new ItemStack(Items.IRON_INGOT, 8)),
+						Map.of(0, new ItemStack(Items.IRON_BLOCK, 2), 1, new ItemStack(Items.IRON_INGOT, 26), 2, new ItemStack(Items.IRON_NUGGET, 239))},
+				{Map.of(0, new ItemStack(Items.IRON_BLOCK, 3), 1, ItemStack.EMPTY, 2, ItemStack.EMPTY), 64, 2, 1, new ItemStack(Items.IRON_NUGGET, 1),
 						Map.of(0, new ItemStack(Items.IRON_BLOCK, 2), 1, new ItemStack(Items.IRON_INGOT, 8), 2, new ItemStack(Items.IRON_NUGGET, 8)),
-						Map.of(0, new ItemStack(Items.IRON_BLOCK, 2), 1, new ItemStack(Items.IRON_INGOT, 26), 2, new ItemStack(Items.IRON_NUGGET, 242))
-				},
-				{
-						Map.of(0, new ItemStack(Items.IRON_BLOCK, 3), 1, new ItemStack(Items.IRON_INGOT, 4), 2, new ItemStack(Items.IRON_NUGGET, 5)),
-						64,
-						0,
-						4,
-						new ItemStack(Items.IRON_BLOCK, 3),
-						Map.of(0, ItemStack.EMPTY),
-						Map.of(0, ItemStack.EMPTY, 1, new ItemStack(Items.IRON_INGOT, 4), 2, new ItemStack(Items.IRON_NUGGET, 41))
-				},
-				{
-						Map.of(0, ItemStack.EMPTY, 1, ItemStack.EMPTY, 2, ItemStack.EMPTY),
-						64,
-						0,
-						4,
-						ItemStack.EMPTY,
-						Map.of(),
-						Map.of(0, ItemStack.EMPTY, 1, ItemStack.EMPTY, 2, ItemStack.EMPTY)
-				},
-				{
-						Map.of(0, new ItemStack(Items.IRON_INGOT, 3), 1, ItemStack.EMPTY, 2, ItemStack.EMPTY),
-						64,
-						1,
-						14,
-						new ItemStack(Items.IRON_NUGGET, 14),
+						Map.of(0, new ItemStack(Items.IRON_BLOCK, 2), 1, new ItemStack(Items.IRON_INGOT, 26), 2, new ItemStack(Items.IRON_NUGGET, 242))},
+				{Map.of(0, new ItemStack(Items.IRON_BLOCK, 3), 1, new ItemStack(Items.IRON_INGOT, 4), 2, new ItemStack(Items.IRON_NUGGET, 5)), 64, 0, 4,
+						new ItemStack(Items.IRON_BLOCK, 3), Map.of(0, ItemStack.EMPTY),
+						Map.of(0, ItemStack.EMPTY, 1, new ItemStack(Items.IRON_INGOT, 4), 2, new ItemStack(Items.IRON_NUGGET, 41))},
+				{Map.of(0, ItemStack.EMPTY, 1, ItemStack.EMPTY, 2, ItemStack.EMPTY), 64, 0, 4, ItemStack.EMPTY, Map.of(),
+						Map.of(0, ItemStack.EMPTY, 1, ItemStack.EMPTY, 2, ItemStack.EMPTY)},
+				{Map.of(0, new ItemStack(Items.IRON_INGOT, 3), 1, ItemStack.EMPTY, 2, ItemStack.EMPTY), 64, 1, 14, new ItemStack(Items.IRON_NUGGET, 14),
 						Map.of(0, new ItemStack(Items.IRON_INGOT, 1), 1, new ItemStack(Items.IRON_NUGGET, 4)),
-						Map.of(0, new ItemStack(Items.IRON_INGOT, 1), 1, new ItemStack(Items.IRON_NUGGET, 13), 2, ItemStack.EMPTY)
-				}
-		};
+						Map.of(0, new ItemStack(Items.IRON_INGOT, 1), 1, new ItemStack(Items.IRON_NUGGET, 13), 2, ItemStack.EMPTY)}};
 	}
 
 	@Test
 	void extractingFromCompressedSlotRefreshesCalculatedSlotsInSlotTracker() {
-		InventoryHandler invHandler = getFilledInventoryHandler(Map.of(0, new ItemStack(Items.IRON_BLOCK, 3), 1, new ItemStack(Items.IRON_INGOT, 4), 2, new ItemStack(Items.IRON_NUGGET, 5)), 64);
+		InventoryHandler invHandler = getFilledInventoryHandler(
+				Map.of(0, new ItemStack(Items.IRON_BLOCK, 3), 1, new ItemStack(Items.IRON_INGOT, 4), 2, new ItemStack(Items.IRON_NUGGET, 5)), 64);
 		CompressionInventoryPart part = initCompressionInventoryPart(invHandler, new SlotRange(0, 3), () -> getMemorySettings(invHandler, Map.of()));
 		ISlotTracker slotTracker = invHandler.getSlotTracker();
 		clearInvocations(invHandler);
@@ -384,10 +331,7 @@ public class CompressionInventoryPartTest {
 
 	private static void assertStackEquals(ItemStack expected, ItemStack actual, Object message) {
 		if (!ItemStack.matches(expected, actual)) {
-			assertionFailure().message(message)
-					.expected(expected)
-					.actual(actual)
-					.buildAndThrow();
+			assertionFailure().message(message).expected(expected).actual(actual).buildAndThrow();
 		}
 	}
 
@@ -403,16 +347,14 @@ public class CompressionInventoryPartTest {
 			}
 		}
 		if (!matching) {
-			assertionFailure().message("Calculated stacks don't equal")
-					.expected(calculatedStacksAfter)
-					.actual(actualCalculatedStacks)
-					.buildAndThrow();
+			assertionFailure().message("Calculated stacks don't equal").expected(calculatedStacksAfter).actual(actualCalculatedStacks).buildAndThrow();
 		}
 	}
 
 	@ParameterizedTest
 	@MethodSource("simulatedExtractItemDoesNotUpdateStacks")
-	void simulatedExtractItemDoesNotUpdateStacks(Map<Integer, ItemStack> internalStacksBefore, Map<Integer, ItemStack> calculatedStacksBefore, int baseSlotLimit, int extractSlot, int extractAmount, ItemStack extractResult) {
+	void simulatedExtractItemDoesNotUpdateStacks(Map<Integer, ItemStack> internalStacksBefore, Map<Integer, ItemStack> calculatedStacksBefore,
+			int baseSlotLimit, int extractSlot, int extractAmount, ItemStack extractResult) {
 		InventoryHandler invHandler = getFilledInventoryHandler(internalStacksBefore, baseSlotLimit);
 		int minSlot = Collections.min(internalStacksBefore.keySet());
 
@@ -427,31 +369,15 @@ public class CompressionInventoryPartTest {
 
 	public static Object[][] simulatedExtractItemDoesNotUpdateStacks() {
 		return new Object[][]{
-				{
-						Map.of(0, new ItemStack(Items.IRON_BLOCK, 1), 1, new ItemStack(Items.IRON_INGOT, 1), 2, ItemStack.EMPTY),
-						Map.of(0, new ItemStack(Items.IRON_BLOCK, 1), 1, new ItemStack(Items.IRON_INGOT, 10), 2, new ItemStack(Items.IRON_NUGGET, 90)),
-						64,
-						1,
-						10,
-						new ItemStack(Items.IRON_INGOT, 10)
-				},
-				{
-						Map.of(0, new ItemStack(Items.IRON_BLOCK, 3), 1, new ItemStack(Items.IRON_INGOT, 4), 2, new ItemStack(Items.IRON_NUGGET, 5)),
-						Map.of(0, new ItemStack(Items.IRON_BLOCK, 3), 1, new ItemStack(Items.IRON_INGOT, 31), 2, new ItemStack(Items.IRON_NUGGET, 284)),
-						64,
-						1,
-						10,
-						new ItemStack(Items.IRON_INGOT, 10)
-				},
-				{
-						Map.of(0, new ItemStack(Items.IRON_BLOCK, 61), 1, new ItemStack(Items.IRON_INGOT, 5), 2, new ItemStack(Items.IRON_NUGGET, 3)),
+				{Map.of(0, new ItemStack(Items.IRON_BLOCK, 1), 1, new ItemStack(Items.IRON_INGOT, 1), 2, ItemStack.EMPTY),
+						Map.of(0, new ItemStack(Items.IRON_BLOCK, 1), 1, new ItemStack(Items.IRON_INGOT, 10), 2, new ItemStack(Items.IRON_NUGGET, 90)), 64, 1,
+						10, new ItemStack(Items.IRON_INGOT, 10)},
+				{Map.of(0, new ItemStack(Items.IRON_BLOCK, 3), 1, new ItemStack(Items.IRON_INGOT, 4), 2, new ItemStack(Items.IRON_NUGGET, 5)),
+						Map.of(0, new ItemStack(Items.IRON_BLOCK, 3), 1, new ItemStack(Items.IRON_INGOT, 31), 2, new ItemStack(Items.IRON_NUGGET, 284)), 64, 1,
+						10, new ItemStack(Items.IRON_INGOT, 10)},
+				{Map.of(0, new ItemStack(Items.IRON_BLOCK, 61), 1, new ItemStack(Items.IRON_INGOT, 5), 2, new ItemStack(Items.IRON_NUGGET, 3)),
 						Map.of(0, new ItemStack(Items.IRON_BLOCK, 61), 1, new ItemStack(Items.IRON_INGOT, 554), 2, new ItemStack(Items.IRON_NUGGET, 4989)),
-						64 * 8,
-						0,
-						300,
-						new ItemStack(Items.IRON_BLOCK, 61)
-				}
-		};
+						64 * 8, 0, 300, new ItemStack(Items.IRON_BLOCK, 61)}};
 	}
 
 	@ParameterizedTest
@@ -469,165 +395,97 @@ public class CompressionInventoryPartTest {
 		assertInternalStacks(params.changedInternalStacks, invHandler);
 	}
 
-	public record InsertItemUpdatesStacksParams(Map<Integer, ItemStack> internalStacksBefore, int baseSlotLimit,
-												int insertSlot, ItemStack stack, ItemStack insertResult,
-												Map<Integer, ItemStack> changedInternalStacks,
-												Map<Integer, ItemStack> calculatedStacksAfter) {
+	public record InsertItemUpdatesStacksParams(Map<Integer, ItemStack> internalStacksBefore, int baseSlotLimit, int insertSlot, ItemStack stack,
+			ItemStack insertResult, Map<Integer, ItemStack> changedInternalStacks, Map<Integer, ItemStack> calculatedStacksAfter) {
 	}
 
 	public static List<InsertItemUpdatesStacksParams> insertItemUpdatesStacks() {
-		return List.of(new InsertItemUpdatesStacksParams(
-						Map.of(2, ItemStack.EMPTY, 1, ItemStack.EMPTY, 0, ItemStack.EMPTY),
-						64,
-						2,
-						new ItemStack(Items.IRON_NUGGET, 100),
-						ItemStack.EMPTY,
+		return List.of(
+				new InsertItemUpdatesStacksParams(Map.of(2, ItemStack.EMPTY, 1, ItemStack.EMPTY, 0, ItemStack.EMPTY), 64, 2,
+						new ItemStack(Items.IRON_NUGGET, 100), ItemStack.EMPTY,
 						Map.of(2, new ItemStack(Items.IRON_NUGGET, 1), 1, new ItemStack(Items.IRON_INGOT, 2), 0, new ItemStack(Items.IRON_BLOCK, 1)),
-						Map.of(2, new ItemStack(Items.IRON_NUGGET, 100), 1, new ItemStack(Items.IRON_INGOT, 11), 0, new ItemStack(Items.IRON_BLOCK, 1))
-				),
-				new InsertItemUpdatesStacksParams(
-						Map.of(2, ItemStack.EMPTY, 1, ItemStack.EMPTY, 0, ItemStack.EMPTY),
-						64,
-						1,
-						new ItemStack(Items.IRON_NUGGET, 100),
-						ItemStack.EMPTY,
+						Map.of(2, new ItemStack(Items.IRON_NUGGET, 100), 1, new ItemStack(Items.IRON_INGOT, 11), 0, new ItemStack(Items.IRON_BLOCK, 1))),
+				new InsertItemUpdatesStacksParams(Map.of(2, ItemStack.EMPTY, 1, ItemStack.EMPTY, 0, ItemStack.EMPTY), 64, 1,
+						new ItemStack(Items.IRON_NUGGET, 100), ItemStack.EMPTY,
 						Map.of(1, new ItemStack(Items.IRON_NUGGET, 1), 0, new ItemStack(Items.IRON_INGOT, 11)),
-						Map.of(2, ItemStack.EMPTY, 1, new ItemStack(Items.IRON_NUGGET, 100), 0, new ItemStack(Items.IRON_INGOT, 11))
-				),
+						Map.of(2, ItemStack.EMPTY, 1, new ItemStack(Items.IRON_NUGGET, 100), 0, new ItemStack(Items.IRON_INGOT, 11))),
 				new InsertItemUpdatesStacksParams(
-						Map.of(2, new ItemStack(Items.IRON_NUGGET, 8), 1, new ItemStack(Items.IRON_INGOT, 8), 0, new ItemStack(Items.IRON_BLOCK, 63)),
-						64,
-						2,
-						new ItemStack(Items.IRON_NUGGET, 1000),
-						new ItemStack(Items.IRON_NUGGET, 359),
+						Map.of(2, new ItemStack(Items.IRON_NUGGET, 8), 1, new ItemStack(Items.IRON_INGOT, 8), 0, new ItemStack(Items.IRON_BLOCK, 63)), 64, 2,
+						new ItemStack(Items.IRON_NUGGET, 1000), new ItemStack(Items.IRON_NUGGET, 359),
 						Map.of(2, new ItemStack(Items.IRON_NUGGET, 64), 1, new ItemStack(Items.IRON_INGOT, 64), 0, new ItemStack(Items.IRON_BLOCK, 64)),
-						Map.of(2, new ItemStack(Items.IRON_NUGGET, 5824), 1, new ItemStack(Items.IRON_INGOT, 640), 0, new ItemStack(Items.IRON_BLOCK, 64))
-				),
+						Map.of(2, new ItemStack(Items.IRON_NUGGET, 5824), 1, new ItemStack(Items.IRON_INGOT, 640), 0, new ItemStack(Items.IRON_BLOCK, 64))),
 				new InsertItemUpdatesStacksParams(
-						Map.of(2, new ItemStack(Items.IRON_NUGGET, 5), 1, new ItemStack(Items.IRON_INGOT, 4), 0, new ItemStack(Items.IRON_BLOCK, 3)),
-						64,
-						1,
-						new ItemStack(Items.IRON_INGOT, 32),
-						ItemStack.EMPTY,
-						Map.of(1, ItemStack.EMPTY, 0, new ItemStack(Items.IRON_BLOCK, 7)),
-						Map.of(2, new ItemStack(Items.IRON_NUGGET, 572), 1, new ItemStack(Items.IRON_INGOT, 63), 0, new ItemStack(Items.IRON_BLOCK, 7))
-				),
+						Map.of(2, new ItemStack(Items.IRON_NUGGET, 5), 1, new ItemStack(Items.IRON_INGOT, 4), 0, new ItemStack(Items.IRON_BLOCK, 3)), 64, 1,
+						new ItemStack(Items.IRON_INGOT, 32), ItemStack.EMPTY, Map.of(1, ItemStack.EMPTY, 0, new ItemStack(Items.IRON_BLOCK, 7)),
+						Map.of(2, new ItemStack(Items.IRON_NUGGET, 572), 1, new ItemStack(Items.IRON_INGOT, 63), 0, new ItemStack(Items.IRON_BLOCK, 7))),
 				new InsertItemUpdatesStacksParams(
 						Map.of(2, new ItemStack(Items.IRON_NUGGET, 8), 1, new ItemStack(Items.IRON_INGOT, 8), 0, new ItemStack(Items.IRON_BLOCK, 73741824)),
-						64 * 64 * 64 * 64 * 64,
-						0,
-						new ItemStack(Items.IRON_BLOCK, 1_000_000_001),
-						new ItemStack(Items.IRON_BLOCK, 1),
+						64 * 64 * 64 * 64 * 64, 0, new ItemStack(Items.IRON_BLOCK, 1_000_000_001), new ItemStack(Items.IRON_BLOCK, 1),
 						Map.of(0, new ItemStack(Items.IRON_BLOCK, 1073741824)),
-						Map.of(0, new ItemStack(Items.IRON_BLOCK, 1073741824), 1, new ItemStack(Items.IRON_INGOT, Integer.MAX_VALUE - 64), 2, new ItemStack(Items.IRON_NUGGET, Integer.MAX_VALUE - 64))
-				),
+						Map.of(0, new ItemStack(Items.IRON_BLOCK, 1073741824), 1, new ItemStack(Items.IRON_INGOT, Integer.MAX_VALUE - 64), 2,
+								new ItemStack(Items.IRON_NUGGET, Integer.MAX_VALUE - 64))),
 				new InsertItemUpdatesStacksParams(
-						Map.of(0, new ItemStack(Items.IRON_BLOCK, 1073741824), 1, new ItemStack(Items.IRON_INGOT, 73741824 - 48), 2, new ItemStack(Items.IRON_NUGGET, 8)),
-						64 * 64 * 64 * 64 * 64,
-						1,
-						new ItemStack(Items.IRON_INGOT, 1_000_000_000),
-						ItemStack.EMPTY,
+						Map.of(0, new ItemStack(Items.IRON_BLOCK, 1073741824), 1, new ItemStack(Items.IRON_INGOT, 73741824 - 48), 2,
+								new ItemStack(Items.IRON_NUGGET, 8)),
+						64 * 64 * 64 * 64 * 64, 1, new ItemStack(Items.IRON_INGOT, 1_000_000_000), ItemStack.EMPTY,
 						Map.of(1, new ItemStack(Items.IRON_INGOT, 1073741824 - 48)),
-						Map.of(0, new ItemStack(Items.IRON_BLOCK, 1073741824), 1, new ItemStack(Items.IRON_INGOT, Integer.MAX_VALUE - 48), 2, new ItemStack(Items.IRON_NUGGET, Integer.MAX_VALUE - 64))
-				),
+						Map.of(0, new ItemStack(Items.IRON_BLOCK, 1073741824), 1, new ItemStack(Items.IRON_INGOT, Integer.MAX_VALUE - 48), 2,
+								new ItemStack(Items.IRON_NUGGET, Integer.MAX_VALUE - 64))),
+				new InsertItemUpdatesStacksParams(Map.of(0, new ItemStack(Items.IRON_INGOT, 1), 1, ItemStack.EMPTY, 2, ItemStack.EMPTY), 64, 1,
+						new ItemStack(Items.IRON_NUGGET, 9), ItemStack.EMPTY, Map.of(0, new ItemStack(Items.IRON_INGOT, 2)),
+						Map.of(0, new ItemStack(Items.IRON_INGOT, 2), 1, new ItemStack(Items.IRON_NUGGET, 18), 2, ItemStack.EMPTY)),
+				new InsertItemUpdatesStacksParams(Map.of(0, new ItemStack(Items.IRON_BLOCK, 1), 1, ItemStack.EMPTY, 2, ItemStack.EMPTY), 64, 2,
+						new ItemStack(Items.IRON_NUGGET, 1), ItemStack.EMPTY, Map.of(2, new ItemStack(Items.IRON_NUGGET, 1)),
+						Map.of(0, new ItemStack(Items.IRON_BLOCK, 1), 1, new ItemStack(Items.IRON_INGOT, 9), 2, new ItemStack(Items.IRON_NUGGET, 82))),
+				new InsertItemUpdatesStacksParams(Map.of(0, new ItemStack(Items.IRON_BLOCK, 1), 1, new ItemStack(Items.IRON_INGOT, 7), 2, ItemStack.EMPTY), 64,
+						2, new ItemStack(Items.IRON_NUGGET, 9), ItemStack.EMPTY, Map.of(1, new ItemStack(Items.IRON_INGOT, 8)),
+						Map.of(0, new ItemStack(Items.IRON_BLOCK, 1), 1, new ItemStack(Items.IRON_INGOT, 17), 2, new ItemStack(Items.IRON_NUGGET, 153))),
+				new InsertItemUpdatesStacksParams(Map.of(0, new ItemStack(Items.IRON_INGOT, 7), 1, ItemStack.EMPTY), 64, 0, new ItemStack(Items.IRON_INGOT, 64),
+						new ItemStack(Items.IRON_INGOT, 7), Map.of(0, new ItemStack(Items.IRON_INGOT, 64)),
+						Map.of(0, new ItemStack(Items.IRON_INGOT, 64), 1, new ItemStack(Items.IRON_NUGGET, 576))),
 				new InsertItemUpdatesStacksParams(
-						Map.of(0, new ItemStack(Items.IRON_INGOT, 1), 1, ItemStack.EMPTY, 2, ItemStack.EMPTY),
-						64,
-						1,
-						new ItemStack(Items.IRON_NUGGET, 9),
-						ItemStack.EMPTY,
-						Map.of(0, new ItemStack(Items.IRON_INGOT, 2)),
-						Map.of(0, new ItemStack(Items.IRON_INGOT, 2), 1, new ItemStack(Items.IRON_NUGGET, 18), 2, ItemStack.EMPTY)
-				),
+						Map.of(0, ItemStack.EMPTY, 1, new ItemStack(Items.STICK, 1), 2, new ItemStack(Items.QUARTZ_BLOCK, 1), 3,
+								new ItemStack(Items.QUARTZ, 1)),
+						64, 0, new ItemStack(Items.DEAD_BUSH, 1), ItemStack.EMPTY, Map.of(0, new ItemStack(Items.DEAD_BUSH, 1)),
+						Map.of(0, new ItemStack(Items.DEAD_BUSH, 1), 1, new ItemStack(Items.STICK, 10), 2, new ItemStack(Items.QUARTZ_BLOCK, 91), 3,
+								new ItemStack(Items.QUARTZ, 365))),
 				new InsertItemUpdatesStacksParams(
-						Map.of(0, new ItemStack(Items.IRON_BLOCK, 1), 1, ItemStack.EMPTY, 2, ItemStack.EMPTY),
-						64,
-						2,
-						new ItemStack(Items.IRON_NUGGET, 1),
-						ItemStack.EMPTY,
-						Map.of(2, new ItemStack(Items.IRON_NUGGET, 1)),
-						Map.of(0, new ItemStack(Items.IRON_BLOCK, 1), 1, new ItemStack(Items.IRON_INGOT, 9), 2, new ItemStack(Items.IRON_NUGGET, 82))
-				),
-				new InsertItemUpdatesStacksParams(
-						Map.of(0, new ItemStack(Items.IRON_BLOCK, 1), 1, new ItemStack(Items.IRON_INGOT, 7), 2, ItemStack.EMPTY),
-						64,
-						2,
-						new ItemStack(Items.IRON_NUGGET, 9),
-						ItemStack.EMPTY,
-						Map.of(1, new ItemStack(Items.IRON_INGOT, 8)),
-						Map.of(0, new ItemStack(Items.IRON_BLOCK, 1), 1, new ItemStack(Items.IRON_INGOT, 17), 2, new ItemStack(Items.IRON_NUGGET, 153))
-				),
-				new InsertItemUpdatesStacksParams(
-						Map.of(0, new ItemStack(Items.IRON_INGOT, 7), 1, ItemStack.EMPTY),
-						64,
-						0,
-						new ItemStack(Items.IRON_INGOT, 64),
-						new ItemStack(Items.IRON_INGOT, 7),
-						Map.of(0, new ItemStack(Items.IRON_INGOT, 64)),
-						Map.of(0, new ItemStack(Items.IRON_INGOT, 64), 1, new ItemStack(Items.IRON_NUGGET, 576))
-				),
-				new InsertItemUpdatesStacksParams(
-						Map.of(0, ItemStack.EMPTY, 1, new ItemStack(Items.STICK, 1), 2, new ItemStack(Items.QUARTZ_BLOCK, 1), 3, new ItemStack(Items.QUARTZ, 1)),
-						64,
-						0,
-						new ItemStack(Items.DEAD_BUSH, 1),
-						ItemStack.EMPTY,
-						Map.of(0, new ItemStack(Items.DEAD_BUSH, 1)),
-						Map.of(0, new ItemStack(Items.DEAD_BUSH, 1), 1, new ItemStack(Items.STICK, 10), 2, new ItemStack(Items.QUARTZ_BLOCK, 91), 3, new ItemStack(Items.QUARTZ, 365))
-				),
-				new InsertItemUpdatesStacksParams(
-						Map.of(0, ItemStack.EMPTY, 1, new ItemStack(Items.STICK, 1), 2, new ItemStack(Items.QUARTZ_BLOCK, 1), 3, new ItemStack(Items.QUARTZ, 1)),
-						64,
-						0,
-						new ItemStack(Items.DEAD_BUSH, 65),
-						new ItemStack(Items.DEAD_BUSH, 1),
-						Map.of(0, new ItemStack(Items.DEAD_BUSH, 64)),
-						Map.of(0, new ItemStack(Items.DEAD_BUSH, 64), 1, new ItemStack(Items.STICK, 577), 2, new ItemStack(Items.QUARTZ_BLOCK, 5194), 3, new ItemStack(Items.QUARTZ, 20777))
+						Map.of(0, ItemStack.EMPTY, 1, new ItemStack(Items.STICK, 1), 2, new ItemStack(Items.QUARTZ_BLOCK, 1), 3,
+								new ItemStack(Items.QUARTZ, 1)),
+						64, 0, new ItemStack(Items.DEAD_BUSH, 65), new ItemStack(Items.DEAD_BUSH, 1), Map.of(0, new ItemStack(Items.DEAD_BUSH, 64)),
+						Map.of(0, new ItemStack(Items.DEAD_BUSH, 64), 1, new ItemStack(Items.STICK, 577), 2, new ItemStack(Items.QUARTZ_BLOCK, 5194), 3,
+								new ItemStack(Items.QUARTZ, 20777))
 
 				),
 				new InsertItemUpdatesStacksParams(
-						Map.of(0, new ItemStack(Items.DEAD_BUSH, 64), 1, new ItemStack(Items.STICK, 64), 2, new ItemStack(Items.QUARTZ_BLOCK, 64), 3, new ItemStack(Items.QUARTZ, 23)),
-						64,
-						3,
-						new ItemStack(Items.QUARTZ, 64),
-						new ItemStack(Items.QUARTZ, 23),
-						Map.of(3, new ItemStack(Items.QUARTZ, 64)),
-						Map.of(0, new ItemStack(Items.DEAD_BUSH, 64), 1, new ItemStack(Items.STICK, 640), 2, new ItemStack(Items.QUARTZ_BLOCK, 5824), 3, new ItemStack(Items.QUARTZ, 23360))
+						Map.of(0, new ItemStack(Items.DEAD_BUSH, 64), 1, new ItemStack(Items.STICK, 64), 2, new ItemStack(Items.QUARTZ_BLOCK, 64), 3,
+								new ItemStack(Items.QUARTZ, 23)),
+						64, 3, new ItemStack(Items.QUARTZ, 64), new ItemStack(Items.QUARTZ, 23), Map.of(3, new ItemStack(Items.QUARTZ, 64)),
+						Map.of(0, new ItemStack(Items.DEAD_BUSH, 64), 1, new ItemStack(Items.STICK, 640), 2, new ItemStack(Items.QUARTZ_BLOCK, 5824), 3,
+								new ItemStack(Items.QUARTZ, 23360))
 
 				),
 				new InsertItemUpdatesStacksParams(
-						Map.of(0, new ItemStack(Items.IRON_BLOCK, 8), 1, new ItemStack(Items.IRON_INGOT, 8), 2, new ItemStack(Items.IRON_NUGGET, 6), 3, ItemStack.EMPTY),
-						8,
-						2,
-						new ItemStack(Items.IRON_NUGGET, 33),
-						new ItemStack(Items.IRON_NUGGET, 31),
-						Map.of( 2, new ItemStack(Items.IRON_NUGGET, 8)),
-						Map.of(0, new ItemStack(Items.IRON_BLOCK, 8), 1, new ItemStack(Items.IRON_INGOT, 80), 2, new ItemStack(Items.IRON_NUGGET, 728), 3, ItemStack.EMPTY)
-				)
-		);
+						Map.of(0, new ItemStack(Items.IRON_BLOCK, 8), 1, new ItemStack(Items.IRON_INGOT, 8), 2, new ItemStack(Items.IRON_NUGGET, 6), 3,
+								ItemStack.EMPTY),
+						8, 2, new ItemStack(Items.IRON_NUGGET, 33), new ItemStack(Items.IRON_NUGGET, 31), Map.of(2, new ItemStack(Items.IRON_NUGGET, 8)),
+						Map.of(0, new ItemStack(Items.IRON_BLOCK, 8), 1, new ItemStack(Items.IRON_INGOT, 80), 2, new ItemStack(Items.IRON_NUGGET, 728), 3,
+								ItemStack.EMPTY)));
 	}
 
 	@Test
 	void insertNotMatchingStackReturnsBackWithoutChanging() {
 		insertItemUpdatesStacks(
-				new InsertItemUpdatesStacksParams(
-						Map.of(0, ItemStack.EMPTY, 1, new ItemStack(Items.IRON_INGOT, 2), 2, new ItemStack(Items.IRON_NUGGET, 1)),
-						64, 2, new ItemStack(Items.GOLD_NUGGET, 100), new ItemStack(Items.GOLD_NUGGET, 100),
-						Map.of(), Map.of(0, ItemStack.EMPTY, 1, new ItemStack(Items.IRON_INGOT, 2), 2, new ItemStack(Items.IRON_NUGGET, 19))
-				)
-		);
+				new InsertItemUpdatesStacksParams(Map.of(0, ItemStack.EMPTY, 1, new ItemStack(Items.IRON_INGOT, 2), 2, new ItemStack(Items.IRON_NUGGET, 1)), 64,
+						2, new ItemStack(Items.GOLD_NUGGET, 100), new ItemStack(Items.GOLD_NUGGET, 100), Map.of(),
+						Map.of(0, ItemStack.EMPTY, 1, new ItemStack(Items.IRON_INGOT, 2), 2, new ItemStack(Items.IRON_NUGGET, 19))));
 	}
 
 	@Test
 	void insertDecompressibleItemJustSetsItInSlotAndDoesntAffectOtherSlots() {
-		insertItemUpdatesStacks(
-				new InsertItemUpdatesStacksParams(
-						Map.of(0, ItemStack.EMPTY, 1, ItemStack.EMPTY, 2, ItemStack.EMPTY),
-						64, 1, new ItemStack(Items.GOLD_NUGGET, 64), ItemStack.EMPTY,
-						Map.of(1, new ItemStack(Items.GOLD_NUGGET, 64)),
-						Map.of(0, ItemStack.EMPTY, 1, new ItemStack(Items.GOLD_NUGGET, 64), 2, ItemStack.EMPTY)
-				)
-		);
+		insertItemUpdatesStacks(new InsertItemUpdatesStacksParams(Map.of(0, ItemStack.EMPTY, 1, ItemStack.EMPTY, 2, ItemStack.EMPTY), 64, 1,
+				new ItemStack(Items.GOLD_NUGGET, 64), ItemStack.EMPTY, Map.of(1, new ItemStack(Items.GOLD_NUGGET, 64)),
+				Map.of(0, ItemStack.EMPTY, 1, new ItemStack(Items.GOLD_NUGGET, 64), 2, ItemStack.EMPTY)));
 	}
 
 	@Test
@@ -652,7 +510,8 @@ public class CompressionInventoryPartTest {
 		CompressionInventoryPart part = initCompressionInventoryPart(invHandler, new SlotRange(0, 3), () -> memorySettings);
 		part.extractItem(0, 32, false);
 
-		assertStackEquals(new ItemStack(Items.GOLD_BLOCK, 32), part.insertItem(1, new ItemStack(Items.GOLD_BLOCK, 32), true, (s, st, sim) -> ItemStack.EMPTY), "Insert result does not equal");
+		assertStackEquals(new ItemStack(Items.GOLD_BLOCK, 32), part.insertItem(1, new ItemStack(Items.GOLD_BLOCK, 32), true, (s, st, sim) -> ItemStack.EMPTY),
+				"Insert result does not equal");
 	}
 
 	@Test
@@ -663,13 +522,16 @@ public class CompressionInventoryPartTest {
 
 		CompressionInventoryPart part = initCompressionInventoryPart(invHandler, new SlotRange(0, 3), () -> memorySettings);
 
-		assertStackEquals(new ItemStack(Items.GOLD_BLOCK, 32), part.insertItem(1, new ItemStack(Items.GOLD_BLOCK, 32), true, (s, st, sim) -> ItemStack.EMPTY), "Insert result does not equal");
-		assertStackEquals(ItemStack.EMPTY, part.insertItem(1, new ItemStack(Items.IRON_BLOCK, 32), true, (s, st, sim) -> ItemStack.EMPTY), "Insert result does not equal");
+		assertStackEquals(new ItemStack(Items.GOLD_BLOCK, 32), part.insertItem(1, new ItemStack(Items.GOLD_BLOCK, 32), true, (s, st, sim) -> ItemStack.EMPTY),
+				"Insert result does not equal");
+		assertStackEquals(ItemStack.EMPTY, part.insertItem(1, new ItemStack(Items.IRON_BLOCK, 32), true, (s, st, sim) -> ItemStack.EMPTY),
+				"Insert result does not equal");
 	}
 
 	@ParameterizedTest
 	@MethodSource("setStackInSlotUpdatesStacks")
-	void setStackInSlotUpdatesStacks(Map<Integer, ItemStack> internalStacksBefore, int baseSlotLimit, int insertSlot, ItemStack stack, Map<Integer, ItemStack> internalStacksAfter, Map<Integer, ItemStack> calculatedStacksAfter) {
+	void setStackInSlotUpdatesStacks(Map<Integer, ItemStack> internalStacksBefore, int baseSlotLimit, int insertSlot, ItemStack stack,
+			Map<Integer, ItemStack> internalStacksAfter, Map<Integer, ItemStack> calculatedStacksAfter) {
 		InventoryHandler invHandler = getFilledInventoryHandler(internalStacksBefore, baseSlotLimit);
 		int minSlot = Collections.min(internalStacksBefore.keySet());
 
@@ -684,39 +546,19 @@ public class CompressionInventoryPartTest {
 
 	public static Object[][] setStackInSlotUpdatesStacks() {
 		return new Object[][]{
-				{
-						Map.of(0, ItemStack.EMPTY, 1, ItemStack.EMPTY, 2, ItemStack.EMPTY),
-						64,
-						2,
-						new ItemStack(Items.IRON_NUGGET, 100),
+				{Map.of(0, ItemStack.EMPTY, 1, ItemStack.EMPTY, 2, ItemStack.EMPTY), 64, 2, new ItemStack(Items.IRON_NUGGET, 100),
 						Map.of(0, new ItemStack(Items.IRON_BLOCK, 1), 1, new ItemStack(Items.IRON_INGOT, 2), 2, new ItemStack(Items.IRON_NUGGET, 1)),
-						Map.of(0, new ItemStack(Items.IRON_BLOCK, 1), 1, new ItemStack(Items.IRON_INGOT, 11), 2, new ItemStack(Items.IRON_NUGGET, 100))
-				},
-				{
-						Map.of(0, ItemStack.EMPTY, 1, ItemStack.EMPTY, 2, ItemStack.EMPTY),
-						64,
-						1,
-						new ItemStack(Items.IRON_NUGGET, 100),
+						Map.of(0, new ItemStack(Items.IRON_BLOCK, 1), 1, new ItemStack(Items.IRON_INGOT, 11), 2, new ItemStack(Items.IRON_NUGGET, 100))},
+				{Map.of(0, ItemStack.EMPTY, 1, ItemStack.EMPTY, 2, ItemStack.EMPTY), 64, 1, new ItemStack(Items.IRON_NUGGET, 100),
 						Map.of(0, new ItemStack(Items.IRON_INGOT, 11), 1, new ItemStack(Items.IRON_NUGGET, 1)),
-						Map.of(0, new ItemStack(Items.IRON_INGOT, 11), 1, new ItemStack(Items.IRON_NUGGET, 100), 2, ItemStack.EMPTY)
-				},
-				{
-						Map.of(0, new ItemStack(Items.IRON_BLOCK, 63), 1, new ItemStack(Items.IRON_INGOT, 8), 2, new ItemStack(Items.IRON_NUGGET, 8)),
-						64,
-						2,
+						Map.of(0, new ItemStack(Items.IRON_INGOT, 11), 1, new ItemStack(Items.IRON_NUGGET, 100), 2, ItemStack.EMPTY)},
+				{Map.of(0, new ItemStack(Items.IRON_BLOCK, 63), 1, new ItemStack(Items.IRON_INGOT, 8), 2, new ItemStack(Items.IRON_NUGGET, 8)), 64, 2,
 						new ItemStack(Items.IRON_NUGGET, 1000),
 						Map.of(0, new ItemStack(Items.IRON_BLOCK, 12), 1, new ItemStack(Items.IRON_INGOT, 3), 2, new ItemStack(Items.IRON_NUGGET, 1)),
-						Map.of(0, new ItemStack(Items.IRON_BLOCK, 12), 1, new ItemStack(Items.IRON_INGOT, 111), 2, new ItemStack(Items.IRON_NUGGET, 1000)),
-				},
-				{
-						Map.of(0, new ItemStack(Items.IRON_BLOCK, 3), 1, new ItemStack(Items.IRON_INGOT, 4), 2, new ItemStack(Items.IRON_NUGGET, 5)),
-						64,
-						1,
-						new ItemStack(Items.IRON_INGOT, 1),
-						Map.of(0, ItemStack.EMPTY, 1, new ItemStack(Items.IRON_INGOT, 1)),
-						Map.of(0, ItemStack.EMPTY, 1, new ItemStack(Items.IRON_INGOT, 1), 2, new ItemStack(Items.IRON_NUGGET, 14))
-				}
-		};
+						Map.of(0, new ItemStack(Items.IRON_BLOCK, 12), 1, new ItemStack(Items.IRON_INGOT, 111), 2, new ItemStack(Items.IRON_NUGGET, 1000)),},
+				{Map.of(0, new ItemStack(Items.IRON_BLOCK, 3), 1, new ItemStack(Items.IRON_INGOT, 4), 2, new ItemStack(Items.IRON_NUGGET, 5)), 64, 1,
+						new ItemStack(Items.IRON_INGOT, 1), Map.of(0, ItemStack.EMPTY, 1, new ItemStack(Items.IRON_INGOT, 1)),
+						Map.of(0, ItemStack.EMPTY, 1, new ItemStack(Items.IRON_INGOT, 1), 2, new ItemStack(Items.IRON_NUGGET, 14))}};
 	}
 
 	@Test
@@ -724,7 +566,8 @@ public class CompressionInventoryPartTest {
 		InventoryHandler invHandler = getFilledInventoryHandler(Map.of(0, ItemStack.EMPTY, 1, ItemStack.EMPTY, 2, ItemStack.EMPTY), 64);
 		int minSlot = 0;
 
-		CompressionInventoryPart part = initCompressionInventoryPart(invHandler, new SlotRange(minSlot, minSlot + 3), () -> getMemorySettings(invHandler, Map.of()));
+		CompressionInventoryPart part = initCompressionInventoryPart(invHandler, new SlotRange(minSlot, minSlot + 3),
+				() -> getMemorySettings(invHandler, Map.of()));
 
 		ItemStack damagedItem = new ItemStack(Items.NETHERITE_AXE);
 		damagedItem.setDamageValue(10);
@@ -752,7 +595,8 @@ public class CompressionInventoryPartTest {
 		InventoryHandler invHandler = getFilledInventoryHandler(Map.of(0, ItemStack.EMPTY, 1, damagedItem, 2, ItemStack.EMPTY), 64);
 		int minSlot = 0;
 
-		CompressionInventoryPart part = initCompressionInventoryPart(invHandler, new SlotRange(minSlot, minSlot + 3), () -> getMemorySettings(invHandler, Map.of()));
+		CompressionInventoryPart part = initCompressionInventoryPart(invHandler, new SlotRange(minSlot, minSlot + 3),
+				() -> getMemorySettings(invHandler, Map.of()));
 
 		ItemStack damagedItemToMatch = new ItemStack(Items.NETHERITE_AXE);
 		damagedItemToMatch.setDamageValue(10);
@@ -764,7 +608,8 @@ public class CompressionInventoryPartTest {
 		InventoryHandler invHandler = getFilledInventoryHandler(Map.of(0, ItemStack.EMPTY, 1, new ItemStack(Items.COBBLESTONE, 10), 2, ItemStack.EMPTY), 64);
 		int minSlot = 0;
 
-		CompressionInventoryPart part = initCompressionInventoryPart(invHandler, new SlotRange(minSlot, minSlot + 3), () -> getMemorySettings(invHandler, Map.of()));
+		CompressionInventoryPart part = initCompressionInventoryPart(invHandler, new SlotRange(minSlot, minSlot + 3),
+				() -> getMemorySettings(invHandler, Map.of()));
 
 		assertStackEquals(new ItemStack(Items.COBBLESTONE, 1), part.extractItem(1, 1, false), "Extracted item doesn't match");
 		assertStackEquals(new ItemStack(Items.COBBLESTONE, 9), part.getStackInSlot(1, s -> ItemStack.EMPTY), "Item left in slot doesn't match");
@@ -776,46 +621,34 @@ public class CompressionInventoryPartTest {
 		InventoryHandler invHandler = getFilledInventoryHandler(params.stacks(), params.baseLimit());
 		int minSlot = 0;
 
-		CompressionInventoryPart part = initCompressionInventoryPart(invHandler, new SlotRange(minSlot, minSlot + params.stacks().size()), () -> getMemorySettings(invHandler, Map.of()));
+		CompressionInventoryPart part = initCompressionInventoryPart(invHandler, new SlotRange(minSlot, minSlot + params.stacks().size()),
+				() -> getMemorySettings(invHandler, Map.of()));
 
-		params.expectedLimits().forEach((slot, stackLimit) -> assertEquals(stackLimit.getRight(), part.getStackLimit(slot, stackLimit.getLeft()), "Stack limit doesn't match"));
+		params.expectedLimits().forEach(
+				(slot, stackLimit) -> assertEquals(stackLimit.getRight(), part.getStackLimit(slot, stackLimit.getLeft()), "Stack limit doesn't match"));
 	}
 
 	private record StackLimitsAreSetCorrectlyOnInitParams(Map<Integer, ItemStack> stacks, int baseLimit,
-														  Map<Integer, Pair<ItemStack, Integer>> expectedLimits) {
+			Map<Integer, Pair<ItemStack, Integer>> expectedLimits) {
 	}
 
 	private static List<StackLimitsAreSetCorrectlyOnInitParams> stackLimitsAreSetCorrectlyOnInit() {
 		return List.of(
+				new StackLimitsAreSetCorrectlyOnInitParams(Map.of(0, new ItemStack(Items.IRON_BLOCK), 1, ItemStack.EMPTY, 2, ItemStack.EMPTY), 64,
+						Map.of(0, ImmutablePair.of(new ItemStack(Items.IRON_BLOCK), 64), 1, ImmutablePair.of(new ItemStack(Items.IRON_INGOT), 9 * 64 + 64), 2,
+								ImmutablePair.of(new ItemStack(Items.IRON_NUGGET), 9 * 9 * 64 + 9 * 64 + 64))),
+				new StackLimitsAreSetCorrectlyOnInitParams(Map.of(0, new ItemStack(Items.IRON_INGOT), 1, ItemStack.EMPTY), 64,
+						Map.of(0, ImmutablePair.of(new ItemStack(Items.IRON_INGOT), 64), 1, ImmutablePair.of(new ItemStack(Items.IRON_NUGGET), 9 * 64 + 64))),
+				new StackLimitsAreSetCorrectlyOnInitParams(Map.of(0, new ItemStack(Items.IRON_INGOT), 1, ItemStack.EMPTY), Integer.MAX_VALUE,
+						Map.of(0, ImmutablePair.of(new ItemStack(Items.IRON_INGOT), Integer.MAX_VALUE), 1,
+								ImmutablePair.of(new ItemStack(Items.IRON_NUGGET), Integer.MAX_VALUE))),
+				new StackLimitsAreSetCorrectlyOnInitParams(Map.of(0, new ItemStack(Items.IRON_SWORD), 1, ItemStack.EMPTY), 64,
+						Map.of(0, ImmutablePair.of(new ItemStack(Items.IRON_SWORD), 1), 1, ImmutablePair.of(new ItemStack(Items.IRON_SWORD), 0))),
 				new StackLimitsAreSetCorrectlyOnInitParams(
-						Map.of(0, new ItemStack(Items.IRON_BLOCK), 1, ItemStack.EMPTY, 2, ItemStack.EMPTY),
-						64,
-						Map.of(0, ImmutablePair.of(new ItemStack(Items.IRON_BLOCK), 64), 1, ImmutablePair.of(new ItemStack(Items.IRON_INGOT), 9 * 64 + 64), 2, ImmutablePair.of(new ItemStack(Items.IRON_NUGGET), 9 * 9 * 64 + 9 * 64 + 64))
-				),
-				new StackLimitsAreSetCorrectlyOnInitParams(
-						Map.of(0, new ItemStack(Items.IRON_INGOT), 1, ItemStack.EMPTY),
-						64,
-						Map.of(0, ImmutablePair.of(new ItemStack(Items.IRON_INGOT), 64), 1, ImmutablePair.of(new ItemStack(Items.IRON_NUGGET), 9 * 64 + 64))
-				),
-				new StackLimitsAreSetCorrectlyOnInitParams(
-						Map.of(0, new ItemStack(Items.IRON_INGOT), 1, ItemStack.EMPTY),
-						Integer.MAX_VALUE,
-						Map.of(0, ImmutablePair.of(new ItemStack(Items.IRON_INGOT), Integer.MAX_VALUE), 1, ImmutablePair.of(new ItemStack(Items.IRON_NUGGET), Integer.MAX_VALUE))
-				),
-				new StackLimitsAreSetCorrectlyOnInitParams(
-						Map.of(0, new ItemStack(Items.IRON_SWORD), 1, ItemStack.EMPTY),
-						64,
-						Map.of(0, ImmutablePair.of(new ItemStack(Items.IRON_SWORD), 1), 1, ImmutablePair.of(new ItemStack(Items.IRON_SWORD), 0))
-				),
-				new StackLimitsAreSetCorrectlyOnInitParams(
-						Map.of(0, new ItemStack(Items.DEAD_BUSH), 1, ItemStack.EMPTY, 2, ItemStack.EMPTY, 3, ItemStack.EMPTY),
-						64,
-						Map.of(
-								0, ImmutablePair.of(new ItemStack(Items.DEAD_BUSH), 64), 1, ImmutablePair.of(new ItemStack(Items.STICK), 9 * 64 + 64),
-								2, ImmutablePair.of(new ItemStack(Items.QUARTZ_BLOCK), 9 * 9 * 64 + 9 * 64 + 64), 3, ImmutablePair.of(new ItemStack(Items.QUARTZ), 9 * 9 * 4 * 64 + 9 * 4 * 64 + 4 * 64 + 64)
-						)
-				)
-		);
+						Map.of(0, new ItemStack(Items.DEAD_BUSH), 1, ItemStack.EMPTY, 2, ItemStack.EMPTY, 3, ItemStack.EMPTY), 64,
+						Map.of(0, ImmutablePair.of(new ItemStack(Items.DEAD_BUSH), 64), 1, ImmutablePair.of(new ItemStack(Items.STICK), 9 * 64 + 64), 2,
+								ImmutablePair.of(new ItemStack(Items.QUARTZ_BLOCK), 9 * 9 * 64 + 9 * 64 + 64), 3,
+								ImmutablePair.of(new ItemStack(Items.QUARTZ), 9 * 9 * 4 * 64 + 9 * 4 * 64 + 4 * 64 + 64))));
 	}
 
 	@ParameterizedTest
@@ -824,7 +657,8 @@ public class CompressionInventoryPartTest {
 		InventoryHandler invHandler = getFilledInventoryHandler(params.stacks(), params.baseLimit());
 		int minSlot = 0;
 
-		CompressionInventoryPart part = initCompressionInventoryPart(invHandler, new SlotRange(minSlot, minSlot + params.stacks().size()), () -> getMemorySettings(invHandler, Map.of()));
+		CompressionInventoryPart part = initCompressionInventoryPart(invHandler, new SlotRange(minSlot, minSlot + params.stacks().size()),
+				() -> getMemorySettings(invHandler, Map.of()));
 
 		part.insertItem(params.insertedStack.getLeft(), params.insertedStack.getRight(), false, (slot, itemStack, simulate) -> ItemStack.EMPTY);
 
@@ -832,39 +666,25 @@ public class CompressionInventoryPartTest {
 		assertInternalStacks(params.expectedStacksSet(), invHandler);
 	}
 
-	private record InsertingAdditionalUncompressibleItemsProperlyCalculatesCountParams(Map<Integer, ItemStack> stacks,
-																					   int baseLimit,
-																					   Pair<Integer, ItemStack> insertedStack,
-																					   Map<Integer, ItemStack> expectedStacksSet) {
+	private record InsertingAdditionalUncompressibleItemsProperlyCalculatesCountParams(Map<Integer, ItemStack> stacks, int baseLimit,
+			Pair<Integer, ItemStack> insertedStack, Map<Integer, ItemStack> expectedStacksSet) {
 	}
 
 	private static List<InsertingAdditionalUncompressibleItemsProperlyCalculatesCountParams> insertingAdditionalUncompressibleItemsProperlyCalculatesCount() {
 		return List.of(
-				new InsertingAdditionalUncompressibleItemsProperlyCalculatesCountParams(
-						Map.of(0, new ItemStack(Items.SAND, 23), 1, ItemStack.EMPTY),
-						64,
-						ImmutablePair.of(0, new ItemStack(Items.SAND, 41)),
-						Map.of(0, new ItemStack(Items.SAND, 64))
-				),
-				new InsertingAdditionalUncompressibleItemsProperlyCalculatesCountParams(
-						Map.of(0, new ItemStack(Items.SAND, 23), 1, ItemStack.EMPTY),
-						256,
-						ImmutablePair.of(0, new ItemStack(Items.SAND, 128)),
-						Map.of(0, new ItemStack(Items.SAND, 151))
-				),
-				new InsertingAdditionalUncompressibleItemsProperlyCalculatesCountParams(
-						Map.of(0, ItemStack.EMPTY, 1, ItemStack.EMPTY),
-						256,
-						ImmutablePair.of(0, new ItemStack(Items.SAND, 256)),
-						Map.of(0, new ItemStack(Items.SAND, 256))
-				)
-		);
+				new InsertingAdditionalUncompressibleItemsProperlyCalculatesCountParams(Map.of(0, new ItemStack(Items.SAND, 23), 1, ItemStack.EMPTY), 64,
+						ImmutablePair.of(0, new ItemStack(Items.SAND, 41)), Map.of(0, new ItemStack(Items.SAND, 64))),
+				new InsertingAdditionalUncompressibleItemsProperlyCalculatesCountParams(Map.of(0, new ItemStack(Items.SAND, 23), 1, ItemStack.EMPTY), 256,
+						ImmutablePair.of(0, new ItemStack(Items.SAND, 128)), Map.of(0, new ItemStack(Items.SAND, 151))),
+				new InsertingAdditionalUncompressibleItemsProperlyCalculatesCountParams(Map.of(0, ItemStack.EMPTY, 1, ItemStack.EMPTY), 256,
+						ImmutablePair.of(0, new ItemStack(Items.SAND, 256)), Map.of(0, new ItemStack(Items.SAND, 256))));
 	}
 
 	@Test
 	void configuredEightItemDecompressionCalculatesLowerSlotCount() {
 		Map<Integer, ItemStack> slotStacks = Map.of(0, new ItemStack(Items.COAL), 1, ItemStack.EMPTY);
-		CompressionUpgradeConfig.DecompressionResult configuredDecompression = new CompressionUpgradeConfig.DecompressionResult(new ItemStack(Items.CHARCOAL), 8);
+		CompressionUpgradeConfig.DecompressionResult configuredDecompression = new CompressionUpgradeConfig.DecompressionResult(new ItemStack(Items.CHARCOAL),
+				8);
 		InventoryHandler invHandler = getFilledInventoryHandler(slotStacks, 64);
 
 		CompressionInventoryPart part = initCompressionInventoryPartWithConfiguredDecompression(invHandler, Items.COAL, configuredDecompression);
@@ -875,7 +695,8 @@ public class CompressionInventoryPartTest {
 	@Test
 	void recipeBackedConfiguredEightItemDecompressionCalculatesLowerSlotCount() {
 		Map<Integer, ItemStack> slotStacks = Map.of(0, new ItemStack(Items.ECHO_SHARD), 1, ItemStack.EMPTY);
-		CompressionUpgradeConfig.DecompressionResult recipeBackedDecompression = new CompressionUpgradeConfig.DecompressionResult(new ItemStack(Items.POISONOUS_POTATO), 8);
+		CompressionUpgradeConfig.DecompressionResult recipeBackedDecompression = new CompressionUpgradeConfig.DecompressionResult(
+				new ItemStack(Items.POISONOUS_POTATO), 8);
 		InventoryHandler invHandler = getFilledInventoryHandler(slotStacks, 64);
 
 		CompressionInventoryPart part = initCompressionInventoryPartWithConfiguredDecompression(invHandler, Items.ECHO_SHARD, recipeBackedDecompression);
@@ -899,7 +720,8 @@ public class CompressionInventoryPartTest {
 		assertInternalStacks(Map.of(0, new ItemStack(Items.COAL, 2)), invHandler);
 	}
 
-	private CompressionInventoryPart initCompressionInventoryPartWithConfiguredDecompression(InventoryHandler invHandler, Item item, CompressionUpgradeConfig.DecompressionResult decompressionResult) {
+	private CompressionInventoryPart initCompressionInventoryPartWithConfiguredDecompression(InventoryHandler invHandler, Item item,
+			CompressionUpgradeConfig.DecompressionResult decompressionResult) {
 		CompressionInventoryPart spiedPart = spy(new CompressionInventoryPart(invHandler, new SlotRange(0, 2), () -> getMemorySettings(invHandler, Map.of())));
 		doReturn(Optional.empty()).when(spiedPart).getDecompressionResultFromConfig(any(Item.class));
 		doReturn(Optional.empty()).when(spiedPart).getCompressionResultFromConfig(any(ItemStack.class));
@@ -914,96 +736,89 @@ public class CompressionInventoryPartTest {
 		InventoryHandler invHandler = getFilledInventoryHandler(params.stacks(), params.baseLimit());
 		int minSlot = 0;
 
-		CompressionInventoryPart part = initCompressionInventoryPart(invHandler, new SlotRange(minSlot, minSlot + params.stacks().size()), () -> getMemorySettings(invHandler, Map.of()));
+		CompressionInventoryPart part = initCompressionInventoryPart(invHandler, new SlotRange(minSlot, minSlot + params.stacks().size()),
+				() -> getMemorySettings(invHandler, Map.of()));
 
 		part.extractItem(params.extractedStack.getLeft(), params.extractedStack.getRight(), false);
 
 		assertCalculatedStacks(params.expectedCalculatedStacks(), 0, part);
 	}
 
-	private record ExtractingFromFullyFilledSlotsProperlyCalculatesCountsParams(Map<Integer, ItemStack> stacks,
-																				int baseLimit,
-																				Pair<Integer, Integer> extractedStack,
-																				Map<Integer, ItemStack> expectedCalculatedStacks) {
+	private record ExtractingFromFullyFilledSlotsProperlyCalculatesCountsParams(Map<Integer, ItemStack> stacks, int baseLimit,
+			Pair<Integer, Integer> extractedStack, Map<Integer, ItemStack> expectedCalculatedStacks) {
 	}
 
 	private static List<ExtractingFromFullyFilledSlotsProperlyCalculatesCountsParams> extractingFromFullyFilledSlotsProperlyCalculatesCounts() {
 		return List.of(
 				new ExtractingFromFullyFilledSlotsProperlyCalculatesCountsParams(
-						Map.of(0, new ItemStack(Items.IRON_BLOCK, 256), 1, new ItemStack(Items.IRON_INGOT, 256)),
-						256,
-						ImmutablePair.of(1, 64),
-						Map.of(0, new ItemStack(Items.IRON_BLOCK, 256), 1, new ItemStack(Items.IRON_INGOT, 2496))
-				),
+						Map.of(0, new ItemStack(Items.IRON_BLOCK, 256), 1, new ItemStack(Items.IRON_INGOT, 256)), 256, ImmutablePair.of(1, 64),
+						Map.of(0, new ItemStack(Items.IRON_BLOCK, 256), 1, new ItemStack(Items.IRON_INGOT, 2496))),
 				new ExtractingFromFullyFilledSlotsProperlyCalculatesCountsParams(
-						Map.of(0, new ItemStack(Items.IRON_BLOCK, 256), 1, new ItemStack(Items.IRON_INGOT, 256)),
-						256,
-						ImmutablePair.of(1, 256),
-						Map.of(0, new ItemStack(Items.IRON_BLOCK, 256), 1, new ItemStack(Items.IRON_INGOT, 2496))
-				),
+						Map.of(0, new ItemStack(Items.IRON_BLOCK, 256), 1, new ItemStack(Items.IRON_INGOT, 256)), 256, ImmutablePair.of(1, 256),
+						Map.of(0, new ItemStack(Items.IRON_BLOCK, 256), 1, new ItemStack(Items.IRON_INGOT, 2496))),
 				new ExtractingFromFullyFilledSlotsProperlyCalculatesCountsParams(
-						Map.of(0, new ItemStack(Items.IRON_BLOCK, 256), 1, new ItemStack(Items.IRON_INGOT, 256)),
-						256,
-						ImmutablePair.of(1, 0),
-						Map.of(0, new ItemStack(Items.IRON_BLOCK, 256), 1, new ItemStack(Items.IRON_INGOT, 2560))
-				),
+						Map.of(0, new ItemStack(Items.IRON_BLOCK, 256), 1, new ItemStack(Items.IRON_INGOT, 256)), 256, ImmutablePair.of(1, 0),
+						Map.of(0, new ItemStack(Items.IRON_BLOCK, 256), 1, new ItemStack(Items.IRON_INGOT, 2560))),
 				new ExtractingFromFullyFilledSlotsProperlyCalculatesCountsParams(
-						Map.of(0, new ItemStack(Items.IRON_BLOCK, 256), 1, new ItemStack(Items.IRON_INGOT, 256), 2, new ItemStack(Items.IRON_NUGGET, 1)),
-						256,
+						Map.of(0, new ItemStack(Items.IRON_BLOCK, 256), 1, new ItemStack(Items.IRON_INGOT, 256), 2, new ItemStack(Items.IRON_NUGGET, 1)), 256,
 						ImmutablePair.of(2, 64),
-						Map.of(0, new ItemStack(Items.IRON_BLOCK, 256), 1, new ItemStack(Items.IRON_INGOT, 2553), 2, new ItemStack(Items.IRON_NUGGET, 22977))
-				),
+						Map.of(0, new ItemStack(Items.IRON_BLOCK, 256), 1, new ItemStack(Items.IRON_INGOT, 2553), 2, new ItemStack(Items.IRON_NUGGET, 22977))),
 				new ExtractingFromFullyFilledSlotsProperlyCalculatesCountsParams(
-						Map.of(0, new ItemStack(Items.IRON_BLOCK, 256), 1, new ItemStack(Items.IRON_INGOT, 256), 2, new ItemStack(Items.IRON_NUGGET, 256)),
-						256,
+						Map.of(0, new ItemStack(Items.IRON_BLOCK, 256), 1, new ItemStack(Items.IRON_INGOT, 256), 2, new ItemStack(Items.IRON_NUGGET, 256)), 256,
 						ImmutablePair.of(2, 256 + 10 * 9),
-						Map.of(0, new ItemStack(Items.IRON_BLOCK, 256), 1, new ItemStack(Items.IRON_INGOT, 2560), 2, new ItemStack(Items.IRON_NUGGET, 23232)) // the extract gets maxed to 64
-				)
-		);
+						Map.of(0, new ItemStack(Items.IRON_BLOCK, 256), 1, new ItemStack(Items.IRON_INGOT, 2560), 2, new ItemStack(Items.IRON_NUGGET, 23232)) // the
+																																								// extract
+																																								// gets
+																																								// maxed
+																																								// to
+																																								// 64
+				));
 	}
 
 	@ParameterizedTest
 	@MethodSource("initializingWithPartiallyNonCompressibleItemsDoesntCrashAndAllowsAccessToNonCompressedStacks")
-	void initializingWithPartiallyNonCompressibleItemsDoesntCrashAndAllowsAccessToNonCompressedStacks(InitializingWithPartiallyNonCompressibleItemsDoesntCrashAndAllowsAccessToNonCompressedStacksParams params) {
+	void initializingWithPartiallyNonCompressibleItemsDoesntCrashAndAllowsAccessToNonCompressedStacks(
+			InitializingWithPartiallyNonCompressibleItemsDoesntCrashAndAllowsAccessToNonCompressedStacksParams params) {
 		InventoryHandler invHandler = getFilledInventoryHandler(params.stacks(), params.baseLimit());
 		int minSlot = 0;
 
-		CompressionInventoryPart part = initCompressionInventoryPart(invHandler, new SlotRange(minSlot, minSlot + params.stacks().size()), () -> getMemorySettings(invHandler, Map.of()));
+		CompressionInventoryPart part = initCompressionInventoryPart(invHandler, new SlotRange(minSlot, minSlot + params.stacks().size()),
+				() -> getMemorySettings(invHandler, Map.of()));
 
 		assertCalculatedStacks(params.calculatedStacks(), 0, part);
 	}
 
-	private record InitializingWithPartiallyNonCompressibleItemsDoesntCrashAndAllowsAccessToNonCompressedStacksParams(
-			Map<Integer, ItemStack> stacks, int baseLimit, Map<Integer, ItemStack> calculatedStacks) {
+	private record InitializingWithPartiallyNonCompressibleItemsDoesntCrashAndAllowsAccessToNonCompressedStacksParams(Map<Integer, ItemStack> stacks,
+			int baseLimit, Map<Integer, ItemStack> calculatedStacks) {
 	}
 
 	private static List<InitializingWithPartiallyNonCompressibleItemsDoesntCrashAndAllowsAccessToNonCompressedStacksParams> initializingWithPartiallyNonCompressibleItemsDoesntCrashAndAllowsAccessToNonCompressedStacks() {
 		return List.of(
 				new InitializingWithPartiallyNonCompressibleItemsDoesntCrashAndAllowsAccessToNonCompressedStacksParams(
-						Map.of(0, ItemStack.EMPTY, 1, new ItemStack(Items.IRON_AXE), 2, new ItemStack(Items.IRON_INGOT), 3, ItemStack.EMPTY),
-						64,
-						Map.of(0, ItemStack.EMPTY, 1, new ItemStack(Items.IRON_AXE), 2, new ItemStack(Items.IRON_INGOT), 3, ItemStack.EMPTY)
-				),
+						Map.of(0, ItemStack.EMPTY, 1, new ItemStack(Items.IRON_AXE), 2, new ItemStack(Items.IRON_INGOT), 3, ItemStack.EMPTY), 64,
+						Map.of(0, ItemStack.EMPTY, 1, new ItemStack(Items.IRON_AXE), 2, new ItemStack(Items.IRON_INGOT), 3, ItemStack.EMPTY)),
 				new InitializingWithPartiallyNonCompressibleItemsDoesntCrashAndAllowsAccessToNonCompressedStacksParams(
-						Map.of(0, ItemStack.EMPTY, 1, new ItemStack(Items.IRON_AXE), 2, new ItemStack(Items.IRON_INGOT, 4), 3, new ItemStack(Items.IRON_NUGGET, 3)),
+						Map.of(0, ItemStack.EMPTY, 1, new ItemStack(Items.IRON_AXE), 2, new ItemStack(Items.IRON_INGOT, 4), 3,
+								new ItemStack(Items.IRON_NUGGET, 3)),
 						256,
-						Map.of(0, ItemStack.EMPTY, 1, new ItemStack(Items.IRON_AXE), 2, new ItemStack(Items.IRON_INGOT, 4), 3, new ItemStack(Items.IRON_NUGGET, 3))
-				),
+						Map.of(0, ItemStack.EMPTY, 1, new ItemStack(Items.IRON_AXE), 2, new ItemStack(Items.IRON_INGOT, 4), 3,
+								new ItemStack(Items.IRON_NUGGET, 3))),
 				new InitializingWithPartiallyNonCompressibleItemsDoesntCrashAndAllowsAccessToNonCompressedStacksParams(
-						Map.of(0, new ItemStack(Items.IRON_INGOT, 4), 1, new ItemStack(Items.IRON_NUGGET, 3), 2, ItemStack.EMPTY, 3, new ItemStack(Items.IRON_AXE)),
-						256,
-						Map.of(0, new ItemStack(Items.IRON_INGOT, 4), 1, new ItemStack(Items.IRON_NUGGET, 3), 2, ItemStack.EMPTY, 3, new ItemStack(Items.IRON_AXE))
-				)
-		);
+						Map.of(0, new ItemStack(Items.IRON_INGOT, 4), 1, new ItemStack(Items.IRON_NUGGET, 3), 2, ItemStack.EMPTY, 3,
+								new ItemStack(Items.IRON_AXE)),
+						256, Map.of(0, new ItemStack(Items.IRON_INGOT, 4), 1, new ItemStack(Items.IRON_NUGGET, 3), 2, ItemStack.EMPTY, 3,
+								new ItemStack(Items.IRON_AXE))));
 	}
 
 	@ParameterizedTest
 	@MethodSource("updatingStackDirectlyAndCallingContentsChangedUpdatesCalculatedStacksProperly")
-	void updatingStackDirectlyAndCallingContentsChangedUpdatesCalculatedStacksProperly(UpdatingStackDirectlyAndCallingContentsChangedUpdatesCalculatedStacksProperlyParams params) {
+	void updatingStackDirectlyAndCallingContentsChangedUpdatesCalculatedStacksProperly(
+			UpdatingStackDirectlyAndCallingContentsChangedUpdatesCalculatedStacksProperlyParams params) {
 		InventoryHandler invHandler = getFilledInventoryHandler(params.stacks(), params.baseLimit());
 		int minSlot = 0;
 
-		CompressionInventoryPart part = initCompressionInventoryPart(invHandler, new SlotRange(minSlot, minSlot + params.stacks().size()), () -> getMemorySettings(invHandler, Map.of()));
+		CompressionInventoryPart part = initCompressionInventoryPart(invHandler, new SlotRange(minSlot, minSlot + params.stacks().size()),
+				() -> getMemorySettings(invHandler, Map.of()));
 
 		part.getStackInSlot(params.shrunkBy.getLeft(), invHandler::getStackInSlot).shrink(params.shrunkBy.getRight());
 		part.onContentsChanged(params.shrunkBy.getLeft(), invHandler::setStackInSlot);
@@ -1011,22 +826,15 @@ public class CompressionInventoryPartTest {
 		assertCalculatedStacks(params.expectedCalculatedStacks(), minSlot, part);
 	}
 
-	private record UpdatingStackDirectlyAndCallingContentsChangedUpdatesCalculatedStacksProperlyParams(
-			Map<Integer, ItemStack> stacks,
-			int baseLimit,
-			Pair<Integer, Integer> shrunkBy,
-			Map<Integer, ItemStack> expectedCalculatedStacks) {
+	private record UpdatingStackDirectlyAndCallingContentsChangedUpdatesCalculatedStacksProperlyParams(Map<Integer, ItemStack> stacks, int baseLimit,
+			Pair<Integer, Integer> shrunkBy, Map<Integer, ItemStack> expectedCalculatedStacks) {
 	}
 
 	private static List<UpdatingStackDirectlyAndCallingContentsChangedUpdatesCalculatedStacksProperlyParams> updatingStackDirectlyAndCallingContentsChangedUpdatesCalculatedStacksProperly() {
-		return List.of(
-				new UpdatingStackDirectlyAndCallingContentsChangedUpdatesCalculatedStacksProperlyParams(
-						Map.of(0, new ItemStack(Items.IRON_BLOCK, 1), 1, new ItemStack(Items.IRON_INGOT, 2), 2, new ItemStack(Items.IRON_NUGGET, 1)),
-						64,
-						ImmutablePair.of(2, 20),
-						Map.of(0, new ItemStack(Items.IRON_BLOCK, 0), 1, new ItemStack(Items.IRON_INGOT, 8), 2, new ItemStack(Items.IRON_NUGGET, 80))
-				)
-		);
+		return List.of(new UpdatingStackDirectlyAndCallingContentsChangedUpdatesCalculatedStacksProperlyParams(
+				Map.of(0, new ItemStack(Items.IRON_BLOCK, 1), 1, new ItemStack(Items.IRON_INGOT, 2), 2, new ItemStack(Items.IRON_NUGGET, 1)), 64,
+				ImmutablePair.of(2, 20),
+				Map.of(0, new ItemStack(Items.IRON_BLOCK, 0), 1, new ItemStack(Items.IRON_INGOT, 8), 2, new ItemStack(Items.IRON_NUGGET, 80))));
 	}
 
 	@ParameterizedTest
@@ -1035,73 +843,62 @@ public class CompressionInventoryPartTest {
 		InventoryHandler invHandler = getFilledInventoryHandler(params.stacks(), params.baseLimit());
 		int minSlot = 0;
 
-		CompressionInventoryPart part = initCompressionInventoryPart(invHandler, new SlotRange(minSlot, minSlot + params.stacks().size()), () -> getMemorySettings(invHandler, Map.of()));
+		CompressionInventoryPart part = initCompressionInventoryPart(invHandler, new SlotRange(minSlot, minSlot + params.stacks().size()),
+				() -> getMemorySettings(invHandler, Map.of()));
 
 		for (ItemStack stack : params.stacksToSet) {
 			part.setStackInSlot(params.slot, stack, (slot, stack1) -> {
 				invHandler.setStackInSlot(slot, stack1);
-				part.onContentsChanged(slot, invHandler::setStackInSlot); //simulates what real implementation of InventoryHandler does when slot changes (the mock used here doesn't trigger the onchange)
+				part.onContentsChanged(slot, invHandler::setStackInSlot); // simulates what real implementation of InventoryHandler does when slot changes (the
+																			// mock used here doesn't trigger the onchange)
 			});
 		}
 
 		assertCalculatedStacks(params.expectedCalculatedStacks, minSlot, part);
 	}
 
-	private record SettingStackMultipleTimesResultsInCorrectCalculatedStacksParams(
-			Map<Integer, ItemStack> stacks,
-			int baseLimit,
+	private record SettingStackMultipleTimesResultsInCorrectCalculatedStacksParams(Map<Integer, ItemStack> stacks, int baseLimit,
 			Map<Integer, ItemStack> expectedCalculatedStacks, int slot, ItemStack... stacksToSet) {
 	}
 
 	private static List<SettingStackMultipleTimesResultsInCorrectCalculatedStacksParams> settingStackMultipleTimesResultsInCorrectCalculatedStacks() {
-		return List.of(
+		return List.of(new SettingStackMultipleTimesResultsInCorrectCalculatedStacksParams(Map.of(0, ItemStack.EMPTY, 1, ItemStack.EMPTY, 2, ItemStack.EMPTY),
+				64, Map.of(0, new ItemStack(Items.IRON_BLOCK, 1), 1, new ItemStack(Items.IRON_INGOT, 11), 2, new ItemStack(Items.IRON_NUGGET, 100)), 2,
+				new ItemStack(Items.IRON_NUGGET, 100)),
+				new SettingStackMultipleTimesResultsInCorrectCalculatedStacksParams(Map.of(0, ItemStack.EMPTY, 1, ItemStack.EMPTY, 2, ItemStack.EMPTY), 64,
+						Map.of(0, new ItemStack(Items.IRON_BLOCK, 2), 1, new ItemStack(Items.IRON_INGOT, 22), 2, new ItemStack(Items.IRON_NUGGET, 200)), 2,
+						new ItemStack(Items.IRON_NUGGET, 100), new ItemStack(Items.IRON_NUGGET, 200)),
 				new SettingStackMultipleTimesResultsInCorrectCalculatedStacksParams(
-						Map.of(0, ItemStack.EMPTY, 1, ItemStack.EMPTY, 2, ItemStack.EMPTY),
-						64,
-						Map.of(0, new ItemStack(Items.IRON_BLOCK, 1), 1, new ItemStack(Items.IRON_INGOT, 11), 2, new ItemStack(Items.IRON_NUGGET, 100)),
-						2,
-						new ItemStack(Items.IRON_NUGGET, 100)
-				),
+						Map.of(0, ItemStack.EMPTY, 1, new ItemStack(Items.IRON_INGOT, 2), 2, ItemStack.EMPTY), 64,
+						Map.of(0, new ItemStack(Items.IRON_BLOCK, 2), 1, new ItemStack(Items.IRON_INGOT, 18), 2, new ItemStack(Items.IRON_NUGGET, 162)), 1,
+						new ItemStack(Items.IRON_INGOT, 2), new ItemStack(Items.IRON_INGOT, 18)),
 				new SettingStackMultipleTimesResultsInCorrectCalculatedStacksParams(
-						Map.of(0, ItemStack.EMPTY, 1, ItemStack.EMPTY, 2, ItemStack.EMPTY),
-						64,
-						Map.of(0, new ItemStack(Items.IRON_BLOCK, 2), 1, new ItemStack(Items.IRON_INGOT, 22), 2, new ItemStack(Items.IRON_NUGGET, 200)),
-						2,
-						new ItemStack(Items.IRON_NUGGET, 100), new ItemStack(Items.IRON_NUGGET, 200)
-				),
-				new SettingStackMultipleTimesResultsInCorrectCalculatedStacksParams(
-						Map.of(0, ItemStack.EMPTY, 1, new ItemStack(Items.IRON_INGOT, 2), 2, ItemStack.EMPTY),
-						64,
-						Map.of(0, new ItemStack(Items.IRON_BLOCK, 2), 1, new ItemStack(Items.IRON_INGOT, 18), 2, new ItemStack(Items.IRON_NUGGET, 162)),
-						1,
-						new ItemStack(Items.IRON_INGOT, 2), new ItemStack(Items.IRON_INGOT, 18)
-				),
-				new SettingStackMultipleTimesResultsInCorrectCalculatedStacksParams(
-						Map.of(0, ItemStack.EMPTY, 1, new ItemStack(Items.IRON_INGOT, 2), 2, ItemStack.EMPTY),
-						64,
-						Map.of(0, new ItemStack(Items.IRON_BLOCK, 2), 1, new ItemStack(Items.IRON_INGOT, 18), 2, new ItemStack(Items.IRON_NUGGET, 162)),
-						1,
-						new ItemStack(Items.IRON_INGOT, 2), new ItemStack(Items.IRON_INGOT, 18), new ItemStack(Items.IRON_INGOT, 36), new ItemStack(Items.IRON_INGOT, 54), new ItemStack(Items.IRON_INGOT, 18)
-				)
-		);
+						Map.of(0, ItemStack.EMPTY, 1, new ItemStack(Items.IRON_INGOT, 2), 2, ItemStack.EMPTY), 64,
+						Map.of(0, new ItemStack(Items.IRON_BLOCK, 2), 1, new ItemStack(Items.IRON_INGOT, 18), 2, new ItemStack(Items.IRON_NUGGET, 162)), 1,
+						new ItemStack(Items.IRON_INGOT, 2), new ItemStack(Items.IRON_INGOT, 18), new ItemStack(Items.IRON_INGOT, 36),
+						new ItemStack(Items.IRON_INGOT, 54), new ItemStack(Items.IRON_INGOT, 18)));
 	}
 
 	@Test
 	public void extractFromIncorrectSlotReturnsEmpty() {
-		InventoryHandler invHandler = getFilledInventoryHandler(Map.of(0, new ItemStack(Items.IRON_BLOCK, 1), 1, new ItemStack(Items.IRON_INGOT, 2), 2, new ItemStack(Items.IRON_NUGGET, 3)), 64);
+		InventoryHandler invHandler = getFilledInventoryHandler(
+				Map.of(0, new ItemStack(Items.IRON_BLOCK, 1), 1, new ItemStack(Items.IRON_INGOT, 2), 2, new ItemStack(Items.IRON_NUGGET, 3)), 64);
 		int minSlot = 0;
 
-		CompressionInventoryPart part = initCompressionInventoryPart(invHandler, new SlotRange(minSlot, minSlot + 3), () -> getMemorySettings(invHandler, Map.of()));
+		CompressionInventoryPart part = initCompressionInventoryPart(invHandler, new SlotRange(minSlot, minSlot + 3),
+				() -> getMemorySettings(invHandler, Map.of()));
 
 		assertStackEquals(ItemStack.EMPTY, part.extractItem(3, 1, false), "Extracted item doesn't match");
 	}
 
 	@Test
 	public void extractFromSlotAfterLastExtractedReturnsEmpty() {
-		InventoryHandler invHandler = getFilledInventoryHandler(Map.of(0, new ItemStack(Items.IRON_BLOCK, 1), 1, new ItemStack(Items.IRON_INGOT, 2), 2, new ItemStack(Items.IRON_NUGGET, 3)), 64);
+		InventoryHandler invHandler = getFilledInventoryHandler(
+				Map.of(0, new ItemStack(Items.IRON_BLOCK, 1), 1, new ItemStack(Items.IRON_INGOT, 2), 2, new ItemStack(Items.IRON_NUGGET, 3)), 64);
 		int minSlot = 0;
 
-		CompressionInventoryPart part = initCompressionInventoryPart(invHandler, new SlotRange(minSlot, minSlot + 3), () -> getMemorySettings(invHandler, Map.of()));
+		CompressionInventoryPart part = initCompressionInventoryPart(invHandler, new SlotRange(minSlot, minSlot + 3),
+				() -> getMemorySettings(invHandler, Map.of()));
 
 		part.extractItem(0, 1, false);
 		part.extractItem(1, 2, false);

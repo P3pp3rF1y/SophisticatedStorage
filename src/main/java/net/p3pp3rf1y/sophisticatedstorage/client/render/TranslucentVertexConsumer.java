@@ -32,7 +32,8 @@ public class TranslucentVertexConsumer implements VertexConsumer {
 	}
 
 	@Override
-	public void addVertex(float x, float y, float z, int color, float texU, float texV, int overlayUV, int lightmapUV, float normalX, float normalY, float normalZ) {
+	public void addVertex(float x, float y, float z, int color, float texU, float texV, int overlayUV, int lightmapUV, float normalX, float normalY,
+			float normalZ) {
 		int modifiedColor = defaultA << 24 | color & 0xFFFFFF;
 		VertexConsumer.super.addVertex(x, y, z, modifiedColor, texU, texV, overlayUV, lightmapUV, normalX, normalY, normalZ);
 	}

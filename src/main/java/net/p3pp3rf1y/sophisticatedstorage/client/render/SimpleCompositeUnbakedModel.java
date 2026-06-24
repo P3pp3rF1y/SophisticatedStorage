@@ -14,6 +14,7 @@ import net.minecraft.util.context.ContextMap;
 import net.neoforged.neoforge.client.model.*;
 
 import javax.annotation.Nullable;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -65,8 +66,7 @@ public class SimpleCompositeUnbakedModel extends AbstractUnbakedModel {
 
 		private void addAllChildElements(ModelBaker baker, ModelDebugName debugName, List<BlockElement> elements) {
 			children.forEach((key, value) -> {
-				ResolvedModel model = value.map(baker::getModel,
-						(inline) -> baker.resolveInlineModel(inline, () -> debugName.debugName() + "_" + key));
+				ResolvedModel model = value.map(baker::getModel, (inline) -> baker.resolveInlineModel(inline, () -> debugName.debugName() + "_" + key));
 				addModelElements(baker, debugName, elements, model);
 			});
 		}
@@ -94,7 +94,6 @@ public class SimpleCompositeUnbakedModel extends AbstractUnbakedModel {
 		}
 	}
 
-
 	@SuppressWarnings("java:S6548") // singleton implementation is good here
 	public static final class Loader implements UnbakedModelLoader<SimpleCompositeUnbakedModel> {
 		public static final Loader INSTANCE = new Loader();
@@ -114,7 +113,8 @@ public class SimpleCompositeUnbakedModel extends AbstractUnbakedModel {
 			return new SimpleCompositeUnbakedModel(new SimpleCompositeUnbakedGeometry(children), parameters);
 		}
 
-		private static void readChildren(JsonObject jsonObject, String name, ImmutableMap.Builder<String, Either<ResourceLocation, UnbakedModel>> children, JsonDeserializationContext context) {
+		private static void readChildren(JsonObject jsonObject, String name, ImmutableMap.Builder<String, Either<ResourceLocation, UnbakedModel>> children,
+				JsonDeserializationContext context) {
 			if (jsonObject.has(name)) {
 				JsonObject childrenJsonObject = jsonObject.getAsJsonObject(name);
 
@@ -122,8 +122,7 @@ public class SimpleCompositeUnbakedModel extends AbstractUnbakedModel {
 					JsonElement jsonElement = entry.getValue();
 					Either<ResourceLocation, UnbakedModel> child = switch (jsonElement) {
 						case JsonPrimitive reference -> Either.left(ResourceLocation.parse(reference.getAsString()));
-						case JsonObject inline ->
-								Either.right((UnbakedModel) context.deserialize(inline, UnbakedModel.class));
+						case JsonObject inline -> Either.right((UnbakedModel) context.deserialize(inline, UnbakedModel.class));
 						default -> throw new IllegalArgumentException("");
 					};
 

@@ -30,12 +30,14 @@ public class ChestBlockStateModel implements DynamicBlockStateModel {
 	public static final ResourceLocation TINTABLE_BREAK_TEXTURE = SophisticatedStorage.getRL(BLOCK_BREAK_FOLDER + "tintable_chest");
 
 	static {
-		WoodStorageBlockBase.CUSTOM_TEXTURE_WOOD_TYPES.keySet().forEach(woodType -> WOOD_BREAK_TEXTURES.put(woodType.name(), SophisticatedStorage.getRL(BLOCK_BREAK_FOLDER + woodType.name() + "_chest")));
+		WoodStorageBlockBase.CUSTOM_TEXTURE_WOOD_TYPES.keySet()
+				.forEach(woodType -> WOOD_BREAK_TEXTURES.put(woodType.name(), SophisticatedStorage.getRL(BLOCK_BREAK_FOLDER + woodType.name() + "_chest")));
 	}
 
 	@Override
-	public void collectParts(BlockAndTintGetter blockAndTintGetter, BlockPos blockPos, BlockState blockState, RandomSource randomSource, List<BlockModelPart> list) {
-		//noop - this model is rendered dynamically
+	public void collectParts(BlockAndTintGetter blockAndTintGetter, BlockPos blockPos, BlockState blockState, RandomSource randomSource,
+			List<BlockModelPart> list) {
+		// noop - this model is rendered dynamically
 	}
 
 	@Override
@@ -45,8 +47,8 @@ public class ChestBlockStateModel implements DynamicBlockStateModel {
 
 	@Override
 	public TextureAtlasSprite particleIcon(BlockAndTintGetter level, BlockPos pos, BlockState state) {
-		return Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(WorldHelper.getBlockEntity(level, pos, WoodStorageBlockEntity.class)
-				.map(be -> {
+		return Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS)
+				.apply(WorldHelper.getBlockEntity(level, pos, WoodStorageBlockEntity.class).map(be -> {
 					boolean hasMainColor = be.getStorageWrapper().hasMainColor();
 					String woodName = be.getWoodType().map(WoodType::name).orElse("");
 
@@ -66,7 +68,7 @@ public class ChestBlockStateModel implements DynamicBlockStateModel {
 
 		@Override
 		public void resolveDependencies(Resolver resolver) {
-			//noop
+			// noop
 		}
 
 		@Override

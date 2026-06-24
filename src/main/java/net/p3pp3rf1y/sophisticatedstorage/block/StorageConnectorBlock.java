@@ -27,7 +27,8 @@ import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import javax.annotation.Nullable;
 
 public class StorageConnectorBlock extends BlockBase implements EntityBlock {
-	public static final String TOOLTIP_TRANSLATION_KEY = Util.makeDescriptionId("block", SophisticatedStorage.getRL("storage_connector")) + TranslationHelper.TOOLTIP_SUFFIX;
+	public static final String TOOLTIP_TRANSLATION_KEY = Util.makeDescriptionId("block", SophisticatedStorage.getRL("storage_connector"))
+			+ TranslationHelper.TOOLTIP_SUFFIX;
 
 	public StorageConnectorBlock(Properties properties) {
 		super(properties.mapColor(MapColor.WOOD).strength(2.5F).sound(SoundType.WOOD));

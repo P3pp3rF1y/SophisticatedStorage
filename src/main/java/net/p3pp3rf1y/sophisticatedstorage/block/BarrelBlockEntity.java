@@ -33,7 +33,7 @@ public class BarrelBlockEntity extends WoodStorageBlockEntity implements IMateri
 		}
 
 		protected void openerCountChanged(Level level, BlockPos pos, BlockState state, int previousOpenerCount, int newOpenerCount) {
-			//noop
+			// noop
 		}
 
 		protected boolean isOwnContainer(Player player) {

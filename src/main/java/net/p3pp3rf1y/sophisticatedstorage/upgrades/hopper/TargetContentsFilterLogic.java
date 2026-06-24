@@ -22,14 +22,16 @@ import java.util.function.Supplier;
 
 public class TargetContentsFilterLogic extends ContentsFilterLogic {
 	private Set<ItemStackKey> inventoryFilterStacks = new HashSet<>();
-	private final LoadingCache<IItemHandler, Set<ItemStackKey>> inventoryCache = CacheBuilder.newBuilder().expireAfterWrite(5, TimeUnit.SECONDS).build(new CacheLoader<>() {
-		@Override
-		public Set<ItemStackKey> load(IItemHandler inventory) {
-			return InventoryHelper.getUniqueStacks(inventory);
-		}
-	});
+	private final LoadingCache<IItemHandler, Set<ItemStackKey>> inventoryCache = CacheBuilder.newBuilder().expireAfterWrite(5, TimeUnit.SECONDS)
+			.build(new CacheLoader<>() {
+				@Override
+				public Set<ItemStackKey> load(IItemHandler inventory) {
+					return InventoryHelper.getUniqueStacks(inventory);
+				}
+			});
 
-	public TargetContentsFilterLogic(ItemStack upgrade, Consumer<ItemStack> saveHandler, int filterSlotCount, Supplier<InventoryHandler> getInventoryHandler, MemorySettingsCategory memorySettings, DeferredHolder<DataComponentType<?>, DataComponentType<FilterAttributes>> filterAttributesComponent) {
+	public TargetContentsFilterLogic(ItemStack upgrade, Consumer<ItemStack> saveHandler, int filterSlotCount, Supplier<InventoryHandler> getInventoryHandler,
+			MemorySettingsCategory memorySettings, DeferredHolder<DataComponentType<?>, DataComponentType<FilterAttributes>> filterAttributesComponent) {
 		super(upgrade, saveHandler, filterSlotCount, getInventoryHandler, memorySettings, filterAttributesComponent);
 	}
 
