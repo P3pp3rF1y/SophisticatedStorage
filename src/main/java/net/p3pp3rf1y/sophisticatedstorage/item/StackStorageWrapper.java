@@ -11,6 +11,7 @@ import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.block.*;
 
 import javax.annotation.Nullable;
+
 import java.util.Optional;
 import java.util.UUID;
 
@@ -19,7 +20,10 @@ public class StackStorageWrapper extends StorageWrapper {
 	private ItemStack storageStack;
 
 	public StackStorageWrapper(ItemStack storageStack) {
-		super(() -> () -> {}, () -> {}, () -> {});
+		super(() -> () -> {
+		}, () -> {
+		}, () -> {
+		});
 		setStorageStack(storageStack);
 	}
 
@@ -29,7 +33,8 @@ public class StackStorageWrapper extends StorageWrapper {
 		if (uuid != null) {
 			CompoundTag compoundtag = ItemContentsStorage.get().getOrCreateStorageContents(uuid).getCompoundOrEmpty(StorageBlockEntity.STORAGE_WRAPPER_TAG);
 			stackStorageWrapper.load(compoundtag);
-			stackStorageWrapper.setContentsUuid(uuid); //setting here because client side the uuid isn't in contentsnbt before this data is synced from server and it would create a new one otherwise
+			stackStorageWrapper.setContentsUuid(uuid); // setting here because client side the uuid isn't in contentsnbt before this data is synced from server
+														// and it would create a new one otherwise
 		}
 
 		return stackStorageWrapper;
@@ -79,13 +84,14 @@ public class StackStorageWrapper extends StorageWrapper {
 			if (contentsUuid == null) {
 				contentsUuid = getNewUuid();
 			}
-			return ItemContentsStorage.get().getOrCreateStorageContents(contentsUuid).getCompoundOrEmpty(StorageBlockEntity.STORAGE_WRAPPER_TAG).getCompoundOrEmpty(CONTENTS_TAG);
+			return ItemContentsStorage.get().getOrCreateStorageContents(contentsUuid).getCompoundOrEmpty(StorageBlockEntity.STORAGE_WRAPPER_TAG)
+					.getCompoundOrEmpty(CONTENTS_TAG);
 		});
 	}
 
 	@Override
 	protected void onUpgradeRefresh() {
-		//noop - there should be no upgrade refresh happening here
+		// noop - there should be no upgrade refresh happening here
 	}
 
 	@Override
@@ -103,8 +109,8 @@ public class StackStorageWrapper extends StorageWrapper {
 	@Override
 	protected void loadSlotNumbers(CompoundTag tag) {
 		StorageBlockItem.getEntityWrapperTagFromStack(storageStack).ifPresentOrElse(wrapperTag -> {
-			numberOfInventorySlots = wrapperTag.getIntOr(StorageWrapper.NUMBER_OF_INVENTORY_SLOTS_TAG, 0);
-			numberOfUpgradeSlots = wrapperTag.getIntOr(StorageWrapper.NUMBER_OF_UPGRADE_SLOTS_TAG, 0);
+			numberOfInventorySlots = wrapperTag.getIntOr(NUMBER_OF_INVENTORY_SLOTS_TAG, 0);
+			numberOfUpgradeSlots = wrapperTag.getIntOr(NUMBER_OF_UPGRADE_SLOTS_TAG, 0);
 			promoteSlotNumbersToDefaults();
 			StorageBlockItem.setNumberOfInventorySlots(storageStack, numberOfInventorySlots);
 			StorageBlockItem.setNumberOfUpgradeSlots(storageStack, numberOfUpgradeSlots);
@@ -130,17 +136,18 @@ public class StackStorageWrapper extends StorageWrapper {
 		}
 
 		Block block = Block.byItem(stack.getItem());
-		return !(block instanceof ShulkerBoxBlock) && !(block instanceof net.minecraft.world.level.block.ShulkerBoxBlock) && !Config.SERVER.shulkerBoxDisallowedItems.isItemDisallowed(stack.getItem());
+		return !(block instanceof ShulkerBoxBlock) && !(block instanceof net.minecraft.world.level.block.ShulkerBoxBlock)
+				&& !Config.SERVER.shulkerBoxDisallowedItems.isItemDisallowed(stack.getItem());
 	}
 
 	@Override
 	public String getStorageType() {
-		return "irrelevant"; //because this is only used when determining upgrade errors in gui which storage stacks can't have open
+		return "irrelevant"; // because this is only used when determining upgrade errors in gui which storage stacks can't have open
 	}
 
 	@Override
 	public Component getDisplayName() {
-		return Component.empty(); //because this is only used when determining upgrade errors in gui which storage stacks can't have open
+		return Component.empty(); // because this is only used when determining upgrade errors in gui which storage stacks can't have open
 	}
 
 	@Override
@@ -154,7 +161,6 @@ public class StackStorageWrapper extends StorageWrapper {
 	public int getMainColor() {
 		return storageStack.getOrDefault(ModCoreDataComponents.MAIN_COLOR, -1);
 	}
-
 
 	@Override
 	public boolean hasMainColor() {

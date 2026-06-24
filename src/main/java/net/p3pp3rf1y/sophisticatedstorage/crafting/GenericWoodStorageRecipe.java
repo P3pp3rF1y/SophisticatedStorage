@@ -101,7 +101,7 @@ public class GenericWoodStorageRecipe extends ShapedRecipe implements IWrapperRe
 
 	public static class Serializer extends RecipeWrapperSerializer<ShapedRecipe, GenericWoodStorageRecipe> {
 		public Serializer() {
-			super(GenericWoodStorageRecipe::new, RecipeSerializer.SHAPED_RECIPE);
+			super(GenericWoodStorageRecipe::new, SHAPED_RECIPE);
 		}
 	}
 }

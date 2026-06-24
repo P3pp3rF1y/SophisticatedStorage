@@ -19,12 +19,8 @@ import java.util.UUID;
 
 public class ItemContentsStorage extends SavedData {
 	private static final SavedDataType<ItemContentsStorage> TYPE = new SavedDataType<>(SophisticatedStorage.MOD_ID, ItemContentsStorage::new,
-			RecordCodecBuilder.create(
-					builder -> builder.group(
-							Codec.unboundedMap(Codec.STRING.xmap(UUID::fromString, UUID::toString), CompoundTag.CODEC)
-									.fieldOf("storageContents").forGetter(storage -> storage.storageContents)
-					).apply(builder, ItemContentsStorage::new)
-			));
+			RecordCodecBuilder.create(builder -> builder.group(Codec.unboundedMap(Codec.STRING.xmap(UUID::fromString, UUID::toString), CompoundTag.CODEC)
+					.fieldOf("storageContents").forGetter(storage -> storage.storageContents)).apply(builder, ItemContentsStorage::new)));
 
 	private final Map<UUID, CompoundTag> storageContents = new HashMap<>();
 	private static final ItemContentsStorage clientStorageCopy = new ItemContentsStorage();
@@ -41,7 +37,7 @@ public class ItemContentsStorage extends SavedData {
 			MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
 			if (server != null) {
 				ServerLevel overworld = server.getLevel(Level.OVERWORLD);
-				//noinspection ConstantConditions - by this time overworld is loaded
+				// noinspection ConstantConditions - by this time overworld is loaded
 				DimensionDataStorage storage = overworld.getDataStorage();
 				return storage.computeIfAbsent(TYPE);
 			}

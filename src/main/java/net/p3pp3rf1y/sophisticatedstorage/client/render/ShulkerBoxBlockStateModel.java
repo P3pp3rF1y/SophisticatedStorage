@@ -26,8 +26,9 @@ public class ShulkerBoxBlockStateModel implements DynamicBlockStateModel {
 	public static final ResourceLocation MAIN_BREAK_TEXTURE = SophisticatedStorage.getRL(BLOCK_BREAK_FOLDER + "shulker_box");
 
 	@Override
-	public void collectParts(BlockAndTintGetter blockAndTintGetter, BlockPos blockPos, BlockState blockState, RandomSource randomSource, List<BlockModelPart> list) {
-		//noop - this model is rendered dynamically
+	public void collectParts(BlockAndTintGetter blockAndTintGetter, BlockPos blockPos, BlockState blockState, RandomSource randomSource,
+			List<BlockModelPart> list) {
+		// noop - this model is rendered dynamically
 	}
 
 	@Override
@@ -38,7 +39,7 @@ public class ShulkerBoxBlockStateModel implements DynamicBlockStateModel {
 	@Override
 	public TextureAtlasSprite particleIcon(BlockAndTintGetter level, BlockPos pos, BlockState state) {
 		return Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(WorldHelper.getBlockEntity(level, pos, ShulkerBoxBlockEntity.class)
-				.map(be -> be.getStorageWrapper().hasMainColor() ? TINTABLE_BREAK_TEXTURE :MAIN_BREAK_TEXTURE).orElse(MAIN_BREAK_TEXTURE));
+				.map(be -> be.getStorageWrapper().hasMainColor() ? TINTABLE_BREAK_TEXTURE : MAIN_BREAK_TEXTURE).orElse(MAIN_BREAK_TEXTURE));
 	}
 
 	public static class Unbaked implements CustomUnbakedBlockStateModel {
@@ -52,7 +53,7 @@ public class ShulkerBoxBlockStateModel implements DynamicBlockStateModel {
 
 		@Override
 		public void resolveDependencies(Resolver resolver) {
-			//noop
+			// noop
 		}
 
 		@Override

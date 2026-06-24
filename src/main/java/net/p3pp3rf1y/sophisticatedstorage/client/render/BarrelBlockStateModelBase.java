@@ -33,6 +33,7 @@ import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelMaterial;
 
 import javax.annotation.Nullable;
+
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -40,7 +41,8 @@ import java.util.stream.Collectors;
 public abstract class BarrelBlockStateModelBase implements DynamicBlockStateModel {
 	public static final Cache<Integer, List<BlockModelPart>> BAKED_PARTS_CACHE = CacheBuilder.newBuilder().expireAfterAccess(15L, TimeUnit.MINUTES).build();
 	public static final Cache<Integer, List<BakedQuad>> BAKED_QUADS_CACHE = CacheBuilder.newBuilder().expireAfterAccess(15L, TimeUnit.MINUTES).build();
-	private static final List<BarrelMaterial> PARTICLE_ICON_MATERIAL_PRIORITY = List.of(BarrelMaterial.ALL, BarrelMaterial.ALL_BUT_TRIM, BarrelMaterial.TOP_ALL, BarrelMaterial.TOP);
+	private static final List<BarrelMaterial> PARTICLE_ICON_MATERIAL_PRIORITY = List.of(BarrelMaterial.ALL, BarrelMaterial.ALL_BUT_TRIM, BarrelMaterial.TOP_ALL,
+			BarrelMaterial.TOP);
 	private boolean showsLock;
 
 	public static void invalidateCache() {
@@ -67,11 +69,10 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 	private final Map<String, Map<BarrelModelPart, QuadCollection>> woodPartitionedModelParts;
 	private final Cache<Integer, QuadCollection> dynamicBakedModelCache = CacheBuilder.newBuilder().expireAfterAccess(1, TimeUnit.MINUTES).build();
 
-	protected BarrelBlockStateModelBase(ModelBaker baker,
-										Map<String, Map<BarrelModelPart, QuadCollection>> woodModelParts,
-										Map<String, Map<BarrelModelPart, TextureAtlasSprite>> particleIcons,
-										Map<String, Map<DynamicBarrelBakingData.DynamicPart, DynamicBarrelBakingData>> woodDynamicBakingData,
-										Map<String, Map<BarrelModelPart, QuadCollection>> woodPartitionedModelParts) {
+	protected BarrelBlockStateModelBase(ModelBaker baker, Map<String, Map<BarrelModelPart, QuadCollection>> woodModelParts,
+			Map<String, Map<BarrelModelPart, TextureAtlasSprite>> particleIcons,
+			Map<String, Map<DynamicBarrelBakingData.DynamicPart, DynamicBarrelBakingData>> woodDynamicBakingData,
+			Map<String, Map<BarrelModelPart, QuadCollection>> woodPartitionedModelParts) {
 		this.baker = baker;
 		this.woodModelParts = woodModelParts;
 		this.particleIcons = particleIcons;
@@ -193,8 +194,10 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 		QuadCollection.Builder translucentQuadCollectionBuilder = new QuadCollection.Builder();
 
 		boolean isBakedDynamically = !materials.isEmpty();
-		Set<BarrelMaterial.MaterialModelPart> materialModelParts = materials.keySet().stream().map(BarrelMaterial::getMaterialModelPart).collect(Collectors.toSet());
-		boolean rendersUsingSplitModel = materialModelParts.contains(BarrelMaterial.MaterialModelPart.CORE) || materialModelParts.contains(BarrelMaterial.MaterialModelPart.TRIM);
+		Set<BarrelMaterial.MaterialModelPart> materialModelParts = materials.keySet().stream().map(BarrelMaterial::getMaterialModelPart)
+				.collect(Collectors.toSet());
+		boolean rendersUsingSplitModel = materialModelParts.contains(BarrelMaterial.MaterialModelPart.CORE)
+				|| materialModelParts.contains(BarrelMaterial.MaterialModelPart.TRIM);
 
 		Map<BarrelModelPart, QuadCollection> modelParts = getWoodModelParts(isBakedDynamically && rendersUsingSplitModel);
 		if (modelParts.isEmpty()) {
@@ -209,7 +212,8 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 
 		if (isBakedDynamically) {
 			bakeAndAddDynamicQuads(cutoutQuadCollectionBuilder, translucentQuadCollectionBuilder, rand, rendersUsingSplitModel,
-					!hasMainColor || materialModelParts.contains(BarrelMaterial.MaterialModelPart.CORE), !hasAccentColor || materialModelParts.contains(BarrelMaterial.MaterialModelPart.TRIM));
+					!hasMainColor || materialModelParts.contains(BarrelMaterial.MaterialModelPart.CORE),
+					!hasAccentColor || materialModelParts.contains(BarrelMaterial.MaterialModelPart.TRIM));
 		}
 
 		if (showsTier) {
@@ -249,9 +253,11 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 		return builder.build();
 	}
 
-	private void bakeAndAddDynamicQuads(QuadCollection.Builder cutoutBuilder, QuadCollection.Builder translucentBuilder, RandomSource rand, boolean rendersUsingSplitModel, boolean renderCore, boolean renderTrim) {
+	private void bakeAndAddDynamicQuads(QuadCollection.Builder cutoutBuilder, QuadCollection.Builder translucentBuilder, RandomSource rand,
+			boolean rendersUsingSplitModel, boolean renderCore, boolean renderTrim) {
 
-		Map<DynamicBarrelBakingData.DynamicPart, DynamicBarrelBakingData> bakingData = woodDynamicBakingData.get(woodName != null ? woodName : WoodType.ACACIA.name());
+		Map<DynamicBarrelBakingData.DynamicPart, DynamicBarrelBakingData> bakingData = woodDynamicBakingData
+				.get(woodName != null ? woodName : WoodType.ACACIA.name());
 
 		Map<String, Material> mats = new HashMap<>();
 		Map<ResourceLocation, RenderHelper.SpriteData> materialSpriteData = new HashMap<>();
@@ -269,17 +275,21 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 
 		if (rendersUsingSplitModel) {
 			if (renderCore) {
-				addDynamicQuads(cutoutBuilder, translucentBuilder, materialSpriteData, getDynamicModel(woodName, bakingData, mats, DynamicBarrelBakingData.DynamicPart.CORE));
+				addDynamicQuads(cutoutBuilder, translucentBuilder, materialSpriteData,
+						getDynamicModel(woodName, bakingData, mats, DynamicBarrelBakingData.DynamicPart.CORE));
 			}
 			if (renderTrim) {
-				addDynamicQuads(cutoutBuilder, translucentBuilder, materialSpriteData, getDynamicModel(woodName, bakingData, mats, DynamicBarrelBakingData.DynamicPart.TRIM));
+				addDynamicQuads(cutoutBuilder, translucentBuilder, materialSpriteData,
+						getDynamicModel(woodName, bakingData, mats, DynamicBarrelBakingData.DynamicPart.TRIM));
 			}
 		} else {
-			addDynamicQuads(cutoutBuilder, translucentBuilder, materialSpriteData, getDynamicModel(woodName, bakingData, mats, DynamicBarrelBakingData.DynamicPart.WHOLE));
+			addDynamicQuads(cutoutBuilder, translucentBuilder, materialSpriteData,
+					getDynamicModel(woodName, bakingData, mats, DynamicBarrelBakingData.DynamicPart.WHOLE));
 		}
 	}
 
-	private void addDynamicQuads(QuadCollection.Builder cutoutBuilder, QuadCollection.Builder translucentBuilder, Map<ResourceLocation, RenderHelper.SpriteData> materialSpriteData, QuadCollection quads) {
+	private void addDynamicQuads(QuadCollection.Builder cutoutBuilder, QuadCollection.Builder translucentBuilder,
+			Map<ResourceLocation, RenderHelper.SpriteData> materialSpriteData, QuadCollection quads) {
 		for (Direction direction : Direction.values()) {
 			for (BakedQuad quad : quads.getQuads(direction)) {
 				getDynamicQuadBuilder(quad, cutoutBuilder, translucentBuilder, materialSpriteData).addCulledFace(direction, applyMaterialTint(quad));
@@ -291,8 +301,10 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 		}
 	}
 
-	private static QuadCollection.Builder getDynamicQuadBuilder(BakedQuad quad, QuadCollection.Builder cutoutBuilder, QuadCollection.Builder translucentBuilder, Map<ResourceLocation, RenderHelper.SpriteData> materialSpriteData) {
-		boolean translucent = Optional.ofNullable(materialSpriteData.get(quad.sprite().contents().name())).map(RenderHelper.SpriteData::translucent).orElse(false);
+	private static QuadCollection.Builder getDynamicQuadBuilder(BakedQuad quad, QuadCollection.Builder cutoutBuilder, QuadCollection.Builder translucentBuilder,
+			Map<ResourceLocation, RenderHelper.SpriteData> materialSpriteData) {
+		boolean translucent = Optional.ofNullable(materialSpriteData.get(quad.sprite().contents().name())).map(RenderHelper.SpriteData::translucent)
+				.orElse(false);
 		return translucent ? translucentBuilder : cutoutBuilder;
 	}
 
@@ -302,7 +314,7 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 	}
 
 	private QuadCollection getDynamicModel(@Nullable String woodName, Map<DynamicBarrelBakingData.DynamicPart, DynamicBarrelBakingData> bakingData,
-										   Map<String, Material> materials, DynamicBarrelBakingData.DynamicPart dynamicPart) {
+			Map<String, Material> materials, DynamicBarrelBakingData.DynamicPart dynamicPart) {
 		int hash = Objects.hash(woodName, materials, dynamicPart.name());
 		QuadCollection bakedModel = dynamicBakedModelCache.getIfPresent(hash);
 		if (bakedModel == null) {
@@ -316,7 +328,8 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 		return BuiltInRegistries.BLOCK.get(blockName).orElseThrow().value().defaultBlockState();
 	}
 
-	private static Map<ResourceLocation, Integer> getMaterialTintColors(Map<BarrelMaterial, ResourceLocation> materials, @Nullable BlockAndTintGetter world, @Nullable BlockPos pos) {
+	private static Map<ResourceLocation, Integer> getMaterialTintColors(Map<BarrelMaterial, ResourceLocation> materials, @Nullable BlockAndTintGetter world,
+			@Nullable BlockPos pos) {
 		Map<ResourceLocation, Integer> materialTintColors = new HashMap<>();
 		RandomSource rand = RandomSource.create();
 		for (Map.Entry<BarrelMaterial, ResourceLocation> entry : materials.entrySet()) {
@@ -334,7 +347,8 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 		return Map.copyOf(materialTintColors);
 	}
 
-	public static int getMaterialParticleTintColor(Map<BarrelMaterial, ResourceLocation> materials, @Nullable BlockAndTintGetter world, @Nullable BlockPos pos) {
+	public static int getMaterialParticleTintColor(Map<BarrelMaterial, ResourceLocation> materials, @Nullable BlockAndTintGetter world,
+			@Nullable BlockPos pos) {
 		for (BarrelMaterial barrelMaterial : PARTICLE_ICON_MATERIAL_PRIORITY) {
 			ResourceLocation material = materials.get(barrelMaterial);
 			if (material == null) {
@@ -362,7 +376,9 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 		resolver.addLast(texturesBuilder.build());
 
 		UnbakedGeometry geometry = bakingData.baseModel().geometry();
-		return geometry == null ? QuadCollection.EMPTY : geometry.bake(resolver.resolve(bakingData.debugName()), baker, bakingData.modelState(), bakingData.debugName(), ContextMap.EMPTY);
+		return geometry == null
+				? QuadCollection.EMPTY
+				: geometry.bake(resolver.resolve(bakingData.debugName()), baker, bakingData.modelState(), bakingData.debugName(), ContextMap.EMPTY);
 	}
 
 	protected abstract BarrelModelPart getBasePart(@Nullable BlockState state);

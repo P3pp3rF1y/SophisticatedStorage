@@ -22,15 +22,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public record RequestControllerTargetHighlightsPayload(ItemStack stack,
-													   List<BlockPos> controllerPositions) implements CustomPacketPayload {
+public record RequestControllerTargetHighlightsPayload(ItemStack stack, List<BlockPos> controllerPositions) implements CustomPacketPayload {
 	public static final Type<RequestControllerTargetHighlightsPayload> TYPE = new Type<>(SophisticatedStorage.getRL("request_controller_target_highlights"));
 	public static final StreamCodec<RegistryFriendlyByteBuf, RequestControllerTargetHighlightsPayload> STREAM_CODEC = StreamCodec.composite(
-			ItemStack.STREAM_CODEC,
-			RequestControllerTargetHighlightsPayload::stack,
-			BlockPos.STREAM_CODEC.apply(ByteBufCodecs.list()),
-			RequestControllerTargetHighlightsPayload::controllerPositions,
-			RequestControllerTargetHighlightsPayload::new);
+			ItemStack.STREAM_CODEC, RequestControllerTargetHighlightsPayload::stack, BlockPos.STREAM_CODEC.apply(ByteBufCodecs.list()),
+			RequestControllerTargetHighlightsPayload::controllerPositions, RequestControllerTargetHighlightsPayload::new);
 	public static final int MATCHING_STACK_HIGHLIGHT_COLOR = 0x4CAF50;
 	public static final int MATCHING_ITEM_HIGHLIGHT_COLOR = 0x42A5F5;
 	public static final int EMPTY_TARGET_HIGHLIGHT_COLOR = 0xFFEB3B;
@@ -56,13 +52,11 @@ public record RequestControllerTargetHighlightsPayload(ItemStack stack,
 				});
 			});
 
-			PacketDistributor.sendToPlayer(serverPlayer, new SyncBlockHighlightsPayload(
-					Map.of(
-							MATCHING_STACK_HIGHLIGHT_COLOR, StoragePositionGroups.getGroupPositions(player.level(), stackStorages),
-							MATCHING_ITEM_HIGHLIGHT_COLOR, StoragePositionGroups.getGroupPositions(player.level(), itemStorages),
-							EMPTY_TARGET_HIGHLIGHT_COLOR, StoragePositionGroups.getGroupPositions(player.level(), emptyTargetSlotStorages)
-					)
-			));
+			PacketDistributor.sendToPlayer(serverPlayer,
+					new SyncBlockHighlightsPayload(
+							Map.of(MATCHING_STACK_HIGHLIGHT_COLOR, StoragePositionGroups.getGroupPositions(player.level(), stackStorages),
+									MATCHING_ITEM_HIGHLIGHT_COLOR, StoragePositionGroups.getGroupPositions(player.level(), itemStorages),
+									EMPTY_TARGET_HIGHLIGHT_COLOR, StoragePositionGroups.getGroupPositions(player.level(), emptyTargetSlotStorages))));
 		}
 	}
 }

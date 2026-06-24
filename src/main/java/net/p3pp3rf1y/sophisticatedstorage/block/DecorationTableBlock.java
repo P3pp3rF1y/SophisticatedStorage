@@ -25,14 +25,8 @@ import javax.annotation.Nullable;
 
 public class DecorationTableBlock extends BlockBase implements EntityBlock {
 	public static final EnumProperty<Direction> FACING = HorizontalDirectionalBlock.FACING;
-	protected static final VoxelShape SHAPE = Shapes.or(
-			Block.box(0, 12, 0, 16, 16, 16),
-			Block.box(1, 8, 1, 15, 12, 15),
-			Block.box(1, 0, 1, 4, 8, 4),
-			Block.box(12, 0, 1, 15, 8, 4),
-			Block.box(1, 0, 12, 4, 8, 15),
-			Block.box(12, 0, 12, 15, 8, 15)
-	);
+	protected static final VoxelShape SHAPE = Shapes.or(box(0, 12, 0, 16, 16, 16), box(1, 8, 1, 15, 12, 15), box(1, 0, 1, 4, 8, 4), box(12, 0, 1, 15, 8, 4),
+			box(1, 0, 12, 4, 8, 15), box(12, 0, 12, 15, 8, 15));
 
 	public DecorationTableBlock(Properties properties) {
 		super(properties.mapColor(MapColor.WOOD).strength(2.5F, 2.5F).sound(SoundType.WOOD));

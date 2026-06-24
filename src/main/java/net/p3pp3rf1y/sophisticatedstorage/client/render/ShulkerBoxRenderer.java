@@ -30,13 +30,18 @@ public class ShulkerBoxRenderer extends StorageRenderer<ShulkerBoxBlockEntity> {
 	private static final String ENTITY_SHULKER_BOX_FOLDER = "entity/shulker_box/";
 
 	public static final Material BASE_TIER_MATERIAL = new Material(Sheets.SHULKER_SHEET, SophisticatedStorage.getRL(ENTITY_SHULKER_BOX_FOLDER + "base_tier"));
-	public static final Material COPPER_TIER_MATERIAL = new Material(Sheets.SHULKER_SHEET, SophisticatedStorage.getRL(ENTITY_SHULKER_BOX_FOLDER + "copper_tier"));
+	public static final Material COPPER_TIER_MATERIAL = new Material(Sheets.SHULKER_SHEET,
+			SophisticatedStorage.getRL(ENTITY_SHULKER_BOX_FOLDER + "copper_tier"));
 	public static final Material IRON_TIER_MATERIAL = new Material(Sheets.SHULKER_SHEET, SophisticatedStorage.getRL(ENTITY_SHULKER_BOX_FOLDER + "iron_tier"));
 	public static final Material GOLD_TIER_MATERIAL = new Material(Sheets.SHULKER_SHEET, SophisticatedStorage.getRL(ENTITY_SHULKER_BOX_FOLDER + "gold_tier"));
-	public static final Material DIAMOND_TIER_MATERIAL = new Material(Sheets.SHULKER_SHEET, SophisticatedStorage.getRL(ENTITY_SHULKER_BOX_FOLDER + "diamond_tier"));
-	public static final Material NETHERITE_TIER_MATERIAL = new Material(Sheets.SHULKER_SHEET, SophisticatedStorage.getRL(ENTITY_SHULKER_BOX_FOLDER + "netherite_tier"));
-	public static final Material TINTABLE_MAIN_MATERIAL = new Material(Sheets.SHULKER_SHEET, SophisticatedStorage.getRL(ENTITY_SHULKER_BOX_FOLDER + "tintable_main"));
-	public static final Material TINTABLE_ACCENT_MATERIAL = new Material(Sheets.SHULKER_SHEET, SophisticatedStorage.getRL(ENTITY_SHULKER_BOX_FOLDER + "tintable_accent"));
+	public static final Material DIAMOND_TIER_MATERIAL = new Material(Sheets.SHULKER_SHEET,
+			SophisticatedStorage.getRL(ENTITY_SHULKER_BOX_FOLDER + "diamond_tier"));
+	public static final Material NETHERITE_TIER_MATERIAL = new Material(Sheets.SHULKER_SHEET,
+			SophisticatedStorage.getRL(ENTITY_SHULKER_BOX_FOLDER + "netherite_tier"));
+	public static final Material TINTABLE_MAIN_MATERIAL = new Material(Sheets.SHULKER_SHEET,
+			SophisticatedStorage.getRL(ENTITY_SHULKER_BOX_FOLDER + "tintable_main"));
+	public static final Material TINTABLE_ACCENT_MATERIAL = new Material(Sheets.SHULKER_SHEET,
+			SophisticatedStorage.getRL(ENTITY_SHULKER_BOX_FOLDER + "tintable_accent"));
 	public static final Material NO_TINT_MATERIAL = new Material(Sheets.SHULKER_SHEET, SophisticatedStorage.getRL(ENTITY_SHULKER_BOX_FOLDER + "no_tint"));
 	private final ShulkerModel model;
 	private final DisplayItemRenderer displayItemRenderer = new DisplayItemRenderer(0.5, new Vec3(0, 0, -0.0075));
@@ -45,11 +50,12 @@ public class ShulkerBoxRenderer extends StorageRenderer<ShulkerBoxBlockEntity> {
 		model = new ShulkerModel(context.bakeLayer(ModelLayers.SHULKER));
 	}
 
-	public void render(ShulkerBoxBlockEntity shulkerBoxEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, Vec3 cameraPos) {
+	public void render(ShulkerBoxBlockEntity shulkerBoxEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight,
+			int packedOverlay, Vec3 cameraPos) {
 		BlockState blockState = shulkerBoxEntity.getBlockState();
 		Direction direction = Direction.UP;
 		if (shulkerBoxEntity.hasLevel()) {
-			//noinspection ConstantConditions
+			// noinspection ConstantConditions
 			BlockState blockstate = shulkerBoxEntity.getLevel().getBlockState(shulkerBoxEntity.getBlockPos());
 			if (blockstate.getBlock() instanceof ShulkerBoxBlock) {
 				direction = blockstate.getValue(ShulkerBoxBlock.FACING);
@@ -113,7 +119,8 @@ public class ShulkerBoxRenderer extends StorageRenderer<ShulkerBoxBlockEntity> {
 		poseStack.translate(-0.5D, -0.5D, -0.5D - zOffset);
 
 		if (shulkerBoxEntity.shouldShowUpgrades() || holdsItemThatShowsUpgrades()) {
-			displayItemRenderer.renderUpgradeItems(shulkerBoxEntity, poseStack, bufferSource, packedLight, packedOverlay, holdsItemThatShowsUpgrades(), shouldShowDisabledUpgradesDisplay(shulkerBoxEntity));
+			displayItemRenderer.renderUpgradeItems(shulkerBoxEntity, poseStack, bufferSource, packedLight, packedOverlay, holdsItemThatShowsUpgrades(),
+					shouldShowDisabledUpgradesDisplay(shulkerBoxEntity));
 		}
 		displayItemRenderer.renderDisplayItem(shulkerBoxEntity, poseStack, bufferSource, packedLight, packedOverlay);
 		LockRenderer.renderLock(shulkerBoxEntity, poseStack, bufferSource, packedLight, packedOverlay, 15F / 16F, this::holdsToolInToggleLockOrLockDisplay);

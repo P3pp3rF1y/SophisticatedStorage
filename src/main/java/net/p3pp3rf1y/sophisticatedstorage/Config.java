@@ -32,6 +32,7 @@ import net.p3pp3rf1y.sophisticatedstorage.upgrades.hopper.HopperUpgradeConfig;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nullable;
+
 import java.util.*;
 
 public class Config {
@@ -67,7 +68,9 @@ public class Config {
 		public Common(ModConfigSpec.Builder builder) {
 			builder.comment("Common Settings").push("common");
 
-			dropPacked = builder.comment("Determines whether chests / barrels are always dropped as packed with their contents when broken without the need to use packing tape").define("dropPacked", false);
+			dropPacked = builder.comment(
+					"Determines whether chests / barrels are always dropped as packed with their contents when broken without the need to use packing tape")
+					.define("dropPacked", false);
 
 			builder.pop();
 		}
@@ -79,7 +82,8 @@ public class Config {
 		public Client(ModConfigSpec.Builder builder) {
 			builder.comment("Client-side Settings").push("client");
 
-			showSingleWoodVariantOnly = builder.comment("Determines whether JEI and creative tab will show only one wood variant of each storage item tier. Makes creative tab and JEI lists smaller.")
+			showSingleWoodVariantOnly = builder.comment(
+					"Determines whether JEI and creative tab will show only one wood variant of each storage item tier. Makes creative tab and JEI lists smaller.")
 					.worldRestart().define("showSingleWoodVariantOnly", false);
 
 			builder.pop();
@@ -176,13 +180,13 @@ public class Config {
 		}
 
 		@SuppressWarnings("unused")
-		//need the Event parameter for forge reflection to understand what event this listens to
+		// need the Event parameter for forge reflection to understand what event this listens to
 		public void onConfigReload(ModConfigEvent.Reloading event) {
 			clearCache();
 		}
 
 		@SuppressWarnings("unused")
-		//need the Event parameter for forge reflection to understand what event this listens to
+		// need the Event parameter for forge reflection to understand what event this listens to
 		public void onConfigLoad(ModConfigEvent.Loading event) {
 			clearCache();
 		}
@@ -275,31 +279,21 @@ public class Config {
 			alchemyUpgrade = new AlchemyUpgradeConfig(builder, "Alchemy Upgrade", "alchemyUpgrade", 4);
 			advancedAlchemyUpgrade = new AlchemyUpgradeConfig(builder, "Advanced Alchemy Upgrade", "advancedAlchemyUpgrade", 8);
 
-			maxUpgradesPerStorage = new MaxUgradesPerStorageConfig(builder, Map.of(
-					ChestBlockEntity.STORAGE_TYPE, Map.of(
-							StackUpgradeItem.UPGRADE_GROUP.name(), 2,
-							ICookingUpgrade.UPGRADE_GROUP.name(), 1,
-							JukeboxUpgradeItem.UPGRADE_GROUP.name(), 1
-					),
-					BarrelBlockEntity.STORAGE_TYPE, Map.of(
-							StackUpgradeItem.UPGRADE_GROUP.name(), 2,
-							ICookingUpgrade.UPGRADE_GROUP.name(), 1,
-							JukeboxUpgradeItem.UPGRADE_GROUP.name(), 1
-					),
-					ShulkerBoxBlockEntity.STORAGE_TYPE, Map.of(
-							StackUpgradeItem.UPGRADE_GROUP.name(), 2,
-							ICookingUpgrade.UPGRADE_GROUP.name(), 1,
-							JukeboxUpgradeItem.UPGRADE_GROUP.name(), 1
-					),
-					LimitedBarrelBlockEntity.STORAGE_TYPE, Map.of(
-							ICookingUpgrade.UPGRADE_GROUP.name(), 1,
-							JukeboxUpgradeItem.UPGRADE_GROUP.name(), 1
-					)
-			));
+			maxUpgradesPerStorage = new MaxUgradesPerStorageConfig(builder, Map.of(ChestBlockEntity.STORAGE_TYPE,
+					Map.of(StackUpgradeItem.UPGRADE_GROUP.name(), 2, ICookingUpgrade.UPGRADE_GROUP.name(), 1, JukeboxUpgradeItem.UPGRADE_GROUP.name(), 1),
+					BarrelBlockEntity.STORAGE_TYPE,
+					Map.of(StackUpgradeItem.UPGRADE_GROUP.name(), 2, ICookingUpgrade.UPGRADE_GROUP.name(), 1, JukeboxUpgradeItem.UPGRADE_GROUP.name(), 1),
+					ShulkerBoxBlockEntity.STORAGE_TYPE,
+					Map.of(StackUpgradeItem.UPGRADE_GROUP.name(), 2, ICookingUpgrade.UPGRADE_GROUP.name(), 1, JukeboxUpgradeItem.UPGRADE_GROUP.name(), 1),
+					LimitedBarrelBlockEntity.STORAGE_TYPE, Map.of(ICookingUpgrade.UPGRADE_GROUP.name(), 1, JukeboxUpgradeItem.UPGRADE_GROUP.name(), 1)));
 
-			tooManyItemEntityDrops = builder.comment("Threshold of item entities dropped from chest / barrel above which breaking is canceled (unless shift is pressed) and a message explains there would be many drops and packing tape should be used").defineInRange("tooManyItemEntityDrops", 200, 0, 1000);
-			limitedBarrelCountDyeingEnabled = builder.comment("Determines if limited barrel counts can be dyed to change their color").define("limitedBarrelCountDyeingEnabled", true);
-			controllerRange = builder.comment("Defines the maximum range of the controller at which it connects storage blocks to multiblock").defineInRange("controllerRange", 15, 4, 64);
+			tooManyItemEntityDrops = builder.comment(
+					"Threshold of item entities dropped from chest / barrel above which breaking is canceled (unless shift is pressed) and a message explains there would be many drops and packing tape should be used")
+					.defineInRange("tooManyItemEntityDrops", 200, 0, 1000);
+			limitedBarrelCountDyeingEnabled = builder.comment("Determines if limited barrel counts can be dyed to change their color")
+					.define("limitedBarrelCountDyeingEnabled", true);
+			controllerRange = builder.comment("Defines the maximum range of the controller at which it connects storage blocks to multiblock")
+					.defineInRange("controllerRange", 15, 4, 64);
 			builder.pop();
 		}
 
@@ -308,8 +302,10 @@ public class Config {
 			public final ModConfigSpec.IntValue upgradeSlotCount;
 
 			public StorageConfig(ModConfigSpec.Builder builder, String storagePrefix, int inventorySlotCountDefault, int upgradeSlotCountDefault) {
-				builder.comment(storagePrefix + " Settings").translation(StorageTranslationHelper.INSTANCE.translConfig(toConfigKey(storagePrefix))).push(storagePrefix.replace(" ", ""));
-				inventorySlotCount = builder.comment("Number of inventory slots in the storage").defineInRange("inventorySlotCount", inventorySlotCountDefault, 1, 180);
+				builder.comment(storagePrefix + " Settings").translation(StorageTranslationHelper.INSTANCE.translConfig(toConfigKey(storagePrefix)))
+						.push(storagePrefix.replace(" ", ""));
+				inventorySlotCount = builder.comment("Number of inventory slots in the storage").defineInRange("inventorySlotCount", inventorySlotCountDefault,
+						1, 180);
 				upgradeSlotCount = builder.comment("Number of upgrade slots in the storage").defineInRange("upgradeSlotCount", upgradeSlotCountDefault, 0, 10);
 				builder.pop();
 			}
@@ -320,8 +316,10 @@ public class Config {
 			public final ModConfigSpec.IntValue upgradeSlotCount;
 
 			public LimitedBarrelConfig(ModConfigSpec.Builder builder, String storagePrefix, int baseSlotLimitMultiplierDefault, int upgradeSlotCountDefault) {
-				builder.comment(storagePrefix + " Settings").translation(StorageTranslationHelper.INSTANCE.translConfig(toConfigKey(storagePrefix))).push(storagePrefix.replace(" ", ""));
-				baseSlotLimitMultiplier = builder.comment("Multiplier that's used to calculate base slot limit").defineInRange("baseSlotLimitMultiplier", baseSlotLimitMultiplierDefault, 1, 8192);
+				builder.comment(storagePrefix + " Settings").translation(StorageTranslationHelper.INSTANCE.translConfig(toConfigKey(storagePrefix)))
+						.push(storagePrefix.replace(" ", ""));
+				baseSlotLimitMultiplier = builder.comment("Multiplier that's used to calculate base slot limit").defineInRange("baseSlotLimitMultiplier",
+						baseSlotLimitMultiplierDefault, 1, 8192);
 				upgradeSlotCount = builder.comment("Number of upgrade slots in the storage").defineInRange("upgradeSlotCount", upgradeSlotCountDefault, 0, 10);
 				builder.pop();
 			}
@@ -359,8 +357,10 @@ public class Config {
 			ShulkerBoxDisallowedItems(ModConfigSpec.Builder builder) {
 				builder.push("shulkerBoxDisallowedItems");
 				disallowedItemsList = builder.comment("List of items that are not allowed to be put in shulker boxes - e.g. \"minecraft:bundle\"")
-						.defineListAllowEmpty("disallowedItems", ArrayList::new, () -> "minecraft:bundle", mapping -> mapping instanceof String str && str.matches(REGISTRY_NAME_MATCHER));
-				containerItemsDisallowed = builder.comment("Determines if container items (those that override canFitInsideContainerItems to false) are able to fit in shulker boxes")
+						.defineListAllowEmpty("disallowedItems", ArrayList::new, () -> "minecraft:bundle",
+								mapping -> mapping instanceof String str && str.matches(REGISTRY_NAME_MATCHER));
+				containerItemsDisallowed = builder
+						.comment("Determines if container items (those that override canFitInsideContainerItems to false) are able to fit in shulker boxes")
 						.define("containerItemsDisallowed", false);
 				builder.pop();
 			}
@@ -398,17 +398,16 @@ public class Config {
 			private Map<String, Map<String, Integer>> maxUpgradesPerStorage = null;
 
 			protected MaxUgradesPerStorageConfig(ModConfigSpec.Builder builder, Map<String, Map<String, Integer>> defaultUpgradesPerStorage) {
-				maxUpgradesPerStorageList = builder.comment("Limit of maximum number of upgrades of type per storage in format of \"StorageType|UpgradeRegistryName[or UpgradeGroup]|MaxNumber\"")
-						.defineList("maxUpgradesPerStorage", convertToList(defaultUpgradesPerStorage), mapping -> ((String) mapping).matches(MAX_UPGRADES_MATCHER));
+				maxUpgradesPerStorageList = builder.comment(
+						"Limit of maximum number of upgrades of type per storage in format of \"StorageType|UpgradeRegistryName[or UpgradeGroup]|MaxNumber\"")
+						.defineList("maxUpgradesPerStorage", convertToList(defaultUpgradesPerStorage),
+								mapping -> ((String) mapping).matches(MAX_UPGRADES_MATCHER));
 			}
 
 			private List<String> convertToList(Map<String, Map<String, Integer>> defaultUpgradesPerStorage) {
 				List<String> list = new ArrayList<>();
-				defaultUpgradesPerStorage.forEach((storageType, upgradeMap) ->
-						upgradeMap.forEach((upgradeName, maxNumber) ->
-								list.add(storageType + "|" + upgradeName + "|" + maxNumber)
-						)
-				);
+				defaultUpgradesPerStorage.forEach((storageType, upgradeMap) -> upgradeMap
+						.forEach((upgradeName, maxNumber) -> list.add(storageType + "|" + upgradeName + "|" + maxNumber)));
 				return list;
 			}
 
