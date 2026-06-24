@@ -9,8 +9,8 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderType;
@@ -67,14 +67,16 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity, ChestRender
 		MeshDefinition meshDefinition = new MeshDefinition();
 		PartDefinition partDefinition = meshDefinition.getRoot();
 		partDefinition.addOrReplaceChild(BOTTOM, CubeListBuilder.create().texOffs(0, 19).addBox(1.0F, 0.0F, 1.0F, 14.0F, 10.0F, 14.0F), PartPose.ZERO);
-		partDefinition.addOrReplaceChild(LID, CubeListBuilder.create().texOffs(0, 0).addBox(1.0F, 0.0F, 0.0F, 14.0F, 5.0F, 14.0F), PartPose.offset(0.0F, 9.0F, 1.0F));
+		partDefinition.addOrReplaceChild(LID, CubeListBuilder.create().texOffs(0, 0).addBox(1.0F, 0.0F, 0.0F, 14.0F, 5.0F, 14.0F),
+				PartPose.offset(0.0F, 9.0F, 1.0F));
 		return LayerDefinition.create(meshDefinition, 64, 64);
 	}
 
 	public static LayerDefinition createSingleLockLayer() {
 		MeshDefinition meshDefinition = new MeshDefinition();
 		PartDefinition partDefinition = meshDefinition.getRoot();
-		partDefinition.addOrReplaceChild(LOCK, CubeListBuilder.create().texOffs(0, 0).addBox(7.0F, -1.0F, 15.0F, 2.0F, 4.0F, 1.0F), PartPose.offset(0.0F, 8.0F, 0.0F));
+		partDefinition.addOrReplaceChild(LOCK, CubeListBuilder.create().texOffs(0, 0).addBox(7.0F, -1.0F, 15.0F, 2.0F, 4.0F, 1.0F),
+				PartPose.offset(0.0F, 8.0F, 0.0F));
 		return LayerDefinition.create(meshDefinition, 64, 64);
 	}
 
@@ -82,14 +84,16 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity, ChestRender
 		MeshDefinition meshDefinition = new MeshDefinition();
 		PartDefinition partDefinition = meshDefinition.getRoot();
 		partDefinition.addOrReplaceChild(BOTTOM, CubeListBuilder.create().texOffs(0, 19).addBox(1.0F, 0.0F, 1.0F, 15.0F, 10.0F, 14.0F), PartPose.ZERO);
-		partDefinition.addOrReplaceChild(LID, CubeListBuilder.create().texOffs(0, 0).addBox(1.0F, 0.0F, 0.0F, 15.0F, 5.0F, 14.0F), PartPose.offset(0.0F, 9.0F, 1.0F));
+		partDefinition.addOrReplaceChild(LID, CubeListBuilder.create().texOffs(0, 0).addBox(1.0F, 0.0F, 0.0F, 15.0F, 5.0F, 14.0F),
+				PartPose.offset(0.0F, 9.0F, 1.0F));
 		return LayerDefinition.create(meshDefinition, 64, 64);
 	}
 
 	public static LayerDefinition createDoubleLockRightLayer() {
 		MeshDefinition meshDefinition = new MeshDefinition();
 		PartDefinition partDefinition = meshDefinition.getRoot();
-		partDefinition.addOrReplaceChild(LOCK, CubeListBuilder.create().texOffs(0, 0).addBox(15.0F, -2.0F, 14.0F, 1.0F, 4.0F, 1.0F), PartPose.offset(0.0F, 9.0F, 1.0F));
+		partDefinition.addOrReplaceChild(LOCK, CubeListBuilder.create().texOffs(0, 0).addBox(15.0F, -2.0F, 14.0F, 1.0F, 4.0F, 1.0F),
+				PartPose.offset(0.0F, 9.0F, 1.0F));
 		return LayerDefinition.create(meshDefinition, 64, 64);
 	}
 
@@ -97,14 +101,16 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity, ChestRender
 		MeshDefinition meshDefinition = new MeshDefinition();
 		PartDefinition partDefinition = meshDefinition.getRoot();
 		partDefinition.addOrReplaceChild(BOTTOM, CubeListBuilder.create().texOffs(0, 19).addBox(0.0F, 0.0F, 1.0F, 15.0F, 10.0F, 14.0F), PartPose.ZERO);
-		partDefinition.addOrReplaceChild(LID, CubeListBuilder.create().texOffs(0, 0).addBox(0.0F, 0.0F, 0.0F, 15.0F, 5.0F, 14.0F), PartPose.offset(0.0F, 9.0F, 1.0F));
+		partDefinition.addOrReplaceChild(LID, CubeListBuilder.create().texOffs(0, 0).addBox(0.0F, 0.0F, 0.0F, 15.0F, 5.0F, 14.0F),
+				PartPose.offset(0.0F, 9.0F, 1.0F));
 		return LayerDefinition.create(meshDefinition, 64, 64);
 	}
 
 	public static LayerDefinition createDoubleLockLeftLayer() {
 		MeshDefinition meshDefinition = new MeshDefinition();
 		PartDefinition partDefinition = meshDefinition.getRoot();
-		partDefinition.addOrReplaceChild(LOCK, CubeListBuilder.create().texOffs(0, 0).addBox(0.0F, -2.0F, 14.0F, 1.0F, 4.0F, 1.0F), PartPose.offset(0.0F, 9.0F, 1.0F));
+		partDefinition.addOrReplaceChild(LOCK, CubeListBuilder.create().texOffs(0, 0).addBox(0.0F, -2.0F, 14.0F, 1.0F, 4.0F, 1.0F),
+				PartPose.offset(0.0F, 9.0F, 1.0F));
 		return LayerDefinition.create(meshDefinition, 64, 64);
 	}
 
@@ -112,7 +118,8 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity, ChestRender
 		return root;
 	}
 
-	private void submitDisplayItem(SubmitNodeCollector submitNodeCollector, ChestRenderState renderState, PoseStack poseStack, StorageRenderState.DisplayItemInfo displayItem) {
+	private void submitDisplayItem(SubmitNodeCollector submitNodeCollector, ChestRenderState renderState, PoseStack poseStack,
+			StorageRenderState.DisplayItemInfo displayItem) {
 		DisplaySide displaySide = displayItem.displaySide();
 
 		if (displaySide == DisplaySide.LEFT) {
@@ -159,7 +166,8 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity, ChestRender
 	}
 
 	@Override
-	public void extractRenderState(ChestBlockEntity blockEntity, ChestRenderState renderState, float partialTick, Vec3 cameraPos, ModelFeatureRenderer.CrumblingOverlay crumblingOverlay) {
+	public void extractRenderState(ChestBlockEntity blockEntity, ChestRenderState renderState, float partialTick, Vec3 cameraPos,
+			ModelFeatureRenderer.CrumblingOverlay crumblingOverlay) {
 		super.extractRenderState(blockEntity, renderState, partialTick, cameraPos, crumblingOverlay);
 
 		BlockState blockState = blockEntity.getBlockState();
@@ -202,10 +210,12 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity, ChestRender
 			subRenderer.submitBottomAndLid(submitNodeCollector, renderState, poseStack, StorageTextureManager.ChestMaterial.BASE);
 		}
 		if (renderState.hasMainColor) {
-			subRenderer.submitBottomAndLidWithTint(submitNodeCollector, renderState, poseStack, renderState.mainColor, StorageTextureManager.ChestMaterial.TINTABLE_MAIN);
+			subRenderer.submitBottomAndLidWithTint(submitNodeCollector, renderState, poseStack, renderState.mainColor,
+					StorageTextureManager.ChestMaterial.TINTABLE_MAIN);
 		}
 		if (renderState.hasAccentColor) {
-			subRenderer.submitBottomAndLidWithTint(submitNodeCollector, renderState, poseStack, renderState.accentColor, StorageTextureManager.ChestMaterial.TINTABLE_ACCENT);
+			subRenderer.submitBottomAndLidWithTint(submitNodeCollector, renderState, poseStack, renderState.accentColor,
+					StorageTextureManager.ChestMaterial.TINTABLE_ACCENT);
 		}
 		if (renderState.showsTier) {
 			subRenderer.submitTier(submitNodeCollector, renderState, poseStack);
@@ -302,11 +312,13 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity, ChestRender
 			poseStack.pushPose();
 			poseStack.translate(-0.005D, -0.005D, -0.005D);
 			poseStack.scale(1.01f, 1.01f, 1.01f);
-			submitNodeCollector.submitModel(hiddenTierModel, renderState.open, poseStack, RenderTypes.entityTranslucent(tierMaterial.atlasLocation()), renderState.lightCoords, OverlayTexture.NO_OVERLAY, 0x7FFFFFFF, sprites.get(tierMaterial), 0, renderState.breakProgress);
+			submitNodeCollector.submitModel(hiddenTierModel, renderState.open, poseStack, RenderTypes.entityTranslucent(tierMaterial.atlasLocation()),
+					renderState.lightCoords, OverlayTexture.NO_OVERLAY, 0x7FFFFFFF, sprites.get(tierMaterial), 0, renderState.breakProgress);
 			poseStack.popPose();
 		}
 
-		private void submitBottomAndLid(SubmitNodeCollector submitNodeCollector, ChestRenderState renderState, PoseStack poseStack, StorageTextureManager.ChestMaterial chestMaterial) {
+		private void submitBottomAndLid(SubmitNodeCollector submitNodeCollector, ChestRenderState renderState, PoseStack poseStack,
+				StorageTextureManager.ChestMaterial chestMaterial) {
 			SpriteId material = chestMaterials.get(chestMaterial);
 			if (material == null) {
 				return;
@@ -314,28 +326,33 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity, ChestRender
 			submitBottomAndLid(submitNodeCollector, renderState, poseStack, material.renderType(RenderTypes::entityCutout), sprites.get(material), -1);
 		}
 
-		private void submitBottomAndLid(SubmitNodeCollector submitNodeCollector, ChestRenderState renderState, PoseStack poseStack, RenderType renderType, net.minecraft.client.renderer.texture.TextureAtlasSprite sprite, int color) {
+		private void submitBottomAndLid(SubmitNodeCollector submitNodeCollector, ChestRenderState renderState, PoseStack poseStack, RenderType renderType,
+				net.minecraft.client.renderer.texture.TextureAtlasSprite sprite, int color) {
 			if (renderState.open > 0) {
 				poseStack.pushPose();
 				poseStack.translate(-0.0005F, -0.001F, -0.0005F);
 				poseStack.scale(1.001F, 1.001F, 1.001F);
 			}
-			submitNodeCollector.submitModel(coreModel, renderState.open, poseStack, renderType, renderState.lightCoords, OverlayTexture.NO_OVERLAY, color, sprite, 0, renderState.breakProgress);
+			submitNodeCollector.submitModel(coreModel, renderState.open, poseStack, renderType, renderState.lightCoords, OverlayTexture.NO_OVERLAY, color,
+					sprite, 0, renderState.breakProgress);
 			if (renderState.open > 0) {
 				poseStack.popPose();
 			}
 		}
 
-		private void submitBottomAndLidWithTint(SubmitNodeCollector submitNodeCollector, ChestRenderState renderState, PoseStack poseStack, int tint, StorageTextureManager.ChestMaterial chestMaterial) {
+		private void submitBottomAndLidWithTint(SubmitNodeCollector submitNodeCollector, ChestRenderState renderState, PoseStack poseStack, int tint,
+				StorageTextureManager.ChestMaterial chestMaterial) {
 			SpriteId material = chestMaterials.get(chestMaterial);
 			if (material == null) {
 				return;
 			}
-			submitBottomAndLid(submitNodeCollector, renderState, poseStack, material.renderType(RenderTypes::entityCutout), sprites.get(material), 0xFF000000 | tint);
+			submitBottomAndLid(submitNodeCollector, renderState, poseStack, material.renderType(RenderTypes::entityCutout), sprites.get(material),
+					0xFF000000 | tint);
 		}
 
 		private void submitChestLock(SubmitNodeCollector submitNodeCollector, ChestRenderState renderState, PoseStack poseStack) {
-			submitNodeCollector.submitModel(lockModel, renderState.open, poseStack, tierMaterial.renderType(RenderTypes::entityCutout), renderState.lightCoords, OverlayTexture.NO_OVERLAY, -1, sprites.get(tierMaterial), 0, renderState.breakProgress);
+			submitNodeCollector.submitModel(lockModel, renderState.open, poseStack, tierMaterial.renderType(RenderTypes::entityCutout), renderState.lightCoords,
+					OverlayTexture.NO_OVERLAY, -1, sprites.get(tierMaterial), 0, renderState.breakProgress);
 		}
 
 		private SpriteId getTierMaterial(Block block) {
@@ -354,7 +371,8 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity, ChestRender
 		}
 
 		private void submitTier(SubmitNodeCollector submitNodeCollector, ChestRenderState chestRenderState, PoseStack poseStack) {
-			submitBottomAndLid(submitNodeCollector, chestRenderState, poseStack, tierMaterial.renderType(RenderTypes::entityCutout), sprites.get(tierMaterial), -1);
+			submitBottomAndLid(submitNodeCollector, chestRenderState, poseStack, tierMaterial.renderType(RenderTypes::entityCutout), sprites.get(tierMaterial),
+					-1);
 		}
 	}
 

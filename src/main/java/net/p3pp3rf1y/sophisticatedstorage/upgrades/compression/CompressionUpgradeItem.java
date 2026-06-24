@@ -24,7 +24,8 @@ import java.util.function.Consumer;
 
 public class CompressionUpgradeItem extends UpgradeItemBase<CompressionUpgradeItem.Wrapper> {
 	public static final UpgradeType<Wrapper> TYPE = new UpgradeType<>(Wrapper::new);
-	public static final List<UpgradeConflictDefinition> UPGRADE_CONFLICT_DEFINITIONS = List.of(new UpgradeConflictDefinition(CompactingUpgradeItem.class::isInstance, 0, StorageTranslationHelper.INSTANCE.translError("add.compacting_exists")));
+	public static final List<UpgradeConflictDefinition> UPGRADE_CONFLICT_DEFINITIONS = List.of(
+			new UpgradeConflictDefinition(CompactingUpgradeItem.class::isInstance, 0, StorageTranslationHelper.INSTANCE.translError("add.compacting_exists")));
 
 	public CompressionUpgradeItem(Properties properties) {
 		super(Config.SERVER.maxUpgradesPerStorage, properties);
@@ -37,14 +38,17 @@ public class CompressionUpgradeItem extends UpgradeItemBase<CompressionUpgradeIt
 	}
 
 	private UpgradeSlotChangeResult checkCompressionSpace(IStorageWrapper storageWrapper) {
-		Optional<SlotRange> slotRange = storageWrapper.getInventoryHandler().getInventoryPartitioner().getFirstSpace(Config.SERVER.compressionUpgrade.maxNumberOfSlots.get());
+		Optional<SlotRange> slotRange = storageWrapper.getInventoryHandler().getInventoryPartitioner()
+				.getFirstSpace(Config.SERVER.compressionUpgrade.maxNumberOfSlots.get());
 
 		return slotRange.map(range -> canUseForCompression(storageWrapper, range))
-				.orElseGet(() -> UpgradeSlotChangeResult.fail(StorageTranslationHelper.INSTANCE.translError("add.compression_no_space"), Collections.emptySet(), Collections.emptySet(), Collections.emptySet()));
+				.orElseGet(() -> UpgradeSlotChangeResult.fail(StorageTranslationHelper.INSTANCE.translError("add.compression_no_space"), Collections.emptySet(),
+						Collections.emptySet(), Collections.emptySet()));
 	}
 
 	@Override
-	public UpgradeSlotChangeResult checkExtraInsertConditions(ItemStack upgradeStack, IStorageWrapper storageWrapper, boolean isClientSide, @Nullable IUpgradeItem<?> upgradeInSlot) {
+	public UpgradeSlotChangeResult checkExtraInsertConditions(ItemStack upgradeStack, IStorageWrapper storageWrapper, boolean isClientSide,
+			@Nullable IUpgradeItem<?> upgradeInSlot) {
 		if (isClientSide) {
 			return UpgradeSlotChangeResult.success();
 		}
@@ -75,7 +79,10 @@ public class CompressionUpgradeItem extends UpgradeItemBase<CompressionUpgradeIt
 		}
 
 		Set<Integer> errorSlots = CompressionChainHelper.getCompressionChainErrorSlots(slotRange, stacks);
-		return !errorSlots.isEmpty() ? UpgradeSlotChangeResult.fail(StorageTranslationHelper.INSTANCE.translError("add.compression_incompatible_items"), Set.of(), errorSlots, Set.of()) : UpgradeSlotChangeResult.success();
+		return !errorSlots.isEmpty()
+				? UpgradeSlotChangeResult.fail(StorageTranslationHelper.INSTANCE.translError("add.compression_incompatible_items"), Set.of(), errorSlots,
+						Set.of())
+				: UpgradeSlotChangeResult.success();
 	}
 
 	@Override
@@ -92,7 +99,9 @@ public class CompressionUpgradeItem extends UpgradeItemBase<CompressionUpgradeIt
 			InventoryPartitioner inventoryPartitioner = storageWrapper.getInventoryHandler().getInventoryPartitioner();
 			inventoryPartitioner.getFirstSpace(Config.SERVER.compressionUpgrade.maxNumberOfSlots.get()).ifPresent(slotRange -> {
 				setFirstInventorySlot(slotRange.firstSlot());
-				inventoryPartitioner.addInventoryPart(slotRange.firstSlot(), slotRange.size(), new CompressionInventoryPart(storageWrapper.getInventoryHandler(), slotRange, () -> storageWrapper.getSettingsHandler().getTypeCategory(MemorySettingsCategory.class)));
+				inventoryPartitioner.addInventoryPart(slotRange.firstSlot(), slotRange.size(),
+						new CompressionInventoryPart(storageWrapper.getInventoryHandler(), slotRange,
+								() -> storageWrapper.getSettingsHandler().getTypeCategory(MemorySettingsCategory.class)));
 			});
 			storageWrapper.getSettingsHandler().getTypeCategory(ItemDisplaySettingsCategory.class).itemsChanged();
 		}

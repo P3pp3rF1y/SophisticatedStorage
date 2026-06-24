@@ -12,7 +12,6 @@ import static net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.common.sub
 public class StorageReiCommonPlugin implements REICommonPlugin {
 	@Override
 	public void registerItemComparators(ItemComparatorRegistry registry) {
-		getSubtypeInterpreters()
-				.forEach((item, subtypeInterpreter) -> registry.register(ReiSubtypeInterpreter.of(subtypeInterpreter), item));
+		getSubtypeInterpreters().forEach((item, subtypeInterpreter) -> registry.register(ReiSubtypeInterpreter.of(subtypeInterpreter), item));
 	}
 }

@@ -40,8 +40,7 @@ public class StorageModelProvider extends SophisticatedModelProvider {
 	private static final Identifier BASE_CHEST_PARTICLE = Identifier.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "block/break/acacia_chest");
 	private static final Identifier BASE_SHULKER_BOX_PARTICLE = Identifier.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, "block/break/shulker_box");
 	private static final PropertyDispatch<VariantMutator> VERTICAL_FACING = PropertyDispatch.modify(LimitedBarrelBlock.VERTICAL_FACING)
-			.select(VerticalFacing.NO, VariantMutator.X_ROT.withValue(Quadrant.R90))
-			.select(VerticalFacing.DOWN, VariantMutator.X_ROT.withValue(Quadrant.R180))
+			.select(VerticalFacing.NO, VariantMutator.X_ROT.withValue(Quadrant.R90)).select(VerticalFacing.DOWN, VariantMutator.X_ROT.withValue(Quadrant.R180))
 			.select(VerticalFacing.UP, NOP);
 
 	public StorageModelProvider(PackOutput output) {
@@ -59,8 +58,10 @@ public class StorageModelProvider extends SophisticatedModelProvider {
 		addItemClasses(barrelItems, List.of(BarrelBlockItem.class));
 		barrelItems.forEach(item -> generateBarrel(blockModels, item));
 
-		generateBlockWithCustomBlockStateModel(blockModels, "chest", ModBlocks.CHEST.get(), ModelTemplates.CHEST_INVENTORY, BASE_CHEST_PARTICLE, ChestBlock.class, new ChestItemRenderer.Unbaked(), ChestBlockStateModel.Unbaked::new);
-		generateBlockWithCustomBlockStateModel(blockModels, "shulker_box", ModBlocks.SHULKER_BOX.get(), ModelTemplates.SHULKER_BOX_INVENTORY, BASE_SHULKER_BOX_PARTICLE, ShulkerBoxBlock.class, new ShulkerBoxItemRenderer.Unbaked(), ShulkerBoxBlockStateModel.Unbaked::new);
+		generateBlockWithCustomBlockStateModel(blockModels, "chest", ModBlocks.CHEST.get(), ModelTemplates.CHEST_INVENTORY, BASE_CHEST_PARTICLE,
+				ChestBlock.class, new ChestItemRenderer.Unbaked(), ChestBlockStateModel.Unbaked::new);
+		generateBlockWithCustomBlockStateModel(blockModels, "shulker_box", ModBlocks.SHULKER_BOX.get(), ModelTemplates.SHULKER_BOX_INVENTORY,
+				BASE_SHULKER_BOX_PARTICLE, ShulkerBoxBlock.class, new ShulkerBoxItemRenderer.Unbaked(), ShulkerBoxBlockStateModel.Unbaked::new);
 		generateCubeBottomTopReuseTopOnBottom(blockModels, ModBlocks.CONTROLLER.get());
 		generateCubeBottomTopReuseTopOnBottom(blockModels, ModBlocks.STORAGE_IO.get());
 		generateCubeBottomTopReuseTopOnBottom(blockModels, ModBlocks.STORAGE_INPUT.get());
@@ -71,15 +72,15 @@ public class StorageModelProvider extends SophisticatedModelProvider {
 		generateCustomModelBlock(blockModels, ModBlocks.STORAGE_LINK.get(), BlockModelGenerators.ROTATIONS_COLUMN_WITH_FACING);
 	}
 
-	private void generateBlockWithCustomBlockStateModel(BlockModelGenerators blockModels, String loaderName, Block baseBlock, ModelTemplate itemModelTemplate, Identifier baseParticle, Class<? extends Block> blockClass, SpecialModelRenderer.Unbaked unbakedSpecialRenderer, Supplier<CustomUnbakedBlockStateModel> unbakedBlockStateModelSupplier) {
+	private void generateBlockWithCustomBlockStateModel(BlockModelGenerators blockModels, String loaderName, Block baseBlock, ModelTemplate itemModelTemplate,
+			Identifier baseParticle, Class<? extends Block> blockClass, SpecialModelRenderer.Unbaked unbakedSpecialRenderer,
+			Supplier<CustomUnbakedBlockStateModel> unbakedBlockStateModelSupplier) {
 		TexturedModel.Provider provider = TexturedModel.createDefault(b -> new TextureMapping(),
 				ExtendedModelTemplateBuilder.builder().customLoader(() -> createSimpleCustomLoaderBuilder(loaderName), loader -> {
-				}).build()
-		);
+				}).build());
 		Identifier itemModel = itemModelTemplate.create(baseBlock.asItem(), TextureMapping.particle(new Material(baseParticle)), blockModels.modelOutput);
 		BuiltInRegistries.BLOCK.entrySet().stream()
-				.filter(entry -> entry.getKey().identifier().getNamespace().equals(modId)
-						&& blockClass.isAssignableFrom(entry.getValue().getClass()))
+				.filter(entry -> entry.getKey().identifier().getNamespace().equals(modId) && blockClass.isAssignableFrom(entry.getValue().getClass()))
 				.forEach(entry -> {
 					Block block = entry.getValue();
 					generateForCustomBlockStateModelBlock(blockModels, block, itemModel, unbakedBlockStateModelSupplier, unbakedSpecialRenderer);
@@ -95,7 +96,8 @@ public class StorageModelProvider extends SophisticatedModelProvider {
 		};
 	}
 
-	private void generateForCustomBlockStateModelBlock(BlockModelGenerators blockModels, Block block, Identifier itemModel, Supplier<CustomUnbakedBlockStateModel> unbakedBlockStateModelSupplier, SpecialModelRenderer.Unbaked unbakedSpecialRenderer) {
+	private void generateForCustomBlockStateModelBlock(BlockModelGenerators blockModels, Block block, Identifier itemModel,
+			Supplier<CustomUnbakedBlockStateModel> unbakedBlockStateModelSupplier, SpecialModelRenderer.Unbaked unbakedSpecialRenderer) {
 		blockModels.blockStateOutput.accept(BlockModelGenerators.createSimpleBlock(block, MultiVariant.of(new UnitBlockStateModelBuilder() {
 			@Override
 			public CustomUnbakedBlockStateModel toUnbaked() {
@@ -113,11 +115,8 @@ public class StorageModelProvider extends SophisticatedModelProvider {
 			Identifier blockModelId = ModelLocationUtils.getModelLocation(block);
 			Identifier flatTopBlockModelId = getFlatTopModelLocation(block);
 			MultiVariantGenerator multiVariantGenerator = MultiVariantGenerator.dispatch(block)
-					.with(
-							PropertyDispatch.initial(BarrelBlock.FLAT_TOP)
-									.select(false, MultiVariant.of(new BarrelBlockStateModelBuilder(blockModelId)))
-									.select(true, MultiVariant.of(new BarrelBlockStateModelBuilder(flatTopBlockModelId)))
-					);
+					.with(PropertyDispatch.initial(BarrelBlock.FLAT_TOP).select(false, MultiVariant.of(new BarrelBlockStateModelBuilder(blockModelId)))
+							.select(true, MultiVariant.of(new BarrelBlockStateModelBuilder(flatTopBlockModelId))));
 			if (block instanceof LimitedBarrelBlock) {
 				multiVariantGenerator = multiVariantGenerator.with(BlockModelGenerators.ROTATION_HORIZONTAL_FACING).with(VERTICAL_FACING);
 			} else {
@@ -125,17 +124,15 @@ public class StorageModelProvider extends SophisticatedModelProvider {
 			}
 			blockModels.blockStateOutput.accept(multiVariantGenerator);
 
-			blockModels.itemModelOutput.accept(item, new BarrelItemModel.Unbaked(
-					blockModelId,
-					flatTopBlockModelId,
-					List.of(new StorageTintSources.Main(-1), new StorageTintSources.Accent(-1))
-			));
+			blockModels.itemModelOutput.accept(item, new BarrelItemModel.Unbaked(blockModelId, flatTopBlockModelId,
+					List.of(new StorageTintSources.Main(-1), new StorageTintSources.Accent(-1))));
 		}
 	}
 
 	private static void generateCustomModelBlock(BlockModelGenerators blockModels, Block block, PropertyDispatch<VariantMutator> facingPropertyDispatch) {
 		Identifier blockModelId = ModelLocationUtils.getModelLocation(block);
-		blockModels.blockStateOutput.accept(MultiVariantGenerator.dispatch(block, BlockModelGenerators.plainVariant(blockModelId)).with(facingPropertyDispatch));
+		blockModels.blockStateOutput
+				.accept(MultiVariantGenerator.dispatch(block, BlockModelGenerators.plainVariant(blockModelId)).with(facingPropertyDispatch));
 		blockModels.itemModelOutput.accept(block.asItem(), ItemModelUtils.plainModel(blockModelId));
 	}
 

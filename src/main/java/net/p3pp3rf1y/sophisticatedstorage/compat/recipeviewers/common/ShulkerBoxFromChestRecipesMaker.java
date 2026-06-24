@@ -41,13 +41,14 @@ public class ShulkerBoxFromChestRecipesMaker {
 	private ShulkerBoxFromChestRecipesMaker() {
 	}
 
-	public static <T extends PropertyBasedSubtypeInterpreter> List<CraftingDisplaySpec> getShapedRecipeSpecs(Function<ItemStack, Optional<T>> getSubtypeInterpreter) {
+	public static <T extends PropertyBasedSubtypeInterpreter> List<CraftingDisplaySpec> getShapedRecipeSpecs(
+			Function<ItemStack, Optional<T>> getSubtypeInterpreter) {
 		return ClientRecipeHelper.transformAllRecipeHoldersOfTypeIntoMultiple(RecipeType.CRAFTING, ShulkerBoxFromChestRecipe.class,
 				recipeHolder -> List.of(createDisplayRecipe(recipeHolder, getSubtypeInterpreter).toSpec()));
 	}
 
-	private static <T extends PropertyBasedSubtypeInterpreter> ShulkerBoxFromChestRecipeDisplayRecipe createDisplayRecipe(RecipeHolder<ShulkerBoxFromChestRecipe> recipeHolder,
-			Function<ItemStack, Optional<T>> getSubtypeInterpreter) {
+	private static <T extends PropertyBasedSubtypeInterpreter> ShulkerBoxFromChestRecipeDisplayRecipe createDisplayRecipe(
+			RecipeHolder<ShulkerBoxFromChestRecipe> recipeHolder, Function<ItemStack, Optional<T>> getSubtypeInterpreter) {
 		ShulkerBoxFromChestRecipe recipe = recipeHolder.value();
 		ShapedRecipe compose = recipe.getCompose();
 		List<Optional<Ingredient>> recipeIngredients = new ArrayList<>(RecipeViewerRecipeHelper.getIngredients(compose));
@@ -63,9 +64,12 @@ public class ShulkerBoxFromChestRecipesMaker {
 			}
 		}
 		Identifier id = recipeHolder.id().identifier().withPath(path -> "shulker_from_chest_grouped/" + path);
-		RecipeHolder<CraftingRecipe> displayRecipeHolder = new RecipeHolder<>(recipeHolder.id(), new ShapedRecipe(new Recipe.CommonInfo(true), new CraftingRecipe.CraftingBookInfo(CraftingBookCategory.MISC, ""),
-				new ShapedRecipePattern(compose.getWidth(), compose.getHeight(), recipeIngredients, Optional.empty()), ItemStackTemplate.fromNonEmptyStack(ClientRecipeHelper.getResultItem(recipe))));
-		return new ShulkerBoxFromChestRecipeDisplayRecipe(id, displayRecipeHolder, compose.getWidth(), compose.getHeight(), ingredientsCopy, chestIngredientIndex, variants, globalVariants);
+		RecipeHolder<CraftingRecipe> displayRecipeHolder = new RecipeHolder<>(recipeHolder.id(),
+				new ShapedRecipe(new Recipe.CommonInfo(true), new CraftingRecipe.CraftingBookInfo(CraftingBookCategory.MISC, ""),
+						new ShapedRecipePattern(compose.getWidth(), compose.getHeight(), recipeIngredients, Optional.empty()),
+						ItemStackTemplate.fromNonEmptyStack(ClientRecipeHelper.getResultItem(recipe))));
+		return new ShulkerBoxFromChestRecipeDisplayRecipe(id, displayRecipeHolder, compose.getWidth(), compose.getHeight(), ingredientsCopy,
+				chestIngredientIndex, variants, globalVariants);
 	}
 
 	private static CraftingDisplayVariant createVariant(ShulkerBoxFromChestRecipe recipe, int chestIngredientIndex, ItemStack chestItem) {
@@ -155,7 +159,8 @@ public class ShulkerBoxFromChestRecipesMaker {
 	private record ShulkerBoxFromChestRecipeDisplayRecipe(Identifier id, RecipeHolder<CraftingRecipe> recipeHolder, int width, int height,
 			NonNullList<Ingredient> ingredients, int chestIngredientIndex, List<CraftingDisplayVariant> variants, List<CraftingDisplayVariant> globalVariants) {
 		private CraftingDisplaySpec toSpec() {
-			return new CraftingDisplaySpec(id, false, width, height, ingredients, variants, globalVariants, Set.of(recipeHolder.id().identifier()), new ShulkerBoxFromChestFocusBehavior(chestIngredientIndex));
+			return new CraftingDisplaySpec(id, false, width, height, ingredients, variants, globalVariants, Set.of(recipeHolder.id().identifier()),
+					new ShulkerBoxFromChestFocusBehavior(chestIngredientIndex));
 		}
 	}
 
@@ -167,9 +172,12 @@ public class ShulkerBoxFromChestRecipesMaker {
 		@Override
 		public List<CraftingDisplayVariant> recipesFor(List<CraftingDisplayVariant> variants, ItemStack focusedOutput) {
 			if (isTinted(focusedOutput)) {
-				return variants.stream().filter(variant -> variant.outputs().stream().anyMatch(output -> ItemStack.isSameItemSameComponents(output, focusedOutput))).toList();
+				return variants.stream()
+						.filter(variant -> variant.outputs().stream().anyMatch(output -> ItemStack.isSameItemSameComponents(output, focusedOutput))).toList();
 			}
-			return variants.stream().filter(variant -> variant.outputs().stream().anyMatch(output -> ItemStack.isSameItem(output, focusedOutput) && !isTinted(output))).toList();
+			return variants.stream()
+					.filter(variant -> variant.outputs().stream().anyMatch(output -> ItemStack.isSameItem(output, focusedOutput) && !isTinted(output)))
+					.toList();
 		}
 
 		@Override
@@ -177,7 +185,8 @@ public class ShulkerBoxFromChestRecipesMaker {
 			if (focusedInput.is(Items.SHULKER_SHELL)) {
 				return variants;
 			}
-			return variants.stream().filter(variant -> variant.inputs().stream().anyMatch(input -> ItemStack.isSameItemSameComponents(input, focusedInput))).toList();
+			return variants.stream().filter(variant -> variant.inputs().stream().anyMatch(input -> ItemStack.isSameItemSameComponents(input, focusedInput)))
+					.toList();
 		}
 	}
 }

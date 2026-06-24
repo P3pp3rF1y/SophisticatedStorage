@@ -77,15 +77,15 @@ public abstract class StorageRenderer<T extends StorageBlockEntity, R extends St
 					.map(item -> StorageToolItem.getMode(item) == StorageToolItem.Mode.UPGRADES_DISPLAY).orElse(false);
 
 			holdsItemThatShowsUpgrades = holdsStorageTool || holdsItem(player, this::isUpgrade);
-			holdsItemThatShowsFillLevels = holdsStorageTool || holdsItem(player, this::isStorageTierUpgrade) || holdsItem(player, stack -> isUpgrade(stack) && stack.getItem() instanceof StackUpgradeItem);
+			holdsItemThatShowsFillLevels = holdsStorageTool || holdsItem(player, this::isStorageTierUpgrade)
+					|| holdsItem(player, stack -> isUpgrade(stack) && stack.getItem() instanceof StackUpgradeItem);
 			holdsItemThatShowsHiddenTiers = (holdsStorageTool && InventoryHelper.getItemFromEitherHand(player, ModItems.STORAGE_TOOL.get())
 					.map(item -> StorageToolItem.getMode(item) == StorageToolItem.Mode.TIER_DISPLAY).orElse(false))
 					|| holdsItem(player, this::isStorageTierUpgrade);
-			holdsToolInToggleLockOrLockDisplay = holdsStorageTool && InventoryHelper.getItemFromEitherHand(player, ModItems.STORAGE_TOOL.get())
-					.map(item -> {
-						StorageToolItem.Mode mode = StorageToolItem.getMode(item);
-						return mode == StorageToolItem.Mode.LOCK_DISPLAY || mode == StorageToolItem.Mode.LOCK;
-					}).orElse(false);
+			holdsToolInToggleLockOrLockDisplay = holdsStorageTool && InventoryHelper.getItemFromEitherHand(player, ModItems.STORAGE_TOOL.get()).map(item -> {
+				StorageToolItem.Mode mode = StorageToolItem.getMode(item);
+				return mode == StorageToolItem.Mode.LOCK_DISPLAY || mode == StorageToolItem.Mode.LOCK;
+			}).orElse(false);
 			holdsToolInToggleFillLevelDisplay = holdsStorageTool && InventoryHelper.getItemFromEitherHand(player, ModItems.STORAGE_TOOL.get())
 					.map(item -> StorageToolItem.getMode(item) == StorageToolItem.Mode.FILL_LEVEL_DISPLAY).orElse(false);
 		}
@@ -107,8 +107,7 @@ public abstract class StorageRenderer<T extends StorageBlockEntity, R extends St
 	}
 
 	private boolean holdsItem(LocalPlayer player, Predicate<ItemStack> itemMatcher) {
-		return itemMatcher.test(player.getItemInHand(InteractionHand.MAIN_HAND))
-				|| itemMatcher.test(player.getItemInHand(InteractionHand.OFF_HAND));
+		return itemMatcher.test(player.getItemInHand(InteractionHand.MAIN_HAND)) || itemMatcher.test(player.getItemInHand(InteractionHand.OFF_HAND));
 	}
 
 	private boolean isStorageTool(ItemStack stack) {
@@ -129,7 +128,8 @@ public abstract class StorageRenderer<T extends StorageBlockEntity, R extends St
 	}
 
 	@Override
-	public void extractRenderState(T blockEntity, R renderState, float partialTick, Vec3 cameraPos, ModelFeatureRenderer.@Nullable CrumblingOverlay crumblingOverlay) {
+	public void extractRenderState(T blockEntity, R renderState, float partialTick, Vec3 cameraPos,
+			ModelFeatureRenderer.@Nullable CrumblingOverlay crumblingOverlay) {
 		BlockEntityRenderer.super.extractRenderState(blockEntity, renderState, partialTick, cameraPos, crumblingOverlay);
 
 		BlockState blockState = blockEntity.getBlockState();
@@ -166,9 +166,12 @@ public abstract class StorageRenderer<T extends StorageBlockEntity, R extends St
 			ItemStackRenderState stackRenderState = new ItemStackRenderState();
 			itemModelResolver.updateForTopItem(stackRenderState, stack, ItemDisplayContext.FIXED, blockEntity.getLevel(), null, 0);
 
-			float itemOffset = (float) DisplayItemRenderer.getDisplayItemOffset(stack, stackRenderState, DisplayItemRenderer.isGui3d(stackRenderState), renderState.displayItemSlots == 1 ? 1 : DisplayItemRenderer.SMALL_BLOCK_ITEM_OFFSET);
+			float itemOffset = (float) DisplayItemRenderer.getDisplayItemOffset(stack, stackRenderState, DisplayItemRenderer.isGui3d(stackRenderState),
+					renderState.displayItemSlots == 1 ? 1 : DisplayItemRenderer.SMALL_BLOCK_ITEM_OFFSET);
 
-			renderState.displayItems.add(new StorageRenderState.DisplayItemInfo(stackRenderState, storageBlock.hasFixedIndexDisplayItems() ? displayItem.slotIndex() : i, displayItem.rotation(), stack.getItem() instanceof BlockItem, itemOffset, displayItem.displaySide()));
+			renderState.displayItems
+					.add(new StorageRenderState.DisplayItemInfo(stackRenderState, storageBlock.hasFixedIndexDisplayItems() ? displayItem.slotIndex() : i,
+							displayItem.rotation(), stack.getItem() instanceof BlockItem, itemOffset, displayItem.displaySide()));
 		}
 	}
 

@@ -1,6 +1,7 @@
 // Auto generated package-info by MCP
 
-@ParametersAreNonnullByDefault @NullMarked
+@ParametersAreNonnullByDefault
+@NullMarked
 package net.p3pp3rf1y.sophisticatedstorage.client;
 
 import org.jspecify.annotations.NullMarked;

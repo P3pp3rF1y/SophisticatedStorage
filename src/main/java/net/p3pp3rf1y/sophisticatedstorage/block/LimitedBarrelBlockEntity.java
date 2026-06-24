@@ -35,11 +35,10 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICountDisplay, IFillLevelDisplay {
-	public static final Codec<Map<Integer, DyeColor>> SLOT_COLORS_CODEC =
-			Codec.unboundedMap(CodecHelper.STRING_ENCODED_INT, DyeColor.CODEC);
+	public static final Codec<Map<Integer, DyeColor>> SLOT_COLORS_CODEC = Codec.unboundedMap(CodecHelper.STRING_ENCODED_INT, DyeColor.CODEC);
 
-	public static final StreamCodec<FriendlyByteBuf, Map<Integer, DyeColor>> SLOT_COLORS_STREAM_CODEC =
-			StreamCodecHelper.ofMap(ByteBufCodecs.INT, DyeColor.STREAM_CODEC, HashMap::new);
+	public static final StreamCodec<FriendlyByteBuf, Map<Integer, DyeColor>> SLOT_COLORS_STREAM_CODEC = StreamCodecHelper.ofMap(ByteBufCodecs.INT,
+			DyeColor.STREAM_CODEC, HashMap::new);
 
 	public static final Consumer<VoidUpgradeWrapper> VOID_UPGRADE_VOIDING_OVERFLOW_OF_EVERYTHING_BY_DEFAULT = voidUpgrade -> {
 		voidUpgrade.getFilterLogic().setAllowByDefault(false);
@@ -169,7 +168,7 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 	}
 
 	public boolean depositItem(Player player, InteractionHand hand, ItemStack stackInHand, int slot) {
-		//noinspection ConstantConditions
+		// noinspection ConstantConditions
 		long gameTime = getLevel().getGameTime();
 		boolean doubleClick = gameTime - lastDepositTime < 10;
 		lastDepositTime = gameTime;
@@ -210,11 +209,13 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 		return false;
 	}
 
-	private boolean depositFromAllOfPlayersInventory(Player player, int slot, InventoryHandler invHandler, ItemResource itemResource, MemorySettingsCategory memorySettings) {
+	private boolean depositFromAllOfPlayersInventory(Player player, int slot, InventoryHandler invHandler, ItemResource itemResource,
+			MemorySettingsCategory memorySettings) {
 		AtomicBoolean success = new AtomicBoolean(false);
 		Predicate<ItemStack> memoryItemMatches = itemStack -> memorySettings.isSlotSelected(slot) && memorySettings.matchesFilter(slot, itemStack);
 		InventoryHelper.iteratePlayerInventory(player, (playerSlot, playerStack) -> {
-			if ((itemResource.isEmpty() && (memoryItemMatches.test(playerStack) || invHandler.isFilterItem(playerStack.getItem())) || (!playerStack.isEmpty() && itemResource.matches(playerStack)))) {
+			if ((itemResource.isEmpty() && (memoryItemMatches.test(playerStack) || invHandler.isFilterItem(playerStack.getItem()))
+					|| (!playerStack.isEmpty() && itemResource.matches(playerStack)))) {
 
 				ItemStack result = invHandler.insertItemOnlyToSlot(slot, playerStack);
 				if (result.getCount() < playerStack.getCount()) {
@@ -238,8 +239,9 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 		try (Transaction tx = Transaction.openRoot()) {
 			ItemStack stackTaken = resourceInSlot.toStack(inventoryHandler.extract(slot, resourceInSlot, countToTake, tx));
 			if (player.getInventory().add(stackTaken)) {
-				//noinspection ConstantConditions
-				getLevel().playSound(null, getBlockPos(), SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, .2f, (RandHelper.getRandomMinusOneToOne(getLevel().getRandom()) * .7f + 1) * 2);
+				// noinspection ConstantConditions
+				getLevel().playSound(null, getBlockPos(), SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, .2f,
+						(RandHelper.getRandomMinusOneToOne(getLevel().getRandom()) * .7f + 1) * 2);
 			} else {
 				player.drop(stackTaken, false);
 			}
@@ -250,7 +252,7 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 
 	@Override
 	void updateOpenBlockState(BlockState state, boolean open) {
-		//noop
+		// noop
 	}
 
 	@Override

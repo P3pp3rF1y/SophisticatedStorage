@@ -22,9 +22,9 @@ import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.subtypes.Prop
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.emi.CraftingSpecEmiRecipe;
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.emi.EmiClientRecipeHelper;
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.emi.EmiGridMenuInfo;
-import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.emi.GroupedCraftingEmiRecipe;
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.emi.EmiSettingsGhostDragDropHandler;
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.emi.EmiStorageGhostDragDropHandler;
+import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.emi.GroupedCraftingEmiRecipe;
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.emi.comparison.EmiSubtypeInterpreter;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.LimitedBarrelScreen;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.LimitedBarrelSettingsScreen;
@@ -42,7 +42,8 @@ import static net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.common.sub
 
 @EmiEntrypoint
 public class StorageEmiPlugin implements EmiPlugin {
-	private static Consumer<WorkstationRegistration> additionalWorkstations = registrar -> {};
+	private static Consumer<WorkstationRegistration> additionalWorkstations = registrar -> {
+	};
 	public static void addAdditionalWorkstations(Consumer<WorkstationRegistration> additionalWorkstations) {
 		StorageEmiPlugin.additionalWorkstations = StorageEmiPlugin.additionalWorkstations.andThen(additionalWorkstations);
 	}
@@ -77,11 +78,10 @@ public class StorageEmiPlugin implements EmiPlugin {
 	}
 
 	private void registerDefaultComparisons(EmiRegistry registry) {
-		getSubtypeInterpreters()
-				.forEach((item, comparator) -> registry.setDefaultComparison(item, EmiSubtypeInterpreter.of(comparator)));
+		getSubtypeInterpreters().forEach((item, comparator) -> registry.setDefaultComparison(item, EmiSubtypeInterpreter.of(comparator)));
 	}
 
-    private void registerGuiHandlers(EmiRegistry registry) {
+	private void registerGuiHandlers(EmiRegistry registry) {
 		registry.addExclusionArea(StorageScreen.class, StorageEmiPlugin::addStorageExclusionArea);
 		registry.addExclusionArea(LimitedBarrelScreen.class, StorageEmiPlugin::addStorageExclusionArea);
 		registry.addExclusionArea(StorageSettingsScreen.class, StorageEmiPlugin::addSettingsExclusionArea);
@@ -101,7 +101,7 @@ public class StorageEmiPlugin implements EmiPlugin {
 	}
 
 	private static void addStorageExclusionArea(StorageScreen screen, Consumer<Bounds> consumer) {
-		//noinspection ConstantValue
+		// noinspection ConstantValue
 		if (screen == null || screen.getUpgradeSettingsControl() == null) {
 			return;
 		}
@@ -115,17 +115,12 @@ public class StorageEmiPlugin implements EmiPlugin {
 		IRecipeViewerDisplayCatalog catalog = createCatalog(subtypeInterpreters);
 		registry.removeRecipes(recipe -> recipe.getBackingRecipe() != null && catalog.replacesCraftingRecipe(recipe.getBackingRecipe()));
 
-		catalog.getGroupedCraftingSpecs().stream()
-				.flatMap(spec -> GroupedCraftingEmiRecipe.ofGroupedUsageAndFocusedRecipes(spec.recipeHolder()).stream())
+		catalog.getGroupedCraftingSpecs().stream().flatMap(spec -> GroupedCraftingEmiRecipe.ofGroupedUsageAndFocusedRecipes(spec.recipeHolder()).stream())
 				.forEach(registry::addRecipe);
-		catalog.getCraftingRecipes().stream()
-				.filter(recipeHolder -> !catalog.replacesCraftingRecipe(recipeHolder))
-				.map(StorageEmiPlugin::wrapSyntheticCraftingRecipe)
-				.forEach(registry::addRecipe);
+		catalog.getCraftingRecipes().stream().filter(recipeHolder -> !catalog.replacesCraftingRecipe(recipeHolder))
+				.map(StorageEmiPlugin::wrapSyntheticCraftingRecipe).forEach(registry::addRecipe);
 
-		catalog.getCraftingSpecs().stream()
-				.flatMap(spec -> CraftingSpecEmiRecipe.ofGroupedUsageAndFocusedRecipes(spec).stream())
-				.forEach(registry::addRecipe);
+		catalog.getCraftingSpecs().stream().flatMap(spec -> CraftingSpecEmiRecipe.ofGroupedUsageAndFocusedRecipes(spec).stream()).forEach(registry::addRecipe);
 
 	}
 

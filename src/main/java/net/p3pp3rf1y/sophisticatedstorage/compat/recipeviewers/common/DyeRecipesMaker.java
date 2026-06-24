@@ -4,7 +4,6 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackTemplate;
@@ -28,7 +27,8 @@ public class DyeRecipesMaker {
 	private DyeRecipesMaker() {
 	}
 
-	public static <T extends PropertyBasedSubtypeInterpreter> List<RecipeHolder<CraftingRecipe>> getMultipleColorsRecipes(Function<ItemStack, Optional<T>> getSubtypeInterpreter) {
+	public static <T extends PropertyBasedSubtypeInterpreter> List<RecipeHolder<CraftingRecipe>> getMultipleColorsRecipes(
+			Function<ItemStack, Optional<T>> getSubtypeInterpreter) {
 		List<RecipeHolder<CraftingRecipe>> recipes = new ArrayList<>();
 
 		Map<Item, ItemStack[]> blocks = getDyeableItems();
@@ -37,7 +37,8 @@ public class DyeRecipesMaker {
 		return recipes;
 	}
 
-	public static <T extends PropertyBasedSubtypeInterpreter> List<SingleColorDyeRecipeSpec> getSingleColorRecipeSpecs(Function<ItemStack, Optional<T>> getSubtypeInterpreter) {
+	public static <T extends PropertyBasedSubtypeInterpreter> List<SingleColorDyeRecipeSpec> getSingleColorRecipeSpecs(
+			Function<ItemStack, Optional<T>> getSubtypeInterpreter) {
 		return getSingleColorRecipeSpecs(getDyeableItems(), getSubtypeInterpreter);
 	}
 
@@ -94,11 +95,13 @@ public class DyeRecipesMaker {
 
 	static List<ItemStack> getWoodStorageStackList(StorageBlockBase woodStorageBlock) {
 		Set<ItemStack> ret = new HashSet<>();
-		WoodStorageBlockBase.CUSTOM_TEXTURE_WOOD_TYPES.keySet().forEach(woodType -> ret.add(WoodStorageBlockItem.setWoodType(new ItemStack(woodStorageBlock), woodType)));
+		WoodStorageBlockBase.CUSTOM_TEXTURE_WOOD_TYPES.keySet()
+				.forEach(woodType -> ret.add(WoodStorageBlockItem.setWoodType(new ItemStack(woodStorageBlock), woodType)));
 		return List.copyOf(ret);
 	}
 
-	private static <T extends PropertyBasedSubtypeInterpreter> void addMultipleColorsRecipe(List<RecipeHolder<CraftingRecipe>> recipes, Map<Item, ItemStack[]> items, Function<ItemStack, Optional<T>> getSubtypeInterpreter) {
+	private static <T extends PropertyBasedSubtypeInterpreter> void addMultipleColorsRecipe(List<RecipeHolder<CraftingRecipe>> recipes,
+			Map<Item, ItemStack[]> items, Function<ItemStack, Optional<T>> getSubtypeInterpreter) {
 		items.forEach((block, stacks) -> {
 			NonNullList<Ingredient> ingredients = NonNullList.create();
 			ingredients.add(Ingredient.of(Items.YELLOW_DYE));
@@ -110,13 +113,16 @@ public class DyeRecipesMaker {
 				tintableBlockItem.setMainColor(result, DyeColor.YELLOW.getTextureDiffuseColor());
 				tintableBlockItem.setAccentColor(result, DyeColor.LIME.getTextureDiffuseColor());
 			}
-			Identifier id = Identifier.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, getSubtypeInterpreter.apply(result).map(i -> i.getRegistrySanitizedItemString(result)).orElse("multiple_color"));
+			Identifier id = Identifier.fromNamespaceAndPath(SophisticatedStorage.MOD_ID,
+					getSubtypeInterpreter.apply(result).map(i -> i.getRegistrySanitizedItemString(result)).orElse("multiple_color"));
 			ShapedRecipePattern pattern = new ShapedRecipePattern(3, 1, ingredients.stream().map(Optional::of).toList(), Optional.empty());
-			recipes.add(new RecipeHolder<>(ClientRecipeHelper.recipeKey(id), new ShapedRecipe(new Recipe.CommonInfo(true), new CraftingRecipe.CraftingBookInfo(CraftingBookCategory.MISC, ""), pattern, ItemStackTemplate.fromNonEmptyStack(result))));
+			recipes.add(new RecipeHolder<>(ClientRecipeHelper.recipeKey(id), new ShapedRecipe(new Recipe.CommonInfo(true),
+					new CraftingRecipe.CraftingBookInfo(CraftingBookCategory.MISC, ""), pattern, ItemStackTemplate.fromNonEmptyStack(result))));
 		});
 	}
 
-	private static <T extends PropertyBasedSubtypeInterpreter> List<SingleColorDyeRecipeSpec> getSingleColorRecipeSpecs(Map<Item, ItemStack[]> items, Function<ItemStack, Optional<T>> getSubtypeInterpreter) {
+	private static <T extends PropertyBasedSubtypeInterpreter> List<SingleColorDyeRecipeSpec> getSingleColorRecipeSpecs(Map<Item, ItemStack[]> items,
+			Function<ItemStack, Optional<T>> getSubtypeInterpreter) {
 		List<SingleColorDyeRecipeSpec> recipes = new ArrayList<>();
 		items.forEach((block, stacks) -> {
 			List<DyeVariantPair> variants = new ArrayList<>();
@@ -129,7 +135,8 @@ public class DyeRecipesMaker {
 				variants.add(new DyeVariantPair(new ItemStack(dyeItem(color)), result));
 			}
 			ItemStack idStack = variants.getFirst().result();
-			Identifier id = Identifier.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, getSubtypeInterpreter.apply(idStack).map(i -> i.getRegistrySanitizedItemString(idStack)).orElse("single_color_" + BuiltInRegistries.ITEM.getKey(block).getPath()));
+			Identifier id = Identifier.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, getSubtypeInterpreter.apply(idStack)
+					.map(i -> i.getRegistrySanitizedItemString(idStack)).orElse("single_color_" + BuiltInRegistries.ITEM.getKey(block).getPath()));
 			recipes.add(new SingleColorDyeRecipeSpec(id.withSuffix("_grouped"), List.of(stacks), variants));
 		});
 		return recipes;

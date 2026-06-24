@@ -20,7 +20,8 @@ import java.util.List;
 import java.util.Optional;
 
 public class DoubleChestTierUpgradeRecipe implements CraftingRecipe, IWrapperRecipe<ShapedRecipe> {
-	public static final RecipeSerializer<DoubleChestTierUpgradeRecipe> SERIALIZER = RecipeWrapperSerializer.create(DoubleChestTierUpgradeRecipe::new, ShapedRecipe.SERIALIZER);
+	public static final RecipeSerializer<DoubleChestTierUpgradeRecipe> SERIALIZER = RecipeWrapperSerializer.create(DoubleChestTierUpgradeRecipe::new,
+			ShapedRecipe.SERIALIZER);
 	private final ShapedRecipe compose;
 
 	public DoubleChestTierUpgradeRecipe(ShapedRecipe compose) {

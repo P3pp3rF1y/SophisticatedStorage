@@ -43,7 +43,8 @@ public abstract class WoodStorageBlockEntity extends StorageBlockEntity {
 	@Override
 	public void loadSynchronizedData(ValueInput in) {
 		super.loadSynchronizedData(in);
-		woodType = in.read("woodType", WoodType.CODEC).orElse(getStorageWrapper().hasMainColor() && getStorageWrapper().hasAccentColor() ? null : WoodType.ACACIA);
+		woodType = in.read("woodType", WoodType.CODEC)
+				.orElse(getStorageWrapper().hasMainColor() && getStorageWrapper().hasAccentColor() ? null : WoodType.ACACIA);
 		packed = in.getBooleanOr(PACKED, false);
 	}
 

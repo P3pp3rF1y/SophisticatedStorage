@@ -55,7 +55,8 @@ public class PaintbrushOverlay {
 		}
 
 		BlockPos pos = blockHitResult.getBlockPos();
-		if (!(level.getBlockState(pos).getBlock() instanceof StorageBlockBase) && level.getBlockState(pos).getBlock() != ModBlocks.CONTROLLER.get() && !(level.getBlockEntity(pos) instanceof ISimpleMaterialHolder)) {
+		if (!(level.getBlockState(pos).getBlock() instanceof StorageBlockBase) && level.getBlockState(pos).getBlock() != ModBlocks.CONTROLLER.get()
+				&& !(level.getBlockEntity(pos) instanceof ISimpleMaterialHolder)) {
 			return;
 		}
 

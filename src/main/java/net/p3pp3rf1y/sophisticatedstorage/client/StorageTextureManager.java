@@ -54,11 +54,11 @@ public class StorageTextureManager extends SimpleJsonResourceReloadListener<Json
 			if (type.equals("chest") && filePath.endsWith(CHEST_SUFFIX)) {
 				WoodType.values().filter(wt -> wt.name().equals(filePath.substring(0, filePath.lastIndexOf(CHEST_SUFFIX)))).findFirst().ifPresent(wt -> {
 					Map<ChestType, Map<ChestMaterial, SpriteId>> chestMaterials = new EnumMap<>(ChestType.class);
-					definition.getTextures().forEach((chestTypeName, textures) -> textures.forEach((textureName, rl) ->
-							ChestMaterial.fromString(textureName)
-									.ifPresent(cm -> chestMaterials.computeIfAbsent(ChestType.valueOf(chestTypeName.toUpperCase(Locale.ROOT)), t -> new EnumMap<>(ChestMaterial.class))
-											.put(cm, new SpriteId(Sheets.CHEST_SHEET, rl)))
-					));
+					definition.getTextures()
+							.forEach((chestTypeName, textures) -> textures.forEach((textureName, rl) -> ChestMaterial.fromString(textureName)
+									.ifPresent(cm -> chestMaterials
+											.computeIfAbsent(ChestType.valueOf(chestTypeName.toUpperCase(Locale.ROOT)), t -> new EnumMap<>(ChestMaterial.class))
+											.put(cm, new SpriteId(Sheets.CHEST_SHEET, rl)))));
 					woodChestMaterials.put(wt, chestMaterials);
 				});
 			}
@@ -77,11 +77,13 @@ public class StorageTextureManager extends SimpleJsonResourceReloadListener<Json
 
 	@Nullable
 	public Map<ChestMaterial, SpriteId> getWoodChestMaterials(ChestType chestType, WoodType woodType) {
-		Map<ChestType, Map<ChestMaterial, SpriteId>> chestTypeMaterials = woodChestMaterials.getOrDefault(woodType, woodChestMaterials.get(DEFAULT_CHEST_WOOD_TYPE));
+		Map<ChestType, Map<ChestMaterial, SpriteId>> chestTypeMaterials = woodChestMaterials.getOrDefault(woodType,
+				woodChestMaterials.get(DEFAULT_CHEST_WOOD_TYPE));
 		return chestTypeMaterials == null ? null : chestTypeMaterials.get(chestType);
 	}
 
-	private Optional<StorageTextureDefinition> loadDefinition(Map<Identifier, StorageTextureDefinition> storageTextureDefinitions, Identifier identifier, JsonElement json, Map<Identifier, JsonElement> fileContents) {
+	private Optional<StorageTextureDefinition> loadDefinition(Map<Identifier, StorageTextureDefinition> storageTextureDefinitions, Identifier identifier,
+			JsonElement json, Map<Identifier, JsonElement> fileContents) {
 		if (storageTextureDefinitions.containsKey(identifier)) {
 			return Optional.of(storageTextureDefinitions.get(identifier));
 		}
@@ -127,7 +129,8 @@ public class StorageTextureManager extends SimpleJsonResourceReloadListener<Json
 		private final Map<String, Map<String, Map<String, Identifier>>> textures;
 
 		@SuppressWarnings({"unused", "java:S1172"})
-		public StorageTextureDefinition(String type, Map<String, Map<String, Map<String, Identifier>>> multiplePartTextures, boolean multipleTextureIgnoredParameter) {
+		public StorageTextureDefinition(String type, Map<String, Map<String, Map<String, Identifier>>> multiplePartTextures,
+				boolean multipleTextureIgnoredParameter) {
 			this.type = type;
 			textures = multiplePartTextures;
 		}
@@ -177,16 +180,7 @@ public class StorageTextureManager extends SimpleJsonResourceReloadListener<Json
 	}
 
 	public enum ChestMaterial {
-		BASE,
-		WOOD_TIER,
-		COPPER_TIER,
-		IRON_TIER,
-		GOLD_TIER,
-		DIAMOND_TIER,
-		NETHERITE_TIER,
-		TINTABLE_MAIN,
-		TINTABLE_ACCENT,
-		PACKED;
+		BASE, WOOD_TIER, COPPER_TIER, IRON_TIER, GOLD_TIER, DIAMOND_TIER, NETHERITE_TIER, TINTABLE_MAIN, TINTABLE_ACCENT, PACKED;
 
 		public static Optional<ChestMaterial> fromString(String materialName) {
 			for (ChestMaterial value : values()) {

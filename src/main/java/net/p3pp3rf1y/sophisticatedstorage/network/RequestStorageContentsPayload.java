@@ -14,10 +14,8 @@ import java.util.UUID;
 
 public record RequestStorageContentsPayload(UUID storageUuid) implements CustomPacketPayload {
 	public static final Type<RequestStorageContentsPayload> TYPE = new Type<>(SophisticatedStorage.getIdentifier("request_storage_contents"));
-	public static final StreamCodec<ByteBuf, RequestStorageContentsPayload> STREAM_CODEC = StreamCodec.composite(
-			UUIDUtil.STREAM_CODEC,
-			RequestStorageContentsPayload::storageUuid,
-			RequestStorageContentsPayload::new);
+	public static final StreamCodec<ByteBuf, RequestStorageContentsPayload> STREAM_CODEC = StreamCodec.composite(UUIDUtil.STREAM_CODEC,
+			RequestStorageContentsPayload::storageUuid, RequestStorageContentsPayload::new);
 
 	@Override
 	public Type<? extends CustomPacketPayload> type() {
@@ -29,6 +27,7 @@ public record RequestStorageContentsPayload(UUID storageUuid) implements CustomP
 			return;
 		}
 
-		PacketDistributor.sendToPlayer(serverPlayer, new StorageContentsPayload(payload.storageUuid, ItemContentsStorage.get().getOrCreateContents(payload.storageUuid)));
+		PacketDistributor.sendToPlayer(serverPlayer,
+				new StorageContentsPayload(payload.storageUuid, ItemContentsStorage.get().getOrCreateContents(payload.storageUuid)));
 	}
 }

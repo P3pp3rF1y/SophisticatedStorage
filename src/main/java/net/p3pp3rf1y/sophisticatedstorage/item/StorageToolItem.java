@@ -38,10 +38,14 @@ public class StorageToolItem extends ItemBase {
 
 	@Override
 	public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay tooltipDisplay, Consumer<Component> tooltipAdder, TooltipFlag flag) {
-		StorageTranslationHelper.INSTANCE.getTranslatedLines(stack.getItem().getDescriptionId() + TranslationHelper.TOOLTIP_SUFFIX, null, ChatFormatting.DARK_GRAY).forEach(tooltipAdder);
+		StorageTranslationHelper.INSTANCE
+				.getTranslatedLines(stack.getItem().getDescriptionId() + TranslationHelper.TOOLTIP_SUFFIX, null, ChatFormatting.DARK_GRAY)
+				.forEach(tooltipAdder);
 		String itemName = RegistryHelper.getItemKey(stack.getItem()).getPath();
-		tooltipAdder.accept(Component.translatable(StorageTranslationHelper.INSTANCE.translItemTooltip(itemName) + ".controls",
-				Component.translatable(StorageTranslationHelper.INSTANCE.translItemTooltip(itemName) + ".controls.combination").withStyle(ChatFormatting.AQUA)).withStyle(ChatFormatting.GRAY));
+		tooltipAdder.accept(Component
+				.translatable(StorageTranslationHelper.INSTANCE.translItemTooltip(itemName) + ".controls", Component
+						.translatable(StorageTranslationHelper.INSTANCE.translItemTooltip(itemName) + ".controls.combination").withStyle(ChatFormatting.AQUA))
+				.withStyle(ChatFormatting.GRAY));
 	}
 
 	public static void useOffHandOnPlaced(ItemStack tool, StorageBlockEntity be) {
@@ -118,7 +122,8 @@ public class StorageToolItem extends ItemBase {
 
 	private static boolean canToggleOverlay(ISimpleMaterialHolder simpleMaterialHolder) {
 		return simpleMaterialHolder.getMaterial().isPresent()
-				&& (simpleMaterialHolder instanceof ControllerBlockEntity || simpleMaterialHolder instanceof StorageIOBlockEntity || simpleMaterialHolder instanceof StorageLinkBlockEntity || simpleMaterialHolder instanceof StorageConnectorBlockEntity);
+				&& (simpleMaterialHolder instanceof ControllerBlockEntity || simpleMaterialHolder instanceof StorageIOBlockEntity
+						|| simpleMaterialHolder instanceof StorageLinkBlockEntity || simpleMaterialHolder instanceof StorageConnectorBlockEntity);
 	}
 
 	private static <T> boolean tryToggling(BlockPos pos, Level level, Class<T> clazz, Consumer<T> toggle) {
@@ -172,20 +177,16 @@ public class StorageToolItem extends ItemBase {
 		Mode mode = getMode(tool);
 		Item item = tool.getItem();
 		return switch (mode) {
-			case LINK ->
-					getControllerLink(tool).map(controllerPos -> StorageTranslationHelper.INSTANCE.translItemOverlayMessage(item, "linking", controllerPos.getX(), controllerPos.getY(), controllerPos.getZ()))
-							.orElseGet(() -> StorageTranslationHelper.INSTANCE.translItemOverlayMessage(item, "unlinking"));
+			case LINK -> getControllerLink(tool)
+					.map(controllerPos -> StorageTranslationHelper.INSTANCE.translItemOverlayMessage(item, "linking", controllerPos.getX(),
+							controllerPos.getY(), controllerPos.getZ()))
+					.orElseGet(() -> StorageTranslationHelper.INSTANCE.translItemOverlayMessage(item, "unlinking"));
 			case LOCK -> StorageTranslationHelper.INSTANCE.translItemOverlayMessage(item, "toggling_lock");
-			case LOCK_DISPLAY ->
-					StorageTranslationHelper.INSTANCE.translItemOverlayMessage(item, "toggling_lock_display");
-			case COUNT_DISPLAY ->
-					StorageTranslationHelper.INSTANCE.translItemOverlayMessage(item, "toggling_count_display");
-			case TIER_DISPLAY ->
-					StorageTranslationHelper.INSTANCE.translItemOverlayMessage(item, "toggling_tier_display");
-			case UPGRADES_DISPLAY ->
-					StorageTranslationHelper.INSTANCE.translItemOverlayMessage(item, "toggling_upgrades_display");
-			case FILL_LEVEL_DISPLAY ->
-					StorageTranslationHelper.INSTANCE.translItemOverlayMessage(item, "toggling_fill_level_display");
+			case LOCK_DISPLAY -> StorageTranslationHelper.INSTANCE.translItemOverlayMessage(item, "toggling_lock_display");
+			case COUNT_DISPLAY -> StorageTranslationHelper.INSTANCE.translItemOverlayMessage(item, "toggling_count_display");
+			case TIER_DISPLAY -> StorageTranslationHelper.INSTANCE.translItemOverlayMessage(item, "toggling_tier_display");
+			case UPGRADES_DISPLAY -> StorageTranslationHelper.INSTANCE.translItemOverlayMessage(item, "toggling_upgrades_display");
+			case FILL_LEVEL_DISPLAY -> StorageTranslationHelper.INSTANCE.translItemOverlayMessage(item, "toggling_fill_level_display");
 		};
 	}
 
@@ -198,13 +199,7 @@ public class StorageToolItem extends ItemBase {
 	}
 
 	public enum Mode implements StringRepresentable {
-		LINK,
-		LOCK,
-		COUNT_DISPLAY,
-		LOCK_DISPLAY,
-		TIER_DISPLAY,
-		UPGRADES_DISPLAY,
-		FILL_LEVEL_DISPLAY;
+		LINK, LOCK, COUNT_DISPLAY, LOCK_DISPLAY, TIER_DISPLAY, UPGRADES_DISPLAY, FILL_LEVEL_DISPLAY;
 
 		public static final StringRepresentable.EnumCodec<Mode> CODEC = StringRepresentable.fromEnum(Mode::values);
 		public static final StreamCodec<FriendlyByteBuf, Mode> STREAM_CODEC = NeoForgeStreamCodecs.enumCodec(Mode.class);

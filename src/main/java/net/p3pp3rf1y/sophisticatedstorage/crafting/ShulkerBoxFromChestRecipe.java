@@ -21,7 +21,8 @@ import java.util.List;
 import java.util.Optional;
 
 public class ShulkerBoxFromChestRecipe implements CraftingRecipe, IWrapperRecipe<ShapedRecipe> {
-	public static final RecipeSerializer<ShulkerBoxFromChestRecipe> SERIALIZER = RecipeWrapperSerializer.create(ShulkerBoxFromChestRecipe::new, ShapedRecipe.SERIALIZER);
+	public static final RecipeSerializer<ShulkerBoxFromChestRecipe> SERIALIZER = RecipeWrapperSerializer.create(ShulkerBoxFromChestRecipe::new,
+			ShapedRecipe.SERIALIZER);
 	private final ShapedRecipe compose;
 
 	public ShulkerBoxFromChestRecipe(ShapedRecipe compose) {

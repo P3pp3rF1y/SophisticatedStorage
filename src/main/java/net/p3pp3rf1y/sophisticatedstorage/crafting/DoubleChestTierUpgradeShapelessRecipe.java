@@ -20,7 +20,8 @@ import java.util.List;
 import java.util.Optional;
 
 public class DoubleChestTierUpgradeShapelessRecipe extends CustomShapelessRecipe implements IWrapperRecipe<ShapelessRecipe> {
-	public static final RecipeSerializer<DoubleChestTierUpgradeShapelessRecipe> SERIALIZER = RecipeWrapperSerializer.create(DoubleChestTierUpgradeShapelessRecipe::new, ShapelessRecipe.SERIALIZER);
+	public static final RecipeSerializer<DoubleChestTierUpgradeShapelessRecipe> SERIALIZER = RecipeWrapperSerializer
+			.create(DoubleChestTierUpgradeShapelessRecipe::new, ShapelessRecipe.SERIALIZER);
 	private final ShapelessRecipe compose;
 
 	public DoubleChestTierUpgradeShapelessRecipe(ShapelessRecipe compose) {

@@ -26,7 +26,8 @@ import java.util.List;
 import java.util.Optional;
 
 public class ShulkerBoxFromVanillaShapelessRecipe extends CustomShapelessRecipe implements IWrapperRecipe<ShapelessRecipe> {
-	public static final RecipeSerializer<ShulkerBoxFromVanillaShapelessRecipe> SERIALIZER = RecipeWrapperSerializer.create(ShulkerBoxFromVanillaShapelessRecipe::new, ShapelessRecipe.SERIALIZER);
+	public static final RecipeSerializer<ShulkerBoxFromVanillaShapelessRecipe> SERIALIZER = RecipeWrapperSerializer
+			.create(ShulkerBoxFromVanillaShapelessRecipe::new, ShapelessRecipe.SERIALIZER);
 	private final ShapelessRecipe compose;
 
 	public ShulkerBoxFromVanillaShapelessRecipe(ShapelessRecipe compose) {
@@ -36,14 +37,16 @@ public class ShulkerBoxFromVanillaShapelessRecipe extends CustomShapelessRecipe 
 
 	@Override
 	public boolean matches(CraftingInput input, Level level) {
-		return super.matches(input, level) && getVanillaShulkerBox(input).map(storage -> !(storage.getItem() instanceof WoodStorageBlockItem) || !WoodStorageBlockItem.isPacked(storage)).orElse(false);
+		return super.matches(input, level) && getVanillaShulkerBox(input)
+				.map(storage -> !(storage.getItem() instanceof WoodStorageBlockItem) || !WoodStorageBlockItem.isPacked(storage)).orElse(false);
 	}
 
 	@Override
 	public ItemStack assemble(CraftingInput input) {
 		ItemStack upgradedStorage = super.assemble(input);
 		getVanillaShulkerBox(input).ifPresent(vanillaShulkerBox -> {
-			@Nullable ResourceHandler<ItemResource> itemCap = vanillaShulkerBox.getCapability(Capabilities.Item.ITEM, ItemAccess.forStack(vanillaShulkerBox));
+			@Nullable
+			ResourceHandler<ItemResource> itemCap = vanillaShulkerBox.getCapability(Capabilities.Item.ITEM, ItemAccess.forStack(vanillaShulkerBox));
 			if (itemCap != null) {
 				StackStorageWrapper wrapper = new StackStorageWrapper(upgradedStorage);
 				wrapper.ensureContentsUuid();
