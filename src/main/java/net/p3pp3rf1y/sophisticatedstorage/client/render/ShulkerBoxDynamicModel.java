@@ -30,6 +30,7 @@ import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
@@ -40,7 +41,8 @@ public class ShulkerBoxDynamicModel implements IUnbakedGeometry<ShulkerBoxDynami
 	public static final ResourceLocation MAIN_BREAK_TEXTURE = SophisticatedStorage.getRL(BLOCK_BREAK_FOLDER + "shulker_box");
 
 	@Override
-	public BakedModel bake(IGeometryBakingContext context, ModelBaker baker, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelTransform, ItemOverrides overrides) {
+	public BakedModel bake(IGeometryBakingContext context, ModelBaker baker, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelTransform,
+			ItemOverrides overrides) {
 		return new ShulkerBoxBakedModel();
 	}
 
@@ -82,12 +84,11 @@ public class ShulkerBoxDynamicModel implements IUnbakedGeometry<ShulkerBoxDynami
 		@Nonnull
 		@Override
 		public ModelData getModelData(BlockAndTintGetter level, BlockPos pos, BlockState state, ModelData modelData) {
-			return WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class)
-					.map(be -> {
-						ModelData.Builder builder = ModelData.builder();
-						builder.with(HAS_MAIN_COLOR, be.getStorageWrapper().getMainColor() != -1);
-						return builder.build();
-					}).orElse(ModelData.EMPTY);
+			return WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).map(be -> {
+				ModelData.Builder builder = ModelData.builder();
+				builder.with(HAS_MAIN_COLOR, be.getStorageWrapper().getMainColor() != -1);
+				return builder.build();
+			}).orElse(ModelData.EMPTY);
 		}
 
 		@Override
@@ -101,7 +102,8 @@ public class ShulkerBoxDynamicModel implements IUnbakedGeometry<ShulkerBoxDynami
 
 		@Override
 		public ItemOverrides getOverrides() {
-			return new ItemOverrides() {};
+			return new ItemOverrides() {
+			};
 		}
 	}
 

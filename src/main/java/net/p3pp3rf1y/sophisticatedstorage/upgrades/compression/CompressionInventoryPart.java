@@ -17,6 +17,7 @@ import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import org.apache.commons.lang3.function.TriFunction;
 
 import javax.annotation.Nullable;
+
 import java.util.*;
 import java.util.function.*;
 import java.util.stream.Collectors;
@@ -27,12 +28,13 @@ import static net.p3pp3rf1y.sophisticatedcore.util.MathHelper.intMaxCappedMultip
 
 public class CompressionInventoryPart implements IInventoryPartHandler {
 	public static final String NAME = "compression";
-	public static final Pair<ResourceLocation, ResourceLocation> EMPTY_COMPRESSION_SLOT = new Pair<>(InventoryMenu.BLOCK_ATLAS, SophisticatedStorage.getRL("item/empty_compression_slot"));
+	public static final Pair<ResourceLocation, ResourceLocation> EMPTY_COMPRESSION_SLOT = new Pair<>(InventoryMenu.BLOCK_ATLAS,
+			SophisticatedStorage.getRL("item/empty_compression_slot"));
 	private final InventoryHandler parent;
 	private final SlotRange slotRange;
 	private final Supplier<MemorySettingsCategory> getMemorySettings;
 	@SuppressWarnings("FieldCanBeLocal")
-	//need field instead of local variable because it's wrapped in WeakReference in RecipeHelper
+	// need field instead of local variable because it's wrapped in WeakReference in RecipeHelper
 	private final Runnable recipeChangeListener = () -> calculateStacks(false);
 
 	private Map<Integer, SlotDefinition> slotDefinitions = new HashMap<>();
@@ -98,7 +100,8 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 		ItemStack prevItem = firstItem;
 		for (int slot = lastSlot; slot >= slotRange.firstSlot(); slot--) {
 			if (existingStacks.containsKey(slot) && !ItemStack.isSameItemSameComponents(existingStacks.get(slot), prevItem)) {
-				ret.clear(); //clearing any compressible definition added before as the compression should no longer compress if there are incompatible items present
+				ret.clear(); // clearing any compressible definition added before as the compression should no longer compress if there are incompatible items
+								// present
 				break;
 			} else {
 				Optional<CompressionChainHelper.CompressionDefinition> compressionDefinition = getCompressionDefinition(prevItem);
@@ -123,7 +126,8 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 		int totalLimit = 0;
 		for (int slot = slotRange.firstSlot(); slot < slotRange.firstSlot() + slotRange.numberOfSlots(); slot++) {
 			if (definitions.containsKey(slot) && definitions.get(slot).isAccessible()) {
-				totalLimit = intMaxCappedAddition(parent.getBaseStackLimit(definitions.get(slot).item), intMaxCappedMultiply(definitions.get(slot).prevSlotMultiplier, totalLimit));
+				totalLimit = intMaxCappedAddition(parent.getBaseStackLimit(definitions.get(slot).item),
+						intMaxCappedMultiply(definitions.get(slot).prevSlotMultiplier, totalLimit));
 
 				definitions.get(slot).setSlotLimit(totalLimit);
 			}
@@ -143,7 +147,9 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 				continue;
 			}
 			int internalCount = parent.getSlotStack(slot).getCount();
-			totalCalculated = Integer.MAX_VALUE / slotDefinition.prevSlotMultiplier() < totalCalculated ? Integer.MAX_VALUE : totalCalculated * slotDefinition.prevSlotMultiplier();
+			totalCalculated = Integer.MAX_VALUE / slotDefinition.prevSlotMultiplier() < totalCalculated
+					? Integer.MAX_VALUE
+					: totalCalculated * slotDefinition.prevSlotMultiplier();
 			totalCalculated = Integer.MAX_VALUE - internalCount < totalCalculated ? Integer.MAX_VALUE : totalCalculated + internalCount;
 
 			ItemStack calculatedStack = slotDefinition.item().copyWithCount(totalCalculated);
@@ -199,8 +205,10 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 			if (!definitions.get(slot).isAccessible()) {
 				continue;
 			}
-			boolean uncompressibledFromNext = definitions.containsKey(slot - 1) && definitions.get(slot - 1).isAccessible() && definitions.get(slot).prevSlotMultiplier() > 1;
-			boolean compressibleFromPrevious = definitions.containsKey(slot + 1) && definitions.get(slot + 1).isAccessible() && definitions.get(slot + 1).prevSlotMultiplier() > 1;
+			boolean uncompressibledFromNext = definitions.containsKey(slot - 1) && definitions.get(slot - 1).isAccessible()
+					&& definitions.get(slot).prevSlotMultiplier() > 1;
+			boolean compressibleFromPrevious = definitions.containsKey(slot + 1) && definitions.get(slot + 1).isAccessible()
+					&& definitions.get(slot + 1).prevSlotMultiplier() > 1;
 			definitions.get(slot).setCompressible(uncompressibledFromNext || compressibleFromPrevious);
 		}
 	}
@@ -218,9 +226,10 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 	private void addPreviousItems(Map<Integer, SlotDefinition> slotDefinitions, int firstFilledSlot, ItemStack firstFilledItem) {
 		ItemStack currentItem = firstFilledItem;
 		for (int slot = firstFilledSlot + 1; slot < slotRange.firstSlot() + slotRange.numberOfSlots(); slot++) {
-			Optional<CompressionChainHelper.DecompressionDefinition> decompressionDefinition = CompressionChainHelper.getDecompressionDefinition(currentItem, this::getDecompressionResultFromConfig);
+			Optional<CompressionChainHelper.DecompressionDefinition> decompressionDefinition = CompressionChainHelper.getDecompressionDefinition(currentItem,
+					this::getDecompressionResultFromConfig);
 			if (decompressionDefinition.isEmpty()) {
-					break;
+				break;
 			}
 
 			ItemStack result = decompressionDefinition.get().result();
@@ -472,7 +481,8 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 		int limit = getStackLimit(definitions.get(slot));
 
 		int currentCalculatedCount = calculatedStacks.containsKey(slot) ? calculatedStacks.get(slot).getCount() : 0;
-		int inserted = Math.min(Math.max(parent.getBaseStackLimit(stack) - parent.getSlotStack(slot).getCount(), limit - currentCalculatedCount), stack.getCount());
+		int inserted = Math.min(Math.max(parent.getBaseStackLimit(stack) - parent.getSlotStack(slot).getCount(), limit - currentCalculatedCount),
+				stack.getCount());
 
 		if (inserted == 0) {
 			return stack;
@@ -540,7 +550,8 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 
 		long amountToSet = amountToInsert + parent.getSlotStack(slot).getCount();
 
-		while (amountToSet / ((long) totalMultiplier * getPrevSlotMultiplier(slot)) > 0 && slotDefinitions.containsKey(slot - 1) && slotDefinitions.get(slot - 1).isAccessible()) {
+		while (amountToSet / ((long) totalMultiplier * getPrevSlotMultiplier(slot)) > 0 && slotDefinitions.containsKey(slot - 1)
+				&& slotDefinitions.get(slot - 1).isAccessible()) {
 			totalMultiplier *= getPrevSlotMultiplier(slot);
 			slot--;
 			amountToSet += (long) parent.getSlotStack(slot).getCount() * totalMultiplier;
@@ -562,7 +573,9 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 
 			if (amountToSet != 0) {
 				if (!slotDefinitions.containsKey(slot + 1) || !slotDefinitions.get(slot + 1).isAccessible()) {
-					SophisticatedStorage.LOGGER.error("Compression inventory is in an invalid state. Slot {} has a prevSlotMultiplier of 0 (likely because it's inaccessible), but there's remaining count of {} to insert.\nSlot Definitions\n{}", slot + 1, amountToSet, slotDefinitions);
+					SophisticatedStorage.LOGGER.error(
+							"Compression inventory is in an invalid state. Slot {} has a prevSlotMultiplier of 0 (likely because it's inaccessible), but there's remaining count of {} to insert.\nSlot Definitions\n{}",
+							slot + 1, amountToSet, slotDefinitions);
 					break;
 				}
 				totalMultiplier /= getPrevSlotMultiplier(slot + 1);
@@ -570,7 +583,7 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 			slot++;
 		}
 
-		//finish calculation of calculated addition to the follow up slots even though they are not getting their internal stack changed
+		// finish calculation of calculated addition to the follow up slots even though they are not getting their internal stack changed
 		while (slot < slotRange.firstSlot() + slotRange.numberOfSlots()) {
 			if (!slotDefinitions.containsKey(slot)) {
 				break;
@@ -642,7 +655,7 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 	@Override
 	public void onContentsChanged(int slot, BiConsumer<Integer, ItemStack> setStackInSlotSuper) {
 		if (reconcilingStacks || !slotDefinitions.containsKey(slot)) {
-			return; //prevent infinite loop when updating calculated stacks
+			return; // prevent infinite loop when updating calculated stacks
 		}
 		reconcilingStacks = true;
 		setStackInSlot(slot, calculatedStacks.getOrDefault(slot, ItemStack.EMPTY), setStackInSlotSuper);
@@ -661,7 +674,9 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 
 	@Override
 	public ItemStack getStackInSlot(int slot, IntFunction<ItemStack> getStackInSlotSuper) {
-		return slotDefinitions.containsKey(slot) && slotDefinitions.get(slot).isAccessible() && calculatedStacks.containsKey(slot) ? calculatedStacks.get(slot) : ItemStack.EMPTY;
+		return slotDefinitions.containsKey(slot) && slotDefinitions.get(slot).isAccessible() && calculatedStacks.containsKey(slot)
+				? calculatedStacks.get(slot)
+				: ItemStack.EMPTY;
 	}
 
 	@Override
@@ -785,13 +800,8 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 
 		@Override
 		public String toString() {
-			return "SlotDefinition{" +
-					"item=" + item +
-					", prevSlotMultiplier=" + prevSlotMultiplier +
-					", slotLimit=" + slotLimit +
-					", isAccessible=" + isAccessible +
-					", isCompressible=" + isCompressible +
-					'}';
+			return "SlotDefinition{" + "item=" + item + ", prevSlotMultiplier=" + prevSlotMultiplier + ", slotLimit=" + slotLimit + ", isAccessible="
+					+ isAccessible + ", isCompressible=" + isCompressible + '}';
 		}
 	}
 

@@ -72,7 +72,7 @@ public class ShulkerBoxFromChestRecipe extends ShapedRecipe implements IWrapperR
 
 	public static class Serializer extends RecipeWrapperSerializer<ShapedRecipe, ShulkerBoxFromChestRecipe> {
 		public Serializer() {
-			super(ShulkerBoxFromChestRecipe::new, RecipeSerializer.SHAPED_RECIPE);
+			super(ShulkerBoxFromChestRecipe::new, SHAPED_RECIPE);
 		}
 	}
 }

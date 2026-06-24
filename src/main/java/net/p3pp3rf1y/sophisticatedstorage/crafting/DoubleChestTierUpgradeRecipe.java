@@ -71,7 +71,7 @@ public class DoubleChestTierUpgradeRecipe extends ShapedRecipe implements IWrapp
 
 	public static class Serializer extends RecipeWrapperSerializer<ShapedRecipe, DoubleChestTierUpgradeRecipe> {
 		public Serializer() {
-			super(DoubleChestTierUpgradeRecipe::new, RecipeSerializer.SHAPED_RECIPE);
+			super(DoubleChestTierUpgradeRecipe::new, SHAPED_RECIPE);
 		}
 	}
 }

@@ -27,7 +27,8 @@ public class ModCompat {
 		CompatRegistry.registerCompat(new CompatInfo(SB_MOD_ID, null), () -> modBus -> new SBCompat());
 		CompatRegistry.registerCompat(new CompatInfo(SAWMILL_MOD_ID, null), () -> modBus -> new SawmillCompat());
 		try {
-			CompatRegistry.registerCompat(new CompatInfo(TOMS_STORAGE, VersionRange.createFromVersionSpec("[2.2.0,)")), () -> modBus -> new TomsStorageCompat());
+			CompatRegistry.registerCompat(new CompatInfo(TOMS_STORAGE, VersionRange.createFromVersionSpec("[2.2.0,)")),
+					() -> modBus -> new TomsStorageCompat());
 		} catch (InvalidVersionSpecificationException e) {
 			SophisticatedStorage.LOGGER.error("Registering Tom's Simple Storage Mod Compat failed.", e);
 		}

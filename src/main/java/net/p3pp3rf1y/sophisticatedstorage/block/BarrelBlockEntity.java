@@ -37,7 +37,7 @@ public class BarrelBlockEntity extends WoodStorageBlockEntity implements IMateri
 		}
 
 		protected void openerCountChanged(Level level, BlockPos pos, BlockState state, int previousOpenerCount, int newOpenerCount) {
-			//noop
+			// noop
 		}
 
 		protected boolean isOwnContainer(Player player) {
@@ -125,7 +125,8 @@ public class BarrelBlockEntity extends WoodStorageBlockEntity implements IMateri
 	@Override
 	public void loadSynchronizedData(CompoundTag tag, HolderLookup.Provider registries) {
 		super.loadSynchronizedData(tag, registries);
-		materials = NBTHelper.getMap(tag, MATERIALS_TAG, BarrelMaterial::fromName, (bm, t) -> Optional.of(ResourceLocation.parse(t.getAsString()))).orElse(Map.of());
+		materials = NBTHelper.getMap(tag, MATERIALS_TAG, BarrelMaterial::fromName, (bm, t) -> Optional.of(ResourceLocation.parse(t.getAsString())))
+				.orElse(Map.of());
 	}
 
 	@Override

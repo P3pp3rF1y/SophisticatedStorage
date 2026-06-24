@@ -16,7 +16,8 @@ import java.util.Optional;
 public class SimpleMaterialBlockData {
 	public static final BooleanProperty OPAQUE = BooleanProperty.create("opaque");
 
-	private SimpleMaterialBlockData() {}
+	private SimpleMaterialBlockData() {
+	}
 
 	public static void copyToBlockEntity(BlockGetter level, BlockPos pos, ItemStack stack) {
 		WorldHelper.getBlockEntity(level, pos, ISimpleMaterialHolder.class).ifPresent(holder -> {
@@ -26,8 +27,8 @@ public class SimpleMaterialBlockData {
 	}
 
 	public static void copyFromBlockEntity(BlockGetter level, BlockPos pos, ItemStack stack) {
-		WorldHelper.getBlockEntity(level, pos, ISimpleMaterialHolder.class).ifPresent(holder ->
-				holder.getMaterial().ifPresentOrElse(material -> SimpleMaterialBlockItem.setMaterial(stack, material), () -> SimpleMaterialBlockItem.removeMaterial(stack)));
+		WorldHelper.getBlockEntity(level, pos, ISimpleMaterialHolder.class).ifPresent(holder -> holder.getMaterial()
+				.ifPresentOrElse(material -> SimpleMaterialBlockItem.setMaterial(stack, material), () -> SimpleMaterialBlockItem.removeMaterial(stack)));
 	}
 
 	public static boolean isOpaque(ItemStack stack) {
@@ -55,8 +56,6 @@ public class SimpleMaterialBlockData {
 	}
 
 	private static boolean isMaterialOpaque(ResourceLocation materialLocation) {
-		return BuiltInRegistries.BLOCK.getOptional(materialLocation)
-				.map(block -> block.defaultBlockState().canOcclude())
-				.orElse(true);
+		return BuiltInRegistries.BLOCK.getOptional(materialLocation).map(block -> block.defaultBlockState().canOcclude()).orElse(true);
 	}
 }

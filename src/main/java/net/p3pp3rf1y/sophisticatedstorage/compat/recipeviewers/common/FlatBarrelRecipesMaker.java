@@ -23,8 +23,10 @@ public class FlatBarrelRecipesMaker {
 		ItemStack flatBarrel = barrel.copy();
 		BarrelBlockItem.toggleFlatTop(flatBarrel);
 
-		recipes.add(new RecipeHolder<>(SophisticatedStorage.getRL("flatten_barrel"), new ShapelessRecipe("", CraftingBookCategory.MISC, flatBarrel, NonNullList.of(Ingredient.EMPTY, Ingredient.of(barrel)))));
-		recipes.add(new RecipeHolder<>(SophisticatedStorage.getRL("unflatten_barrel"), new ShapelessRecipe("", CraftingBookCategory.MISC, barrel, NonNullList.of(Ingredient.EMPTY, Ingredient.of(flatBarrel)))));
+		recipes.add(new RecipeHolder<>(SophisticatedStorage.getRL("flatten_barrel"),
+				new ShapelessRecipe("", CraftingBookCategory.MISC, flatBarrel, NonNullList.of(Ingredient.EMPTY, Ingredient.of(barrel)))));
+		recipes.add(new RecipeHolder<>(SophisticatedStorage.getRL("unflatten_barrel"),
+				new ShapelessRecipe("", CraftingBookCategory.MISC, barrel, NonNullList.of(Ingredient.EMPTY, Ingredient.of(flatBarrel)))));
 
 		return recipes;
 	}

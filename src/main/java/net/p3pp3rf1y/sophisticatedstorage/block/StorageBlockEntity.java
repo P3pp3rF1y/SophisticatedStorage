@@ -40,9 +40,18 @@ import net.p3pp3rf1y.sophisticatedstorage.network.StorageOpennessPayload;
 import net.p3pp3rf1y.sophisticatedstorage.upgrades.INeighborChangeListenerUpgrade;
 
 import javax.annotation.Nullable;
+
 import java.util.*;
 
-public abstract class StorageBlockEntity extends BlockEntity implements IControllableStorage, ILinkable, ILockable, Nameable, ITierDisplay, IUpgradeDisplay, Clearable {
+public abstract class StorageBlockEntity extends BlockEntity
+		implements
+			IControllableStorage,
+			ILinkable,
+			ILockable,
+			Nameable,
+			ITierDisplay,
+			IUpgradeDisplay,
+			Clearable {
 	public static final String STORAGE_WRAPPER_TAG = "storageWrapper";
 	public static final String UPDATE_BLOCK_RENDER_TAG = "updateBlockRender";
 	private final StorageWrapper storageWrapper;
@@ -98,13 +107,16 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 			public ItemStack getWrappedStorageStack() {
 				BlockPos pos = getBlockPos();
 				BlockState state = getBlockState();
-				return addWrappedStorageStackData(state.getBlock().getCloneItemStack(state, new BlockHitResult(new Vec3(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5), Direction.DOWN, pos, true), getLevel(), pos, null), state);
+				return addWrappedStorageStackData(state.getBlock().getCloneItemStack(state,
+						new BlockHitResult(new Vec3(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5), Direction.DOWN, pos, true), getLevel(), pos, null),
+						state);
 			}
 
 			@Override
 			protected void onUpgradeRefresh() {
 				if (canRefreshUpgrades() && getBlockState().getBlock() instanceof IStorageBlock storageBlock) {
-					storageBlock.setTicking(level, getBlockPos(), getBlockState(), !storageWrapper.getUpgradeHandler().getWrappersThatImplement(ITickableUpgrade.class).isEmpty());
+					storageBlock.setTicking(level, getBlockPos(), getBlockState(),
+							!storageWrapper.getUpgradeHandler().getWrappersThatImplement(ITickableUpgrade.class).isEmpty());
 				}
 			}
 
@@ -131,7 +143,9 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 
 			@Override
 			public int getBaseStackSizeMultiplier() {
-				return getBlockState().getBlock() instanceof IStorageBlock storageBlock ? storageBlock.getBaseStackSizeMultiplier() : super.getBaseStackSizeMultiplier();
+				return getBlockState().getBlock() instanceof IStorageBlock storageBlock
+						? storageBlock.getBaseStackSizeMultiplier()
+						: super.getBaseStackSizeMultiplier();
 			}
 
 			@Override
@@ -153,7 +167,9 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 			public ITrackedContentsItemHandler getInventoryForInputOutput() {
 				if (locked && allowsEmptySlotsMatchingItemInsertsWhenLocked()) {
 					if (contentsFilteredItemHandler == null) {
-						contentsFilteredItemHandler = new ContentsFilteredItemHandler(super::getInventoryForInputOutput, () -> getStorageWrapper().getInventoryHandler().getSlotTracker(), () -> getStorageWrapper().getSettingsHandler().getTypeCategory(MemorySettingsCategory.class));
+						contentsFilteredItemHandler = new ContentsFilteredItemHandler(super::getInventoryForInputOutput,
+								() -> getStorageWrapper().getInventoryHandler().getSlotTracker(),
+								() -> getStorageWrapper().getSettingsHandler().getTypeCategory(MemorySettingsCategory.class));
 					}
 					return contentsFilteredItemHandler;
 				}
@@ -168,7 +184,7 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		return !isDroppingContents && level != null && !level.isClientSide;
 	}
 
-	@SuppressWarnings("java:S1172") //parameter used in override
+	@SuppressWarnings("java:S1172") // parameter used in override
 	protected ItemStack addWrappedStorageStackData(ItemStack cloneItemStack, BlockState state) {
 		return cloneItemStack;
 	}
@@ -266,7 +282,8 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 	private void sendOpenness() {
 		if (level instanceof ServerLevel serverLevel) {
 			ChunkPos chunkPos = level.getChunkAt(getBlockPos()).getPos();
-			PacketDistributor.sendToPlayersTrackingChunk(serverLevel, chunkPos, new StorageOpennessPayload(getBlockPos(), getOpenersCounter().getOpenerCount() > 0));
+			PacketDistributor.sendToPlayersTrackingChunk(serverLevel, chunkPos,
+					new StorageOpennessPayload(getBlockPos(), getOpenersCounter().getOpenerCount() > 0));
 		}
 	}
 
@@ -345,7 +362,7 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		}
 
 		loadStorageWrapper(tag, registries);
-		loadSynchronizedData(tag,registries);
+		loadSynchronizedData(tag, registries);
 	}
 
 	public void setUpdateBlockRender() {
@@ -362,7 +379,8 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 	}
 
 	public static void serverTick(Level level, BlockPos blockPos, StorageBlockEntity storageBlockEntity) {
-		storageBlockEntity.getStorageWrapper().getUpgradeHandler().getWrappersThatImplement(ITickableUpgrade.class).forEach(upgrade -> upgrade.tick(null, level, blockPos));
+		storageBlockEntity.getStorageWrapper().getUpgradeHandler().getWrappersThatImplement(ITickableUpgrade.class)
+				.forEach(upgrade -> upgrade.tick(null, level, blockPos));
 	}
 
 	@Override
@@ -383,7 +401,7 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		return getBlockState().getBlock().getName();
 	}
 
-	@SuppressWarnings("unused") //stack param used in override
+	@SuppressWarnings("unused") // stack param used in override
 	protected boolean isAllowedInStorage(ItemStack stack) {
 		return true;
 	}
@@ -429,7 +447,8 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 			return getStorageWrapper().getInventoryForInputOutput();
 		}
 		if (cachedFailedInsertItemHandler == null) {
-			cachedFailedInsertItemHandler = new CachedFailedInsertInventoryHandler<>(() -> getStorageWrapper().getInventoryForInputOutput(), () -> level != null ? level.getGameTime() : 0);
+			cachedFailedInsertItemHandler = new CachedFailedInsertInventoryHandler<>(() -> getStorageWrapper().getInventoryForInputOutput(),
+					() -> level != null ? level.getGameTime() : 0);
 		}
 		return cachedFailedInsertItemHandler;
 	}
@@ -543,7 +562,8 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 	private void lock() {
 		locked = true;
 		if (memorizesItemsWhenLocked()) {
-			getStorageWrapper().getSettingsHandler().getTypeCategory(MemorySettingsCategory.class).selectSlots(0, getStorageWrapper().getInventoryHandler().getSlots());
+			getStorageWrapper().getSettingsHandler().getTypeCategory(MemorySettingsCategory.class).selectSlots(0,
+					getStorageWrapper().getInventoryHandler().getSlots());
 		}
 		updateEmptySlots();
 		if (allowsEmptySlotsMatchingItemInsertsWhenLocked()) {
@@ -620,7 +640,8 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		if (direction == null) {
 			return;
 		}
-		storageWrapper.getUpgradeHandler().getWrappersThatImplement(INeighborChangeListenerUpgrade.class).forEach(upgrade -> upgrade.onNeighborChange(level, worldPosition, direction));
+		storageWrapper.getUpgradeHandler().getWrappersThatImplement(INeighborChangeListenerUpgrade.class)
+				.forEach(upgrade -> upgrade.onNeighborChange(level, worldPosition, direction));
 	}
 
 	@Nullable
@@ -639,13 +660,13 @@ public abstract class StorageBlockEntity extends BlockEntity implements IControl
 		return direction;
 	}
 
-	@SuppressWarnings("unused") //parameter used in override
+	@SuppressWarnings("unused") // parameter used in override
 	public float getSlotFillPercentage(int slot) {
-		return 0; //only used in limited barrels
+		return 0; // only used in limited barrels
 	}
 
 	public void setShouldBeOpen(boolean shouldBeOpen) {
-		//noop by default
+		// noop by default
 	}
 
 	@Override

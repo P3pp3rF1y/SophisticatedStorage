@@ -4,6 +4,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 
 import javax.annotation.Nullable;
+
 import java.util.Optional;
 
 public interface ISimpleMaterialHolder {

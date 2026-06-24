@@ -95,7 +95,8 @@ public class CommonEventHandler {
 	private void sendPlayerSettingsToClient(Player player) {
 		if (player instanceof ServerPlayer serverPlayer) {
 			String playerTagName = StorageSettingsHandler.SOPHISTICATED_STORAGE_SETTINGS_PLAYER_TAG;
-			PacketDistributor.sendToPlayer(serverPlayer, new SyncPlayerSettingsPayload(playerTagName, SettingsManager.getPlayerSettingsTag(player, playerTagName)));
+			PacketDistributor.sendToPlayer(serverPlayer,
+					new SyncPlayerSettingsPayload(playerTagName, SettingsManager.getPlayerSettingsTag(player, playerTagName)));
 		}
 	}
 
@@ -126,14 +127,15 @@ public class CommonEventHandler {
 			return;
 		}
 
-		WorldHelper.getBlockEntity(event.getLevel(), event.getPos(), StorageBlockEntity.class)
-				.ifPresent(storageBlockEntity -> {
-					if (storageBlockEntity.getStorageWrapper().getUpgradeHandler().getTypeWrappers(InfinityUpgradeItem.TYPE).stream().anyMatch(w -> !player.hasPermissions(w.getPermissionLevel()))) {
-						event.setCanceled(true);
-						player.displayClientMessage(StorageTranslationHelper.INSTANCE.translStatusMessage("infinity_upgrade_only_admin_break").withStyle(ChatFormatting.RED), true);
-						scheduleRenderUpdate(storageBlockEntity, event.getLevel(), event.getPos(), event.getState());
-					}
-				});
+		WorldHelper.getBlockEntity(event.getLevel(), event.getPos(), StorageBlockEntity.class).ifPresent(storageBlockEntity -> {
+			if (storageBlockEntity.getStorageWrapper().getUpgradeHandler().getTypeWrappers(InfinityUpgradeItem.TYPE).stream()
+					.anyMatch(w -> !player.hasPermissions(w.getPermissionLevel()))) {
+				event.setCanceled(true);
+				player.displayClientMessage(
+						StorageTranslationHelper.INSTANCE.translStatusMessage("infinity_upgrade_only_admin_break").withStyle(ChatFormatting.RED), true);
+				scheduleRenderUpdate(storageBlockEntity, event.getLevel(), event.getPos(), event.getState());
+			}
+		});
 	}
 
 	private void handleTooManyDropsBreak(BlockEvent.BreakEvent event) {
@@ -165,7 +167,8 @@ public class CommonEventHandler {
 				if (stack.isEmpty() || slot < startCountingFromSlot) {
 					return;
 				}
-				droppedItemEntityCount.addAndGet((int) Math.ceil(stack.getCount() / (double) Math.min(stack.getMaxStackSize(), AVERAGE_MAX_ITEM_ENTITY_DROP_COUNT)));
+				droppedItemEntityCount
+						.addAndGet((int) Math.ceil(stack.getCount() / (double) Math.min(stack.getMaxStackSize(), AVERAGE_MAX_ITEM_ENTITY_DROP_COUNT)));
 			}, () -> false, false);
 
 			if (droppedItemEntityCount.get() > Config.SERVER.tooManyItemEntityDrops.get()) {
@@ -173,11 +176,11 @@ public class CommonEventHandler {
 				ItemBase packingTapeItem = ModItems.PACKING_TAPE.get();
 				Component packingTapeItemName = packingTapeItem.getName(new ItemStack(packingTapeItem)).copy().withStyle(ChatFormatting.GREEN);
 				BlockState state = event.getState();
-				player.sendSystemMessage(StorageTranslationHelper.INSTANCE.translStatusMessage("too_many_item_entity_drops",
-						state.getBlock().getCloneItemStack(state, new BlockHitResult(new Vec3(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5), Direction.DOWN, pos, true), level, pos, player).getHoverName().copy().withStyle(ChatFormatting.GREEN),
-						Component.literal(String.valueOf(droppedItemEntityCount.get())).withStyle(ChatFormatting.RED),
-						packingTapeItemName)
-				);
+				player.sendSystemMessage(StorageTranslationHelper.INSTANCE.translStatusMessage("too_many_item_entity_drops", state.getBlock()
+						.getCloneItemStack(state, new BlockHitResult(new Vec3(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5), Direction.DOWN, pos, true),
+								level, pos, player)
+						.getHoverName().copy().withStyle(ChatFormatting.GREEN),
+						Component.literal(String.valueOf(droppedItemEntityCount.get())).withStyle(ChatFormatting.RED), packingTapeItemName));
 				scheduleRenderUpdate(wbe, level, pos, state);
 			}
 		});

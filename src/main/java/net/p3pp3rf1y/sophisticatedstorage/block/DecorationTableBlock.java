@@ -27,14 +27,8 @@ import javax.annotation.Nullable;
 
 public class DecorationTableBlock extends BlockBase implements EntityBlock {
 	public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
-	protected static final VoxelShape SHAPE = Shapes.or(
-			Block.box(0, 12, 0, 16, 16, 16),
-			Block.box(1, 8, 1, 15, 12, 15),
-			Block.box(1, 0, 1, 4, 8, 4),
-			Block.box(12, 0, 1, 15, 8, 4),
-			Block.box(1, 0, 12, 4, 8, 15),
-			Block.box(12, 0, 12, 15, 8, 15)
-	);
+	protected static final VoxelShape SHAPE = Shapes.or(box(0, 12, 0, 16, 16, 16), box(1, 8, 1, 15, 12, 15), box(1, 0, 1, 4, 8, 4), box(12, 0, 1, 15, 8, 4),
+			box(1, 0, 12, 4, 8, 15), box(12, 0, 12, 15, 8, 15));
 
 	public DecorationTableBlock() {
 		super(Properties.of().mapColor(MapColor.WOOD).strength(2.5F, 2.5F).sound(SoundType.WOOD));
@@ -65,7 +59,7 @@ public class DecorationTableBlock extends BlockBase implements EntityBlock {
 
 	@Override
 	public boolean onDestroyedByPlayer(BlockState state, Level level, BlockPos pos, Player player, boolean willHarvest, FluidState fluid) {
-		//TODO drop contents either here or in loot table
+		// TODO drop contents either here or in loot table
 		return super.onDestroyedByPlayer(state, level, pos, player, willHarvest, fluid);
 	}
 

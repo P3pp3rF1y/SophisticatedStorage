@@ -4,15 +4,15 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.client.model.data.ModelData;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 import net.p3pp3rf1y.sophisticatedstorage.block.ISimpleMaterialHolder;
@@ -32,16 +32,14 @@ public class SimpleMaterialOverlayRenderer<T extends BlockEntity & ISimpleMateri
 	}
 
 	public static void renderHiddenOverlay(BlockEntity blockEntity, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
-		if (!(blockEntity instanceof ISimpleMaterialHolder simpleMaterialHolder) || !simpleMaterialHolder.isOverlayHidden() || !holdsStorageToolThatShowsHiddenOverlay()) {
+		if (!(blockEntity instanceof ISimpleMaterialHolder simpleMaterialHolder) || !simpleMaterialHolder.isOverlayHidden()
+				|| !holdsStorageToolThatShowsHiddenOverlay()) {
 			return;
 		}
 
 		simpleMaterialHolder.getMaterial().ifPresent(material -> {
-			ModelData overlayModelData = ModelData.builder()
-					.with(SimpleMaterialModel.MATERIAL, material)
-					.with(SimpleMaterialModel.OVERLAY_ONLY, true)
-					.with(SimpleMaterialModel.OVERLAY_EXPANDED, true)
-					.build();
+			ModelData overlayModelData = ModelData.builder().with(SimpleMaterialModel.MATERIAL, material).with(SimpleMaterialModel.OVERLAY_ONLY, true)
+					.with(SimpleMaterialModel.OVERLAY_EXPANDED, true).build();
 			poseStack.pushPose();
 			poseStack.translate(-0.005, -0.005, -0.005);
 			poseStack.scale(1.01f, 1.01f, 1.01f);
@@ -53,16 +51,19 @@ public class SimpleMaterialOverlayRenderer<T extends BlockEntity & ISimpleMateri
 		});
 	}
 
-	private static void renderOverlayOnly(BlockEntity blockEntity, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, ModelData overlayModelData) {
+	private static void renderOverlayOnly(BlockEntity blockEntity, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay,
+			ModelData overlayModelData) {
 		BlockState state = blockEntity.getBlockState();
 		BakedModel blockModel = Minecraft.getInstance().getBlockRenderer().getBlockModel(state);
 		VertexConsumer vertexConsumer = TranslucentVertexConsumer.getVertexConsumer(bufferSource, 255);
 		RandomSource random = RandomSource.create(42L);
 		for (Direction direction : Direction.values()) {
-			renderQuads(blockModel.getQuads(state, direction, random, overlayModelData, RenderType.translucent()), poseStack, vertexConsumer, packedLight, packedOverlay);
+			renderQuads(blockModel.getQuads(state, direction, random, overlayModelData, RenderType.translucent()), poseStack, vertexConsumer, packedLight,
+					packedOverlay);
 			random.setSeed(42L);
 		}
-		renderQuads(blockModel.getQuads(state, null, random, overlayModelData, RenderType.translucent()), poseStack, vertexConsumer, packedLight, packedOverlay);
+		renderQuads(blockModel.getQuads(state, null, random, overlayModelData, RenderType.translucent()), poseStack, vertexConsumer, packedLight,
+				packedOverlay);
 	}
 
 	private static void renderQuads(List<BakedQuad> quads, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay) {

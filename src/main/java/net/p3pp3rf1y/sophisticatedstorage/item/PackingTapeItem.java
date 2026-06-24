@@ -28,12 +28,13 @@ public class PackingTapeItem extends ItemBase {
 	public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag isAdvanced) {
 		super.appendHoverText(stack, context, tooltip, isAdvanced);
 		if (Boolean.TRUE.equals(Config.COMMON.dropPacked.get())) {
-			tooltip.add(Component.translatable(StorageTranslationHelper.INSTANCE.translItemTooltip(stack.getItem()) + ".disabled").withStyle(ChatFormatting.RED));
+			tooltip.add(
+					Component.translatable(StorageTranslationHelper.INSTANCE.translItemTooltip(stack.getItem()) + ".disabled").withStyle(ChatFormatting.RED));
 		} else {
-			tooltip.add(Component.translatable(StorageTranslationHelper.INSTANCE.translItemTooltip(stack.getItem()),
-							Component.literal(String.valueOf(getMaxDamage(stack) - getDamage(stack))).withStyle(ChatFormatting.GREEN)
-					).withStyle(ChatFormatting.DARK_GRAY)
-			);
+			tooltip.add(Component
+					.translatable(StorageTranslationHelper.INSTANCE.translItemTooltip(stack.getItem()),
+							Component.literal(String.valueOf(getMaxDamage(stack) - getDamage(stack))).withStyle(ChatFormatting.GREEN))
+					.withStyle(ChatFormatting.DARK_GRAY));
 		}
 	}
 

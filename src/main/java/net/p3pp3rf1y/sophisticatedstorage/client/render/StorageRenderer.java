@@ -54,15 +54,15 @@ public abstract class StorageRenderer<T extends StorageBlockEntity> implements B
 					.map(item -> StorageToolItem.getMode(item) == StorageToolItem.Mode.UPGRADES_DISPLAY).orElse(false);
 
 			holdsItemThatShowsUpgrades = holdsStorageTool || holdsItem(player, this::isUpgrade);
-			holdsItemThatShowsFillLevels = holdsStorageTool || holdsItem(player, this::isStorageTierUpgrade) || holdsItem(player, stack -> isUpgrade(stack) && stack.getItem() instanceof StackUpgradeItem);
+			holdsItemThatShowsFillLevels = holdsStorageTool || holdsItem(player, this::isStorageTierUpgrade)
+					|| holdsItem(player, stack -> isUpgrade(stack) && stack.getItem() instanceof StackUpgradeItem);
 			holdsItemThatShowsHiddenTiers = (holdsStorageTool && InventoryHelper.getItemFromEitherHand(player, ModItems.STORAGE_TOOL.get())
 					.map(item -> StorageToolItem.getMode(item) == StorageToolItem.Mode.TIER_DISPLAY).orElse(false))
 					|| holdsItem(player, this::isStorageTierUpgrade);
-			holdsToolInToggleLockOrLockDisplay = holdsStorageTool && InventoryHelper.getItemFromEitherHand(player, ModItems.STORAGE_TOOL.get())
-					.map(item -> {
-						StorageToolItem.Mode mode = StorageToolItem.getMode(item);
-						return mode == StorageToolItem.Mode.LOCK_DISPLAY || mode == StorageToolItem.Mode.LOCK;
-					}).orElse(false);
+			holdsToolInToggleLockOrLockDisplay = holdsStorageTool && InventoryHelper.getItemFromEitherHand(player, ModItems.STORAGE_TOOL.get()).map(item -> {
+				StorageToolItem.Mode mode = StorageToolItem.getMode(item);
+				return mode == StorageToolItem.Mode.LOCK_DISPLAY || mode == StorageToolItem.Mode.LOCK;
+			}).orElse(false);
 			holdsToolInToggleFillLevelDisplay = holdsStorageTool && InventoryHelper.getItemFromEitherHand(player, ModItems.STORAGE_TOOL.get())
 					.map(item -> StorageToolItem.getMode(item) == StorageToolItem.Mode.FILL_LEVEL_DISPLAY).orElse(false);
 		}
@@ -84,8 +84,7 @@ public abstract class StorageRenderer<T extends StorageBlockEntity> implements B
 	}
 
 	private boolean holdsItem(LocalPlayer player, Predicate<ItemStack> itemMatcher) {
-		return itemMatcher.test(player.getItemInHand(InteractionHand.MAIN_HAND))
-				|| itemMatcher.test(player.getItemInHand(InteractionHand.OFF_HAND));
+		return itemMatcher.test(player.getItemInHand(InteractionHand.MAIN_HAND)) || itemMatcher.test(player.getItemInHand(InteractionHand.OFF_HAND));
 	}
 
 	private boolean isStorageTool(ItemStack stack) {

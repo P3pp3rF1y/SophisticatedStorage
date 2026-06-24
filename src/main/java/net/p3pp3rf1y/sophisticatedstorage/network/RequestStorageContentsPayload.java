@@ -12,13 +12,10 @@ import net.p3pp3rf1y.sophisticatedstorage.block.ItemContentsStorage;
 
 import java.util.UUID;
 
-public record
-RequestStorageContentsPayload(UUID storageUuid) implements CustomPacketPayload {
+public record RequestStorageContentsPayload(UUID storageUuid) implements CustomPacketPayload {
 	public static final Type<RequestStorageContentsPayload> TYPE = new Type<>(SophisticatedStorage.getRL("request_storage_contents"));
-	public static final StreamCodec<ByteBuf, RequestStorageContentsPayload> STREAM_CODEC = StreamCodec.composite(
-			UUIDUtil.STREAM_CODEC,
-			RequestStorageContentsPayload::storageUuid,
-			RequestStorageContentsPayload::new);
+	public static final StreamCodec<ByteBuf, RequestStorageContentsPayload> STREAM_CODEC = StreamCodec.composite(UUIDUtil.STREAM_CODEC,
+			RequestStorageContentsPayload::storageUuid, RequestStorageContentsPayload::new);
 
 	@Override
 	public Type<? extends CustomPacketPayload> type() {
@@ -30,6 +27,7 @@ RequestStorageContentsPayload(UUID storageUuid) implements CustomPacketPayload {
 			return;
 		}
 
-		PacketDistributor.sendToPlayer(serverPlayer, new StorageContentsPayload(payload.storageUuid, ItemContentsStorage.get().getOrCreateStorageContents(payload.storageUuid)));
+		PacketDistributor.sendToPlayer(serverPlayer,
+				new StorageContentsPayload(payload.storageUuid, ItemContentsStorage.get().getOrCreateStorageContents(payload.storageUuid)));
 	}
 }

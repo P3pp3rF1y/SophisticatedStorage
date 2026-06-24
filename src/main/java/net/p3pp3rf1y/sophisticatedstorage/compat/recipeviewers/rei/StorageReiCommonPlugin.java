@@ -10,9 +10,8 @@ import static net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.common.sub
 @SuppressWarnings("unused")
 @REIPluginCommon
 public class StorageReiCommonPlugin implements REIServerPlugin {
-    @Override
-    public void registerItemComparators(ItemComparatorRegistry registry) {
-        getSubtypeInterpreters()
-                .forEach((item, subtypeInterpreter) -> registry.register(ReiSubtypeInterpreter.of(subtypeInterpreter), item));
-    }
+	@Override
+	public void registerItemComparators(ItemComparatorRegistry registry) {
+		getSubtypeInterpreters().forEach((item, subtypeInterpreter) -> registry.register(ReiSubtypeInterpreter.of(subtypeInterpreter), item));
+	}
 }

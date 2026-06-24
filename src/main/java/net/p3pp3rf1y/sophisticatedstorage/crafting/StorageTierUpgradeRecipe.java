@@ -72,7 +72,7 @@ public class StorageTierUpgradeRecipe extends ShapedRecipe implements IWrapperRe
 
 	public static class Serializer extends RecipeWrapperSerializer<ShapedRecipe, StorageTierUpgradeRecipe> {
 		public Serializer() {
-			super(StorageTierUpgradeRecipe::new, RecipeSerializer.SHAPED_RECIPE);
+			super(StorageTierUpgradeRecipe::new, SHAPED_RECIPE);
 		}
 	}
 }

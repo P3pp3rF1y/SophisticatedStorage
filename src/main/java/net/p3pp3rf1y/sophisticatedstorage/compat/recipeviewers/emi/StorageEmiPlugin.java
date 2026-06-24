@@ -46,7 +46,8 @@ import static net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.common.sub
 
 @EmiEntrypoint
 public class StorageEmiPlugin implements EmiPlugin {
-	private static Consumer<WorkstationRegistration> additionalWorkstations = registrar -> {};
+	private static Consumer<WorkstationRegistration> additionalWorkstations = registrar -> {
+	};
 	public static void addAdditionalWorkstations(Consumer<WorkstationRegistration> additionalWorkstations) {
 		StorageEmiPlugin.additionalWorkstations = StorageEmiPlugin.additionalWorkstations.andThen(additionalWorkstations);
 	}
@@ -81,11 +82,10 @@ public class StorageEmiPlugin implements EmiPlugin {
 	}
 
 	private void registerDefaultComparisons(EmiRegistry registry) {
-		getSubtypeInterpreters()
-				.forEach((item, comparator) -> registry.setDefaultComparison(item, EmiSubtypeInterpreter.of(comparator)));
+		getSubtypeInterpreters().forEach((item, comparator) -> registry.setDefaultComparison(item, EmiSubtypeInterpreter.of(comparator)));
 	}
 
-    private void registerGuiHandlers(EmiRegistry registry) {
+	private void registerGuiHandlers(EmiRegistry registry) {
 		registry.addExclusionArea(StorageScreen.class, StorageEmiPlugin::addStorageExclusionArea);
 		registry.addExclusionArea(LimitedBarrelScreen.class, StorageEmiPlugin::addStorageExclusionArea);
 		registry.addExclusionArea(StorageSettingsScreen.class, StorageEmiPlugin::addSettingsExclusionArea);
@@ -105,7 +105,7 @@ public class StorageEmiPlugin implements EmiPlugin {
 	}
 
 	private static void addStorageExclusionArea(StorageScreen screen, Consumer<Bounds> consumer) {
-		//noinspection ConstantValue
+		// noinspection ConstantValue
 		if (screen == null || screen.getUpgradeSettingsControl() == null) {
 			return;
 		}
@@ -118,20 +118,15 @@ public class StorageEmiPlugin implements EmiPlugin {
 		Map<BlockItem, PropertyBasedSubtypeInterpreter> subtypeInterpreters = getSubtypeInterpreters();
 		IRecipeViewerDisplayCatalog catalog = createCatalog(subtypeInterpreters);
 		Set<ResourceLocation> craftingRecipeIds = catalog.getCraftingRecipes().stream().map(RecipeHolder::id).collect(Collectors.toSet());
-		registry.removeRecipes(recipe -> recipe.getBackingRecipe() != null && (catalog.replacesCraftingRecipe(recipe.getBackingRecipe()) || craftingRecipeIds.contains(recipe.getBackingRecipe().id())));
+		registry.removeRecipes(recipe -> recipe.getBackingRecipe() != null
+				&& (catalog.replacesCraftingRecipe(recipe.getBackingRecipe()) || craftingRecipeIds.contains(recipe.getBackingRecipe().id())));
 
-		catalog.getGroupedCraftingSpecs().stream()
-				.flatMap(spec -> spec.getAllDisplays().stream())
-				.flatMap(recipeHolder -> GroupedCraftingEmiRecipe.ofGroupedUsageAndFocusedRecipes(recipeHolder).stream())
-				.forEach(registry::addRecipe);
-		catalog.getCraftingRecipes().stream()
-				.filter(recipeHolder -> !catalog.replacesCraftingRecipe(recipeHolder))
-				.flatMap(recipeHolder -> wrapSyntheticCraftingRecipe(recipeHolder).stream())
-				.forEach(registry::addRecipe);
+		catalog.getGroupedCraftingSpecs().stream().flatMap(spec -> spec.getAllDisplays().stream())
+				.flatMap(recipeHolder -> GroupedCraftingEmiRecipe.ofGroupedUsageAndFocusedRecipes(recipeHolder).stream()).forEach(registry::addRecipe);
+		catalog.getCraftingRecipes().stream().filter(recipeHolder -> !catalog.replacesCraftingRecipe(recipeHolder))
+				.flatMap(recipeHolder -> wrapSyntheticCraftingRecipe(recipeHolder).stream()).forEach(registry::addRecipe);
 
-		catalog.getCraftingSpecs().stream()
-				.flatMap(spec -> CraftingSpecEmiRecipe.ofGroupedUsageAndFocusedRecipes(spec).stream())
-				.forEach(registry::addRecipe);
+		catalog.getCraftingSpecs().stream().flatMap(spec -> CraftingSpecEmiRecipe.ofGroupedUsageAndFocusedRecipes(spec).stream()).forEach(registry::addRecipe);
 
 	}
 
@@ -147,9 +142,12 @@ public class StorageEmiPlugin implements EmiPlugin {
 		List<Ingredient> ingredients = recipe.getIngredients();
 		List<EmiRecipe> recipes = new ArrayList<>();
 		if (hasBroadIngredient(ingredients)) {
-			recipes.add(new SyntheticCraftingRecipe(recipeHolder.id(), recipeHolder, getInputIngredients(ingredients), ingredientIndex -> !isBroadIngredient(ingredients, ingredientIndex), true));
+			recipes.add(new SyntheticCraftingRecipe(recipeHolder.id(), recipeHolder, getInputIngredients(ingredients),
+					ingredientIndex -> !isBroadIngredient(ingredients, ingredientIndex), true));
 		} else {
-			recipes.add(recipe instanceof ShapelessRecipe ? EmiClientRecipeHelper.wrapSyntheticShapelessRecipe(recipeHolder.id(), recipe) : EmiClientRecipeHelper.wrapSyntheticShapedRecipe(recipeHolder.id(), recipe));
+			recipes.add(recipe instanceof ShapelessRecipe
+					? EmiClientRecipeHelper.wrapSyntheticShapelessRecipe(recipeHolder.id(), recipe)
+					: EmiClientRecipeHelper.wrapSyntheticShapedRecipe(recipeHolder.id(), recipe));
 		}
 		addFocusedInputSyntheticRecipes(recipeHolder, recipes);
 		return recipes;
@@ -184,7 +182,8 @@ public class StorageEmiPlugin implements EmiPlugin {
 				int focusedIngredientIndex = ingredientIndex;
 				int focusedStackIndex = stackIndex;
 				ResourceLocation id = baseId.withPath(path -> path + "/input/" + focusedIngredientIndex + "/" + focusedStackIndex);
-				recipes.add(new SyntheticCraftingRecipe(id, recipeHolder, getFocusedInputIngredients(ingredients, ingredientIndex, stacks[stackIndex]), inputIndex -> true, false));
+				recipes.add(new SyntheticCraftingRecipe(id, recipeHolder, getFocusedInputIngredients(ingredients, ingredientIndex, stacks[stackIndex]),
+						inputIndex -> true, false));
 			}
 		}
 	}
@@ -215,7 +214,8 @@ public class StorageEmiPlugin implements EmiPlugin {
 		private final EmiStack output;
 		private final boolean shapeless;
 
-		private SyntheticCraftingRecipe(ResourceLocation id, RecipeHolder<CraftingRecipe> recipeHolder, List<EmiIngredient> displayInputs, IntPredicate inputIndexFilter, boolean indexOutput) {
+		private SyntheticCraftingRecipe(ResourceLocation id, RecipeHolder<CraftingRecipe> recipeHolder, List<EmiIngredient> displayInputs,
+				IntPredicate inputIndexFilter, boolean indexOutput) {
 			super(VanillaEmiRecipeCategories.CRAFTING, id.withPath(path -> path.startsWith("/") ? path : "/" + path), 118, 54);
 			this.recipeHolder = recipeHolder;
 			this.displayInputs = displayInputs;

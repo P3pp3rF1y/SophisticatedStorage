@@ -24,17 +24,20 @@ public class StorageDyeRecipe extends StorageDyeRecipeBase {
 
 	@Override
 	protected boolean isDyeableStorageItem(ItemStack stack) {
-		return stack.getItem() instanceof BlockItem blockItem && blockItem instanceof ITintableBlockItem tintableBlockItem && tintableBlockItem.isTintable(stack);
+		return stack.getItem() instanceof BlockItem blockItem && blockItem instanceof ITintableBlockItem tintableBlockItem
+				&& tintableBlockItem.isTintable(stack);
 	}
 
 	@Override
 	protected void applyColors(ItemStack coloredStorage, List<DyeColor> mainDyes, List<DyeColor> trimDyes) {
 		if (coloredStorage.getItem() instanceof BlockItem blockItem && blockItem instanceof ITintableBlockItem tintableBlockItem) {
 			if (!mainDyes.isEmpty()) {
-				tintableBlockItem.setMainColor(coloredStorage, ColorHelper.calculateColor(tintableBlockItem.getMainColor(coloredStorage).orElse(0), 0, mainDyes));
+				tintableBlockItem.setMainColor(coloredStorage,
+						ColorHelper.calculateColor(tintableBlockItem.getMainColor(coloredStorage).orElse(0), 0, mainDyes));
 			}
 			if (!trimDyes.isEmpty()) {
-				tintableBlockItem.setAccentColor(coloredStorage, ColorHelper.calculateColor(tintableBlockItem.getAccentColor(coloredStorage).orElse(0), 0, trimDyes));
+				tintableBlockItem.setAccentColor(coloredStorage,
+						ColorHelper.calculateColor(tintableBlockItem.getAccentColor(coloredStorage).orElse(0), 0, trimDyes));
 			}
 		}
 	}

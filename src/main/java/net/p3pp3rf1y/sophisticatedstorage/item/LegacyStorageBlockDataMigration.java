@@ -35,7 +35,8 @@ public final class LegacyStorageBlockDataMigration {
 	private static final String BLOCK_ENTITY_TAG = "BlockEntityTag";
 	private static final String REAL_COUNT_TAG = "realCount";
 
-	private LegacyStorageBlockDataMigration() {}
+	private LegacyStorageBlockDataMigration() {
+	}
 
 	public static void normalizeLegacyData(ItemStack storageStack) {
 		if (!storageStack.has(ModCoreDataComponents.STORAGE_UUID)) {
@@ -215,7 +216,9 @@ public final class LegacyStorageBlockDataMigration {
 	}
 
 	private static Optional<CompoundTag> getBlockEntityWrapperTag(ItemStack storageStack) {
-		return getBlockEntityData(storageStack).flatMap(tag -> tag.contains(StorageBlockEntity.STORAGE_WRAPPER_TAG) ? Optional.of(tag.getCompound(StorageBlockEntity.STORAGE_WRAPPER_TAG)) : Optional.empty());
+		return getBlockEntityData(storageStack).flatMap(tag -> tag.contains(StorageBlockEntity.STORAGE_WRAPPER_TAG)
+				? Optional.of(tag.getCompound(StorageBlockEntity.STORAGE_WRAPPER_TAG))
+				: Optional.empty());
 	}
 
 	private static Optional<CompoundTag> getBlockEntityData(ItemStack storageStack) {
@@ -223,7 +226,8 @@ public final class LegacyStorageBlockDataMigration {
 		if (blockEntityData != null) {
 			return Optional.of(blockEntityData.copyTag());
 		}
-		return getLegacyCustomData(storageStack).flatMap(tag -> tag.contains(BLOCK_ENTITY_TAG) ? Optional.of(tag.getCompound(BLOCK_ENTITY_TAG)) : Optional.empty());
+		return getLegacyCustomData(storageStack)
+				.flatMap(tag -> tag.contains(BLOCK_ENTITY_TAG) ? Optional.of(tag.getCompound(BLOCK_ENTITY_TAG)) : Optional.empty());
 	}
 
 	private static Optional<CompoundTag> getLegacyCustomData(ItemStack storageStack) {

@@ -10,18 +10,11 @@ import java.util.Map;
 import java.util.Optional;
 
 public class SimpleMaterialHelper {
-	private static final List<BarrelMaterial> SINGLE_MATERIAL_PRIORITY = List.of(
-			BarrelMaterial.TOP_INNER_TRIM,
-			BarrelMaterial.TOP_TRIM,
-			BarrelMaterial.SIDE_TRIM,
-			BarrelMaterial.BOTTOM_TRIM,
-			BarrelMaterial.TOP,
-			BarrelMaterial.SIDE,
-			BarrelMaterial.BOTTOM,
-			BarrelMaterial.ALL
-	);
+	private static final List<BarrelMaterial> SINGLE_MATERIAL_PRIORITY = List.of(BarrelMaterial.TOP_INNER_TRIM, BarrelMaterial.TOP_TRIM,
+			BarrelMaterial.SIDE_TRIM, BarrelMaterial.BOTTOM_TRIM, BarrelMaterial.TOP, BarrelMaterial.SIDE, BarrelMaterial.BOTTOM, BarrelMaterial.ALL);
 
-	private SimpleMaterialHelper() {}
+	private SimpleMaterialHelper() {
+	}
 
 	public static Optional<ResourceLocation> getSingleMaterial(Map<BarrelMaterial, ResourceLocation> materials) {
 		Map<BarrelMaterial, ResourceLocation> uncompactedMaterials = new EnumMap<>(BarrelMaterial.class);

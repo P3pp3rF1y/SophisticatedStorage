@@ -35,6 +35,7 @@ import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import org.joml.Vector3f;
 
 import javax.annotation.Nullable;
+
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -59,8 +60,9 @@ public abstract class StorageBlockBase extends BlockBase implements IStorageBloc
 	}
 
 	@Nullable
-	protected static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(BlockEntityType<A> typePassedIn, BlockEntityType<E> typeExpected, BlockEntityTicker<? super E> blockEntityTicker) {
-		//noinspection unchecked
+	protected static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(BlockEntityType<A> typePassedIn,
+			BlockEntityType<E> typeExpected, BlockEntityTicker<? super E> blockEntityTicker) {
+		// noinspection unchecked
 		return typeExpected == typePassedIn ? (BlockEntityTicker<A>) blockEntityTicker : null;
 	}
 
@@ -85,9 +87,11 @@ public abstract class StorageBlockBase extends BlockBase implements IStorageBloc
 		return point;
 	}
 
-	private <T extends IUpgradeRenderData> void renderUpgrade(IUpgradeRenderer<T> renderer, Level level, RandomSource rand, BlockPos pos, Direction facing, UpgradeRenderDataType<?> type, IUpgradeRenderData data, BlockState state, StorageBlockBase storageBlock) {
-		//noinspection unchecked
-		type.cast(data).ifPresent(renderData -> renderer.render(level, rand, vector -> storageBlock.getMiddleFacePoint(state, pos, facing, vector), (T) renderData));
+	private <T extends IUpgradeRenderData> void renderUpgrade(IUpgradeRenderer<T> renderer, Level level, RandomSource rand, BlockPos pos, Direction facing,
+			UpgradeRenderDataType<?> type, IUpgradeRenderData data, BlockState state, StorageBlockBase storageBlock) {
+		// noinspection unchecked
+		type.cast(data)
+				.ifPresent(renderData -> renderer.render(level, rand, vector -> storageBlock.getMiddleFacePoint(state, pos, facing, vector), (T) renderData));
 	}
 
 	@Override
@@ -109,7 +113,10 @@ public abstract class StorageBlockBase extends BlockBase implements IStorageBloc
 	@Nullable
 	@Override
 	public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> blockEntityType) {
-		return !level.isClientSide && Boolean.TRUE.equals(state.getValue(StorageBlockBase.TICKING)) ? StorageBlockBase.createTickerHelper(blockEntityType, getBlockEntityType(), (l, blockPos, blockState, storageBlockEntity) -> StorageBlockEntity.serverTick(l, blockPos, storageBlockEntity)) : null;
+		return !level.isClientSide && Boolean.TRUE.equals(state.getValue(TICKING))
+				? createTickerHelper(blockEntityType, getBlockEntityType(),
+						(l, blockPos, blockState, storageBlockEntity) -> StorageBlockEntity.serverTick(l, blockPos, storageBlockEntity))
+				: null;
 	}
 
 	protected abstract BlockEntityType<? extends StorageBlockEntity> getBlockEntityType();
@@ -126,7 +133,7 @@ public abstract class StorageBlockBase extends BlockBase implements IStorageBloc
 
 	@Override
 	public void setTicking(Level level, BlockPos pos, BlockState currentState, boolean ticking) {
-		level.setBlockAndUpdate(pos, currentState.setValue(StorageBlockBase.TICKING, ticking));
+		level.setBlockAndUpdate(pos, currentState.setValue(TICKING, ticking));
 	}
 
 	@Override
@@ -136,7 +143,8 @@ public abstract class StorageBlockBase extends BlockBase implements IStorageBloc
 
 	@Override
 	public int getAnalogOutputSignal(BlockState blockState, Level level, BlockPos pos) {
-		return WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).map(be -> InventoryHelper.getAnalogOutputSignal(be.getStorageWrapper().getInventoryForInputOutput())).orElse(0);
+		return WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class)
+				.map(be -> InventoryHelper.getAnalogOutputSignal(be.getStorageWrapper().getInventoryForInputOutput())).orElse(0);
 	}
 
 	@Override
@@ -209,7 +217,8 @@ public abstract class StorageBlockBase extends BlockBase implements IStorageBloc
 		WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).ifPresent(be -> be.onNeighborChange(neighbor));
 	}
 
-	protected boolean tryAddUpgrade(Player player, InteractionHand hand, StorageBlockEntity b, ItemStack itemInHand, Direction facing, BlockHitResult hitResult) {
+	protected boolean tryAddUpgrade(Player player, InteractionHand hand, StorageBlockEntity b, ItemStack itemInHand, Direction facing,
+			BlockHitResult hitResult) {
 		if (player.level().isClientSide) {
 			return true;
 		}
@@ -242,7 +251,8 @@ public abstract class StorageBlockBase extends BlockBase implements IStorageBloc
 	}
 
 	@Override
-	public boolean trySneakItemInteraction(Player player, InteractionHand hand, BlockState state, Level level, BlockPos pos, BlockHitResult hitVec, ItemStack itemInHand) {
+	public boolean trySneakItemInteraction(Player player, InteractionHand hand, BlockState state, Level level, BlockPos pos, BlockHitResult hitVec,
+			ItemStack itemInHand) {
 		if (level.isClientSide() || hitVec.getDirection() != getFacing(state)) {
 			return false;
 		}
