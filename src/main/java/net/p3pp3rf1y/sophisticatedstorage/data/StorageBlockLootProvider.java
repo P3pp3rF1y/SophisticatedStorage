@@ -26,12 +26,7 @@ import java.util.concurrent.CompletableFuture;
 
 public class StorageBlockLootProvider extends LootTableProvider {
 	StorageBlockLootProvider(PackOutput packOutput, CompletableFuture<HolderLookup.Provider> registries) {
-		super(packOutput, Set.of(),
-				List.of(
-						new SubProviderEntry(SubProvider::new, LootContextParamSets.BLOCK)
-				),
-				registries
-		);
+		super(packOutput, Set.of(), List.of(new SubProviderEntry(SubProvider::new, LootContextParamSets.BLOCK)), registries);
 	}
 
 	private static class SubProvider extends BlockLootSubProvider {
@@ -90,31 +85,27 @@ public class StorageBlockLootProvider extends LootTableProvider {
 			add(ModBlocks.STORAGE_INPUT.get(), dropSimpleMaterialBlock(ModBlocks.STORAGE_INPUT_ITEM.get()));
 			add(ModBlocks.STORAGE_OUTPUT.get(), dropSimpleMaterialBlock(ModBlocks.STORAGE_OUTPUT_ITEM.get()));
 
-			ModBlocks.STORAGE_CONNECTOR_BLOCKS.forEach((woodType, blockSupplier) ->
-					add(blockSupplier.get(), dropSimpleMaterialBlock(ModBlocks.STORAGE_CONNECTOR_ITEMS.get(woodType).get()))
-			);
+			ModBlocks.STORAGE_CONNECTOR_BLOCKS.forEach(
+					(woodType, blockSupplier) -> add(blockSupplier.get(), dropSimpleMaterialBlock(ModBlocks.STORAGE_CONNECTOR_ITEMS.get(woodType).get())));
 
 			add(ModBlocks.DECORATION_TABLE.get(), dropBlock(ModBlocks.DECORATION_TABLE_ITEM.get()));
 		}
 
 		@Override
 		protected Iterable<Block> getKnownBlocks() {
-			return BuiltInRegistries.BLOCK.entrySet().stream()
-					.filter(e -> e.getKey().location().getNamespace().equals(SophisticatedStorage.MOD_ID))
-					.map(Map.Entry::getValue)
-					.toList();
+			return BuiltInRegistries.BLOCK.entrySet().stream().filter(e -> e.getKey().location().getNamespace().equals(SophisticatedStorage.MOD_ID))
+					.map(Map.Entry::getValue).toList();
 		}
 
 		private static LootTable.Builder dropStorageWithContents(Item storageItem) {
-			LootPool.Builder pool = LootPool.lootPool().name("main").setRolls(ConstantValue.exactly(1))
-					.add(LootItem.lootTableItem(storageItem))
-					.apply(CopyNameFunction.copyName(new CopyNameFunction.Source(LootContextParams.BLOCK_ENTITY)))
-					.apply(CopyStorageDataFunction.builder());
+			LootPool.Builder pool = LootPool.lootPool().name("main").setRolls(ConstantValue.exactly(1)).add(LootItem.lootTableItem(storageItem))
+					.apply(CopyNameFunction.copyName(new CopyNameFunction.Source(LootContextParams.BLOCK_ENTITY))).apply(CopyStorageDataFunction.builder());
 			return LootTable.lootTable().withPool(pool);
 		}
 
 		public LootTable.Builder dropBlock(ItemLike item) {
-			return LootTable.lootTable().withPool(applyExplosionCondition(item, LootPool.lootPool().name("main").setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(item))));
+			return LootTable.lootTable().withPool(
+					applyExplosionCondition(item, LootPool.lootPool().name("main").setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(item))));
 		}
 
 		private LootTable.Builder dropSimpleMaterialBlock(ItemLike item) {

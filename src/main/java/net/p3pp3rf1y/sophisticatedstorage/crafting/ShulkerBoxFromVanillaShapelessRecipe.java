@@ -8,6 +8,7 @@ import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.ShapelessRecipe;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.ShulkerBoxBlock;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.access.ItemAccess;
@@ -22,6 +23,7 @@ import net.p3pp3rf1y.sophisticatedstorage.item.StackStorageWrapper;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
 
 import javax.annotation.Nullable;
+
 import java.util.Optional;
 
 public class ShulkerBoxFromVanillaShapelessRecipe extends CustomShapelessRecipe implements IWrapperRecipe<ShapelessRecipe> {
@@ -34,14 +36,16 @@ public class ShulkerBoxFromVanillaShapelessRecipe extends CustomShapelessRecipe 
 
 	@Override
 	public boolean matches(CraftingInput input, Level level) {
-		return super.matches(input, level) && getVanillaShulkerBox(input).map(storage -> !(storage.getItem() instanceof WoodStorageBlockItem) || !WoodStorageBlockItem.isPacked(storage)).orElse(false);
+		return super.matches(input, level) && getVanillaShulkerBox(input)
+				.map(storage -> !(storage.getItem() instanceof WoodStorageBlockItem) || !WoodStorageBlockItem.isPacked(storage)).orElse(false);
 	}
 
 	@Override
 	public ItemStack assemble(CraftingInput input, HolderLookup.Provider registries) {
 		ItemStack upgradedStorage = super.assemble(input, registries);
 		getVanillaShulkerBox(input).ifPresent(vanillaShulkerBox -> {
-			@Nullable ResourceHandler<ItemResource> itemCap = vanillaShulkerBox.getCapability(Capabilities.Item.ITEM, ItemAccess.forStack(vanillaShulkerBox));
+			@Nullable
+			ResourceHandler<ItemResource> itemCap = vanillaShulkerBox.getCapability(Capabilities.Item.ITEM, ItemAccess.forStack(vanillaShulkerBox));
 			if (itemCap != null) {
 				StackStorageWrapper wrapper = StackStorageWrapper.fromStack(registries, upgradedStorage);
 				wrapper.ensureContentsUuid();
@@ -61,7 +65,7 @@ public class ShulkerBoxFromVanillaShapelessRecipe extends CustomShapelessRecipe 
 	private Optional<ItemStack> getVanillaShulkerBox(CraftingInput input) {
 		for (int slot = 0; slot < input.size(); slot++) {
 			ItemStack slotStack = input.getItem(slot);
-			if (slotStack.getItem() instanceof BlockItem blockItem && blockItem.getBlock() instanceof net.minecraft.world.level.block.ShulkerBoxBlock) {
+			if (slotStack.getItem() instanceof BlockItem blockItem && blockItem.getBlock() instanceof ShulkerBoxBlock) {
 				return Optional.of(slotStack);
 			}
 		}

@@ -39,7 +39,8 @@ public abstract class SophisticatedOpenersCounter extends ContainerOpenersCounte
 		maxInteractionRange = 0.0;
 
 		ContainerUser containerUser;
-		for (Iterator<ContainerUser> it = list.iterator(); it.hasNext(); maxInteractionRange = Math.max(containerUser.getContainerInteractionRange(), maxInteractionRange)) {
+		for (Iterator<ContainerUser> it = list.iterator(); it
+				.hasNext(); maxInteractionRange = Math.max(containerUser.getContainerInteractionRange(), maxInteractionRange)) {
 			containerUser = it.next();
 		}
 

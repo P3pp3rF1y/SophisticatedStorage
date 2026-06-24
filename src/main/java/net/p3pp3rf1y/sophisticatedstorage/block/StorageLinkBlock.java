@@ -24,6 +24,7 @@ import net.p3pp3rf1y.sophisticatedcore.util.RotatedShapes;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 
 import javax.annotation.Nullable;
+
 import java.util.EnumMap;
 import java.util.Map;
 

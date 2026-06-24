@@ -29,7 +29,8 @@ public class ShulkerBoxFromChestRecipesMaker {
 	private ShulkerBoxFromChestRecipesMaker() {
 	}
 
-	public static <T extends PropertyBasedSubtypeInterpreter> List<CraftingDisplaySpec> getShapedRecipeSpecs(Function<ItemStack, Optional<T>> getSubtypeInterpreter) {
+	public static <T extends PropertyBasedSubtypeInterpreter> List<CraftingDisplaySpec> getShapedRecipeSpecs(
+			Function<ItemStack, Optional<T>> getSubtypeInterpreter) {
 		return ClientRecipeHelper.transformAllRecipeHoldersOfTypeIntoMultiple(RecipeType.CRAFTING, ShulkerBoxFromChestRecipe.class, recipeHolder -> {
 			ShulkerBoxFromChestRecipeDisplayRecipe displayRecipe = createDisplayRecipe(recipeHolder);
 			return List.of(displayRecipe.toSpec());
@@ -52,9 +53,10 @@ public class ShulkerBoxFromChestRecipesMaker {
 		}
 
 		ResourceLocation id = recipeHolder.id().location().withPath(path -> "shulker_from_chest_grouped/" + path);
-		RecipeHolder<CraftingRecipe> displayRecipeHolder = new RecipeHolder<>(recipeHolder.id(),
-				new ShapedRecipe("", recipe.category(), new ShapedRecipePattern(recipe.getWidth(), recipe.getHeight(), recipeIngredients, Optional.empty()), ClientRecipeHelper.getResultItem(recipe)));
-		return new ShulkerBoxFromChestRecipeDisplayRecipe(id, displayRecipeHolder, recipe.getWidth(), recipe.getHeight(), ingredientsCopy, chestIngredientIndex, variants, globalVariants);
+		RecipeHolder<CraftingRecipe> displayRecipeHolder = new RecipeHolder<>(recipeHolder.id(), new ShapedRecipe("", recipe.category(),
+				new ShapedRecipePattern(recipe.getWidth(), recipe.getHeight(), recipeIngredients, Optional.empty()), ClientRecipeHelper.getResultItem(recipe)));
+		return new ShulkerBoxFromChestRecipeDisplayRecipe(id, displayRecipeHolder, recipe.getWidth(), recipe.getHeight(), ingredientsCopy, chestIngredientIndex,
+				variants, globalVariants);
 	}
 
 	private static CraftingDisplayVariant createVariant(ShulkerBoxFromChestRecipe recipe, int chestIngredientIndex, ItemStack chestItem) {
@@ -141,10 +143,11 @@ public class ShulkerBoxFromChestRecipesMaker {
 		return StorageBlockItem.getMainColorFromComponentHolder(stack).isPresent() || StorageBlockItem.getAccentColorFromComponentHolder(stack).isPresent();
 	}
 
-	private record ShulkerBoxFromChestRecipeDisplayRecipe(ResourceLocation id, RecipeHolder<CraftingRecipe> recipeHolder, int width, int height, NonNullList<Ingredient> ingredients,
-			int chestIngredientIndex, List<CraftingDisplayVariant> variants, List<CraftingDisplayVariant> globalVariants) {
+	private record ShulkerBoxFromChestRecipeDisplayRecipe(ResourceLocation id, RecipeHolder<CraftingRecipe> recipeHolder, int width, int height,
+			NonNullList<Ingredient> ingredients, int chestIngredientIndex, List<CraftingDisplayVariant> variants, List<CraftingDisplayVariant> globalVariants) {
 		private CraftingDisplaySpec toSpec() {
-			return new CraftingDisplaySpec(id, false, width, height, ingredients, variants, globalVariants, Set.of(recipeHolder.id().location()), new ShulkerBoxFromChestFocusBehavior(chestIngredientIndex));
+			return new CraftingDisplaySpec(id, false, width, height, ingredients, variants, globalVariants, Set.of(recipeHolder.id().location()),
+					new ShulkerBoxFromChestFocusBehavior(chestIngredientIndex));
 		}
 	}
 
@@ -172,7 +175,8 @@ public class ShulkerBoxFromChestRecipesMaker {
 		@Override
 		public List<CraftingDisplayVariant> usagesFor(List<CraftingDisplayVariant> variants, ItemStack focusedInput) {
 			if (focusedInput.getItem() instanceof ChestBlockItem) {
-				return variants.stream().filter(variant -> chestIngredientIndex < variant.inputs().size() && ItemStack.isSameItemSameComponents(variant.inputs().get(chestIngredientIndex), focusedInput)).toList();
+				return variants.stream().filter(variant -> chestIngredientIndex < variant.inputs().size()
+						&& ItemStack.isSameItemSameComponents(variant.inputs().get(chestIngredientIndex), focusedInput)).toList();
 			}
 			return focusedInput.is(Items.SHULKER_SHELL) ? variants : List.of();
 		}

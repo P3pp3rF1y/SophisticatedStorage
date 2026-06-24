@@ -23,7 +23,8 @@ public class RequestPlayerSettingsPayload implements CustomPacketPayload {
 	public static void handlePayload(IPayloadContext context) {
 		String name = SophisticatedStorage.MOD_ID;
 		if (context.player() instanceof ServerPlayer serverPlayer) {
-			PacketDistributor.sendToPlayer(serverPlayer, new SyncPlayerSettingsPayload(name, PlayerMainSettingsSavedData.get().get(serverPlayer.getUUID(), name)));
+			PacketDistributor.sendToPlayer(serverPlayer,
+					new SyncPlayerSettingsPayload(name, PlayerMainSettingsSavedData.get().get(serverPlayer.getUUID(), name)));
 		}
 	}
 }

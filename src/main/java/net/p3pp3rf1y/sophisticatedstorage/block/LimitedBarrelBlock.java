@@ -36,6 +36,7 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import javax.annotation.Nullable;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -47,8 +48,9 @@ public class LimitedBarrelBlock extends BarrelBlock {
 
 	public LimitedBarrelBlock(int numberOfInventorySlots, Config.Server.LimitedBarrelConfig config, float explosionResistance, Properties properties) {
 		super(() -> numberOfInventorySlots, config::upgradeSlotCount, explosionResistance,
-				stateDef -> stateDef.any().setValue(HORIZONTAL_FACING, Direction.NORTH).setValue(VERTICAL_FACING, VerticalFacing.NO).setValue(TICKING, false).setValue(FLAT_TOP, false).setValue(OPAQUE, true), properties
-		);
+				stateDef -> stateDef.any().setValue(HORIZONTAL_FACING, Direction.NORTH).setValue(VERTICAL_FACING, VerticalFacing.NO).setValue(TICKING, false)
+						.setValue(FLAT_TOP, false).setValue(OPAQUE, true),
+				properties);
 		this.getBaseStackSizeMultiplier = config::baseSlotLimitMultiplier;
 	}
 
@@ -82,11 +84,8 @@ public class LimitedBarrelBlock extends BarrelBlock {
 		Direction direction = blockPlaceContext.getNearestLookingDirection().getOpposite();
 		Direction horizontalDirection = blockPlaceContext.getHorizontalDirection().getOpposite();
 		ItemStack stack = blockPlaceContext.getItemInHand();
-		return defaultBlockState()
-				.setValue(HORIZONTAL_FACING, horizontalDirection)
-				.setValue(VERTICAL_FACING, VerticalFacing.fromDirection(direction))
-				.setValue(FLAT_TOP, BarrelBlockItem.isFlatTop(stack))
-				.setValue(OPAQUE, areMaterialsOpaque(BarrelBlockItem.getMaterials(stack)));
+		return defaultBlockState().setValue(HORIZONTAL_FACING, horizontalDirection).setValue(VERTICAL_FACING, VerticalFacing.fromDirection(direction))
+				.setValue(FLAT_TOP, BarrelBlockItem.isFlatTop(stack)).setValue(OPAQUE, areMaterialsOpaque(BarrelBlockItem.getMaterials(stack)));
 	}
 
 	@Override
@@ -117,7 +116,8 @@ public class LimitedBarrelBlock extends BarrelBlock {
 	}
 
 	@Override
-	protected InteractionResult tryItemInteraction(Player player, InteractionHand hand, WoodStorageBlockEntity b, ItemStack stackInHand, Direction facing, BlockHitResult hitResult) {
+	protected InteractionResult tryItemInteraction(Player player, InteractionHand hand, WoodStorageBlockEntity b, ItemStack stackInHand, Direction facing,
+			BlockHitResult hitResult) {
 		InteractionResult result = super.tryItemInteraction(player, hand, b, stackInHand, facing, hitResult);
 		if (result.consumesAction()) {
 			return result;
@@ -131,7 +131,8 @@ public class LimitedBarrelBlock extends BarrelBlock {
 				return InteractionResult.PASS;
 			} else if (limitedBarrelBlockEntity.depositItem(player, hand, stackInHand, slot)) {
 				return InteractionResult.SUCCESS;
-			} else if (Config.SERVER.limitedBarrelCountDyeingEnabled.getAsBoolean() && stackInHand.getItem() instanceof DyeItem dyeItem && limitedBarrelBlockEntity.applyDye(slot, stackInHand, dyeItem.getDyeColor(), player.isShiftKeyDown())) {
+			} else if (Config.SERVER.limitedBarrelCountDyeingEnabled.getAsBoolean() && stackInHand.getItem() instanceof DyeItem dyeItem
+					&& limitedBarrelBlockEntity.applyDye(slot, stackInHand, dyeItem.getDyeColor(), player.isShiftKeyDown())) {
 				return InteractionResult.SUCCESS;
 			}
 		}
@@ -139,7 +140,8 @@ public class LimitedBarrelBlock extends BarrelBlock {
 	}
 
 	@Override
-	public boolean trySneakItemInteraction(Player player, InteractionHand hand, BlockState state, Level level, BlockPos pos, BlockHitResult hitVec, ItemStack itemInHand) {
+	public boolean trySneakItemInteraction(Player player, InteractionHand hand, BlockState state, Level level, BlockPos pos, BlockHitResult hitVec,
+			ItemStack itemInHand) {
 		if (super.trySneakItemInteraction(player, hand, state, level, pos, hitVec, itemInHand)) {
 			return true;
 		}
@@ -151,9 +153,8 @@ public class LimitedBarrelBlock extends BarrelBlock {
 		if (hitVec.getDirection() != getFacing(state) || !(itemStack.getItem() instanceof DyeItem)) {
 			return false;
 		}
-		return WorldHelper.getBlockEntity(level, pos, LimitedBarrelBlockEntity.class).map(barrel ->
-				barrel.applyDye(0, itemStack, ((DyeItem) itemStack.getItem()).getDyeColor(), true)
-		).orElse(false);
+		return WorldHelper.getBlockEntity(level, pos, LimitedBarrelBlockEntity.class)
+				.map(barrel -> barrel.applyDye(0, itemStack, ((DyeItem) itemStack.getItem()).getDyeColor(), true)).orElse(false);
 	}
 
 	private int getInteractionSlot(BlockPos pos, BlockState state, BlockHitResult hitResult) {
@@ -243,7 +244,8 @@ public class LimitedBarrelBlock extends BarrelBlock {
 	}
 
 	public boolean isLookingAtFront(Player player, BlockPos pos, BlockState state) {
-		return getHitResult(player).map(blockHitResult -> blockHitResult.getBlockPos().equals(pos) && blockHitResult.getDirection() == getFacing(state)).orElse(false);
+		return getHitResult(player).map(blockHitResult -> blockHitResult.getBlockPos().equals(pos) && blockHitResult.getDirection() == getFacing(state))
+				.orElse(false);
 	}
 
 	@Override

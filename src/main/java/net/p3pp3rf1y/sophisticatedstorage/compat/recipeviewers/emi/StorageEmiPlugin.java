@@ -40,7 +40,8 @@ import static net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.common.sub
 
 @EmiEntrypoint
 public class StorageEmiPlugin implements EmiPlugin {
-	private static Consumer<WorkstationRegistration> additionalWorkstations = registrar -> {};
+	private static Consumer<WorkstationRegistration> additionalWorkstations = registrar -> {
+	};
 	public static void addAdditionalWorkstations(Consumer<WorkstationRegistration> additionalWorkstations) {
 		StorageEmiPlugin.additionalWorkstations = StorageEmiPlugin.additionalWorkstations.andThen(additionalWorkstations);
 	}
@@ -75,11 +76,10 @@ public class StorageEmiPlugin implements EmiPlugin {
 	}
 
 	private void registerDefaultComparisons(EmiRegistry registry) {
-		getSubtypeInterpreters()
-				.forEach((item, comparator) -> registry.setDefaultComparison(item, EmiSubtypeInterpreter.of(comparator)));
+		getSubtypeInterpreters().forEach((item, comparator) -> registry.setDefaultComparison(item, EmiSubtypeInterpreter.of(comparator)));
 	}
 
-    private void registerGuiHandlers(EmiRegistry registry) {
+	private void registerGuiHandlers(EmiRegistry registry) {
 		registry.addExclusionArea(StorageScreen.class, StorageEmiPlugin::addStorageExclusionArea);
 		registry.addExclusionArea(LimitedBarrelScreen.class, StorageEmiPlugin::addStorageExclusionArea);
 		registry.addExclusionArea(StorageSettingsScreen.class, StorageEmiPlugin::addSettingsExclusionArea);
@@ -99,7 +99,7 @@ public class StorageEmiPlugin implements EmiPlugin {
 	}
 
 	private static void addStorageExclusionArea(StorageScreen screen, Consumer<Bounds> consumer) {
-		//noinspection ConstantValue
+		// noinspection ConstantValue
 		if (screen == null || screen.getUpgradeSettingsControl() == null) {
 			return;
 		}
@@ -113,17 +113,12 @@ public class StorageEmiPlugin implements EmiPlugin {
 		IRecipeViewerDisplayCatalog catalog = createCatalog(subtypeInterpreters);
 		registry.removeRecipes(recipe -> recipe.getBackingRecipe() != null && catalog.replacesCraftingRecipe(recipe.getBackingRecipe()));
 
-		catalog.getGroupedCraftingSpecs().stream()
-				.flatMap(spec -> GroupedCraftingEmiRecipe.ofGroupedUsageAndFocusedRecipes(spec.recipeHolder()).stream())
+		catalog.getGroupedCraftingSpecs().stream().flatMap(spec -> GroupedCraftingEmiRecipe.ofGroupedUsageAndFocusedRecipes(spec.recipeHolder()).stream())
 				.forEach(registry::addRecipe);
-		catalog.getCraftingRecipes().stream()
-				.filter(recipeHolder -> !catalog.replacesCraftingRecipe(recipeHolder))
-				.map(StorageEmiPlugin::toEmiCraftingRecipe)
+		catalog.getCraftingRecipes().stream().filter(recipeHolder -> !catalog.replacesCraftingRecipe(recipeHolder)).map(StorageEmiPlugin::toEmiCraftingRecipe)
 				.forEach(registry::addRecipe);
 
-		catalog.getCraftingSpecs().stream()
-				.flatMap(spec -> CraftingSpecEmiRecipe.ofGroupedUsageAndFocusedRecipes(spec).stream())
-				.forEach(registry::addRecipe);
+		catalog.getCraftingSpecs().stream().flatMap(spec -> CraftingSpecEmiRecipe.ofGroupedUsageAndFocusedRecipes(spec).stream()).forEach(registry::addRecipe);
 
 	}
 
@@ -136,8 +131,7 @@ public class StorageEmiPlugin implements EmiPlugin {
 
 	private static EmiCraftingRecipe toEmiCraftingRecipe(RecipeHolder<CraftingRecipe> recipeHolder) {
 		List<EmiIngredient> inputs = RecipeHelper.getIngredients(recipeHolder.value()).stream()
-				.map(ingredient -> ingredient.<EmiIngredient>map(EmiIngredient::of).orElse(EmiStack.EMPTY))
-				.toList();
+				.map(ingredient -> ingredient.<EmiIngredient>map(EmiIngredient::of).orElse(EmiStack.EMPTY)).toList();
 		return new EmiCraftingRecipe(inputs, EmiStack.of(ClientRecipeHelper.getResultItem(recipeHolder.value())), recipeHolder.id().location());
 	}
 

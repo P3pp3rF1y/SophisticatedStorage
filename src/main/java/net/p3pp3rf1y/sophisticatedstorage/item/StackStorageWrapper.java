@@ -16,8 +16,13 @@ import net.p3pp3rf1y.sophisticatedcore.inventory.StorageWrapperRepository;
 import net.p3pp3rf1y.sophisticatedcore.util.ValueIOHelper;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.block.*;
+import net.p3pp3rf1y.sophisticatedstorage.block.ItemContentsStorage;
+import net.p3pp3rf1y.sophisticatedstorage.block.ShulkerBoxBlock;
+import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
+import net.p3pp3rf1y.sophisticatedstorage.block.StorageWrapper;
 
 import javax.annotation.Nullable;
+
 import java.util.Optional;
 import java.util.UUID;
 
@@ -43,7 +48,8 @@ public class StackStorageWrapper extends StorageWrapper {
 			Tag contentsTag = ContainerContents.CODEC.encodeStart(RegistryOps.create(NbtOps.INSTANCE, registries), contents).getOrThrow();
 			storageWrappertag.put(StorageWrapper.CONTENTS, contentsTag);
 			stackStorageWrapper.deserialize(ValueIOHelper.inputFromCompoundTag(registries, storageWrappertag));
-			stackStorageWrapper.setContentsUuid(uuid); //setting here because client side the uuid isn't in contentsnbt before this data is synced from server and it would create a new one otherwise
+			stackStorageWrapper.setContentsUuid(uuid); // setting here because client side the uuid isn't in contentsnbt before this data is synced from server
+														// and it would create a new one otherwise
 		}
 
 		return stackStorageWrapper;
@@ -54,12 +60,11 @@ public class StackStorageWrapper extends StorageWrapper {
 			setContentsUuid(UUID.randomUUID());
 		}
 
-		ItemContentsStorage.get().getOrCreateAddtionalBeData(contentsUuid).getCompound(StorageBlockEntity.STORAGE_WRAPPER)
-				.orElseGet(() -> {
-					CompoundTag storageWrapperTag = new CompoundTag();
-					ItemContentsStorage.get().getOrCreateAddtionalBeData(contentsUuid).put(StorageBlockEntity.STORAGE_WRAPPER, storageWrapperTag);
-					return storageWrapperTag;
-				});
+		ItemContentsStorage.get().getOrCreateAddtionalBeData(contentsUuid).getCompound(StorageBlockEntity.STORAGE_WRAPPER).orElseGet(() -> {
+			CompoundTag storageWrapperTag = new CompoundTag();
+			ItemContentsStorage.get().getOrCreateAddtionalBeData(contentsUuid).put(StorageBlockEntity.STORAGE_WRAPPER, storageWrapperTag);
+			return storageWrapperTag;
+		});
 	}
 
 	private UUID getNewUuid() {
@@ -97,7 +102,7 @@ public class StackStorageWrapper extends StorageWrapper {
 
 	@Override
 	protected void onUpgradeRefresh() {
-		//noop - there should be no upgrade refresh happening here
+		// noop - there should be no upgrade refresh happening here
 	}
 
 	@Override
@@ -114,8 +119,10 @@ public class StackStorageWrapper extends StorageWrapper {
 
 	@Override
 	protected void loadSlotNumbers(ValueInput in) {
-		numberOfInventorySlots = Math.max(in.getIntOr(StorageWrapper.NUMBER_OF_INVENTORY_SLOTS, StorageBlockItem.getNumberOfInventorySlots(storageStack)), getDefaultNumberOfInventorySlots());
-		numberOfUpgradeSlots = Math.max(in.getIntOr(StorageWrapper.NUMBER_OF_UPGRADE_SLOTS, StorageBlockItem.getNumberOfUpgradeSlots(storageStack)), getDefaultNumberOfUpgradeSlots());
+		numberOfInventorySlots = Math.max(in.getIntOr(StorageWrapper.NUMBER_OF_INVENTORY_SLOTS, StorageBlockItem.getNumberOfInventorySlots(storageStack)),
+				getDefaultNumberOfInventorySlots());
+		numberOfUpgradeSlots = Math.max(in.getIntOr(StorageWrapper.NUMBER_OF_UPGRADE_SLOTS, StorageBlockItem.getNumberOfUpgradeSlots(storageStack)),
+				getDefaultNumberOfUpgradeSlots());
 		StorageBlockItem.setNumberOfInventorySlots(storageStack, numberOfInventorySlots);
 		StorageBlockItem.setNumberOfUpgradeSlots(storageStack, numberOfUpgradeSlots);
 	}
@@ -136,17 +143,18 @@ public class StackStorageWrapper extends StorageWrapper {
 		}
 
 		Block block = Block.byItem(resource.getItem());
-		return !(block instanceof ShulkerBoxBlock) && !(block instanceof net.minecraft.world.level.block.ShulkerBoxBlock) && !Config.SERVER.shulkerBoxDisallowedItems.isItemDisallowed(resource.getItem());
+		return !(block instanceof ShulkerBoxBlock) && !(block instanceof net.minecraft.world.level.block.ShulkerBoxBlock)
+				&& !Config.SERVER.shulkerBoxDisallowedItems.isItemDisallowed(resource.getItem());
 	}
 
 	@Override
 	public String getStorageType() {
-		return "irrelevant"; //because this is only used when determining upgrade errors in gui which storage stacks can't have open
+		return "irrelevant"; // because this is only used when determining upgrade errors in gui which storage stacks can't have open
 	}
 
 	@Override
 	public Component getDisplayName() {
-		return Component.empty(); //because this is only used when determining upgrade errors in gui which storage stacks can't have open
+		return Component.empty(); // because this is only used when determining upgrade errors in gui which storage stacks can't have open
 	}
 
 	@Override
@@ -160,7 +168,6 @@ public class StackStorageWrapper extends StorageWrapper {
 	public int getMainColor() {
 		return storageStack.getOrDefault(ModCoreDataComponents.MAIN_COLOR, -1);
 	}
-
 
 	@Override
 	public boolean hasMainColor() {

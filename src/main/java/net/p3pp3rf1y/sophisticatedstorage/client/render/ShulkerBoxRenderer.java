@@ -32,13 +32,18 @@ public class ShulkerBoxRenderer extends StorageRenderer<ShulkerBoxBlockEntity, S
 	private static final String ENTITY_SHULKER_BOX_FOLDER = "entity/shulker_box/";
 
 	public static final Material BASE_TIER_MATERIAL = new Material(Sheets.SHULKER_SHEET, SophisticatedStorage.getRL(ENTITY_SHULKER_BOX_FOLDER + "base_tier"));
-	public static final Material COPPER_TIER_MATERIAL = new Material(Sheets.SHULKER_SHEET, SophisticatedStorage.getRL(ENTITY_SHULKER_BOX_FOLDER + "copper_tier"));
+	public static final Material COPPER_TIER_MATERIAL = new Material(Sheets.SHULKER_SHEET,
+			SophisticatedStorage.getRL(ENTITY_SHULKER_BOX_FOLDER + "copper_tier"));
 	public static final Material IRON_TIER_MATERIAL = new Material(Sheets.SHULKER_SHEET, SophisticatedStorage.getRL(ENTITY_SHULKER_BOX_FOLDER + "iron_tier"));
 	public static final Material GOLD_TIER_MATERIAL = new Material(Sheets.SHULKER_SHEET, SophisticatedStorage.getRL(ENTITY_SHULKER_BOX_FOLDER + "gold_tier"));
-	public static final Material DIAMOND_TIER_MATERIAL = new Material(Sheets.SHULKER_SHEET, SophisticatedStorage.getRL(ENTITY_SHULKER_BOX_FOLDER + "diamond_tier"));
-	public static final Material NETHERITE_TIER_MATERIAL = new Material(Sheets.SHULKER_SHEET, SophisticatedStorage.getRL(ENTITY_SHULKER_BOX_FOLDER + "netherite_tier"));
-	public static final Material TINTABLE_MAIN_MATERIAL = new Material(Sheets.SHULKER_SHEET, SophisticatedStorage.getRL(ENTITY_SHULKER_BOX_FOLDER + "tintable_main"));
-	public static final Material TINTABLE_ACCENT_MATERIAL = new Material(Sheets.SHULKER_SHEET, SophisticatedStorage.getRL(ENTITY_SHULKER_BOX_FOLDER + "tintable_accent"));
+	public static final Material DIAMOND_TIER_MATERIAL = new Material(Sheets.SHULKER_SHEET,
+			SophisticatedStorage.getRL(ENTITY_SHULKER_BOX_FOLDER + "diamond_tier"));
+	public static final Material NETHERITE_TIER_MATERIAL = new Material(Sheets.SHULKER_SHEET,
+			SophisticatedStorage.getRL(ENTITY_SHULKER_BOX_FOLDER + "netherite_tier"));
+	public static final Material TINTABLE_MAIN_MATERIAL = new Material(Sheets.SHULKER_SHEET,
+			SophisticatedStorage.getRL(ENTITY_SHULKER_BOX_FOLDER + "tintable_main"));
+	public static final Material TINTABLE_ACCENT_MATERIAL = new Material(Sheets.SHULKER_SHEET,
+			SophisticatedStorage.getRL(ENTITY_SHULKER_BOX_FOLDER + "tintable_accent"));
 	public static final Material NO_TINT_MATERIAL = new Material(Sheets.SHULKER_SHEET, SophisticatedStorage.getRL(ENTITY_SHULKER_BOX_FOLDER + "no_tint"));
 	private final ShulkerBoxModel model;
 	private final DisplayItemRenderer displayItemRenderer = new DisplayItemRenderer(0.5, new Vec3(0, 0, -0.0075));
@@ -75,11 +80,15 @@ public class ShulkerBoxRenderer extends StorageRenderer<ShulkerBoxBlockEntity, S
 	}
 
 	@Override
-	public void extractRenderState(ShulkerBoxBlockEntity blockEntity, ShulkerBoxRenderState renderState, float partialTick, Vec3 cameraPos, @Nullable ModelFeatureRenderer.CrumblingOverlay crumblingOverlay) {
+	public void extractRenderState(ShulkerBoxBlockEntity blockEntity, ShulkerBoxRenderState renderState, float partialTick, Vec3 cameraPos,
+			@Nullable ModelFeatureRenderer.CrumblingOverlay crumblingOverlay) {
 		super.extractRenderState(blockEntity, renderState, partialTick, cameraPos, crumblingOverlay);
 
 		BlockState blockState = blockEntity.getBlockState();
-		renderState.facing = !blockEntity.getBlockPos().equals(BlockPos.ZERO) || (blockEntity.hasLevel() && blockEntity.getLevel().getBlockState(BlockPos.ZERO).getBlock() instanceof ShulkerBoxBlock) ? blockState.getValue(ShulkerBoxBlock.FACING) : Direction.UP;
+		renderState.facing = !blockEntity.getBlockPos().equals(BlockPos.ZERO)
+				|| (blockEntity.hasLevel() && blockEntity.getLevel().getBlockState(BlockPos.ZERO).getBlock() instanceof ShulkerBoxBlock)
+						? blockState.getValue(ShulkerBoxBlock.FACING)
+						: Direction.UP;
 		renderState.lidProgress = blockEntity.getProgress(partialTick);
 		renderState.mainColor = blockEntity.getStorageWrapper().getMainColor();
 		renderState.accentColor = blockEntity.getStorageWrapper().getAccentColor();
@@ -99,20 +108,24 @@ public class ShulkerBoxRenderer extends StorageRenderer<ShulkerBoxBlockEntity, S
 
 		if (renderState.mainColor == -1 || renderState.accentColor == -1) {
 			RenderType renderType = NO_TINT_MATERIAL.renderType(RenderType::entityCutoutNoCull);
-			submitNodeCollector.submitModel(model, renderState, poseStack, renderType, renderState.lightCoords, OverlayTexture.NO_OVERLAY, -1, materialSet.get(NO_TINT_MATERIAL), 0, renderState.breakProgress);
+			submitNodeCollector.submitModel(model, renderState, poseStack, renderType, renderState.lightCoords, OverlayTexture.NO_OVERLAY, -1,
+					materialSet.get(NO_TINT_MATERIAL), 0, renderState.breakProgress);
 		}
 		if (renderState.mainColor != -1) {
 			int color = 0xFF_000000 | renderState.mainColor;
-			submitNodeCollector.submitModel(model, renderState, poseStack, TINTABLE_MAIN_MATERIAL.renderType(RenderType::entityCutoutNoCull), renderState.lightCoords, OverlayTexture.NO_OVERLAY, color, materialSet.get(TINTABLE_MAIN_MATERIAL), 0, renderState.breakProgress);
+			submitNodeCollector.submitModel(model, renderState, poseStack, TINTABLE_MAIN_MATERIAL.renderType(RenderType::entityCutoutNoCull),
+					renderState.lightCoords, OverlayTexture.NO_OVERLAY, color, materialSet.get(TINTABLE_MAIN_MATERIAL), 0, renderState.breakProgress);
 		}
 		if (renderState.accentColor != -1) {
 			int accentColor = 0xFF_000000 | renderState.accentColor;
-			submitNodeCollector.submitModel(model, renderState, poseStack, TINTABLE_ACCENT_MATERIAL.renderType(RenderType::entityCutoutNoCull), renderState.lightCoords, OverlayTexture.NO_OVERLAY, accentColor, materialSet.get(TINTABLE_ACCENT_MATERIAL), 0, renderState.breakProgress);
+			submitNodeCollector.submitModel(model, renderState, poseStack, TINTABLE_ACCENT_MATERIAL.renderType(RenderType::entityCutoutNoCull),
+					renderState.lightCoords, OverlayTexture.NO_OVERLAY, accentColor, materialSet.get(TINTABLE_ACCENT_MATERIAL), 0, renderState.breakProgress);
 		}
 		if (renderState.showsTier) {
 			Material tierMaterial = getTierMaterial(renderState.blockState.getBlock());
 			RenderType renderType = RenderType.entityCutoutNoCull(tierMaterial.atlasLocation());
-			submitNodeCollector.submitModel(model, renderState, poseStack, renderType, renderState.lightCoords, OverlayTexture.NO_OVERLAY, -1, materialSet.get(tierMaterial), 0, renderState.breakProgress);
+			submitNodeCollector.submitModel(model, renderState, poseStack, renderType, renderState.lightCoords, OverlayTexture.NO_OVERLAY, -1,
+					materialSet.get(tierMaterial), 0, renderState.breakProgress);
 		} else if (holdsItemThatShowsHiddenTiers()) {
 			Material tierMaterial = getTierMaterial(renderState.blockState.getBlock());
 			RenderType renderType = RenderType.entityTranslucent(tierMaterial.atlasLocation());
@@ -120,7 +133,8 @@ public class ShulkerBoxRenderer extends StorageRenderer<ShulkerBoxBlockEntity, S
 			poseStack.translate(0, -0.01, 0);
 			poseStack.scale(1.01f, 1.01f, 1.01f);
 			int color = 0x7F_FFFFFF;
-			submitNodeCollector.submitModel(model, renderState, poseStack, renderType, renderState.lightCoords, OverlayTexture.NO_OVERLAY, color, materialSet.get(tierMaterial), 0, renderState.breakProgress);
+			submitNodeCollector.submitModel(model, renderState, poseStack, renderType, renderState.lightCoords, OverlayTexture.NO_OVERLAY, color,
+					materialSet.get(tierMaterial), 0, renderState.breakProgress);
 			poseStack.popPose();
 		}
 
@@ -144,7 +158,8 @@ public class ShulkerBoxRenderer extends StorageRenderer<ShulkerBoxBlockEntity, S
 			displayItemRenderer.submitUpgradeItems(submitNodeCollector, renderState, poseStack, OverlayTexture.NO_OVERLAY, holdsItemThatShowsUpgrades);
 		}
 		if (!renderState.displayItems.isEmpty()) {
-			displayItemRenderer.submitDisplayItem(submitNodeCollector, poseStack, renderState.lightCoords, OverlayTexture.NO_OVERLAY, renderState.displayItems.getFirst());
+			displayItemRenderer.submitDisplayItem(submitNodeCollector, poseStack, renderState.lightCoords, OverlayTexture.NO_OVERLAY,
+					renderState.displayItems.getFirst());
 		}
 		LockRenderer.submitLock(submitNodeCollector, renderState, poseStack, 15F / 16F, this::holdsToolInToggleLockOrLockDisplay, materialSet);
 		poseStack.popPose();

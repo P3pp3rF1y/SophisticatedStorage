@@ -27,6 +27,7 @@ import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.settings.StorageSettingsHandler;
 
 import javax.annotation.Nullable;
+
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -80,14 +81,14 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 		this(getSaveHandler, onSerializeRenderData, markContentsDirty, 1, false);
 	}
 
-	protected StorageWrapper(Supplier<Runnable> getSaveHandler, Runnable onSerializeRenderData, Runnable markContentsDirty, int numberOfDisplayItems, boolean showsCountsAndFillRatios) {
+	protected StorageWrapper(Supplier<Runnable> getSaveHandler, Runnable onSerializeRenderData, Runnable markContentsDirty, int numberOfDisplayItems,
+			boolean showsCountsAndFillRatios) {
 		this.getSaveHandler = getSaveHandler;
-		renderDataHandler = new RenderDataHandler(renderData,
-				renderData -> {
-					this.renderData = renderData;
-					onSerializeRenderData.run();
-					getSaveHandler.get().run();
-				}, showsCountsAndFillRatios);
+		renderDataHandler = new RenderDataHandler(renderData, renderData -> {
+			this.renderData = renderData;
+			onSerializeRenderData.run();
+			getSaveHandler.get().run();
+		}, showsCountsAndFillRatios);
 		settingsHandler = new StorageSettingsHandler(contents.settings(), markContentsDirty, this::getInventoryHandler, () -> renderDataHandler) {
 
 			@Override
@@ -118,7 +119,8 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 				}
 				getInventoryHandler().addListener(getSettingsHandler().getTypeCategory(ItemDisplaySettingsCategory.class)::itemChanged);
 				refreshInventoryForInputOutput();
-				getSettingsHandler().getTypeCategory(ItemDisplaySettingsCategory.class).itemsChanged(); //in case stack upgrade changed need to send updated fill ratios to client
+				getSettingsHandler().getTypeCategory(ItemDisplaySettingsCategory.class).itemsChanged(); // in case stack upgrade changed need to send updated
+																										// fill ratios to client
 			}) {
 				@Override
 				public boolean isValid(int index, ItemResource resource) {
@@ -143,8 +145,9 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 		return upgradeHandlerInitializing;
 	}
 
-	private <T extends IUpgradeWrapper> void registerUpgradeDefaultsHandlerInUpgradeHandler(Class<T> wrapperClass, Consumer<? extends IUpgradeWrapper> defaultsHandler) {
-		//noinspection DataFlowIssue, unchecked - only called after upgradeHandler is initialized
+	private <T extends IUpgradeWrapper> void registerUpgradeDefaultsHandlerInUpgradeHandler(Class<T> wrapperClass,
+			Consumer<? extends IUpgradeWrapper> defaultsHandler) {
+		// noinspection DataFlowIssue, unchecked - only called after upgradeHandler is initialized
 		upgradeHandler.registerUpgradeDefaultsHandler(wrapperClass, (Consumer<T>) defaultsHandler);
 	}
 
@@ -207,7 +210,8 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 		if (upgradeHandler != null) {
 			getUpgradeHandler().refreshUpgradeWrappers();
 		}
-		if (Thread.currentThread().getThreadGroup() == SidedThreadGroups.SERVER && getRenderDataHandler().getUpgradeItems().size() != getUpgradeHandler().size()) {
+		if (Thread.currentThread().getThreadGroup() == SidedThreadGroups.SERVER
+				&& getRenderDataHandler().getUpgradeItems().size() != getUpgradeHandler().size()) {
 			getUpgradeHandler().setRenderUpgradeItems();
 		}
 	}
@@ -226,8 +230,8 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 	}
 
 	private void loadData(ValueInput in) {
-		renderData = in.read(RENDER_DATA, RenderData.CODEC)
-				.or(() -> in.read("renderInfo", RenderData.CODEC)) //TODO remove legacy deserialization likely after major 1.22 release
+		renderData = in.read(RENDER_DATA, RenderData.CODEC).or(() -> in.read("renderInfo", RenderData.CODEC)) // TODO remove legacy deserialization likely after
+																												// major 1.22 release
 				.orElse(RenderData.EMPTY.copy());
 		renderDataHandler.reloadFrom(renderData);
 		renderDataValidationPending = true;
@@ -292,7 +296,7 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 
 	@Override
 	public void setContentsChangeHandler(Runnable contentsChangeHandler) {
-		//noop
+		// noop
 	}
 
 	@Override
@@ -310,7 +314,8 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 	}
 
 	private InventoryHandler initInventoryHandler() {
-		InventoryHandler handler = new InventoryHandler(getNumberOfInventorySlots(), this, getContents(), getSaveHandler.get(), StackUpgradeItem.getInventorySlotLimit(this), Config.SERVER.stackUpgrade) {
+		InventoryHandler handler = new InventoryHandler(getNumberOfInventorySlots(), this, getContents(), getSaveHandler.get(),
+				StackUpgradeItem.getInventorySlotLimit(this), Config.SERVER.stackUpgrade) {
 			@Override
 			protected boolean isAllowed(ItemResource resource) {
 				return isAllowedInStorage(resource);
@@ -472,12 +477,12 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 
 	@Override
 	public void setPersistent(boolean persistent) {
-		//noop
+		// noop
 	}
 
 	@Override
 	public void fillWithLoot(Player playerEntity) {
-		//noop
+		// noop
 	}
 
 	@Override

@@ -36,7 +36,8 @@ public class StorageBlockItem extends BlockItemBase implements ITintableBlockIte
 	public static int getNumberOfInventorySlots(ItemStack storageStack) {
 		int defaultNumberOfInventorySlots = getDefaultNumberOfInventorySlots(storageStack);
 		Integer storedNumberOfInventorySlots = storageStack.get(ModCoreDataComponents.NUMBER_OF_INVENTORY_SLOTS);
-		int numberOfInventorySlots = Math.max(storedNumberOfInventorySlots == null ? defaultNumberOfInventorySlots : storedNumberOfInventorySlots, defaultNumberOfInventorySlots);
+		int numberOfInventorySlots = Math.max(storedNumberOfInventorySlots == null ? defaultNumberOfInventorySlots : storedNumberOfInventorySlots,
+				defaultNumberOfInventorySlots);
 		if (storedNumberOfInventorySlots == null || storedNumberOfInventorySlots < numberOfInventorySlots) {
 			storageStack.set(ModCoreDataComponents.NUMBER_OF_INVENTORY_SLOTS, numberOfInventorySlots);
 		}
@@ -44,13 +45,16 @@ public class StorageBlockItem extends BlockItemBase implements ITintableBlockIte
 	}
 
 	public static int getDefaultNumberOfInventorySlots(ItemStack storageStack) {
-		return storageStack.getItem() instanceof BlockItemBase blockItem && blockItem.getBlock() instanceof IStorageBlock storageBlock ? storageBlock.getNumberOfInventorySlots() : 0;
+		return storageStack.getItem() instanceof BlockItemBase blockItem && blockItem.getBlock() instanceof IStorageBlock storageBlock
+				? storageBlock.getNumberOfInventorySlots()
+				: 0;
 	}
 
 	public static int getNumberOfUpgradeSlots(ItemStack storageStack) {
 		int defaultNumberOfUpgradeSlots = getDefaultNumberOfUpgradeSlots(storageStack);
 		Integer storedNumberOfUpgradeSlots = storageStack.get(ModCoreDataComponents.NUMBER_OF_UPGRADE_SLOTS);
-		int numberOfUpgradeSlots = Math.max(storedNumberOfUpgradeSlots == null ? defaultNumberOfUpgradeSlots : storedNumberOfUpgradeSlots, defaultNumberOfUpgradeSlots);
+		int numberOfUpgradeSlots = Math.max(storedNumberOfUpgradeSlots == null ? defaultNumberOfUpgradeSlots : storedNumberOfUpgradeSlots,
+				defaultNumberOfUpgradeSlots);
 		if (storedNumberOfUpgradeSlots == null || storedNumberOfUpgradeSlots < numberOfUpgradeSlots) {
 			storageStack.set(ModCoreDataComponents.NUMBER_OF_UPGRADE_SLOTS, numberOfUpgradeSlots);
 		}
@@ -58,9 +62,10 @@ public class StorageBlockItem extends BlockItemBase implements ITintableBlockIte
 	}
 
 	public static int getDefaultNumberOfUpgradeSlots(ItemStack storageStack) {
-		return storageStack.getItem() instanceof BlockItemBase blockItem && blockItem.getBlock() instanceof IStorageBlock storageBlock ? storageBlock.getNumberOfUpgradeSlots() : 0;
+		return storageStack.getItem() instanceof BlockItemBase blockItem && blockItem.getBlock() instanceof IStorageBlock storageBlock
+				? storageBlock.getNumberOfUpgradeSlots()
+				: 0;
 	}
-
 
 	public static boolean isLocked(ItemStack stack) {
 		return stack.getOrDefault(ModDataComponents.LOCKED, false);
@@ -81,7 +86,7 @@ public class StorageBlockItem extends BlockItemBase implements ITintableBlockIte
 
 	@Override
 	public Optional<Integer> getMainColor(ItemStack storageStack) {
-		return StorageBlockItem.getMainColorFromComponentHolder(storageStack);
+		return getMainColorFromComponentHolder(storageStack);
 	}
 
 	@Override
@@ -101,7 +106,7 @@ public class StorageBlockItem extends BlockItemBase implements ITintableBlockIte
 
 	@Override
 	public Optional<Integer> getAccentColor(ItemStack stack) {
-		return StorageBlockItem.getAccentColorFromComponentHolder(stack);
+		return getAccentColorFromComponentHolder(stack);
 	}
 
 	public static boolean showsTier(ItemStack stack) {

@@ -30,23 +30,27 @@ import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
 import org.joml.Vector3f;
 
 import javax.annotation.Nullable;
+
 import java.util.Optional;
 import java.util.Set;
 
 public class ChestItemRenderer implements SpecialModelRenderer<ChestItemRenderer.ChestAttributes> {
-	private final LoadingCache<BlockItem, ChestBlockEntity> chestBlockEntities = CacheBuilder.newBuilder().maximumSize(512L).weakKeys().build(new CacheLoader<>() {
-		@Override
-		public ChestBlockEntity load(BlockItem blockItem) {
-			return new ChestBlockEntity(BlockPos.ZERO, blockItem.getBlock().defaultBlockState().setValue(ChestBlock.FACING, Direction.SOUTH));
-		}
-	});
+	private final LoadingCache<BlockItem, ChestBlockEntity> chestBlockEntities = CacheBuilder.newBuilder().maximumSize(512L).weakKeys()
+			.build(new CacheLoader<>() {
+				@Override
+				public ChestBlockEntity load(BlockItem blockItem) {
+					return new ChestBlockEntity(BlockPos.ZERO, blockItem.getBlock().defaultBlockState().setValue(ChestBlock.FACING, Direction.SOUTH));
+				}
+			});
 
-	private final LoadingCache<DoubleChestBlockEntityKey, ChestBlockEntity> doubleChestBlockEntities = CacheBuilder.newBuilder().maximumSize(512L).weakKeys().build(new CacheLoader<>() {
-		@Override
-		public ChestBlockEntity load(DoubleChestBlockEntityKey key) {
-			return new ChestBlockEntity(BlockPos.ZERO, key.blockItem().getBlock().defaultBlockState().setValue(ChestBlock.FACING, Direction.SOUTH).setValue(ChestBlock.TYPE, key.chestType()));
-		}
-	});
+	private final LoadingCache<DoubleChestBlockEntityKey, ChestBlockEntity> doubleChestBlockEntities = CacheBuilder.newBuilder().maximumSize(512L).weakKeys()
+			.build(new CacheLoader<>() {
+				@Override
+				public ChestBlockEntity load(DoubleChestBlockEntityKey key) {
+					return new ChestBlockEntity(BlockPos.ZERO, key.blockItem().getBlock().defaultBlockState().setValue(ChestBlock.FACING, Direction.SOUTH)
+							.setValue(ChestBlock.TYPE, key.chestType()));
+				}
+			});
 
 	@Nullable
 	@Override
@@ -68,18 +72,21 @@ public class ChestItemRenderer implements SpecialModelRenderer<ChestItemRenderer
 	}
 
 	@Override
-	public void submit(@Nullable ChestAttributes chestAttributes, ItemDisplayContext itemDisplayContext, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, int packedLight, int packedOverlay, boolean hasFoil, int color) {
+	public void submit(@Nullable ChestAttributes chestAttributes, ItemDisplayContext itemDisplayContext, PoseStack poseStack,
+			SubmitNodeCollector submitNodeCollector, int packedLight, int packedOverlay, boolean hasFoil, int color) {
 		if (chestAttributes == null) {
 			return;
 		}
 
 		if (chestAttributes.isDoubleChest()) {
-			ChestBlockEntity leftChestBlockEntity = doubleChestBlockEntities.getUnchecked(new DoubleChestBlockEntityKey(chestAttributes.blockItem(), ChestType.LEFT));
+			ChestBlockEntity leftChestBlockEntity = doubleChestBlockEntities
+					.getUnchecked(new DoubleChestBlockEntityKey(chestAttributes.blockItem(), ChestType.LEFT));
 			poseStack.pushPose();
 			poseStack.scale(0.8F, 0.8F, 0.8F);
 			poseStack.translate(0.72D, 0.0D, 0.0D);
 			renderBlockEntity(chestAttributes, poseStack, submitNodeCollector, packedLight, packedOverlay, leftChestBlockEntity);
-			ChestBlockEntity rightChestBlockEntity = doubleChestBlockEntities.getUnchecked(new DoubleChestBlockEntityKey(chestAttributes.blockItem(), ChestType.RIGHT));
+			ChestBlockEntity rightChestBlockEntity = doubleChestBlockEntities
+					.getUnchecked(new DoubleChestBlockEntityKey(chestAttributes.blockItem(), ChestType.RIGHT));
 			poseStack.translate(-1D, 0.0D, 0.0D);
 			renderBlockEntity(chestAttributes, poseStack, submitNodeCollector, packedLight, packedOverlay, rightChestBlockEntity);
 			poseStack.popPose();
@@ -94,13 +101,15 @@ public class ChestItemRenderer implements SpecialModelRenderer<ChestItemRenderer
 	public void getExtents(Set<Vector3f> set) {
 		PoseStack posestack = new PoseStack();
 		ChestBlockEntity chestBlockEntity = chestBlockEntities.getUnchecked(ModBlocks.CHEST_ITEM.get());
-		BlockEntityRenderer<ChestBlockEntity, ChestRenderer.ChestRenderState> blockentityrenderer = Minecraft.getInstance().getBlockEntityRenderDispatcher().getRenderer(chestBlockEntity);
+		BlockEntityRenderer<ChestBlockEntity, ChestRenderer.ChestRenderState> blockentityrenderer = Minecraft.getInstance().getBlockEntityRenderDispatcher()
+				.getRenderer(chestBlockEntity);
 		if (blockentityrenderer instanceof ChestRenderer chestRenderer) {
 			chestRenderer.rootModelPart().getExtentsForGui(posestack, set);
 		}
 	}
 
-	private void renderBlockEntity(ChestAttributes chestAttributes, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, int packedLight, int packedOverlay, ChestBlockEntity chestBlockEntity) {
+	private void renderBlockEntity(ChestAttributes chestAttributes, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, int packedLight,
+			int packedOverlay, ChestBlockEntity chestBlockEntity) {
 		chestBlockEntity.getStorageWrapper().setColors(chestAttributes.mainColor(), chestAttributes.accentColor());
 		Optional<WoodType> woodType = chestAttributes.woodType();
 		if (woodType.isPresent() || !(chestBlockEntity.getStorageWrapper().hasAccentColor() && chestBlockEntity.getStorageWrapper().hasMainColor())) {
@@ -119,15 +128,17 @@ public class ChestItemRenderer implements SpecialModelRenderer<ChestItemRenderer
 		}
 	}
 
-	public record ChestAttributes(BlockItem blockItem, boolean isDoubleChest, int mainColor, int accentColor,
-								  Optional<WoodType> woodType, boolean isPacked, boolean showsTier) {
+	public record ChestAttributes(BlockItem blockItem, boolean isDoubleChest, int mainColor, int accentColor, Optional<WoodType> woodType, boolean isPacked,
+			boolean showsTier) {
 	}
 
 	private record DoubleChestBlockEntityKey(BlockItem blockItem, ChestType chestType) {
 		@Override
 		public boolean equals(Object o) {
-			if (this == o) return true;
-			if (o == null || getClass() != o.getClass()) return false;
+			if (this == o)
+				return true;
+			if (o == null || getClass() != o.getClass())
+				return false;
 			DoubleChestBlockEntityKey that = (DoubleChestBlockEntityKey) o;
 			return Objects.equal(blockItem, that.blockItem) && chestType == that.chestType;
 		}

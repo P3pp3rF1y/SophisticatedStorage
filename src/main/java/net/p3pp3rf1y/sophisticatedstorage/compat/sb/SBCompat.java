@@ -20,7 +20,7 @@ public class SBCompat implements ICompat {
 	public void setup() {
 		DecorationTableInputSlotPreview.registerPreviewStack(() -> new ItemStack(ModItems.BACKPACK.get()));
 
-		DecorationTableBlockEntity.registerItemDecorator(item -> item instanceof BackpackItem, new DecorationTableBlockEntity.IItemDecorator() {
+		DecorationTableBlockEntity.registerItemDecorator(BackpackItem.class::isInstance, new DecorationTableBlockEntity.IItemDecorator() {
 			@Override
 			public boolean supportsMaterials(ItemResource input) {
 				return false;
@@ -54,12 +54,14 @@ public class SBCompat implements ICompat {
 				int originalAccentColor = backpackWrapper.getAccentColor();
 
 				backpackWrapper.setColors(mainColorToSet, accentColorToSet);
-				return new DecorationTableBlockEntity.TintDecorationResult(result, DecorationHelper.getDyePartsNeeded(mainColorToSet, accentColorToSet, originalMainColor, originalAccentColor, 20, 4));
+				return new DecorationTableBlockEntity.TintDecorationResult(result,
+						DecorationHelper.getDyePartsNeeded(mainColorToSet, accentColorToSet, originalMainColor, originalAccentColor, 20, 4));
 			}
 
 			private boolean colorsTransparentOrSameAs(ItemStack backpack, int mainColorToSet, int accentColorToSet) {
 				IBackpackWrapper backpackWrapper = BackpackWrapper.fromStack(backpack);
-				return (mainColorToSet == -1 || mainColorToSet == backpackWrapper.getMainColor()) && (accentColorToSet == -1 || accentColorToSet == backpackWrapper.getAccentColor());
+				return (mainColorToSet == -1 || mainColorToSet == backpackWrapper.getMainColor())
+						&& (accentColorToSet == -1 || accentColorToSet == backpackWrapper.getAccentColor());
 			}
 		});
 	}

@@ -13,7 +13,6 @@ import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
@@ -23,10 +22,13 @@ import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageToolItem;
 
 import javax.annotation.Nullable;
+
 import java.util.Collections;
 import java.util.List;
 
-public class SimpleMaterialOverlayRenderer<T extends BlockEntity & ISimpleMaterialHolder> implements BlockEntityRenderer<T, SimpleMaterialOverlayRenderer.SimpleMaterialOverlayRenderState> {
+public class SimpleMaterialOverlayRenderer<T extends BlockEntity & ISimpleMaterialHolder>
+		implements
+			BlockEntityRenderer<T, SimpleMaterialOverlayRenderer.SimpleMaterialOverlayRenderState> {
 	private static final RenderType TRANSLUCENT = RenderType.entityTranslucent(TextureAtlas.LOCATION_BLOCKS);
 	private static long lastCacheTime = -1;
 	private static boolean holdsStorageToolThatShowsHiddenOverlay = false;
@@ -37,7 +39,8 @@ public class SimpleMaterialOverlayRenderer<T extends BlockEntity & ISimpleMateri
 	}
 
 	@Override
-	public void extractRenderState(T blockEntity, SimpleMaterialOverlayRenderState renderState, float partialTick, Vec3 cameraPos, @Nullable ModelFeatureRenderer.CrumblingOverlay crumblingOverlay) {
+	public void extractRenderState(T blockEntity, SimpleMaterialOverlayRenderState renderState, float partialTick, Vec3 cameraPos,
+			@Nullable ModelFeatureRenderer.CrumblingOverlay crumblingOverlay) {
 		BlockEntityRenderer.super.extractRenderState(blockEntity, renderState, partialTick, cameraPos, crumblingOverlay);
 		renderState.quads = Collections.emptyList();
 		renderState.doubleRender = false;
@@ -55,11 +58,13 @@ public class SimpleMaterialOverlayRenderer<T extends BlockEntity & ISimpleMateri
 	}
 
 	@Override
-	public void submit(SimpleMaterialOverlayRenderState renderState, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState cameraRenderState) {
+	public void submit(SimpleMaterialOverlayRenderState renderState, PoseStack poseStack, SubmitNodeCollector submitNodeCollector,
+			CameraRenderState cameraRenderState) {
 		submitHiddenOverlayQuads(submitNodeCollector, poseStack, renderState.lightCoords, renderState.quads, renderState.doubleRender);
 	}
 
-	public static void submitHiddenOverlayQuads(SubmitNodeCollector submitNodeCollector, PoseStack poseStack, int lightCoords, List<BakedQuad> quads, boolean doubleRender) {
+	public static void submitHiddenOverlayQuads(SubmitNodeCollector submitNodeCollector, PoseStack poseStack, int lightCoords, List<BakedQuad> quads,
+			boolean doubleRender) {
 		if (quads.isEmpty()) {
 			return;
 		}

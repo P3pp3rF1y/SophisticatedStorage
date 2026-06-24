@@ -19,6 +19,7 @@ import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 
 import javax.annotation.Nullable;
+
 import java.util.List;
 
 public class ShulkerBoxBlockEntity extends StorageBlockEntity {
@@ -31,7 +32,7 @@ public class ShulkerBoxBlockEntity extends StorageBlockEntity {
 		protected void onOpen(Level level, BlockPos pos, BlockState state) {
 			animationStatus = AnimationStatus.OPENING;
 			playSound(state, SoundEvents.SHULKER_BOX_OPEN);
-			//noinspection ConstantConditions
+			// noinspection ConstantConditions
 			doNeighborUpdates(getLevel(), worldPosition, getBlockState());
 		}
 
@@ -39,13 +40,13 @@ public class ShulkerBoxBlockEntity extends StorageBlockEntity {
 		protected void onClose(Level level, BlockPos pos, BlockState state) {
 			animationStatus = AnimationStatus.CLOSING;
 			playSound(state, SoundEvents.SHULKER_BOX_CLOSE);
-			//noinspection ConstantConditions
+			// noinspection ConstantConditions
 			doNeighborUpdates(getLevel(), worldPosition, getBlockState());
 		}
 
 		@Override
 		protected void openerCountChanged(Level level, BlockPos pos, BlockState state, int previousOpenCount, int openCount) {
-			//noop
+			// noop
 		}
 
 		@Override
@@ -97,7 +98,8 @@ public class ShulkerBoxBlockEntity extends StorageBlockEntity {
 	@Override
 	protected boolean isAllowedInStorage(ItemResource resource) {
 		Block block = Block.byItem(resource.getItem());
-		return !(block instanceof ShulkerBoxBlock) && !(block instanceof net.minecraft.world.level.block.ShulkerBoxBlock) && !Config.SERVER.shulkerBoxDisallowedItems.isItemDisallowed(resource.getItem());
+		return !(block instanceof ShulkerBoxBlock) && !(block instanceof net.minecraft.world.level.block.ShulkerBoxBlock)
+				&& !Config.SERVER.shulkerBoxDisallowedItems.isItemDisallowed(resource.getItem());
 	}
 
 	private static void doNeighborUpdates(Level level, BlockPos pos, BlockState state) {
@@ -120,7 +122,8 @@ public class ShulkerBoxBlockEntity extends StorageBlockEntity {
 			if (!list.isEmpty()) {
 				for (Entity entity : list) {
 					if (entity.getPistonPushReaction() != PushReaction.IGNORE) {
-						entity.move(MoverType.SHULKER_BOX, new Vec3((aabb.getXsize() + 0.01D) * direction.getStepX(), (aabb.getYsize() + 0.01D) * direction.getStepY(), (aabb.getZsize() + 0.01D) * direction.getStepZ()));
+						entity.move(MoverType.SHULKER_BOX, new Vec3((aabb.getXsize() + 0.01D) * direction.getStepX(),
+								(aabb.getYsize() + 0.01D) * direction.getStepY(), (aabb.getZsize() + 0.01D) * direction.getStepZ()));
 					}
 				}
 			}
@@ -168,9 +171,6 @@ public class ShulkerBoxBlockEntity extends StorageBlockEntity {
 	}
 
 	public enum AnimationStatus {
-		CLOSED,
-		OPENING,
-		OPENED,
-		CLOSING
+		CLOSED, OPENING, OPENED, CLOSING
 	}
 }

@@ -10,6 +10,7 @@ import net.p3pp3rf1y.sophisticatedstorage.Config;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,26 +29,22 @@ public class CompressionUpgradeConfig {
 	public CompressionUpgradeConfig(ModConfigSpec.Builder builder) {
 		builder.comment("Compression Upgrade Settings").push("compressionUpgrade");
 		maxNumberOfSlots = builder.comment("Defines how many slots at a maximum compression upgrade is able to use").defineInRange("maxNumberOfSlots", 5, 3, 9);
-		additionalDecompressibleItems = builder.comment("List of items that can be decompressed by compression upgrade and their results. "
-				+ "Item registry names are expected here in format of \"mod:itemBeingDecompressed=Nxmod:itemDecompressResult\"")
-				.defineList("additionalDecompressibleItems", CompressionUpgradeConfig::getDecompressibleItemsDefault, () -> "minecraft:glowstone=4xminecraft:glowstone_dust", itemName -> itemName instanceof String str && str.matches(DECOMPRESSIBLE_MATCHER));
+		additionalDecompressibleItems = builder
+				.comment("List of items that can be decompressed by compression upgrade and their results. "
+						+ "Item registry names are expected here in format of \"mod:itemBeingDecompressed=Nxmod:itemDecompressResult\"")
+				.defineList("additionalDecompressibleItems", CompressionUpgradeConfig::getDecompressibleItemsDefault,
+						() -> "minecraft:glowstone=4xminecraft:glowstone_dust",
+						itemName -> itemName instanceof String str && str.matches(DECOMPRESSIBLE_MATCHER));
 		builder.pop();
 	}
 
 	@Nonnull
 	private static List<String> getDecompressibleItemsDefault() {
-		return List.of(
-				getDecompressibleEntry(Items.GLOWSTONE, 4, Items.GLOWSTONE_DUST),
-				getDecompressibleEntry(Items.QUARTZ_BLOCK, 4, Items.QUARTZ),
-				getDecompressibleEntry(Items.CLAY, 4, Items.CLAY_BALL),
-				getDecompressibleEntry(Items.SNOW_BLOCK, 4, Items.SNOWBALL),
-				getDecompressibleEntry(Items.BRICKS, 4, Items.BRICK),
-				getDecompressibleEntry(Items.NETHER_BRICKS, 4, Items.NETHER_BRICK),
-				getDecompressibleEntry(Items.NETHER_WART_BLOCK, 9, Items.NETHER_WART),
-				getDecompressibleEntry(Items.MELON, 9, Items.MELON_SLICE),
-				getDecompressibleEntry(Items.PACKED_ICE, 9, Items.ICE),
-				getDecompressibleEntry(Items.BLUE_ICE, 9, Items.PACKED_ICE)
-		);
+		return List.of(getDecompressibleEntry(Items.GLOWSTONE, 4, Items.GLOWSTONE_DUST), getDecompressibleEntry(Items.QUARTZ_BLOCK, 4, Items.QUARTZ),
+				getDecompressibleEntry(Items.CLAY, 4, Items.CLAY_BALL), getDecompressibleEntry(Items.SNOW_BLOCK, 4, Items.SNOWBALL),
+				getDecompressibleEntry(Items.BRICKS, 4, Items.BRICK), getDecompressibleEntry(Items.NETHER_BRICKS, 4, Items.NETHER_BRICK),
+				getDecompressibleEntry(Items.NETHER_WART_BLOCK, 9, Items.NETHER_WART), getDecompressibleEntry(Items.MELON, 9, Items.MELON_SLICE),
+				getDecompressibleEntry(Items.PACKED_ICE, 9, Items.ICE), getDecompressibleEntry(Items.BLUE_ICE, 9, Items.PACKED_ICE));
 	}
 
 	private static String getDecompressibleEntry(Item fromItem, int count, Item toItem) {
@@ -76,7 +73,9 @@ public class CompressionUpgradeConfig {
 	}
 
 	public Optional<CompressionResult> getCompressionResult(ItemStack stack) {
-		return Config.SERVER.compactingUpgrade.getCompactingResult(stack, 3, 3, (result, count) -> getDecompressionResult(result.getItem()).filter(decompressionResult -> decompressionResult.matches(stack, count)).isPresent())
+		return Config.SERVER.compactingUpgrade
+				.getCompactingResult(stack, 3, 3, (result, count) -> getDecompressionResult(result.getItem())
+						.filter(decompressionResult -> decompressionResult.matches(stack, count)).isPresent())
 				.map(compactingResult -> new CompressionResult(compactingResult.result().getResult(), compactingResult.count()));
 	}
 

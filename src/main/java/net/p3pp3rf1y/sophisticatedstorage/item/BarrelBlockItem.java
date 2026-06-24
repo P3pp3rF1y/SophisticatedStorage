@@ -22,12 +22,12 @@ public class BarrelBlockItem extends WoodStorageBlockItem {
 		super(block, properties);
 	}
 
-	public static final Codec<Map<BarrelMaterial, ResourceLocation>> MATERIALS_CODEC =
-			Codec.simpleMap(BarrelMaterial.CODEC, ResourceLocation.CODEC, StringRepresentable.keys(BarrelMaterial.values())).codec();
+	public static final Codec<Map<BarrelMaterial, ResourceLocation>> MATERIALS_CODEC = Codec
+			.simpleMap(BarrelMaterial.CODEC, ResourceLocation.CODEC, StringRepresentable.keys(BarrelMaterial.values())).codec();
 
-	public static final StreamCodec<FriendlyByteBuf, Map<BarrelMaterial, ResourceLocation>> MATERIALS_STREAM_CODEC =
-			StreamCodec.of((buf, map) -> buf.writeMap(map, BarrelMaterial.STREAM_CODEC, ResourceLocation.STREAM_CODEC),
-					buf -> buf.readMap(BarrelMaterial.STREAM_CODEC, ResourceLocation.STREAM_CODEC));
+	public static final StreamCodec<FriendlyByteBuf, Map<BarrelMaterial, ResourceLocation>> MATERIALS_STREAM_CODEC = StreamCodec.of(
+			(buf, map) -> buf.writeMap(map, BarrelMaterial.STREAM_CODEC, ResourceLocation.STREAM_CODEC),
+			buf -> buf.readMap(BarrelMaterial.STREAM_CODEC, ResourceLocation.STREAM_CODEC));
 
 	public static void toggleFlatTop(ItemStack stack) {
 		boolean flatTop = isFlatTop(stack);
@@ -77,7 +77,7 @@ public class BarrelBlockItem extends WoodStorageBlockItem {
 	public static void compactMaterials(Map<BarrelMaterial, ResourceLocation> materials) {
 		for (BarrelMaterial material : BarrelMaterial.values()) {
 			if (!material.isLeaf()) {
-				//if all children have the same texture remove them and convert to the parent
+				// if all children have the same texture remove them and convert to the parent
 				ResourceLocation firstChildTexture = null;
 				boolean allChildrenHaveSameTexture = true;
 				for (BarrelMaterial child : material.getChildren()) {

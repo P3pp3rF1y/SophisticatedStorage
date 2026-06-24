@@ -20,9 +20,7 @@ public class StoragePositionGroups {
 	}
 
 	public static StoragePositionGroup getGroup(Level level, BlockPos pos) {
-		return WorldHelper.getBlockEntity(level, pos, ChestBlockEntity.class)
-				.map(StoragePositionGroups::getChestGroup)
-				.orElseGet(() -> singleton(pos));
+		return WorldHelper.getBlockEntity(level, pos, ChestBlockEntity.class).map(StoragePositionGroups::getChestGroup).orElseGet(() -> singleton(pos));
 	}
 
 	public static List<List<BlockPos>> getGroupPositions(Level level, Collection<BlockPos> positions) {
@@ -48,16 +46,14 @@ public class StoragePositionGroups {
 			return singleton(mainPos);
 		}
 
-		return WorldHelper.getBlockEntity(chestBlockEntity.getLevel(), mainPos, ChestBlockEntity.class)
-				.map(mainChest -> {
-					List<BlockPos> positions = new ArrayList<>();
-					positions.add(mainPos);
-					if (mainChest.getBlockState().getValue(ChestBlock.TYPE) != ChestType.SINGLE) {
-						positions.add(mainPos.relative(ChestBlock.getConnectedDirection(mainChest.getBlockState())));
-					}
-					return new StoragePositionGroup(mainPos, positions.stream().sorted(BLOCK_POS_COMPARATOR).toList());
-				})
-				.orElseGet(() -> singleton(mainPos));
+		return WorldHelper.getBlockEntity(chestBlockEntity.getLevel(), mainPos, ChestBlockEntity.class).map(mainChest -> {
+			List<BlockPos> positions = new ArrayList<>();
+			positions.add(mainPos);
+			if (mainChest.getBlockState().getValue(ChestBlock.TYPE) != ChestType.SINGLE) {
+				positions.add(mainPos.relative(ChestBlock.getConnectedDirection(mainChest.getBlockState())));
+			}
+			return new StoragePositionGroup(mainPos, positions.stream().sorted(BLOCK_POS_COMPARATOR).toList());
+		}).orElseGet(() -> singleton(mainPos));
 	}
 
 	private static StoragePositionGroup singleton(BlockPos pos) {

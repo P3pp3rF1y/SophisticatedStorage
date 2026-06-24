@@ -36,6 +36,7 @@ import net.p3pp3rf1y.sophisticatedstorage.item.StorageToolItem;
 import org.joml.Quaternionf;
 
 import javax.annotation.Nullable;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -44,20 +45,15 @@ import java.util.stream.Stream;
 
 public class ControllerRenderer implements BlockEntityRenderer<ControllerBlockEntity, ControllerRenderer.ControllerRenderState> {
 	public static final RenderPipeline NO_DEPTH_LINES_PIPELINE = RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)
-			.withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
-			.withDepthWrite(false)
-			.withLocation(SophisticatedStorage.getRL("pipeline/controller_lines"))
+			.withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST).withDepthWrite(false).withLocation(SophisticatedStorage.getRL("pipeline/controller_lines"))
 			.build();
 
 	private static final RenderType LINES = RenderType.create("storage_lines", 1536, NO_DEPTH_LINES_PIPELINE,
-			RenderType.CompositeState.builder()
-					.setLineState(new RenderStateShard.LineStateShard(OptionalDouble.empty()))
-					.setLayeringState(RenderType.VIEW_OFFSET_Z_LAYERING)
-					.setOutputState(RenderType.ITEM_ENTITY_TARGET)
-					.createCompositeState(false)
-	);
+			RenderType.CompositeState.builder().setLineState(new RenderStateShard.LineStateShard(OptionalDouble.empty()))
+					.setLayeringState(RenderType.VIEW_OFFSET_Z_LAYERING).setOutputState(RenderType.ITEM_ENTITY_TARGET).createCompositeState(false));
 
-	private void submitConnectedStorageBlocksInfo(SubmitNodeCollector submitNodeCollector, Direction playerLookDirection, PoseStack poseStack, List<BlockPos> storagePositions, List<Integer> storageSlots, BlockPos controllerPos) {
+	private void submitConnectedStorageBlocksInfo(SubmitNodeCollector submitNodeCollector, Direction playerLookDirection, PoseStack poseStack,
+			List<BlockPos> storagePositions, List<Integer> storageSlots, BlockPos controllerPos) {
 		double zScale = 0.001;
 		float scale = 0.015f;
 		int storageOrder = 1;
@@ -74,25 +70,31 @@ public class ControllerRenderer implements BlockEntityRenderer<ControllerBlockEn
 			poseStack.translate(-0.45f, 0.45f, 0);
 
 			poseStack.scale(scale, -scale, (float) zScale);
-			submitNodeCollector.submitText(poseStack, 0, 0, Component.literal("Order: " + storageOrder).getVisualOrderText(), false, Font.DisplayMode.NORMAL, 15728880, DyeColor.WHITE.getTextColor(), 0, 0);
+			submitNodeCollector.submitText(poseStack, 0, 0, Component.literal("Order: " + storageOrder).getVisualOrderText(), false, Font.DisplayMode.NORMAL,
+					15728880, DyeColor.WHITE.getTextColor(), 0, 0);
 			poseStack.translate(0, 10, 0);
-			submitNodeCollector.submitText(poseStack, 0, 0, Component.literal("Slots: " + storageSlots.get(storageOrder - 1)).getVisualOrderText(), false, Font.DisplayMode.NORMAL, 15728880, DyeColor.WHITE.getTextColor(), 0, 0);
+			submitNodeCollector.submitText(poseStack, 0, 0, Component.literal("Slots: " + storageSlots.get(storageOrder - 1)).getVisualOrderText(), false,
+					Font.DisplayMode.NORMAL, 15728880, DyeColor.WHITE.getTextColor(), 0, 0);
 			poseStack.popPose();
 
 			storageOrder++;
 		}
 	}
 
-	private void submitLinkedBlocks(SubmitNodeCollector submitNodeCollector, PoseStack poseStack, BlockPos controllerPos, List<VoxelOutliner.Edge> linkedBlockEdges, List<ControllerRenderState.LinkedBlockInfo> linkedBlocks) {
-		linkedBlocks.forEach(linkedBlockInfo -> submitLineBetweenBlocks(submitNodeCollector, controllerPos, linkedBlockInfo.pos, linkedBlockInfo.center, poseStack, DyeColor.LIME.getTextColor()));
+	private void submitLinkedBlocks(SubmitNodeCollector submitNodeCollector, PoseStack poseStack, BlockPos controllerPos,
+			List<VoxelOutliner.Edge> linkedBlockEdges, List<ControllerRenderState.LinkedBlockInfo> linkedBlocks) {
+		linkedBlocks.forEach(linkedBlockInfo -> submitLineBetweenBlocks(submitNodeCollector, controllerPos, linkedBlockInfo.pos, linkedBlockInfo.center,
+				poseStack, DyeColor.LIME.getTextColor()));
 		BlockHighlightRenderHelper.submitThickEdges(submitNodeCollector, poseStack, DyeColor.LIME.getTextColor(), linkedBlockEdges, controllerPos);
 	}
 
-	private void submitStorageBlocksOutline(SubmitNodeCollector submitNodeCollector, PoseStack poseStack, List<VoxelOutliner.Edge> storageBlockEdges, BlockPos controllerPos) {
+	private void submitStorageBlocksOutline(SubmitNodeCollector submitNodeCollector, PoseStack poseStack, List<VoxelOutliner.Edge> storageBlockEdges,
+			BlockPos controllerPos) {
 		BlockHighlightRenderHelper.submitThickEdges(submitNodeCollector, poseStack, 0x69c53b, storageBlockEdges, controllerPos);
 	}
 
-	private void submitLineBetweenBlocks(SubmitNodeCollector submitNodeCollector, BlockPos initialPos, BlockPos pos, Vec3 center, PoseStack poseStack, int color) {
+	private void submitLineBetweenBlocks(SubmitNodeCollector submitNodeCollector, BlockPos initialPos, BlockPos pos, Vec3 center, PoseStack poseStack,
+			int color) {
 		int red = color >> 16 & 255;
 		int green = color >> 8 & 255;
 		int blue = color & 255;
@@ -101,14 +103,14 @@ public class ControllerRenderer implements BlockEntityRenderer<ControllerBlockEn
 		float normalY = (float) (pos.getY() - initialPos.getY() + (0.5F - center.y()));
 		float normalZ = (float) (pos.getZ() - initialPos.getZ() + (0.5F - center.z()));
 		submitNodeCollector.submitCustomGeometry(poseStack, LINES, (pose, buffer) -> {
-			buffer.addVertex(pose, 0.5F, 0.5F, 0.5F).setColor(red, green, blue, 255)
-					.setNormal(pose, normalX, normalY, normalZ);
-			buffer.addVertex(pose, (float) (pos.getX() - initialPos.getX() + center.x()), (float) (pos.getY() - initialPos.getY() + center.y()), (float) (pos.getZ() - initialPos.getZ() + center.z())).setColor(red, green, blue, 255)
-					.setNormal(pose, normalX, normalY, normalZ);
+			buffer.addVertex(pose, 0.5F, 0.5F, 0.5F).setColor(red, green, blue, 255).setNormal(pose, normalX, normalY, normalZ);
+			buffer.addVertex(pose, (float) (pos.getX() - initialPos.getX() + center.x()), (float) (pos.getY() - initialPos.getY() + center.y()),
+					(float) (pos.getZ() - initialPos.getZ() + center.z())).setColor(red, green, blue, 255).setNormal(pose, normalX, normalY, normalZ);
 		});
 	}
 
-	private void submitControllerOutline(SubmitNodeCollector submitNodeCollector, PoseStack poseStack, List<VoxelOutliner.Edge> controllerEdges, BlockPos controllerPos) {
+	private void submitControllerOutline(SubmitNodeCollector submitNodeCollector, PoseStack poseStack, List<VoxelOutliner.Edge> controllerEdges,
+			BlockPos controllerPos) {
 		BlockHighlightRenderHelper.submitThickEdges(submitNodeCollector, poseStack, 0x2ebbff, controllerEdges, controllerPos);
 	}
 
@@ -118,7 +120,8 @@ public class ControllerRenderer implements BlockEntityRenderer<ControllerBlockEn
 	}
 
 	@Override
-	public void extractRenderState(ControllerBlockEntity controller, ControllerRenderState renderState, float partialTick, Vec3 cameraPos, @Nullable ModelFeatureRenderer.CrumblingOverlay crumblingOverlay) {
+	public void extractRenderState(ControllerBlockEntity controller, ControllerRenderState renderState, float partialTick, Vec3 cameraPos,
+			@Nullable ModelFeatureRenderer.CrumblingOverlay crumblingOverlay) {
 		BlockEntityRenderer.super.extractRenderState(controller, renderState, partialTick, cameraPos, crumblingOverlay);
 
 		Minecraft mc = Minecraft.getInstance();
@@ -173,7 +176,8 @@ public class ControllerRenderer implements BlockEntityRenderer<ControllerBlockEn
 	}
 
 	@Override
-	public void submit(ControllerRenderState controllerRenderState, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState cameraRenderState) {
+	public void submit(ControllerRenderState controllerRenderState, PoseStack poseStack, SubmitNodeCollector submitNodeCollector,
+			CameraRenderState cameraRenderState) {
 		BlockPos controllerPos = controllerRenderState.blockPos;
 
 		LocalPlayer player = Minecraft.getInstance().player;
@@ -181,11 +185,13 @@ public class ControllerRenderer implements BlockEntityRenderer<ControllerBlockEn
 			return;
 		}
 
-		submitConnectedStorageBlocksInfo(submitNodeCollector, Direction.orderedByNearest(player)[0].getOpposite(), poseStack, controllerRenderState.storagePositions, controllerRenderState.storageSlots, controllerPos);
+		submitConnectedStorageBlocksInfo(submitNodeCollector, Direction.orderedByNearest(player)[0].getOpposite(), poseStack,
+				controllerRenderState.storagePositions, controllerRenderState.storageSlots, controllerPos);
 		submitControllerOutline(submitNodeCollector, poseStack, controllerRenderState.controllerEdges, controllerPos);
 		submitLinkedBlocks(submitNodeCollector, poseStack, controllerPos, controllerRenderState.linkedBlockEdges, controllerRenderState.linkedBlocks);
 		submitStorageBlocksOutline(submitNodeCollector, poseStack, controllerRenderState.storageBlockEdges, controllerPos);
-		SimpleMaterialOverlayRenderer.submitHiddenOverlayQuads(submitNodeCollector, poseStack, controllerRenderState.lightCoords, controllerRenderState.hiddenOverlayQuads, false);
+		SimpleMaterialOverlayRenderer.submitHiddenOverlayQuads(submitNodeCollector, poseStack, controllerRenderState.lightCoords,
+				controllerRenderState.hiddenOverlayQuads, false);
 	}
 
 	@Override
@@ -207,6 +213,7 @@ public class ControllerRenderer implements BlockEntityRenderer<ControllerBlockEn
 		public List<VoxelOutliner.Edge> controllerEdges = Collections.emptyList();
 		public List<BakedQuad> hiddenOverlayQuads = Collections.emptyList();
 
-		public record LinkedBlockInfo(BlockPos pos, Vec3 center) { }
+		public record LinkedBlockInfo(BlockPos pos, Vec3 center) {
+		}
 	}
 }

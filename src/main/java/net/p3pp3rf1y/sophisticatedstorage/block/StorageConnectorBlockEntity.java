@@ -19,6 +19,7 @@ import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 
 import javax.annotation.Nullable;
+
 import java.util.Objects;
 import java.util.Optional;
 
@@ -161,7 +162,8 @@ public class StorageConnectorBlockEntity extends BlockEntity implements IControl
 
 	public void removeFromController() {
 		if (controllerPos != null && !level.isClientSide()) {
-			WorldHelper.getBlockEntity(level, controllerPos, ControllerBlockEntityBase.class).ifPresent(controller -> controller.removeBoundable(worldPosition));
+			WorldHelper.getBlockEntity(level, controllerPos, ControllerBlockEntityBase.class)
+					.ifPresent(controller -> controller.removeBoundable(worldPosition));
 			removeControllerPos();
 		}
 	}
