@@ -20,7 +20,8 @@ import java.util.List;
 import java.util.Optional;
 
 public class StorageTierUpgradeShapelessRecipe extends CustomShapelessRecipe implements IWrapperRecipe<ShapelessRecipe> {
-	public static final RecipeSerializer<StorageTierUpgradeShapelessRecipe> SERIALIZER = RecipeWrapperSerializer.create(StorageTierUpgradeShapelessRecipe::new, ShapelessRecipe.SERIALIZER);
+	public static final RecipeSerializer<StorageTierUpgradeShapelessRecipe> SERIALIZER = RecipeWrapperSerializer.create(StorageTierUpgradeShapelessRecipe::new,
+			ShapelessRecipe.SERIALIZER);
 	private final ShapelessRecipe compose;
 
 	public StorageTierUpgradeShapelessRecipe(ShapelessRecipe compose) {

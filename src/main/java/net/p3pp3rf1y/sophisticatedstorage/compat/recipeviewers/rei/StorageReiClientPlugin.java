@@ -13,9 +13,9 @@ import me.shedaniel.rei.api.client.registry.transfer.TransferHandlerRegistry;
 import me.shedaniel.rei.api.common.category.CategoryIdentifier;
 import me.shedaniel.rei.api.common.display.Display;
 import me.shedaniel.rei.api.common.entry.EntryStack;
-import me.shedaniel.rei.api.common.util.EntryStacks;
 import me.shedaniel.rei.api.common.plugins.PluginManager;
 import me.shedaniel.rei.api.common.registry.ReloadStage;
+import me.shedaniel.rei.api.common.util.EntryStacks;
 import me.shedaniel.rei.forge.REIPluginClient;
 import me.shedaniel.rei.plugin.common.BuiltinPlugin;
 import me.shedaniel.rei.plugin.common.displays.crafting.DefaultCraftingDisplay;
@@ -48,7 +48,8 @@ import static net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.common.sub
 @SuppressWarnings("unused")
 @REIPluginClient
 public class StorageReiClientPlugin implements REIClientPlugin {
-	private static Consumer<WorkstationRegistration> additionalWorkstations = registration -> {};
+	private static Consumer<WorkstationRegistration> additionalWorkstations = registration -> {
+	};
 	private IRecipeViewerDisplayCatalog catalog = null;
 	private boolean catalogCreatedWithoutServer = false;
 
@@ -76,18 +77,19 @@ public class StorageReiClientPlugin implements REIClientPlugin {
 		}
 	}
 
-    @Override
-    public void registerExclusionZones(ExclusionZones zones) {
-        zones.register(StorageScreen.class, screen -> {
-            List<Rect2i> ret = new ArrayList<>();
-            screen.getUpgradeSlotsRectangle().ifPresent(ret::add);
-            ret.addAll(screen.getUpgradeSettingsControl().getTabRectangles());
-            screen.getSortButtonsRectangle().ifPresent(ret::add);
-            return ret.stream().map(r -> new Rectangle(r.getX(), r.getY(), r.getWidth(), r.getHeight())).toList();
-        });
+	@Override
+	public void registerExclusionZones(ExclusionZones zones) {
+		zones.register(StorageScreen.class, screen -> {
+			List<Rect2i> ret = new ArrayList<>();
+			screen.getUpgradeSlotsRectangle().ifPresent(ret::add);
+			ret.addAll(screen.getUpgradeSettingsControl().getTabRectangles());
+			screen.getSortButtonsRectangle().ifPresent(ret::add);
+			return ret.stream().map(r -> new Rectangle(r.getX(), r.getY(), r.getWidth(), r.getHeight())).toList();
+		});
 
-		zones.register(StorageSettingsScreen.class, screen -> screen.getExtendedControlsRectangles().stream().map(r -> new Rectangle(r.getX(), r.getY(), r.getWidth(), r.getHeight())).toList());
-    }
+		zones.register(StorageSettingsScreen.class,
+				screen -> screen.getExtendedControlsRectangles().stream().map(r -> new Rectangle(r.getX(), r.getY(), r.getWidth(), r.getHeight())).toList());
+	}
 
 	@Override
 	public void registerScreens(ScreenRegistry registry) {
@@ -97,25 +99,19 @@ public class StorageReiClientPlugin implements REIClientPlugin {
 
 	@Override
 	public void registerEntries(EntryRegistry registry) {
-		ModBlocks.ITEMS.getEntries().stream()
-				.map(holder -> holder.get())
-				.filter(StorageBlockItem.class::isInstance)
-				.map(StorageBlockItem.class::cast)
-				.forEach(storageItem -> getCreativeVariants(storageItem).stream()
-						.filter(stack -> !registry.alreadyContain(EntryStacks.of(stack)))
+		ModBlocks.ITEMS.getEntries().stream().map(holder -> holder.get()).filter(StorageBlockItem.class::isInstance).map(StorageBlockItem.class::cast)
+				.forEach(storageItem -> getCreativeVariants(storageItem).stream().filter(stack -> !registry.alreadyContain(EntryStacks.of(stack)))
 						.forEach(stack -> registry.addEntry(EntryStacks.of(stack))));
 	}
 
 	@Override
 	public void registerCollapsibleEntries(CollapsibleEntryRegistry registry) {
-		ModBlocks.ITEMS.getEntries().stream()
-				.map(holder -> holder.get())
-				.filter(StorageBlockItem.class::isInstance)
-				.map(StorageBlockItem.class::cast)
+		ModBlocks.ITEMS.getEntries().stream().map(holder -> holder.get()).filter(StorageBlockItem.class::isInstance).map(StorageBlockItem.class::cast)
 				.forEach(storageItem -> {
 					List<ItemStack> variants = getCreativeVariants(storageItem);
 					if (variants.size() > 1) {
-						registry.group(getCollapseId(storageItem), storageItem.getName(storageItem.getDefaultInstance()), variants.stream().map(EntryStacks::of).toList());
+						registry.group(getCollapseId(storageItem), storageItem.getName(storageItem.getDefaultInstance()),
+								variants.stream().map(EntryStacks::of).toList());
 					}
 				});
 	}
@@ -146,8 +142,7 @@ public class StorageReiClientPlugin implements REIClientPlugin {
 
 	private static boolean craftingDisplayReplaced(IRecipeViewerDisplayCatalog catalog, DefaultCraftingDisplay craftingDisplay) {
 		return craftingDisplay.getDisplayLocation()
-				.map(displayId -> catalog.getCraftingSpecs().stream().anyMatch(spec -> spec.replacedRecipeIds().contains(displayId)))
-				.orElse(false);
+				.map(displayId -> catalog.getCraftingSpecs().stream().anyMatch(spec -> spec.replacedRecipeIds().contains(displayId))).orElse(false);
 	}
 
 	@Override

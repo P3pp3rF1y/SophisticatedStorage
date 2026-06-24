@@ -17,7 +17,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelMaterial;
-import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.item.BarrelBlockItem;
 
 import java.util.EnumMap;
@@ -60,7 +59,8 @@ public class BarrelMaterialRecipe extends CustomRecipe {
 					} else {
 						return false;
 					}
-				} else if (item.getItem() instanceof BlockItem blockItem && Block.isShapeFullBlock(blockItem.getBlock().defaultBlockState().getShape(EmptyBlockGetter.INSTANCE, BlockPos.ZERO))) {
+				} else if (item.getItem() instanceof BlockItem blockItem
+						&& Block.isShapeFullBlock(blockItem.getBlock().defaultBlockState().getShape(EmptyBlockGetter.INSTANCE, BlockPos.ZERO))) {
 					boolean isBottomMiddleAndBottomLeftHasBlock = barrelCol == col && barrelRow < row && rowCounts.getOrDefault(row, 0) > 0;
 					if (isBottomMiddleAndBottomLeftHasBlock) {
 						return false;
@@ -85,7 +85,8 @@ public class BarrelMaterialRecipe extends CustomRecipe {
 			}
 		}
 
-		if (barrelRow < 0 || rowCounts.isEmpty() || minRowWithBlock < barrelRow - 1 || maxRowWithBlock > barrelRow + 1 || minColWithBlock < barrelCol - 1 || maxColWithBlock > barrelCol + 1) {
+		if (barrelRow < 0 || rowCounts.isEmpty() || minRowWithBlock < barrelRow - 1 || maxRowWithBlock > barrelRow + 1 || minColWithBlock < barrelCol - 1
+				|| maxColWithBlock > barrelCol + 1) {
 			return false;
 		}
 

@@ -17,7 +17,7 @@ public class ClientStorageContentsTooltip extends ClientStorageContentsTooltipBa
 	private final ItemStack storageItem;
 
 	@SuppressWarnings("unused")
-	//parameter needs to be there so that addListener logic would know which event this method listens to
+	// parameter needs to be there so that addListener logic would know which event this method listens to
 	public static void onWorldLoad(LevelEvent.Load event) {
 		refreshContents();
 		lastRequestTime = 0;

@@ -9,7 +9,7 @@ import java.util.List;
 
 import static net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks.LIMITED_BARREL_CONTAINER_TYPE;
 
-public class LimitedBarrelContainerMenu extends StorageContainerMenu{
+public class LimitedBarrelContainerMenu extends StorageContainerMenu {
 	public LimitedBarrelContainerMenu(int containerId, Player player, BlockPos pos) {
 		super(LIMITED_BARREL_CONTAINER_TYPE.get(), containerId, player, pos);
 	}

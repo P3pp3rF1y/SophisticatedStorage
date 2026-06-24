@@ -68,7 +68,8 @@ public class SimpleCompositeUnbakedModel extends AbstractUnbakedModel {
 		}
 
 		@Override
-		public QuadCollection bake(TextureSlots slots, ModelBaker baker, net.minecraft.client.renderer.block.dispatch.ModelState state, ModelDebugName debugName, ContextMap additionalProperties) {
+		public QuadCollection bake(TextureSlots slots, ModelBaker baker, net.minecraft.client.renderer.block.dispatch.ModelState state,
+				ModelDebugName debugName, ContextMap additionalProperties) {
 			List<CuboidModelElement> allElements = new ArrayList<>();
 			addAllChildElements(baker, debugName, allElements);
 
@@ -82,8 +83,7 @@ public class SimpleCompositeUnbakedModel extends AbstractUnbakedModel {
 
 		private void addAllChildElements(ModelBaker baker, ModelDebugName debugName, List<CuboidModelElement> elements) {
 			children.forEach((key, value) -> {
-				ResolvedModel model = value.map(baker::getModel,
-						inline -> baker.resolveInlineModel(inline, () -> debugName.debugName() + "_" + key));
+				ResolvedModel model = value.map(baker::getModel, inline -> baker.resolveInlineModel(inline, () -> debugName.debugName() + "_" + key));
 				addModelElements(baker, debugName, elements, model);
 			});
 		}
@@ -131,7 +131,8 @@ public class SimpleCompositeUnbakedModel extends AbstractUnbakedModel {
 			return new SimpleCompositeUnbakedModel(new SimpleCompositeUnbakedGeometry(children), parameters);
 		}
 
-		private static void readChildren(JsonObject jsonObject, String name, ImmutableMap.Builder<String, Either<Identifier, UnbakedModel>> children, JsonDeserializationContext context) {
+		private static void readChildren(JsonObject jsonObject, String name, ImmutableMap.Builder<String, Either<Identifier, UnbakedModel>> children,
+				JsonDeserializationContext context) {
 			if (jsonObject.has(name)) {
 				JsonObject childrenJsonObject = jsonObject.getAsJsonObject(name);
 

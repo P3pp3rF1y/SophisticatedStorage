@@ -2,8 +2,8 @@ package net.p3pp3rf1y.sophisticatedstorage.block;
 
 import com.mojang.math.Axis;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
@@ -49,8 +49,9 @@ public class LimitedBarrelBlock extends BarrelBlock {
 
 	public LimitedBarrelBlock(int numberOfInventorySlots, Config.Server.LimitedBarrelConfig config, float explosionResistance, Properties properties) {
 		super(() -> numberOfInventorySlots, config::upgradeSlotCount, explosionResistance,
-				stateDef -> stateDef.any().setValue(HORIZONTAL_FACING, Direction.NORTH).setValue(VERTICAL_FACING, VerticalFacing.NO).setValue(TICKING, false).setValue(FLAT_TOP, false).setValue(OPAQUE, true), properties
-		);
+				stateDef -> stateDef.any().setValue(HORIZONTAL_FACING, Direction.NORTH).setValue(VERTICAL_FACING, VerticalFacing.NO).setValue(TICKING, false)
+						.setValue(FLAT_TOP, false).setValue(OPAQUE, true),
+				properties);
 		this.getBaseStackSizeMultiplier = config::baseSlotLimitMultiplier;
 	}
 
@@ -84,11 +85,8 @@ public class LimitedBarrelBlock extends BarrelBlock {
 		Direction direction = blockPlaceContext.getNearestLookingDirection().getOpposite();
 		Direction horizontalDirection = blockPlaceContext.getHorizontalDirection().getOpposite();
 		ItemStack stack = blockPlaceContext.getItemInHand();
-		return defaultBlockState()
-				.setValue(HORIZONTAL_FACING, horizontalDirection)
-				.setValue(VERTICAL_FACING, VerticalFacing.fromDirection(direction))
-				.setValue(FLAT_TOP, BarrelBlockItem.isFlatTop(stack))
-				.setValue(OPAQUE, areMaterialsOpaque(BarrelBlockItem.getMaterials(stack)));
+		return defaultBlockState().setValue(HORIZONTAL_FACING, horizontalDirection).setValue(VERTICAL_FACING, VerticalFacing.fromDirection(direction))
+				.setValue(FLAT_TOP, BarrelBlockItem.isFlatTop(stack)).setValue(OPAQUE, areMaterialsOpaque(BarrelBlockItem.getMaterials(stack)));
 	}
 
 	@Override
@@ -119,7 +117,8 @@ public class LimitedBarrelBlock extends BarrelBlock {
 	}
 
 	@Override
-	protected InteractionResult tryItemInteraction(Player player, InteractionHand hand, WoodStorageBlockEntity b, ItemStack stackInHand, Direction facing, BlockHitResult hitResult) {
+	protected InteractionResult tryItemInteraction(Player player, InteractionHand hand, WoodStorageBlockEntity b, ItemStack stackInHand, Direction facing,
+			BlockHitResult hitResult) {
 		InteractionResult result = super.tryItemInteraction(player, hand, b, stackInHand, facing, hitResult);
 		if (result.consumesAction()) {
 			return result;
@@ -136,7 +135,8 @@ public class LimitedBarrelBlock extends BarrelBlock {
 			}
 
 			DyeColor dyeColor = stackInHand.get(DataComponents.DYE);
-			if (Config.SERVER.limitedBarrelCountDyeingEnabled.getAsBoolean() && stackInHand.getItem() instanceof DyeItem && dyeColor != null && limitedBarrelBlockEntity.applyDye(slot, stackInHand, dyeColor, player.isShiftKeyDown())) {
+			if (Config.SERVER.limitedBarrelCountDyeingEnabled.getAsBoolean() && stackInHand.getItem() instanceof DyeItem && dyeColor != null
+					&& limitedBarrelBlockEntity.applyDye(slot, stackInHand, dyeColor, player.isShiftKeyDown())) {
 				return InteractionResult.SUCCESS;
 			}
 		}
@@ -144,7 +144,8 @@ public class LimitedBarrelBlock extends BarrelBlock {
 	}
 
 	@Override
-	public boolean trySneakItemInteraction(Player player, InteractionHand hand, BlockState state, Level level, BlockPos pos, BlockHitResult hitVec, ItemStack itemInHand) {
+	public boolean trySneakItemInteraction(Player player, InteractionHand hand, BlockState state, Level level, BlockPos pos, BlockHitResult hitVec,
+			ItemStack itemInHand) {
 		if (super.trySneakItemInteraction(player, hand, state, level, pos, hitVec, itemInHand)) {
 			return true;
 		}
@@ -160,8 +161,7 @@ public class LimitedBarrelBlock extends BarrelBlock {
 		if (dyeColor == null) {
 			return false;
 		}
-		return WorldHelper.getBlockEntity(level, pos, LimitedBarrelBlockEntity.class)
-				.map(barrel -> barrel.applyDye(0, itemStack, dyeColor, true))
+		return WorldHelper.getBlockEntity(level, pos, LimitedBarrelBlockEntity.class).map(barrel -> barrel.applyDye(0, itemStack, dyeColor, true))
 				.orElse(false);
 	}
 
@@ -252,7 +252,8 @@ public class LimitedBarrelBlock extends BarrelBlock {
 	}
 
 	public boolean isLookingAtFront(Player player, BlockPos pos, BlockState state) {
-		return getHitResult(player).map(blockHitResult -> blockHitResult.getBlockPos().equals(pos) && blockHitResult.getDirection() == getFacing(state)).orElse(false);
+		return getHitResult(player).map(blockHitResult -> blockHitResult.getBlockPos().equals(pos) && blockHitResult.getDirection() == getFacing(state))
+				.orElse(false);
 	}
 
 	@Override

@@ -30,12 +30,14 @@ public class ChestBlockStateModel implements DynamicBlockStateModel {
 	public static final Identifier TINTABLE_BREAK_TEXTURE = SophisticatedStorage.getIdentifier(BREAK_TEXTURE_FOLDER + "tintable_chest");
 
 	static {
-		WoodStorageBlockBase.CUSTOM_TEXTURE_WOOD_TYPES.keySet().forEach(woodType -> WOOD_BREAK_TEXTURES.put(woodType.name(), SophisticatedStorage.getIdentifier(BREAK_TEXTURE_FOLDER + woodType.name() + "_chest")));
+		WoodStorageBlockBase.CUSTOM_TEXTURE_WOOD_TYPES.keySet().forEach(
+				woodType -> WOOD_BREAK_TEXTURES.put(woodType.name(), SophisticatedStorage.getIdentifier(BREAK_TEXTURE_FOLDER + woodType.name() + "_chest")));
 	}
 
 	@Override
-	public void collectParts(BlockAndTintGetter blockAndTintGetter, BlockPos blockPos, BlockState blockState, RandomSource randomSource, List<BlockStateModelPart> list) {
-		//noop - this model is rendered dynamically
+	public void collectParts(BlockAndTintGetter blockAndTintGetter, BlockPos blockPos, BlockState blockState, RandomSource randomSource,
+			List<BlockStateModelPart> list) {
+		// noop - this model is rendered dynamically
 	}
 
 	@Override
@@ -45,8 +47,8 @@ public class ChestBlockStateModel implements DynamicBlockStateModel {
 
 	@Override
 	public Material.Baked particleMaterial(BlockAndTintGetter level, BlockPos pos, BlockState state) {
-		return new Material.Baked(Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS).getSprite(WorldHelper.getBlockEntity(level, pos, WoodStorageBlockEntity.class)
-				.map(be -> {
+		return new Material.Baked(Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS)
+				.getSprite(WorldHelper.getBlockEntity(level, pos, WoodStorageBlockEntity.class).map(be -> {
 					boolean hasMainColor = be.getStorageWrapper().hasMainColor();
 					String woodName = be.getWoodType().map(WoodType::name).orElse("");
 
@@ -71,7 +73,7 @@ public class ChestBlockStateModel implements DynamicBlockStateModel {
 
 		@Override
 		public void resolveDependencies(Resolver resolver) {
-			//noop
+			// noop
 		}
 
 		@Override

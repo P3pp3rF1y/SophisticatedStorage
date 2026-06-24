@@ -15,7 +15,8 @@ public class HopperUpgradeItem extends UpgradeItemBase<HopperUpgradeWrapper> {
 	private final IntSupplier maxTransferStackSize;
 	public static final UpgradeType<HopperUpgradeWrapper> TYPE = new UpgradeType<>(HopperUpgradeWrapper::new);
 
-	public HopperUpgradeItem(IntSupplier inputFilterSlotCount, IntSupplier outputFilterSlotCount, IntSupplier transferSpeedTicks, IntSupplier maxTransferStackSize, Properties properties) {
+	public HopperUpgradeItem(IntSupplier inputFilterSlotCount, IntSupplier outputFilterSlotCount, IntSupplier transferSpeedTicks,
+			IntSupplier maxTransferStackSize, Properties properties) {
 		super(Config.SERVER.maxUpgradesPerStorage, properties);
 		this.inputFilterSlotCount = inputFilterSlotCount;
 		this.outputFilterSlotCount = outputFilterSlotCount;

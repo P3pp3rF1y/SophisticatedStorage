@@ -30,7 +30,8 @@ public class CopyStorageDataFunction implements LootItemFunction {
 			}
 		}
 		if (be instanceof ISimpleMaterialHolder simpleMaterialHolder && stack.getItem() instanceof SimpleMaterialBlockItem) {
-			simpleMaterialHolder.getMaterial().ifPresentOrElse(material -> SimpleMaterialBlockItem.setMaterial(stack, material), () -> SimpleMaterialBlockItem.removeMaterial(stack));
+			simpleMaterialHolder.getMaterial().ifPresentOrElse(material -> SimpleMaterialBlockItem.setMaterial(stack, material),
+					() -> SimpleMaterialBlockItem.removeMaterial(stack));
 		}
 
 		return stack;
@@ -40,7 +41,6 @@ public class CopyStorageDataFunction implements LootItemFunction {
 	public MapCodec<? extends LootItemFunction> codec() {
 		return ModItems.COPY_STORAGE_DATA.get();
 	}
-
 
 	public static Builder builder() {
 		return new Builder();

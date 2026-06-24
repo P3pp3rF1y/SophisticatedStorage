@@ -31,7 +31,7 @@ import static net.minecraft.world.level.block.state.properties.BlockStatePropert
 
 public class StorageLinkBlock extends BlockBase implements EntityBlock {
 	private static final Map<Direction, VoxelShape> ROTATED_SHAPES = new EnumMap<>(Direction.class);
-	private static final RotatedShapes SHAPE = new RotatedShapes(false, Block.box(1, 14, 1, 15, 16, 15));
+	private static final RotatedShapes SHAPE = new RotatedShapes(false, box(1, 14, 1, 15, 16, 15));
 
 	public StorageLinkBlock(Properties properties) {
 		super(properties.mapColor(MapColor.STONE).requiresCorrectToolForDrops().strength(2.5F, 5.0F));

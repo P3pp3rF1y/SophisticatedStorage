@@ -14,17 +14,15 @@ public class AccessHelper {
 		try {
 			COMPACTING_RESULT_INIT = RecipeHelper.CompactingResult.class.getDeclaredConstructor(ItemStack.class, List.class);
 			COMPACTING_RESULT_INIT.setAccessible(true);
-		}
-		catch (NoSuchMethodException e) {
+		} catch (NoSuchMethodException e) {
 			throw new RuntimeException(e);
 		}
 	}
 
 	static RecipeHelper.CompactingResult initCompactingResult(ItemStack result, List<ItemStack> remainingItems) {
 		try {
-		return COMPACTING_RESULT_INIT.newInstance(result, remainingItems);
-		}
-		catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+			return COMPACTING_RESULT_INIT.newInstance(result, remainingItems);
+		} catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
 			throw new RuntimeException(e);
 		}
 	}

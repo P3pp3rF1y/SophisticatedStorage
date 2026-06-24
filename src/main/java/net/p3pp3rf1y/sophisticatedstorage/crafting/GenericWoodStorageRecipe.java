@@ -22,7 +22,8 @@ import java.util.Optional;
 import java.util.Set;
 
 public class GenericWoodStorageRecipe implements CraftingRecipe, IWrapperRecipe<ShapedRecipe> {
-	public static final RecipeSerializer<GenericWoodStorageRecipe> SERIALIZER = RecipeWrapperSerializer.create(GenericWoodStorageRecipe::new, ShapedRecipe.SERIALIZER);
+	public static final RecipeSerializer<GenericWoodStorageRecipe> SERIALIZER = RecipeWrapperSerializer.create(GenericWoodStorageRecipe::new,
+			ShapedRecipe.SERIALIZER);
 	private final ShapedRecipe compose;
 
 	public GenericWoodStorageRecipe(ShapedRecipe compose) {

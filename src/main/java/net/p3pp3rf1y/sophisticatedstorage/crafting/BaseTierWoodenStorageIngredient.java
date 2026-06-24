@@ -40,7 +40,8 @@ public class BaseTierWoodenStorageIngredient implements ICustomIngredient {
 			itemBase.addCreativeTabItems(items::add);
 		}
 
-		return new SlotDisplay.Composite(items.stream().map(ItemStackTemplate::fromNonEmptyStack).map(SlotDisplay.ItemStackSlotDisplay::new).map(SlotDisplay.class::cast).toList());
+		return new SlotDisplay.Composite(
+				items.stream().map(ItemStackTemplate::fromNonEmptyStack).map(SlotDisplay.ItemStackSlotDisplay::new).map(SlotDisplay.class::cast).toList());
 	}
 
 	@Override

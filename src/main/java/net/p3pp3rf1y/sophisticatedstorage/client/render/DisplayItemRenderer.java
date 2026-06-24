@@ -20,7 +20,6 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import java.lang.reflect.Field;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class DisplayItemRenderer {
@@ -59,8 +58,10 @@ public class DisplayItemRenderer {
 		return builder.isDefined() && builder.build().getZsize() > 0.0625F;
 	}
 
-	public void submitDisplayItem(SubmitNodeCollector submitNodeCollector, PoseStack poseStack, int packedLight, int packedOverlay, StorageRenderState.DisplayItemInfo displayItemInfo) {
-		submitSingleItem(submitNodeCollector, poseStack, packedLight, packedOverlay, 1, displayItemInfo.item(), displayItemInfo.index(), displayItemInfo.itemOffset(), displayItemInfo.rotation(), displayItemInfo.isBlockItem());
+	public void submitDisplayItem(SubmitNodeCollector submitNodeCollector, PoseStack poseStack, int packedLight, int packedOverlay,
+			StorageRenderState.DisplayItemInfo displayItemInfo) {
+		submitSingleItem(submitNodeCollector, poseStack, packedLight, packedOverlay, 1, displayItemInfo.item(), displayItemInfo.index(),
+				displayItemInfo.itemOffset(), displayItemInfo.rotation(), displayItemInfo.isBlockItem());
 	}
 
 	public void submitDisplayItems(SubmitNodeCollector submitNodeCollector, StorageRenderState storageRenderState, PoseStack poseStack, int packedOverlay) {
@@ -71,15 +72,18 @@ public class DisplayItemRenderer {
 
 		for (int displayItemIndex = 0; displayItemIndex < storageRenderState.displayItemSlots; displayItemIndex++) {
 			if (storageRenderState.inaccessibleSlots.contains(displayItemIndex)) {
-				submitSingleItem(submitNodeCollector, poseStack, storageRenderState.lightCoords, packedOverlay, storageRenderState.displayItemSlots, INACCESSIBLE_SLOT_STACK, displayItemIndex);
+				submitSingleItem(submitNodeCollector, poseStack, storageRenderState.lightCoords, packedOverlay, storageRenderState.displayItemSlots,
+						INACCESSIBLE_SLOT_STACK, displayItemIndex);
 			}
 		}
 		for (StorageRenderState.DisplayItemInfo displayItemInfo : storageRenderState.displayItems) {
-			submitSingleDisplayItem(submitNodeCollector, poseStack, storageRenderState.lightCoords, packedOverlay, displayItemInfo, storageRenderState.displayItemSlots);
+			submitSingleDisplayItem(submitNodeCollector, poseStack, storageRenderState.lightCoords, packedOverlay, displayItemInfo,
+					storageRenderState.displayItemSlots);
 		}
 	}
 
-	public void submitUpgradeItems(SubmitNodeCollector submitNodeCollector, StorageRenderState storageRenderState, PoseStack poseStack, int packedOverlay, boolean renderEmptySlots) {
+	public void submitUpgradeItems(SubmitNodeCollector submitNodeCollector, StorageRenderState storageRenderState, PoseStack poseStack, int packedOverlay,
+			boolean renderEmptySlots) {
 		initHelperStacks();
 		poseStack.pushPose();
 		int i = 0;
@@ -106,15 +110,19 @@ public class DisplayItemRenderer {
 		poseStack.popPose();
 	}
 
-	private void submitSingleDisplayItem(SubmitNodeCollector submitNodeCollector, PoseStack poseStack, int packedLight, int packedOverlay, StorageRenderState.DisplayItemInfo displayItemInfo, int displayItemCount) {
-		submitSingleItem(submitNodeCollector, poseStack, packedLight, packedOverlay, displayItemCount, displayItemInfo.item(), displayItemInfo.index(), displayItemInfo.itemOffset(), displayItemInfo.rotation(), displayItemInfo.isBlockItem());
+	private void submitSingleDisplayItem(SubmitNodeCollector submitNodeCollector, PoseStack poseStack, int packedLight, int packedOverlay,
+			StorageRenderState.DisplayItemInfo displayItemInfo, int displayItemCount) {
+		submitSingleItem(submitNodeCollector, poseStack, packedLight, packedOverlay, displayItemCount, displayItemInfo.item(), displayItemInfo.index(),
+				displayItemInfo.itemOffset(), displayItemInfo.rotation(), displayItemInfo.isBlockItem());
 	}
 
-	private void submitSingleItem(SubmitNodeCollector submitNodeCollector, PoseStack poseStack, int packedLight, int packedOverlay, int displayItemCount, ItemStackRenderState item, int displayItemIndex) {
+	private void submitSingleItem(SubmitNodeCollector submitNodeCollector, PoseStack poseStack, int packedLight, int packedOverlay, int displayItemCount,
+			ItemStackRenderState item, int displayItemIndex) {
 		submitSingleItem(submitNodeCollector, poseStack, packedLight, packedOverlay, displayItemCount, item, displayItemIndex, 0, 0, false);
 	}
 
-	private void submitSingleItem(SubmitNodeCollector submitNodeCollector, PoseStack poseStack, int packedLight, int packedOverlay, int displayItemCount, ItemStackRenderState item, int displayItemIndex, float itemOffset, int rotation, boolean isBlockItem) {
+	private void submitSingleItem(SubmitNodeCollector submitNodeCollector, PoseStack poseStack, int packedLight, int packedOverlay, int displayItemCount,
+			ItemStackRenderState item, int displayItemIndex, float itemOffset, int rotation, boolean isBlockItem) {
 		if (item.layers.length < 1) {
 			return;
 		}
@@ -122,7 +130,7 @@ public class DisplayItemRenderer {
 		poseStack.pushPose();
 
 		Vector3f frontOffset = getDisplayItemIndexFrontOffset(displayItemIndex, displayItemCount, (float) yCenterTranslation);
-		poseStack.translate(frontOffset.x(), frontOffset.y(), - itemOffset);
+		poseStack.translate(frontOffset.x(), frontOffset.y(), -itemOffset);
 		poseStack.mulPose(Axis.ZP.rotationDegrees(rotation));
 
 		float itemScale;
@@ -149,15 +157,14 @@ public class DisplayItemRenderer {
 	}
 
 	private static double calculateDisplayItemOffset(ItemStack item, ItemStackRenderState itemStackRenderState, boolean isGui3d, float additionalScale) {
-		return isGui3d && item.getItem() instanceof BlockItem
-				? calculateOffsetFromBoundingBox(itemStackRenderState, additionalScale)
-				: 0;
+		return isGui3d && item.getItem() instanceof BlockItem ? calculateOffsetFromBoundingBox(itemStackRenderState, additionalScale) : 0;
 	}
 
 	private static double calculateOffsetFromBoundingBox(ItemStackRenderState itemStackRenderState, float additionalScale) {
 		AABB boundingBox = itemStackRenderState.getModelBoundingBox();
 		double zScale = getFixedTransformScale(itemStackRenderState);
-		return ((zScale * (2 / 15.95D)) - boundingBox.maxZ) * additionalScale; //15.95 because of z-fighting if displayed model had surface offset exactly 1 pixel from the top most surface
+		return ((zScale * (2 / 15.95D)) - boundingBox.maxZ) * additionalScale; // 15.95 because of z-fighting if displayed model had surface offset exactly 1
+																				// pixel from the top most surface
 	}
 
 	private static double getFixedTransformScale(ItemStackRenderState itemStackRenderState) {
@@ -207,7 +214,8 @@ public class DisplayItemRenderer {
 			frontOffset = new Vector3f(xOffset, displayItemIndex == 0 ? centerYOffset + halfCenterYOffset : halfCenterYOffset, 0.5f);
 		} else {
 			float halfCenterYOffset = centerYOffset / 2;
-			frontOffset = new Vector3f(displayItemIndex == 0 || displayItemIndex == 2 ? centerYOffset + halfCenterYOffset : halfCenterYOffset, displayItemIndex == 0 || displayItemIndex == 1 ? centerYOffset + halfCenterYOffset : halfCenterYOffset, 0.5f);
+			frontOffset = new Vector3f(displayItemIndex == 0 || displayItemIndex == 2 ? centerYOffset + halfCenterYOffset : halfCenterYOffset,
+					displayItemIndex == 0 || displayItemIndex == 1 ? centerYOffset + halfCenterYOffset : halfCenterYOffset, 0.5f);
 		}
 
 		return frontOffset;

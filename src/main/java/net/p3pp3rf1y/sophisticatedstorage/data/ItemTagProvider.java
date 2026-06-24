@@ -44,8 +44,10 @@ public class ItemTagProvider extends ItemTagsProvider {
 					}
 				});
 
-		tag(Tags.Items.CHESTS).add(key(ModBlocks.CHEST_ITEM.get()), key(ModBlocks.COPPER_CHEST_ITEM.get()), key(ModBlocks.IRON_CHEST_ITEM.get()), key(ModBlocks.GOLD_CHEST_ITEM.get()), key(ModBlocks.DIAMOND_CHEST_ITEM.get()), key(ModBlocks.NETHERITE_CHEST_ITEM.get()));
-		tag(Tags.Items.BARRELS).add(key(ModBlocks.BARREL_ITEM.get()), key(ModBlocks.COPPER_BARREL_ITEM.get()), key(ModBlocks.IRON_BARREL_ITEM.get()), key(ModBlocks.GOLD_BARREL_ITEM.get()), key(ModBlocks.DIAMOND_BARREL_ITEM.get()), key(ModBlocks.NETHERITE_BARREL_ITEM.get()));
+		tag(Tags.Items.CHESTS).add(key(ModBlocks.CHEST_ITEM.get()), key(ModBlocks.COPPER_CHEST_ITEM.get()), key(ModBlocks.IRON_CHEST_ITEM.get()),
+				key(ModBlocks.GOLD_CHEST_ITEM.get()), key(ModBlocks.DIAMOND_CHEST_ITEM.get()), key(ModBlocks.NETHERITE_CHEST_ITEM.get()));
+		tag(Tags.Items.BARRELS).add(key(ModBlocks.BARREL_ITEM.get()), key(ModBlocks.COPPER_BARREL_ITEM.get()), key(ModBlocks.IRON_BARREL_ITEM.get()),
+				key(ModBlocks.GOLD_BARREL_ITEM.get()), key(ModBlocks.DIAMOND_BARREL_ITEM.get()), key(ModBlocks.NETHERITE_BARREL_ITEM.get()));
 		tag(Tags.Items.BARRELS_WOODEN).add(key(ModBlocks.BARREL_ITEM.get()));
 	}
 
