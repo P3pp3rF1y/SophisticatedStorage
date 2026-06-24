@@ -10,7 +10,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.BlockPlaceContext;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
@@ -30,10 +29,12 @@ import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageTranslationHelper;
 
 import javax.annotation.Nullable;
+
 import java.util.List;
 
 public class StorageConnectorBlock extends BlockBase implements EntityBlock {
-	public static final String TOOLTIP_TRANSLATION_KEY = Util.makeDescriptionId("block", SophisticatedStorage.getRL("storage_connector")) + TranslationHelper.TOOLTIP_SUFFIX;
+	public static final String TOOLTIP_TRANSLATION_KEY = Util.makeDescriptionId("block", SophisticatedStorage.getRL("storage_connector"))
+			+ TranslationHelper.TOOLTIP_SUFFIX;
 
 	public StorageConnectorBlock(Properties properties) {
 		super(properties.mapColor(MapColor.WOOD).strength(2.5F).sound(SoundType.WOOD));

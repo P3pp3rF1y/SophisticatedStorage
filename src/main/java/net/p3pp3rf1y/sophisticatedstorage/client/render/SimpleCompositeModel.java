@@ -29,7 +29,8 @@ public class SimpleCompositeModel extends AbstractUnbakedModel {
 	}
 
 	@Override
-	public BakedModel bake(TextureSlots slots, ModelBaker baker, ModelState state, boolean useAmbientOcclusion, boolean usesBlockLight, ItemTransforms transforms, ContextMap additionalProperties) {
+	public BakedModel bake(TextureSlots slots, ModelBaker baker, ModelState state, boolean useAmbientOcclusion, boolean usesBlockLight,
+			ItemTransforms transforms, ContextMap additionalProperties) {
 		List<BlockElement> allElements = new ArrayList<>();
 		addAllChildElements(allElements);
 
@@ -38,7 +39,8 @@ public class SimpleCompositeModel extends AbstractUnbakedModel {
 			state = UnbakedElementsHelper.composeRootTransformIntoModelState(state, rootTransform);
 		}
 
-		return SimpleBakedModel.bakeElements(allElements, slots, baker.sprites(), state, useAmbientOcclusion, usesBlockLight, true, transforms, rootTransform, RenderTypeGroup.EMPTY);
+		return SimpleBakedModel.bakeElements(allElements, slots, baker.sprites(), state, useAmbientOcclusion, usesBlockLight, true, transforms, rootTransform,
+				RenderTypeGroup.EMPTY);
 	}
 
 	@Override
@@ -105,7 +107,8 @@ public class SimpleCompositeModel extends AbstractUnbakedModel {
 			return new SimpleCompositeModel(children, parameters);
 		}
 
-		private static void readChildren(JsonObject jsonObject, String name, ImmutableMap.Builder<String, Either<ResourceLocation, UnbakedModel>> children, JsonDeserializationContext context) {
+		private static void readChildren(JsonObject jsonObject, String name, ImmutableMap.Builder<String, Either<ResourceLocation, UnbakedModel>> children,
+				JsonDeserializationContext context) {
 			if (jsonObject.has(name)) {
 				JsonObject childrenJsonObject = jsonObject.getAsJsonObject(name);
 
@@ -113,8 +116,7 @@ public class SimpleCompositeModel extends AbstractUnbakedModel {
 					JsonElement jsonElement = entry.getValue();
 					Either<ResourceLocation, UnbakedModel> child = switch (jsonElement) {
 						case JsonPrimitive reference -> Either.left(ResourceLocation.parse(reference.getAsString()));
-						case JsonObject inline ->
-								Either.right((UnbakedModel) context.deserialize(inline, UnbakedModel.class));
+						case JsonObject inline -> Either.right((UnbakedModel) context.deserialize(inline, UnbakedModel.class));
 						default -> throw new IllegalArgumentException("");
 					};
 

@@ -21,7 +21,6 @@ import net.p3pp3rf1y.sophisticatedcore.settings.ISettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.settings.SettingsHandler;
 import net.p3pp3rf1y.sophisticatedcore.settings.itemdisplay.ItemDisplaySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeHandler;
-import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
@@ -29,6 +28,7 @@ import net.p3pp3rf1y.sophisticatedstorage.item.ChestBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.upgrades.INeighborChangeListenerUpgrade;
 
 import javax.annotation.Nullable;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -71,7 +71,8 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 		public void incrementOpeners(Player player, Level level, BlockPos pos, BlockState state) {
 			super.incrementOpeners(player, level, pos, state);
 			if (isMainChest()) {
-				runOnTheOtherPart(level, pos, (blockEntity, neighborPos) -> blockEntity.openersCounter.incrementOpeners(player, level, neighborPos, level.getBlockState(neighborPos)));
+				runOnTheOtherPart(level, pos, (blockEntity, neighborPos) -> blockEntity.openersCounter.incrementOpeners(player, level, neighborPos,
+						level.getBlockState(neighborPos)));
 			}
 		}
 
@@ -79,7 +80,8 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 		public void decrementOpeners(Player player, Level level, BlockPos pos, BlockState state) {
 			super.decrementOpeners(player, level, pos, state);
 			if (isMainChest()) {
-				runOnTheOtherPart(level, pos, (blockEntity, neighborPos) -> blockEntity.openersCounter.decrementOpeners(player, level, neighborPos, level.getBlockState(neighborPos)));
+				runOnTheOtherPart(level, pos, (blockEntity, neighborPos) -> blockEntity.openersCounter.decrementOpeners(player, level, neighborPos,
+						level.getBlockState(neighborPos)));
 			}
 		}
 	};
@@ -101,7 +103,8 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 		InventoryHandler mainInventoryHandler = mainBE.getStorageWrapper().getInventoryHandler();
 		int originalNumberOfSlots = mainInventoryHandler.getSlots();
 		InventoryHandler thisInventoryHandler = getStorageWrapper().getInventoryHandler();
-		int inventorySlotDiff = 2 * (mainBE.getBlockState().getBlock() instanceof StorageBlockBase storageBlock ? storageBlock.getNumberOfInventorySlots() : 0) - mainInventoryHandler.getSlots();
+		int inventorySlotDiff = 2 * (mainBE.getBlockState().getBlock() instanceof StorageBlockBase storageBlock ? storageBlock.getNumberOfInventorySlots() : 0)
+				- mainInventoryHandler.getSlots();
 		mainBE.changeStorageSize(inventorySlotDiff, 0);
 
 		moveStacksToMain(thisInventoryHandler, mainInventoryHandler, originalNumberOfSlots);
@@ -129,18 +132,16 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 
 	private void copySettings(ChestBlockEntity from, ChestBlockEntity to, int startFromSlot, int slotOffset) {
 		SettingsHandler mainSettingsHandler = to.getStorageWrapper().getSettingsHandler();
-		from.getStorageWrapper().getSettingsHandler().getSettingsCategories().forEach((name, category) ->
-				copyCategorySettings(category, mainSettingsHandler.getTypeCategory(category.getClass()), startFromSlot, slotOffset)
-		);
+		from.getStorageWrapper().getSettingsHandler().getSettingsCategories().forEach(
+				(name, category) -> copyCategorySettings(category, mainSettingsHandler.getTypeCategory(category.getClass()), startFromSlot, slotOffset));
 	}
 
 	private void deleteSettingsFromSlot(ChestBlockEntity from, int startFromSlot) {
-		from.getStorageWrapper().getSettingsHandler().getSettingsCategories().forEach((name, category) ->
-				category.deleteSlotSettingsFrom(startFromSlot)
-		);
+		from.getStorageWrapper().getSettingsHandler().getSettingsCategories().forEach((name, category) -> category.deleteSlotSettingsFrom(startFromSlot));
 	}
 
-	private <T extends ISettingsCategory<?>> void copyCategorySettings(ISettingsCategory<T> category, ISettingsCategory<?> mainCategory, int startFromSlot, int slotOffset) {
+	private <T extends ISettingsCategory<?>> void copyCategorySettings(ISettingsCategory<T> category, ISettingsCategory<?> mainCategory, int startFromSlot,
+			int slotOffset) {
 		category.copyTo((T) mainCategory, startFromSlot, slotOffset);
 	}
 
@@ -192,7 +193,8 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 		if (direction == null) {
 			return;
 		}
-		getMainStorageWrapper().getUpgradeHandler().getWrappersThatImplement(INeighborChangeListenerUpgrade.class).forEach(upgrade -> upgrade.onNeighborChange(level, worldPosition, direction));
+		getMainStorageWrapper().getUpgradeHandler().getWrappersThatImplement(INeighborChangeListenerUpgrade.class)
+				.forEach(upgrade -> upgrade.onNeighborChange(level, worldPosition, direction));
 	}
 
 	private void moveOtherPartStacksToIt() {
@@ -228,7 +230,8 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 				getStorageWrapper().getInventoryHandler().setSlotStack(slot - firstIndex, mainInventoryHandler.getSlotStack(slot));
 				mainInventoryHandler.setSlotStack(slot, ItemStack.EMPTY);
 			}
-			int inventorySlotDiff = (mainBE.getBlockState().getBlock() instanceof StorageBlockBase storageBlock ? storageBlock.getNumberOfInventorySlots() : 0) - mainInventoryHandler.getSlots();
+			int inventorySlotDiff = (mainBE.getBlockState().getBlock() instanceof StorageBlockBase storageBlock ? storageBlock.getNumberOfInventorySlots() : 0)
+					- mainInventoryHandler.getSlots();
 
 			mainBE.changeStorageSize(inventorySlotDiff, 0);
 			deleteSettingsFromSlot(mainBE, firstIndex);
@@ -325,8 +328,7 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 		}
 		Direction facing = getBlockState().getValue(ChestBlock.FACING);
 		BlockPos neighborPos = isMainChest() ? pos.relative(facing.getCounterClockWise()) : pos.relative(facing.getClockWise());
-		level.getBlockEntity(neighborPos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get())
-				.ifPresent(chestBlockEntity -> execute.accept(chestBlockEntity, neighborPos));
+		level.getBlockEntity(neighborPos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get()).ifPresent(chestBlockEntity -> execute.accept(chestBlockEntity, neighborPos));
 	}
 
 	@Nullable
@@ -368,7 +370,8 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 		if (level != null) {
 			BlockPos mainPos = getMainPos();
 			if (!mainPos.equals(worldPosition)) {
-				return level.getBlockEntity(mainPos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get()).map(StorageBlockEntity::getStorageWrapper).orElseGet(this::getStorageWrapper);
+				return level.getBlockEntity(mainPos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get()).map(StorageBlockEntity::getStorageWrapper)
+						.orElseGet(this::getStorageWrapper);
 			}
 		}
 		return getStorageWrapper();
@@ -400,9 +403,8 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 		}
 
 		if (level instanceof ServerLevel serverLevel) {
-			serverLevel.getServer().schedule(new TickTask(serverLevel.getServer().getTickCount(), () ->
-					dropItems.forEach(itemStack -> Containers.dropItemStack(serverLevel, dropPosition.getX(), dropPosition.getY(), dropPosition.getZ(), itemStack)))
-			);
+			serverLevel.getServer().schedule(new TickTask(serverLevel.getServer().getTickCount(), () -> dropItems
+					.forEach(itemStack -> Containers.dropItemStack(serverLevel, dropPosition.getX(), dropPosition.getY(), dropPosition.getZ(), itemStack))));
 		}
 
 		int inventorySlotDiff = chestBlock.getNumberOfInventorySlots() - invHandler.getSlots();
@@ -452,8 +454,7 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 
 		BlockPos mainPos = worldPosition.relative(ChestBlock.getConnectedDirection(state));
 		BlockState mainState = level.getBlockState(mainPos);
-		if (mainState.is(state.getBlock())
-				&& mainState.getValue(ChestBlock.TYPE) == ChestType.RIGHT
+		if (mainState.is(state.getBlock()) && mainState.getValue(ChestBlock.TYPE) == ChestType.RIGHT
 				&& mainState.getValue(ChestBlock.FACING) == state.getValue(ChestBlock.FACING)
 				&& mainPos.relative(ChestBlock.getConnectedDirection(mainState)).equals(worldPosition)) {
 			return mainPos;
@@ -476,8 +477,7 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 		if (level != null) {
 			BlockPos mainPos = getMainPos();
 			if (!mainPos.equals(worldPosition)) {
-				level.getBlockEntity(mainPos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get())
-						.ifPresent(be -> be.linkToController(controllerPos));
+				level.getBlockEntity(mainPos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get()).ifPresent(be -> be.linkToController(controllerPos));
 				return;
 			}
 		}
@@ -492,8 +492,7 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 		if (level != null) {
 			BlockPos mainPos = getMainPos();
 			if (!mainPos.equals(worldPosition)) {
-				level.getBlockEntity(mainPos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get())
-						.ifPresent(ChestBlockEntity::unlinkFromController);
+				level.getBlockEntity(mainPos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get()).ifPresent(ChestBlockEntity::unlinkFromController);
 				return;
 			}
 		}

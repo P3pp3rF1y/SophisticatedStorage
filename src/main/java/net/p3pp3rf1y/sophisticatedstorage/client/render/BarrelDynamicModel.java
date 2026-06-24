@@ -9,21 +9,28 @@ import net.neoforged.neoforge.client.model.data.ModelData;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlock;
 
 import javax.annotation.Nullable;
+
 import java.util.Map;
 
 public class BarrelDynamicModel extends BarrelDynamicModelBase {
 
-	public BarrelDynamicModel(@Nullable ResourceLocation parentLocation, Map<String, Map<BarrelModelPart, BarrelModelPartDefinition>> woodOverrides, Map<DynamicBarrelBakingData.DynamicPart, ResourceLocation> dynamicPartModels, Map<String, Map<BarrelModelPart, BarrelModelPartDefinition>> woodPartitionedModelPartDefinitions) {
+	public BarrelDynamicModel(@Nullable ResourceLocation parentLocation, Map<String, Map<BarrelModelPart, BarrelModelPartDefinition>> woodOverrides,
+			Map<DynamicBarrelBakingData.DynamicPart, ResourceLocation> dynamicPartModels,
+			Map<String, Map<BarrelModelPart, BarrelModelPartDefinition>> woodPartitionedModelPartDefinitions) {
 		super(parentLocation, woodOverrides, dynamicPartModels, woodPartitionedModelPartDefinitions);
 	}
 
 	@Override
-	protected BarrelBakedModelBase instantiateBakedModel(ModelBaker baker, Map<String, Map<BarrelModelPart, BakedModel>> woodModelParts, Map<String, Map<DynamicBarrelBakingData.DynamicPart, DynamicBarrelBakingData>> woodDynamicBakingData, Map<String, Map<BarrelModelPart, BakedModel>> woodPartitionedModelParts) {
+	protected BarrelBakedModelBase instantiateBakedModel(ModelBaker baker, Map<String, Map<BarrelModelPart, BakedModel>> woodModelParts,
+			Map<String, Map<DynamicBarrelBakingData.DynamicPart, DynamicBarrelBakingData>> woodDynamicBakingData,
+			Map<String, Map<BarrelModelPart, BakedModel>> woodPartitionedModelParts) {
 		return new BarrelBakedModel(baker, woodModelParts, woodDynamicBakingData, woodPartitionedModelParts);
 	}
 
 	private static class BarrelBakedModel extends BarrelBakedModelBase {
-		public BarrelBakedModel(ModelBaker baker, Map<String, Map<BarrelModelPart, BakedModel>> woodModelParts, Map<String, Map<DynamicBarrelBakingData.DynamicPart, DynamicBarrelBakingData>> woodDynamicBakingData, Map<String, Map<BarrelModelPart, BakedModel>> woodPartitionedModelParts) {
+		public BarrelBakedModel(ModelBaker baker, Map<String, Map<BarrelModelPart, BakedModel>> woodModelParts,
+				Map<String, Map<DynamicBarrelBakingData.DynamicPart, DynamicBarrelBakingData>> woodDynamicBakingData,
+				Map<String, Map<BarrelModelPart, BakedModel>> woodPartitionedModelParts) {
 			super(baker, woodModelParts, woodDynamicBakingData, woodPartitionedModelParts);
 		}
 
@@ -47,12 +54,15 @@ public class BarrelDynamicModel extends BarrelDynamicModelBase {
 		}
 	}
 
-	@SuppressWarnings("java:S6548") //singleton is intended here
+	@SuppressWarnings("java:S6548") // singleton is intended here
 	public static final class Loader extends BarrelDynamicModelBase.Loader<BarrelDynamicModel> {
 		public static final Loader INSTANCE = new Loader();
 
 		@Override
-		protected BarrelDynamicModel instantiateModel(@Nullable ResourceLocation parentLocation, Map<String, Map<BarrelModelPart, BarrelModelPartDefinition>> woodOverrides, Map<DynamicBarrelBakingData.DynamicPart, ResourceLocation> dynamicPartModels, Map<String, Map<BarrelModelPart, BarrelModelPartDefinition>> woodPartitionedModelPartDefinitions) {
+		protected BarrelDynamicModel instantiateModel(@Nullable ResourceLocation parentLocation,
+				Map<String, Map<BarrelModelPart, BarrelModelPartDefinition>> woodOverrides,
+				Map<DynamicBarrelBakingData.DynamicPart, ResourceLocation> dynamicPartModels,
+				Map<String, Map<BarrelModelPart, BarrelModelPartDefinition>> woodPartitionedModelPartDefinitions) {
 			return new BarrelDynamicModel(parentLocation, woodOverrides, dynamicPartModels, woodPartitionedModelPartDefinitions);
 		}
 	}

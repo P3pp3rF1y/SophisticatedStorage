@@ -30,6 +30,7 @@ import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+
 import java.util.Collections;
 import java.util.List;
 
@@ -39,7 +40,8 @@ public class ShulkerBoxDynamicModel implements ExtendedUnbakedModel {
 	public static final ResourceLocation MAIN_BREAK_TEXTURE = SophisticatedStorage.getRL(BLOCK_BREAK_FOLDER + "shulker_box");
 
 	@Override
-	public BakedModel bake(TextureSlots textureSlots, ModelBaker modelBaker, ModelState modelState, boolean useAmbientOcclusion, boolean usesBlockLight, ItemTransforms itemTransforms, ContextMap contextMap) {
+	public BakedModel bake(TextureSlots textureSlots, ModelBaker modelBaker, ModelState modelState, boolean useAmbientOcclusion, boolean usesBlockLight,
+			ItemTransforms itemTransforms, ContextMap contextMap) {
 		return new ShulkerBoxBakedModel();
 	}
 
@@ -86,12 +88,11 @@ public class ShulkerBoxDynamicModel implements ExtendedUnbakedModel {
 		@Nonnull
 		@Override
 		public ModelData getModelData(BlockAndTintGetter level, BlockPos pos, BlockState state, ModelData modelData) {
-			return WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class)
-					.map(be -> {
-						ModelData.Builder builder = ModelData.builder();
-						builder.with(HAS_MAIN_COLOR, be.getStorageWrapper().getMainColor() != -1);
-						return builder.build();
-					}).orElse(ModelData.EMPTY);
+			return WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).map(be -> {
+				ModelData.Builder builder = ModelData.builder();
+				builder.with(HAS_MAIN_COLOR, be.getStorageWrapper().getMainColor() != -1);
+				return builder.build();
+			}).orElse(ModelData.EMPTY);
 		}
 
 		@Override

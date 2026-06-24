@@ -42,15 +42,21 @@ class CompressionUpgradeItemTest {
 		Bootstrap.bootStrap();
 
 		recipeHelperMock = Mockito.mockStatic(RecipeHelper.class);
-		recipeHelperMock.when(() -> RecipeHelper.getCompactingResult(stackOf(Items.IRON_NUGGET), eq(RecipeHelper.CompactingShape.THREE_BY_THREE_UNCRAFTABLE))).thenReturn(AccessHelper.initCompactingResult(new ItemStack(Items.IRON_INGOT), Collections.emptyList()));
-		recipeHelperMock.when(() -> RecipeHelper.getCompactingResult(stackOf(Items.IRON_INGOT), eq(RecipeHelper.CompactingShape.THREE_BY_THREE_UNCRAFTABLE))).thenReturn(AccessHelper.initCompactingResult(new ItemStack(Items.IRON_BLOCK), Collections.emptyList()));
+		recipeHelperMock.when(() -> RecipeHelper.getCompactingResult(stackOf(Items.IRON_NUGGET), eq(RecipeHelper.CompactingShape.THREE_BY_THREE_UNCRAFTABLE)))
+				.thenReturn(AccessHelper.initCompactingResult(new ItemStack(Items.IRON_INGOT), Collections.emptyList()));
+		recipeHelperMock.when(() -> RecipeHelper.getCompactingResult(stackOf(Items.IRON_INGOT), eq(RecipeHelper.CompactingShape.THREE_BY_THREE_UNCRAFTABLE)))
+				.thenReturn(AccessHelper.initCompactingResult(new ItemStack(Items.IRON_BLOCK), Collections.emptyList()));
 		recipeHelperMock.when(() -> RecipeHelper.getUncompactingResult(any(ItemStack.class))).thenReturn(RecipeHelper.UncompactingResult.EMPTY);
-		recipeHelperMock.when(() -> RecipeHelper.getUncompactingResult(stackOf(Items.IRON_BLOCK))).thenReturn(new RecipeHelper.UncompactingResult(new ItemStack(Items.IRON_INGOT), RecipeHelper.CompactingShape.THREE_BY_THREE_UNCRAFTABLE));
-		recipeHelperMock.when(() -> RecipeHelper.getUncompactingResult(stackOf(Items.IRON_INGOT))).thenReturn(new RecipeHelper.UncompactingResult(new ItemStack(Items.IRON_NUGGET), RecipeHelper.CompactingShape.THREE_BY_THREE_UNCRAFTABLE));
+		recipeHelperMock.when(() -> RecipeHelper.getUncompactingResult(stackOf(Items.IRON_BLOCK)))
+				.thenReturn(new RecipeHelper.UncompactingResult(new ItemStack(Items.IRON_INGOT), RecipeHelper.CompactingShape.THREE_BY_THREE_UNCRAFTABLE));
+		recipeHelperMock.when(() -> RecipeHelper.getUncompactingResult(stackOf(Items.IRON_INGOT)))
+				.thenReturn(new RecipeHelper.UncompactingResult(new ItemStack(Items.IRON_NUGGET), RecipeHelper.CompactingShape.THREE_BY_THREE_UNCRAFTABLE));
 
 		recipeHelperMock.when(() -> RecipeHelper.getItemCompactingShapes(any(ItemStack.class))).thenReturn(Set.of(RecipeHelper.CompactingShape.NONE));
-		recipeHelperMock.when(() -> RecipeHelper.getItemCompactingShapes(stackOf(Items.IRON_NUGGET))).thenReturn(Set.of(RecipeHelper.CompactingShape.THREE_BY_THREE_UNCRAFTABLE));
-		recipeHelperMock.when(() -> RecipeHelper.getItemCompactingShapes(stackOf(Items.IRON_INGOT))).thenReturn(Set.of(RecipeHelper.CompactingShape.THREE_BY_THREE_UNCRAFTABLE));
+		recipeHelperMock.when(() -> RecipeHelper.getItemCompactingShapes(stackOf(Items.IRON_NUGGET)))
+				.thenReturn(Set.of(RecipeHelper.CompactingShape.THREE_BY_THREE_UNCRAFTABLE));
+		recipeHelperMock.when(() -> RecipeHelper.getItemCompactingShapes(stackOf(Items.IRON_INGOT)))
+				.thenReturn(Set.of(RecipeHelper.CompactingShape.THREE_BY_THREE_UNCRAFTABLE));
 	}
 
 	private static ItemStack stackOf(Item item) {
@@ -64,10 +70,7 @@ class CompressionUpgradeItemTest {
 
 	@Test
 	void canUseForCompressionAllowsCompressionChainWithEmptySlotsBetweenItems() {
-		Map<Integer, ItemStack> slotStacks = Map.of(
-				0, new ItemStack(Items.IRON_BLOCK),
-				2, new ItemStack(Items.IRON_NUGGET)
-		);
+		Map<Integer, ItemStack> slotStacks = Map.of(0, new ItemStack(Items.IRON_BLOCK), 2, new ItemStack(Items.IRON_NUGGET));
 
 		UpgradeSlotChangeResult result = validateCompressionSlots(slotStacks);
 
@@ -76,11 +79,8 @@ class CompressionUpgradeItemTest {
 
 	@Test
 	void canUseForCompressionRejectsItemOneSlotTooFarFromPreviousCompressionLevel() {
-		Map<Integer, ItemStack> slotStacks = Map.of(
-				0, new ItemStack(Items.IRON_BLOCK),
-				1, new ItemStack(Items.IRON_INGOT),
-				3, new ItemStack(Items.IRON_NUGGET)
-		);
+		Map<Integer, ItemStack> slotStacks = Map.of(0, new ItemStack(Items.IRON_BLOCK), 1, new ItemStack(Items.IRON_INGOT), 3,
+				new ItemStack(Items.IRON_NUGGET));
 
 		UpgradeSlotChangeResult result = validateCompressionSlots(slotStacks);
 
@@ -90,11 +90,8 @@ class CompressionUpgradeItemTest {
 
 	@Test
 	void canUseForCompressionRejectsItemTwoSlotsTooFarFromPreviousCompressionLevel() {
-		Map<Integer, ItemStack> slotStacks = Map.of(
-				0, new ItemStack(Items.IRON_BLOCK),
-				1, new ItemStack(Items.IRON_INGOT),
-				4, new ItemStack(Items.IRON_NUGGET)
-		);
+		Map<Integer, ItemStack> slotStacks = Map.of(0, new ItemStack(Items.IRON_BLOCK), 1, new ItemStack(Items.IRON_INGOT), 4,
+				new ItemStack(Items.IRON_NUGGET));
 
 		UpgradeSlotChangeResult result = validateCompressionSlots(slotStacks);
 

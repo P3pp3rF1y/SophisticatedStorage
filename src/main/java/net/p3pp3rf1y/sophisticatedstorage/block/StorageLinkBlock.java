@@ -5,7 +5,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -30,6 +29,7 @@ import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageTranslationHelper;
 
 import javax.annotation.Nullable;
+
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -38,7 +38,7 @@ import static net.minecraft.world.level.block.state.properties.BlockStatePropert
 
 public class StorageLinkBlock extends BlockBase implements EntityBlock {
 	private static final Map<Direction, VoxelShape> ROTATED_SHAPES = new EnumMap<>(Direction.class);
-	private static final RotatedShapes SHAPE = new RotatedShapes(false, Block.box(1, 14, 1, 15, 16, 15));
+	private static final RotatedShapes SHAPE = new RotatedShapes(false, box(1, 14, 1, 15, 16, 15));
 
 	public StorageLinkBlock(Properties properties) {
 		super(properties.mapColor(MapColor.STONE).requiresCorrectToolForDrops().strength(2.5F, 5.0F));
@@ -47,7 +47,8 @@ public class StorageLinkBlock extends BlockBase implements EntityBlock {
 
 	@Override
 	public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltipComponents, TooltipFlag flag) {
-		tooltipComponents.addAll(StorageTranslationHelper.INSTANCE.getTranslatedLines(stack.getItem().getDescriptionId() + TranslationHelper.TOOLTIP_SUFFIX, null, ChatFormatting.DARK_GRAY));
+		tooltipComponents.addAll(StorageTranslationHelper.INSTANCE.getTranslatedLines(stack.getItem().getDescriptionId() + TranslationHelper.TOOLTIP_SUFFIX,
+				null, ChatFormatting.DARK_GRAY));
 	}
 
 	@Nullable

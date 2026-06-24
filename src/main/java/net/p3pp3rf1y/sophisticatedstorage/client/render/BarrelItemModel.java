@@ -21,13 +21,15 @@ import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
 
 import javax.annotation.Nullable;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 public record BarrelItemModel(BakedModel model, @Nullable BakedModel flatTopModel, List<ItemTintSource> tints) implements ItemModel {
 	@Override
-	public void update(ItemStackRenderState state, ItemStack stack, ItemModelResolver itemModelResolver, ItemDisplayContext itemDisplayContext, @Nullable ClientLevel clientLevel, @Nullable LivingEntity livingEntity, int i) {
+	public void update(ItemStackRenderState state, ItemStack stack, ItemModelResolver itemModelResolver, ItemDisplayContext itemDisplayContext,
+			@Nullable ClientLevel clientLevel, @Nullable LivingEntity livingEntity, int i) {
 		if (!(model instanceof BarrelBakedModelBase barrelBakedModel)) {
 			throw new IllegalStateException("BarrelItemModel must be used with BarrelBakedModelBase");
 		}
@@ -53,7 +55,7 @@ public record BarrelItemModel(BakedModel model, @Nullable BakedModel flatTopMode
 		ItemStackRenderState.LayerRenderState layerState = state.newLayer();
 		int[] tintArray = new int[tints.size()];
 
-		for(int j = 0; j < tintArray.length; ++j) {
+		for (int j = 0; j < tintArray.length; ++j) {
 			tintArray[j] = tints.get(j).calculate(stack, clientLevel, livingEntity);
 		}
 		int[] aint = layerState.prepareTintLayers(tintArray.length);
@@ -63,14 +65,14 @@ public record BarrelItemModel(BakedModel model, @Nullable BakedModel flatTopMode
 	}
 
 	public record Unbaked(ResourceLocation model, @Nullable ResourceLocation flatTopModel, List<ItemTintSource> tints) implements ItemModel.Unbaked {
-		public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec(instance ->
-				instance.group(
-								ResourceLocation.CODEC.fieldOf("model").forGetter(Unbaked::model),
-								ResourceLocation.CODEC.optionalFieldOf("flat_top_model").forGetter(unbaked -> Optional.ofNullable(unbaked.flatTopModel())),
-								ItemTintSources.CODEC.listOf().optionalFieldOf("tints", List.of()).forGetter(Unbaked::tints)
-						)
-						.apply(instance, (model, flatTopModel, tints) -> new Unbaked(model, flatTopModel.orElse(null), tints))
-		);
+		public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder
+				.mapCodec(
+						instance -> instance
+								.group(ResourceLocation.CODEC.fieldOf("model").forGetter(Unbaked::model),
+										ResourceLocation.CODEC.optionalFieldOf("flat_top_model")
+												.forGetter(unbaked -> Optional.ofNullable(unbaked.flatTopModel())),
+										ItemTintSources.CODEC.listOf().optionalFieldOf("tints", List.of()).forGetter(Unbaked::tints))
+								.apply(instance, (model, flatTopModel, tints) -> new Unbaked(model, flatTopModel.orElse(null), tints)));
 		@Override
 		public MapCodec<? extends ItemModel.Unbaked> type() {
 			return MAP_CODEC;

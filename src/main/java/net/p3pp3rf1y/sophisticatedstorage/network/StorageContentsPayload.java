@@ -15,12 +15,8 @@ import java.util.UUID;
 
 public record StorageContentsPayload(UUID shulkerBoxUuid, CompoundTag contents) implements CustomPacketPayload {
 	public static final Type<StorageContentsPayload> TYPE = new Type<>(SophisticatedStorage.getRL("storage_contents"));
-	public static final StreamCodec<ByteBuf, StorageContentsPayload> STREAM_CODEC = StreamCodec.composite(
-			UUIDUtil.STREAM_CODEC,
-			StorageContentsPayload::shulkerBoxUuid,
-			ByteBufCodecs.COMPOUND_TAG,
-			StorageContentsPayload::contents,
-			StorageContentsPayload::new);
+	public static final StreamCodec<ByteBuf, StorageContentsPayload> STREAM_CODEC = StreamCodec.composite(UUIDUtil.STREAM_CODEC,
+			StorageContentsPayload::shulkerBoxUuid, ByteBufCodecs.COMPOUND_TAG, StorageContentsPayload::contents, StorageContentsPayload::new);
 
 	@Override
 	public Type<? extends CustomPacketPayload> type() {

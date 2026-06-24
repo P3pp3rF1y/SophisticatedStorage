@@ -19,6 +19,7 @@ import net.p3pp3rf1y.sophisticatedstorage.item.StackStorageWrapper;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
 
 import javax.annotation.Nullable;
+
 import java.util.Optional;
 
 public class ShulkerBoxFromVanillaShapelessRecipe extends CustomShapelessRecipe implements IWrapperRecipe<ShapelessRecipe> {
@@ -31,14 +32,16 @@ public class ShulkerBoxFromVanillaShapelessRecipe extends CustomShapelessRecipe 
 
 	@Override
 	public boolean matches(CraftingInput input, Level level) {
-		return super.matches(input, level) && getVanillaShulkerBox(input).map(storage -> !(storage.getItem() instanceof WoodStorageBlockItem) || !WoodStorageBlockItem.isPacked(storage)).orElse(false);
+		return super.matches(input, level) && getVanillaShulkerBox(input)
+				.map(storage -> !(storage.getItem() instanceof WoodStorageBlockItem) || !WoodStorageBlockItem.isPacked(storage)).orElse(false);
 	}
 
 	@Override
 	public ItemStack assemble(CraftingInput input, HolderLookup.Provider registries) {
 		ItemStack upgradedStorage = super.assemble(input, registries);
 		getVanillaShulkerBox(input).ifPresent(vanillaShulkerBox -> {
-			@Nullable IItemHandler itemCap = vanillaShulkerBox.getCapability(Capabilities.ItemHandler.ITEM);
+			@Nullable
+			IItemHandler itemCap = vanillaShulkerBox.getCapability(Capabilities.ItemHandler.ITEM);
 			if (itemCap != null) {
 				StackStorageWrapper wrapper = StackStorageWrapper.fromStack(registries, upgradedStorage);
 				wrapper.ensureContentsUuid();
@@ -75,7 +78,7 @@ public class ShulkerBoxFromVanillaShapelessRecipe extends CustomShapelessRecipe 
 
 	public static class Serializer extends RecipeWrapperSerializer<ShapelessRecipe, ShulkerBoxFromVanillaShapelessRecipe> {
 		public Serializer() {
-			super(ShulkerBoxFromVanillaShapelessRecipe::new, RecipeSerializer.SHAPELESS_RECIPE);
+			super(ShulkerBoxFromVanillaShapelessRecipe::new, SHAPELESS_RECIPE);
 		}
 	}
 }

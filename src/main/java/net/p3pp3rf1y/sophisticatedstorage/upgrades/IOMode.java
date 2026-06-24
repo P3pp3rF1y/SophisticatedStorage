@@ -6,11 +6,7 @@ import net.minecraft.util.StringRepresentable;
 import java.util.Map;
 
 public enum IOMode implements StringRepresentable {
-	PUSH("push"),
-	PULL("pull"),
-	PUSH_PULL("push_pull"),
-	OFF("off"),
-	DISABLED("disabled");
+	PUSH("push"), PULL("pull"), PUSH_PULL("push_pull"), OFF("off"), DISABLED("disabled");
 
 	private final String name;
 
@@ -32,7 +28,7 @@ public enum IOMode implements StringRepresentable {
 
 	static {
 		ImmutableMap.Builder<String, IOMode> builder = new ImmutableMap.Builder<>();
-		for (IOMode value : IOMode.values()) {
+		for (IOMode value : values()) {
 			builder.put(value.getSerializedName(), value);
 		}
 		NAME_VALUES = builder.build();

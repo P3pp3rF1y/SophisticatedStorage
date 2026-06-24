@@ -12,12 +12,8 @@ import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
 
 public record StorageOpennessPayload(BlockPos pos, boolean shouldBeOpen) implements CustomPacketPayload {
 	public static final Type<StorageOpennessPayload> TYPE = new Type<>(SophisticatedStorage.getRL("storage_openness"));
-	public static final StreamCodec<ByteBuf, StorageOpennessPayload> STREAM_CODEC = StreamCodec.composite(
-			BlockPos.STREAM_CODEC,
-			StorageOpennessPayload::pos,
-			ByteBufCodecs.BOOL,
-			StorageOpennessPayload::shouldBeOpen,
-			StorageOpennessPayload::new);
+	public static final StreamCodec<ByteBuf, StorageOpennessPayload> STREAM_CODEC = StreamCodec.composite(BlockPos.STREAM_CODEC, StorageOpennessPayload::pos,
+			ByteBufCodecs.BOOL, StorageOpennessPayload::shouldBeOpen, StorageOpennessPayload::new);
 
 	@Override
 	public Type<? extends CustomPacketPayload> type() {
@@ -25,8 +21,7 @@ public record StorageOpennessPayload(BlockPos pos, boolean shouldBeOpen) impleme
 	}
 
 	public static void handlePayload(StorageOpennessPayload payload, IPayloadContext context) {
-		WorldHelper.getLoadedBlockEntity(context.player().level(), payload.pos, StorageBlockEntity.class).ifPresent(
-				storageBlockEntity -> storageBlockEntity.setShouldBeOpen(payload.shouldBeOpen)
-		);
+		WorldHelper.getLoadedBlockEntity(context.player().level(), payload.pos, StorageBlockEntity.class)
+				.ifPresent(storageBlockEntity -> storageBlockEntity.setShouldBeOpen(payload.shouldBeOpen));
 	}
 }

@@ -11,7 +11,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.BlockPlaceContext;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
@@ -31,6 +30,7 @@ import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageTranslationHelper;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageTierUpgradeItem;
 
 import javax.annotation.Nullable;
+
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -52,7 +52,8 @@ public class ControllerBlock extends BlockBase implements ISneakItemInteractionB
 
 	@Override
 	public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltipComponents, TooltipFlag flag) {
-		tooltipComponents.addAll(StorageTranslationHelper.INSTANCE.getTranslatedLines(stack.getItem().getDescriptionId() + TranslationHelper.TOOLTIP_SUFFIX, null, ChatFormatting.DARK_GRAY));
+		tooltipComponents.addAll(StorageTranslationHelper.INSTANCE.getTranslatedLines(stack.getItem().getDescriptionId() + TranslationHelper.TOOLTIP_SUFFIX,
+				null, ChatFormatting.DARK_GRAY));
 	}
 
 	@Nullable
@@ -97,7 +98,8 @@ public class ControllerBlock extends BlockBase implements ISneakItemInteractionB
 	}
 
 	@Override
-	protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
+	protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand,
+			BlockHitResult hitResult) {
 		if (level.isClientSide()) {
 			return InteractionResult.SUCCESS;
 		}
@@ -124,7 +126,8 @@ public class ControllerBlock extends BlockBase implements ISneakItemInteractionB
 	}
 
 	@Override
-	public boolean trySneakItemInteraction(Player player, InteractionHand hand, BlockState state, Level level, BlockPos pos, BlockHitResult hitVec, ItemStack itemInHand) {
+	public boolean trySneakItemInteraction(Player player, InteractionHand hand, BlockState state, Level level, BlockPos pos, BlockHitResult hitVec,
+			ItemStack itemInHand) {
 		if (level.isClientSide()) {
 			return false;
 		}
@@ -133,8 +136,8 @@ public class ControllerBlock extends BlockBase implements ISneakItemInteractionB
 			AtomicBoolean result = new AtomicBoolean(false);
 			controller.getStoragePositions().forEach(storagePos -> {
 				Block block = level.getBlockState(storagePos).getBlock();
-				if (block instanceof StorageBlockBase storageblock &&
-						storageblock.tryFillUpgrades(player, hand, level, storagePos, player.getItemInHand(hand))) {
+				if (block instanceof StorageBlockBase storageblock
+						&& storageblock.tryFillUpgrades(player, hand, level, storagePos, player.getItemInHand(hand))) {
 					result.set(true);
 				}
 			});

@@ -22,12 +22,13 @@ import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
 import javax.annotation.Nullable;
 
 public class ShulkerBoxItemRenderer implements SpecialModelRenderer<ShulkerBoxItemRenderer.ShulkerBoxAttributes> {
-	private final LoadingCache<BlockItem, ShulkerBoxBlockEntity> shulkerBoxBlockEntities = CacheBuilder.newBuilder().maximumSize(512L).weakKeys().build(new CacheLoader<>() {
-		@Override
-		public ShulkerBoxBlockEntity load(BlockItem blockItem) {
-			return new ShulkerBoxBlockEntity(BlockPos.ZERO, blockItem.getBlock().defaultBlockState().setValue(ShulkerBoxBlock.FACING, Direction.SOUTH));
-		}
-	});
+	private final LoadingCache<BlockItem, ShulkerBoxBlockEntity> shulkerBoxBlockEntities = CacheBuilder.newBuilder().maximumSize(512L).weakKeys()
+			.build(new CacheLoader<>() {
+				@Override
+				public ShulkerBoxBlockEntity load(BlockItem blockItem) {
+					return new ShulkerBoxBlockEntity(BlockPos.ZERO, blockItem.getBlock().defaultBlockState().setValue(ShulkerBoxBlock.FACING, Direction.SOUTH));
+				}
+			});
 
 	@Nullable
 	@Override
@@ -46,7 +47,8 @@ public class ShulkerBoxItemRenderer implements SpecialModelRenderer<ShulkerBoxIt
 	}
 
 	@Override
-	public void render(@Nullable ShulkerBoxAttributes shulkerBoxAttributes, ItemDisplayContext itemDisplayContext, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay, boolean hasFoil) {
+	public void render(@Nullable ShulkerBoxAttributes shulkerBoxAttributes, ItemDisplayContext itemDisplayContext, PoseStack poseStack,
+			MultiBufferSource buffer, int packedLight, int packedOverlay, boolean hasFoil) {
 		if (shulkerBoxAttributes == null) {
 			return;
 		}
@@ -62,7 +64,8 @@ public class ShulkerBoxItemRenderer implements SpecialModelRenderer<ShulkerBoxIt
 		}
 	}
 
-	public record ShulkerBoxAttributes(BlockItem blockItem, int mainColor, int accentColor, boolean showsTier) {}
+	public record ShulkerBoxAttributes(BlockItem blockItem, int mainColor, int accentColor, boolean showsTier) {
+	}
 
 	public static class Unbaked implements SpecialModelRenderer.Unbaked {
 		public static final MapCodec<Unbaked> MAP_CODEC = MapCodec.unit(new Unbaked());

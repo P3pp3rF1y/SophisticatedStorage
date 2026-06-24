@@ -37,7 +37,8 @@ public class LimitedBarrelRenderer extends BarrelRenderer<LimitedBarrelBlockEnti
 	private final DisplayItemRenderer flatDisplayItemRenderer = new DisplayItemRenderer(0.5, Vec3.ZERO);
 
 	@Override
-	public void render(LimitedBarrelBlockEntity blockEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
+	public void render(LimitedBarrelBlockEntity blockEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight,
+			int packedOverlay) {
 		BlockState blockState = blockEntity.getBlockState();
 		if (blockEntity.isPacked() || !(blockState.getBlock() instanceof StorageBlockBase storageBlock)
 				|| (hasNoDisplayItems(blockEntity) && !blockEntity.shouldShowCounts() && !holdsItemThatShowsUpgrades() && !blockEntity.shouldShowUpgrades())) {
@@ -57,8 +58,10 @@ public class LimitedBarrelRenderer extends BarrelRenderer<LimitedBarrelBlockEnti
 		renderHiddenLock(blockEntity, poseStack, bufferSource, packedLight, packedOverlay);
 	}
 
-	private void renderFrontFace(LimitedBarrelBlockEntity blockEntity, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, BlockState blockState, boolean flatTop, Direction horizontalFacing) {
-		if (!hasNoDisplayItems(blockEntity) || holdsItemThatShowsUpgrades() || blockEntity.shouldShowUpgrades() || blockEntity.shouldShowFillLevels() || holdsItemThatShowsFillLevels()) {
+	private void renderFrontFace(LimitedBarrelBlockEntity blockEntity, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay,
+			BlockState blockState, boolean flatTop, Direction horizontalFacing) {
+		if (!hasNoDisplayItems(blockEntity) || holdsItemThatShowsUpgrades() || blockEntity.shouldShowUpgrades() || blockEntity.shouldShowFillLevels()
+				|| holdsItemThatShowsFillLevels()) {
 			poseStack.pushPose();
 
 			poseStack.translate(0.5, 0.5, 0.5);
@@ -86,15 +89,19 @@ public class LimitedBarrelRenderer extends BarrelRenderer<LimitedBarrelBlockEnti
 		}
 	}
 
-	private void renderUpgrades(LimitedBarrelBlockEntity blockEntity, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, boolean flatTop, boolean holdsItemThatShowsUpgrades) {
+	private void renderUpgrades(LimitedBarrelBlockEntity blockEntity, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay,
+			boolean flatTop, boolean holdsItemThatShowsUpgrades) {
 		if (flatTop) {
-			flatDisplayItemRenderer.renderUpgradeItems(blockEntity, poseStack, bufferSource, packedLight, packedOverlay, holdsItemThatShowsUpgrades, shouldShowDisabledUpgradesDisplay(blockEntity));
+			flatDisplayItemRenderer.renderUpgradeItems(blockEntity, poseStack, bufferSource, packedLight, packedOverlay, holdsItemThatShowsUpgrades,
+					shouldShowDisabledUpgradesDisplay(blockEntity));
 		} else {
-			displayItemRenderer.renderUpgradeItems(blockEntity, poseStack, bufferSource, packedLight, packedOverlay, holdsItemThatShowsUpgrades, shouldShowDisabledUpgradesDisplay(blockEntity));
+			displayItemRenderer.renderUpgradeItems(blockEntity, poseStack, bufferSource, packedLight, packedOverlay, holdsItemThatShowsUpgrades,
+					shouldShowDisabledUpgradesDisplay(blockEntity));
 		}
 	}
 
-	private void renderFillLevels(LimitedBarrelBlockEntity blockEntity, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
+	private void renderFillLevels(LimitedBarrelBlockEntity blockEntity, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight,
+			int packedOverlay) {
 		poseStack.pushPose();
 		poseStack.translate(0, 0, -0.001);
 
@@ -127,7 +134,8 @@ public class LimitedBarrelRenderer extends BarrelRenderer<LimitedBarrelBlockEnti
 		poseStack.popPose();
 	}
 
-	private void renderDisplayItems(LimitedBarrelBlockEntity blockEntity, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, boolean flatTop) {
+	private void renderDisplayItems(LimitedBarrelBlockEntity blockEntity, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight,
+			int packedOverlay, boolean flatTop) {
 		if (flatTop) {
 			flatDisplayItemRenderer.renderDisplayItems(blockEntity, poseStack, bufferSource, packedLight, packedOverlay);
 		} else {
@@ -135,13 +143,15 @@ public class LimitedBarrelRenderer extends BarrelRenderer<LimitedBarrelBlockEnti
 		}
 	}
 
-	private void renderItemCounts(LimitedBarrelBlockEntity blockEntity, PoseStack poseStack, MultiBufferSource bufferSource, boolean flatTop, Direction horizontalFacing, VerticalFacing verticalFacing, int packedLight) {
+	private void renderItemCounts(LimitedBarrelBlockEntity blockEntity, PoseStack poseStack, MultiBufferSource bufferSource, boolean flatTop,
+			Direction horizontalFacing, VerticalFacing verticalFacing, int packedLight) {
 		if (!blockEntity.shouldShowCounts()) {
 			return;
 		}
 
 		if (blockEntity.getLevel() != null && blockEntity.shouldUseLightInFrontForFrontRender()) {
-			packedLight = LevelRenderer.getLightColor(blockEntity.getLevel(), blockEntity.getBlockPos().relative(verticalFacing != VerticalFacing.NO ? verticalFacing.getDirection() : horizontalFacing));
+			packedLight = LevelRenderer.getLightColor(blockEntity.getLevel(),
+					blockEntity.getBlockPos().relative(verticalFacing != VerticalFacing.NO ? verticalFacing.getDirection() : horizontalFacing));
 		}
 
 		poseStack.pushPose();
@@ -189,16 +199,18 @@ public class LimitedBarrelRenderer extends BarrelRenderer<LimitedBarrelBlockEnti
 			Font font = Minecraft.getInstance().font;
 			float countDisplayXOffset = -font.getSplitter().stringWidth(countString) / 2f;
 			poseStack.translate(countDisplayXOffset, 0, 0);
-			font.drawInBatch(countString, 0, 0, blockEntity.getSlotColor(displayItemIndex), false, poseStack.last().pose(), bufferSource, Font.DisplayMode.NORMAL, 0, packedLight);
+			font.drawInBatch(countString, 0, 0, blockEntity.getSlotColor(displayItemIndex), false, poseStack.last().pose(), bufferSource,
+					Font.DisplayMode.NORMAL, 0, packedLight);
 
 			poseStack.popPose();
 		}
 		poseStack.popPose();
 	}
 
-	private void renderFillLevel(PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, float fillLevel, float x, float y, boolean large, boolean translucentRender) {
+	private void renderFillLevel(PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, float fillLevel, float x, float y,
+			boolean large, boolean translucentRender) {
 		poseStack.pushPose();
-		poseStack.translate(x + 1/16F/5F, y + 1/16F/5F, 0);
+		poseStack.translate(x + 1 / 16F / 5F, y + 1 / 16F / 5F, 0);
 		int barHeight = large ? 14 : 6;
 		poseStack.scale(1 / 16F / 5F * 3, fillLevel * 1 / 16F / 5F * (barHeight * 5 - 2), 1);
 		poseStack.pushPose();
@@ -214,7 +226,8 @@ public class LimitedBarrelRenderer extends BarrelRenderer<LimitedBarrelBlockEnti
 		pose.normal().transform(normal);
 		float minU = large ? 0 : 3 / 128F;
 		float maxV = large ? 68 / 128F : 28 / 128F;
-		RenderHelper.renderQuad(vertexConsumer, pose.pose(), normal, packedOverlay, packedLight, translucentRender ? 0.5F : 1, minU, (1 - fillLevel) * maxV, minU + 3 / 128F, maxV);
+		RenderHelper.renderQuad(vertexConsumer, pose.pose(), normal, packedOverlay, packedLight, translucentRender ? 0.5F : 1, minU, (1 - fillLevel) * maxV,
+				minU + 3 / 128F, maxV);
 
 		poseStack.popPose();
 		poseStack.popPose();

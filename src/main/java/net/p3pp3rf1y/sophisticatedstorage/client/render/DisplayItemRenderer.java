@@ -60,8 +60,8 @@ public class DisplayItemRenderer {
 	private static final Cache<Integer, Double> ITEM_HASHCODE_OFFSETS = CacheBuilder.newBuilder().expireAfterAccess(30L, TimeUnit.MINUTES).build();
 
 	public void renderDisplayItem(StorageBlockEntity blockEntity, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
-		blockEntity.getStorageWrapper().getRenderInfo().getItemDisplayRenderInfo().getDisplayItem().ifPresent(displayItem ->
-				renderDisplayItem(poseStack, bufferSource, packedLight, packedOverlay, displayItem));
+		blockEntity.getStorageWrapper().getRenderInfo().getItemDisplayRenderInfo().getDisplayItem()
+				.ifPresent(displayItem -> renderDisplayItem(poseStack, bufferSource, packedLight, packedOverlay, displayItem));
 	}
 
 	public void renderDisplayItem(PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, RenderInfo.DisplayItem displayItem) {
@@ -85,17 +85,21 @@ public class DisplayItemRenderer {
 		int displayItemCount = storageBlock.getDisplayItemsCount(displayItems);
 		for (int displayItemIndex = 0; displayItemIndex < displayItemCount; displayItemIndex++) {
 			if (inaccessibleSlots.contains(displayItemIndex)) {
-				renderSingleItem(poseStack, bufferSource, packedLight, packedOverlay, minecraft, displayItemIndex, displayItemCount, INACCESSIBLE_SLOT_STACK, 0);
+				renderSingleItem(poseStack, bufferSource, packedLight, packedOverlay, minecraft, displayItemIndex, displayItemCount, INACCESSIBLE_SLOT_STACK,
+						0);
 			}
 		}
 		int displayItemIndex = 0;
 		for (RenderInfo.DisplayItem displayItem : displayItems) {
-			renderSingleItem(poseStack, bufferSource, packedLight, packedOverlay, minecraft, storageBlock.hasFixedIndexDisplayItems() ? displayItem.getSlotIndex() : displayItemIndex, displayItemCount, displayItem.getItem(), displayItem.getRotation());
+			renderSingleItem(poseStack, bufferSource, packedLight, packedOverlay, minecraft,
+					storageBlock.hasFixedIndexDisplayItems() ? displayItem.getSlotIndex() : displayItemIndex, displayItemCount, displayItem.getItem(),
+					displayItem.getRotation());
 			displayItemIndex++;
 		}
 	}
 
-	public void renderUpgradeItems(StorageBlockEntity blockEntity, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, boolean renderEmptySlots, boolean renderDisabledUpgradeDisplay) {
+	public void renderUpgradeItems(StorageBlockEntity blockEntity, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay,
+			boolean renderEmptySlots, boolean renderDisabledUpgradeDisplay) {
 		List<ItemStack> upgradeItems = blockEntity.getStorageWrapper().getRenderInfo().getUpgradeItems();
 
 		poseStack.pushPose();
@@ -116,7 +120,8 @@ public class DisplayItemRenderer {
 			if (renderDisabledUpgradeDisplay) {
 				poseStack.pushPose();
 				poseStack.translate(0, 0, -0.001f);
-				minecraft.getItemModelResolver().updateForTopItem(itemStackRenderState, INACCESSIBLE_SLOT_STACK, ItemDisplayContext.FIXED, false, null, null, 0);
+				minecraft.getItemModelResolver().updateForTopItem(itemStackRenderState, INACCESSIBLE_SLOT_STACK, ItemDisplayContext.FIXED, false, null, null,
+						0);
 				itemStackRenderState.render(poseStack, bufferSource, packedLight, packedOverlay);
 				poseStack.popPose();
 			}
@@ -127,7 +132,8 @@ public class DisplayItemRenderer {
 		poseStack.popPose();
 	}
 
-	private void renderSingleItem(PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, Minecraft minecraft, int displayItemIndex, int displayItemCount, ItemStack stack, int rotation) {
+	private void renderSingleItem(PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, Minecraft minecraft,
+			int displayItemIndex, int displayItemCount, ItemStack stack, int rotation) {
 		if (stack.isEmpty()) {
 			return;
 		}
@@ -179,7 +185,8 @@ public class DisplayItemRenderer {
 		return itemOffset;
 	}
 
-	private static double calculateOffsetFromModelOrShape(ItemStackRenderState itemStackRenderState, BakedModel itemModel, Block block, ClientLevel level, float additionalScale) {
+	private static double calculateOffsetFromModelOrShape(ItemStackRenderState itemStackRenderState, BakedModel itemModel, Block block, ClientLevel level,
+			float additionalScale) {
 		if (RenderHelper.isSpecialRenderer(itemStackRenderState)) {
 			return transformBoundsCornersAndCalculateOffset(itemModel, getBoundsCornersFromShape(block, level), additionalScale);
 		} else {
@@ -195,7 +202,8 @@ public class DisplayItemRenderer {
 		points = translatePoints(points, transform.translation);
 
 		float zScale = transform.scale.z();
-		return ((zScale * (2 / 15.95D)) - getMaxZ(points)) * additionalScale; //15.95 because of z-fighting if displayed model had surface offset exactly 1 pixel from the top most surface
+		return ((zScale * (2 / 15.95D)) - getMaxZ(points)) * additionalScale; // 15.95 because of z-fighting if displayed model had surface offset exactly 1
+																				// pixel from the top most surface
 	}
 
 	private static Set<Vector3f> getBoundsCornersFromShape(Block block, ClientLevel level) {
@@ -291,7 +299,8 @@ public class DisplayItemRenderer {
 	}
 
 	private static Set<Vector3f> getCornerPointsRelativeToCenter(AABB aabb) {
-		return getCornerPointsRelativeToCenter((float) aabb.minX, (float) aabb.minY, (float) aabb.minZ, (float) aabb.maxX, (float) aabb.maxY, (float) aabb.maxZ);
+		return getCornerPointsRelativeToCenter((float) aabb.minX, (float) aabb.minY, (float) aabb.minZ, (float) aabb.maxX, (float) aabb.maxY,
+				(float) aabb.maxZ);
 	}
 
 	private static Set<Vector3f> getCornerPointsRelativeToCenter(float minX, float minY, float minZ, float maxX, float maxY, float maxZ) {
@@ -331,7 +340,8 @@ public class DisplayItemRenderer {
 			frontOffset = new Vector3f(xOffset, displayItemIndex == 0 ? centerYOffset + halfCenterYOffset : halfCenterYOffset, 0.5f);
 		} else {
 			float halfCenterYOffset = centerYOffset / 2;
-			frontOffset = new Vector3f(displayItemIndex == 0 || displayItemIndex == 2 ? centerYOffset + halfCenterYOffset : halfCenterYOffset, displayItemIndex == 0 || displayItemIndex == 1 ? centerYOffset + halfCenterYOffset : halfCenterYOffset, 0.5f);
+			frontOffset = new Vector3f(displayItemIndex == 0 || displayItemIndex == 2 ? centerYOffset + halfCenterYOffset : halfCenterYOffset,
+					displayItemIndex == 0 || displayItemIndex == 1 ? centerYOffset + halfCenterYOffset : halfCenterYOffset, 0.5f);
 		}
 
 		return frontOffset;

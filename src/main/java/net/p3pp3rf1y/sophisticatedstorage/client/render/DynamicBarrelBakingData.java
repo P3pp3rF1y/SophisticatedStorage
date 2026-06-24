@@ -12,10 +12,7 @@ import java.util.Optional;
 public record DynamicBarrelBakingData(UnbakedModel baseModel, Map<String, Material> baseTextures, ModelState modelState) {
 
 	public enum DynamicPart {
-		WHOLE,
-		TRIM,
-		CORE,
-		PARTITIONED;
+		WHOLE, TRIM, CORE, PARTITIONED;
 
 		private static final Map<String, DynamicPart> NAME_TO_PART;
 

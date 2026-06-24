@@ -19,7 +19,8 @@ public class LockRenderer {
 
 	public static final Material LOCK_TEXTURE = new Material(TextureAtlas.LOCATION_BLOCKS, SophisticatedStorage.getRL("block/lock"));
 
-	public static void renderLock(StorageBlockEntity blockEntity, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, float yOffset, BooleanSupplier holdsCorrectItem) {
+	public static void renderLock(StorageBlockEntity blockEntity, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay,
+			float yOffset, BooleanSupplier holdsCorrectItem) {
 		if (!blockEntity.isLocked() || (!holdsCorrectItem.getAsBoolean() && !blockEntity.shouldShowLock())) {
 			return;
 		}
@@ -30,10 +31,10 @@ public class LockRenderer {
 		VertexConsumer vertexConsumer;
 		boolean translucentRender = !blockEntity.shouldShowLock() && holdsCorrectItem.getAsBoolean();
 		if (translucentRender) {
-			TextureAtlasSprite sprite = LockRenderer.LOCK_TEXTURE.sprite();
+			TextureAtlasSprite sprite = LOCK_TEXTURE.sprite();
 			vertexConsumer = sprite.wrap(bufferSource.getBuffer(RenderType.entityTranslucent(sprite.atlasLocation())));
 		} else {
-			vertexConsumer = LockRenderer.LOCK_TEXTURE.buffer(bufferSource, RenderType::entityCutoutNoCull);
+			vertexConsumer = LOCK_TEXTURE.buffer(bufferSource, RenderType::entityCutoutNoCull);
 		}
 
 		PoseStack.Pose pose = poseStack.last();

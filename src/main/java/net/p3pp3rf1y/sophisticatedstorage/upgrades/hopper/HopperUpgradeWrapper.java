@@ -28,6 +28,7 @@ import net.p3pp3rf1y.sophisticatedstorage.init.ModDataComponents;
 import net.p3pp3rf1y.sophisticatedstorage.upgrades.INeighborChangeListenerUpgrade;
 
 import javax.annotation.Nullable;
+
 import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -35,7 +36,10 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-public class HopperUpgradeWrapper extends UpgradeWrapperBase<HopperUpgradeWrapper, HopperUpgradeItem> implements ITickableUpgrade, INeighborChangeListenerUpgrade {
+public class HopperUpgradeWrapper extends UpgradeWrapperBase<HopperUpgradeWrapper, HopperUpgradeItem>
+		implements
+			ITickableUpgrade,
+			INeighborChangeListenerUpgrade {
 
 	private final Set<Direction> pullDirections = new LinkedHashSet<>();
 	private final Set<Direction> pushDirections = new LinkedHashSet<>();
@@ -47,8 +51,11 @@ public class HopperUpgradeWrapper extends UpgradeWrapperBase<HopperUpgradeWrappe
 
 	protected HopperUpgradeWrapper(IStorageWrapper storageWrapper, ItemStack upgrade, Consumer<ItemStack> upgradeSaveHandler) {
 		super(storageWrapper, upgrade, upgradeSaveHandler);
-		inputFilterLogic = new ContentsFilterLogic(upgrade, upgradeSaveHandler, upgradeItem.getInputFilterSlotCount(), storageWrapper::getInventoryHandler, storageWrapper.getSettingsHandler().getTypeCategory(MemorySettingsCategory.class), ModCoreDataComponents.INPUT_FILTER_ATTRIBUTES);
-		outputFilterLogic = new TargetContentsFilterLogic(upgrade, upgradeSaveHandler, upgradeItem.getOutputFilterSlotCount(), storageWrapper::getInventoryHandler, storageWrapper.getSettingsHandler().getTypeCategory(MemorySettingsCategory.class), ModDataComponents.OUTPUT_FILTER_ATTRIBUTES);
+		inputFilterLogic = new ContentsFilterLogic(upgrade, upgradeSaveHandler, upgradeItem.getInputFilterSlotCount(), storageWrapper::getInventoryHandler,
+				storageWrapper.getSettingsHandler().getTypeCategory(MemorySettingsCategory.class), ModCoreDataComponents.INPUT_FILTER_ATTRIBUTES);
+		outputFilterLogic = new TargetContentsFilterLogic(upgrade, upgradeSaveHandler, upgradeItem.getOutputFilterSlotCount(),
+				storageWrapper::getInventoryHandler, storageWrapper.getSettingsHandler().getTypeCategory(MemorySettingsCategory.class),
+				ModDataComponents.OUTPUT_FILTER_ATTRIBUTES);
 
 		deserialize();
 	}
@@ -119,7 +126,8 @@ public class HopperUpgradeWrapper extends UpgradeWrapperBase<HopperUpgradeWrappe
 				if (!extractedStack.isEmpty()) {
 					ItemStack remainder = InventoryHelper.insertIntoInventory(extractedStack, toHandler, true);
 					if (remainder.getCount() < extractedStack.getCount()) {
-						InventoryHelper.insertIntoInventory(fromHandler.extractItem(slot, extractedStack.getCount() - remainder.getCount(), false), toHandler, false);
+						InventoryHelper.insertIntoInventory(fromHandler.extractItem(slot, extractedStack.getCount() - remainder.getCount(), false), toHandler,
+								false);
 						return true;
 					}
 				}
@@ -173,7 +181,9 @@ public class HopperUpgradeWrapper extends UpgradeWrapperBase<HopperUpgradeWrappe
 		};
 
 		BlockState storageState = level.getBlockState(pos);
-		List<BlockPos> offsetPositions = storageState.getBlock() instanceof StorageBlockBase storageBlock ? storageBlock.getNeighborPos(storageState, pos, direction) : List.of(pos.relative(direction));
+		List<BlockPos> offsetPositions = storageState.getBlock() instanceof StorageBlockBase storageBlock
+				? storageBlock.getNeighborPos(storageState, pos, direction)
+				: List.of(pos.relative(direction));
 
 		List<BlockCapabilityCache<IItemHandler, Direction>> caches = new ArrayList<>();
 
@@ -184,7 +194,8 @@ public class HopperUpgradeWrapper extends UpgradeWrapperBase<HopperUpgradeWrappe
 				return storageInputBlockEntity.getControllerPos();
 			}).orElse(offsetPos);
 
-			caches.add(BlockCapabilityCache.create(Capabilities.ItemHandler.BLOCK, serverLevel, offsetPos, direction.getOpposite(), validityCheck, () -> handlerCache.remove(direction)));
+			caches.add(BlockCapabilityCache.create(Capabilities.ItemHandler.BLOCK, serverLevel, offsetPos, direction.getOpposite(), validityCheck,
+					() -> handlerCache.remove(direction)));
 		});
 		return new ItemHandlerHolder(caches, refreshOnEveryNeighborChange.get());
 	}
@@ -200,9 +211,12 @@ public class HopperUpgradeWrapper extends UpgradeWrapperBase<HopperUpgradeWrappe
 		return handler.isEmpty() ? runOnAutomationEntityItemHandlers(level, pos, direction, run, entity) : run.test(handler);
 	}
 
-	private boolean runOnAutomationEntityItemHandlers(Level level, BlockPos pos, Direction direction, Predicate<List<IItemHandler>> run, @Nullable Entity entity) {
+	private boolean runOnAutomationEntityItemHandlers(Level level, BlockPos pos, Direction direction, Predicate<List<IItemHandler>> run,
+			@Nullable Entity entity) {
 		BlockState storageState = level.getBlockState(pos);
-		List<BlockPos> offsetPositions = entity == null && storageState.getBlock() instanceof StorageBlockBase storageBlock ? storageBlock.getNeighborPos(storageState, pos, direction) : List.of(pos.relative(direction));
+		List<BlockPos> offsetPositions = entity == null && storageState.getBlock() instanceof StorageBlockBase storageBlock
+				? storageBlock.getNeighborPos(storageState, pos, direction)
+				: List.of(pos.relative(direction));
 
 		List<Entity> entities = new ArrayList<>();
 		for (BlockPos offsetPosition : offsetPositions) {
@@ -295,7 +309,6 @@ public class HopperUpgradeWrapper extends UpgradeWrapperBase<HopperUpgradeWrappe
 		setPullingFrom(pullDirection, true);
 	}
 
-	private record ItemHandlerHolder(List<BlockCapabilityCache<IItemHandler, Direction>> handlers,
-									 boolean refreshOnEveryNeighborChange) {
+	private record ItemHandlerHolder(List<BlockCapabilityCache<IItemHandler, Direction>> handlers, boolean refreshOnEveryNeighborChange) {
 	}
 }

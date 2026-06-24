@@ -7,14 +7,7 @@ import java.util.Map;
 import java.util.Optional;
 
 public enum BarrelModelPart {
-	BASE,
-	BASE_OPEN,
-	TINTABLE_ACCENT,
-	TINTABLE_MAIN,
-	TINTABLE_MAIN_OPEN,
-	TIER,
-	PACKED,
-	LOCKED;
+	BASE, BASE_OPEN, TINTABLE_ACCENT, TINTABLE_MAIN, TINTABLE_MAIN_OPEN, TIER, PACKED, LOCKED;
 
 	private static final Map<String, BarrelModelPart> NAME_TO_PART;
 

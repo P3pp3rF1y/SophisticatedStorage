@@ -33,7 +33,7 @@ public abstract class MovingStorageOpenersCounter {
 			onOpen();
 			player.level().gameEvent(player, GameEvent.CONTAINER_OPEN, entity.blockPosition());
 			nextOpenRecheck = player.level().getGameTime() + CHECK_TICK_DELAY;
- 		}
+		}
 
 		maxInteractionRange = Math.max(player.blockInteractionRange(), maxInteractionRange);
 	}
