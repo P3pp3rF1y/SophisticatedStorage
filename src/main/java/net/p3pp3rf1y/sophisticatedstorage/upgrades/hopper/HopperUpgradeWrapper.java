@@ -14,6 +14,7 @@ import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.neoforged.neoforge.transfer.transaction.Transaction;
+import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.init.ModCoreDataComponents;
 import net.p3pp3rf1y.sophisticatedcore.settings.memory.MemorySettingsCategory;
@@ -155,7 +156,7 @@ public class HopperUpgradeWrapper extends UpgradeWrapperBase<HopperUpgradeWrappe
 			return true;
 		}
 
-		for (BlockCapabilityCache<ResourceHandler<ItemResource>, Direction> handler : holder.handlers()) {
+		for (ItemHandlerTarget handler : holder.handlers()) {
 			if (handler.getCapability() == null) {
 				return true;
 			}
@@ -189,19 +190,21 @@ public class HopperUpgradeWrapper extends UpgradeWrapperBase<HopperUpgradeWrappe
 				? storageBlock.getNeighborPos(storageState, pos, direction)
 				: List.of(pos.relative(direction));
 
-		List<BlockCapabilityCache<ResourceHandler<ItemResource>, Direction>> caches = new ArrayList<>();
+		List<ItemHandlerTarget> itemHandlerTargets = new ArrayList<>();
 
 		AtomicBoolean refreshOnEveryNeighborChange = new AtomicBoolean(false);
 		offsetPositions.forEach(offsetPos -> {
-			offsetPos = level.getBlockEntity(offsetPos, ModBlocks.STORAGE_INPUT_BLOCK_ENTITY_TYPE.get()).flatMap(storageInputBlockEntity -> {
-				refreshOnEveryNeighborChange.set(true);
-				return storageInputBlockEntity.getControllerPos();
-			}).orElse(offsetPos);
+			Optional<BlockPos> controllerPos = level.getBlockEntity(offsetPos, ModBlocks.STORAGE_INPUT_BLOCK_ENTITY_TYPE.get())
+					.flatMap(storageInputBlockEntity -> {
+						refreshOnEveryNeighborChange.set(true);
+						return storageInputBlockEntity.getControllerPos();
+					});
+			BlockPos targetPos = controllerPos.orElse(offsetPos);
 
-			caches.add(BlockCapabilityCache.create(Capabilities.Item.BLOCK, serverLevel, offsetPos, direction.getOpposite(), validityCheck,
-					() -> handlerCache.remove(direction)));
+			itemHandlerTargets.add(new ItemHandlerTarget(BlockCapabilityCache.create(Capabilities.Item.BLOCK, serverLevel, targetPos, direction.getOpposite(),
+					validityCheck, () -> handlerCache.remove(direction)), controllerPos.isPresent()));
 		});
-		return new ItemHandlerHolder(caches, refreshOnEveryNeighborChange.get());
+		return new ItemHandlerHolder(itemHandlerTargets, refreshOnEveryNeighborChange.get());
 	}
 
 	private boolean runOnItemHandlers(Level level, BlockPos pos, Direction direction, Predicate<List<ResourceHandler<ItemResource>>> run,
@@ -211,7 +214,7 @@ public class HopperUpgradeWrapper extends UpgradeWrapperBase<HopperUpgradeWrappe
 			return runOnAutomationEntityItemHandlers(level, pos, direction, run, entity);
 		}
 
-		List<ResourceHandler<ItemResource>> handler = holder.handlers().stream().map(BlockCapabilityCache::getCapability).filter(Objects::nonNull).toList();
+		List<ResourceHandler<ItemResource>> handler = holder.handlers().stream().map(ItemHandlerTarget::getCapability).filter(Objects::nonNull).toList();
 
 		return handler.isEmpty() ? runOnAutomationEntityItemHandlers(level, pos, direction, run, entity) : run.test(handler);
 	}
@@ -314,6 +317,82 @@ public class HopperUpgradeWrapper extends UpgradeWrapperBase<HopperUpgradeWrappe
 		setPullingFrom(pullDirection, true);
 	}
 
-	private record ItemHandlerHolder(List<BlockCapabilityCache<ResourceHandler<ItemResource>, Direction>> handlers, boolean refreshOnEveryNeighborChange) {
+	private static class ItemHandlerTarget {
+		private final BlockCapabilityCache<ResourceHandler<ItemResource>, Direction> handlerCache;
+		private final boolean blockExtraction;
+		@Nullable
+		private ResourceHandler<ItemResource> noExtractHandler;
+
+		private ItemHandlerTarget(BlockCapabilityCache<ResourceHandler<ItemResource>, Direction> handlerCache, boolean blockExtraction) {
+			this.handlerCache = handlerCache;
+			this.blockExtraction = blockExtraction;
+		}
+
+		@Nullable
+		private ResourceHandler<ItemResource> getCapability() {
+			ResourceHandler<ItemResource> itemHandler = handlerCache.getCapability();
+			if (itemHandler == null) {
+				return null;
+			}
+
+			if (!blockExtraction) {
+				return itemHandler;
+			}
+
+			if (noExtractHandler == null) {
+				noExtractHandler = new NoExtractResourceHandler(itemHandler);
+			}
+			return noExtractHandler;
+		}
+	}
+
+	private record NoExtractResourceHandler(ResourceHandler<ItemResource> itemHandler) implements ResourceHandler<ItemResource> {
+		@Override
+		public int size() {
+			return itemHandler.size();
+		}
+
+		@Override
+		public long getAmountAsLong(int slot) {
+			return itemHandler.getAmountAsLong(slot);
+		}
+
+		@Override
+		public ItemResource getResource(int slot) {
+			return itemHandler.getResource(slot);
+		}
+
+		@Override
+		public int insert(int slot, ItemResource resource, int amount, TransactionContext transaction) {
+			return itemHandler.insert(slot, resource, amount, transaction);
+		}
+
+		@Override
+		public int insert(ItemResource resource, int amount, TransactionContext transaction) {
+			return itemHandler.insert(resource, amount, transaction);
+		}
+
+		@Override
+		public int extract(int slot, ItemResource resource, int amount, TransactionContext transaction) {
+			return 0;
+		}
+
+		@Override
+		public int extract(ItemResource resource, int amount, TransactionContext transaction) {
+			return 0;
+		}
+
+		@Override
+		public long getCapacityAsLong(int slot, ItemResource resource) {
+			return itemHandler.getCapacityAsLong(slot, resource);
+		}
+
+		@Override
+		public boolean isValid(int slot, ItemResource resource) {
+			return itemHandler.isValid(slot, resource);
+		}
+	}
+
+	private record ItemHandlerHolder(List<ItemHandlerTarget> handlers, boolean refreshOnEveryNeighborChange) {
 	}
 }
