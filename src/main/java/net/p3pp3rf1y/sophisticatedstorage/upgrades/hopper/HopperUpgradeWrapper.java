@@ -75,8 +75,8 @@ public class HopperUpgradeWrapper extends UpgradeWrapperBase<HopperUpgradeWrappe
 
 		for (Direction pushDirection : pushDirections) {
 			boolean done = false;
-			for (LazyOptional<IItemHandler> itemHandler : getItemHandlers(level, pos, pushDirection, entity == null)) {
-				if (itemHandler.map(this::pushItems).orElse(false)) {
+			for (ItemHandlerTarget itemHandler : getItemHandlers(level, pos, pushDirection, entity == null)) {
+				if (itemHandler.getCapability().map(this::pushItems).orElse(false)) {
 					done = true;
 					break;
 				}
@@ -98,8 +98,8 @@ public class HopperUpgradeWrapper extends UpgradeWrapperBase<HopperUpgradeWrappe
 
 		for (Direction pullDirection : pullDirections) {
 			boolean done = false;
-			for (LazyOptional<IItemHandler> itemHandler : getItemHandlers(level, pos, pullDirection, entity == null)) {
-				if (itemHandler.map(this::pullItems).orElse(false)) {
+			for (ItemHandlerTarget itemHandler : getItemHandlers(level, pos, pullDirection, entity == null)) {
+				if (itemHandler.getCapability().map(this::pullItems).orElse(false)) {
 					done = true;
 					break;
 				}
@@ -284,7 +284,7 @@ public class HopperUpgradeWrapper extends UpgradeWrapperBase<HopperUpgradeWrappe
 			return true;
 		}
 
-		for (LazyOptional<IItemHandler> handler : holder.handlers()) {
+		for (ItemHandlerTarget handler : holder.handlers()) {
 			if (!handler.isPresent()) {
 				return true;
 			}
@@ -303,24 +303,33 @@ public class HopperUpgradeWrapper extends UpgradeWrapperBase<HopperUpgradeWrappe
 		List<BlockPos> offsetPositions = storageState.getBlock() instanceof StorageBlockBase storageBlock
 				? storageBlock.getNeighborPos(storageState, pos, direction)
 				: List.of(pos.relative(direction));
-		List<LazyOptional<IItemHandler>> caches = new ArrayList<>();
+		List<ItemHandlerTarget> itemHandlerTargets = new ArrayList<>();
 		AtomicBoolean refreshOnEveryNeighborChange = new AtomicBoolean(false);
 		offsetPositions.forEach(offsetPos -> WorldHelper.getLoadedBlockEntity(level, offsetPos).ifPresent(blockEntity -> {
+			boolean blockExtraction = false;
 			if (blockEntity instanceof StorageInputBlockEntity input) {
 				refreshOnEveryNeighborChange.set(true);
-				blockEntity = input.getControllerPos().map(level::getBlockEntity).orElse(blockEntity);
+				Optional<BlockPos> controllerPos = input.getControllerPos();
+				if (controllerPos.isPresent()) {
+					blockEntity = level.getBlockEntity(controllerPos.get());
+					blockExtraction = blockEntity != null;
+				}
+			}
+
+			if (blockEntity == null) {
+				return;
 			}
 
 			LazyOptional<IItemHandler> lazyOptional = blockEntity.getCapability(ForgeCapabilities.ITEM_HANDLER, direction.getOpposite());
 			if (lazyOptional.isPresent()) {
 				lazyOptional.addListener(l -> updateCacheOnSide(level, pos, direction));
-				caches.add(lazyOptional);
+				itemHandlerTargets.add(new ItemHandlerTarget(lazyOptional, blockExtraction));
 			}
 		}));
-		handlerCache.put(direction, new ItemHandlerHolder(caches, refreshOnEveryNeighborChange.get()));
+		handlerCache.put(direction, new ItemHandlerHolder(itemHandlerTargets, refreshOnEveryNeighborChange.get()));
 	}
 
-	private List<LazyOptional<IItemHandler>> getItemHandlers(Level level, BlockPos pos, Direction direction, boolean useCache) {
+	private List<ItemHandlerTarget> getItemHandlers(Level level, BlockPos pos, Direction direction, boolean useCache) {
 		if (useCache) {
 			if (!handlerCache.containsKey(direction)) {
 				updateCacheOnSide(level, pos, direction);
@@ -389,6 +398,74 @@ public class HopperUpgradeWrapper extends UpgradeWrapperBase<HopperUpgradeWrappe
 		setPullingFrom(pullDirection, true);
 	}
 
-	private record ItemHandlerHolder(List<LazyOptional<IItemHandler>> handlers, boolean refreshOnEveryNeighborChange) {
+	private static class ItemHandlerTarget {
+		private final LazyOptional<IItemHandler> handler;
+		private final boolean blockExtraction;
+		@Nullable
+		private IItemHandler wrappedHandler;
+		@Nullable
+		private LazyOptional<IItemHandler> noExtractHandler;
+
+		private ItemHandlerTarget(LazyOptional<IItemHandler> handler, boolean blockExtraction) {
+			this.handler = handler;
+			this.blockExtraction = blockExtraction;
+		}
+
+		private boolean isPresent() {
+			return handler.isPresent();
+		}
+
+		private LazyOptional<IItemHandler> getCapability() {
+			if (!blockExtraction) {
+				return handler;
+			}
+
+			Optional<IItemHandler> itemHandler = handler.resolve();
+			if (itemHandler.isEmpty()) {
+				return LazyOptional.empty();
+			}
+
+			if (noExtractHandler == null || wrappedHandler != itemHandler.get()) {
+				wrappedHandler = itemHandler.get();
+				IItemHandler noExtractHandlerValue = new NoExtractItemHandler(wrappedHandler);
+				noExtractHandler = LazyOptional.of(() -> noExtractHandlerValue);
+			}
+			return noExtractHandler;
+		}
+	}
+
+	private record NoExtractItemHandler(IItemHandler itemHandler) implements IItemHandler {
+		@Override
+		public int getSlots() {
+			return itemHandler.getSlots();
+		}
+
+		@Override
+		public ItemStack getStackInSlot(int slot) {
+			return itemHandler.getStackInSlot(slot);
+		}
+
+		@Override
+		public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
+			return itemHandler.insertItem(slot, stack, simulate);
+		}
+
+		@Override
+		public ItemStack extractItem(int slot, int amount, boolean simulate) {
+			return ItemStack.EMPTY;
+		}
+
+		@Override
+		public int getSlotLimit(int slot) {
+			return itemHandler.getSlotLimit(slot);
+		}
+
+		@Override
+		public boolean isItemValid(int slot, ItemStack stack) {
+			return itemHandler.isItemValid(slot, stack);
+		}
+	}
+
+	private record ItemHandlerHolder(List<ItemHandlerTarget> handlers, boolean refreshOnEveryNeighborChange) {
 	}
 }
