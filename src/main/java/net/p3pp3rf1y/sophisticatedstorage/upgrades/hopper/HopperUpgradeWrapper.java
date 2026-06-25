@@ -151,7 +151,7 @@ public class HopperUpgradeWrapper extends UpgradeWrapperBase<HopperUpgradeWrappe
 			return true;
 		}
 
-		for (BlockCapabilityCache<IItemHandler, Direction> handler : holder.handlers()) {
+		for (ItemHandlerTarget handler : holder.handlers()) {
 			if (handler.getCapability() == null) {
 				return true;
 			}
@@ -185,19 +185,21 @@ public class HopperUpgradeWrapper extends UpgradeWrapperBase<HopperUpgradeWrappe
 				? storageBlock.getNeighborPos(storageState, pos, direction)
 				: List.of(pos.relative(direction));
 
-		List<BlockCapabilityCache<IItemHandler, Direction>> caches = new ArrayList<>();
+		List<ItemHandlerTarget> itemHandlerTargets = new ArrayList<>();
 
 		AtomicBoolean refreshOnEveryNeighborChange = new AtomicBoolean(false);
 		offsetPositions.forEach(offsetPos -> {
-			offsetPos = level.getBlockEntity(offsetPos, ModBlocks.STORAGE_INPUT_BLOCK_ENTITY_TYPE.get()).flatMap(storageInputBlockEntity -> {
-				refreshOnEveryNeighborChange.set(true);
-				return storageInputBlockEntity.getControllerPos();
-			}).orElse(offsetPos);
+			Optional<BlockPos> controllerPos = level.getBlockEntity(offsetPos, ModBlocks.STORAGE_INPUT_BLOCK_ENTITY_TYPE.get())
+					.flatMap(storageInputBlockEntity -> {
+						refreshOnEveryNeighborChange.set(true);
+						return storageInputBlockEntity.getControllerPos();
+					});
+			BlockPos targetPos = controllerPos.orElse(offsetPos);
 
-			caches.add(BlockCapabilityCache.create(Capabilities.ItemHandler.BLOCK, serverLevel, offsetPos, direction.getOpposite(), validityCheck,
-					() -> handlerCache.remove(direction)));
+			itemHandlerTargets.add(new ItemHandlerTarget(BlockCapabilityCache.create(Capabilities.ItemHandler.BLOCK, serverLevel, targetPos,
+					direction.getOpposite(), validityCheck, () -> handlerCache.remove(direction)), controllerPos.isPresent()));
 		});
-		return new ItemHandlerHolder(caches, refreshOnEveryNeighborChange.get());
+		return new ItemHandlerHolder(itemHandlerTargets, refreshOnEveryNeighborChange.get());
 	}
 
 	private boolean runOnItemHandlers(Level level, BlockPos pos, Direction direction, Predicate<List<IItemHandler>> run, @Nullable Entity entity) {
@@ -206,7 +208,7 @@ public class HopperUpgradeWrapper extends UpgradeWrapperBase<HopperUpgradeWrappe
 			return runOnAutomationEntityItemHandlers(level, pos, direction, run, entity);
 		}
 
-		List<IItemHandler> handler = holder.handlers().stream().map(BlockCapabilityCache::getCapability).filter(Objects::nonNull).toList();
+		List<IItemHandler> handler = holder.handlers().stream().map(ItemHandlerTarget::getCapability).filter(Objects::nonNull).toList();
 
 		return handler.isEmpty() ? runOnAutomationEntityItemHandlers(level, pos, direction, run, entity) : run.test(handler);
 	}
@@ -309,6 +311,78 @@ public class HopperUpgradeWrapper extends UpgradeWrapperBase<HopperUpgradeWrappe
 		setPullingFrom(pullDirection, true);
 	}
 
-	private record ItemHandlerHolder(List<BlockCapabilityCache<IItemHandler, Direction>> handlers, boolean refreshOnEveryNeighborChange) {
+	private static class ItemHandlerTarget {
+		private final BlockCapabilityCache<IItemHandler, Direction> handlerCache;
+		private final boolean blockExtraction;
+		@Nullable
+		private IItemHandler noExtractHandler;
+
+		private ItemHandlerTarget(BlockCapabilityCache<IItemHandler, Direction> handlerCache, boolean blockExtraction) {
+			this.handlerCache = handlerCache;
+			this.blockExtraction = blockExtraction;
+		}
+
+		@Nullable
+		private IItemHandler getCapability() {
+			IItemHandler itemHandler = handlerCache.getCapability();
+			if (itemHandler == null) {
+				return null;
+			}
+
+			if (!blockExtraction) {
+				return itemHandler;
+			}
+
+			if (noExtractHandler == null) {
+				noExtractHandler = new NoExtractItemHandler(handlerCache);
+			}
+			return noExtractHandler;
+		}
+	}
+
+	private static class NoExtractItemHandler implements IItemHandler {
+		private final BlockCapabilityCache<IItemHandler, Direction> handlerCache;
+
+		private NoExtractItemHandler(BlockCapabilityCache<IItemHandler, Direction> handlerCache) {
+			this.handlerCache = handlerCache;
+		}
+
+		@Override
+		public int getSlots() {
+			IItemHandler itemHandler = handlerCache.getCapability();
+			return itemHandler == null ? 0 : itemHandler.getSlots();
+		}
+
+		@Override
+		public ItemStack getStackInSlot(int slot) {
+			IItemHandler itemHandler = handlerCache.getCapability();
+			return itemHandler == null ? ItemStack.EMPTY : itemHandler.getStackInSlot(slot);
+		}
+
+		@Override
+		public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
+			IItemHandler itemHandler = handlerCache.getCapability();
+			return itemHandler == null ? stack : itemHandler.insertItem(slot, stack, simulate);
+		}
+
+		@Override
+		public ItemStack extractItem(int slot, int amount, boolean simulate) {
+			return ItemStack.EMPTY;
+		}
+
+		@Override
+		public int getSlotLimit(int slot) {
+			IItemHandler itemHandler = handlerCache.getCapability();
+			return itemHandler == null ? 0 : itemHandler.getSlotLimit(slot);
+		}
+
+		@Override
+		public boolean isItemValid(int slot, ItemStack stack) {
+			IItemHandler itemHandler = handlerCache.getCapability();
+			return itemHandler != null && itemHandler.isItemValid(slot, stack);
+		}
+	}
+
+	private record ItemHandlerHolder(List<ItemHandlerTarget> handlers, boolean refreshOnEveryNeighborChange) {
 	}
 }
