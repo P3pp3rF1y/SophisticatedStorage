@@ -28,6 +28,8 @@ import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import net.p3pp3rf1y.sophisticatedcore.client.render.BlockHighlightRenderHelper;
+import net.p3pp3rf1y.sophisticatedcore.util.VoxelOutliner;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.*;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.PaintbrushOverlay;
@@ -57,6 +59,8 @@ public class ClientEventHandler {
 	public static final ModelLayerLocation CHEST_LOCK_LAYER = new ModelLayerLocation(CHEST_RL, "lock");
 	public static final ModelLayerLocation CHEST_LOCK_LEFT_LAYER = new ModelLayerLocation(CHEST_LEFT_RL, "lock");
 	public static final ModelLayerLocation CHEST_LOCK_RIGHT_LAYER = new ModelLayerLocation(CHEST_RIGHT_RL, "lock");
+	private static final int PAINTBRUSH_CAN_APPLY_HIGHLIGHT_COLOR = 0x69c53b;
+	private static final int PAINTBRUSH_MISSING_ITEMS_HIGHLIGHT_COLOR = 0xc53b3b;
 
 	public static void registerHandlers(IEventBus modBus) {
 		modBus.addListener(ClientEventHandler::onRegisterModelLoaders);
@@ -148,13 +152,13 @@ public class ClientEventHandler {
 					|| level.getBlockEntity(pos) instanceof ISimpleMaterialHolder) {
 				PaintbrushOverlay.getItemRequirementsFor(stack, player, level, pos).ifPresent(itemRequirements -> {
 					event.addCustomRenderer((blockOutlineRenderState, bufferSource, poseStack, b, levelRenderState) -> {
-						float red = !itemRequirements.itemsMissing().isEmpty() ? 1 : 0;
-						float green = itemRequirements.itemsMissing().isEmpty() ? 1 : 0;
-						VertexConsumer vertexConsumer = bufferSource.getBuffer(RenderTypes.lines());
+						int color = itemRequirements.itemsMissing().isEmpty() ? PAINTBRUSH_CAN_APPLY_HIGHLIGHT_COLOR : PAINTBRUSH_MISSING_ITEMS_HIGHLIGHT_COLOR;
 						Vec3 cameraPos = levelRenderState.cameraRenderState.pos;
-						ShapeRenderer.renderShape(poseStack, vertexConsumer, blockState.getShape(level, pos, collisionContext), pos.getX() - cameraPos.x,
-								pos.getY() - cameraPos.y, pos.getZ() - cameraPos.z, ARGB.colorFromFloat(1, red, green, 0),
-								minecraft.getWindow().getAppropriateLineWidth());
+						poseStack.pushPose();
+						poseStack.translate(pos.getX() - cameraPos.x, pos.getY() - cameraPos.y, pos.getZ() - cameraPos.z);
+						BlockHighlightRenderHelper.renderThickEdges(poseStack, bufferSource, color,
+								VoxelOutliner.linesFromVoxelShapeSimplified(blockState.getShape(level, pos, collisionContext), pos), pos);
+						poseStack.popPose();
 						return true;
 					});
 				});
