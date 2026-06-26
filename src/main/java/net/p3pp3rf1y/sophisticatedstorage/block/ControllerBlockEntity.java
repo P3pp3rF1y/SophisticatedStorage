@@ -14,6 +14,7 @@ import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.neoforged.neoforge.transfer.transaction.Transaction;
+import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 import net.p3pp3rf1y.sophisticatedcore.controller.ControllerBlockEntityBase;
 import net.p3pp3rf1y.sophisticatedcore.inventory.ItemStackKey;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
@@ -60,7 +61,7 @@ public class ControllerBlockEntity extends ControllerBlockEntityBase
 			AtomicBoolean insertedAny = new AtomicBoolean(false);
 			try (Transaction tx = Transaction.openRoot()) {
 				InventoryHelper.iteratePlayerInventory(player, (slot, stack) -> {
-					if (canDepositStack(stack)) {
+					if (canDepositStack(stack, tx)) {
 						int inserted = insertItem(stack, tx, false);
 						if (inserted > 0) {
 							player.getInventory().removeItem(slot, inserted);
@@ -90,6 +91,10 @@ public class ControllerBlockEntity extends ControllerBlockEntityBase
 
 	private boolean canDepositStack(ItemStack stack) {
 		return hasItem(stack.getItem()) || isMemorizedItem(stack) || isFilterItem(stack.getItem()) || hasMatchingFilter(stack);
+	}
+
+	private boolean canDepositStack(ItemStack stack, TransactionContext tx) {
+		return hasItem(stack.getItem()) || isMemorizedItem(stack) || isFilterItem(stack.getItem()) || hasMatchingFilter(stack, tx);
 	}
 
 	@Override
