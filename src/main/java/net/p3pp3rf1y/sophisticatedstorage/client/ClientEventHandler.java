@@ -1,6 +1,5 @@
 package net.p3pp3rf1y.sophisticatedstorage.client;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.geom.ModelLayerLocation;
@@ -30,6 +29,8 @@ import net.neoforged.neoforge.common.util.TriState;
 import net.neoforged.neoforge.event.AddPackFindersEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
+import net.p3pp3rf1y.sophisticatedcore.client.render.BlockHighlightRenderHelper;
+import net.p3pp3rf1y.sophisticatedcore.util.VoxelOutliner;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlockClientExtensions;
@@ -62,6 +63,8 @@ public class ClientEventHandler {
 	public static final ModelLayerLocation CHEST_LAYER = new ModelLayerLocation(CHEST_RL, "main");
 	public static final ModelLayerLocation CHEST_LEFT_LAYER = new ModelLayerLocation(CHEST_LEFT_RL, "main");
 	public static final ModelLayerLocation CHEST_RIGHT_LAYER = new ModelLayerLocation(CHEST_RIGHT_RL, "main");
+	private static final int PAINTBRUSH_CAN_APPLY_HIGHLIGHT_COLOR = 0x69c53b;
+	private static final int PAINTBRUSH_MISSING_ITEMS_HIGHLIGHT_COLOR = 0xc53b3b;
 
 	public static void registerHandlers(IEventBus modBus) {
 		modBus.addListener(ClientEventHandler::onModelRegistry);
@@ -124,13 +127,13 @@ public class ClientEventHandler {
 			if (blockState.getBlock() instanceof StorageBlockBase || blockState.getBlock() == ModBlocks.CONTROLLER.get()
 					|| level.getBlockEntity(pos) instanceof ISimpleMaterialHolder) {
 				PaintbrushOverlay.getItemRequirementsFor(stack, player, level, pos).ifPresent(itemRequirements -> {
-					float red = !itemRequirements.itemsMissing().isEmpty() ? 1 : 0;
-					float green = itemRequirements.itemsMissing().isEmpty() ? 1 : 0;
-					VertexConsumer vertexConsumer = event.getMultiBufferSource().getBuffer(RenderType.lines());
+					int color = itemRequirements.itemsMissing().isEmpty() ? PAINTBRUSH_CAN_APPLY_HIGHLIGHT_COLOR : PAINTBRUSH_MISSING_ITEMS_HIGHLIGHT_COLOR;
 					Vec3 cameraPos = event.getCamera().getPosition();
-					PoseStack poseStack = event.getPoseStack();
-					LevelRenderer.renderShape(poseStack, vertexConsumer, blockState.getShape(level, pos, CollisionContext.of(event.getCamera().getEntity())),
-							pos.getX() - cameraPos.x, pos.getY() - cameraPos.y, pos.getZ() - cameraPos.z, red, green, 0.0F, 1);
+					event.getPoseStack().pushPose();
+					event.getPoseStack().translate(pos.getX() - cameraPos.x, pos.getY() - cameraPos.y, pos.getZ() - cameraPos.z);
+					BlockHighlightRenderHelper.renderThickEdges(event.getPoseStack(), event.getMultiBufferSource(), color, VoxelOutliner
+							.linesFromVoxelShapeSimplified(blockState.getShape(level, pos, CollisionContext.of(event.getCamera().getEntity())), pos), pos);
+					event.getPoseStack().popPose();
 					event.setCanceled(true);
 				});
 			}
