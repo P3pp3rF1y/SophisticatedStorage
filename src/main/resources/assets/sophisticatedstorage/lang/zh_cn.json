@@ -230,7 +230,7 @@
   "gui.sophisticatedstorage.upgrades.hopper.tooltip": "漏斗设置",
   "gui.sophisticatedstorage.upgrades.advanced_hopper": "高级漏斗",
   "gui.sophisticatedstorage.upgrades.advanced_hopper.tooltip": "高级漏斗设置",
-  "gui.sophisticatedstorage.error.add.compression_incompatible_items": "高亮槽位与先前已填充槽位的压缩链不匹配。物品必须来自同一压缩链，且按顺序排列。",
+  "gui.sophisticatedstorage.error.add.compression_incompatible_items": "高亮槽位与上一个已填充槽位的压缩链不匹配。物品必须来自同一压缩链，且按顺序排列。",
   "gui.sophisticatedstorage.error.add.compression_no_space": "这个压缩升级没有额外的槽位可管理",
   "gui.sophisticatedstorage.error.add.compression_exists": "另一插槽中已存在压缩升级",
   "gui.sophisticatedstorage.error.add.compacting_exists": "另一插槽中已存在压制升级",
