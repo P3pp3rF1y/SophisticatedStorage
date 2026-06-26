@@ -23,17 +23,22 @@ import java.util.Optional;
 
 public class PaintbrushOverlay {
 
+	private static final int CACHE_REFRESH_INTERVAL_TICKS = 60;
 	private static Optional<PaintbrushItem.ItemRequirements> ITEM_REQUIREMENTS_CACHE = Optional.empty();
 	@Nullable
 	private static BlockPos lastPosCached = null;
 	@Nullable
 	private static ItemStack lastPaintbrushCached = null;
+	private static long lastCacheUpdateGameTime = -CACHE_REFRESH_INTERVAL_TICKS;
 
 	public static Optional<PaintbrushItem.ItemRequirements> getItemRequirementsFor(ItemStack paintbrush, Player player, Level level, BlockPos pos) {
-		if (!pos.equals(lastPosCached) || paintbrush != lastPaintbrushCached) {
+		long gameTime = level.getGameTime();
+		boolean cacheExpired = gameTime < lastCacheUpdateGameTime || gameTime - lastCacheUpdateGameTime >= CACHE_REFRESH_INTERVAL_TICKS;
+		if (!pos.equals(lastPosCached) || paintbrush != lastPaintbrushCached || cacheExpired) {
 			ITEM_REQUIREMENTS_CACHE = PaintbrushItem.getItemRequirements(paintbrush, player, level, pos);
 			lastPosCached = pos;
 			lastPaintbrushCached = paintbrush;
+			lastCacheUpdateGameTime = gameTime;
 		}
 		return ITEM_REQUIREMENTS_CACHE;
 	}
@@ -44,6 +49,7 @@ public class PaintbrushOverlay {
 			if (!mc.gui.screen().isPauseScreen()) {
 				lastPosCached = null;
 				lastPaintbrushCached = null;
+				lastCacheUpdateGameTime = -CACHE_REFRESH_INTERVAL_TICKS;
 			}
 			return;
 		}
