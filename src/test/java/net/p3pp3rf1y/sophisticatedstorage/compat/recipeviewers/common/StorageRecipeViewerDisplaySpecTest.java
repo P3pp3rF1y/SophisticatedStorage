@@ -19,11 +19,14 @@ import net.minecraft.world.level.WorldDataConfiguration;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.*;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
+import net.p3pp3rf1y.sophisticatedstorage.block.BarrelMaterial;
+import net.p3pp3rf1y.sophisticatedstorage.block.DecorationTableBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.DoubleChestTierUpgradeRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.DoubleChestTierUpgradeShapelessRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.StorageTierUpgradeRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.StorageTierUpgradeShapelessRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
+import net.p3pp3rf1y.sophisticatedstorage.item.BarrelBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.ChestBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
@@ -32,7 +35,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -96,6 +101,31 @@ class StorageRecipeViewerDisplaySpecTest {
 		assertTrue(recipes.stream().anyMatch(
 				recipe -> ItemStack.isSameItemSameComponents(woodStorageStack(ModBlocks.COPPER_BARREL_ITEM.get(), WoodType.SPRUCE), recipe.inputs().get(4))));
 		assertTrue(recipes.stream().allMatch(recipe -> ItemStack.isSameItemSameComponents(spruceIronBarrel, recipe.firstOutput())));
+	}
+
+	@Test
+	void fullyTintedWoodStorageKeepsWoodTypeButHidesItInName() {
+		ItemStack spruceChest = woodStorageStack(ModBlocks.CHEST_ITEM.get(), WoodType.SPRUCE);
+		StorageBlockItem storageBlockItem = (StorageBlockItem) spruceChest.getItem();
+
+		storageBlockItem.setMainColor(spruceChest, 0x336699);
+		storageBlockItem.setAccentColor(spruceChest, 0x99CC33);
+
+		assertTrue(WoodStorageBlockItem.getWoodType(spruceChest).filter(WoodType.SPRUCE::equals).isPresent());
+		assertEquals(WoodStorageBlockItem.getDisplayName(ModBlocks.CHEST_ITEM.get().getDescriptionId(), null), spruceChest.getHoverName());
+	}
+
+	@Test
+	void materialDecoratedBarrelKeepsWoodTypeButHidesItInName() {
+		ItemStack spruceBarrel = woodStorageStack(ModBlocks.BARREL_ITEM.get(), WoodType.SPRUCE);
+		Map<BarrelMaterial, Identifier> materials = new EnumMap<>(BarrelMaterial.class);
+		materials.put(BarrelMaterial.ALL, Identifier.parse("minecraft:oak_planks"));
+
+		ItemStack decoratedBarrel = DecorationTableBlockEntity.STORAGE_DECORATOR.decorateWithMaterials(spruceBarrel, materials);
+
+		assertTrue(WoodStorageBlockItem.getWoodType(decoratedBarrel).filter(WoodType.SPRUCE::equals).isPresent());
+		assertFalse(BarrelBlockItem.getMaterials(decoratedBarrel).isEmpty());
+		assertEquals(WoodStorageBlockItem.getDisplayName(ModBlocks.BARREL_ITEM.get().getDescriptionId(), null), decoratedBarrel.getHoverName());
 	}
 
 	@Test
@@ -270,8 +300,8 @@ class StorageRecipeViewerDisplaySpecTest {
 		IRecipeViewerDisplayCatalog catalog = createChestCatalog();
 
 		List<CraftingDisplayVariant> usages = getCraftingUsagesFor(catalog, new ItemStack(Items.IRON_INGOT));
-		List<RecipeHolder<net.minecraft.world.item.crafting.CraftingRecipe>> recipeHolders = catalog.getCraftingUsagesFor(new ItemStack(Items.IRON_INGOT))
-				.stream().flatMap(view -> view.variants().stream().map(view.spec()::recipeHolder)).toList();
+		List<RecipeHolder<CraftingRecipe>> recipeHolders = catalog.getCraftingUsagesFor(new ItemStack(Items.IRON_INGOT)).stream()
+				.flatMap(view -> view.variants().stream().map(view.spec()::recipeHolder)).toList();
 
 		assertEquals(16, usages.size());
 		assertEquals(16, recipeHolders.size());
@@ -394,9 +424,6 @@ class StorageRecipeViewerDisplaySpecTest {
 	}
 
 	private final static class TestRecipeResources {
-		private TestRecipeResources() {
-		}
-
 		private static LoadedResources load() {
 			SharedConstants.tryDetectVersion();
 			Bootstrap.bootStrap();
