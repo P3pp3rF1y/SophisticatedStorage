@@ -5,8 +5,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.events.GuiEventListener;
-import net.minecraft.client.gui.render.state.GuiItemRenderState;
-import net.minecraft.client.gui.render.state.pip.OversizedItemRenderState;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -31,6 +29,7 @@ import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.*;
 import net.p3pp3rf1y.sophisticatedcore.util.Easing;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.DecorationTableBlockEntity;
+import net.p3pp3rf1y.sophisticatedstorage.client.render.DecorationTablePreviewRenderState;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.DecorationTableInputSlotPreview;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.DecorationTableMenu;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
@@ -797,7 +796,7 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 		}
 
 		public void setTargetRotations(int xAxisRotation, int yAxisRotation) {
-			if ((targetXAxisRotation == xAxisRotation && targetYAxisRotation == yAxisRotation)) {
+			if (targetXAxisRotation == xAxisRotation && targetYAxisRotation == yAxisRotation) {
 				return;
 			}
 
@@ -832,11 +831,9 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 			resolveModel(previewStack, renderState, ItemDisplayContext.NONE);
 			ItemTransform transform = renderState.layers[0].transform;
 			renderState.layers[0].transform = new ItemTransform(new Vector3f(xAxisRotation, yAxisRotation, 0), transform.translation(), new Vector3f(3, 3, 3));
-			renderState.setOversizedInGui(true);
-			renderState.appendModelIdentityElement(xAxisRotation);
-			renderState.appendModelIdentityElement(yAxisRotation);
-			guiGraphics.submitPictureInPictureRenderState(new OversizedItemRenderState(new GuiItemRenderState(previewStack.getItem().getName().toString(),
-					new Matrix3x2f(guiGraphics.pose()), renderState, x, y, guiGraphics.peekScissorStack()), x, y, x + getWidth(), y + getHeight()));
+			int previewHeight = getHeight() - (previewStackButtons.isEmpty() ? 0 : 20);
+			guiGraphics.submitPictureInPictureRenderState(new DecorationTablePreviewRenderState(renderState, new Matrix3x2f(guiGraphics.pose()),
+					guiGraphics.peekScissorStack(), x, y, x + getWidth(), y + previewHeight));
 		}
 
 		private void updateRotations() {
