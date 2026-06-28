@@ -12,17 +12,36 @@ import net.minecraft.server.WorldLoader;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.server.packs.repository.ServerPacksSource;
 import net.minecraft.server.packs.resources.CloseableResourceManager;
-import net.minecraft.world.item.*;
-import net.minecraft.world.item.crafting.*;
+import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.DyeItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.CraftingInput;
+import net.minecraft.world.item.crafting.CraftingRecipe;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeManager;
+import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.WorldDataConfiguration;
 import net.minecraft.world.level.block.state.properties.WoodType;
-import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.*;
+import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.ClientRecipeHelper;
+import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.CraftingDisplaySpec;
+import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.CraftingDisplayVariant;
+import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.GroupedCraftingRecipe;
+import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.IRecipeViewerDisplayCatalog;
+import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.IRecipeViewerDisplayContext;
+import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.RecipeViewerDisplayCatalog;
+import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.SingleColorDyeRecipeSpec;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
+import net.p3pp3rf1y.sophisticatedstorage.block.BarrelMaterial;
+import net.p3pp3rf1y.sophisticatedstorage.block.DecorationTableBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.DoubleChestTierUpgradeRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.DoubleChestTierUpgradeShapelessRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.StorageTierUpgradeRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.StorageTierUpgradeShapelessRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
+import net.p3pp3rf1y.sophisticatedstorage.item.BarrelBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.ChestBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
@@ -31,7 +50,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -95,6 +116,31 @@ class StorageRecipeViewerDisplaySpecTest {
 		assertTrue(recipes.stream().anyMatch(
 				recipe -> ItemStack.isSameItemSameComponents(woodStorageStack(ModBlocks.COPPER_BARREL_ITEM.get(), WoodType.SPRUCE), recipe.inputs().get(4))));
 		assertTrue(recipes.stream().allMatch(recipe -> ItemStack.isSameItemSameComponents(spruceIronBarrel, recipe.firstOutput())));
+	}
+
+	@Test
+	void fullyTintedWoodStorageKeepsWoodTypeButHidesItInName() {
+		ItemStack spruceChest = woodStorageStack(ModBlocks.CHEST_ITEM.get(), WoodType.SPRUCE);
+		StorageBlockItem storageBlockItem = (StorageBlockItem) spruceChest.getItem();
+
+		storageBlockItem.setMainColor(spruceChest, 0x336699);
+		storageBlockItem.setAccentColor(spruceChest, 0x99CC33);
+
+		assertTrue(WoodStorageBlockItem.getWoodType(spruceChest).filter(WoodType.SPRUCE::equals).isPresent());
+		assertEquals(WoodStorageBlockItem.getDisplayName(ModBlocks.CHEST_ITEM.get().getDescriptionId(), null), spruceChest.getHoverName());
+	}
+
+	@Test
+	void materialDecoratedBarrelKeepsWoodTypeButHidesItInName() {
+		ItemStack spruceBarrel = woodStorageStack(ModBlocks.BARREL_ITEM.get(), WoodType.SPRUCE);
+		Map<BarrelMaterial, ResourceLocation> materials = new EnumMap<>(BarrelMaterial.class);
+		materials.put(BarrelMaterial.ALL, ResourceLocation.parse("minecraft:oak_planks"));
+
+		ItemStack decoratedBarrel = DecorationTableBlockEntity.STORAGE_DECORATOR.decorateWithMaterials(spruceBarrel, materials);
+
+		assertTrue(WoodStorageBlockItem.getWoodType(decoratedBarrel).filter(WoodType.SPRUCE::equals).isPresent());
+		assertFalse(BarrelBlockItem.getMaterials(decoratedBarrel).isEmpty());
+		assertEquals(WoodStorageBlockItem.getDisplayName(ModBlocks.BARREL_ITEM.get().getDescriptionId(), null), decoratedBarrel.getHoverName());
 	}
 
 	@Test
@@ -389,9 +435,6 @@ class StorageRecipeViewerDisplaySpecTest {
 	}
 
 	private final static class TestRecipeResources {
-		private TestRecipeResources() {
-		}
-
 		private static LoadedResources load() {
 			SharedConstants.tryDetectVersion();
 			Bootstrap.bootStrap();
