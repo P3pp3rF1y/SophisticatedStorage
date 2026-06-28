@@ -61,7 +61,6 @@ public class DecorationTableBlockEntity extends BlockEntity implements Clearable
 	public static final int RED_DYE_SLOT = 0;
 	public static final int GREEN_DYE_SLOT = 1;
 	public static final int BLUE_DYE_SLOT = 2;
-	private static final TagKey<Item> DYEABLE_ITEMS = ItemTags.create(Identifier.withDefaultNamespace("dyeable"));
 	public static final Set<Item> STORAGES_WIHOUT_TOP_INNER_TRIM = Set.of(ModBlocks.BARREL_ITEM.get(), ModBlocks.COPPER_BARREL_ITEM.get(),
 			ModBlocks.IRON_BARREL_ITEM.get(), ModBlocks.GOLD_BARREL_ITEM.get(), ModBlocks.DIAMOND_BARREL_ITEM.get(), ModBlocks.NETHERITE_BARREL_ITEM.get(),
 			ModBlocks.LIMITED_BARREL_1_ITEM.get(), ModBlocks.LIMITED_COPPER_BARREL_1_ITEM.get(), ModBlocks.LIMITED_IRON_BARREL_1_ITEM.get(),
@@ -805,7 +804,7 @@ public class DecorationTableBlockEntity extends BlockEntity implements Clearable
 						new ItemStack(ModBlocks.SHULKER_BOX_ITEM.get()));
 			}
 		});
-		ITEM_DECORATORS.put(item -> item.builtInRegistryHolder().is(DYEABLE_ITEMS), new IItemDecorator() {
+		ITEM_DECORATORS.put(item -> item.builtInRegistryHolder().is(ItemTags.CAULDRON_CAN_REMOVE_DYE), new IItemDecorator() {
 			@Override
 			public boolean supportsMaterials(ItemResource input) {
 				return false;
