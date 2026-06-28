@@ -84,22 +84,12 @@ public class WoodStorageBlockItem extends StorageBlockItem {
 
 	@Override
 	public void setMainColor(ItemStack storageStack, int mainColor) {
-		if (StorageBlockItem.getAccentColorFromStack(storageStack).isPresent()) {
-			removeWoodType(storageStack);
-		}
 		super.setMainColor(storageStack, mainColor);
 	}
 
 	@Override
 	public void setAccentColor(ItemStack storageStack, int accentColor) {
-		if (StorageBlockItem.getMainColorFromStack(storageStack).isPresent()) {
-			removeWoodType(storageStack);
-		}
 		super.setAccentColor(storageStack, accentColor);
-	}
-
-	private void removeWoodType(ItemStack storageStack) {
-		storageStack.getOrCreateTag().remove(WoodStorageBlockItem.WOOD_TYPE_TAG);
 	}
 
 	public static Optional<WoodType> getWoodType(ItemStack storageStack) {
@@ -145,7 +135,11 @@ public class WoodStorageBlockItem extends StorageBlockItem {
 
 	@Override
 	public Component getName(ItemStack stack) {
-		return getDisplayName(getDescriptionId(), getWoodType(stack).orElse(null));
+		return getDisplayName(getDescriptionId(), isFullyTinted(stack) ? null : getWoodType(stack).orElse(null));
+	}
+
+	private static boolean isFullyTinted(ItemStack stack) {
+		return StorageBlockItem.getMainColorFromStack(stack).isPresent() && StorageBlockItem.getAccentColorFromStack(stack).isPresent();
 	}
 
 	public static Component getDisplayName(String descriptionId, @Nullable WoodType woodType) {
