@@ -12,8 +12,6 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.item.TrackingItemStackRenderState;
-import net.minecraft.client.renderer.state.gui.GuiItemRenderState;
-import net.minecraft.client.renderer.state.gui.pip.OversizedItemRenderState;
 import net.minecraft.client.resources.model.cuboid.ItemTransform;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -35,6 +33,7 @@ import net.p3pp3rf1y.sophisticatedcore.network.SyncContainerClientDataPayload;
 import net.p3pp3rf1y.sophisticatedcore.util.Easing;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.DecorationTableBlockEntity;
+import net.p3pp3rf1y.sophisticatedstorage.client.render.DecorationTablePreviewRenderState;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.DecorationTableInputSlotPreview;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.DecorationTableMenu;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
@@ -816,7 +815,7 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 		}
 
 		public void setTargetRotations(int xAxisRotation, int yAxisRotation) {
-			if ((targetXAxisRotation == xAxisRotation && targetYAxisRotation == yAxisRotation)) {
+			if (targetXAxisRotation == xAxisRotation && targetYAxisRotation == yAxisRotation) {
 				return;
 			}
 
@@ -853,17 +852,15 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 				return;
 			}
 			ItemStackRenderState.LayerRenderState layer = renderState.layers[0];
-			layer.setLocalTransform(new Matrix4f().rotationXYZ((float) Math.toRadians(xAxisRotation), (float) Math.toRadians(yAxisRotation), 0));
+			layer.setLocalTransform(new Matrix4f().translate(0.5f, 0.5f, 0.5f)
+					.rotateXYZ((float) Math.toRadians(xAxisRotation), (float) Math.toRadians(yAxisRotation), 0).translate(-0.5f, -0.5f, -0.5f));
 			ItemTransform itemTransform = getItemTransform(layer);
 			if (itemTransform != null) {
 				layer.setItemTransform(new ItemTransform(itemTransform.rotation(), itemTransform.translation(), new Vector3f(3, 3, 3)));
 			}
-			renderState.setOversizedInGui(true);
-			renderState.appendModelIdentityElement(xAxisRotation);
-			renderState.appendModelIdentityElement(yAxisRotation);
-			guiGraphics.submitPictureInPictureRenderState(
-					new OversizedItemRenderState(new GuiItemRenderState(new Matrix3x2f(guiGraphics.pose()), renderState, x, y, guiGraphics.peekScissorStack()),
-							x, y, x + getWidth(), y + getHeight()));
+			int previewHeight = getHeight() - (previewStackButtons.isEmpty() ? 0 : 20);
+			guiGraphics.submitPictureInPictureRenderState(new DecorationTablePreviewRenderState(renderState, new Matrix3x2f(guiGraphics.pose()),
+					guiGraphics.peekScissorStack(), x, y, x + getWidth(), y + previewHeight));
 		}
 
 		private void updateRotations() {
