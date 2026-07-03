@@ -53,10 +53,18 @@ public class StorageIOBlockEntity extends BlockEntity implements IControllerBoun
 
 	@Override
 	public void setControllerPos(BlockPos controllerPos) {
+		setControllerPos(controllerPos, true);
+	}
+
+	private void setControllerPos(BlockPos controllerPos, boolean updateWorld) {
 		this.controllerPos = controllerPos;
-		invalidateAllCapabilityCache();
-		setChanged();
-		WorldHelper.notifyBlockUpdate(this);
+		if (updateWorld) {
+			invalidateAllCapabilityCache();
+			setChanged();
+			WorldHelper.notifyBlockUpdate(this);
+		} else {
+			capabilitySideCache.clear();
+		}
 	}
 
 	@Override
@@ -166,7 +174,7 @@ public class StorageIOBlockEntity extends BlockEntity implements IControllerBoun
 	@Override
 	public void load(CompoundTag tag) {
 		super.load(tag);
-		loadControllerPos(tag);
+		NBTHelper.getLong(tag, CONTROLLER_POS_TAG).ifPresent(value -> setControllerPos(BlockPos.of(value), false));
 		loadSimpleMaterialData(tag);
 		isLinkedToController = NBTHelper.getBoolean(tag, "isLinkedToController").orElse(false);
 	}
