@@ -204,8 +204,7 @@ public class StorageTierUpgradeItem extends ItemBase {
 
 	private static class VanillaTintedShulkerBoxTierUpgradeDefinition extends VanillaTierUpgradeDefinition<ShulkerBoxBlockEntity> {
 		private VanillaTintedShulkerBoxTierUpgradeDefinition(DyeColor color, net.p3pp3rf1y.sophisticatedstorage.block.ShulkerBoxBlock newBlock) {
-			super(ShulkerBoxBlockEntity.class, shulkerBoxBlockEntity -> shulkerBoxBlockEntity.openCount > 0, newBlock, null, color, ShulkerBoxBlock.FACING,
-					StorageBlockBase.TICKING);
+			super(ShulkerBoxBlockEntity.class, shulkerBoxBlockEntity -> shulkerBoxBlockEntity.openCount > 0, newBlock, null, color, ShulkerBoxBlock.FACING);
 		}
 	}
 
