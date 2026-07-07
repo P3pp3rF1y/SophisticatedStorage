@@ -307,12 +307,21 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 		super.setPlacedBy(level, pos, state, placer, stack);
 
 		if (ChestBlockItem.isDoubleChest(stack) && !level.isClientSide()) {
-			BlockPos otherPartPos = pos.relative(state.getValue(FACING).getCounterClockWise());
-			level.setBlock(otherPartPos, state.setValue(TYPE, ChestType.LEFT), 3);
+			BlockState rightState = state.setValue(TYPE, ChestType.RIGHT);
+			BlockState leftState = state.setValue(TYPE, ChestType.LEFT);
+			BlockPos otherPartPos = pos.relative(rightState.getValue(FACING).getCounterClockWise());
+			int blockUpdateFlags = UPDATE_CLIENTS | UPDATE_KNOWN_SHAPE;
+			level.setBlock(pos, rightState, blockUpdateFlags);
+			level.setBlock(otherPartPos, leftState, blockUpdateFlags);
 			level.getBlockEntity(otherPartPos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get()).ifPresent(be -> {
 				setRenderBlockRenderProperties(stack, be);
 				be.tryToAddToController();
 			});
+			joinChests(level, pos, otherPartPos, ChestType.RIGHT);
+			rightState.updateNeighbourShapes(level, pos, 3);
+			leftState.updateNeighbourShapes(level, otherPartPos, 3);
+			normalizeDoubleChestControllerRegistration(level, pos, otherPartPos);
+			return;
 		}
 
 		ChestType chestType = state.getValue(TYPE);
