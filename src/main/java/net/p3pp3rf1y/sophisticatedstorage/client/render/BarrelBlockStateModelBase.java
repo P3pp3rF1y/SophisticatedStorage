@@ -31,6 +31,7 @@ import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelMaterial;
+import net.p3pp3rf1y.sophisticatedstorage.util.GenericWoodStorageHelper;
 
 import javax.annotation.Nullable;
 
@@ -164,11 +165,15 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 		BarrelBlockEntity be = WorldHelper.getBlockEntity(level, pos, BarrelBlockEntity.class).orElse(null);
 
 		if (be != null) {
-			hasMainColor = be.getStorageWrapper().hasMainColor();
-			hasAccentColor = be.getStorageWrapper().hasAccentColor();
+			Optional<WoodType> woodType = be.getWoodType();
+			boolean isGenericWood = woodType.map(GenericWoodStorageHelper::isGenericWood).orElse(false);
+			hasMainColor = be.getStorageWrapper().hasMainColor() || isGenericWood;
+			hasAccentColor = be.getStorageWrapper().hasAccentColor() || isGenericWood;
 			isPacked = be.isPacked();
 			showsTier = be.shouldShowTier();
-			woodName = be.getWoodType().map(WoodType::name).orElse(WoodType.ACACIA.name());
+			woodName = !isGenericWood && (woodType.isPresent() || !(hasMainColor && hasAccentColor))
+					? woodType.map(WoodType::name).orElse(WoodType.ACACIA.name())
+					: null;
 			materials = be.getMaterials();
 			materialTintColors = getMaterialTintColors(materials, level, pos);
 			flatTop = state != null && state.getValue(BarrelBlock.FLAT_TOP);

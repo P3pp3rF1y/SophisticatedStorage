@@ -26,6 +26,7 @@ import net.p3pp3rf1y.sophisticatedstorage.block.BarrelMaterial;
 import net.p3pp3rf1y.sophisticatedstorage.item.BarrelBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
+import net.p3pp3rf1y.sophisticatedstorage.util.GenericWoodStorageHelper;
 import org.joml.Vector3f;
 
 import javax.annotation.Nullable;
@@ -64,14 +65,17 @@ public record BarrelItemModel(BarrelBlockStateModelBase model, @Nullable BarrelB
 		boolean flatTop = BarrelBlockItem.isFlatTop(stack);
 		BarrelBlockStateModelBase updatedModel = flatTop && flatTopModel != null ? flatTopModel : model;
 
-		boolean hasMainColor = StorageBlockItem.getMainColorFromComponentHolder(stack).isPresent();
+		Optional<WoodType> woodType = WoodStorageBlockItem.getWoodType(stack);
+		boolean isGenericWood = woodType.map(GenericWoodStorageHelper::isGenericWood).orElse(false);
+		boolean hasMainColor = StorageBlockItem.getMainColorFromComponentHolder(stack).isPresent() || isGenericWood;
 		updatedModel.setHasMainColor(hasMainColor);
-		boolean hasAccentColor = StorageBlockItem.getAccentColorFromComponentHolder(stack).isPresent();
+		boolean hasAccentColor = StorageBlockItem.getAccentColorFromComponentHolder(stack).isPresent() || isGenericWood;
 		updatedModel.setHasAccentColor(hasAccentColor);
 		Map<BarrelMaterial, ResourceLocation> materials = BarrelBlockItem.getMaterials(stack);
 		updatedModel.setBarrelMaterials(materials);
-		String woodName = WoodStorageBlockItem.getWoodType(stack).map(WoodType::name)
-				.orElse(hasMainColor && hasAccentColor && materials.isEmpty() ? null : WoodType.ACACIA.name());
+		String woodName = isGenericWood
+				? null
+				: woodType.map(WoodType::name).orElse(hasMainColor && hasAccentColor && materials.isEmpty() ? null : WoodType.ACACIA.name());
 		updatedModel.setWoodName(woodName);
 		boolean packed = WoodStorageBlockItem.isPacked(stack);
 		updatedModel.setPacked(packed);
