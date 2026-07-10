@@ -50,6 +50,7 @@ import net.p3pp3rf1y.sophisticatedstorage.item.PaintbrushItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageContentsTooltip;
 import net.p3pp3rf1y.sophisticatedstorage.network.RequestPlayerSettingsPayload;
 import net.p3pp3rf1y.sophisticatedstorage.network.ScrolledToolPayload;
+import net.p3pp3rf1y.sophisticatedstorage.util.GenericWoodStorageHelper;
 
 import java.util.Map;
 
@@ -212,6 +213,7 @@ public class ClientEventHandler {
 
 	private static void onRegisterReloadListeners(RegisterClientReloadListenersEvent event) {
 		event.registerReloadListener((ResourceManagerReloadListener) resourceManager -> {
+			GenericWoodStorageHelper.invalidateCache();
 			BarrelDynamicModelBase.invalidateCache();
 			BarrelBakedModelBase.invalidateCache();
 		});

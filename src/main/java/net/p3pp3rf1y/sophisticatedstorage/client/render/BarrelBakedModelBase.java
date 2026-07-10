@@ -50,6 +50,7 @@ import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.item.BarrelBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
+import net.p3pp3rf1y.sophisticatedstorage.util.GenericWoodStorageHelper;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -792,10 +793,12 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 
 	private static ModelData getModelDataFromBlockEntity(BarrelBlockEntity be, @Nullable BlockAndTintGetter world, @Nullable BlockPos pos) {
 		ModelData.Builder builder = ModelData.builder();
+		Optional<WoodType> woodType = be.getWoodType();
+		boolean isGenericWood = woodType.map(GenericWoodStorageHelper::isGenericWood).orElse(false);
 		boolean hasMainColor = be.getStorageWrapper().hasMainColor();
-		builder.with(HAS_MAIN_COLOR, hasMainColor);
 		boolean hasAccentColor = be.getStorageWrapper().hasAccentColor();
-		builder.with(HAS_ACCENT_COLOR, hasAccentColor);
+		builder.with(HAS_MAIN_COLOR, hasMainColor || isGenericWood);
+		builder.with(HAS_ACCENT_COLOR, hasAccentColor || isGenericWood);
 		if (!be.hasFullyDynamicRenderer()) {
 			builder.with(DISPLAY_ITEMS, be.getStorageWrapper().getRenderInfo().getItemDisplayRenderInfo().getDisplayItems());
 			builder.with(INACCESSIBLE_SLOTS, be.getStorageWrapper().getRenderInfo().getItemDisplayRenderInfo().getInaccessibleSlots());
@@ -803,8 +806,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 		builder.with(IS_PACKED, be.isPacked());
 		builder.with(SHOWS_LOCK, be.isLocked() && be.shouldShowLock());
 		builder.with(SHOWS_TIER, be.shouldShowTier());
-		Optional<WoodType> woodType = be.getWoodType();
-		if (woodType.isPresent() || !(hasMainColor && hasAccentColor)) {
+		if (!isGenericWood && (woodType.isPresent() || !(hasMainColor && hasAccentColor))) {
 			builder.with(WOOD_NAME, woodType.orElse(WoodType.ACACIA).name());
 		}
 
@@ -889,11 +891,17 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 				return flatTopModel.getOverrides().resolve(flatTopModel, stack, level, entity, seed);
 			}
 
-			boolean hasMainColor = StorageBlockItem.getMainColorFromComponentHolder(stack).isPresent();
-			boolean hasAccentColor = StorageBlockItem.getAccentColorFromComponentHolder(stack).isPresent();
+			Optional<WoodType> woodType = WoodStorageBlockItem.getWoodType(stack);
+			boolean isGenericWood = woodType.map(GenericWoodStorageHelper::isGenericWood).orElse(false);
+			boolean hasMainColor = StorageBlockItem.getMainColorFromComponentHolder(stack).isPresent() || isGenericWood;
+			boolean hasAccentColor = StorageBlockItem.getAccentColorFromComponentHolder(stack).isPresent() || isGenericWood;
 			Map<BarrelMaterial, ResourceLocation> materials = BarrelBlockItem.getMaterials(stack);
-			String woodName = WoodStorageBlockItem.getWoodType(stack).map(WoodType::name).orElse(
-					barrelBakedModel.barrelHasAccentColor && barrelBakedModel.barrelHasMainColor && materials.isEmpty() ? null : WoodType.ACACIA.name());
+			String woodName = isGenericWood
+					? null
+					: woodType.map(WoodType::name)
+							.orElse(barrelBakedModel.barrelHasAccentColor && barrelBakedModel.barrelHasMainColor && materials.isEmpty()
+									? null
+									: WoodType.ACACIA.name());
 			boolean packed = WoodStorageBlockItem.isPacked(stack);
 			boolean barrelShowsTier = StorageBlockItem.showsTier(stack);
 			Item item = stack.getItem();
