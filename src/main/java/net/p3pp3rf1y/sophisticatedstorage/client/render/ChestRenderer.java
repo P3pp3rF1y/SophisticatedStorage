@@ -31,8 +31,10 @@ import net.p3pp3rf1y.sophisticatedstorage.block.ChestBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.ChestBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageWrapper;
 import net.p3pp3rf1y.sophisticatedstorage.client.ClientEventHandler;
+import net.p3pp3rf1y.sophisticatedstorage.client.GenericWoodStorageTintCache;
 import net.p3pp3rf1y.sophisticatedstorage.client.StorageTextureManager;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
+import net.p3pp3rf1y.sophisticatedstorage.util.GenericWoodStorageHelper;
 
 import java.util.Map;
 import java.util.Optional;
@@ -42,6 +44,7 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity, ChestRender
 	private static final String BOTTOM = "bottom";
 	private static final String LID = "lid";
 	private static final String LOCK = "lock";
+	private static final int GENERIC_WOOD_CHEST_ACCENT_COLOR = 0x463E32;
 	private final DisplayItemRenderer displayItemRenderer = new DisplayItemRenderer(0.5 * (14.01 / 16), new Vec3(-1 / 16D, 0, -0.0075));
 	private final Map<ChestType, ChestSubRenderer> chestSubRenderers;
 	private final ModelPart root;
@@ -172,6 +175,8 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity, ChestRender
 
 		BlockState blockState = blockEntity.getBlockState();
 		renderState.woodType = blockEntity.getWoodType();
+		renderState.isGenericWood = renderState.woodType.map(GenericWoodStorageHelper::isGenericWood).orElse(false);
+		renderState.genericTintColors = renderState.isGenericWood ? renderState.woodType.flatMap(GenericWoodStorageTintCache::getTintColors) : Optional.empty();
 		renderState.chestType = blockState.getValue(ChestBlock.TYPE);
 		renderState.block = blockState.getBlock();
 		renderState.facing = blockState.getValue(ChestBlock.FACING);
@@ -196,7 +201,7 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity, ChestRender
 	@Override
 	public void submit(ChestRenderState renderState, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState cameraRenderState) {
 		ChestSubRenderer subRenderer = chestSubRenderers.get(renderState.chestType);
-		if (!subRenderer.setChestMaterialsFrom(renderState.woodType.orElse(WoodType.ACACIA), renderState.block)) {
+		if (!subRenderer.setChestMaterialsFrom(renderState.isGenericWood ? WoodType.ACACIA : renderState.woodType.orElse(WoodType.ACACIA), renderState.block)) {
 			return;
 		}
 
@@ -206,15 +211,17 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity, ChestRender
 		poseStack.mulPose(Axis.YP.rotationDegrees(-f));
 		poseStack.translate(-0.5D, -0.5D, -0.5D);
 
-		if (renderState.woodType.isPresent() || !(renderState.hasMainColor && renderState.hasAccentColor)) {
+		if (!renderState.isGenericWood && (renderState.woodType.isPresent() || !(renderState.hasMainColor && renderState.hasAccentColor))
+				|| renderState.isGenericWood && renderState.genericTintColors.isEmpty()) {
 			subRenderer.submitBottomAndLid(submitNodeCollector, renderState, poseStack, StorageTextureManager.ChestMaterial.BASE);
 		}
-		if (renderState.hasMainColor) {
-			subRenderer.submitBottomAndLidWithTint(submitNodeCollector, renderState, poseStack, renderState.mainColor,
-					StorageTextureManager.ChestMaterial.TINTABLE_MAIN);
+		if (renderState.hasMainColor || renderState.genericTintColors.isPresent()) {
+			int mainColor = renderState.hasMainColor ? renderState.mainColor : renderState.genericTintColors.get().mainColor();
+			subRenderer.submitBottomAndLidWithTint(submitNodeCollector, renderState, poseStack, mainColor, StorageTextureManager.ChestMaterial.TINTABLE_MAIN);
 		}
-		if (renderState.hasAccentColor) {
-			subRenderer.submitBottomAndLidWithTint(submitNodeCollector, renderState, poseStack, renderState.accentColor,
+		if (renderState.hasAccentColor || renderState.genericTintColors.isPresent()) {
+			int accentColor = renderState.hasAccentColor ? renderState.accentColor : GENERIC_WOOD_CHEST_ACCENT_COLOR;
+			subRenderer.submitBottomAndLidWithTint(submitNodeCollector, renderState, poseStack, accentColor,
 					StorageTextureManager.ChestMaterial.TINTABLE_ACCENT);
 		}
 		if (renderState.showsTier) {
@@ -408,6 +415,8 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity, ChestRender
 
 	public static class ChestRenderState extends StorageRenderState {
 		public Optional<WoodType> woodType;
+		public boolean isGenericWood;
+		public Optional<GenericWoodStorageTintCache.TintColors> genericTintColors = Optional.empty();
 		public ChestType chestType;
 		public Block block;
 		public Direction facing;

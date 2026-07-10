@@ -30,6 +30,7 @@ public class StorageRecipeViewerDisplays {
 		ShulkerBoxFromChestRecipesMaker.getShapedRecipeSpecs(context::getSubtypeInterpreter).forEach(catalog::addCraftingSpec);
 		ClientRecipeHelper.transformAllRecipeHoldersOfType(RecipeType.CRAFTING, CraftingRecipe.class, (id, recipeHolder) -> recipeHolder).stream()
 				.filter(StorageRecipeViewerDisplays::isBaseStorageRecipe).forEach(catalog::addCraftingRecipe);
+		GenericWoodStorageRecipesMaker.getRecipes().forEach(catalog::addCraftingRecipe);
 		FlatBarrelRecipesMaker.getShapelessSpecs().forEach(catalog::addCraftingSpec);
 		ClientRecipeHelper
 				.transformAllRecipeHoldersOfType(RecipeType.CRAFTING, ShulkerBoxFromVanillaShapelessRecipe.class,
@@ -43,7 +44,8 @@ public class StorageRecipeViewerDisplays {
 		return recipeHolder.id().identifier().getNamespace().equals(SophisticatedStorage.MOD_ID) && result.getItem() instanceof StorageBlockItem
 				&& !(recipe instanceof StorageTierUpgradeRecipe) && !(recipe instanceof StorageTierUpgradeShapelessRecipe)
 				&& !(recipe instanceof DoubleChestTierUpgradeRecipe) && !(recipe instanceof DoubleChestTierUpgradeShapelessRecipe)
-				&& !(recipe instanceof ShulkerBoxFromChestRecipe) && !(recipe instanceof ShulkerBoxFromVanillaShapelessRecipe);
+				&& !(recipe instanceof ShulkerBoxFromChestRecipe) && !(recipe instanceof ShulkerBoxFromVanillaShapelessRecipe)
+				&& !(recipe instanceof GenericWoodStorageRecipe);
 	}
 
 	public static void registerDyeRecipes(IRecipeViewerDisplayCatalog catalog, IRecipeViewerDisplayContext context) {

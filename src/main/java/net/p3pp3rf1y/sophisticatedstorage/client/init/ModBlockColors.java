@@ -13,7 +13,10 @@ import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderData;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.block.LimitedBarrelBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
+import net.p3pp3rf1y.sophisticatedstorage.block.WoodStorageBlockEntity;
+import net.p3pp3rf1y.sophisticatedstorage.client.GenericWoodStorageTintCache;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
+import net.p3pp3rf1y.sophisticatedstorage.util.GenericWoodStorageHelper;
 
 import java.util.List;
 
@@ -86,14 +89,26 @@ public class ModBlockColors {
 	private static class MainColorTintSource extends StorageBlockTintSource {
 		@Override
 		protected int getColor(StorageBlockEntity be) {
-			return be.getStorageWrapper().getMainColor();
+			int mainColor = be.getStorageWrapper().getMainColor();
+			return mainColor != -1 ? mainColor : getGenericWoodColor(be, true);
 		}
 	}
 
 	private static class AccentColorTintSource extends StorageBlockTintSource {
 		@Override
 		protected int getColor(StorageBlockEntity be) {
-			return be.getStorageWrapper().getAccentColor();
+			int accentColor = be.getStorageWrapper().getAccentColor();
+			return accentColor != -1 ? accentColor : getGenericWoodColor(be, false);
 		}
+	}
+
+	private static int getGenericWoodColor(StorageBlockEntity be, boolean mainColor) {
+		if (!(be instanceof WoodStorageBlockEntity woodStorageBlockEntity)) {
+			return -1;
+		}
+
+		return woodStorageBlockEntity.getWoodType().filter(GenericWoodStorageHelper::isGenericWood)
+				.map(woodType -> mainColor ? GenericWoodStorageTintCache.getMainColor(woodType) : GenericWoodStorageTintCache.getAccentColor(woodType))
+				.orElse(-1);
 	}
 }

@@ -26,6 +26,7 @@ import net.p3pp3rf1y.sophisticatedstorage.block.BarrelMaterial;
 import net.p3pp3rf1y.sophisticatedstorage.item.BarrelBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
+import net.p3pp3rf1y.sophisticatedstorage.util.GenericWoodStorageHelper;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 import org.jspecify.annotations.Nullable;
@@ -67,11 +68,13 @@ public record BarrelItemModel(BarrelBlockStateModelBase model, @Nullable BarrelB
 		updatedModel.setFlatTop(flatTop);
 		state.appendModelIdentityElement(flatTop);
 
-		boolean hasMainColor = StorageBlockItem.getMainColorFromComponentHolder(stack).isPresent();
+		Optional<WoodType> woodType = WoodStorageBlockItem.getWoodType(stack);
+		boolean isGenericWood = woodType.map(GenericWoodStorageHelper::isGenericWood).orElse(false);
+		boolean hasMainColor = StorageBlockItem.getMainColorFromComponentHolder(stack).isPresent() || isGenericWood;
 		updatedModel.setHasMainColor(hasMainColor);
 		state.appendModelIdentityElement(hasMainColor);
 
-		boolean hasAccentColor = StorageBlockItem.getAccentColorFromComponentHolder(stack).isPresent();
+		boolean hasAccentColor = StorageBlockItem.getAccentColorFromComponentHolder(stack).isPresent() || isGenericWood;
 		updatedModel.setHasAccentColor(hasAccentColor);
 		state.appendModelIdentityElement(hasAccentColor);
 
@@ -79,8 +82,9 @@ public record BarrelItemModel(BarrelBlockStateModelBase model, @Nullable BarrelB
 		updatedModel.setBarrelMaterials(materials);
 		state.appendModelIdentityElement(materials);
 
-		String woodName = WoodStorageBlockItem.getWoodType(stack).map(WoodType::name)
-				.orElse(hasMainColor && hasAccentColor && materials.isEmpty() ? null : WoodType.ACACIA.name());
+		String woodName = isGenericWood
+				? null
+				: woodType.map(WoodType::name).orElse(hasMainColor && hasAccentColor && materials.isEmpty() ? null : WoodType.ACACIA.name());
 		updatedModel.setWoodName(woodName);
 		if (woodName != null) {
 			state.appendModelIdentityElement(woodName);

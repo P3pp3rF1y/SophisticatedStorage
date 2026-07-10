@@ -74,6 +74,7 @@ public class Config {
 	public static class Client {
 		public final ModConfigSpec.BooleanValue showHigherTierTintedVariants;
 		public final ModConfigSpec.BooleanValue showSingleWoodVariantOnly;
+		public final ModConfigSpec.BooleanValue showHigherTierGenericWoodVariants;
 
 		public Client(ModConfigSpec.Builder builder) {
 			showHigherTierTintedVariants = builder.comment(
@@ -82,6 +83,9 @@ public class Config {
 			showSingleWoodVariantOnly = builder
 					.comment("Determines whether JEI and creative tab will show only single wood variant of storage item per tier. Makes creative tab and .")
 					.worldRestart().define("showSingleWoodVariantOnly", false);
+			showHigherTierGenericWoodVariants = builder.comment(
+					"Determines whether JEI and creative tab will show generic wood variants for copper and higher tiers. Can help with keeping these lists smaller when many compatible wood types are loaded.")
+					.worldRestart().define("showHigherTierGenericWoodVariants", false);
 		}
 	}
 
