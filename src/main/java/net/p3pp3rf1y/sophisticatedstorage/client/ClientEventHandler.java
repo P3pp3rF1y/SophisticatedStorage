@@ -45,6 +45,7 @@ import net.p3pp3rf1y.sophisticatedstorage.item.PaintbrushItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageContentsTooltip;
 import net.p3pp3rf1y.sophisticatedstorage.network.RequestPlayerSettingsPayload;
 import net.p3pp3rf1y.sophisticatedstorage.network.ScrolledToolPayload;
+import net.p3pp3rf1y.sophisticatedstorage.util.GenericWoodStorageHelper;
 
 public class ClientEventHandler {
 	private ClientEventHandler() {
@@ -229,6 +230,7 @@ public class ClientEventHandler {
 	}
 
 	private static void invalidateBarrelCache(ResourceManager resourceManager) {
+		GenericWoodStorageHelper.invalidateCache();
 		BarrelUnbakedModelBase.invalidateCache();
 		BarrelBlockStateModelBase.invalidateCache();
 	}

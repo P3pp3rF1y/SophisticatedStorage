@@ -14,10 +14,10 @@ import net.minecraft.world.level.block.state.properties.WoodType;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.TranslationHelper;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModDataComponents;
+import net.p3pp3rf1y.sophisticatedstorage.util.GenericWoodStorageHelper;
 
 import javax.annotation.Nullable;
 
-import java.util.Locale;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -100,6 +100,6 @@ public class WoodStorageBlockItem extends StorageBlockItem {
 		if (woodType == null) {
 			return Component.translatable(descriptionId, "", "");
 		}
-		return Component.translatable(descriptionId, Component.translatable("wood_name.sophisticatedstorage." + woodType.name().toLowerCase(Locale.ROOT)), " ");
+		return Component.translatable(descriptionId, GenericWoodStorageHelper.getWoodDisplayName(woodType), " ");
 	}
 }

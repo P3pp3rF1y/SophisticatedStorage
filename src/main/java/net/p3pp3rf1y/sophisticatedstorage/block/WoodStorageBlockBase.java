@@ -42,6 +42,7 @@ import net.p3pp3rf1y.sophisticatedstorage.item.PackingTapeItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageToolItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
+import net.p3pp3rf1y.sophisticatedstorage.util.GenericWoodStorageHelper;
 
 import javax.annotation.Nullable;
 
@@ -143,6 +144,10 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 			itemConsumer.accept(WoodStorageBlockItem.setWoodType(new ItemStack(this), WoodType.ACACIA));
 		} else {
 			CUSTOM_TEXTURE_WOOD_TYPES.keySet().forEach(woodType -> itemConsumer.accept(WoodStorageBlockItem.setWoodType(new ItemStack(this), woodType)));
+			if (shouldShowGenericWoodVariants()) {
+				GenericWoodStorageHelper.getGenericWoodTypes()
+						.forEach(woodType -> itemConsumer.accept(WoodStorageBlockItem.setWoodType(new ItemStack(this), woodType)));
+			}
 		}
 
 		if (isBasicTier()) {
@@ -166,6 +171,10 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 	private boolean isBasicTier() {
 		return this == ModBlocks.BARREL.get() || this == ModBlocks.CHEST.get() || this == ModBlocks.LIMITED_BARREL_1.get()
 				|| this == ModBlocks.LIMITED_BARREL_2.get() || this == ModBlocks.LIMITED_BARREL_3.get() || this == ModBlocks.LIMITED_BARREL_4.get();
+	}
+
+	private boolean shouldShowGenericWoodVariants() {
+		return isBasicTier() || Config.CLIENT.showHigherTierGenericWoodVariants.get();
 	}
 
 	@Override
