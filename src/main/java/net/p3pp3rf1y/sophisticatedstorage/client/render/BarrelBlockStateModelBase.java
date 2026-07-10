@@ -34,6 +34,7 @@ import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelMaterial;
+import net.p3pp3rf1y.sophisticatedstorage.util.GenericWoodStorageHelper;
 import org.jspecify.annotations.Nullable;
 
 import java.util.*;
@@ -482,7 +483,10 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 		boolean hasMainColor = be.getStorageWrapper().hasMainColor();
 		boolean hasAccentColor = be.getStorageWrapper().hasAccentColor();
 		Optional<WoodType> woodType = be.getWoodType();
-		String woodName = woodType.isPresent() || !(hasMainColor && hasAccentColor) ? woodType.orElse(WoodType.ACACIA).name() : null;
+		boolean isGenericWood = woodType.map(GenericWoodStorageHelper::isGenericWood).orElse(false);
+		hasMainColor = hasMainColor || isGenericWood;
+		hasAccentColor = hasAccentColor || isGenericWood;
+		String woodName = !isGenericWood && (woodType.isPresent() || !(hasMainColor && hasAccentColor)) ? woodType.orElse(WoodType.ACACIA).name() : null;
 		Map<BarrelMaterial, Identifier> materials = copyMaterials(be.getMaterials());
 		return new ModelData(woodName, hasMainColor, hasAccentColor, be.isPacked(), be.isLocked() && be.shouldShowLock(), be.shouldShowTier(), materials,
 				getMaterialTintColors(materials, level, pos), state != null && state.getValue(BarrelBlock.FLAT_TOP));
@@ -499,7 +503,10 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 		showsLock = be.isLocked() && be.shouldShowLock();
 		showsTier = be.shouldShowTier();
 		Optional<WoodType> woodType = be.getWoodType();
-		if (woodType.isPresent() || !(hasMainColor && hasAccentColor)) {
+		boolean isGenericWood = woodType.map(GenericWoodStorageHelper::isGenericWood).orElse(false);
+		hasMainColor = hasMainColor || isGenericWood;
+		hasAccentColor = hasAccentColor || isGenericWood;
+		if (!isGenericWood && (woodType.isPresent() || !(hasMainColor && hasAccentColor))) {
 			woodName = woodType.orElse(WoodType.ACACIA).name();
 		} else {
 			woodName = null;

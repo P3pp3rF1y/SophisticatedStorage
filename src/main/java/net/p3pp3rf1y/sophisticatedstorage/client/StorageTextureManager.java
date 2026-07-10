@@ -64,6 +64,7 @@ public class StorageTextureManager extends SimpleJsonResourceReloadListener<Json
 
 	private void clear() {
 		woodChestMaterials.clear();
+		GenericWoodStorageTintCache.clear();
 	}
 
 	@Override

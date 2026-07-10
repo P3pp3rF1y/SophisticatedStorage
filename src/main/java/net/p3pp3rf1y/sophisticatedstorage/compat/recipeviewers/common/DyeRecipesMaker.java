@@ -17,6 +17,7 @@ import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockBase;
 import net.p3pp3rf1y.sophisticatedstorage.block.WoodStorageBlockBase;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
+import net.p3pp3rf1y.sophisticatedstorage.util.GenericWoodStorageHelper;
 
 import java.util.*;
 import java.util.function.Function;
@@ -92,8 +93,10 @@ public class DyeRecipesMaker {
 	}
 
 	static List<ItemStack> getWoodStorageStackList(StorageBlockBase woodStorageBlock) {
-		Set<ItemStack> ret = new HashSet<>();
+		Set<ItemStack> ret = new LinkedHashSet<>();
 		WoodStorageBlockBase.CUSTOM_TEXTURE_WOOD_TYPES.keySet()
+				.forEach(woodType -> ret.add(WoodStorageBlockItem.setWoodType(new ItemStack(woodStorageBlock), woodType)));
+		GenericWoodStorageHelper.getGenericWoodTypes()
 				.forEach(woodType -> ret.add(WoodStorageBlockItem.setWoodType(new ItemStack(woodStorageBlock), woodType)));
 		return List.copyOf(ret);
 	}

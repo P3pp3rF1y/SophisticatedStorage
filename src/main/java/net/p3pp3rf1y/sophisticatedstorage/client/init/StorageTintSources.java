@@ -10,7 +10,10 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
+import net.p3pp3rf1y.sophisticatedstorage.client.GenericWoodStorageTintCache;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
+import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
+import net.p3pp3rf1y.sophisticatedstorage.util.GenericWoodStorageHelper;
 import org.jspecify.annotations.Nullable;
 
 public class StorageTintSources {
@@ -29,7 +32,8 @@ public class StorageTintSources {
 
 		@Override
 		public int calculate(ItemStack itemStack, @Nullable ClientLevel clientLevel, @Nullable LivingEntity livingEntity) {
-			return StorageBlockItem.getMainColorFromComponentHolder(itemStack).orElse(-1);
+			return StorageBlockItem.getMainColorFromComponentHolder(itemStack).orElseGet(() -> WoodStorageBlockItem.getWoodType(itemStack)
+					.filter(GenericWoodStorageHelper::isGenericWood).map(GenericWoodStorageTintCache::getMainColor).orElse(-1));
 		}
 
 		@Override
@@ -48,7 +52,8 @@ public class StorageTintSources {
 
 		@Override
 		public int calculate(ItemStack itemStack, @Nullable ClientLevel clientLevel, @Nullable LivingEntity livingEntity) {
-			return StorageBlockItem.getAccentColorFromComponentHolder(itemStack).orElse(-1);
+			return StorageBlockItem.getAccentColorFromComponentHolder(itemStack).orElseGet(() -> WoodStorageBlockItem.getWoodType(itemStack)
+					.filter(GenericWoodStorageHelper::isGenericWood).map(GenericWoodStorageTintCache::getAccentColor).orElse(-1));
 		}
 
 		@Override
