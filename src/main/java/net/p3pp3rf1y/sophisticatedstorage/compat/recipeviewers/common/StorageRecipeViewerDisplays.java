@@ -10,6 +10,7 @@ import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.IRecipeViewer
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.SingleColorDyeRecipeSpec;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.DoubleChestTierUpgradeRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.DoubleChestTierUpgradeShapelessRecipe;
+import net.p3pp3rf1y.sophisticatedstorage.crafting.GenericWoodStorageRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.ShulkerBoxFromChestRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.ShulkerBoxFromVanillaShapelessRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.StorageTierUpgradeRecipe;
@@ -37,6 +38,7 @@ public class StorageRecipeViewerDisplays {
 		ShulkerBoxFromChestRecipesMaker.getShapedRecipeSpecs(context::getSubtypeInterpreter).forEach(catalog::addCraftingSpec);
 		ClientRecipeHelper.transformAllRecipeHoldersOfType(RecipeType.CRAFTING, CraftingRecipe.class, (id, recipeHolder) -> recipeHolder).stream()
 				.filter(StorageRecipeViewerDisplays::isBaseStorageRecipe).forEach(catalog::addCraftingRecipe);
+		GenericWoodStorageRecipesMaker.getRecipes().forEach(catalog::addCraftingRecipe);
 		FlatBarrelRecipesMaker.getShapelessRecipes().forEach(catalog::addCraftingRecipe);
 		ClientRecipeHelper
 				.transformAllRecipeHoldersOfType(RecipeType.CRAFTING, ShulkerBoxFromVanillaShapelessRecipe.class,
@@ -51,7 +53,7 @@ public class StorageRecipeViewerDisplays {
 				&& WoodStorageBlockItem.getWoodType(result).isPresent() && !(recipe instanceof StorageTierUpgradeRecipe)
 				&& !(recipe instanceof StorageTierUpgradeShapelessRecipe) && !(recipe instanceof DoubleChestTierUpgradeRecipe)
 				&& !(recipe instanceof DoubleChestTierUpgradeShapelessRecipe) && !(recipe instanceof ShulkerBoxFromChestRecipe)
-				&& !(recipe instanceof ShulkerBoxFromVanillaShapelessRecipe);
+				&& !(recipe instanceof ShulkerBoxFromVanillaShapelessRecipe) && !(recipe instanceof GenericWoodStorageRecipe);
 	}
 
 	public static void registerDyeRecipes(IRecipeViewerDisplayCatalog catalog, IRecipeViewerDisplayContext context) {
