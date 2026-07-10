@@ -1,5 +1,6 @@
 package net.p3pp3rf1y.sophisticatedstorage.crafting;
 
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.data.BlockFamily;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.CraftingContainer;
@@ -9,10 +10,13 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.properties.WoodType;
 import net.p3pp3rf1y.sophisticatedcore.crafting.IWrapperRecipe;
 import net.p3pp3rf1y.sophisticatedcore.crafting.RecipeWrapperSerializer;
 import net.p3pp3rf1y.sophisticatedstorage.block.WoodStorageBlockBase;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
+import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
+import net.p3pp3rf1y.sophisticatedstorage.util.GenericWoodStorageHelper;
 
 import java.util.LinkedHashSet;
 import java.util.Optional;
@@ -39,6 +43,13 @@ public class GenericWoodStorageRecipe extends ShapedRecipe implements IWrapperRe
 		return super.matches(inv, level) && hasMixedOrNonCustomWood(inv);
 	}
 
+	@Override
+	public ItemStack assemble(CraftingContainer inv, RegistryAccess registries) {
+		ItemStack result = super.assemble(inv, registries);
+		getGenericWoodType(inv).ifPresent(woodType -> WoodStorageBlockItem.setWoodType(result, woodType));
+		return result;
+	}
+
 	private record TopLeftCornerCoords(int left, int top) {
 	}
 
@@ -50,8 +61,8 @@ public class GenericWoodStorageRecipe extends ShapedRecipe implements IWrapperRe
 		int minRow = Integer.MAX_VALUE;
 		int minCol = Integer.MAX_VALUE;
 
-		for (int row = 0; row < inv.getHeight() - getHeight(); row++) {
-			for (int col = 0; col < inv.getWidth() - getWidth(); col++) {
+		for (int row = 0; row <= inv.getHeight() - getHeight(); row++) {
+			for (int col = 0; col <= inv.getWidth() - getWidth(); col++) {
 				if (!inv.getItem(col + row * inv.getWidth()).isEmpty()) {
 					minRow = Math.min(minRow, row);
 					minCol = Math.min(minCol, col);
@@ -61,14 +72,39 @@ public class GenericWoodStorageRecipe extends ShapedRecipe implements IWrapperRe
 		return new TopLeftCornerCoords(minCol, minRow);
 	}
 
+	private Optional<WoodType> getGenericWoodType(CraftingContainer inv) {
+		TopLeftCornerCoords topLeftCorner = getTopLeftCornerCoords(inv);
+		Set<WoodType> genericWoodTypes = new LinkedHashSet<>();
+		for (int row = topLeftCorner.top; row < topLeftCorner.top + getHeight(); row++) {
+			for (int col = topLeftCorner.left; col < topLeftCorner.left + getWidth(); col++) {
+				int inputSlot = col + row * inv.getWidth();
+				int recipeSlot = col - topLeftCorner.left + (row - topLeftCorner.top) * getWidth();
+				ItemStack itemStack = inv.getItem(inputSlot);
+				if (itemStack.isEmpty() || getIngredients().get(recipeSlot).getItems().length < 2) {
+					continue;
+				}
+
+				Optional<WoodType> genericWoodType = GenericWoodStorageHelper.getWoodTypeForPlanks(itemStack)
+						.or(() -> GenericWoodStorageHelper.getWoodTypeForSlab(itemStack));
+				if (genericWoodType.isEmpty()) {
+					return Optional.empty();
+				}
+				genericWoodTypes.add(genericWoodType.get());
+			}
+		}
+
+		return genericWoodTypes.size() == 1 ? Optional.of(genericWoodTypes.iterator().next()) : Optional.empty();
+	}
+
 	private boolean hasMixedOrNonCustomWood(CraftingContainer inv) {
 		TopLeftCornerCoords topLeftCorner = getTopLeftCornerCoords(inv);
 		Set<BlockFamily> customFamilies = new LinkedHashSet<>();
 		for (int row = topLeftCorner.top; row < topLeftCorner.top + getHeight(); row++) {
 			for (int col = topLeftCorner.left; col < topLeftCorner.left + getWidth(); col++) {
-				int slot = col + row * inv.getWidth();
-				ItemStack itemStack = inv.getItem(slot);
-				if (itemStack.isEmpty() || getIngredients().get(slot).getItems().length < 2) {
+				int inputSlot = col + row * inv.getWidth();
+				int recipeSlot = col - topLeftCorner.left + (row - topLeftCorner.top) * getWidth();
+				ItemStack itemStack = inv.getItem(inputSlot);
+				if (itemStack.isEmpty() || getIngredients().get(recipeSlot).getItems().length < 2) {
 					continue;
 				}
 

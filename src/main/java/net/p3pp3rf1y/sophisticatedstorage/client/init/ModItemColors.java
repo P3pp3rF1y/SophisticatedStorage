@@ -1,8 +1,11 @@
 package net.p3pp3rf1y.sophisticatedstorage.client.init;
 
 import net.minecraftforge.client.event.RegisterColorHandlersEvent;
+import net.p3pp3rf1y.sophisticatedstorage.client.GenericWoodStorageTintCache;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
+import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
+import net.p3pp3rf1y.sophisticatedstorage.util.GenericWoodStorageHelper;
 
 public class ModItemColors {
 	private ModItemColors() {
@@ -14,9 +17,11 @@ public class ModItemColors {
 				return -1;
 			}
 			if (tintIndex == 1000) {
-				return StorageBlockItem.getMainColorFromStack(stack).orElse(-1);
+				return StorageBlockItem.getMainColorFromStack(stack).orElseGet(() -> WoodStorageBlockItem.getWoodType(stack)
+						.filter(GenericWoodStorageHelper::isGenericWood).map(GenericWoodStorageTintCache::getMainColor).orElse(-1));
 			} else {
-				return StorageBlockItem.getAccentColorFromStack(stack).orElse(-1);
+				return StorageBlockItem.getAccentColorFromStack(stack).orElseGet(() -> WoodStorageBlockItem.getWoodType(stack)
+						.filter(GenericWoodStorageHelper::isGenericWood).map(GenericWoodStorageTintCache::getAccentColor).orElse(-1));
 			}
 		}, ModBlocks.BARREL_ITEM.get(), ModBlocks.COPPER_BARREL_ITEM.get(), ModBlocks.IRON_BARREL_ITEM.get(), ModBlocks.GOLD_BARREL_ITEM.get(),
 				ModBlocks.DIAMOND_BARREL_ITEM.get(), ModBlocks.NETHERITE_BARREL_ITEM.get(), ModBlocks.LIMITED_BARREL_1_ITEM.get(),

@@ -77,6 +77,7 @@ public class Config {
 	public static class Client {
 		public final ForgeConfigSpec.BooleanValue showHigherTierTintedVariants;
 		public final ForgeConfigSpec.BooleanValue showSingleWoodVariantOnly;
+		public final ForgeConfigSpec.BooleanValue showHigherTierGenericWoodVariants;
 
 		public Client(ForgeConfigSpec.Builder builder) {
 			builder.comment("Client-side Settings").push("client");
@@ -87,6 +88,9 @@ public class Config {
 			showSingleWoodVariantOnly = builder.comment(
 					"Determines whether JEI and creative tab will show only one wood variant of each storage item tier. Makes creative tab and JEI lists smaller.")
 					.worldRestart().define("showSingleWoodVariantOnly", false);
+			showHigherTierGenericWoodVariants = builder.comment(
+					"Determines whether JEI and creative tab will show generic wood variants for copper and higher tiers. Can help with keeping these lists smaller when many compatible wood types are loaded.")
+					.worldRestart().define("showHigherTierGenericWoodVariants", false);
 
 			builder.pop();
 		}

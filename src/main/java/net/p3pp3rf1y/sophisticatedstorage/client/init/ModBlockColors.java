@@ -10,7 +10,10 @@ import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.block.LimitedBarrelBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
+import net.p3pp3rf1y.sophisticatedstorage.block.WoodStorageBlockEntity;
+import net.p3pp3rf1y.sophisticatedstorage.client.GenericWoodStorageTintCache;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
+import net.p3pp3rf1y.sophisticatedstorage.util.GenericWoodStorageHelper;
 
 import javax.annotation.Nullable;
 
@@ -44,9 +47,11 @@ public class ModBlockColors {
 		}
 		return WorldHelper.getBlockEntity(blockDisplayReader, pos, StorageBlockEntity.class).map(be -> {
 			if (tintIndex == 1000) {
-				return be.getStorageWrapper().getMainColor();
+				int mainColor = be.getStorageWrapper().getMainColor();
+				return mainColor != -1 ? mainColor : getGenericWoodColor(be, true);
 			} else if (tintIndex == 1001) {
-				return be.getStorageWrapper().getAccentColor();
+				int accentColor = be.getStorageWrapper().getAccentColor();
+				return accentColor != -1 ? accentColor : getGenericWoodColor(be, false);
 			} else {
 				RenderInfo.ItemDisplayRenderInfo itemDisplayRenderInfo = be.getStorageWrapper().getRenderInfo().getItemDisplayRenderInfo();
 				int displayItemIndex = (tintIndex > 1000 ? tintIndex - 1000 : tintIndex) / 10 - 1;
@@ -62,6 +67,15 @@ public class ModBlockColors {
 			}
 			return -1;
 		}).orElse(-1);
+	}
+
+	private static int getGenericWoodColor(StorageBlockEntity be, boolean mainColor) {
+		if (be instanceof WoodStorageBlockEntity woodStorageBlockEntity) {
+			return woodStorageBlockEntity.getWoodType().filter(GenericWoodStorageHelper::isGenericWood)
+					.map(woodType -> mainColor ? GenericWoodStorageTintCache.getMainColor(woodType) : GenericWoodStorageTintCache.getAccentColor(woodType))
+					.orElse(-1);
+		}
+		return -1;
 	}
 
 	private static ItemStack getDisplayItemWithIndex(int displayItemIndex, List<RenderInfo.DisplayItem> displayItems, boolean isLimitedBarrel) {
@@ -81,7 +95,8 @@ public class ModBlockColors {
 		}
 		return WorldHelper.getBlockEntity(blockDisplayReader, pos, StorageBlockEntity.class).map(be -> {
 			if (tintIndex == 0) { // this is only needed for particle texture handling so no need to handle anything other than just the main color
-				return be.getStorageWrapper().getMainColor();
+				int mainColor = be.getStorageWrapper().getMainColor();
+				return mainColor != -1 ? mainColor : getGenericWoodColor(be, true);
 			}
 			return -1;
 		}).orElse(-1);

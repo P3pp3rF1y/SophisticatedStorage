@@ -1,6 +1,7 @@
 package net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.common;
 
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.ClientRecipeHelper;
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.IRecipeViewerDisplayCatalog;
@@ -8,6 +9,7 @@ import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.IRecipeViewer
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.SingleColorDyeRecipeSpec;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.DoubleChestTierUpgradeRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.DoubleChestTierUpgradeShapelessRecipe;
+import net.p3pp3rf1y.sophisticatedstorage.crafting.GenericWoodStorageRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.ShulkerBoxFromChestRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.ShulkerBoxFromVanillaShapelessRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.StorageTierUpgradeRecipe;
@@ -33,9 +35,21 @@ public class StorageRecipeViewerDisplays {
 		TierUpgradeRecipesMaker.getGroupedShapelessCraftingRecipes(context::getSubtypeInterpreter).stream().map(TierUpgradeDisplayRecipe::toSpec)
 				.forEach(catalog::addCraftingSpec);
 		ShulkerBoxFromChestRecipesMaker.getShapedRecipeSpecs(context::getSubtypeInterpreter).forEach(catalog::addCraftingSpec);
+		ClientRecipeHelper.transformAllRecipesOfType(RecipeType.CRAFTING, CraftingRecipe.class, recipe -> recipe).stream()
+				.filter(StorageRecipeViewerDisplays::isBaseStorageRecipe).forEach(catalog::addCraftingRecipe);
+		GenericWoodStorageRecipesMaker.getRecipes().forEach(catalog::addCraftingRecipe);
 		FlatBarrelRecipesMaker.getShapelessRecipes().forEach(catalog::addCraftingRecipe);
 		ClientRecipeHelper.transformAllRecipesOfType(RecipeType.CRAFTING, ShulkerBoxFromVanillaShapelessRecipe.class, recipe -> recipe)
 				.forEach(catalog::addCraftingRecipe);
+	}
+
+	private static boolean isBaseStorageRecipe(CraftingRecipe recipe) {
+		ItemStack result = ClientRecipeHelper.getResultItem(recipe);
+		return recipe.getId().getNamespace().equals("sophisticatedstorage") && result.getItem() instanceof StorageBlockItem
+				&& WoodStorageBlockItem.getWoodType(result).isPresent() && !(recipe instanceof StorageTierUpgradeRecipe)
+				&& !(recipe instanceof StorageTierUpgradeShapelessRecipe) && !(recipe instanceof DoubleChestTierUpgradeRecipe)
+				&& !(recipe instanceof DoubleChestTierUpgradeShapelessRecipe) && !(recipe instanceof ShulkerBoxFromChestRecipe)
+				&& !(recipe instanceof ShulkerBoxFromVanillaShapelessRecipe) && !(recipe instanceof GenericWoodStorageRecipe);
 	}
 
 	public static void registerDyeRecipes(IRecipeViewerDisplayCatalog catalog, IRecipeViewerDisplayContext context) {
