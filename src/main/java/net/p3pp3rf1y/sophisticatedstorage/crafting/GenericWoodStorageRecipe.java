@@ -11,10 +11,13 @@ import net.minecraft.world.item.crafting.PlacementInfo;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.properties.WoodType;
 import net.p3pp3rf1y.sophisticatedcore.crafting.IWrapperRecipe;
 import net.p3pp3rf1y.sophisticatedcore.crafting.RecipeWrapperSerializer;
 import net.p3pp3rf1y.sophisticatedstorage.block.WoodStorageBlockBase;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
+import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
+import net.p3pp3rf1y.sophisticatedstorage.util.GenericWoodStorageHelper;
 
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -51,8 +54,8 @@ public class GenericWoodStorageRecipe implements CraftingRecipe, IWrapperRecipe<
 		int minRow = Integer.MAX_VALUE;
 		int minCol = Integer.MAX_VALUE;
 
-		for (int row = 0; row < input.height() - compose.getHeight(); row++) {
-			for (int col = 0; col < input.width() - compose.getWidth(); col++) {
+		for (int row = 0; row <= input.height() - compose.getHeight(); row++) {
+			for (int col = 0; col <= input.width() - compose.getWidth(); col++) {
 				if (!input.getItem(col + row * input.width()).isEmpty()) {
 					minRow = Math.min(minRow, row);
 					minCol = Math.min(minCol, col);
@@ -67,9 +70,10 @@ public class GenericWoodStorageRecipe implements CraftingRecipe, IWrapperRecipe<
 		Set<BlockFamily> customFamilies = new LinkedHashSet<>();
 		for (int row = topLeftCorner.top; row < topLeftCorner.top + compose.getHeight(); row++) {
 			for (int col = topLeftCorner.left; col < topLeftCorner.left + compose.getWidth(); col++) {
-				int slot = col + row * input.width();
-				ItemStack itemStack = input.getItem(slot);
-				if (itemStack.isEmpty() || compose.pattern.ingredients().get(slot).map(i -> i.getValues().size() < 2).orElse(true)) {
+				int inputSlot = col + row * input.width();
+				int recipeSlot = col - topLeftCorner.left + (row - topLeftCorner.top) * compose.getWidth();
+				ItemStack itemStack = input.getItem(inputSlot);
+				if (itemStack.isEmpty() || compose.pattern.ingredients().get(recipeSlot).map(i -> i.getValues().size() < 2).orElse(true)) {
 					continue;
 				}
 
@@ -83,6 +87,29 @@ public class GenericWoodStorageRecipe implements CraftingRecipe, IWrapperRecipe<
 		}
 
 		return customFamilies.size() > 1;
+	}
+
+	private Optional<WoodType> getGenericWoodType(CraftingInput input) {
+		TopLeftCornerCoords topLeftCorner = getTopLeftCornerCoords(input);
+		Set<WoodType> woodTypes = new LinkedHashSet<>();
+		for (int row = topLeftCorner.top; row < topLeftCorner.top + compose.getHeight(); row++) {
+			for (int col = topLeftCorner.left; col < topLeftCorner.left + compose.getWidth(); col++) {
+				int inputSlot = col + row * input.width();
+				int recipeSlot = col - topLeftCorner.left + (row - topLeftCorner.top) * compose.getWidth();
+				ItemStack itemStack = input.getItem(inputSlot);
+				if (itemStack.isEmpty() || compose.pattern.ingredients().get(recipeSlot).map(i -> i.getValues().size() < 2).orElse(true)) {
+					continue;
+				}
+
+				Optional<WoodType> woodType = GenericWoodStorageHelper.getWoodTypeForPlanks(itemStack)
+						.or(() -> GenericWoodStorageHelper.getWoodTypeForSlab(itemStack));
+				if (woodType.isEmpty()) {
+					return Optional.empty();
+				}
+				woodTypes.add(woodType.get());
+			}
+		}
+		return woodTypes.size() == 1 ? Optional.of(woodTypes.iterator().next()) : Optional.empty();
 	}
 
 	private Optional<BlockFamily> getCustomBlockFamily(Item item) {
@@ -106,7 +133,9 @@ public class GenericWoodStorageRecipe implements CraftingRecipe, IWrapperRecipe<
 
 	@Override
 	public ItemStack assemble(CraftingInput input) {
-		return compose.assemble(input);
+		ItemStack result = compose.assemble(input);
+		getGenericWoodType(input).ifPresent(woodType -> WoodStorageBlockItem.setWoodType(result, woodType));
+		return result;
 	}
 
 	@Override
