@@ -12,7 +12,10 @@ import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.block.LimitedBarrelBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
+import net.p3pp3rf1y.sophisticatedstorage.block.WoodStorageBlockEntity;
+import net.p3pp3rf1y.sophisticatedstorage.client.GenericWoodStorageTintCache;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
+import net.p3pp3rf1y.sophisticatedstorage.util.GenericWoodStorageHelper;
 
 import javax.annotation.Nullable;
 
@@ -46,12 +49,23 @@ public class ModBlockColors {
 		}
 		return WorldHelper.getBlockEntity(blockDisplayReader, pos, StorageBlockEntity.class).map(be -> {
 			if (tintIndex == 0) {
-				return be.getStorageWrapper().getMainColor();
+				int mainColor = be.getStorageWrapper().getMainColor();
+				return mainColor != -1 ? mainColor : getGenericWoodColor(be, true);
 			} else if (tintIndex == 1) {
-				return be.getStorageWrapper().getAccentColor();
+				int accentColor = be.getStorageWrapper().getAccentColor();
+				return accentColor != -1 ? accentColor : getGenericWoodColor(be, false);
 			}
 			return -1;
 		}).orElse(-1);
+	}
+
+	private static int getGenericWoodColor(StorageBlockEntity be, boolean mainColor) {
+		if (be instanceof WoodStorageBlockEntity wbe) {
+			return wbe.getWoodType().filter(GenericWoodStorageHelper::isGenericWood)
+					.map(woodType -> mainColor ? GenericWoodStorageTintCache.getMainColor(woodType) : GenericWoodStorageTintCache.getAccentColor(woodType))
+					.orElse(-1);
+		}
+		return -1;
 	}
 
 	private static int getTint(BlockState state, int displayItemIndex, int adjustedTintIndex, StorageBlockEntity be) {
@@ -90,7 +104,8 @@ public class ModBlockColors {
 		}
 		return WorldHelper.getBlockEntity(blockDisplayReader, pos, StorageBlockEntity.class).map(be -> {
 			if (tintIndex == 0) { // this is only needed for particle texture handling so no need to handle anything other than just the main color
-				return be.getStorageWrapper().getMainColor();
+				int mainColor = be.getStorageWrapper().getMainColor();
+				return mainColor != -1 ? mainColor : getGenericWoodColor(be, true);
 			}
 			return -1;
 		}).orElse(-1);
