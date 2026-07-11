@@ -296,6 +296,7 @@
   "gui.sophisticatedstorage.status.packing_tape_disabled": "Config set to drop all storages as packed without the need for packing tape",
   "gui.sophisticatedstorage.tooltip.parts_stored": "Parts Stored",
   "sophisticatedstorage.configuration.dropPacked": "Always Drop Packed",
+  "sophisticatedstorage.configuration.showHigherTierGenericWoodVariants": "Show Higher Tier Generic Wood Variants",
   "sophisticatedstorage.configuration.showHigherTierTintedVariants": "Show Tinted Tier Variants",
   "sophisticatedstorage.configuration.showSingleWoodVariantOnly": "Show One Wood Variant",
   "sophisticatedstorage.configuration.woodBarrel": "Wood Barrel",
