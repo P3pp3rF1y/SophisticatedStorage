@@ -4,6 +4,7 @@ import net.minecraft.SharedConstants;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.LayeredRegistryAccess;
+import net.minecraft.core.NonNullList;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.Bootstrap;
 import net.minecraft.server.RegistryLayer;
@@ -17,13 +18,18 @@ import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.CraftingRecipe;
+import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.ShapedRecipe;
+import net.minecraft.world.item.crafting.ShapedRecipePattern;
 import net.minecraft.world.level.WorldDataConfiguration;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.ClientRecipeHelper;
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.CraftingDisplaySpec;
@@ -33,11 +39,13 @@ import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.IRecipeViewer
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.IRecipeViewerDisplayContext;
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.RecipeViewerDisplayCatalog;
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.SingleColorDyeRecipeSpec;
+import net.p3pp3rf1y.sophisticatedcore.util.RecipeHelper;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelMaterial;
 import net.p3pp3rf1y.sophisticatedstorage.block.DecorationTableBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.DoubleChestTierUpgradeRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.DoubleChestTierUpgradeShapelessRecipe;
+import net.p3pp3rf1y.sophisticatedstorage.crafting.GenericWoodStorageRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.StorageTierUpgradeRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.StorageTierUpgradeShapelessRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
@@ -45,6 +53,7 @@ import net.p3pp3rf1y.sophisticatedstorage.item.BarrelBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.ChestBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
+import net.p3pp3rf1y.sophisticatedstorage.util.GenericWoodStorageHelper;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
@@ -53,6 +62,7 @@ import org.mockito.Mockito;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -248,6 +258,24 @@ class StorageRecipeViewerDisplaySpecTest {
 	}
 
 	@Test
+	void genericWoodStorageRecipesPreserveLoadedNonWoodIngredients() {
+		try (MockedStatic<ClientRecipeHelper> clientRecipeHelper = Mockito.mockStatic(ClientRecipeHelper.class, Mockito.CALLS_REAL_METHODS)) {
+			RecipeHolder<GenericWoodStorageRecipe> recipeHolder = customGenericChestRecipeHolder(Items.STONE_BUTTON);
+			clientRecipeHelper.when(() -> ClientRecipeHelper.getResultItem(Mockito.any()))
+					.thenReturn(WoodStorageBlockItem.setWoodType(new ItemStack(ModBlocks.CHEST_ITEM.get()), WoodType.OAK));
+
+			RecipeHolder<CraftingRecipe> oakRecipe = GenericWoodStorageRecipesMaker.createRecipe(recipeHolder, WoodType.OAK,
+					new GenericWoodStorageHelper.GenericWoodInfo(WoodType.OAK, Blocks.OAK_PLANKS, Blocks.OAK_SLAB));
+
+			List<Optional<Ingredient>> inputs = List.copyOf(RecipeHelper.getIngredients(oakRecipe.value()));
+			assertTrue(inputs.get(0).orElseThrow().test(new ItemStack(Items.OAK_PLANKS)));
+			assertFalse(inputs.get(0).orElseThrow().test(new ItemStack(Items.SPRUCE_PLANKS)));
+			assertTrue(inputs.get(4).orElseThrow().test(new ItemStack(Items.STONE_BUTTON)));
+			assertFalse(inputs.get(4).orElseThrow().test(new ItemStack(Items.LEVER)));
+		}
+	}
+
+	@Test
 	void tierUsageChainCanReachNetheriteUpgrade() {
 		IRecipeViewerDisplayCatalog catalog = createCatalog();
 
@@ -333,6 +361,23 @@ class StorageRecipeViewerDisplaySpecTest {
 
 	private static ItemStack woodStorageStack(Item item, WoodType woodType) {
 		return WoodStorageBlockItem.setWoodType(new ItemStack(item), woodType);
+	}
+
+	private static RecipeHolder<GenericWoodStorageRecipe> customGenericChestRecipeHolder(Item nonWoodIngredient) {
+		NonNullList<Ingredient> ingredients = NonNullList.create();
+		for (int slot = 0; slot < 9; slot++) {
+			ingredients.add(slot == 4 ? Ingredient.of(nonWoodIngredient) : allPlanksIngredient());
+		}
+
+		ItemStack result = WoodStorageBlockItem.setWoodType(new ItemStack(ModBlocks.CHEST_ITEM.get()), WoodType.OAK);
+		ShapedRecipe recipe = new ShapedRecipe("", CraftingBookCategory.MISC,
+				new ShapedRecipePattern(3, 3, ingredients.stream().map(Optional::of).toList(), Optional.empty()), result);
+		return new RecipeHolder<>(ClientRecipeHelper.recipeKey(ResourceLocation.parse("test:custom_generic_chest")), new GenericWoodStorageRecipe(recipe));
+	}
+
+	private static Ingredient allPlanksIngredient() {
+		return Ingredient.of(Items.OAK_PLANKS, Items.SPRUCE_PLANKS, Items.BIRCH_PLANKS, Items.JUNGLE_PLANKS, Items.ACACIA_PLANKS, Items.DARK_OAK_PLANKS,
+				Items.MANGROVE_PLANKS, Items.CHERRY_PLANKS, Items.BAMBOO_PLANKS, Items.CRIMSON_PLANKS, Items.WARPED_PLANKS);
 	}
 
 	private static IRecipeViewerDisplayCatalog createCatalog() {
