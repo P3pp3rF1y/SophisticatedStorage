@@ -298,6 +298,7 @@
   "sophisticatedstorage.configuration.common": "Common",
   "sophisticatedstorage.configuration.server": "Server",
   "sophisticatedstorage.configuration.dropPacked": "Always Drop Packed",
+  "sophisticatedstorage.configuration.showHigherTierGenericWoodVariants": "Show Higher Tier Generic Wood Variants",
   "sophisticatedstorage.configuration.showHigherTierTintedVariants": "Show Tinted Tier Variants",
   "sophisticatedstorage.configuration.showSingleWoodVariantOnly": "Show One Wood Variant",
   "sophisticatedstorage.configuration.woodBarrel": "Wood Barrel",
