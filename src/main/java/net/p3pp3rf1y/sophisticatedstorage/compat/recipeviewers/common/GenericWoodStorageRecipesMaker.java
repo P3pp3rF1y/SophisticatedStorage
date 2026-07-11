@@ -2,17 +2,14 @@ package net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.common;
 
 import net.minecraft.core.NonNullList;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.crafting.ShapedRecipe;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.properties.WoodType;
-import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
-import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
+import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.ClientRecipeHelper;
+import net.p3pp3rf1y.sophisticatedstorage.crafting.GenericWoodStorageRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.util.GenericWoodStorageHelper;
 
@@ -25,43 +22,41 @@ public class GenericWoodStorageRecipesMaker {
 	}
 
 	public static List<CraftingRecipe> getRecipes() {
-		List<CraftingRecipe> recipes = new ArrayList<>();
-		GenericWoodStorageHelper.getGenericWoodTypes()
-				.forEach(woodType -> GenericWoodStorageHelper.getGenericWoodInfo(woodType).ifPresent(info -> addRecipes(recipes, woodType, info)));
-		return recipes;
+		return ClientRecipeHelper.transformAllRecipesOfTypeIntoMultiple(RecipeType.CRAFTING, GenericWoodStorageRecipe.class, recipe -> {
+			List<CraftingRecipe> recipes = new ArrayList<>();
+			GenericWoodStorageHelper.getGenericWoodTypes().forEach(
+					woodType -> GenericWoodStorageHelper.getGenericWoodInfo(woodType).ifPresent(info -> recipes.add(createRecipe(recipe, woodType, info))));
+			return recipes;
+		});
 	}
 
-	private static void addRecipes(List<CraftingRecipe> recipes, WoodType woodType, GenericWoodStorageHelper.GenericWoodInfo info) {
-		recipes.add(createRecipe("chest", woodType, ModBlocks.CHEST_ITEM.get(), info.planks(), null, "PPP", "PLP", "PPP"));
-		recipes.add(createRecipe("barrel", woodType, ModBlocks.BARREL_ITEM.get(), info.planks(), info.slab(), "PSP", "PLP", "PSP"));
-		recipes.add(createRecipe("limited_barrel_1", woodType, ModBlocks.LIMITED_BARREL_1_ITEM.get(), info.planks(), info.slab(), "PSP", "PLP", "PPP"));
-		recipes.add(createRecipe("limited_barrel_2", woodType, ModBlocks.LIMITED_BARREL_2_ITEM.get(), info.planks(), info.slab(), "PPP", "SLS", "PPP"));
-		recipes.add(createRecipe("limited_barrel_3", woodType, ModBlocks.LIMITED_BARREL_3_ITEM.get(), info.planks(), info.slab(), "PSP", "PLP", "SPS"));
-		recipes.add(createRecipe("limited_barrel_4", woodType, ModBlocks.LIMITED_BARREL_4_ITEM.get(), info.planks(), info.slab(), "SPS", "PLP", "SPS"));
+	static CraftingRecipe createRecipe(GenericWoodStorageRecipe recipe, WoodType woodType, GenericWoodStorageHelper.GenericWoodInfo info) {
+		NonNullList<Ingredient> ingredients = specializeWoodIngredients(recipe.getIngredients(), info);
+		ItemStack result = ClientRecipeHelper.getResultItem(recipe).copy();
+		WoodStorageBlockItem.setWoodType(result, woodType);
+
+		return new ShapedRecipe(getRecipeId(recipe.getId(), woodType), recipe.getGroup(), recipe.category(), recipe.getRecipeWidth(), recipe.getRecipeHeight(),
+				ingredients, result);
 	}
 
-	private static CraftingRecipe createRecipe(String storageName, WoodType woodType, Item item, Block planks, Block slab, String... pattern) {
-		NonNullList<Ingredient> ingredients = NonNullList.create();
-		for (String row : pattern) {
-			for (int i = 0; i < row.length(); i++) {
-				ingredients.add(getIngredient(row.charAt(i), planks, slab));
+	private static NonNullList<Ingredient> specializeWoodIngredients(NonNullList<Ingredient> ingredients, GenericWoodStorageHelper.GenericWoodInfo info) {
+		NonNullList<Ingredient> specializedIngredients = NonNullList.createWithCapacity(ingredients.size());
+		ItemStack planks = new ItemStack(info.planks());
+		ItemStack slab = new ItemStack(info.slab());
+		for (Ingredient ingredient : ingredients) {
+			if (ingredient.test(planks)) {
+				specializedIngredients.add(Ingredient.of(info.planks()));
+			} else if (ingredient.test(slab)) {
+				specializedIngredients.add(Ingredient.of(info.slab()));
+			} else {
+				specializedIngredients.add(ingredient);
 			}
 		}
-
-		ItemStack result = WoodStorageBlockItem.setWoodType(new ItemStack(item), woodType);
-		return new ShapedRecipe(getRecipeId(storageName, woodType), "", CraftingBookCategory.MISC, 3, 3, ingredients, result);
+		return specializedIngredients;
 	}
 
-	private static Ingredient getIngredient(char key, Block planks, Block slab) {
-		return switch (key) {
-			case 'P' -> Ingredient.of(planks);
-			case 'S' -> Ingredient.of(slab);
-			case 'L' -> Ingredient.of(Items.LEVER);
-			default -> Ingredient.EMPTY;
-		};
-	}
-
-	private static ResourceLocation getRecipeId(String storageName, WoodType woodType) {
-		return SophisticatedStorage.getRL("generic_wood_storage/" + woodType.name().toLowerCase(Locale.ROOT).replace(':', '/') + "/" + storageName);
+	private static ResourceLocation getRecipeId(ResourceLocation recipeId, WoodType woodType) {
+		return new ResourceLocation(recipeId.getNamespace(),
+				"generic_wood_storage/" + woodType.name().toLowerCase(Locale.ROOT).replace(':', '/') + "/" + recipeId.getPath());
 	}
 }

@@ -291,5 +291,6 @@
   "gui.sophisticatedstorage.status.too_many_item_entity_drops": "Can't break the %s as it would cause too many (%s) item entities to drop from it\nConsider using %s or break it while sneaking to skip this check",
   "gui.sophisticatedstorage.status.too_low_tier_upgrade_count": "Upgrading requires %s %ss",
   "gui.sophisticatedstorage.status.packing_tape_disabled": "Config set to drop all storages as packed without the need for packing tape",
-  "gui.sophisticatedstorage.tooltip.parts_stored": "Parts Stored"
+  "gui.sophisticatedstorage.tooltip.parts_stored": "Parts Stored",
+  "sophisticatedstorage.configuration.showHigherTierGenericWoodVariants": "Show Higher Tier Generic Wood Variants"
 }

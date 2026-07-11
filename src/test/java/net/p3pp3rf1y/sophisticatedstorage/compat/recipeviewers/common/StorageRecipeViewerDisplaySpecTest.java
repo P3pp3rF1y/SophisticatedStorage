@@ -3,6 +3,7 @@ package net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.common;
 import net.minecraft.SharedConstants;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.LayeredRegistryAccess;
+import net.minecraft.core.NonNullList;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -19,6 +20,7 @@ import net.minecraft.world.item.*;
 import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.WorldDataConfiguration;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import net.minecraftforge.common.crafting.CraftingHelper;
 import net.minecraftforge.common.crafting.VanillaIngredientSerializer;
@@ -38,6 +40,7 @@ import net.p3pp3rf1y.sophisticatedstorage.block.BarrelMaterial;
 import net.p3pp3rf1y.sophisticatedstorage.block.DecorationTableBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.DoubleChestTierUpgradeRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.DoubleChestTierUpgradeShapelessRecipe;
+import net.p3pp3rf1y.sophisticatedstorage.crafting.GenericWoodStorageRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.StorageTierUpgradeRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.StorageTierUpgradeShapelessRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
@@ -46,6 +49,7 @@ import net.p3pp3rf1y.sophisticatedstorage.item.BarrelBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.ChestBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
+import net.p3pp3rf1y.sophisticatedstorage.util.GenericWoodStorageHelper;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
@@ -260,6 +264,24 @@ class StorageRecipeViewerDisplaySpecTest {
 	}
 
 	@Test
+	void genericWoodStorageRecipesPreserveLoadedNonWoodIngredients() {
+		try (MockedStatic<ClientRecipeHelper> clientRecipeHelper = Mockito.mockStatic(ClientRecipeHelper.class, Mockito.CALLS_REAL_METHODS)) {
+			GenericWoodStorageRecipe recipe = customGenericChestRecipe(Items.STONE_BUTTON);
+			clientRecipeHelper.when(() -> ClientRecipeHelper.getResultItem(Mockito.any()))
+					.thenReturn(WoodStorageBlockItem.setWoodType(new ItemStack(ModBlocks.CHEST_ITEM.get()), WoodType.OAK));
+
+			CraftingRecipe oakRecipe = GenericWoodStorageRecipesMaker.createRecipe(recipe, WoodType.OAK,
+					new GenericWoodStorageHelper.GenericWoodInfo(WoodType.OAK, Blocks.OAK_PLANKS, Blocks.OAK_SLAB));
+
+			NonNullList<Ingredient> inputs = oakRecipe.getIngredients();
+			assertTrue(inputs.get(0).test(new ItemStack(Items.OAK_PLANKS)));
+			assertFalse(inputs.get(0).test(new ItemStack(Items.SPRUCE_PLANKS)));
+			assertTrue(inputs.get(4).test(new ItemStack(Items.STONE_BUTTON)));
+			assertFalse(inputs.get(4).test(new ItemStack(Items.LEVER)));
+		}
+	}
+
+	@Test
 	void tierUsageChainCanReachNetheriteUpgrade() {
 		IRecipeViewerDisplayCatalog catalog = createCatalog();
 
@@ -347,6 +369,22 @@ class StorageRecipeViewerDisplaySpecTest {
 
 	private static ItemStack woodStorageStack(Item item, WoodType woodType) {
 		return WoodStorageBlockItem.setWoodType(new ItemStack(item), woodType);
+	}
+
+	private static GenericWoodStorageRecipe customGenericChestRecipe(Item nonWoodIngredient) {
+		NonNullList<Ingredient> ingredients = NonNullList.create();
+		for (int slot = 0; slot < 9; slot++) {
+			ingredients.add(slot == 4 ? Ingredient.of(nonWoodIngredient) : allPlanksIngredient());
+		}
+
+		ItemStack result = WoodStorageBlockItem.setWoodType(new ItemStack(ModBlocks.CHEST_ITEM.get()), WoodType.OAK);
+		ShapedRecipe recipe = new ShapedRecipe(new ResourceLocation("test", "custom_generic_chest"), "", CraftingBookCategory.MISC, 3, 3, ingredients, result);
+		return new GenericWoodStorageRecipe(recipe);
+	}
+
+	private static Ingredient allPlanksIngredient() {
+		return Ingredient.of(Items.OAK_PLANKS, Items.SPRUCE_PLANKS, Items.BIRCH_PLANKS, Items.JUNGLE_PLANKS, Items.ACACIA_PLANKS, Items.DARK_OAK_PLANKS,
+				Items.MANGROVE_PLANKS, Items.CHERRY_PLANKS, Items.BAMBOO_PLANKS, Items.CRIMSON_PLANKS, Items.WARPED_PLANKS);
 	}
 
 	private static IRecipeViewerDisplayCatalog createCatalog() {
