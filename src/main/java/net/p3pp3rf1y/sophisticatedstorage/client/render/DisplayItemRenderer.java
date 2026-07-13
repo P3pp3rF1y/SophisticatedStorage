@@ -29,6 +29,7 @@ public class DisplayItemRenderer {
 	static final float BIG_ITEM_SCALE = 0.5f;
 	static final float SMALL_ITEM_SCALE = 0.25f;
 	static final float UPGRADE_ITEM_SCALE = 0.125f;
+	private static final double DISPLAY_ITEM_PIXEL_SIZE_DIVISOR = 15.95D;
 	private static final ItemStackRenderState INACCESSIBLE_SLOT_STACK = new ItemStackRenderState();
 	private static final Field ITEM_TRANSFORM_FIELD = getItemTransformField();
 	private static boolean helperStacksInitialized = false;
@@ -163,8 +164,13 @@ public class DisplayItemRenderer {
 	private static double calculateOffsetFromBoundingBox(ItemStackRenderState itemStackRenderState, float additionalScale) {
 		AABB boundingBox = itemStackRenderState.getModelBoundingBox();
 		double zScale = getFixedTransformScale(itemStackRenderState);
-		return ((zScale * (2 / 15.95D)) - boundingBox.maxZ) * additionalScale; // 15.95 because of z-fighting if displayed model had surface offset exactly 1
-																				// pixel from the top most surface
+		return ((zScale * (2 / DISPLAY_ITEM_PIXEL_SIZE_DIVISOR)) - boundingBox.maxZ) * additionalScale; // 15.95 because of z-fighting if displayed model had
+																										// surface offset exactly 1
+		// pixel from the top most surface
+	}
+
+	public static double getDisplayItemPixelOffset(ItemStackRenderState itemStackRenderState, float additionalScale) {
+		return getFixedTransformScale(itemStackRenderState) * (1 / DISPLAY_ITEM_PIXEL_SIZE_DIVISOR) * additionalScale;
 	}
 
 	private static double getFixedTransformScale(ItemStackRenderState itemStackRenderState) {

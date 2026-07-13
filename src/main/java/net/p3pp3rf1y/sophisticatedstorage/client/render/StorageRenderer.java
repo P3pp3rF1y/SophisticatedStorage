@@ -166,12 +166,17 @@ public abstract class StorageRenderer<T extends StorageBlockEntity, R extends St
 			ItemStackRenderState stackRenderState = new ItemStackRenderState();
 			itemModelResolver.updateForTopItem(stackRenderState, stack, ItemDisplayContext.FIXED, blockEntity.getLevel(), null, 0);
 
-			float itemOffset = (float) DisplayItemRenderer.getDisplayItemOffset(stack, stackRenderState, DisplayItemRenderer.isGui3d(stackRenderState),
-					renderState.displayItemSlots == 1 ? 1 : DisplayItemRenderer.SMALL_BLOCK_ITEM_OFFSET);
+			boolean isBlockItem = stack.getItem() instanceof BlockItem;
+			boolean isGui3d = DisplayItemRenderer.isGui3d(stackRenderState);
+			float itemScale = renderState.displayItemSlots == 1
+					? isBlockItem && isGui3d ? 1.0f : DisplayItemRenderer.BIG_ITEM_SCALE
+					: isBlockItem && isGui3d ? DisplayItemRenderer.SMALL_BLOCK_ITEM_SCALE : DisplayItemRenderer.SMALL_ITEM_SCALE;
+			float itemOffset = (float) (DisplayItemRenderer.getDisplayItemOffset(stack, stackRenderState, isGui3d, itemScale)
+					+ displayItem.zOffset() * DisplayItemRenderer.getDisplayItemPixelOffset(stackRenderState, itemScale));
 
 			renderState.displayItems
 					.add(new StorageRenderState.DisplayItemInfo(stackRenderState, storageBlock.hasFixedIndexDisplayItems() ? displayItem.slotIndex() : i,
-							displayItem.rotation(), stack.getItem() instanceof BlockItem, itemOffset, displayItem.displaySide()));
+							displayItem.rotation(), isBlockItem, itemOffset, displayItem.displaySide()));
 		}
 	}
 

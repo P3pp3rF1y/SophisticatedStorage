@@ -30,7 +30,6 @@ import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.controls.*;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.*;
 import net.p3pp3rf1y.sophisticatedcore.network.SyncContainerClientDataPayload;
-import net.p3pp3rf1y.sophisticatedcore.util.Easing;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.DecorationTableBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.client.render.DecorationTablePreviewRenderState;
@@ -729,16 +728,8 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 		}
 	}
 
-	private static class BlockPreview extends CompositeWidgetBase<WidgetBase> {
+	private static class BlockPreview extends RotatablePreviewWidget {
 		private final List<ItemStack> previewStacks = new ArrayList<>();
-		private float xAxisRotation = 30;
-		private float yAxisRotation = 45;
-
-		private float fromXAxisRotation = xAxisRotation;
-		private float fromYAxisRotation = yAxisRotation;
-		private float targetXAxisRotation = xAxisRotation;
-		private float targetYAxisRotation = yAxisRotation;
-		private long lastTargetSetTime = 0;
 		private int selectedPreview = 0;
 		private final List<StackButton> previewStackButtons = new ArrayList<>();
 
@@ -814,26 +805,9 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 			}
 		}
 
-		public void setTargetRotations(int xAxisRotation, int yAxisRotation) {
-			if (targetXAxisRotation == xAxisRotation && targetYAxisRotation == yAxisRotation) {
-				return;
-			}
-
-			fromXAxisRotation = this.xAxisRotation;
-			fromYAxisRotation = this.yAxisRotation;
-			targetXAxisRotation = xAxisRotation;
-			targetYAxisRotation = yAxisRotation;
-			lastTargetSetTime = System.currentTimeMillis();
-		}
-
 		@Override
-		protected void extractBg(GuiGraphicsExtractor guiGraphics, Minecraft minecraft, int mouseX, int mouseY) {
-			guiGraphics.fill(x, y, x + getWidth(), y + getHeight(), 0xFF_000000);
-		}
-
-		@Override
-		protected void extractWidget(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTicks) {
-			super.extractWidget(guiGraphics, mouseX, mouseY, partialTicks);
+		protected void extractPreview(GuiGraphicsExtractor guiGraphics, int x, int y, int width, int height, float xAxisRotation, float yAxisRotation,
+				float partialTicks) {
 			if (previewStacks.isEmpty()) {
 				return;
 			}
@@ -843,8 +817,6 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 			if (previewStack.isEmpty()) {
 				return;
 			}
-
-			updateRotations();
 
 			TrackingItemStackRenderState renderState = new TrackingItemStackRenderState();
 			resolveModel(previewStack, renderState, ItemDisplayContext.NONE);
@@ -858,38 +830,18 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 			if (itemTransform != null) {
 				layer.setItemTransform(new ItemTransform(itemTransform.rotation(), itemTransform.translation(), new Vector3f(3, 3, 3)));
 			}
-			int previewHeight = getHeight() - (previewStackButtons.isEmpty() ? 0 : 20);
+			int previewHeight = height - (previewStackButtons.isEmpty() ? 0 : 20);
 			guiGraphics.submitPictureInPictureRenderState(new DecorationTablePreviewRenderState(renderState, new Matrix3x2f(guiGraphics.pose()),
 					guiGraphics.peekScissorStack(), x, y, x + getWidth(), y + previewHeight));
-		}
-
-		private void updateRotations() {
-			float secondsDuration = 1;
-			long currentTime = System.currentTimeMillis();
-			if (currentTime - lastTargetSetTime <= secondsDuration * 1000) {
-				float ratio = (currentTime - lastTargetSetTime) / (secondsDuration * 1000);
-				ratio = Easing.EASE_IN_OUT_CUBIC.ease(ratio);
-				xAxisRotation = (fromXAxisRotation + (targetXAxisRotation - fromXAxisRotation) * ratio);
-				yAxisRotation = (fromYAxisRotation + (targetYAxisRotation - fromYAxisRotation) * ratio);
-			} else {
-				xAxisRotation = targetXAxisRotation;
-				yAxisRotation = targetYAxisRotation;
-			}
 		}
 
 		@Override
 		public boolean mouseDragged(MouseButtonEvent event, double dragX, double dragY) {
 			if (!previewStackButtons.isEmpty() && event.y() > y + getHeight() - 20) {
-				return super.mouseDragged(event, dragX, dragY);
+				return getChildAt(event.x(), event.y()).map(child -> child.mouseDragged(event, dragX, dragY)).orElse(false);
 			}
 
-			yAxisRotation += (float) (2 * dragX);
-			yAxisRotation = yAxisRotation % 360;
-			xAxisRotation += (float) (2 * dragY);
-			xAxisRotation = xAxisRotation % 360;
-			targetXAxisRotation = xAxisRotation;
-			targetYAxisRotation = yAxisRotation;
-			return true;
+			return super.mouseDragged(event, dragX, dragY);
 		}
 	}
 }
