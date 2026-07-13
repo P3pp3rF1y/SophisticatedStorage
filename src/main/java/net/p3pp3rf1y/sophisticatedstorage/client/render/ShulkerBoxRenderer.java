@@ -52,6 +52,11 @@ public class ShulkerBoxRenderer extends StorageRenderer<ShulkerBoxBlockEntity> {
 
 	public void render(ShulkerBoxBlockEntity shulkerBoxEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight,
 			int packedOverlay) {
+		render(shulkerBoxEntity, partialTick, poseStack, bufferSource, packedLight, packedOverlay, false);
+	}
+
+	public void render(ShulkerBoxBlockEntity shulkerBoxEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight,
+			int packedOverlay, boolean forceClosedPreview) {
 		BlockState blockState = shulkerBoxEntity.getBlockState();
 		Direction direction = Direction.UP;
 		if (shulkerBoxEntity.hasLevel()) {
@@ -60,6 +65,8 @@ public class ShulkerBoxRenderer extends StorageRenderer<ShulkerBoxBlockEntity> {
 			if (blockstate.getBlock() instanceof ShulkerBoxBlock) {
 				direction = blockstate.getValue(ShulkerBoxBlock.FACING);
 			}
+		} else if (forceClosedPreview && blockState.getBlock() instanceof ShulkerBoxBlock) {
+			direction = blockState.getValue(ShulkerBoxBlock.FACING);
 		}
 
 		poseStack.pushPose();
@@ -69,7 +76,7 @@ public class ShulkerBoxRenderer extends StorageRenderer<ShulkerBoxBlockEntity> {
 		poseStack.scale(1.0F, -1.0F, -1.0F);
 		poseStack.translate(0.0D, -1.0D, 0.0D);
 		ModelPart lidPart = model.getLid();
-		float lidProgress = shulkerBoxEntity.getProgress(partialTick);
+		float lidProgress = forceClosedPreview ? 0 : shulkerBoxEntity.getProgress(partialTick);
 		lidPart.setPos(0.0F, 24.0F - lidProgress * 0.5F * 16.0F, 0.0F);
 		lidPart.yRot = 270.0F * lidProgress * ((float) Math.PI / 180F);
 

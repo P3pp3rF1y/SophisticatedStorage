@@ -220,6 +220,11 @@ public abstract class MovingStorageWrapper implements IStorageWrapper {
 					}
 
 					@Override
+					protected boolean canDeselectDisplayItems() {
+						return !isLimitedBarrel(storageStack);
+					}
+
+					@Override
 					protected void saveCategoryNbt(CompoundTag settingsNbt, String categoryName, CompoundTag tag) {
 						super.saveCategoryNbt(settingsNbt, categoryName, tag);
 						contentsChangeHandler.run();

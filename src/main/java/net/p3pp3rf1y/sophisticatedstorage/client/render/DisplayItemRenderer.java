@@ -45,6 +45,7 @@ public class DisplayItemRenderer {
 	static final float BIG_ITEM_SCALE = 0.5f;
 	static final float SMALL_ITEM_SCALE = 0.25f;
 	static final float UPGRADE_ITEM_SCALE = 0.125f;
+	private static final double DISPLAY_ITEM_PIXEL_SIZE_DIVISOR = 15.95D;
 	private static final ItemStack INACCESSIBLE_SLOT_STACK = new ItemStack(ModItems.INACCESSIBLE_SLOT.get());
 	private static final RandomSource RAND = new ThreadSafeLegacyRandomSource(RandomSupport.generateUniqueSeed());
 	private final double yCenterTranslation;
@@ -64,7 +65,7 @@ public class DisplayItemRenderer {
 
 	public void renderDisplayItem(PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, RenderInfo.DisplayItem displayItem) {
 		renderSingleItem(poseStack, bufferSource, packedLight, packedOverlay, Minecraft.getInstance(), false, 0, 1, displayItem.getItem(),
-				displayItem.getRotation());
+				displayItem.getRotation(), displayItem.getZOffset());
 	}
 
 	public void renderDisplayItems(StorageBlockEntity blockEntity, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay,
@@ -86,14 +87,14 @@ public class DisplayItemRenderer {
 		for (int displayItemIndex = 0; displayItemIndex < displayItemCount; displayItemIndex++) {
 			if (inaccessibleSlots.contains(displayItemIndex)) {
 				renderSingleItem(poseStack, bufferSource, packedLight, packedOverlay, minecraft, renderOnlyCustom, displayItemIndex, displayItemCount,
-						INACCESSIBLE_SLOT_STACK, 0);
+						INACCESSIBLE_SLOT_STACK, 0, 0);
 			}
 		}
 		int displayItemIndex = 0;
 		for (RenderInfo.DisplayItem displayItem : displayItems) {
 			renderSingleItem(poseStack, bufferSource, packedLight, packedOverlay, minecraft, renderOnlyCustom,
 					storageBlock.hasFixedIndexDisplayItems() ? displayItem.getSlotIndex() : displayItemIndex, displayItemCount, displayItem.getItem(),
-					displayItem.getRotation());
+					displayItem.getRotation(), displayItem.getZOffset());
 			displayItemIndex++;
 		}
 	}
@@ -133,7 +134,7 @@ public class DisplayItemRenderer {
 	}
 
 	private void renderSingleItem(PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, Minecraft minecraft,
-			boolean renderOnlyCustom, int displayItemIndex, int displayItemCount, ItemStack stack, int rotation) {
+			boolean renderOnlyCustom, int displayItemIndex, int displayItemCount, ItemStack stack, int rotation, int zOffset) {
 		if (stack.isEmpty()) {
 			return;
 		}
@@ -142,19 +143,19 @@ public class DisplayItemRenderer {
 			return;
 		}
 
-		float itemOffset = (float) getDisplayItemOffset(stack, itemModel, displayItemCount == 1 ? 1 : SMALL_BLOCK_ITEM_SCALE);
-		poseStack.pushPose();
-
-		Vector3f frontOffset = getDisplayItemIndexFrontOffset(displayItemIndex, displayItemCount, (float) yCenterTranslation);
-		poseStack.translate(frontOffset.x(), frontOffset.y(), -itemOffset);
-		poseStack.mulPose(Axis.ZP.rotationDegrees(rotation));
-
 		float itemScale;
 		if (displayItemCount == 1) {
 			itemScale = stack.getItem() instanceof BlockItem && itemModel.isGui3d() ? 1.0f : BIG_ITEM_SCALE;
 		} else {
 			itemScale = stack.getItem() instanceof BlockItem && itemModel.isGui3d() ? SMALL_BLOCK_ITEM_SCALE : SMALL_ITEM_SCALE;
 		}
+
+		float itemOffset = (float) getDisplayItemOffset(stack, itemModel, itemScale);
+		poseStack.pushPose();
+
+		Vector3f frontOffset = getDisplayItemIndexFrontOffset(displayItemIndex, displayItemCount, (float) yCenterTranslation);
+		poseStack.translate(frontOffset.x(), frontOffset.y(), -itemOffset - zOffset * getDisplayItemPixelOffset(itemModel, itemScale));
+		poseStack.mulPose(Axis.ZP.rotationDegrees(rotation));
 		poseStack.scale(itemScale, itemScale, itemScale);
 
 		minecraft.getItemRenderer().render(stack, ItemDisplayContext.FIXED, false, poseStack, bufferSource, packedLight, packedOverlay, itemModel);
@@ -170,6 +171,11 @@ public class DisplayItemRenderer {
 		offset = calculateDisplayItemOffset(item, itemModel, additionalScale);
 		ITEM_HASHCODE_OFFSETS.put(hash, offset);
 		return offset;
+	}
+
+	public static double getDisplayItemPixelOffset(BakedModel itemModel, float additionalScale) {
+		ItemTransform transform = itemModel.getTransforms().getTransform(ItemDisplayContext.FIXED);
+		return transform.scale.z() * (1 / DISPLAY_ITEM_PIXEL_SIZE_DIVISOR) * additionalScale;
 	}
 
 	private static double calculateDisplayItemOffset(ItemStack item, BakedModel itemModel, float additionalScale) {
@@ -200,7 +206,7 @@ public class DisplayItemRenderer {
 		points = translatePoints(points, transform.translation);
 
 		float zScale = transform.scale.z();
-		return ((zScale * (2 / 15.95D)) - getMaxZ(points)) * additionalScale; // 15.95 because of z-fighting if displayed model had surface offset exactly 1
+		return ((zScale * (2 / DISPLAY_ITEM_PIXEL_SIZE_DIVISOR)) - getMaxZ(points)) * additionalScale; // 15.95 because of z-fighting if displayed model had surface offset exactly 1
 																				// pixel from the top most surface
 	}
 

@@ -82,8 +82,9 @@ public class LimitedBarrelDynamicModel extends BarrelDynamicModelBase<LimitedBar
 		}
 
 		@Override
-		protected int calculateDirectionMoveHash(BlockState state, ItemStack displayItem, int displayItemIndex, int displayItemCount, boolean isFlatTop) {
-			int hash = super.calculateDirectionMoveHash(state, displayItem, displayItemIndex, displayItemCount, isFlatTop);
+		protected int calculateDirectionMoveHash(BlockState state, ItemStack displayItem, int displayItemIndex, int displayItemCount, boolean isFlatTop,
+				int zOffset) {
+			int hash = super.calculateDirectionMoveHash(state, displayItem, displayItemIndex, displayItemCount, isFlatTop, zOffset);
 			hash = 31 * hash + state.getValue(LimitedBarrelBlock.HORIZONTAL_FACING).get2DDataValue();
 			hash = 31 * hash + state.getValue(LimitedBarrelBlock.VERTICAL_FACING).getIndex();
 			return hash;

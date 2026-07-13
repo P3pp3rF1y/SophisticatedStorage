@@ -499,6 +499,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 		ItemStack stack = displayItem.getItem();
 		hash = hash * 31 + ItemStack.hashItemAndComponents(stack);
 		hash = hash * 31 + displayItem.getSlotIndex();
+		hash = hash * 31 + displayItem.getZOffset();
 		return hash;
 	}
 
@@ -526,10 +527,11 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 				BakedModel model = itemRenderer.getModel(item, null, minecraft.player, 0);
 				if (!model.isCustomRenderer() && shouldRenderForRenderType(item, renderType, model, rand)) {
 					int rotation = displayItem.getRotation();
+					int zOffset = displayItem.getZOffset();
 					for (Direction face : Direction.values()) {
-						addRenderedItemSide(state, rand, ret, item, model, rotation, face, index, barrelBlock.getDisplayItemsCount(displayItems));
+						addRenderedItemSide(state, rand, ret, item, model, rotation, zOffset, face, index, barrelBlock.getDisplayItemsCount(displayItems));
 					}
-					addRenderedItemSide(state, rand, ret, item, model, rotation, null, index, barrelBlock.getDisplayItemsCount(displayItems));
+					addRenderedItemSide(state, rand, ret, item, model, rotation, zOffset, null, index, barrelBlock.getDisplayItemsCount(displayItems));
 				}
 				index++;
 			}
@@ -563,10 +565,10 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 			for (int inaccessibleSlot : inaccessibleSlots) {
 				if (!model.isCustomRenderer()) {
 					for (Direction face : Direction.values()) {
-						addRenderedItemSide(state, rand, ret, inaccessibleSlotStack, model, 0, face, inaccessibleSlot,
+						addRenderedItemSide(state, rand, ret, inaccessibleSlotStack, model, 0, 0, face, inaccessibleSlot,
 								barrelBlock.getDisplayItemsCount(displayItems));
 					}
-					addRenderedItemSide(state, rand, ret, inaccessibleSlotStack, model, 0, null, inaccessibleSlot,
+					addRenderedItemSide(state, rand, ret, inaccessibleSlotStack, model, 0, 0, null, inaccessibleSlot,
 							barrelBlock.getDisplayItemsCount(displayItems));
 				}
 			}
@@ -575,18 +577,22 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 
 	@SuppressWarnings({"deprecation", "java:S107"})
 	private void addRenderedItemSide(BlockState state, RandomSource rand, List<BakedQuad> ret, ItemStack displayItem, BakedModel model, int rotation,
-			@Nullable Direction dir, int displayItemIndex, int displayItemCount) {
+			int zOffset, @Nullable Direction dir, int displayItemIndex, int displayItemCount) {
 		List<BakedQuad> quads = model.getQuads(null, dir, rand);
 		quads = MOVE_TO_CORNER.process(quads);
 		quads = QuadTransformers.applying(toTransformation(model.getTransforms().getTransform(ItemDisplayContext.FIXED))).process(quads);
+		float itemScale = 1;
 		if (!model.isGui3d() || !(displayItem.getItem() instanceof BlockItem)) {
 			if (displayItemCount == 1) {
 				quads = SCALE_BIG_ITEM.process(quads);
+				itemScale = BIG_ITEM_SCALE;
 			} else {
 				quads = SCALE_SMALL_ITEM.process(quads);
+				itemScale = SMALL_ITEM_SCALE;
 			}
 		} else if (displayItemCount > 1) {
 			quads = SCALE_SMALL_BLOCK_ITEM.process(quads);
+			itemScale = SMALL_BLOCK_ITEM_SCALE;
 		}
 
 		if (rotation != 0) {
@@ -597,12 +603,11 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 		quads = rotateDisplayItemQuads(quads, state);
 
 		if (model.isGui3d()) {
-			IQuadTransformer transformer = getDirectionMove(displayItem, model, state, facing, displayItemIndex, displayItemCount,
-					displayItemCount == 1 ? 1 : SMALL_BLOCK_ITEM_SCALE);
+			IQuadTransformer transformer = getDirectionMove(displayItem, model, state, facing, displayItemIndex, displayItemCount, zOffset, itemScale);
 			quads = transformer.process(quads);
 			recalculateDirections(quads);
 		} else {
-			quads = getDirectionMove(displayItem, model, state, facing, displayItemIndex, displayItemCount, 1).process(quads);
+			quads = getDirectionMove(displayItem, model, state, facing, displayItemIndex, displayItemCount, zOffset, itemScale).process(quads);
 			recalculateDirections(quads);
 		}
 
@@ -639,14 +644,14 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 	}
 
 	private IQuadTransformer getDirectionMove(ItemStack displayItem, BakedModel model, BlockState state, Direction direction, int displayItemIndex,
-			int displayItemCount, float itemScale) {
+			int displayItemCount, int zOffset, float itemScale) {
 		boolean isFlatTop = state.getValue(BarrelBlock.FLAT_TOP);
-		int hash = calculateDirectionMoveHash(state, displayItem, displayItemIndex, displayItemCount, isFlatTop);
+		int hash = calculateDirectionMoveHash(state, displayItem, displayItemIndex, displayItemCount, isFlatTop, zOffset);
 		Cache<Integer, IQuadTransformer> directionCache = DIRECTION_MOVES_3D_ITEMS.getUnchecked(direction);
 		IQuadTransformer transformer = directionCache.getIfPresent(hash);
 
 		if (transformer == null) {
-			double offset = getDisplayItemOffset(displayItem, model, itemScale);
+			double offset = getDisplayItemOffset(displayItem, model, itemScale) + zOffset * getDisplayItemPixelOffset(model, itemScale);
 			if (!isFlatTop) {
 				offset -= 1 / 16D;
 			}
@@ -659,11 +664,13 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 	}
 
 	@SuppressWarnings("java:S1172") // state used in override
-	protected int calculateDirectionMoveHash(BlockState state, ItemStack displayItem, int displayItemIndex, int displayItemCount, boolean isFlatTop) {
+	protected int calculateDirectionMoveHash(BlockState state, ItemStack displayItem, int displayItemIndex, int displayItemCount, boolean isFlatTop,
+			int zOffset) {
 		int hashCode = ItemStack.hashItemAndComponents(displayItem);
 		hashCode = hashCode * 31 + displayItemIndex;
 		hashCode = hashCode * 31 + displayItemCount;
 		hashCode = hashCode * 31 + (isFlatTop ? 1 : 0);
+		hashCode = hashCode * 31 + zOffset;
 		return hashCode;
 	}
 
