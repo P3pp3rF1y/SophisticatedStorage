@@ -40,6 +40,7 @@ public class DisplayItemRenderer {
 	static final float BIG_ITEM_SCALE = 0.5f;
 	static final float SMALL_ITEM_SCALE = 0.25f;
 	static final float UPGRADE_ITEM_SCALE = 0.125f;
+	private static final double DISPLAY_ITEM_PIXEL_SIZE_DIVISOR = 15.95D;
 	private static final ItemStackRenderState INACCESSIBLE_SLOT_STACK = new ItemStackRenderState();
 	private final double yCenterTranslation;
 	private final Vec3 upgradesOffset;
@@ -64,7 +65,7 @@ public class DisplayItemRenderer {
 	public void submitDisplayItem(SubmitNodeCollector submitNodeCollector, PoseStack poseStack, int packedLight, int packedOverlay,
 			StorageRenderState.DisplayItemInfo displayItemInfo) {
 		submitSingleItem(submitNodeCollector, poseStack, packedLight, packedOverlay, 1, displayItemInfo.item(), displayItemInfo.index(),
-				displayItemInfo.itemOffset(), displayItemInfo.rotation(), displayItemInfo.isBlockItem());
+				displayItemInfo.itemOffset(), displayItemInfo.rotation(), displayItemInfo.zOffset(), displayItemInfo.isBlockItem());
 	}
 
 	public void submitDisplayItems(SubmitNodeCollector submitNodeCollector, StorageRenderState storageRenderState, PoseStack poseStack, int packedOverlay) {
@@ -114,25 +115,19 @@ public class DisplayItemRenderer {
 	private void submitSingleDisplayItem(SubmitNodeCollector submitNodeCollector, PoseStack poseStack, int packedLight, int packedOverlay,
 			StorageRenderState.DisplayItemInfo displayItemInfo, int displayItemCount) {
 		submitSingleItem(submitNodeCollector, poseStack, packedLight, packedOverlay, displayItemCount, displayItemInfo.item(), displayItemInfo.index(),
-				displayItemInfo.itemOffset(), displayItemInfo.rotation(), displayItemInfo.isBlockItem());
+				displayItemInfo.itemOffset(), displayItemInfo.rotation(), displayItemInfo.zOffset(), displayItemInfo.isBlockItem());
 	}
 
 	private void submitSingleItem(SubmitNodeCollector submitNodeCollector, PoseStack poseStack, int packedLight, int packedOverlay, int displayItemCount,
 			ItemStackRenderState item, int displayItemIndex) {
-		submitSingleItem(submitNodeCollector, poseStack, packedLight, packedOverlay, displayItemCount, item, displayItemIndex, 0, 0, false);
+		submitSingleItem(submitNodeCollector, poseStack, packedLight, packedOverlay, displayItemCount, item, displayItemIndex, 0, 0, 0, false);
 	}
 
 	private void submitSingleItem(SubmitNodeCollector submitNodeCollector, PoseStack poseStack, int packedLight, int packedOverlay, int displayItemCount,
-			ItemStackRenderState item, int displayItemIndex, float itemOffset, int rotation, boolean isBlockItem) {
+			ItemStackRenderState item, int displayItemIndex, float itemOffset, int rotation, int zOffset, boolean isBlockItem) {
 		if (item.layers.length < 1) {
 			return;
 		}
-
-		poseStack.pushPose();
-
-		Vector3f frontOffset = getDisplayItemIndexFrontOffset(displayItemIndex, displayItemCount, (float) yCenterTranslation);
-		poseStack.translate(frontOffset.x(), frontOffset.y(), -itemOffset);
-		poseStack.mulPose(Axis.ZP.rotationDegrees(rotation));
 
 		float itemScale;
 		if (displayItemCount == 1) {
@@ -140,6 +135,12 @@ public class DisplayItemRenderer {
 		} else {
 			itemScale = isBlockItem && isGui3d(item) ? SMALL_BLOCK_ITEM_SCALE : SMALL_ITEM_SCALE;
 		}
+
+		poseStack.pushPose();
+
+		Vector3f frontOffset = getDisplayItemIndexFrontOffset(displayItemIndex, displayItemCount, (float) yCenterTranslation);
+		poseStack.translate(frontOffset.x(), frontOffset.y(), -itemOffset - zOffset * getDisplayItemPixelOffset(item, itemScale));
+		poseStack.mulPose(Axis.ZP.rotationDegrees(rotation));
 		poseStack.scale(itemScale, itemScale, itemScale);
 
 		item.submit(poseStack, submitNodeCollector, packedLight, packedOverlay, 0);
@@ -158,6 +159,11 @@ public class DisplayItemRenderer {
 		offset = calculateDisplayItemOffset(item, itemStackRenderState, transform, quads, isGui3d, additionalScale);
 		ITEM_HASHCODE_OFFSETS.put(hash, offset);
 		return offset;
+	}
+
+	public static double getDisplayItemPixelOffset(ItemStackRenderState itemStackRenderState, float additionalScale) {
+		ItemTransform transform = itemStackRenderState.layers[0].transform;
+		return transform.scale().z() * (1 / DISPLAY_ITEM_PIXEL_SIZE_DIVISOR) * additionalScale;
 	}
 
 	private static double calculateDisplayItemOffset(ItemStack item, ItemStackRenderState itemStackRenderState, ItemTransform transform, List<BakedQuad> quads,
@@ -188,8 +194,8 @@ public class DisplayItemRenderer {
 		points = translatePoints(points, transform.translation());
 
 		float zScale = transform.scale().z();
-		return ((zScale * (2 / 15.95D)) - getMaxZ(points)) * additionalScale; // 15.95 because of z-fighting if displayed model had surface offset exactly 1
-																				// pixel from the top most surface
+		return ((zScale * (2 / DISPLAY_ITEM_PIXEL_SIZE_DIVISOR)) - getMaxZ(points)) * additionalScale; // 15.95 because of z-fighting if displayed model had surface offset exactly 1
+																// pixel from the top most surface
 	}
 
 	private static Set<Vector3f> getBoundsCornersFromShape(Block block, ClientLevel level) {

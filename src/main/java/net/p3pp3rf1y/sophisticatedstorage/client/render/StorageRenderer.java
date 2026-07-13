@@ -172,7 +172,7 @@ public abstract class StorageRenderer<T extends StorageBlockEntity, R extends St
 
 			renderState.displayItems
 					.add(new StorageRenderState.DisplayItemInfo(stackRenderState, storageBlock.hasFixedIndexDisplayItems() ? displayItem.slotIndex() : i,
-							displayItem.rotation(), stack.getItem() instanceof BlockItem, itemOffset, displayItem.displaySide()));
+							displayItem.rotation(), displayItem.zOffset(), stack.getItem() instanceof BlockItem, itemOffset, displayItem.displaySide()));
 		}
 	}
 

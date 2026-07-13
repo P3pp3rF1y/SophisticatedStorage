@@ -446,13 +446,14 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 	}
 
 	public void setModelPropertiesFromBlockEntity(BarrelBlockEntity be) {
-		hasMainColor = be.getStorageWrapper().hasMainColor();
-		hasAccentColor = be.getStorageWrapper().hasAccentColor();
+		Optional<WoodType> woodType = be.getWoodType();
+		boolean isGenericWood = woodType.map(GenericWoodStorageHelper::isGenericWood).orElse(false);
+		hasMainColor = be.getStorageWrapper().hasMainColor() || isGenericWood;
+		hasAccentColor = be.getStorageWrapper().hasAccentColor() || isGenericWood;
 		isPacked = be.isPacked();
 		showsLock = be.isLocked() && be.shouldShowLock();
 		showsTier = be.shouldShowTier();
-		Optional<WoodType> woodType = be.getWoodType();
-		if (woodType.isPresent() || !(hasMainColor && hasAccentColor)) {
+		if (!isGenericWood && (woodType.isPresent() || !(hasMainColor && hasAccentColor))) {
 			woodName = woodType.orElse(WoodType.ACACIA).name();
 		} else {
 			woodName = null;

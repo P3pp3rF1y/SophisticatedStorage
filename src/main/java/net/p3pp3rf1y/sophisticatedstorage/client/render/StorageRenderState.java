@@ -18,6 +18,6 @@ public class StorageRenderState extends BlockEntityRenderState {
 	public Set<Integer> inaccessibleSlots;
 	public int displayItemSlots;
 
-	public record DisplayItemInfo(ItemStackRenderState item, int index, int rotation, boolean isBlockItem, float itemOffset, DisplaySide displaySide) {
+	public record DisplayItemInfo(ItemStackRenderState item, int index, int rotation, int zOffset, boolean isBlockItem, float itemOffset, DisplaySide displaySide) {
 	}
 }

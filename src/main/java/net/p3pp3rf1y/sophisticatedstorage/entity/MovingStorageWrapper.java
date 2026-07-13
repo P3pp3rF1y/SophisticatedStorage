@@ -216,6 +216,11 @@ public abstract class MovingStorageWrapper implements IStorageWrapper {
 					protected int getNumberOfDisplayItems() {
 						return MovingStorageWrapper.getNumberOfDisplayItems(storageStack);
 					}
+
+					@Override
+					protected boolean canDeselectDisplayItems() {
+						return !isLimitedBarrel(storageStack);
+					}
 				};
 			} else {
 				settingsHandler = NoopStorageWrapper.INSTANCE.getSettingsHandler();

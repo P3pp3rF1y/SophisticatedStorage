@@ -24,7 +24,11 @@ public abstract class StorageSettingsHandler extends SettingsHandler {
 			ContainerContents.SettingsData settingsData) {
 		this.<ItemDisplaySettingsCategoryData, ItemDisplaySettingsCategory>addSettingsCategory(
 				settingsData, ItemDisplaySettingsCategory.NAME, markContentsDirty, (data, save) -> new ItemDisplaySettingsCategory(inventoryHandlerSupplier,
-						renderDataHandlerSupplier, data, save, getNumberOfDisplayItems(), () -> getTypeCategory(MemorySettingsCategory.class)),
+						renderDataHandlerSupplier, data, save, getNumberOfDisplayItems(), canDeselectDisplayItems(), () -> getTypeCategory(MemorySettingsCategory.class)),
 				ItemDisplaySettingsCategoryData::new);
+	}
+
+	protected boolean canDeselectDisplayItems() {
+		return true;
 	}
 }
