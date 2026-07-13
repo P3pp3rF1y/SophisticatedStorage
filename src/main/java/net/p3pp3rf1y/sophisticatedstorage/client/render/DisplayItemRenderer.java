@@ -29,6 +29,7 @@ public class DisplayItemRenderer {
 	static final float BIG_ITEM_SCALE = 0.5f;
 	static final float SMALL_ITEM_SCALE = 0.25f;
 	static final float UPGRADE_ITEM_SCALE = 0.125f;
+	private static final double DISPLAY_ITEM_PIXEL_SIZE_DIVISOR = 15.95D;
 	private static final ItemStackRenderState INACCESSIBLE_SLOT_STACK = new ItemStackRenderState();
 	private static final Field ITEM_TRANSFORM_FIELD = getItemTransformField();
 	private static boolean helperStacksInitialized = false;
@@ -61,7 +62,7 @@ public class DisplayItemRenderer {
 	public void submitDisplayItem(SubmitNodeCollector submitNodeCollector, PoseStack poseStack, int packedLight, int packedOverlay,
 			StorageRenderState.DisplayItemInfo displayItemInfo) {
 		submitSingleItem(submitNodeCollector, poseStack, packedLight, packedOverlay, 1, displayItemInfo.item(), displayItemInfo.index(),
-				displayItemInfo.itemOffset(), displayItemInfo.rotation(), displayItemInfo.isBlockItem());
+				displayItemInfo.itemOffset(), displayItemInfo.rotation(), displayItemInfo.isBlockItem(), displayItemInfo.zOffset());
 	}
 
 	public void submitDisplayItems(SubmitNodeCollector submitNodeCollector, StorageRenderState storageRenderState, PoseStack poseStack, int packedOverlay) {
@@ -113,25 +114,19 @@ public class DisplayItemRenderer {
 	private void submitSingleDisplayItem(SubmitNodeCollector submitNodeCollector, PoseStack poseStack, int packedLight, int packedOverlay,
 			StorageRenderState.DisplayItemInfo displayItemInfo, int displayItemCount) {
 		submitSingleItem(submitNodeCollector, poseStack, packedLight, packedOverlay, displayItemCount, displayItemInfo.item(), displayItemInfo.index(),
-				displayItemInfo.itemOffset(), displayItemInfo.rotation(), displayItemInfo.isBlockItem());
+				displayItemInfo.itemOffset(), displayItemInfo.rotation(), displayItemInfo.isBlockItem(), displayItemInfo.zOffset());
 	}
 
 	private void submitSingleItem(SubmitNodeCollector submitNodeCollector, PoseStack poseStack, int packedLight, int packedOverlay, int displayItemCount,
 			ItemStackRenderState item, int displayItemIndex) {
-		submitSingleItem(submitNodeCollector, poseStack, packedLight, packedOverlay, displayItemCount, item, displayItemIndex, 0, 0, false);
+		submitSingleItem(submitNodeCollector, poseStack, packedLight, packedOverlay, displayItemCount, item, displayItemIndex, 0, 0, false, 0);
 	}
 
 	private void submitSingleItem(SubmitNodeCollector submitNodeCollector, PoseStack poseStack, int packedLight, int packedOverlay, int displayItemCount,
-			ItemStackRenderState item, int displayItemIndex, float itemOffset, int rotation, boolean isBlockItem) {
+			ItemStackRenderState item, int displayItemIndex, float itemOffset, int rotation, boolean isBlockItem, int zOffset) {
 		if (item.layers.length < 1) {
 			return;
 		}
-
-		poseStack.pushPose();
-
-		Vector3f frontOffset = getDisplayItemIndexFrontOffset(displayItemIndex, displayItemCount, (float) yCenterTranslation);
-		poseStack.translate(frontOffset.x(), frontOffset.y(), -itemOffset);
-		poseStack.mulPose(Axis.ZP.rotationDegrees(rotation));
 
 		float itemScale;
 		if (displayItemCount == 1) {
@@ -139,6 +134,12 @@ public class DisplayItemRenderer {
 		} else {
 			itemScale = isBlockItem && isGui3d(item) ? SMALL_BLOCK_ITEM_SCALE : SMALL_ITEM_SCALE;
 		}
+
+		poseStack.pushPose();
+
+		Vector3f frontOffset = getDisplayItemIndexFrontOffset(displayItemIndex, displayItemCount, (float) yCenterTranslation);
+		poseStack.translate(frontOffset.x(), frontOffset.y(), -itemOffset - zOffset * getDisplayItemPixelOffset(item, itemScale));
+		poseStack.mulPose(Axis.ZP.rotationDegrees(rotation));
 		poseStack.scale(itemScale, itemScale, itemScale);
 
 		item.submit(poseStack, submitNodeCollector, packedLight, packedOverlay, 0);
@@ -164,7 +165,11 @@ public class DisplayItemRenderer {
 		AABB boundingBox = itemStackRenderState.getModelBoundingBox();
 		double zScale = getFixedTransformScale(itemStackRenderState);
 		return ((zScale * (2 / 15.95D)) - boundingBox.maxZ) * additionalScale; // 15.95 because of z-fighting if displayed model had surface offset exactly 1
-																				// pixel from the top most surface
+		// pixel from the top most surface
+	}
+
+	public static double getDisplayItemPixelOffset(ItemStackRenderState itemStackRenderState, float additionalScale) {
+		return getFixedTransformScale(itemStackRenderState) * (1 / DISPLAY_ITEM_PIXEL_SIZE_DIVISOR) * additionalScale;
 	}
 
 	private static double getFixedTransformScale(ItemStackRenderState itemStackRenderState) {

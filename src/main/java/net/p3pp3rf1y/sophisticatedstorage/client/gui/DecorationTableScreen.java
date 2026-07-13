@@ -13,7 +13,6 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.item.TrackingItemStackRenderState;
-import net.minecraft.client.resources.model.cuboid.ItemTransform;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -30,7 +29,6 @@ import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.controls.*;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.*;
 import net.p3pp3rf1y.sophisticatedcore.network.SyncContainerClientDataPayload;
-import net.p3pp3rf1y.sophisticatedcore.util.Easing;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.DecorationTableBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.client.render.DecorationTablePreviewRenderState;
@@ -40,11 +38,8 @@ import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.util.DecorationHelper;
 import org.joml.Matrix3x2f;
 import org.joml.Matrix3x2fStack;
-import org.joml.Matrix4f;
-import org.joml.Vector3f;
 import org.jspecify.annotations.Nullable;
 
-import java.lang.reflect.Field;
 import java.util.*;
 import java.util.function.BooleanSupplier;
 import java.util.function.Function;
@@ -114,9 +109,6 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 	private ColorPicker colorPicker;
 
 	private final List<Component> resultPartsNeededTooltip = new ArrayList<>();
-	@Nullable
-	private static final Field ITEM_TRANSFORM_FIELD = getItemTransformField();
-
 	public DecorationTableScreen(DecorationTableMenu menu, Inventory playerInventory, Component title) {
 		super(menu, playerInventory, title, 250, 226);
 		inventoryLabelX = 45;
@@ -505,17 +497,6 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 		});
 	}
 
-	@Nullable
-	private static Field getItemTransformField() {
-		try {
-			Field field = ItemStackRenderState.LayerRenderState.class.getDeclaredField("itemTransform");
-			field.setAccessible(true);
-			return field;
-		} catch (NoSuchFieldException e) {
-			return null;
-		}
-	}
-
 	private static final Map<Integer, Vec2> SLOT_PREVIEW_ROTATIONS = Map.of(0, new Vec2(90, 180), 1, new Vec2(90, 180), 4, new Vec2(90, 180), 2,
 			new Vec2(0, 180), 5, new Vec2(0, 180), 3, new Vec2(-90, 180), 6, new Vec2(-90, 180));
 
@@ -729,16 +710,8 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 		}
 	}
 
-	private static class BlockPreview extends CompositeWidgetBase<WidgetBase> {
+	private static class BlockPreview extends RotatablePreviewWidget {
 		private final List<ItemStack> previewStacks = new ArrayList<>();
-		private float xAxisRotation = 30;
-		private float yAxisRotation = 45;
-
-		private float fromXAxisRotation = xAxisRotation;
-		private float fromYAxisRotation = yAxisRotation;
-		private float targetXAxisRotation = xAxisRotation;
-		private float targetYAxisRotation = yAxisRotation;
-		private long lastTargetSetTime = 0;
 		private int selectedPreview = 0;
 		private final List<StackButton> previewStackButtons = new ArrayList<>();
 
@@ -775,65 +748,16 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 		}
 
 		public void resetToDefaultRotation() {
-			if (previewStacks.isEmpty()) {
-				return;
-			}
-
-			ItemStack previewStack = previewStacks.get(selectedPreview);
-			if (previewStack.isEmpty()) {
-				return;
-			}
-
-			ItemStackRenderState renderState = new ItemStackRenderState();
-			resolveModel(previewStack, renderState, ItemDisplayContext.GUI);
-
-			if (renderState.isEmpty()) {
-				return;
-			}
-
-			ItemTransform itemTransform = getItemTransform(renderState.layers[0]);
-			if (itemTransform != null) {
-				setTargetRotations((int) itemTransform.rotation().x(), (int) itemTransform.rotation().y());
-			}
+			super.resetToDefaultRotation();
 		}
 
 		private void resolveModel(ItemStack previewStack, ItemStackRenderState renderState, ItemDisplayContext displayContext) {
 			minecraft.getItemModelResolver().updateForTopItem(renderState, previewStack, displayContext, null, null, 0);
 		}
 
-		@Nullable
-		private ItemTransform getItemTransform(ItemStackRenderState.LayerRenderState layer) {
-			if (ITEM_TRANSFORM_FIELD == null) {
-				return null;
-			}
-
-			try {
-				return (ItemTransform) ITEM_TRANSFORM_FIELD.get(layer);
-			} catch (IllegalAccessException e) {
-				return null;
-			}
-		}
-
-		public void setTargetRotations(int xAxisRotation, int yAxisRotation) {
-			if (targetXAxisRotation == xAxisRotation && targetYAxisRotation == yAxisRotation) {
-				return;
-			}
-
-			fromXAxisRotation = this.xAxisRotation;
-			fromYAxisRotation = this.yAxisRotation;
-			targetXAxisRotation = xAxisRotation;
-			targetYAxisRotation = yAxisRotation;
-			lastTargetSetTime = System.currentTimeMillis();
-		}
-
 		@Override
-		protected void extractBg(GuiGraphicsExtractor guiGraphics, Minecraft minecraft, int mouseX, int mouseY) {
-			guiGraphics.fill(x, y, x + getWidth(), y + getHeight(), 0xFF_000000);
-		}
-
-		@Override
-		protected void extractWidget(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTicks) {
-			super.extractWidget(guiGraphics, mouseX, mouseY, partialTicks);
+		protected void renderPreview(GuiGraphicsExtractor guiGraphics, int x, int y, int width, int height, float xAxisRotation, float yAxisRotation,
+				float partialTicks) {
 			if (previewStacks.isEmpty()) {
 				return;
 			}
@@ -844,52 +768,14 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 				return;
 			}
 
-			updateRotations();
-
 			TrackingItemStackRenderState renderState = new TrackingItemStackRenderState();
 			resolveModel(previewStack, renderState, ItemDisplayContext.NONE);
 			if (renderState.isEmpty()) {
 				return;
 			}
-			ItemStackRenderState.LayerRenderState layer = renderState.layers[0];
-			layer.setLocalTransform(new Matrix4f().translate(0.5f, 0.5f, 0.5f)
-					.rotateXYZ((float) Math.toRadians(xAxisRotation), (float) Math.toRadians(yAxisRotation), 0).translate(-0.5f, -0.5f, -0.5f));
-			ItemTransform itemTransform = getItemTransform(layer);
-			if (itemTransform != null) {
-				layer.setItemTransform(new ItemTransform(itemTransform.rotation(), itemTransform.translation(), new Vector3f(3, 3, 3)));
-			}
-			int previewHeight = getHeight() - (previewStackButtons.isEmpty() ? 0 : 20);
+			int previewHeight = height - (previewStackButtons.isEmpty() ? 0 : 20);
 			guiGraphics.submitPictureInPictureRenderState(new DecorationTablePreviewRenderState(renderState, new Matrix3x2f(guiGraphics.pose()),
-					guiGraphics.peekScissorStack(), x, y, x + getWidth(), y + previewHeight));
-		}
-
-		private void updateRotations() {
-			float secondsDuration = 1;
-			long currentTime = System.currentTimeMillis();
-			if (currentTime - lastTargetSetTime <= secondsDuration * 1000) {
-				float ratio = (currentTime - lastTargetSetTime) / (secondsDuration * 1000);
-				ratio = Easing.EASE_IN_OUT_CUBIC.ease(ratio);
-				xAxisRotation = (fromXAxisRotation + (targetXAxisRotation - fromXAxisRotation) * ratio);
-				yAxisRotation = (fromYAxisRotation + (targetYAxisRotation - fromYAxisRotation) * ratio);
-			} else {
-				xAxisRotation = targetXAxisRotation;
-				yAxisRotation = targetYAxisRotation;
-			}
-		}
-
-		@Override
-		public boolean mouseDragged(MouseButtonEvent event, double dragX, double dragY) {
-			if (!previewStackButtons.isEmpty() && event.y() > y + getHeight() - 20) {
-				return super.mouseDragged(event, dragX, dragY);
-			}
-
-			yAxisRotation += (float) (2 * dragX);
-			yAxisRotation = yAxisRotation % 360;
-			xAxisRotation += (float) (2 * dragY);
-			xAxisRotation = xAxisRotation % 360;
-			targetXAxisRotation = xAxisRotation;
-			targetYAxisRotation = yAxisRotation;
-			return true;
+					guiGraphics.peekScissorStack(), x, y, x + width, y + previewHeight, xAxisRotation, yAxisRotation));
 		}
 	}
 }

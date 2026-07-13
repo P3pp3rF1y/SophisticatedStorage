@@ -7,7 +7,7 @@ import org.joml.Matrix3x2fc;
 import org.jspecify.annotations.Nullable;
 
 public record DecorationTablePreviewRenderState(TrackingItemStackRenderState itemStackRenderState, Matrix3x2fc pose, @Nullable ScreenRectangle scissorArea,
-		int x0, int y0, int x1, int y1) implements PictureInPictureRenderState {
+		int x0, int y0, int x1, int y1, float xAxisRotation, float yAxisRotation) implements PictureInPictureRenderState {
 	@Override
 	public float scale() {
 		return 16;
