@@ -94,6 +94,7 @@ public class ClientEventHandler {
 	private static void registerPictureInPictuterRenderers(RegisterPictureInPictureRenderersEvent event) {
 		event.register(OversizedItemRenderState.class, OversizedItemRenderer::new);
 		event.register(DecorationTablePreviewRenderState.class, DecorationTablePreviewRenderer::new);
+		event.register(StorageBlockPreviewRenderState.class, StorageBlockPreviewPipRenderer::new);
 	}
 
 	private static void registerRenderPipelines(RegisterRenderPipelinesEvent event) {

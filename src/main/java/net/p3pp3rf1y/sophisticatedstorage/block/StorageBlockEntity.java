@@ -117,6 +117,11 @@ public abstract class StorageBlockEntity extends BlockEntity
 			}
 
 			@Override
+			protected boolean canDeselectDisplayItems() {
+				return !(StorageBlockEntity.this instanceof LimitedBarrelBlockEntity);
+			}
+
+			@Override
 			public int getDefaultNumberOfInventorySlots() {
 				if (getBlockState().getBlock() instanceof IStorageBlock storageBlock) {
 					return storageBlock.getNumberOfInventorySlots();

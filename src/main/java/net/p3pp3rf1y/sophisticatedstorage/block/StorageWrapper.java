@@ -104,7 +104,16 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 			protected int getNumberOfDisplayItems() {
 				return numberOfDisplayItems;
 			}
+
+			@Override
+			protected boolean canDeselectDisplayItems() {
+				return StorageWrapper.this.canDeselectDisplayItems();
+			}
 		};
+	}
+
+	protected boolean canDeselectDisplayItems() {
+		return true;
 	}
 
 	public void setContentsUuid(@Nullable UUID contentsUuid) {
