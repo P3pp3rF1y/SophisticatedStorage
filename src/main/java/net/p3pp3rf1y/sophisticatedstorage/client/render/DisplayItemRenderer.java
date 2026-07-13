@@ -42,6 +42,7 @@ public class DisplayItemRenderer {
 	static final float BIG_ITEM_SCALE = 0.5f;
 	static final float SMALL_ITEM_SCALE = 0.25f;
 	static final float UPGRADE_ITEM_SCALE = 0.125f;
+	private static final double DISPLAY_ITEM_PIXEL_SIZE_DIVISOR = 15.95D;
 	private static final ItemStack INACCESSIBLE_SLOT_STACK = new ItemStack(ModItems.INACCESSIBLE_SLOT.get());
 	private final double yCenterTranslation;
 	private final Vec3 upgradesOffset;
@@ -66,7 +67,8 @@ public class DisplayItemRenderer {
 	}
 
 	public void renderDisplayItem(PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, RenderInfo.DisplayItem displayItem) {
-		renderSingleItem(poseStack, bufferSource, packedLight, packedOverlay, Minecraft.getInstance(), 0, 1, displayItem.getItem(), displayItem.getRotation());
+		renderSingleItem(poseStack, bufferSource, packedLight, packedOverlay, Minecraft.getInstance(), 0, 1, displayItem.getItem(), displayItem.getRotation(),
+				displayItem.getZOffset());
 	}
 
 	public void renderDisplayItems(StorageBlockEntity blockEntity, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
@@ -86,7 +88,7 @@ public class DisplayItemRenderer {
 		int displayItemCount = storageBlock.getDisplayItemsCount(displayItems);
 		for (int displayItemIndex = 0; displayItemIndex < displayItemCount; displayItemIndex++) {
 			if (inaccessibleSlots.contains(displayItemIndex)) {
-				renderSingleItem(poseStack, bufferSource, packedLight, packedOverlay, minecraft, displayItemIndex, displayItemCount, INACCESSIBLE_SLOT_STACK,
+				renderSingleItem(poseStack, bufferSource, packedLight, packedOverlay, minecraft, displayItemIndex, displayItemCount, INACCESSIBLE_SLOT_STACK, 0,
 						0);
 			}
 		}
@@ -94,7 +96,7 @@ public class DisplayItemRenderer {
 		for (RenderInfo.DisplayItem displayItem : displayItems) {
 			renderSingleItem(poseStack, bufferSource, packedLight, packedOverlay, minecraft,
 					storageBlock.hasFixedIndexDisplayItems() ? displayItem.getSlotIndex() : displayItemIndex, displayItemCount, displayItem.getItem(),
-					displayItem.getRotation());
+					displayItem.getRotation(), displayItem.getZOffset());
 			displayItemIndex++;
 		}
 	}
@@ -133,7 +135,7 @@ public class DisplayItemRenderer {
 	}
 
 	private void renderSingleItem(PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, Minecraft minecraft,
-			int displayItemIndex, int displayItemCount, ItemStack stack, int rotation) {
+			int displayItemIndex, int displayItemCount, ItemStack stack, int rotation, int zOffset) {
 		if (stack.isEmpty()) {
 			return;
 		}
@@ -142,21 +144,21 @@ public class DisplayItemRenderer {
 			return;
 		}
 
-		ItemStackRenderState.LayerRenderState layer = itemStackRenderState.layers[0];
-		float itemOffset = (float) getDisplayItemOffset(stack, itemStackRenderState, layer.transform, layer.prepareQuadList(), isGui3d(itemStackRenderState),
-				displayItemCount == 1 ? 1 : SMALL_BLOCK_ITEM_SCALE);
-		poseStack.pushPose();
-
-		Vector3f frontOffset = getDisplayItemIndexFrontOffset(displayItemIndex, displayItemCount, (float) yCenterTranslation);
-		poseStack.translate(frontOffset.x(), frontOffset.y(), -itemOffset);
-		poseStack.mulPose(Axis.ZP.rotationDegrees(rotation));
-
 		float itemScale;
 		if (displayItemCount == 1) {
 			itemScale = stack.getItem() instanceof BlockItem && isGui3d(itemStackRenderState) ? 1.0f : BIG_ITEM_SCALE;
 		} else {
 			itemScale = stack.getItem() instanceof BlockItem && isGui3d(itemStackRenderState) ? SMALL_BLOCK_ITEM_SCALE : SMALL_ITEM_SCALE;
 		}
+
+		ItemStackRenderState.LayerRenderState layer = itemStackRenderState.layers[0];
+		float itemOffset = (float) getDisplayItemOffset(stack, itemStackRenderState, layer.transform, layer.prepareQuadList(), isGui3d(itemStackRenderState),
+				itemScale);
+		poseStack.pushPose();
+
+		Vector3f frontOffset = getDisplayItemIndexFrontOffset(displayItemIndex, displayItemCount, (float) yCenterTranslation);
+		poseStack.translate(frontOffset.x(), frontOffset.y(), -itemOffset - zOffset * getDisplayItemPixelOffset(layer.transform, itemScale));
+		poseStack.mulPose(Axis.ZP.rotationDegrees(rotation));
 		poseStack.scale(itemScale, itemScale, itemScale);
 
 		itemStackRenderState.render(poseStack, bufferSource, packedLight, packedOverlay);
@@ -173,6 +175,10 @@ public class DisplayItemRenderer {
 		offset = calculateDisplayItemOffset(item, itemStackRenderState, transform, quads, isGui3d, additionalScale);
 		ITEM_HASHCODE_OFFSETS.put(hash, offset);
 		return offset;
+	}
+
+	public static double getDisplayItemPixelOffset(ItemTransform transform, float additionalScale) {
+		return transform.scale().z() * (1 / DISPLAY_ITEM_PIXEL_SIZE_DIVISOR) * additionalScale;
 	}
 
 	private static double calculateDisplayItemOffset(ItemStack item, ItemStackRenderState itemStackRenderState, ItemTransform transform, List<BakedQuad> quads,
@@ -203,8 +209,9 @@ public class DisplayItemRenderer {
 		points = translatePoints(points, transform.translation());
 
 		float zScale = transform.scale().z();
-		return ((zScale * (2 / 15.95D)) - getMaxZ(points)) * additionalScale; // 15.95 because of z-fighting if displayed model had surface offset exactly 1
-																				// pixel from the top most surface
+		return ((zScale * (2 / DISPLAY_ITEM_PIXEL_SIZE_DIVISOR)) - getMaxZ(points)) * additionalScale; // 15.95 because of z-fighting if displayed model had
+																										// surface offset exactly 1
+																										// pixel from the top most surface
 	}
 
 	private static Set<Vector3f> getBoundsCornersFromShape(Block block, ClientLevel level) {

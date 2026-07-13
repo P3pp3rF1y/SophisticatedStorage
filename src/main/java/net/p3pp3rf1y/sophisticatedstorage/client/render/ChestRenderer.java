@@ -94,6 +94,11 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity> {
 	@Override
 	public void render(ChestBlockEntity chestEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay,
 			Vec3 cameraPos) {
+		render(chestEntity, partialTick, poseStack, bufferSource, packedLight, packedOverlay, cameraPos, false);
+	}
+
+	public void render(ChestBlockEntity chestEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay,
+			Vec3 cameraPos, boolean forceClosed) {
 		BlockState blockstate = chestEntity.getBlockState();
 		Optional<WoodType> woodType = chestEntity.getWoodType();
 		ChestType chestType = blockstate.getValue(ChestBlock.TYPE);
@@ -109,7 +114,7 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity> {
 		poseStack.translate(0.5D, 0.5D, 0.5D);
 		poseStack.mulPose(Axis.YP.rotationDegrees(-f));
 		poseStack.translate(-0.5D, -0.5D, -0.5D);
-		float lidAngle = chestEntity.getOpenNess(partialTick);
+		float lidAngle = forceClosed ? 0 : chestEntity.getOpenNess(partialTick);
 		lidAngle = 1.0F - lidAngle;
 		lidAngle = 1.0F - lidAngle * lidAngle * lidAngle;
 
