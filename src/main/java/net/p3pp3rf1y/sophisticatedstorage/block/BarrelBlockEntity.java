@@ -11,6 +11,7 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
+import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageSettingsContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.item.BarrelBlockItem;
 
@@ -39,9 +40,9 @@ public class BarrelBlockEntity extends WoodStorageBlockEntity implements IMateri
 		protected boolean isOwnContainer(Player player) {
 			if (player.containerMenu instanceof StorageContainerMenu storageContainerMenu) {
 				return storageContainerMenu.getStorageBlockEntity() == BarrelBlockEntity.this;
-			} else {
-				return false;
 			}
+			return player.containerMenu instanceof StorageSettingsContainerMenu storageSettingsContainerMenu
+					&& storageSettingsContainerMenu.getBlockPosition().equals(getBlockPos());
 		}
 	};
 
