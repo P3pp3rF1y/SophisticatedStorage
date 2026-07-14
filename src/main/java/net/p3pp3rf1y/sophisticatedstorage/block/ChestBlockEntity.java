@@ -24,6 +24,7 @@ import net.p3pp3rf1y.sophisticatedcore.settings.itemdisplay.ItemDisplaySettingsC
 import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeHandler;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
+import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageSettingsContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.item.ChestBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.upgrades.INeighborChangeListenerUpgrade;
@@ -61,9 +62,9 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 		public boolean isOwnContainer(Player player) {
 			if (player.containerMenu instanceof StorageContainerMenu storageContainerMenu) {
 				return storageContainerMenu.getStorageBlockEntity() == getMainChestBlockEntity();
-			} else {
-				return false;
 			}
+			return player.containerMenu instanceof StorageSettingsContainerMenu storageSettingsContainerMenu
+					&& storageSettingsContainerMenu.getBlockPosition().equals(getMainPos());
 		}
 
 		@Override
