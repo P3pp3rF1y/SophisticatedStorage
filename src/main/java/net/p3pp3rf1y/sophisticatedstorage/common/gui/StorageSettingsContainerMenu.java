@@ -19,13 +19,23 @@ import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 public class StorageSettingsContainerMenu extends SettingsContainerMenu<IStorageWrapper> {
 	private final BlockPos pos;
 	private final boolean doubleChest;
+	private boolean stopOpenersOnRemove;
 
 	protected StorageSettingsContainerMenu(int windowId, Player player, BlockPos pos) {
-		this(ModBlocks.SETTINGS_CONTAINER_TYPE.get(), windowId, player, pos);
+		this(windowId, player, pos, false);
+	}
+
+	protected StorageSettingsContainerMenu(int windowId, Player player, BlockPos pos, boolean stopOpenersOnRemove) {
+		this(ModBlocks.SETTINGS_CONTAINER_TYPE.get(), windowId, player, pos, stopOpenersOnRemove);
 	}
 	protected StorageSettingsContainerMenu(MenuType<?> menuType, int windowId, Player player, BlockPos pos) {
+		this(menuType, windowId, player, pos, false);
+	}
+
+	protected StorageSettingsContainerMenu(MenuType<?> menuType, int windowId, Player player, BlockPos pos, boolean stopOpenersOnRemove) {
 		super(menuType, windowId, player, getWrapper(player.level(), pos));
 		this.pos = pos;
+		this.stopOpenersOnRemove = stopOpenersOnRemove;
 		BlockState blockState = player.level().getBlockState(pos);
 		doubleChest = blockState.getBlock() instanceof ChestBlock && blockState.getValue(ChestBlock.TYPE) != ChestType.SINGLE;
 	}
@@ -42,6 +52,18 @@ public class StorageSettingsContainerMenu extends SettingsContainerMenu<IStorage
 
 	public static StorageSettingsContainerMenu fromBuffer(int windowId, Inventory playerInventory, FriendlyByteBuf buffer) {
 		return new StorageSettingsContainerMenu(windowId, playerInventory.player, buffer.readBlockPos());
+	}
+
+	@Override
+	public void removed(Player player) {
+		super.removed(player);
+		if (!player.level().isClientSide() && stopOpenersOnRemove) {
+			WorldHelper.getBlockEntity(player.level(), pos, StorageBlockEntity.class).ifPresent(storageBlockEntity -> storageBlockEntity.stopOpen(player));
+		}
+	}
+
+	public void transferOpenersToStorageMenu() {
+		stopOpenersOnRemove = false;
 	}
 
 	@Override
