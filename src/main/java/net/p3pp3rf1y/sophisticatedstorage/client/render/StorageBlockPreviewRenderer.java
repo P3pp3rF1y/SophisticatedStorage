@@ -21,11 +21,7 @@ import net.minecraft.world.level.lighting.LevelLightEngine;
 import net.minecraft.world.level.material.FluidState;
 import net.neoforged.neoforge.client.RenderTypeHelper;
 import net.neoforged.neoforge.client.model.data.ModelData;
-import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlock;
-import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlockEntity;
-import net.p3pp3rf1y.sophisticatedstorage.block.ChestBlockEntity;
-import net.p3pp3rf1y.sophisticatedstorage.block.ShulkerBoxBlockEntity;
-import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
+import net.p3pp3rf1y.sophisticatedstorage.block.*;
 
 import javax.annotation.Nullable;
 
@@ -59,8 +55,7 @@ public final class StorageBlockPreviewRenderer {
 		BlockEntityRenderer<?> renderer = minecraft.getBlockEntityRenderDispatcher().getRenderer(renderBlockEntity);
 		if (renderer instanceof ChestRenderer chestRenderer && renderBlockEntity instanceof ChestBlockEntity chestBlockEntity) {
 			chestRenderer.render(chestBlockEntity, partialTicks, poseStack, buffer, packedLight, OverlayTexture.NO_OVERLAY, true);
-		} else if (renderer instanceof ShulkerBoxRenderer shulkerBoxRenderer
-				&& renderBlockEntity instanceof ShulkerBoxBlockEntity shulkerBoxBlockEntity) {
+		} else if (renderer instanceof ShulkerBoxRenderer shulkerBoxRenderer && renderBlockEntity instanceof ShulkerBoxBlockEntity shulkerBoxBlockEntity) {
 			shulkerBoxRenderer.render(shulkerBoxBlockEntity, partialTicks, poseStack, buffer, packedLight, OverlayTexture.NO_OVERLAY, true);
 		} else if (renderer != null) {
 			renderBlockEntity(renderer, renderBlockEntity, partialTicks, poseStack, buffer, packedLight);

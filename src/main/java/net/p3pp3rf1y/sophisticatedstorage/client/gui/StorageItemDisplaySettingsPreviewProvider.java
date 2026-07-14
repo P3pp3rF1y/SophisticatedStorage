@@ -20,17 +20,7 @@ import net.p3pp3rf1y.sophisticatedcore.settings.itemdisplay.ItemDisplaySettingsC
 import net.p3pp3rf1y.sophisticatedcore.settings.itemdisplay.ItemDisplaySettingsContainer;
 import net.p3pp3rf1y.sophisticatedcore.settings.itemdisplay.ItemDisplaySettingsTab;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
-import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlock;
-import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlockEntity;
-import net.p3pp3rf1y.sophisticatedstorage.block.ChestBlock;
-import net.p3pp3rf1y.sophisticatedstorage.block.ChestBlockEntity;
-import net.p3pp3rf1y.sophisticatedstorage.block.LimitedBarrelBlock;
-import net.p3pp3rf1y.sophisticatedstorage.block.ShulkerBoxBlock;
-import net.p3pp3rf1y.sophisticatedstorage.block.ShulkerBoxBlockEntity;
-import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockBase;
-import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
-import net.p3pp3rf1y.sophisticatedstorage.block.VerticalFacing;
-import net.p3pp3rf1y.sophisticatedstorage.block.WoodStorageBlockEntity;
+import net.p3pp3rf1y.sophisticatedstorage.block.*;
 import net.p3pp3rf1y.sophisticatedstorage.client.render.DisplayItemRenderer;
 import net.p3pp3rf1y.sophisticatedstorage.client.render.StorageBlockPreviewRenderer;
 import net.p3pp3rf1y.sophisticatedstorage.item.BarrelBlockItem;
@@ -43,7 +33,8 @@ import java.util.Optional;
 public final class StorageItemDisplaySettingsPreviewProvider implements IItemDisplaySettingsPreviewProvider {
 	public static final StorageItemDisplaySettingsPreviewProvider INSTANCE = new StorageItemDisplaySettingsPreviewProvider();
 
-	private StorageItemDisplaySettingsPreviewProvider() {}
+	private StorageItemDisplaySettingsPreviewProvider() {
+	}
 
 	@Override
 	public Optional<ItemStack> getItemDisplaySettingsPreviewStack(SettingsScreen screen, ItemDisplaySettingsContainer container, int selectedSlot) {
@@ -52,16 +43,17 @@ public final class StorageItemDisplaySettingsPreviewProvider implements IItemDis
 	}
 
 	@Override
-	public boolean renderItemDisplaySettingsPreview(ItemDisplaySettingsTab tab, SettingsScreen screen, GuiGraphics guiGraphics, int x, int y, int width, int height,
-			ItemDisplaySettingsContainer container, int selectedSlot, float xAxisRotation, float yAxisRotation, float partialTicks) {
+	public boolean renderItemDisplaySettingsPreview(ItemDisplaySettingsTab tab, SettingsScreen screen, GuiGraphics guiGraphics, int x, int y, int width,
+			int height, ItemDisplaySettingsContainer container, int selectedSlot, float xAxisRotation, float yAxisRotation, float partialTicks) {
 		Minecraft minecraft = Minecraft.getInstance();
 		if (minecraft.level == null) {
 			return false;
 		}
 
-		Optional<StorageBlockEntity> storageBlockEntity = WorldHelper.getBlockEntity(minecraft.level, screen.getMenu().getBlockPosition(), StorageBlockEntity.class);
-		storageBlockEntity.ifPresent(blockEntity -> renderStorageBlockPreview(tab, guiGraphics, x, y, width, height, xAxisRotation, yAxisRotation, partialTicks,
-				blockEntity));
+		Optional<StorageBlockEntity> storageBlockEntity = WorldHelper.getBlockEntity(minecraft.level, screen.getMenu().getBlockPosition(),
+				StorageBlockEntity.class);
+		storageBlockEntity.ifPresent(
+				blockEntity -> renderStorageBlockPreview(tab, guiGraphics, x, y, width, height, xAxisRotation, yAxisRotation, partialTicks, blockEntity));
 		if (storageBlockEntity.isPresent()) {
 			return true;
 		}
@@ -136,8 +128,7 @@ public final class StorageItemDisplaySettingsPreviewProvider implements IItemDis
 	private void copyPreviewRenderProperties(IStorageWrapper sourceWrapper, StorageBlockEntity previewBlockEntity, ItemStack wrappedStorageStack) {
 		previewBlockEntity.getStorageWrapper().setColors(
 				StorageBlockItem.getMainColorFromComponentHolder(wrappedStorageStack).orElse(sourceWrapper.getMainColor()),
-				StorageBlockItem.getAccentColorFromComponentHolder(wrappedStorageStack).orElse(sourceWrapper.getAccentColor())
-		);
+				StorageBlockItem.getAccentColorFromComponentHolder(wrappedStorageStack).orElse(sourceWrapper.getAccentColor()));
 		if (previewBlockEntity instanceof WoodStorageBlockEntity woodStorageBlockEntity) {
 			WoodStorageBlockItem.getWoodType(wrappedStorageStack).ifPresent(woodStorageBlockEntity::setWoodType);
 		}
@@ -201,7 +192,8 @@ public final class StorageItemDisplaySettingsPreviewProvider implements IItemDis
 
 		int combinedLight = 15728880;
 		tab.renderWithItemDisplayPreviewLighting(guiGraphics, () -> {
-			StorageBlockPreviewRenderer.render(renderBlockEntity, partialTicks, poseStack, guiGraphics.bufferSource(), combinedLight, OverlayTexture.NO_OVERLAY);
+			StorageBlockPreviewRenderer.render(renderBlockEntity, partialTicks, poseStack, guiGraphics.bufferSource(), combinedLight,
+					OverlayTexture.NO_OVERLAY);
 			otherChest.ifPresent(chest -> otherChestOffset.ifPresent(offset -> {
 				poseStack.pushPose();
 				poseStack.translate(offset.getX(), 0, offset.getZ());
@@ -229,7 +221,8 @@ public final class StorageItemDisplaySettingsPreviewProvider implements IItemDis
 	}
 
 	private float getStoragePreviewYAxisRotation(StorageBlockEntity storageBlockEntity, float yAxisRotation) {
-		if (storageBlockEntity instanceof ChestBlockEntity || storageBlockEntity instanceof BarrelBlockEntity || storageBlockEntity instanceof ShulkerBoxBlockEntity) {
+		if (storageBlockEntity instanceof ChestBlockEntity || storageBlockEntity instanceof BarrelBlockEntity
+				|| storageBlockEntity instanceof ShulkerBoxBlockEntity) {
 			return yAxisRotation + 180;
 		}
 
@@ -237,7 +230,8 @@ public final class StorageItemDisplaySettingsPreviewProvider implements IItemDis
 	}
 
 	private boolean shouldScaleStoragePreviewDown(StorageBlockEntity storageBlockEntity) {
-		return storageBlockEntity instanceof ChestBlockEntity || storageBlockEntity instanceof BarrelBlockEntity || storageBlockEntity instanceof ShulkerBoxBlockEntity;
+		return storageBlockEntity instanceof ChestBlockEntity || storageBlockEntity instanceof BarrelBlockEntity
+				|| storageBlockEntity instanceof ShulkerBoxBlockEntity;
 	}
 
 	private Optional<ChestBlockEntity> getOtherChest(StorageBlockEntity storageBlockEntity) {
@@ -251,8 +245,10 @@ public final class StorageItemDisplaySettingsPreviewProvider implements IItemDis
 			return Optional.empty();
 		}
 
-		return WorldHelper.getBlockEntity(minecraft.level, chestBlockEntity.getBlockPos().relative(ChestBlock.getConnectedDirection(state)), ChestBlockEntity.class);
+		return WorldHelper.getBlockEntity(minecraft.level, chestBlockEntity.getBlockPos().relative(ChestBlock.getConnectedDirection(state)),
+				ChestBlockEntity.class);
 	}
 
-	private record PreviewStorage(StorageBlockEntity blockEntity, Optional<ChestBlockEntity> otherChest) {}
+	private record PreviewStorage(StorageBlockEntity blockEntity, Optional<ChestBlockEntity> otherChest) {
+	}
 }
