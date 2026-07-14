@@ -13,6 +13,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
+import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageSettingsContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 
 import java.util.EnumMap;
@@ -41,9 +42,9 @@ public class BarrelBlockEntity extends WoodStorageBlockEntity implements IMateri
 		protected boolean isOwnContainer(Player player) {
 			if (player.containerMenu instanceof StorageContainerMenu storageContainerMenu) {
 				return storageContainerMenu.getStorageBlockEntity() == BarrelBlockEntity.this;
-			} else {
-				return false;
 			}
+			return player.containerMenu instanceof StorageSettingsContainerMenu storageSettingsContainerMenu
+					&& storageSettingsContainerMenu.getBlockPosition().equals(getBlockPos());
 		}
 	};
 
