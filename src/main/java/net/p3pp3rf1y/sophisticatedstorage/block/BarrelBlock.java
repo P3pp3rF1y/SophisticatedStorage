@@ -84,7 +84,7 @@ public class BarrelBlock extends WoodStorageBlockBase {
 
 	@Override
 	public boolean isCollisionShapeFullBlock(BlockState state, BlockGetter level, BlockPos pos) {
-		return false;
+		return state.getValue(OPAQUE);
 	}
 
 	@Override
@@ -206,8 +206,13 @@ public class BarrelBlock extends WoodStorageBlockBase {
 
 	@Override
 	public VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-		return context instanceof EntityCollisionContext entityCollisionContext && entityCollisionContext.getEntity() instanceof ItemEntity
-				|| isCalledByCollisionCacheLogic(level, pos) ? ITEM_ENTITY_COLLISION_SHAPE : super.getCollisionShape(state, level, pos, context);
+		if (isCalledByCollisionCacheLogic(level, pos)) {
+			return state.getValue(OPAQUE) ? Shapes.block() : ITEM_ENTITY_COLLISION_SHAPE;
+		}
+		if (context instanceof EntityCollisionContext entityCollisionContext && entityCollisionContext.getEntity() instanceof ItemEntity) {
+			return ITEM_ENTITY_COLLISION_SHAPE;
+		}
+		return super.getCollisionShape(state, level, pos, context);
 	}
 
 	@Override
