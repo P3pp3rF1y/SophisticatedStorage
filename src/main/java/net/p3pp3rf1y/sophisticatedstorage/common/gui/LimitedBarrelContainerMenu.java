@@ -11,7 +11,11 @@ import static net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks.LIMITED_BARREL_C
 
 public class LimitedBarrelContainerMenu extends StorageContainerMenu {
 	public LimitedBarrelContainerMenu(int containerId, Player player, BlockPos pos) {
-		super(LIMITED_BARREL_CONTAINER_TYPE.get(), containerId, player, pos);
+		this(containerId, player, pos, false);
+	}
+
+	public LimitedBarrelContainerMenu(int containerId, Player player, BlockPos pos, boolean openersAlreadyActive) {
+		super(LIMITED_BARREL_CONTAINER_TYPE.get(), containerId, player, pos, openersAlreadyActive);
 	}
 
 	public static LimitedBarrelContainerMenu fromBuffer(int windowId, Inventory playerInventory, FriendlyByteBuf buffer) {
@@ -20,7 +24,12 @@ public class LimitedBarrelContainerMenu extends StorageContainerMenu {
 
 	@Override
 	protected StorageSettingsContainerMenu instantiateSettingsContainerMenu(int windowId, Player player, BlockPos pos) {
-		return new LimitedBarrelSettingsContainerMenu(windowId, player, pos);
+		return instantiateSettingsContainerMenu(windowId, player, pos, false);
+	}
+
+	@Override
+	protected StorageSettingsContainerMenu instantiateSettingsContainerMenu(int windowId, Player player, BlockPos pos, boolean openersAlreadyActive) {
+		return new LimitedBarrelSettingsContainerMenu(windowId, player, pos, openersAlreadyActive);
 	}
 
 	@Override
