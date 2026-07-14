@@ -8,7 +8,11 @@ import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 
 public class LimitedBarrelSettingsContainerMenu extends StorageSettingsContainerMenu {
 	protected LimitedBarrelSettingsContainerMenu(int windowId, Player player, BlockPos pos) {
-		super(ModBlocks.LIMITED_BARREL_SETTINGS_CONTAINER_TYPE.get(), windowId, player, pos);
+		this(windowId, player, pos, false);
+	}
+
+	protected LimitedBarrelSettingsContainerMenu(int windowId, Player player, BlockPos pos, boolean stopOpenersOnRemove) {
+		super(ModBlocks.LIMITED_BARREL_SETTINGS_CONTAINER_TYPE.get(), windowId, player, pos, stopOpenersOnRemove);
 	}
 
 	public static LimitedBarrelSettingsContainerMenu fromBuffer(int windowId, Inventory playerInventory, FriendlyByteBuf packetBuffer) {

@@ -13,6 +13,7 @@ import net.p3pp3rf1y.sophisticatedstorage.block.LimitedBarrelBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.LimitedBarrelContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
+import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageSettingsContainerMenu;
 
 import javax.annotation.Nullable;
 
@@ -44,17 +45,22 @@ public class OpenStorageInventoryMessage {
 			return;
 		}
 
+		boolean shouldTransferOpeners = player.containerMenu instanceof StorageSettingsContainerMenu settingsContainerMenu && settingsContainerMenu.getBlockPosition().equals(msg.pos);
+		if (shouldTransferOpeners) {
+			((StorageSettingsContainerMenu) player.containerMenu).transferOpenersToStorageMenu();
+		}
+		boolean openersAlreadyActive = shouldTransferOpeners;
 		NetworkHooks.openScreen(player,
-				new SimpleMenuProvider((w, p, pl) -> instantiateContainerMenu(msg, w, pl), WorldHelper
+				new SimpleMenuProvider((w, p, pl) -> instantiateContainerMenu(msg, w, pl, openersAlreadyActive), WorldHelper
 						.getBlockEntity(player.level(), msg.pos, StorageBlockEntity.class).map(StorageBlockEntity::getDisplayName).orElse(Component.empty())),
 				msg.pos);
 	}
 
-	private static StorageContainerMenu instantiateContainerMenu(OpenStorageInventoryMessage msg, int windowId, Player player) {
+	private static StorageContainerMenu instantiateContainerMenu(OpenStorageInventoryMessage msg, int windowId, Player player, boolean openersAlreadyActive) {
 		if (player.level().getBlockState(msg.pos).getBlock() instanceof LimitedBarrelBlock) {
-			return new LimitedBarrelContainerMenu(windowId, player, msg.pos);
+			return new LimitedBarrelContainerMenu(windowId, player, msg.pos, openersAlreadyActive);
 		} else {
-			return new StorageContainerMenu(windowId, player, msg.pos);
+			return new StorageContainerMenu(windowId, player, msg.pos, openersAlreadyActive);
 		}
 	}
 }
