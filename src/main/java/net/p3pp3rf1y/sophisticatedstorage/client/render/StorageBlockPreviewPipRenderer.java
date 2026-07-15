@@ -21,6 +21,7 @@ import org.joml.Vector3f;
 import org.lwjgl.system.MemoryStack;
 
 import javax.annotation.Nullable;
+
 import java.nio.ByteBuffer;
 
 public class StorageBlockPreviewPipRenderer extends PictureInPictureRenderer<StorageBlockPreviewRenderState> {
@@ -52,11 +53,13 @@ public class StorageBlockPreviewPipRenderer extends PictureInPictureRenderer<Sto
 			poseStack.translate(-otherStorageOffset.getX() / 2D, 0, -otherStorageOffset.getZ() / 2D);
 		}
 
-		StorageBlockPreviewRenderer.render(renderState.storageBlockEntity(), renderState.partialTicks(), poseStack, bufferSource, 15728880, OverlayTexture.NO_OVERLAY);
+		StorageBlockPreviewRenderer.render(renderState.storageBlockEntity(), renderState.partialTicks(), poseStack, bufferSource, 15728880,
+				OverlayTexture.NO_OVERLAY);
 		if (renderState.otherStorageBlockEntity() != null && otherStorageOffset != null) {
 			poseStack.pushPose();
 			poseStack.translate(otherStorageOffset.getX(), 0, otherStorageOffset.getZ());
-			StorageBlockPreviewRenderer.render(renderState.otherStorageBlockEntity(), renderState.partialTicks(), poseStack, bufferSource, 15728880, OverlayTexture.NO_OVERLAY);
+			StorageBlockPreviewRenderer.render(renderState.otherStorageBlockEntity(), renderState.partialTicks(), poseStack, bufferSource, 15728880,
+					OverlayTexture.NO_OVERLAY);
 			poseStack.popPose();
 		}
 	}
@@ -88,10 +91,8 @@ public class StorageBlockPreviewPipRenderer extends PictureInPictureRenderer<Sto
 		if (previewLightingBuffer == null) {
 			previewLightingBuffer = RenderSystem.getDevice().createBuffer(() -> "Storage item display preview lighting", 136, Lighting.UBO_SIZE);
 			try (MemoryStack memoryStack = MemoryStack.stackPush()) {
-				ByteBuffer byteBuffer = Std140Builder.onStack(memoryStack, Lighting.UBO_SIZE)
-						.putVec3(ITEM_DISPLAY_PREVIEW_LIGHT_0)
-						.putVec3(ITEM_DISPLAY_PREVIEW_LIGHT_1)
-						.get();
+				ByteBuffer byteBuffer = Std140Builder.onStack(memoryStack, Lighting.UBO_SIZE).putVec3(ITEM_DISPLAY_PREVIEW_LIGHT_0)
+						.putVec3(ITEM_DISPLAY_PREVIEW_LIGHT_1).get();
 				RenderSystem.getDevice().createCommandEncoder().writeToBuffer(previewLightingBuffer.slice(0, Lighting.UBO_SIZE), byteBuffer);
 			}
 		}

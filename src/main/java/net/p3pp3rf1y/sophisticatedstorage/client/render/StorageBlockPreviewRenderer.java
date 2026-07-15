@@ -112,7 +112,9 @@ public final class StorageBlockPreviewRenderer {
 
 		@Override
 		public FluidState getFluidState(BlockPos blockPos) {
-			return BlockPos.ZERO.equals(blockPos) ? blockState.getFluidState() : level == null ? blockEntity.getBlockState().getFluidState() : level.getFluidState(blockPos);
+			return BlockPos.ZERO.equals(blockPos)
+					? blockState.getFluidState()
+					: level == null ? blockEntity.getBlockState().getFluidState() : level.getFluidState(blockPos);
 		}
 
 		@Override

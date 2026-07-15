@@ -88,8 +88,8 @@ public class DisplayItemRenderer {
 		int displayItemCount = storageBlock.getDisplayItemsCount(displayItems);
 		for (int displayItemIndex = 0; displayItemIndex < displayItemCount; displayItemIndex++) {
 			if (inaccessibleSlots.contains(displayItemIndex)) {
-				renderSingleItem(poseStack, bufferSource, packedLight, packedOverlay, minecraft, displayItemIndex, displayItemCount, INACCESSIBLE_SLOT_STACK,
-						0, 0);
+				renderSingleItem(poseStack, bufferSource, packedLight, packedOverlay, minecraft, displayItemIndex, displayItemCount, INACCESSIBLE_SLOT_STACK, 0,
+						0);
 			}
 		}
 		int displayItemIndex = 0;
@@ -152,7 +152,8 @@ public class DisplayItemRenderer {
 			itemScale = stack.getItem() instanceof BlockItem && isGui3d(itemStackRenderState) ? SMALL_BLOCK_ITEM_SCALE : SMALL_ITEM_SCALE;
 		}
 
-		float itemOffset = (float) getDisplayItemOffset(stack, itemStackRenderState, layer.transform, layer.prepareQuadList(), isGui3d(itemStackRenderState), itemScale);
+		float itemOffset = (float) getDisplayItemOffset(stack, itemStackRenderState, layer.transform, layer.prepareQuadList(), isGui3d(itemStackRenderState),
+				itemScale);
 		poseStack.pushPose();
 
 		Vector3f frontOffset = getDisplayItemIndexFrontOffset(displayItemIndex, displayItemCount, (float) yCenterTranslation);
@@ -208,8 +209,9 @@ public class DisplayItemRenderer {
 		points = translatePoints(points, transform.translation());
 
 		float zScale = transform.scale().z();
-		return ((zScale * (2 / DISPLAY_ITEM_PIXEL_SIZE_DIVISOR)) - getMaxZ(points)) * additionalScale; // 15.95 because of z-fighting if displayed model had surface offset exactly 1
-																				// pixel from the top most surface
+		return ((zScale * (2 / DISPLAY_ITEM_PIXEL_SIZE_DIVISOR)) - getMaxZ(points)) * additionalScale; // 15.95 because of z-fighting if displayed model had
+																										// surface offset exactly 1
+		// pixel from the top most surface
 	}
 
 	private static Set<Vector3f> getBoundsCornersFromShape(Block block, ClientLevel level) {

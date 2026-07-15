@@ -788,7 +788,8 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 		}
 
 		@Override
-		protected void renderPreview(GuiGraphics guiGraphics, int x, int y, int width, int height, float xAxisRotation, float yAxisRotation, float partialTicks) {
+		protected void renderPreview(GuiGraphics guiGraphics, int x, int y, int width, int height, float xAxisRotation, float yAxisRotation,
+				float partialTicks) {
 			if (previewStacks.isEmpty()) {
 				return;
 			}
