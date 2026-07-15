@@ -38,6 +38,7 @@ import net.p3pp3rf1y.sophisticatedstorage.common.gui.DecorationTableInputSlotPre
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.DecorationTableMenu;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.util.DecorationHelper;
+
 import javax.annotation.Nullable;
 
 import java.util.*;

@@ -45,7 +45,8 @@ public class OpenStorageInventoryMessage {
 			return;
 		}
 
-		boolean shouldTransferOpeners = player.containerMenu instanceof StorageSettingsContainerMenu settingsContainerMenu && settingsContainerMenu.getBlockPosition().equals(msg.pos);
+		boolean shouldTransferOpeners = player.containerMenu instanceof StorageSettingsContainerMenu settingsContainerMenu
+				&& settingsContainerMenu.getBlockPosition().equals(msg.pos);
 		if (shouldTransferOpeners) {
 			((StorageSettingsContainerMenu) player.containerMenu).transferOpenersToStorageMenu();
 		}

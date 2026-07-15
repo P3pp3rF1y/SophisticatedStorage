@@ -106,15 +106,11 @@ public class StorageContainerMenu extends StorageContainerMenuBase<IStorageWrapp
 			sendToServer(data -> data.putString(ACTION_TAG, "openSettings"));
 			return;
 		}
-		getBlockPosition()
-				.ifPresent(
-						pos -> {
-							transferOpenersToSettingsMenu();
-							NetworkHooks.openScreen((ServerPlayer) player,
-									new SimpleMenuProvider((w, p, pl) -> instantiateSettingsContainerMenu(w, pl, pos, true),
-										Component.translatable(StorageTranslationHelper.INSTANCE.translGui("settings.title"))),
-									storageBlockEntity.getBlockPos());
-						});
+		getBlockPosition().ifPresent(pos -> {
+			transferOpenersToSettingsMenu();
+			NetworkHooks.openScreen((ServerPlayer) player, new SimpleMenuProvider((w, p, pl) -> instantiateSettingsContainerMenu(w, pl, pos, true),
+					Component.translatable(StorageTranslationHelper.INSTANCE.translGui("settings.title"))), storageBlockEntity.getBlockPos());
+		});
 	}
 
 	protected StorageSettingsContainerMenu instantiateSettingsContainerMenu(int windowId, Player player, BlockPos pos) {
