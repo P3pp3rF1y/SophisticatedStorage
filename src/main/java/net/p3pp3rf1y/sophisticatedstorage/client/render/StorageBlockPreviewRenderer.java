@@ -39,8 +39,8 @@ public final class StorageBlockPreviewRenderer {
 	private StorageBlockPreviewRenderer() {
 	}
 
-	public static void submitStorageBlock(StorageBlockEntity renderBlockEntity, float partialTicks, PoseStack poseStack, SubmitNodeCollector submitNodeCollector,
-			int packedLight) {
+	public static void submitStorageBlock(StorageBlockEntity renderBlockEntity, float partialTicks, PoseStack poseStack,
+			SubmitNodeCollector submitNodeCollector, int packedLight) {
 		Minecraft minecraft = Minecraft.getInstance();
 		BlockState state = getClosedPreviewState(renderBlockEntity.getBlockState());
 		if (renderBlockEntity instanceof BarrelBlockEntity barrel && minecraft.level != null) {
