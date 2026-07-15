@@ -96,8 +96,8 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity> {
 		render(chestEntity, partialTick, poseStack, bufferSource, packedLight, packedOverlay, false);
 	}
 
-	public void render(ChestBlockEntity chestEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight,
-			int packedOverlay, boolean forceClosed) {
+	public void render(ChestBlockEntity chestEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay,
+			boolean forceClosed) {
 		BlockState blockstate = chestEntity.getBlockState();
 		Optional<WoodType> woodType = chestEntity.getWoodType();
 		boolean isGenericWood = woodType.map(GenericWoodStorageHelper::isGenericWood).orElse(false);

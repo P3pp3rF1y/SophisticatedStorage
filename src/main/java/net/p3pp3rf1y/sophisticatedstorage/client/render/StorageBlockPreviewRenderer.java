@@ -59,8 +59,7 @@ public final class StorageBlockPreviewRenderer {
 		BlockEntityRenderer<?> renderer = minecraft.getBlockEntityRenderDispatcher().getRenderer(renderBlockEntity);
 		if (renderer instanceof ChestRenderer chestRenderer && renderBlockEntity instanceof ChestBlockEntity chestBlockEntity) {
 			chestRenderer.render(chestBlockEntity, partialTicks, poseStack, buffer, packedLight, OverlayTexture.NO_OVERLAY, true);
-		} else if (renderer instanceof ShulkerBoxRenderer shulkerBoxRenderer
-				&& renderBlockEntity instanceof ShulkerBoxBlockEntity shulkerBoxBlockEntity) {
+		} else if (renderer instanceof ShulkerBoxRenderer shulkerBoxRenderer && renderBlockEntity instanceof ShulkerBoxBlockEntity shulkerBoxBlockEntity) {
 			shulkerBoxRenderer.render(shulkerBoxBlockEntity, partialTicks, poseStack, buffer, packedLight, OverlayTexture.NO_OVERLAY, true);
 		} else if (renderer != null) {
 			renderBlockEntity(renderer, renderBlockEntity, partialTicks, poseStack, buffer, packedLight);
