@@ -39,10 +39,11 @@ import java.util.Iterator;
 import java.util.List;
 
 public final class StorageBlockPreviewRenderer {
-	private StorageBlockPreviewRenderer() {}
+	private StorageBlockPreviewRenderer() {
+	}
 
-	public static void submitStorageBlock(StorageBlockEntity renderBlockEntity, float partialTicks, PoseStack poseStack, SubmitNodeCollector submitNodeCollector,
-			int packedLight) {
+	public static void submitStorageBlock(StorageBlockEntity renderBlockEntity, float partialTicks, PoseStack poseStack,
+			SubmitNodeCollector submitNodeCollector, int packedLight) {
 		BlockState state = getClosedPreviewState(renderBlockEntity.getBlockState());
 		Minecraft minecraft = Minecraft.getInstance();
 		if (renderBlockEntity instanceof BarrelBlockEntity barrel) {
@@ -68,15 +69,17 @@ public final class StorageBlockPreviewRenderer {
 				}
 			});
 			if (!translucentParts.isEmpty()) {
-				submitNodeCollector.submitCustomGeometry(poseStack, RenderTypeHelper.getEntityRenderType(ChunkSectionLayer.TRANSLUCENT), (pose, vertexConsumer) -> {
-					for (BlockModelPart part : translucentParts) {
-						renderBlockModelPart(packedLight, pose, vertexConsumer, part, state, wrappedLevel);
-					}
-				});
+				submitNodeCollector.submitCustomGeometry(poseStack, RenderTypeHelper.getEntityRenderType(ChunkSectionLayer.TRANSLUCENT),
+						(pose, vertexConsumer) -> {
+							for (BlockModelPart part : translucentParts) {
+								renderBlockModelPart(packedLight, pose, vertexConsumer, part, state, wrappedLevel);
+							}
+						});
 			}
 		}
 
-		BlockEntityRenderer<StorageBlockEntity, ? extends BlockEntityRenderState> renderer = minecraft.getBlockEntityRenderDispatcher().getRenderer(renderBlockEntity);
+		BlockEntityRenderer<StorageBlockEntity, ? extends BlockEntityRenderState> renderer = minecraft.getBlockEntityRenderDispatcher()
+				.getRenderer(renderBlockEntity);
 		if (renderer != null) {
 			submitBlockEntityRender(renderer, renderBlockEntity, state, partialTicks, poseStack, submitNodeCollector, packedLight);
 		}
@@ -168,7 +171,9 @@ public final class StorageBlockPreviewRenderer {
 
 		@Override
 		public FluidState getFluidState(BlockPos blockPos) {
-			return BlockPos.ZERO.equals(blockPos) ? blockState.getFluidState() : level == null ? blockEntity.getBlockState().getFluidState() : level.getFluidState(blockPos);
+			return BlockPos.ZERO.equals(blockPos)
+					? blockState.getFluidState()
+					: level == null ? blockEntity.getBlockState().getFluidState() : level.getFluidState(blockPos);
 		}
 
 		@Override
