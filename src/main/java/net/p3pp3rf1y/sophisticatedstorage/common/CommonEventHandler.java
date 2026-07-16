@@ -17,6 +17,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.TagsUpdatedEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.level.BlockEvent;
@@ -34,6 +35,7 @@ import net.p3pp3rf1y.sophisticatedstorage.block.*;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageTranslationHelper;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.settings.StorageSettingsHandler;
+import net.p3pp3rf1y.sophisticatedstorage.util.GenericWoodStorageHelper;
 
 import java.util.Iterator;
 import java.util.Queue;
@@ -53,6 +55,11 @@ public class CommonEventHandler {
 		eventBus.addListener(this::onLimitedBarrelLeftClicked);
 		eventBus.addListener(this::onSneakItemBlockInteraction);
 		eventBus.addListener(this::onLevelTick);
+		eventBus.addListener(this::onTagsUpdated);
+	}
+
+	private void onTagsUpdated(TagsUpdatedEvent event) {
+		GenericWoodStorageHelper.invalidateCache();
 	}
 
 	private void onLimitedBarrelLeftClicked(PlayerInteractEvent.LeftClickBlock event) {

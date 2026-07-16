@@ -27,16 +27,25 @@ import java.util.Optional;
 
 public class StorageContainerMenu extends StorageContainerMenuBase<IStorageWrapper> implements ISyncedContainer {
 	private final StorageBlockEntity storageBlockEntity;
+	private boolean stopOpenersOnRemove = true;
 
 	public StorageContainerMenu(int containerId, Player player, BlockPos pos) {
-		this(ModBlocks.STORAGE_CONTAINER_TYPE.get(), containerId, player, pos);
+		this(containerId, player, pos, false);
+	}
+
+	public StorageContainerMenu(int containerId, Player player, BlockPos pos, boolean openersAlreadyActive) {
+		this(ModBlocks.STORAGE_CONTAINER_TYPE.get(), containerId, player, pos, openersAlreadyActive);
 	}
 
 	public StorageContainerMenu(MenuType<?> menuType, int containerId, Player player, BlockPos pos) {
+		this(menuType, containerId, player, pos, false);
+	}
+
+	protected StorageContainerMenu(MenuType<?> menuType, int containerId, Player player, BlockPos pos, boolean openersAlreadyActive) {
 		super(menuType, containerId, player, getWrapper(player.level(), pos), NoopStorageWrapper.INSTANCE, -1, false);
 		storageBlockEntity = WorldHelper.getBlockEntity(player.level(), pos, StorageBlockEntity.class)
 				.orElseThrow(() -> new IllegalArgumentException("Incorrect block entity at " + pos + " exptected to find StorageBlockEntity"));
-		if (!player.level().isClientSide()) {
+		if (!player.level().isClientSide() && !openersAlreadyActive) {
 			storageBlockEntity.startOpen(player);
 		}
 	}
@@ -48,9 +57,13 @@ public class StorageContainerMenu extends StorageContainerMenuBase<IStorageWrapp
 	@Override
 	public void removed(Player player) {
 		super.removed(player);
-		if (!player.level().isClientSide()) {
+		if (!player.level().isClientSide() && stopOpenersOnRemove) {
 			storageBlockEntity.stopOpen(player);
 		}
+	}
+
+	public void transferOpenersToSettingsMenu() {
+		stopOpenersOnRemove = false;
 	}
 
 	private static IStorageWrapper getWrapper(Level level, BlockPos pos) {
@@ -91,15 +104,19 @@ public class StorageContainerMenu extends StorageContainerMenuBase<IStorageWrapp
 			sendToServer(data -> data.putString(ACTION_TAG, "openSettings"));
 			return;
 		}
-		getBlockPosition()
-				.ifPresent(pos -> player.openMenu(
-						new SophisticatedMenuProvider((w, p, pl) -> instantiateSettingsContainerMenu(w, pl, pos),
-								Component.translatable(StorageTranslationHelper.INSTANCE.translGui("settings.title")), false),
-						storageBlockEntity.getBlockPos()));
+		getBlockPosition().ifPresent(pos -> {
+			transferOpenersToSettingsMenu();
+			player.openMenu(new SophisticatedMenuProvider((w, p, pl) -> instantiateSettingsContainerMenu(w, pl, pos, true),
+					Component.translatable(StorageTranslationHelper.INSTANCE.translGui("settings.title")), false), storageBlockEntity.getBlockPos());
+		});
 	}
 
 	protected StorageSettingsContainerMenu instantiateSettingsContainerMenu(int windowId, Player player, BlockPos pos) {
-		return new StorageSettingsContainerMenu(windowId, player, pos);
+		return instantiateSettingsContainerMenu(windowId, player, pos, false);
+	}
+
+	protected StorageSettingsContainerMenu instantiateSettingsContainerMenu(int windowId, Player player, BlockPos pos, boolean openersAlreadyActive) {
+		return new StorageSettingsContainerMenu(windowId, player, pos, openersAlreadyActive);
 	}
 
 	@Override

@@ -501,10 +501,6 @@ public class ModBlocks {
 			}
 		}
 
-		@Override
-		protected boolean canRemovePaint(ItemStack stack) {
-			return super.canRemovePaint(stack) && !WoodStorageBlockItem.isPacked(stack);
-		}
 	}
 
 	@SuppressWarnings("java:S6548") // singleton is correct here

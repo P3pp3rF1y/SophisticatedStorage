@@ -26,8 +26,10 @@ import net.p3pp3rf1y.sophisticatedstorage.block.ChestBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.ChestBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageWrapper;
 import net.p3pp3rf1y.sophisticatedstorage.client.ClientEventHandler;
+import net.p3pp3rf1y.sophisticatedstorage.client.GenericWoodStorageTintCache;
 import net.p3pp3rf1y.sophisticatedstorage.client.StorageTextureManager;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
+import net.p3pp3rf1y.sophisticatedstorage.util.GenericWoodStorageHelper;
 
 import java.util.Map;
 import java.util.Optional;
@@ -36,6 +38,7 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity> {
 	private static final String BOTTOM = "bottom";
 	private static final String LID = "lid";
 	private static final String LOCK = "lock";
+	private static final int GENERIC_WOOD_CHEST_ACCENT_COLOR = 0x463E32;
 	private final DisplayItemRenderer displayItemRenderer = new DisplayItemRenderer(0.5 * (14.01 / 16), new Vec3(-1 / 16D, 0, -0.0075));
 
 	private final Map<ChestType, ChestSubRenderer> chestSubRenderers;
@@ -90,11 +93,17 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity> {
 
 	public void render(ChestBlockEntity chestEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight,
 			int packedOverlay) {
+		render(chestEntity, partialTick, poseStack, bufferSource, packedLight, packedOverlay, false);
+	}
+
+	public void render(ChestBlockEntity chestEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay,
+			boolean forceClosed) {
 		BlockState blockstate = chestEntity.getBlockState();
 		Optional<WoodType> woodType = chestEntity.getWoodType();
 		ChestType chestType = blockstate.getValue(ChestBlock.TYPE);
 		ChestSubRenderer subRenderer = chestSubRenderers.get(chestType);
-		if (!subRenderer.setChestMaterialsFrom(woodType.orElse(WoodType.ACACIA), blockstate.getBlock())) {
+		boolean isGenericWood = woodType.map(GenericWoodStorageHelper::isGenericWood).orElse(false);
+		if (!subRenderer.setChestMaterialsFrom(isGenericWood ? WoodType.ACACIA : woodType.orElse(WoodType.ACACIA), blockstate.getBlock())) {
 			return;
 		}
 
@@ -104,24 +113,27 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity> {
 		poseStack.translate(0.5D, 0.5D, 0.5D);
 		poseStack.mulPose(Axis.YP.rotationDegrees(-f));
 		poseStack.translate(-0.5D, -0.5D, -0.5D);
-		float lidAngle = chestEntity.getOpenNess(partialTick);
+		float lidAngle = forceClosed ? 0 : chestEntity.getOpenNess(partialTick);
 		lidAngle = 1.0F - lidAngle;
 		lidAngle = 1.0F - lidAngle * lidAngle * lidAngle;
 
 		StorageWrapper storageWrapper = chestEntity.getMainStorageWrapper();
 		boolean hasMainColor = storageWrapper.hasMainColor();
 		boolean hasAccentColor = storageWrapper.hasAccentColor();
+		Optional<GenericWoodStorageTintCache.TintColors> genericTintColors = isGenericWood
+				? woodType.flatMap(GenericWoodStorageTintCache::getTintColors)
+				: Optional.empty();
 
-		if (woodType.isPresent() || !(hasMainColor && hasAccentColor)) {
+		if ((!isGenericWood && (woodType.isPresent() || !(hasMainColor && hasAccentColor))) || (isGenericWood && genericTintColors.isEmpty())) {
 			subRenderer.renderBottomAndLid(poseStack, bufferSource, lidAngle, packedLight, packedOverlay, StorageTextureManager.ChestMaterial.BASE);
 		}
-		if (hasMainColor) {
-			subRenderer.renderBottomAndLidWithTint(poseStack, bufferSource, lidAngle, packedLight, packedOverlay, storageWrapper.getMainColor(),
-					StorageTextureManager.ChestMaterial.TINTABLE_MAIN);
+		if (hasMainColor || genericTintColors.isPresent()) {
+			subRenderer.renderBottomAndLidWithTint(poseStack, bufferSource, lidAngle, packedLight, packedOverlay,
+					hasMainColor ? storageWrapper.getMainColor() : genericTintColors.get().mainColor(), StorageTextureManager.ChestMaterial.TINTABLE_MAIN);
 		}
-		if (hasAccentColor) {
-			subRenderer.renderBottomAndLidWithTint(poseStack, bufferSource, lidAngle, packedLight, packedOverlay, storageWrapper.getAccentColor(),
-					StorageTextureManager.ChestMaterial.TINTABLE_ACCENT);
+		if (hasAccentColor || genericTintColors.isPresent()) {
+			subRenderer.renderBottomAndLidWithTint(poseStack, bufferSource, lidAngle, packedLight, packedOverlay,
+					hasAccentColor ? storageWrapper.getAccentColor() : GENERIC_WOOD_CHEST_ACCENT_COLOR, StorageTextureManager.ChestMaterial.TINTABLE_ACCENT);
 		}
 		if (chestEntity.shouldShowTier()) {
 			subRenderer.renderTier(poseStack, bufferSource, lidAngle, packedLight, packedOverlay);

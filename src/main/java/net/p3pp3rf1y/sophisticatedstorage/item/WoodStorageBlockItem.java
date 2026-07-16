@@ -16,11 +16,11 @@ import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.common.extensions.IDataComponentHolderExtension;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.TranslationHelper;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModDataComponents;
+import net.p3pp3rf1y.sophisticatedstorage.util.GenericWoodStorageHelper;
 
 import javax.annotation.Nullable;
 
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
 
 public class WoodStorageBlockItem extends StorageBlockItem {
@@ -76,22 +76,12 @@ public class WoodStorageBlockItem extends StorageBlockItem {
 
 	@Override
 	public void setMainColor(ItemStack storageStack, int mainColor) {
-		if (getAccentColorFromComponentHolder(storageStack).isPresent()) {
-			removeWoodType(storageStack);
-		}
 		super.setMainColor(storageStack, mainColor);
 	}
 
 	@Override
 	public void setAccentColor(ItemStack storageStack, int accentColor) {
-		if (getMainColorFromComponentHolder(storageStack).isPresent()) {
-			removeWoodType(storageStack);
-		}
 		super.setAccentColor(storageStack, accentColor);
-	}
-
-	private void removeWoodType(ItemStack storageStack) {
-		storageStack.remove(ModDataComponents.WOOD_TYPE);
 	}
 
 	public static Optional<WoodType> getWoodType(IDataComponentHolderExtension componentHolder) {
@@ -106,13 +96,17 @@ public class WoodStorageBlockItem extends StorageBlockItem {
 
 	@Override
 	public Component getName(ItemStack stack) {
-		return getDisplayName(getDescriptionId(), getWoodType(stack).orElse(null));
+		return getDisplayName(getDescriptionId(), isFullyTinted(stack) ? null : getWoodType(stack).orElse(null));
+	}
+
+	private static boolean isFullyTinted(ItemStack stack) {
+		return getMainColorFromComponentHolder(stack).isPresent() && getAccentColorFromComponentHolder(stack).isPresent();
 	}
 
 	public static Component getDisplayName(String descriptionId, @Nullable WoodType woodType) {
 		if (woodType == null) {
 			return Component.translatable(descriptionId, "", "");
 		}
-		return Component.translatable(descriptionId, Component.translatable("wood_name.sophisticatedstorage." + woodType.name().toLowerCase(Locale.ROOT)), " ");
+		return Component.translatable(descriptionId, GenericWoodStorageHelper.getWoodDisplayName(woodType), " ");
 	}
 }

@@ -48,7 +48,11 @@ public abstract class StorageSettingsHandler extends SettingsHandler {
 			CompoundTag settingsNbt) {
 		addSettingsCategory(settingsNbt, ItemDisplaySettingsCategory.NAME, markContentsDirty,
 				(categoryNbt, saveNbt) -> new ItemDisplaySettingsCategory(inventoryHandlerSupplier, renderInfoSupplier, categoryNbt, saveNbt,
-						getNumberOfDisplayItems(), () -> getTypeCategory(MemorySettingsCategory.class)));
+						getNumberOfDisplayItems(), canDeselectDisplayItems(), () -> getTypeCategory(MemorySettingsCategory.class)));
+	}
+
+	protected boolean canDeselectDisplayItems() {
+		return true;
 	}
 
 	@Override
