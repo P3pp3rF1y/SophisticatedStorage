@@ -291,5 +291,6 @@
   "gui.sophisticatedstorage.status.too_many_item_entity_drops": "无法破坏该%s，将会导致过多（%s）掉落物实体从中掉落\n请考虑使用%s或者按住Shift进行破坏来跳过此项检查",
   "gui.sophisticatedstorage.status.too_low_tier_upgrade_count": "升级需要%s个%s",
   "gui.sophisticatedstorage.status.packing_tape_disabled": "配置文件设置为以打包状态掉落所有容器，无需打包带",
-  "gui.sophisticatedstorage.tooltip.parts_stored": "已存储部件"
+  "gui.sophisticatedstorage.tooltip.parts_stored": "已存储部件",
+  "sophisticatedstorage.configuration.showHigherTierGenericWoodVariants": "显示更高等级的通用木材变种"
 }
