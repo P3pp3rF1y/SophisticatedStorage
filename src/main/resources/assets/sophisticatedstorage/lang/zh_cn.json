@@ -298,6 +298,7 @@
   "sophisticatedstorage.configuration.common": "通用",
   "sophisticatedstorage.configuration.server": "服务端",
   "sophisticatedstorage.configuration.dropPacked": "总是掉落打包容器",
+  "sophisticatedstorage.configuration.showHigherTierGenericWoodVariants": "显示更高等级的通用木材变种",
   "sophisticatedstorage.configuration.showHigherTierTintedVariants": "显示同级的染色变种",
   "sophisticatedstorage.configuration.showSingleWoodVariantOnly": "仅显示一种木材变种",
   "sophisticatedstorage.configuration.woodBarrel": "木桶",
