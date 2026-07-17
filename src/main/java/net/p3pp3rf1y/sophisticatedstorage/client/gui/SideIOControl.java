@@ -4,6 +4,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.controls.ButtonDefinition;
@@ -38,8 +39,15 @@ public class SideIOControl extends CompositeWidgetBase<WidgetBase> {
 	}
 
 	private void addSideIOButton(SideIOContainer container, Position position1, BlockSide side) {
-		addChild(new SideIOToggleButton(position1, StorageButtonDefinitions.IO_MODE, button -> container.toggleSideIO(side),
-				() -> container.getSideIOMode(side), side, container::toDirection));
+		addChild(new SideIOToggleButton(position1, StorageButtonDefinitions.IO_MODE, button -> {
+			if (button == 0 && Screen.hasShiftDown()) {
+				container.setSideIOToOff(side);
+			} else if (button == 0) {
+				container.toggleSideIO(side);
+			} else if (button == 1) {
+				container.toggleSideIOBackwards(side);
+			}
+		}, () -> container.getSideIOMode(side), side, container::toDirection));
 	}
 
 	@Override

@@ -43,12 +43,31 @@ public class SideIOContainer {
 	}
 
 	public void toggleSideIO(BlockSide side) {
-		IOMode currentIO = getSideIOMode(side);
+		setSideIO(side, getNextIOMode(getSideIOMode(side)));
+	}
+
+	public void toggleSideIOBackwards(BlockSide side) {
+		setSideIO(side, getPreviousIOMode(getSideIOMode(side)));
+	}
+
+	public void setSideIOToOff(BlockSide side) {
+		setSideIO(side, IOMode.OFF);
+	}
+
+	private IOMode getNextIOMode(IOMode currentIO) {
 		IOMode next = currentIO.next();
 		if (!canSideIOBeDisabled && next == IOMode.DISABLED) {
 			next = next.next();
 		}
-		setSideIO(side, next);
+		return next;
+	}
+
+	private IOMode getPreviousIOMode(IOMode currentIO) {
+		IOMode previous = currentIO.previous();
+		if (!canSideIOBeDisabled && previous == IOMode.DISABLED) {
+			previous = previous.previous();
+		}
+		return previous;
 	}
 
 	private void setSideIO(BlockSide side, IOMode ioMode) {
