@@ -37,8 +37,15 @@ public class SideIOControl extends CompositeWidgetBase<WidgetBase> {
 	}
 
 	private void addSideIOButton(SideIOContainer container, Position position1, BlockSide side) {
-		addChild(new SideIOToggleButton(position1, StorageButtonDefinitions.IO_MODE, button -> container.toggleSideIO(side),
-				() -> container.getSideIOMode(side), side, container::toDirection));
+		addChild(new SideIOToggleButton(position1, StorageButtonDefinitions.IO_MODE, button -> {
+			if (button == 0 && Minecraft.getInstance().hasShiftDown()) {
+				container.setSideIOToOff(side);
+			} else if (button == 0) {
+				container.toggleSideIO(side);
+			} else if (button == 1) {
+				container.toggleSideIOBackwards(side);
+			}
+		}, () -> container.getSideIOMode(side), side, container::toDirection));
 	}
 
 	@Override
