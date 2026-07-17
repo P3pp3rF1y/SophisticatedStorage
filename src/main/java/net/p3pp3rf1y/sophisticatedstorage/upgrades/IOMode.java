@@ -23,6 +23,10 @@ public enum IOMode implements StringRepresentable {
 		return VALUES[(ordinal() + 1) % VALUES.length];
 	}
 
+	public IOMode previous() {
+		return VALUES[(ordinal() + VALUES.length - 1) % VALUES.length];
+	}
+
 	private static final Map<String, IOMode> NAME_VALUES;
 	private static final IOMode[] VALUES;
 
