@@ -2,8 +2,10 @@ package net.p3pp3rf1y.sophisticatedstorage.util;
 
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -14,6 +16,7 @@ import net.p3pp3rf1y.sophisticatedstorage.block.WoodStorageBlockBase;
 
 import javax.annotation.Nullable;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -21,6 +24,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.BiPredicate;
 
 public class GenericWoodStorageHelper {
 	private static final Object CACHE_LOCK = new Object();
@@ -111,12 +115,14 @@ public class GenericWoodStorageHelper {
 			Map<WoodType, GenericWoodInfo> discoveredWoods = new LinkedHashMap<>();
 			Map<Item, WoodType> discoveredPlankItems = new HashMap<>();
 			Map<Item, WoodType> discoveredSlabItems = new HashMap<>();
+			WoodItemCandidates candidates = getBlockItemCandidates();
 
-			WoodType.values().filter(woodType -> !isCustomTexturedWood(woodType)).forEach(woodType -> findGenericWoodInfo(woodType).ifPresent(info -> {
-				discoveredWoods.put(woodType, info);
-				discoveredPlankItems.put(info.planks().asItem(), woodType);
-				discoveredSlabItems.put(info.slab().asItem(), woodType);
-			}));
+			WoodType.values().filter(woodType -> !isCustomTexturedWood(woodType))
+					.forEach(woodType -> findGenericWoodInfo(woodType, candidates.planks(), candidates.slabs()).ifPresent(info -> {
+						discoveredWoods.put(woodType, info);
+						discoveredPlankItems.put(info.planks().asItem(), woodType);
+						discoveredSlabItems.put(info.slab().asItem(), woodType);
+					}));
 
 			currentCacheState = new CacheState(Map.copyOf(discoveredWoods), Map.copyOf(discoveredPlankItems), Map.copyOf(discoveredSlabItems), woodTypeCount,
 					itemTagsAvailable);
@@ -129,26 +135,27 @@ public class GenericWoodStorageHelper {
 		return Items.OAK_PLANKS.getDefaultInstance().is(ItemTags.PLANKS);
 	}
 
-	private static Optional<GenericWoodInfo> findGenericWoodInfo(WoodType woodType) {
+	private static Optional<GenericWoodInfo> findGenericWoodInfo(WoodType woodType, List<WoodItemCandidate> plankCandidates,
+			List<WoodItemCandidate> slabCandidates) {
 		String woodTypeName = woodType.name().toLowerCase(Locale.ROOT);
-		List<WoodItemCandidate> plankCandidates = getBlockItemCandidates("_planks", woodTypeName, ItemTags.PLANKS);
-		if (plankCandidates.isEmpty()) {
+		List<WoodItemCandidate> matchingPlankCandidates = plankCandidates.stream().filter(candidate -> candidate.matches(woodTypeName)).toList();
+		if (matchingPlankCandidates.isEmpty()) {
 			return Optional.empty();
 		}
 
-		List<WoodItemCandidate> slabCandidates = getBlockItemCandidates("_slab", woodTypeName, ItemTags.WOODEN_SLABS);
-		if (slabCandidates.isEmpty()) {
+		List<WoodItemCandidate> matchingSlabCandidates = slabCandidates.stream().filter(candidate -> candidate.matches(woodTypeName)).toList();
+		if (matchingSlabCandidates.isEmpty()) {
 			return Optional.empty();
 		}
 
-		Optional<WoodItemCandidate> planks = getUnambiguousCandidate(plankCandidates, slabCandidates);
+		Optional<WoodItemCandidate> planks = getUnambiguousCandidate(matchingPlankCandidates, matchingSlabCandidates);
 		if (planks.isEmpty()) {
 			return Optional.empty();
 		}
 
 		WoodItemCandidate plankItem = planks.get();
-		Optional<Block> slab = slabCandidates.stream().filter(slabCandidate -> slabCandidate.matches(plankItem.namespace(), plankItem.basePath())).findFirst()
-				.map(WoodItemCandidate::blockItem).map(BlockItem::getBlock);
+		Optional<Block> slab = matchingSlabCandidates.stream().filter(slabCandidate -> slabCandidate.matches(plankItem.namespace(), plankItem.basePath()))
+				.findFirst().map(WoodItemCandidate::blockItem).map(BlockItem::getBlock);
 		return slab.map(block -> new GenericWoodInfo(woodType, plankItem.getBlock(), block));
 	}
 
@@ -172,11 +179,24 @@ public class GenericWoodStorageHelper {
 		return new WoodName(null, name, name);
 	}
 
-	private static List<WoodItemCandidate> getBlockItemCandidates(String suffix, String woodTypeName, net.minecraft.tags.TagKey<Item> tag) {
-		return BuiltInRegistries.ITEM.entrySet().stream().filter(entry -> entry.getKey().location().getPath().endsWith(suffix))
-				.filter(entry -> new ItemStack(entry.getValue()).is(tag))
-				.map(entry -> new WoodItemCandidate(entry.getValue(), entry.getKey().location(), suffix)).filter(WoodItemCandidate::isBlockItem)
-				.filter(candidate -> candidate.matches(woodTypeName)).toList();
+	private static WoodItemCandidates getBlockItemCandidates() {
+		return getBlockItemCandidates(BuiltInRegistries.ITEM.entrySet(), (item, tag) -> new ItemStack(item).is(tag));
+	}
+
+	static WoodItemCandidates getBlockItemCandidates(Iterable<Map.Entry<ResourceKey<Item>, Item>> entries, BiPredicate<Item, TagKey<Item>> isInTag) {
+		List<WoodItemCandidate> planks = new ArrayList<>();
+		List<WoodItemCandidate> slabs = new ArrayList<>();
+		for (Map.Entry<ResourceKey<Item>, Item> entry : entries) {
+			Item item = entry.getValue();
+			ResourceLocation location = entry.getKey().location();
+			String path = location.getPath();
+			if (path.endsWith("_planks") && isInTag.test(item, ItemTags.PLANKS) && item instanceof BlockItem) {
+				planks.add(new WoodItemCandidate(item, location, "_planks"));
+			} else if (path.endsWith("_slab") && isInTag.test(item, ItemTags.WOODEN_SLABS) && item instanceof BlockItem) {
+				slabs.add(new WoodItemCandidate(item, location, "_slab"));
+			}
+		}
+		return new WoodItemCandidates(planks, slabs);
 	}
 
 	private static String removeSuffix(String value, String suffix) {
@@ -186,7 +206,10 @@ public class GenericWoodStorageHelper {
 	private record WoodName(@Nullable String namespace, String path, String translationKeyName) {
 	}
 
-	private record WoodItemCandidate(Item item, ResourceLocation location, String suffix) {
+	record WoodItemCandidates(List<WoodItemCandidate> planks, List<WoodItemCandidate> slabs) {
+	}
+
+	record WoodItemCandidate(Item item, ResourceLocation location, String suffix) {
 		private boolean isBlockItem() {
 			return item instanceof BlockItem;
 		}
@@ -207,7 +230,7 @@ public class GenericWoodStorageHelper {
 			return removeSuffix(location.getPath(), suffix);
 		}
 
-		private boolean matches(String woodTypeName) {
+		boolean matches(String woodTypeName) {
 			String basePath = basePath();
 			String namespace = namespace();
 			return woodTypeName.equals(basePath) || woodTypeName.equals(namespace + ":" + basePath) || woodTypeName.equals(namespace + "_" + basePath);
