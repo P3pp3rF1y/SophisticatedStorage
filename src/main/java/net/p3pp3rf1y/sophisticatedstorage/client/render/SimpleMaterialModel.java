@@ -7,6 +7,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
@@ -20,6 +21,7 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.LivingEntity;
@@ -30,6 +32,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.client.model.AbstractUnbakedModel;
 import net.neoforged.neoforge.client.model.DynamicBlockStateModel;
 import net.neoforged.neoforge.client.model.IQuadTransformer;
+import net.neoforged.neoforge.client.model.QuadTransformers;
 import net.neoforged.neoforge.client.model.StandardModelParameters;
 import net.neoforged.neoforge.client.model.UnbakedModelLoader;
 import net.neoforged.neoforge.client.model.block.CustomUnbakedBlockStateModel;
@@ -145,7 +148,8 @@ public class SimpleMaterialModel extends AbstractUnbakedModel {
 				return;
 			}
 
-			addMaterialParts(parts, material, simpleMaterialHolder.map(ISimpleMaterialHolder::isOverlayHidden).orElse(false), false, rand);
+			addMaterialParts(parts, material, simpleMaterialHolder.map(ISimpleMaterialHolder::isOverlayHidden).orElse(false), false,
+					getMaterialTintColors(material, level, pos), rand);
 		}
 
 		@Override
@@ -166,7 +170,7 @@ public class SimpleMaterialModel extends AbstractUnbakedModel {
 
 		public List<BakedQuad> getItemQuads(ResourceLocation material, RandomSource rand) {
 			List<BlockModelPart> parts = new ArrayList<>();
-			addMaterialParts(parts, material, false, false, rand);
+			addMaterialParts(parts, material, false, false, getMaterialTintColors(material, null, null), rand);
 			List<BakedQuad> quads = new ArrayList<>();
 			for (BlockModelPart part : parts) {
 				for (Direction direction : Direction.values()) {
@@ -188,11 +192,11 @@ public class SimpleMaterialModel extends AbstractUnbakedModel {
 		}
 
 		private void addMaterialParts(List<BlockModelPart> parts, ResourceLocation material, boolean overlayHidden, boolean overlayExpanded,
-				RandomSource rand) {
+				Map<ResourceLocation, Integer> materialTintColors, RandomSource rand) {
 			QuadCollection.Builder cutoutBuilder = new QuadCollection.Builder();
 			QuadCollection.Builder translucentBuilder = new QuadCollection.Builder();
 
-			addMaterialQuads(cutoutBuilder, translucentBuilder, material, rand);
+			addMaterialQuads(cutoutBuilder, translucentBuilder, material, materialTintColors, rand);
 			if (!overlayHidden && !overlayQuads.getAll().isEmpty()) {
 				addOverlayQuads(overlayQuads, translucentBuilder, overlayExpanded);
 			}
@@ -209,17 +213,21 @@ public class SimpleMaterialModel extends AbstractUnbakedModel {
 		}
 
 		private void addMaterialQuads(QuadCollection.Builder cutoutBuilder, QuadCollection.Builder translucentBuilder, ResourceLocation material,
-				RandomSource rand) {
+				Map<ResourceLocation, Integer> materialTintColors, RandomSource rand) {
 			for (Direction direction : Direction.values()) {
 				for (BakedQuad quad : baseQuads.getQuads(direction)) {
-					RenderHelper.SpriteData spriteData = RenderHelper.getSpriteData(material, direction, rand);
-					(spriteData.translucent() ? translucentBuilder : cutoutBuilder).addCulledFace(direction, respriteQuad(quad, spriteData.sprite()));
+					for (RenderHelper.SpriteData spriteData : RenderHelper.getSpriteDataList(material, direction, rand)) {
+						(spriteData.translucent() ? translucentBuilder : cutoutBuilder).addCulledFace(direction,
+								applyMaterialTint(respriteQuad(quad, spriteData.sprite()), materialTintColors));
+					}
 				}
 				rand.setSeed(42L);
 			}
 			for (BakedQuad quad : baseQuads.getQuads(null)) {
-				RenderHelper.SpriteData spriteData = RenderHelper.getSpriteData(material, quad.direction(), rand);
-				(spriteData.translucent() ? translucentBuilder : cutoutBuilder).addUnculledFace(respriteQuad(quad, spriteData.sprite()));
+				for (RenderHelper.SpriteData spriteData : RenderHelper.getSpriteDataList(material, quad.direction(), rand)) {
+					(spriteData.translucent() ? translucentBuilder : cutoutBuilder)
+							.addUnculledFace(applyMaterialTint(respriteQuad(quad, spriteData.sprite()), materialTintColors));
+				}
 			}
 		}
 
@@ -244,6 +252,28 @@ public class SimpleMaterialModel extends AbstractUnbakedModel {
 				quads.add(expanded ? offsetQuad(quad, HIDDEN_OVERLAY_OFFSET) : quad);
 			}
 		}
+	}
+
+	private static BakedQuad applyMaterialTint(BakedQuad quad, Map<ResourceLocation, Integer> materialTintColors) {
+		Integer tintColor = materialTintColors.get(quad.sprite().contents().name());
+		return tintColor == null ? quad : QuadTransformers.applyingColor(tintColor).process(quad);
+	}
+
+	private static Map<ResourceLocation, Integer> getMaterialTintColors(ResourceLocation material, @Nullable BlockAndTintGetter level, @Nullable BlockPos pos) {
+		Map<ResourceLocation, Integer> materialTintColors = new HashMap<>();
+		BlockState blockState = BuiltInRegistries.BLOCK.get(material).orElseThrow().value().defaultBlockState();
+		RandomSource random = RandomSource.create();
+		for (Direction direction : Direction.values()) {
+			for (RenderHelper.SpriteData spriteData : RenderHelper.getSpriteDataList(material, direction, random)) {
+				if (spriteData.tintIndex() >= 0) {
+					int tintColor = Minecraft.getInstance().getBlockColors().getColor(blockState, level, pos, spriteData.tintIndex());
+					if (tintColor != -1) {
+						materialTintColors.put(spriteData.sprite().contents().name(), 0xFF000000 | (tintColor & 0xFFFFFF));
+					}
+				}
+			}
+		}
+		return Map.copyOf(materialTintColors);
 	}
 
 	private static BakedQuad respriteQuad(BakedQuad quad, TextureAtlasSprite newSprite) {
