@@ -426,9 +426,10 @@ public abstract class StorageWrapper implements IStorageWrapper {
 	public void sort() {
 		Set<Integer> slotIndexesExcludedFromSort = new HashSet<>();
 		slotIndexesExcludedFromSort.addAll(getSettingsHandler().getTypeCategory(NoSortSettingsCategory.class).getNoSortSlots());
-		slotIndexesExcludedFromSort.addAll(getSettingsHandler().getTypeCategory(MemorySettingsCategory.class).getSlotIndexes());
 		slotIndexesExcludedFromSort.addAll(getInventoryHandler().getNoSortSlots());
-		InventorySorter.sortHandler(getInventoryHandler(), getComparator(), slotIndexesExcludedFromSort);
+		MemorySettingsCategory memorySettings = getSettingsHandler().getTypeCategory(MemorySettingsCategory.class);
+		InventorySorter.sortHandler(getInventoryHandler(), getComparator(), slotIndexesExcludedFromSort, memorySettings.getSlotIndexes(),
+				memorySettings::matchesFilter);
 	}
 
 	private Comparator<Map.Entry<ItemStackKey, Integer>> getComparator() {
