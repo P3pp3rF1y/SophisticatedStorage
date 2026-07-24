@@ -4,6 +4,7 @@ import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
@@ -12,6 +13,7 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.context.ContextMap;
@@ -32,12 +34,14 @@ import net.p3pp3rf1y.sophisticatedstorage.item.SimpleMaterialBlockItem;
 import javax.annotation.Nullable;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class SimpleMaterialModel extends AbstractUnbakedModel {
 	static final ModelProperty<ResourceLocation> MATERIAL = new ModelProperty<>();
+	private static final ModelProperty<Map<ResourceLocation, Integer>> MATERIAL_TINT_COLORS = new ModelProperty<>();
 	private static final ModelProperty<Boolean> OVERLAY_HIDDEN = new ModelProperty<>();
 	static final ModelProperty<Boolean> OVERLAY_ONLY = new ModelProperty<>();
 	static final ModelProperty<Boolean> OVERLAY_EXPANDED = new ModelProperty<>();
@@ -113,10 +117,14 @@ public class SimpleMaterialModel extends AbstractUnbakedModel {
 			}
 
 			List<BakedQuad> quads = new ArrayList<>();
+			Map<ResourceLocation, Integer> materialTintColors = getMaterialTintColors(data);
 			for (BakedQuad quad : getBaseQuadsForMaterial(state, side, rand)) {
-				RenderHelper.SpriteData spriteData = RenderHelper.getSpriteData(material, quad.getDirection(), rand);
-				if (shouldRenderMaterial(spriteData, renderType)) {
-					quads.add(respriteQuad(quad, spriteData.sprite()));
+				for (RenderHelper.SpriteData spriteData : RenderHelper.getSpriteDataList(material, quad.getDirection(), rand)) {
+					if (shouldRenderMaterial(spriteData, renderType)) {
+						BakedQuad respritedQuad = respriteQuad(quad, spriteData.sprite());
+						Integer tintColor = materialTintColors.get(spriteData.sprite().contents().name());
+						quads.add(tintColor == null ? respritedQuad : QuadTransformers.applyingColor(tintColor).process(respritedQuad));
+					}
 				}
 			}
 
@@ -186,7 +194,13 @@ public class SimpleMaterialModel extends AbstractUnbakedModel {
 		public ModelData getModelData(BlockAndTintGetter level, BlockPos pos, BlockState state, ModelData modelData) {
 			ModelData.Builder builder = ModelData.builder();
 			WorldHelper.getBlockEntity(level, pos, ISimpleMaterialHolder.class).ifPresent(simpleMaterialHolder -> {
-				simpleMaterialHolder.getMaterial().ifPresent(material -> builder.with(MATERIAL, material));
+				simpleMaterialHolder.getMaterial().ifPresent(material -> {
+					builder.with(MATERIAL, material);
+					Map<ResourceLocation, Integer> materialTintColors = getMaterialTintColors(material, level, pos);
+					if (!materialTintColors.isEmpty()) {
+						builder.with(MATERIAL_TINT_COLORS, materialTintColors);
+					}
+				});
 				if (simpleMaterialHolder.isOverlayHidden()) {
 					builder.with(OVERLAY_HIDDEN, true);
 				}
@@ -339,7 +353,12 @@ public class SimpleMaterialModel extends AbstractUnbakedModel {
 		}
 
 		private ModelData getMaterialModelData() {
-			return ModelData.builder().with(MATERIAL, material).build();
+			ModelData.Builder builder = ModelData.builder().with(MATERIAL, material);
+			Map<ResourceLocation, Integer> materialTintColors = getMaterialTintColors(material, null, null);
+			if (!materialTintColors.isEmpty()) {
+				builder.with(MATERIAL_TINT_COLORS, materialTintColors);
+			}
+			return builder.build();
 		}
 
 		@Override
@@ -386,6 +405,27 @@ public class SimpleMaterialModel extends AbstractUnbakedModel {
 		public RenderType getRenderType(ItemStack itemStack) {
 			return RenderTypeHelper.getEntityRenderType(RenderType.translucent());
 		}
+	}
+
+	private static Map<ResourceLocation, Integer> getMaterialTintColors(ModelData data) {
+		return data.has(MATERIAL_TINT_COLORS) ? data.get(MATERIAL_TINT_COLORS) : Collections.emptyMap();
+	}
+
+	private static Map<ResourceLocation, Integer> getMaterialTintColors(ResourceLocation material, @Nullable BlockAndTintGetter level, @Nullable BlockPos pos) {
+		Map<ResourceLocation, Integer> materialTintColors = new HashMap<>();
+		BlockState blockState = BuiltInRegistries.BLOCK.get(material).orElseThrow().value().defaultBlockState();
+		RandomSource random = RandomSource.create();
+		for (Direction direction : Direction.values()) {
+			for (RenderHelper.SpriteData spriteData : RenderHelper.getSpriteDataList(material, direction, random)) {
+				if (spriteData.tintIndex() >= 0) {
+					int tintColor = Minecraft.getInstance().getBlockColors().getColor(blockState, level, pos, spriteData.tintIndex());
+					if (tintColor != -1) {
+						materialTintColors.put(spriteData.sprite().contents().name(), 0xFF000000 | (tintColor & 0xFFFFFF));
+					}
+				}
+			}
+		}
+		return Map.copyOf(materialTintColors);
 	}
 
 	@SuppressWarnings("java:S6548")
