@@ -22,6 +22,7 @@ import org.joml.Vector4f;
 
 import javax.annotation.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -29,17 +30,21 @@ public class RenderHelper {
 	private RenderHelper() {
 	}
 
-	private static final Cache<Integer, SpriteData> SPRITE_CACHE = CacheBuilder.newBuilder().expireAfterAccess(1, TimeUnit.MINUTES).build();
+	private static final Cache<Integer, List<SpriteData>> SPRITE_CACHE = CacheBuilder.newBuilder().expireAfterAccess(1, TimeUnit.MINUTES).build();
 
 	public static TextureAtlasSprite getSprite(ResourceLocation blockName, @Nullable Direction direction, RandomSource rand) {
 		return getSpriteData(blockName, direction, rand).sprite();
 	}
 
 	public static SpriteData getSpriteData(ResourceLocation blockName, @Nullable Direction direction, RandomSource rand) {
+		return getSpriteDataList(blockName, direction, rand).get(0);
+	}
+
+	public static List<SpriteData> getSpriteDataList(ResourceLocation blockName, @Nullable Direction direction, RandomSource rand) {
 		int hash = blockName.hashCode();
 		hash = hash * 31 + (direction == null ? 0 : direction.hashCode());
 
-		SpriteData spriteData = SPRITE_CACHE.getIfPresent(hash);
+		List<SpriteData> spriteData = SPRITE_CACHE.getIfPresent(hash);
 		if (spriteData == null) {
 			spriteData = parseSpriteData(blockName, direction, rand);
 			SPRITE_CACHE.put(hash, spriteData);
@@ -47,22 +52,23 @@ public class RenderHelper {
 		return spriteData;
 	}
 
-	private static SpriteData parseSpriteData(ResourceLocation blockName, @Nullable Direction direction, RandomSource rand) {
+	private static List<SpriteData> parseSpriteData(ResourceLocation blockName, @Nullable Direction direction, RandomSource rand) {
 		BlockState blockState = getDefaultBlockState(blockName);
 
-		SpriteData spriteData = parseSpriteFromModel(blockState, direction, rand);
+		List<SpriteData> spriteData = parseSpriteFromModel(blockState, direction, rand);
 
-		if (spriteData == null) {
-			spriteData = new SpriteData(Minecraft.getInstance().getModelManager().getMissingModel().getParticleIcon(ModelData.EMPTY), -1, false);
+		if (spriteData.isEmpty()) {
+			spriteData = List.of(new SpriteData(Minecraft.getInstance().getModelManager().getMissingModel().getParticleIcon(ModelData.EMPTY), -1, false));
 		}
 
 		return spriteData;
 	}
 
 	@SuppressWarnings("java:S1874") // need to call deprecated getQuads here as well just in case it was overriden by mods instead of the main one
-	@Nullable
-	private static SpriteData parseSpriteFromModel(BlockState blockState, @Nullable Direction direction, RandomSource rand) {
-		SpriteData spriteData = null;
+	private static List<SpriteData> parseSpriteFromModel(BlockState blockState, @Nullable Direction direction, RandomSource rand) {
+		List<SpriteData> spriteData = new ArrayList<>();
+		@Nullable
+		SpriteData fallbackSpriteData = null;
 
 		BakedModel blockModel = Minecraft.getInstance().getBlockRenderer().getBlockModel(blockState);
 		try {
@@ -70,18 +76,18 @@ public class RenderHelper {
 				boolean translucent = layer == RenderType.translucent();
 				List<BakedQuad> culledQuads = blockModel.getQuads(blockState, direction, rand, ModelData.EMPTY, layer);
 				if (!culledQuads.isEmpty()) {
-					BakedQuad quad = culledQuads.get(0);
-					return new SpriteData(quad.getSprite(), quad.getTintIndex(), translucent);
+					addSpriteData(spriteData, culledQuads, translucent);
+					continue;
 				}
 
 				// noinspection deprecation
 				for (BakedQuad bakedQuad : blockModel.getQuads(blockState, null, rand)) {
-					if (spriteData == null) {
-						spriteData = new SpriteData(bakedQuad.getSprite(), bakedQuad.getTintIndex(), translucent);
+					if (fallbackSpriteData == null) {
+						fallbackSpriteData = getSpriteData(bakedQuad, translucent);
 					}
 
 					if (bakedQuad.getDirection() == direction) {
-						return new SpriteData(bakedQuad.getSprite(), bakedQuad.getTintIndex(), translucent);
+						spriteData.add(getSpriteData(bakedQuad, translucent));
 					}
 				}
 			}
@@ -89,15 +95,29 @@ public class RenderHelper {
 			// NO OP
 		}
 
-		if (spriteData == null) {
+		if (spriteData.isEmpty() && fallbackSpriteData != null) {
+			spriteData.add(fallbackSpriteData);
+		}
+
+		if (spriteData.isEmpty()) {
 			try {
-				spriteData = new SpriteData(blockModel.getParticleIcon(ModelData.EMPTY), -1, false);
+				spriteData.add(new SpriteData(blockModel.getParticleIcon(ModelData.EMPTY), -1, false));
 			} catch (Exception e) {
 				// NO OP
 			}
 		}
 
-		return spriteData;
+		return List.copyOf(spriteData);
+	}
+
+	private static void addSpriteData(List<SpriteData> spriteData, List<BakedQuad> quads, boolean translucent) {
+		for (BakedQuad quad : quads) {
+			spriteData.add(getSpriteData(quad, translucent));
+		}
+	}
+
+	private static SpriteData getSpriteData(BakedQuad quad, boolean translucent) {
+		return new SpriteData(quad.getSprite(), quad.getTintIndex(), translucent);
 	}
 
 	public record SpriteData(TextureAtlasSprite sprite, int tintIndex, boolean translucent) {
