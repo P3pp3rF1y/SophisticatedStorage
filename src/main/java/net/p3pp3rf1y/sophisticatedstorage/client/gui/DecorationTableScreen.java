@@ -11,7 +11,6 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.block.model.ItemTransform;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -530,6 +529,10 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 	private static final Map<Integer, Vec2> SLOT_PREVIEW_ROTATIONS = Map.of(0, new Vec2(90, 180), 1, new Vec2(90, 180), 4, new Vec2(90, 180), 2,
 			new Vec2(0, 180), 5, new Vec2(0, 180), 3, new Vec2(-90, 180), 6, new Vec2(-90, 180));
 
+	public static Optional<Vec2> getPreviewRotationTarget(int slotIndex) {
+		return Optional.ofNullable(SLOT_PREVIEW_ROTATIONS.get(slotIndex));
+	}
+
 	private void updatePreviewRotation(int mouseX, int mouseY) {
 		SLOT_PREVIEW_ROTATIONS.forEach((slotIndex, rotation) -> updatePreviewRotationForSlot(slotIndex, mouseX, mouseY, (int) rotation.x, (int) rotation.y));
 		if (lastRotationSetTime != 0 && System.currentTimeMillis() - lastRotationSetTime > 1000) {
@@ -779,23 +782,7 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 		}
 
 		public void resetToDefaultRotation() {
-			if (previewStacks.isEmpty()) {
-				return;
-			}
-
-			ItemStack previewStack = previewStacks.get(selectedPreview);
-			if (previewStack.isEmpty()) {
-				return;
-			}
-
-			resolveModel(previewStack, ItemDisplayContext.GUI);
-
-			if (renderState.layers.length < 1) {
-				return;
-			}
-
-			ItemTransform guiTransform = renderState.layers[0].transform;
-			setTargetRotations((int) guiTransform.rotation().x(), (int) guiTransform.rotation().y());
+			setTargetRotations(0, 0);
 		}
 
 		private void resolveModel(ItemStack previewStack, ItemDisplayContext displayContext) {
@@ -819,11 +806,12 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 			pose.pushPose();
 			float yCenter = (getHeight() - (previewStackButtons.isEmpty() ? 0 : 20)) / 2f;
 			pose.translate(x + getWidth() / 2f, y + yCenter, 150);
-			pose.mulPose(Axis.XN.rotationDegrees(xAxisRotation));
-			pose.mulPose(Axis.YP.rotationDegrees(yAxisRotation));
-			int scale = 48;
+			pose.mulPose(Axis.XN.rotationDegrees(-xAxisRotation));
+			pose.mulPose(Axis.YP.rotationDegrees(-yAxisRotation));
+			// Fit rotated GUI models to the same viewport scale as the 26.2 picture-in-picture renderer.
+			int scale = xAxisRotation == 0 && yAxisRotation == 0 ? 64 : 44;
 			pose.scale(scale, -scale, scale);
-			resolveModel(previewStack, ItemDisplayContext.NONE);
+			resolveModel(previewStack, ItemDisplayContext.GUI);
 			int combinedLight = 15728880;
 			guiGraphics.drawSpecial(buffer -> renderState.render(pose, buffer, combinedLight, OverlayTexture.NO_OVERLAY));
 			pose.popPose();
