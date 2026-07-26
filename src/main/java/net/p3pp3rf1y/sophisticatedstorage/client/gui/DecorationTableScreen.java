@@ -748,7 +748,7 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 		}
 
 		public void resetToDefaultRotation() {
-			super.resetToDefaultRotation();
+			setTargetRotations(0, 0);
 		}
 
 		private void resolveModel(ItemStack previewStack, ItemStackRenderState renderState, ItemDisplayContext displayContext) {
@@ -769,7 +769,7 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 			}
 
 			TrackingItemStackRenderState renderState = new TrackingItemStackRenderState();
-			resolveModel(previewStack, renderState, ItemDisplayContext.NONE);
+			resolveModel(previewStack, renderState, ItemDisplayContext.GUI);
 			if (renderState.isEmpty()) {
 				return;
 			}

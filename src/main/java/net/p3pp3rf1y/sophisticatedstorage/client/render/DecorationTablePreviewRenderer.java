@@ -17,12 +17,9 @@ public class DecorationTablePreviewRenderer extends PictureInPictureRenderer<Dec
 
 	@Override
 	protected void renderToTexture(DecorationTablePreviewRenderState renderState, PoseStack poseStack, SubmitNodeCollector submitNodeCollector) {
-		poseStack.scale(1.0F, -1.0F, -1.0F);
-		poseStack.translate(0.5F, 0.5F, 0.5F);
-		poseStack.mulPose(Axis.XP.rotationDegrees(renderState.xAxisRotation()));
-		poseStack.mulPose(Axis.YP.rotationDegrees(renderState.yAxisRotation()));
-		poseStack.scale(3, 3, 3);
-		poseStack.translate(-0.5F, -0.5F, -0.5F);
+		poseStack.mulPose(Axis.XN.rotationDegrees(-renderState.xAxisRotation()));
+		poseStack.mulPose(Axis.YP.rotationDegrees(-renderState.yAxisRotation()));
+		poseStack.scale(4, -4, -4);
 		TrackingItemStackRenderState itemStackRenderState = renderState.itemStackRenderState();
 		Minecraft.getInstance().gameRenderer.lighting().setupFor(itemStackRenderState.usesBlockLight() ? Lighting.Entry.ITEMS_3D : Lighting.Entry.ITEMS_FLAT);
 		itemStackRenderState.submit(poseStack, submitNodeCollector, 15728880, OverlayTexture.NO_OVERLAY, 0);
