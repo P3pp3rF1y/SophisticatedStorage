@@ -2,6 +2,7 @@ package net.p3pp3rf1y.sophisticatedstorage.client.render;
 
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.render.pip.PictureInPictureRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -20,7 +21,9 @@ public class DecorationTablePreviewRenderer extends PictureInPictureRenderer<Dec
 
 	@Override
 	protected void renderToTexture(DecorationTablePreviewRenderState renderState, PoseStack poseStack) {
-		poseStack.scale(1.0F, -1.0F, -1.0F);
+		poseStack.mulPose(Axis.XN.rotationDegrees(-renderState.xAxisRotation()));
+		poseStack.mulPose(Axis.YP.rotationDegrees(-renderState.yAxisRotation()));
+		poseStack.scale(4, -4, -4);
 		TrackingItemStackRenderState itemStackRenderState = renderState.itemStackRenderState();
 		Minecraft.getInstance().gameRenderer.getLighting()
 				.setupFor(itemStackRenderState.usesBlockLight() ? Lighting.Entry.ITEMS_3D : Lighting.Entry.ITEMS_FLAT);
