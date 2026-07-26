@@ -10,7 +10,6 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.block.model.ItemTransform;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.item.TrackingItemStackRenderState;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -37,7 +36,6 @@ import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.util.DecorationHelper;
 import org.joml.Matrix3x2f;
 import org.joml.Matrix3x2fStack;
-import org.joml.Vector3f;
 import org.jspecify.annotations.Nullable;
 
 import java.util.*;
@@ -763,24 +761,7 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 
 		@Override
 		public void resetToDefaultRotation() {
-			if (previewStacks.isEmpty()) {
-				return;
-			}
-
-			ItemStack previewStack = previewStacks.get(selectedPreview);
-			if (previewStack.isEmpty()) {
-				return;
-			}
-
-			ItemStackRenderState renderState = new ItemStackRenderState();
-			resolveModel(previewStack, renderState, ItemDisplayContext.GUI);
-
-			if (renderState.layers.length < 1) {
-				return;
-			}
-
-			ItemTransform guiTransform = renderState.layers[0].transform;
-			setTargetRotations((int) guiTransform.rotation().x(), (int) guiTransform.rotation().y());
+			setTargetRotations(0, 0);
 		}
 
 		private void resolveModel(ItemStack previewStack, ItemStackRenderState renderState, ItemDisplayContext displayContext) {
@@ -801,12 +782,10 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 			}
 
 			TrackingItemStackRenderState renderState = new TrackingItemStackRenderState();
-			resolveModel(previewStack, renderState, ItemDisplayContext.NONE);
-			ItemTransform transform = renderState.layers[0].transform;
-			renderState.layers[0].transform = new ItemTransform(new Vector3f(xAxisRotation, yAxisRotation, 0), transform.translation(), new Vector3f(3, 3, 3));
+			resolveModel(previewStack, renderState, ItemDisplayContext.GUI);
 			int previewHeight = getHeight() - (previewStackButtons.isEmpty() ? 0 : 20);
 			guiGraphics.submitPictureInPictureRenderState(new DecorationTablePreviewRenderState(renderState, new Matrix3x2f(guiGraphics.pose()),
-					guiGraphics.peekScissorStack(), x, y, x + getWidth(), y + previewHeight));
+					guiGraphics.peekScissorStack(), x, y, x + getWidth(), y + previewHeight, xAxisRotation, yAxisRotation));
 		}
 
 		@Override
