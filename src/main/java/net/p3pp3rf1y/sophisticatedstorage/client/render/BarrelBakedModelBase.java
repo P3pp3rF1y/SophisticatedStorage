@@ -33,6 +33,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import net.minecraftforge.client.ChunkRenderTypeSet;
+import net.minecraftforge.client.RenderTypeHelper;
 import net.minecraftforge.client.model.BakedModelWrapper;
 import net.minecraftforge.client.model.IDynamicBakedModel;
 import net.minecraftforge.client.model.IQuadTransformer;
@@ -350,13 +351,13 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 	}
 
 	private static boolean shouldRenderDynamicMaterials(@Nullable BlockState state, @Nullable RenderType renderType) {
-		return renderType == null || renderType == RenderType.cutout() || state != null && renderType == RenderType.translucent();
+		return renderType == null || renderType == RenderType.cutout() || renderType == RenderType.translucent();
 	}
 
 	private void addDynamicQuads(@Nullable BlockState state, @Nullable Direction side, RandomSource rand, List<BakedQuad> ret, @Nullable RenderType renderType,
 			Map<ResourceLocation, RenderHelper.SpriteData> materialSpriteData, Map<ResourceLocation, Integer> materialTintColors, BakedModel bakedModel) {
-		for (BakedQuad quad : bakedModel.getQuads(state, side, rand, ModelData.EMPTY, renderType)) {
-			if (state != null && !shouldRenderDynamicQuad(renderType, materialSpriteData, quad)) {
+		for (BakedQuad quad : bakedModel.getQuads(state, side, rand, ModelData.EMPTY, null)) {
+			if (!shouldRenderDynamicQuad(renderType, materialSpriteData, quad)) {
 				continue;
 			}
 			ret.add(applyMaterialTint(quad, materialTintColors));
@@ -968,7 +969,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 
 			@Override
 			public List<BakedModel> getRenderPasses(ItemStack itemStack, boolean fabulous) {
-				return List.of(this); // this will only work as long as the barrel model has only 1 render pass
+				return List.of(new RenderTypeModel(this, RenderType.cutout()), new RenderTypeModel(this, RenderType.translucent()));
 			}
 
 			private void setProperties() {
@@ -980,6 +981,31 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 				barrelBakedModel.barrelMaterials = materials;
 				barrelBakedModel.flatTop = flatTop;
 				barrelBakedModel.barrelItem = item;
+			}
+
+			private static class RenderTypeModel extends BakedModelWrapper<ResolvedModel> {
+				private final RenderType renderType;
+
+				private RenderTypeModel(ResolvedModel originalModel, RenderType renderType) {
+					super(originalModel);
+					this.renderType = renderType;
+				}
+
+				@Override
+				@SuppressWarnings("deprecation")
+				public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, RandomSource rand) {
+					return originalModel.getQuads(state, side, rand, ModelData.EMPTY, renderType);
+				}
+
+				@Override
+				public List<RenderType> getRenderTypes(ItemStack itemStack, boolean fabulous) {
+					return List.of(RenderTypeHelper.getEntityRenderType(renderType, fabulous));
+				}
+
+				@Override
+				public List<BakedModel> getRenderPasses(ItemStack itemStack, boolean fabulous) {
+					return List.of(this);
+				}
 			}
 		}
 	}

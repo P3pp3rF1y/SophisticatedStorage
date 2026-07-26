@@ -848,7 +848,6 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 					});
 				});
 			}
-			guiGraphics.flush();
 			pose.popPose();
 		}
 
