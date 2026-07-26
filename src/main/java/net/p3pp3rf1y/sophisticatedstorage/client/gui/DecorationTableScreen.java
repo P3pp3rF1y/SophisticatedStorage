@@ -12,7 +12,6 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.item.TrackingItemStackRenderState;
-import net.minecraft.client.resources.model.cuboid.ItemTransform;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -39,11 +38,8 @@ import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.util.DecorationHelper;
 import org.joml.Matrix3x2f;
 import org.joml.Matrix3x2fStack;
-import org.joml.Matrix4f;
-import org.joml.Vector3f;
 import org.jspecify.annotations.Nullable;
 
-import java.lang.reflect.Field;
 import java.util.*;
 import java.util.function.BooleanSupplier;
 import java.util.function.Function;
@@ -113,9 +109,6 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 	private ColorPicker colorPicker;
 
 	private final List<Component> resultPartsNeededTooltip = new ArrayList<>();
-	@Nullable
-	private static final Field ITEM_TRANSFORM_FIELD = getItemTransformField();
-
 	public DecorationTableScreen(DecorationTableMenu menu, Inventory playerInventory, Component title) {
 		super(menu, playerInventory, title, 250, 226);
 		inventoryLabelX = 45;
@@ -300,7 +293,7 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 					super.extractRenderState(guiGraphics, -1, -1, partialTicks);
 				}
 				if (getMenu().isInheritanceSlotActive(partSlot.getSlotIndex()) && isMouseOver(mouseX, mouseY)) {
-					Vec2 rotations = SLOT_PREVIEW_ROTATIONS.get(partSlot);
+					Vec2 rotations = SLOT_PREVIEW_ROTATIONS.get(partSlot.getSlotIndex());
 					if (rotations != null) {
 						setPreviewRotations((int) rotations.x, (int) rotations.y);
 					}
@@ -505,16 +498,6 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 	}
 
 	@Nullable
-	private static Field getItemTransformField() {
-		try {
-			Field field = ItemStackRenderState.LayerRenderState.class.getDeclaredField("itemTransform");
-			field.setAccessible(true);
-			return field;
-		} catch (NoSuchFieldException e) {
-			return null;
-		}
-	}
-
 	private static final Map<Integer, Vec2> SLOT_PREVIEW_ROTATIONS = Map.of(0, new Vec2(90, 180), 1, new Vec2(90, 180), 4, new Vec2(90, 180), 2,
 			new Vec2(0, 180), 5, new Vec2(0, 180), 3, new Vec2(-90, 180), 6, new Vec2(-90, 180));
 
@@ -766,43 +749,11 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 		}
 
 		public void resetToDefaultRotation() {
-			if (previewStacks.isEmpty()) {
-				return;
-			}
-
-			ItemStack previewStack = previewStacks.get(selectedPreview);
-			if (previewStack.isEmpty()) {
-				return;
-			}
-
-			ItemStackRenderState renderState = new ItemStackRenderState();
-			resolveModel(previewStack, renderState, ItemDisplayContext.GUI);
-
-			if (renderState.isEmpty()) {
-				return;
-			}
-
-			ItemTransform itemTransform = getItemTransform(renderState.layers[0]);
-			if (itemTransform != null) {
-				setTargetRotations((int) itemTransform.rotation().x(), (int) itemTransform.rotation().y());
-			}
+			setTargetRotations(0, 0);
 		}
 
 		private void resolveModel(ItemStack previewStack, ItemStackRenderState renderState, ItemDisplayContext displayContext) {
 			minecraft.getItemModelResolver().updateForTopItem(renderState, previewStack, displayContext, null, null, 0);
-		}
-
-		@Nullable
-		private ItemTransform getItemTransform(ItemStackRenderState.LayerRenderState layer) {
-			if (ITEM_TRANSFORM_FIELD == null) {
-				return null;
-			}
-
-			try {
-				return (ItemTransform) ITEM_TRANSFORM_FIELD.get(layer);
-			} catch (IllegalAccessException e) {
-				return null;
-			}
 		}
 
 		@Override
@@ -819,20 +770,13 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 			}
 
 			TrackingItemStackRenderState renderState = new TrackingItemStackRenderState();
-			resolveModel(previewStack, renderState, ItemDisplayContext.NONE);
+			resolveModel(previewStack, renderState, ItemDisplayContext.GUI);
 			if (renderState.isEmpty()) {
 				return;
 			}
-			ItemStackRenderState.LayerRenderState layer = renderState.layers[0];
-			layer.setLocalTransform(new Matrix4f().translate(0.5f, 0.5f, 0.5f)
-					.rotateXYZ((float) Math.toRadians(xAxisRotation), (float) Math.toRadians(yAxisRotation), 0).translate(-0.5f, -0.5f, -0.5f));
-			ItemTransform itemTransform = getItemTransform(layer);
-			if (itemTransform != null) {
-				layer.setItemTransform(new ItemTransform(itemTransform.rotation(), itemTransform.translation(), new Vector3f(3, 3, 3)));
-			}
 			int previewHeight = height - (previewStackButtons.isEmpty() ? 0 : 20);
 			guiGraphics.submitPictureInPictureRenderState(new DecorationTablePreviewRenderState(renderState, new Matrix3x2f(guiGraphics.pose()),
-					guiGraphics.peekScissorStack(), x, y, x + getWidth(), y + previewHeight));
+					guiGraphics.peekScissorStack(), x, y, x + getWidth(), y + previewHeight, xAxisRotation, yAxisRotation));
 		}
 
 		@Override
