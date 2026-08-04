@@ -12,6 +12,7 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.item.TrackingItemStackRenderState;
+import net.minecraft.client.resources.model.cuboid.ItemTransform;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -24,11 +25,11 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.phys.Vec2;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.controls.*;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.*;
 import net.p3pp3rf1y.sophisticatedcore.network.SyncContainerClientDataPayload;
+import net.p3pp3rf1y.sophisticatedcore.util.Easing;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.DecorationTableBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.client.render.DecorationTablePreviewRenderState;
@@ -38,6 +39,7 @@ import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.util.DecorationHelper;
 import org.joml.Matrix3x2f;
 import org.joml.Matrix3x2fStack;
+import org.joml.Quaternionf;
 import org.jspecify.annotations.Nullable;
 
 import java.util.*;
@@ -293,9 +295,10 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 					super.extractRenderState(guiGraphics, -1, -1, partialTicks);
 				}
 				if (getMenu().isInheritanceSlotActive(partSlot.getSlotIndex()) && isMouseOver(mouseX, mouseY)) {
-					Vec2 rotations = SLOT_PREVIEW_ROTATIONS.get(partSlot.getSlotIndex());
+					PreviewRotation rotations = SLOT_PREVIEW_ROTATIONS.get(partSlot.getSlotIndex());
 					if (rotations != null) {
-						setPreviewRotations((int) rotations.x, (int) rotations.y);
+						blockPreview.startMaterialRotation(rotations.xAxisRotation(), rotations.yAxisRotation(), rotations.zAxisRotation());
+						setPreviewRotations(rotations.xAxisRotation(), rotations.yAxisRotation());
 					}
 				}
 			}
@@ -498,18 +501,19 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 	}
 
 	@Nullable
-	private static final Map<Integer, Vec2> SLOT_PREVIEW_ROTATIONS = Map.of(0, new Vec2(90, 180), 1, new Vec2(90, 180), 4, new Vec2(90, 180), 2,
-			new Vec2(0, 180), 5, new Vec2(0, 180), 3, new Vec2(-90, 180), 6, new Vec2(-90, 180));
-
+	private static final Map<Integer, PreviewRotation> SLOT_PREVIEW_ROTATIONS = Map.of(0, new PreviewRotation(-90, 180, 0), 1, new PreviewRotation(-90, 180, 0),
+			4, new PreviewRotation(-90, 180, 0), 2, new PreviewRotation(0, 180, 0), 5, new PreviewRotation(0, 180, 0), 3, new PreviewRotation(90, 180, 0), 6,
+			new PreviewRotation(90, 180, 0));
 	private void updatePreviewRotation(int mouseX, int mouseY) {
-		SLOT_PREVIEW_ROTATIONS.forEach((slotIndex, rotation) -> updatePreviewRotationForSlot(slotIndex, mouseX, mouseY, (int) rotation.x, (int) rotation.y));
+		SLOT_PREVIEW_ROTATIONS.forEach((slotIndex, rotation) -> updatePreviewRotationForSlot(slotIndex, mouseX, mouseY, rotation));
 		if (lastRotationSetTime != 0 && System.currentTimeMillis() - lastRotationSetTime > 1000) {
+			blockPreview.returnFromMaterialRotation();
 			blockPreview.resetToDefaultRotation();
 			lastRotationSetTime = 0;
 		}
 	}
 
-	private void updatePreviewRotationForSlot(int slotIndex, int mouseX, int mouseY, int xAxisRotation, int yAxisRotation) {
+	private void updatePreviewRotationForSlot(int slotIndex, int mouseX, int mouseY, PreviewRotation rotation) {
 		if (!getMenu().isMaterialSlotActive(slotIndex)) {
 			return;
 		}
@@ -518,7 +522,8 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 		int slotLeft = leftPos + slot.x;
 		int slotTop = topPos + slot.y;
 		if (leftPos + slot.x <= mouseX && mouseX < slotLeft + 16 + 18 && slotTop <= mouseY && mouseY < slotTop + 16) {
-			setPreviewRotations(xAxisRotation, yAxisRotation);
+			blockPreview.startMaterialRotation(rotation.xAxisRotation(), rotation.yAxisRotation(), rotation.zAxisRotation());
+			setPreviewRotations(rotation.xAxisRotation(), rotation.yAxisRotation());
 		}
 	}
 
@@ -715,6 +720,21 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 		private final List<ItemStack> previewStacks = new ArrayList<>();
 		private int selectedPreview = 0;
 		private final List<StackButton> previewStackButtons = new ArrayList<>();
+		private boolean useDefaultReferenceRotation = true;
+		private boolean materialRotationActive;
+		private boolean materialRotationReturning;
+		private float materialRotationTargetX;
+		private float materialRotationTargetY;
+		private float materialRotationTargetZ;
+		private final Quaternionf materialRotationFrom = new Quaternionf();
+		private final Quaternionf materialRotationTo = new Quaternionf();
+		private final Quaternionf guiRotation = new Quaternionf();
+		private boolean defaultRotationsKnown;
+		private float defaultXAxisRotation;
+		private float defaultYAxisRotation;
+		private float currentXAxisRotation;
+		private float currentYAxisRotation;
+		private long materialRotationStartedAt;
 
 		protected BlockPreview(Position position, Dimension dimension) {
 			super(position, dimension);
@@ -724,8 +744,10 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 			this.previewStacks.clear();
 			this.previewStacks.addAll(previewStacks);
 			selectedPreview = 0;
+			useDefaultReferenceRotation = true;
+			materialRotationActive = false;
+			defaultRotationsKnown = false;
 			updatePreviewStackButtons();
-			resetToDefaultRotation();
 		}
 
 		private void updatePreviewStackButtons() {
@@ -742,18 +764,90 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 				int finalI = i;
 				previewStackButtons.add(new StackButton(new Position(x + i * 20, y + getHeight() - 19), button -> {
 					selectedPreview = finalI;
-					resetToDefaultRotation();
+					useDefaultReferenceRotation = true;
+					defaultRotationsKnown = false;
 				}, () -> stack));
 			}
 			previewStackButtons.forEach(this::addChild);
 		}
 
 		public void resetToDefaultRotation() {
-			setTargetRotations(0, 0);
+			if (defaultRotationsKnown) {
+				useDefaultReferenceRotation = false;
+				setTargetRotations(defaultXAxisRotation, defaultYAxisRotation);
+			} else {
+				useDefaultReferenceRotation = true;
+			}
 		}
 
-		private void resolveModel(ItemStack previewStack, ItemStackRenderState renderState, ItemDisplayContext displayContext) {
+		private GuiTransform resolveModel(ItemStack previewStack, ItemStackRenderState renderState, ItemDisplayContext displayContext) {
 			minecraft.getItemModelResolver().updateForTopItem(renderState, previewStack, displayContext, null, null, 0);
+			return getGuiTransform(renderState);
+		}
+
+		public void startMaterialRotation(float xAxisRotation, float yAxisRotation, float zAxisRotation) {
+			if (materialRotationActive && materialRotationTargetX == xAxisRotation && materialRotationTargetY == yAxisRotation
+					&& materialRotationTargetZ == zAxisRotation) {
+				return;
+			}
+
+			// The native GUI preview has an identity parent pose until the user drags it.
+			materialRotationFrom.set(materialRotationActive
+					? getMaterialRotation()
+					: useDefaultReferenceRotation ? new Quaternionf() : getManualRotation(currentXAxisRotation, currentYAxisRotation));
+			materialRotationTo.set(getMaterialRotationTarget(xAxisRotation, yAxisRotation, zAxisRotation));
+			useDefaultReferenceRotation = false;
+			materialRotationActive = true;
+			materialRotationReturning = false;
+			materialRotationTargetX = xAxisRotation;
+			materialRotationTargetY = yAxisRotation;
+			materialRotationTargetZ = zAxisRotation;
+			materialRotationStartedAt = System.currentTimeMillis();
+		}
+
+		public void returnFromMaterialRotation() {
+			if (!materialRotationActive) {
+				return;
+			}
+
+			materialRotationFrom.set(getMaterialRotation());
+			materialRotationTo.identity();
+			materialRotationTargetX = defaultXAxisRotation;
+			materialRotationTargetY = defaultYAxisRotation;
+			materialRotationTargetZ = 0;
+			materialRotationReturning = true;
+			materialRotationStartedAt = System.currentTimeMillis();
+		}
+
+		private Quaternionf getMaterialRotation() {
+			float progress = Math.min(1.0F, (System.currentTimeMillis() - materialRotationStartedAt) / 1000.0F);
+			Quaternionf rotation = new Quaternionf(materialRotationFrom).slerp(materialRotationTo, Easing.EASE_IN_OUT_CUBIC.ease(progress));
+			if (materialRotationReturning && progress >= 1.0F) {
+				materialRotationActive = false;
+				materialRotationReturning = false;
+				useDefaultReferenceRotation = true;
+			}
+			return rotation;
+		}
+
+		private Quaternionf getMaterialRotationTarget(float xAxisRotation, float yAxisRotation, float zAxisRotation) {
+			Quaternionf previewBasisRotation = new Quaternionf().rotationX((float) Math.PI);
+			return getReferenceRotation(xAxisRotation, yAxisRotation, zAxisRotation).mul(previewBasisRotation).mul(new Quaternionf(guiRotation).invert())
+					.mul(previewBasisRotation);
+		}
+
+		private GuiTransform getGuiTransform(ItemStackRenderState renderState) {
+			if (renderState.layers.length == 0) {
+				return new GuiTransform(new Quaternionf(), new Quaternionf(), 0, 0);
+			}
+
+			ItemTransform itemTransform = renderState.layers[0].itemTransform;
+			float xAxisRotation = itemTransform.rotation().x();
+			float yAxisRotation = itemTransform.rotation().y();
+			return new GuiTransform(
+					new Quaternionf().rotationXYZ((float) Math.toRadians(xAxisRotation), (float) Math.toRadians(yAxisRotation),
+							(float) Math.toRadians(itemTransform.rotation().z())),
+					getReferenceRotation(xAxisRotation, yAxisRotation, 0), xAxisRotation, yAxisRotation);
 		}
 
 		@Override
@@ -770,13 +864,22 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 			}
 
 			TrackingItemStackRenderState renderState = new TrackingItemStackRenderState();
-			resolveModel(previewStack, renderState, ItemDisplayContext.GUI);
+			GuiTransform guiTransform = resolveModel(previewStack, renderState, ItemDisplayContext.GUI);
 			if (renderState.isEmpty()) {
 				return;
 			}
+			defaultXAxisRotation = guiTransform.xAxisRotation();
+			defaultYAxisRotation = guiTransform.yAxisRotation();
+			defaultRotationsKnown = true;
+			currentXAxisRotation = xAxisRotation;
+			currentYAxisRotation = yAxisRotation;
+			guiRotation.set(guiTransform.guiRotation());
+			Quaternionf manualParentRotation = useDefaultReferenceRotation
+					? new Quaternionf()
+					: materialRotationActive ? getMaterialRotation() : getManualRotation(xAxisRotation, yAxisRotation);
 			int previewHeight = height - (previewStackButtons.isEmpty() ? 0 : 20);
 			guiGraphics.submitPictureInPictureRenderState(new DecorationTablePreviewRenderState(renderState, new Matrix3x2f(guiGraphics.pose()),
-					guiGraphics.peekScissorStack(), x, y, x + getWidth(), y + previewHeight, xAxisRotation, yAxisRotation));
+					guiGraphics.peekScissorStack(), x, y, x + getWidth(), y + previewHeight, manualParentRotation));
 		}
 
 		@Override
@@ -785,7 +888,33 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 				return getChildAt(event.x(), event.y()).map(child -> child.mouseDragged(event, dragX, dragY)).orElse(false);
 			}
 
+			useDefaultReferenceRotation = false;
+			materialRotationActive = false;
 			return super.mouseDragged(event, dragX, dragY);
 		}
+
+		private Quaternionf getManualRotation(float xAxisRotation, float yAxisRotation) {
+			Quaternionf defaultRotation = getManualReferenceRotation(defaultXAxisRotation, defaultYAxisRotation);
+			Quaternionf targetRotation = getManualReferenceRotation(defaultXAxisRotation, yAxisRotation);
+			Quaternionf localRotation = defaultRotation.invert().mul(targetRotation);
+			Quaternionf yawRotation = new Quaternionf(guiRotation).mul(localRotation).mul(new Quaternionf(guiRotation).invert());
+			return new Quaternionf().rotationX((float) Math.toRadians(xAxisRotation - defaultXAxisRotation)).mul(yawRotation);
+		}
+
+		private static Quaternionf getManualReferenceRotation(float xAxisRotation, float yAxisRotation) {
+			return new Quaternionf().rotationX((float) Math.toRadians(xAxisRotation)).rotateY((float) Math.toRadians(-yAxisRotation));
+		}
+
+		private static Quaternionf getReferenceRotation(float xAxisRotation, float yAxisRotation, float zAxisRotation) {
+			return new Quaternionf().rotationX((float) Math.toRadians(-xAxisRotation)).rotateY((float) Math.toRadians(yAxisRotation))
+					.rotateZ((float) Math.toRadians(zAxisRotation));
+		}
+
+		private record GuiTransform(Quaternionf guiRotation, Quaternionf defaultReferenceRotation, float xAxisRotation, float yAxisRotation) {
+		}
 	}
+
+	private record PreviewRotation(int xAxisRotation, int yAxisRotation, int zAxisRotation) {
+	}
+
 }
