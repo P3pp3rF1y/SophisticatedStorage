@@ -19,7 +19,6 @@ import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
-import java.lang.reflect.Field;
 import java.util.concurrent.TimeUnit;
 
 public class DisplayItemRenderer {
@@ -31,7 +30,6 @@ public class DisplayItemRenderer {
 	static final float UPGRADE_ITEM_SCALE = 0.125f;
 	private static final double DISPLAY_ITEM_PIXEL_SIZE_DIVISOR = 15.95D;
 	private static final ItemStackRenderState INACCESSIBLE_SLOT_STACK = new ItemStackRenderState();
-	private static final Field ITEM_TRANSFORM_FIELD = getItemTransformField();
 	private static boolean helperStacksInitialized = false;
 	private final double yCenterTranslation;
 	private final Vec3 upgradesOffset;
@@ -173,26 +171,12 @@ public class DisplayItemRenderer {
 	}
 
 	private static double getFixedTransformScale(ItemStackRenderState itemStackRenderState) {
-		if (ITEM_TRANSFORM_FIELD == null || itemStackRenderState.layers.length == 0) {
+		if (itemStackRenderState.layers.length == 0) {
 			return 1;
 		}
 
-		try {
-			ItemTransform itemTransform = (ItemTransform) ITEM_TRANSFORM_FIELD.get(itemStackRenderState.layers[0]);
-			return itemTransform == null ? 1 : itemTransform.scale().z();
-		} catch (IllegalAccessException e) {
-			return 1;
-		}
-	}
-
-	private static Field getItemTransformField() {
-		try {
-			Field field = ItemStackRenderState.LayerRenderState.class.getDeclaredField("itemTransform");
-			field.setAccessible(true);
-			return field;
-		} catch (NoSuchFieldException e) {
-			return null;
-		}
+		ItemTransform itemTransform = itemStackRenderState.layers[0].itemTransform;
+		return itemTransform == null ? 1 : itemTransform.scale().z();
 	}
 
 	public static Vector3f getDisplayItemIndexFrontOffset(int displayItemIndex, int displayItemCount) {
