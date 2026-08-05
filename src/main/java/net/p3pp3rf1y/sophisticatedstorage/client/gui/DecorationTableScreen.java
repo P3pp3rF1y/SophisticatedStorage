@@ -11,6 +11,7 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.block.model.ItemTransform;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -747,7 +748,7 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 		private final List<ItemStack> previewStacks = new ArrayList<>();
 		private int selectedPreview = 0;
 		private final List<StackButton> previewStackButtons = new ArrayList<>();
-		private final ItemStackRenderState renderState = new ItemStackRenderState();
+		private final ItemStackRenderState guiTransformState = new ItemStackRenderState();
 
 		protected BlockPreview(Position position, Dimension dimension) {
 			super(position, dimension);
@@ -758,7 +759,7 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 			this.previewStacks.addAll(previewStacks);
 			selectedPreview = 0;
 			updatePreviewStackButtons();
-			resetToDefaultRotation();
+			setDefaultRotations(true);
 		}
 
 		private void updatePreviewStackButtons() {
@@ -775,18 +776,36 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 				int finalI = i;
 				previewStackButtons.add(new StackButton(new Position(x + i * 20, y + getHeight() - 19), button -> {
 					selectedPreview = finalI;
-					resetToDefaultRotation();
+					setDefaultRotations(true);
 				}, () -> stack));
 			}
 			previewStackButtons.forEach(this::addChild);
 		}
 
+		@Override
 		public void resetToDefaultRotation() {
-			setTargetRotations(0, 0);
+			setDefaultRotations(false);
 		}
 
-		private void resolveModel(ItemStack previewStack, ItemDisplayContext displayContext) {
-			minecraft.getItemModelResolver().updateForTopItem(renderState, previewStack, displayContext, null, null, 0);
+		private void setDefaultRotations(boolean immediately) {
+			if (previewStacks.isEmpty()) {
+				return;
+			}
+
+			ItemStack previewStack = previewStacks.get(selectedPreview);
+			if (previewStack.isEmpty()) {
+				return;
+			}
+
+			minecraft.getItemModelResolver().updateForTopItem(guiTransformState, previewStack, ItemDisplayContext.GUI, null, null, 0);
+			if (!guiTransformState.isEmpty()) {
+				ItemTransform guiTransform = guiTransformState.layers[0].transform;
+				if (immediately) {
+					setRotationsImmediately(guiTransform.rotation().x(), guiTransform.rotation().y());
+				} else {
+					setTargetRotations(guiTransform.rotation().x(), guiTransform.rotation().y());
+				}
+			}
 		}
 
 		@Override
@@ -806,14 +825,12 @@ public class DecorationTableScreen extends AbstractContainerScreen<DecorationTab
 			pose.pushPose();
 			float yCenter = (getHeight() - (previewStackButtons.isEmpty() ? 0 : 20)) / 2f;
 			pose.translate(x + getWidth() / 2f, y + yCenter, 150);
-			pose.mulPose(Axis.XN.rotationDegrees(-xAxisRotation));
-			pose.mulPose(Axis.YP.rotationDegrees(-yAxisRotation));
-			// Fit rotated GUI models to the same viewport scale as the 26.2 picture-in-picture renderer.
-			int scale = xAxisRotation == 0 && yAxisRotation == 0 ? 64 : 44;
-			pose.scale(scale, -scale, scale);
-			resolveModel(previewStack, ItemDisplayContext.GUI);
+			pose.mulPose(Axis.XN.rotationDegrees(xAxisRotation));
+			pose.mulPose(Axis.YP.rotationDegrees(yAxisRotation));
+			pose.scale(48, -48, 48);
 			int combinedLight = 15728880;
-			guiGraphics.drawSpecial(buffer -> renderState.render(pose, buffer, combinedLight, OverlayTexture.NO_OVERLAY));
+			guiGraphics.drawSpecial(buffer -> minecraft.getItemRenderer().renderStatic(previewStack, ItemDisplayContext.NONE, combinedLight,
+					OverlayTexture.NO_OVERLAY, pose, buffer, null, 0));
 			pose.popPose();
 		}
 
