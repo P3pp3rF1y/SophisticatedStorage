@@ -180,6 +180,7 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 	@Override
 	public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
 		if (level.isClientSide()) {
+			WorldHelper.getBlockEntity(level, pos, WoodStorageBlockEntity.class).ifPresent(be -> setRenderBlockRenderProperties(stack, be));
 			return;
 		}
 
