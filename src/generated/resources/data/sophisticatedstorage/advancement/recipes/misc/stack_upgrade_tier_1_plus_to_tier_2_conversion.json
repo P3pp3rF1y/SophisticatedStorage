@@ -1,0 +1,38 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:stack_upgrade_tier_1_plus_to_tier_2_conversion"
+    }
+  ],
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_stack_upgrade_tier_1_plus": {
+      "conditions": {
+        "items": [
+          {
+            "items": "sophisticatedstorage:stack_upgrade_tier_1_plus"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "sophisticatedstorage:stack_upgrade_tier_1_plus_to_tier_2_conversion"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_stack_upgrade_tier_1_plus"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "sophisticatedstorage:stack_upgrade_tier_1_plus_to_tier_2_conversion"
+    ]
+  }
+}

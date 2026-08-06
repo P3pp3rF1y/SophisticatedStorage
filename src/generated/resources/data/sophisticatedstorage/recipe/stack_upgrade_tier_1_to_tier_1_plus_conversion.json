@@ -1,0 +1,23 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:stack_upgrade_tier_1_to_tier_1_plus_conversion"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": "#c:storage_blocks/copper",
+    "C": "#c:ingots/copper",
+    "P": "#minecraft:planks"
+  },
+  "pattern": [
+    "CCC",
+    "CPC",
+    "BCB"
+  ],
+  "result": {
+    "id": "sophisticatedstorage:stack_upgrade_tier_1_to_tier_1_plus_conversion"
+  }
+}

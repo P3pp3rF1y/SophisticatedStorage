@@ -647,6 +647,70 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.define('S', ModItems.STACK_UPGRADE_TIER_4.get()).define('N', Tags.Items.INGOTS_NETHERITE).define('B', Tags.Items.STORAGE_BLOCKS_NETHERITE)
 				.unlockedBy("has_stack_upgrade_tier_4", has(ModItems.STACK_UPGRADE_TIER_4.get())).save(recipeOutput);
 
+		ShapeBasedRecipeBuilder.shaped(items, ModItems.STACK_UPGRADE_TIER_1_TO_TIER_1_PLUS_CONVERSION.get()).pattern("CCC").pattern("CPC").pattern("BCB")
+				.define('P', ItemTags.PLANKS).define('C', Tags.Items.INGOTS_COPPER).define('B', Tags.Items.STORAGE_BLOCKS_COPPER)
+				.unlockedBy("has_stack_upgrade_tier_1", has(ModItems.STACK_UPGRADE_TIER_1.get())).save(recipeOutput);
+		ShapeBasedRecipeBuilder.shaped(items, ModItems.STACK_UPGRADE_TIER_1_TO_TIER_2_CONVERSION.get()).pattern("III").pattern("ISI").pattern("BIB")
+				.define('S', ModItems.STACK_UPGRADE_TIER_1_TO_TIER_1_PLUS_CONVERSION.get()).define('I', Tags.Items.INGOTS_IRON)
+				.define('B', Tags.Items.STORAGE_BLOCKS_IRON)
+				.unlockedBy("has_stack_upgrade_tier_1_to_tier_1_plus_conversion", has(ModItems.STACK_UPGRADE_TIER_1_TO_TIER_1_PLUS_CONVERSION.get()))
+				.save(recipeOutput);
+		ShapeBasedRecipeBuilder.shaped(items, ModItems.STACK_UPGRADE_TIER_1_TO_TIER_3_CONVERSION.get()).pattern("GGG").pattern("GSG").pattern("BGB")
+				.define('S', ModItems.STACK_UPGRADE_TIER_1_TO_TIER_2_CONVERSION.get()).define('G', Tags.Items.INGOTS_GOLD)
+				.define('B', Tags.Items.STORAGE_BLOCKS_GOLD)
+				.unlockedBy("has_stack_upgrade_tier_1_to_tier_2_conversion", has(ModItems.STACK_UPGRADE_TIER_1_TO_TIER_2_CONVERSION.get())).save(recipeOutput);
+		ShapeBasedRecipeBuilder.shaped(items, ModItems.STACK_UPGRADE_TIER_1_TO_TIER_4_CONVERSION.get()).pattern("DDD").pattern("DSD").pattern("BDB")
+				.define('S', ModItems.STACK_UPGRADE_TIER_1_TO_TIER_3_CONVERSION.get()).define('D', Tags.Items.GEMS_DIAMOND)
+				.define('B', Tags.Items.STORAGE_BLOCKS_DIAMOND)
+				.unlockedBy("has_stack_upgrade_tier_1_to_tier_3_conversion", has(ModItems.STACK_UPGRADE_TIER_1_TO_TIER_3_CONVERSION.get())).save(recipeOutput);
+		ShapeBasedRecipeBuilder.shaped(items, ModItems.STACK_UPGRADE_TIER_1_TO_TIER_5_CONVERSION.get()).pattern("NNN").pattern("NSN").pattern("BNB")
+				.define('S', ModItems.STACK_UPGRADE_TIER_1_TO_TIER_4_CONVERSION.get()).define('N', Tags.Items.INGOTS_NETHERITE)
+				.define('B', Tags.Items.STORAGE_BLOCKS_NETHERITE)
+				.unlockedBy("has_stack_upgrade_tier_1_to_tier_4_conversion", has(ModItems.STACK_UPGRADE_TIER_1_TO_TIER_4_CONVERSION.get())).save(recipeOutput);
+
+		ShapeBasedRecipeBuilder.shaped(items, ModItems.STACK_UPGRADE_TIER_1_PLUS_TO_TIER_2_CONVERSION.get()).pattern(" I ").pattern("IPI").pattern(" B ")
+				.define('P', ItemTags.PLANKS).define('I', Tags.Items.INGOTS_IRON).define('B', Tags.Items.STORAGE_BLOCKS_IRON)
+				.unlockedBy("has_stack_upgrade_tier_1_plus", has(ModItems.STACK_UPGRADE_TIER_1_PLUS.get())).save(recipeOutput);
+		ShapeBasedRecipeBuilder.shaped(items, ModItems.STACK_UPGRADE_TIER_1_PLUS_TO_TIER_3_CONVERSION.get()).pattern("GGG").pattern("GSG").pattern("BGB")
+				.define('S', ModItems.STACK_UPGRADE_TIER_1_PLUS_TO_TIER_2_CONVERSION.get()).define('G', Tags.Items.INGOTS_GOLD)
+				.define('B', Tags.Items.STORAGE_BLOCKS_GOLD)
+				.unlockedBy("has_stack_upgrade_tier_1_plus_to_tier_2_conversion", has(ModItems.STACK_UPGRADE_TIER_1_PLUS_TO_TIER_2_CONVERSION.get()))
+				.save(recipeOutput);
+		ShapeBasedRecipeBuilder.shaped(items, ModItems.STACK_UPGRADE_TIER_1_PLUS_TO_TIER_4_CONVERSION.get()).pattern("DDD").pattern("DSD").pattern("BDB")
+				.define('S', ModItems.STACK_UPGRADE_TIER_1_PLUS_TO_TIER_3_CONVERSION.get()).define('D', Tags.Items.GEMS_DIAMOND)
+				.define('B', Tags.Items.STORAGE_BLOCKS_DIAMOND)
+				.unlockedBy("has_stack_upgrade_tier_1_plus_to_tier_3_conversion", has(ModItems.STACK_UPGRADE_TIER_1_PLUS_TO_TIER_3_CONVERSION.get()))
+				.save(recipeOutput);
+		ShapeBasedRecipeBuilder.shaped(items, ModItems.STACK_UPGRADE_TIER_1_PLUS_TO_TIER_5_CONVERSION.get()).pattern("NNN").pattern("NSN").pattern("BNB")
+				.define('S', ModItems.STACK_UPGRADE_TIER_1_PLUS_TO_TIER_4_CONVERSION.get()).define('N', Tags.Items.INGOTS_NETHERITE)
+				.define('B', Tags.Items.STORAGE_BLOCKS_NETHERITE)
+				.unlockedBy("has_stack_upgrade_tier_1_plus_to_tier_4_conversion", has(ModItems.STACK_UPGRADE_TIER_1_PLUS_TO_TIER_4_CONVERSION.get()))
+				.save(recipeOutput);
+
+		ShapeBasedRecipeBuilder.shaped(items, ModItems.STACK_UPGRADE_TIER_2_TO_TIER_3_CONVERSION.get()).pattern("GGG").pattern("GPG").pattern("BGB")
+				.define('P', ItemTags.PLANKS).define('G', Tags.Items.INGOTS_GOLD).define('B', Tags.Items.STORAGE_BLOCKS_GOLD)
+				.unlockedBy("has_stack_upgrade_tier_2", has(ModItems.STACK_UPGRADE_TIER_2.get())).save(recipeOutput);
+		ShapeBasedRecipeBuilder.shaped(items, ModItems.STACK_UPGRADE_TIER_2_TO_TIER_4_CONVERSION.get()).pattern("DDD").pattern("DSD").pattern("BDB")
+				.define('S', ModItems.STACK_UPGRADE_TIER_2_TO_TIER_3_CONVERSION.get()).define('D', Tags.Items.GEMS_DIAMOND)
+				.define('B', Tags.Items.STORAGE_BLOCKS_DIAMOND)
+				.unlockedBy("has_stack_upgrade_tier_2_to_tier_3_conversion", has(ModItems.STACK_UPGRADE_TIER_2_TO_TIER_3_CONVERSION.get())).save(recipeOutput);
+		ShapeBasedRecipeBuilder.shaped(items, ModItems.STACK_UPGRADE_TIER_2_TO_TIER_5_CONVERSION.get()).pattern("NNN").pattern("NSN").pattern("BNB")
+				.define('S', ModItems.STACK_UPGRADE_TIER_2_TO_TIER_4_CONVERSION.get()).define('N', Tags.Items.INGOTS_NETHERITE)
+				.define('B', Tags.Items.STORAGE_BLOCKS_NETHERITE)
+				.unlockedBy("has_stack_upgrade_tier_2_to_tier_4_conversion", has(ModItems.STACK_UPGRADE_TIER_2_TO_TIER_4_CONVERSION.get())).save(recipeOutput);
+
+		ShapeBasedRecipeBuilder.shaped(items, ModItems.STACK_UPGRADE_TIER_3_TO_TIER_4_CONVERSION.get()).pattern("DDD").pattern("DPD").pattern("BDB")
+				.define('P', ItemTags.PLANKS).define('D', Tags.Items.GEMS_DIAMOND).define('B', Tags.Items.STORAGE_BLOCKS_DIAMOND)
+				.unlockedBy("has_stack_upgrade_tier_3", has(ModItems.STACK_UPGRADE_TIER_3.get())).save(recipeOutput);
+		ShapeBasedRecipeBuilder.shaped(items, ModItems.STACK_UPGRADE_TIER_3_TO_TIER_5_CONVERSION.get()).pattern("NNN").pattern("NSN").pattern("BNB")
+				.define('S', ModItems.STACK_UPGRADE_TIER_3_TO_TIER_4_CONVERSION.get()).define('N', Tags.Items.INGOTS_NETHERITE)
+				.define('B', Tags.Items.STORAGE_BLOCKS_NETHERITE)
+				.unlockedBy("has_stack_upgrade_tier_3_to_tier_4_conversion", has(ModItems.STACK_UPGRADE_TIER_3_TO_TIER_4_CONVERSION.get())).save(recipeOutput);
+
+		ShapeBasedRecipeBuilder.shaped(items, ModItems.STACK_UPGRADE_TIER_4_TO_TIER_5_CONVERSION.get()).pattern("NNN").pattern("NPN").pattern("BNB")
+				.define('P', ItemTags.PLANKS).define('N', Tags.Items.INGOTS_NETHERITE).define('B', Tags.Items.STORAGE_BLOCKS_NETHERITE)
+				.unlockedBy("has_stack_upgrade_tier_4", has(ModItems.STACK_UPGRADE_TIER_4.get())).save(recipeOutput);
+
 		ShapeBasedRecipeBuilder.shaped(items, ModItems.STACK_UPGRADE_OMEGA_TIER.get()).pattern("SSS").pattern("SSS").pattern("SSS")
 				.define('S', ModItems.STACK_UPGRADE_TIER_5.get()).unlockedBy("has_stack_upgrade_tier_5", has(ModItems.STACK_UPGRADE_TIER_5.get()))
 				.save(recipeOutput);

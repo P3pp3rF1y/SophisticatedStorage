@@ -1,0 +1,23 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:stack_upgrade_tier_1_plus_to_tier_4_conversion"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": "#c:storage_blocks/diamond",
+    "D": "#c:gems/diamond",
+    "S": "sophisticatedstorage:stack_upgrade_tier_1_plus_to_tier_3_conversion"
+  },
+  "pattern": [
+    "DDD",
+    "DSD",
+    "BDB"
+  ],
+  "result": {
+    "id": "sophisticatedstorage:stack_upgrade_tier_1_plus_to_tier_4_conversion"
+  }
+}
