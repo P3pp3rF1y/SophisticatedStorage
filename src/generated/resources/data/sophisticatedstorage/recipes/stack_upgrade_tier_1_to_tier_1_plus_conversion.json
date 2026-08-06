@@ -1,0 +1,28 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:stack_upgrade_tier_1_to_tier_1_plus_conversion"
+    }
+  ],
+  "key": {
+    "B": {
+      "tag": "forge:storage_blocks/copper"
+    },
+    "C": {
+      "tag": "forge:ingots/copper"
+    },
+    "P": {
+      "tag": "minecraft:planks"
+    }
+  },
+  "pattern": [
+    "CCC",
+    "CPC",
+    "BCB"
+  ],
+  "result": {
+    "item": "sophisticatedstorage:stack_upgrade_tier_1_to_tier_1_plus_conversion"
+  }
+}

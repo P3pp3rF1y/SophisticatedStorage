@@ -1,0 +1,35 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_stack_upgrade_tier_1_plus_to_tier_3_conversion": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "sophisticatedstorage:stack_upgrade_tier_1_plus_to_tier_3_conversion"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "sophisticatedstorage:stack_upgrade_tier_1_plus_to_tier_4_conversion"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_stack_upgrade_tier_1_plus_to_tier_3_conversion",
+      "has_the_recipe"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "sophisticatedstorage:stack_upgrade_tier_1_plus_to_tier_4_conversion"
+    ]
+  },
+  "sends_telemetry_event": true
+}
