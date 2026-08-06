@@ -150,6 +150,21 @@ public class StorageModelProvider extends SophisticatedModelProvider {
 		flatItems.add(ModItems.SUPER_PACKING_TAPE.get());
 		flatItems.add(ModItems.UPGRADE_BASE.get());
 		flatItems.add(ModItems.INACCESSIBLE_SLOT.get());
+		flatItems.add(ModItems.STACK_UPGRADE_TIER_1_TO_TIER_1_PLUS_CONVERSION.get());
+		flatItems.add(ModItems.STACK_UPGRADE_TIER_1_TO_TIER_2_CONVERSION.get());
+		flatItems.add(ModItems.STACK_UPGRADE_TIER_1_TO_TIER_3_CONVERSION.get());
+		flatItems.add(ModItems.STACK_UPGRADE_TIER_1_TO_TIER_4_CONVERSION.get());
+		flatItems.add(ModItems.STACK_UPGRADE_TIER_1_TO_TIER_5_CONVERSION.get());
+		flatItems.add(ModItems.STACK_UPGRADE_TIER_1_PLUS_TO_TIER_2_CONVERSION.get());
+		flatItems.add(ModItems.STACK_UPGRADE_TIER_1_PLUS_TO_TIER_3_CONVERSION.get());
+		flatItems.add(ModItems.STACK_UPGRADE_TIER_1_PLUS_TO_TIER_4_CONVERSION.get());
+		flatItems.add(ModItems.STACK_UPGRADE_TIER_1_PLUS_TO_TIER_5_CONVERSION.get());
+		flatItems.add(ModItems.STACK_UPGRADE_TIER_2_TO_TIER_3_CONVERSION.get());
+		flatItems.add(ModItems.STACK_UPGRADE_TIER_2_TO_TIER_4_CONVERSION.get());
+		flatItems.add(ModItems.STACK_UPGRADE_TIER_2_TO_TIER_5_CONVERSION.get());
+		flatItems.add(ModItems.STACK_UPGRADE_TIER_3_TO_TIER_4_CONVERSION.get());
+		flatItems.add(ModItems.STACK_UPGRADE_TIER_3_TO_TIER_5_CONVERSION.get());
+		flatItems.add(ModItems.STACK_UPGRADE_TIER_4_TO_TIER_5_CONVERSION.get());
 
 		flatItems.forEach(item -> itemModels.generateFlatItem(item, ModelTemplates.FLAT_ITEM));
 
