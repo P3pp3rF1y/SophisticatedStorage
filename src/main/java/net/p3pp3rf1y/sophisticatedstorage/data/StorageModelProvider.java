@@ -18,6 +18,7 @@ import net.neoforged.neoforge.client.model.generators.template.CustomLoaderBuild
 import net.neoforged.neoforge.client.model.generators.template.ExtendedModelTemplateBuilder;
 import net.p3pp3rf1y.sophisticatedcore.data.SophisticatedModelProvider;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeItemBase;
+import net.p3pp3rf1y.sophisticatedcore.upgrades.stack.StackUpgradeConversionItem;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.*;
 import net.p3pp3rf1y.sophisticatedstorage.client.init.StorageTintSources;
@@ -143,7 +144,7 @@ public class StorageModelProvider extends SophisticatedModelProvider {
 	private void generateItemModels(ItemModelGenerators itemModels) {
 		List<Item> flatItems = new ArrayList<>();
 
-		addItemClasses(flatItems, List.of(UpgradeItemBase.class, StorageTierUpgradeItem.class));
+		addItemClasses(flatItems, List.of(UpgradeItemBase.class, StackUpgradeConversionItem.class, StorageTierUpgradeItem.class));
 		flatItems.add(ModItems.DEBUG_TOOL.get());
 		flatItems.add(ModItems.PACKING_TAPE.get());
 		flatItems.add(ModItems.SUPER_PACKING_TAPE.get());
