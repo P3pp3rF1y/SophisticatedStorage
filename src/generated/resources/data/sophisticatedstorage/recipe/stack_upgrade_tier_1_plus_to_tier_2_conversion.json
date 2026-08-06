@@ -1,0 +1,24 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:stack_upgrade_tier_1_plus_to_tier_2_conversion"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": "#c:storage_blocks/iron",
+    "I": "#c:ingots/iron",
+    "P": "#minecraft:planks"
+  },
+  "pattern": [
+    " I ",
+    "IPI",
+    " B "
+  ],
+  "result": {
+    "count": 1,
+    "id": "sophisticatedstorage:stack_upgrade_tier_1_plus_to_tier_2_conversion"
+  }
+}
