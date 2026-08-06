@@ -1,0 +1,30 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:stack_upgrade_tier_3_to_tier_4_conversion"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "tag": "c:storage_blocks/diamond"
+    },
+    "D": {
+      "tag": "c:gems/diamond"
+    },
+    "P": {
+      "tag": "minecraft:planks"
+    }
+  },
+  "pattern": [
+    "DDD",
+    "DPD",
+    "BDB"
+  ],
+  "result": {
+    "count": 1,
+    "id": "sophisticatedstorage:stack_upgrade_tier_3_to_tier_4_conversion"
+  }
+}

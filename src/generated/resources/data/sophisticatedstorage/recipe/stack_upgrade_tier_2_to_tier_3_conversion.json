@@ -1,0 +1,30 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:stack_upgrade_tier_2_to_tier_3_conversion"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "tag": "c:storage_blocks/gold"
+    },
+    "G": {
+      "tag": "c:ingots/gold"
+    },
+    "P": {
+      "tag": "minecraft:planks"
+    }
+  },
+  "pattern": [
+    "GGG",
+    "GPG",
+    "BGB"
+  ],
+  "result": {
+    "count": 1,
+    "id": "sophisticatedstorage:stack_upgrade_tier_2_to_tier_3_conversion"
+  }
+}

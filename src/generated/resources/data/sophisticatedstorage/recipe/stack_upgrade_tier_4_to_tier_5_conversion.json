@@ -1,0 +1,30 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:stack_upgrade_tier_4_to_tier_5_conversion"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "tag": "c:storage_blocks/netherite"
+    },
+    "N": {
+      "tag": "c:ingots/netherite"
+    },
+    "P": {
+      "tag": "minecraft:planks"
+    }
+  },
+  "pattern": [
+    "NNN",
+    "NPN",
+    "BNB"
+  ],
+  "result": {
+    "count": 1,
+    "id": "sophisticatedstorage:stack_upgrade_tier_4_to_tier_5_conversion"
+  }
+}

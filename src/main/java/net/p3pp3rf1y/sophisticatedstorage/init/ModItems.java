@@ -55,6 +55,7 @@ import net.p3pp3rf1y.sophisticatedcore.upgrades.pickup.PickupUpgradeWrapper;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.pump.PumpUpgradeContainer;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.pump.PumpUpgradeItem;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.pump.PumpUpgradeWrapper;
+import net.p3pp3rf1y.sophisticatedcore.upgrades.stack.StackUpgradeConversionItem;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.stack.StackUpgradeItem;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.stonecutter.StonecutterUpgradeContainer;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.stonecutter.StonecutterUpgradeItem;
@@ -154,6 +155,36 @@ public class ModItems {
 			() -> new StackUpgradeItem(16, Config.SERVER.maxUpgradesPerStorage));
 	public static final DeferredHolder<Item, StackUpgradeItem> STACK_UPGRADE_TIER_5 = ITEMS.register("stack_upgrade_tier_5",
 			() -> new StackUpgradeItem(32, Config.SERVER.maxUpgradesPerStorage));
+	public static final DeferredHolder<Item, StackUpgradeConversionItem> STACK_UPGRADE_TIER_1_TO_TIER_1_PLUS_CONVERSION = ITEMS
+			.register("stack_upgrade_tier_1_to_tier_1_plus_conversion", () -> new StackUpgradeConversionItem(STACK_UPGRADE_TIER_1, STACK_UPGRADE_TIER_1_PLUS));
+	public static final DeferredHolder<Item, StackUpgradeConversionItem> STACK_UPGRADE_TIER_1_TO_TIER_2_CONVERSION = ITEMS
+			.register("stack_upgrade_tier_1_to_tier_2_conversion", () -> new StackUpgradeConversionItem(STACK_UPGRADE_TIER_1, STACK_UPGRADE_TIER_2));
+	public static final DeferredHolder<Item, StackUpgradeConversionItem> STACK_UPGRADE_TIER_1_TO_TIER_3_CONVERSION = ITEMS
+			.register("stack_upgrade_tier_1_to_tier_3_conversion", () -> new StackUpgradeConversionItem(STACK_UPGRADE_TIER_1, STACK_UPGRADE_TIER_3));
+	public static final DeferredHolder<Item, StackUpgradeConversionItem> STACK_UPGRADE_TIER_1_TO_TIER_4_CONVERSION = ITEMS
+			.register("stack_upgrade_tier_1_to_tier_4_conversion", () -> new StackUpgradeConversionItem(STACK_UPGRADE_TIER_1, STACK_UPGRADE_TIER_4));
+	public static final DeferredHolder<Item, StackUpgradeConversionItem> STACK_UPGRADE_TIER_1_TO_TIER_5_CONVERSION = ITEMS
+			.register("stack_upgrade_tier_1_to_tier_5_conversion", () -> new StackUpgradeConversionItem(STACK_UPGRADE_TIER_1, STACK_UPGRADE_TIER_5));
+	public static final DeferredHolder<Item, StackUpgradeConversionItem> STACK_UPGRADE_TIER_1_PLUS_TO_TIER_2_CONVERSION = ITEMS
+			.register("stack_upgrade_tier_1_plus_to_tier_2_conversion", () -> new StackUpgradeConversionItem(STACK_UPGRADE_TIER_1_PLUS, STACK_UPGRADE_TIER_2));
+	public static final DeferredHolder<Item, StackUpgradeConversionItem> STACK_UPGRADE_TIER_1_PLUS_TO_TIER_3_CONVERSION = ITEMS
+			.register("stack_upgrade_tier_1_plus_to_tier_3_conversion", () -> new StackUpgradeConversionItem(STACK_UPGRADE_TIER_1_PLUS, STACK_UPGRADE_TIER_3));
+	public static final DeferredHolder<Item, StackUpgradeConversionItem> STACK_UPGRADE_TIER_1_PLUS_TO_TIER_4_CONVERSION = ITEMS
+			.register("stack_upgrade_tier_1_plus_to_tier_4_conversion", () -> new StackUpgradeConversionItem(STACK_UPGRADE_TIER_1_PLUS, STACK_UPGRADE_TIER_4));
+	public static final DeferredHolder<Item, StackUpgradeConversionItem> STACK_UPGRADE_TIER_1_PLUS_TO_TIER_5_CONVERSION = ITEMS
+			.register("stack_upgrade_tier_1_plus_to_tier_5_conversion", () -> new StackUpgradeConversionItem(STACK_UPGRADE_TIER_1_PLUS, STACK_UPGRADE_TIER_5));
+	public static final DeferredHolder<Item, StackUpgradeConversionItem> STACK_UPGRADE_TIER_2_TO_TIER_3_CONVERSION = ITEMS
+			.register("stack_upgrade_tier_2_to_tier_3_conversion", () -> new StackUpgradeConversionItem(STACK_UPGRADE_TIER_2, STACK_UPGRADE_TIER_3));
+	public static final DeferredHolder<Item, StackUpgradeConversionItem> STACK_UPGRADE_TIER_2_TO_TIER_4_CONVERSION = ITEMS
+			.register("stack_upgrade_tier_2_to_tier_4_conversion", () -> new StackUpgradeConversionItem(STACK_UPGRADE_TIER_2, STACK_UPGRADE_TIER_4));
+	public static final DeferredHolder<Item, StackUpgradeConversionItem> STACK_UPGRADE_TIER_2_TO_TIER_5_CONVERSION = ITEMS
+			.register("stack_upgrade_tier_2_to_tier_5_conversion", () -> new StackUpgradeConversionItem(STACK_UPGRADE_TIER_2, STACK_UPGRADE_TIER_5));
+	public static final DeferredHolder<Item, StackUpgradeConversionItem> STACK_UPGRADE_TIER_3_TO_TIER_4_CONVERSION = ITEMS
+			.register("stack_upgrade_tier_3_to_tier_4_conversion", () -> new StackUpgradeConversionItem(STACK_UPGRADE_TIER_3, STACK_UPGRADE_TIER_4));
+	public static final DeferredHolder<Item, StackUpgradeConversionItem> STACK_UPGRADE_TIER_3_TO_TIER_5_CONVERSION = ITEMS
+			.register("stack_upgrade_tier_3_to_tier_5_conversion", () -> new StackUpgradeConversionItem(STACK_UPGRADE_TIER_3, STACK_UPGRADE_TIER_5));
+	public static final DeferredHolder<Item, StackUpgradeConversionItem> STACK_UPGRADE_TIER_4_TO_TIER_5_CONVERSION = ITEMS
+			.register("stack_upgrade_tier_4_to_tier_5_conversion", () -> new StackUpgradeConversionItem(STACK_UPGRADE_TIER_4, STACK_UPGRADE_TIER_5));
 	public static final DeferredHolder<Item, StackUpgradeItem> STACK_DOWNGRADE_TIER_1 = ITEMS.register("stack_downgrade_tier_1",
 			() -> new StackUpgradeItem(0.125, Config.SERVER.maxUpgradesPerStorage));
 	public static final DeferredHolder<Item, StackUpgradeItem> STACK_DOWNGRADE_TIER_2 = ITEMS.register("stack_downgrade_tier_2",
