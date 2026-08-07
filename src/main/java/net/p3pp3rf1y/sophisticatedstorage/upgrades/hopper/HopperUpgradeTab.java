@@ -3,8 +3,11 @@ package net.p3pp3rf1y.sophisticatedstorage.upgrades.hopper;
 import net.minecraft.network.chat.Component;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.StorageScreenBase;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.UpgradeSettingsTab;
+import net.p3pp3rf1y.sophisticatedcore.client.gui.controls.ButtonDefinition;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.Position;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.ContentsFilterControl;
+import net.p3pp3rf1y.sophisticatedcore.upgrades.ContentsFilterLogicContainer;
+import net.p3pp3rf1y.sophisticatedcore.upgrades.ContentsFilterType;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.SideIOControl;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageButtonDefinitions;
@@ -40,21 +43,44 @@ public abstract class HopperUpgradeTab extends UpgradeSettingsTab<HopperUpgradeC
 	}
 
 	public static class Advanced extends HopperUpgradeTab {
+		private static final int TAG_LIST_HEIGHT = 18;
+
+		private SideIOControl sideIOControl;
 
 		public Advanced(HopperUpgradeContainer container, Position position, StorageScreenBase<?> screen) {
 			super(container, position, screen, StorageTranslationHelper.INSTANCE.translUpgrade("advanced_hopper"),
 					StorageTranslationHelper.INSTANCE.translUpgradeTooltip("advanced_hopper"));
 			inputFilterLogicControl = addHideableChild(
-					new ContentsFilterControl.Advanced(screen, new Position(x + 3, y + 24), getContainer().getInputFilterLogicContainer(),
+					new HopperContentsFilterControl(screen, new Position(x + 3, y + 24), getContainer().getInputFilterLogicContainer(),
 							Config.SERVER.advancedHopperUpgrade.inputFilterSlotsInRow.get(), StorageButtonDefinitions.STORAGE_CONTENTS_FILTER_TYPE));
 
-			SideIOControl sideIOControl = new SideIOControl(getContainer().getSideIOContainer(),
-					new Position(x + 3 + 9, inputFilterLogicControl.getY() + inputFilterLogicControl.getHeight() + 4));
-			addHideableChild(sideIOControl);
+			sideIOControl = addHideableChild(new SideIOControl(getContainer().getSideIOContainer(),
+					new Position(x + 3 + 9, inputFilterLogicControl.getY() + inputFilterLogicControl.getHeight() + 4)));
 
-			outputFilterLogicControl = addHideableChild(new ContentsFilterControl.Advanced(screen,
+			outputFilterLogicControl = addHideableChild(new HopperContentsFilterControl(screen,
 					new Position(x + 3, sideIOControl.getY() + sideIOControl.getHeight() + 4), getContainer().getOutputFilterLogicContainer(),
 					Config.SERVER.advancedHopperUpgrade.outputFilterSlotsInRow.get(), StorageButtonDefinitions.STORAGE_CONTENTS_FILTER_TYPE));
+			inputFilterLogicControl.setDimensionsChangedHandler(this::updateControlPositions);
+			outputFilterLogicControl.setDimensionsChangedHandler(this::updateControlPositions);
+		}
+
+		private void updateControlPositions() {
+			sideIOControl.setPosition(new Position(x + 3 + 9, inputFilterLogicControl.getY() + inputFilterLogicControl.getHeight() + 4));
+			outputFilterLogicControl.setPosition(new Position(x + 3, sideIOControl.getY() + sideIOControl.getHeight() + 4));
+			outputFilterLogicControl.moveSlotsToView();
+			refreshOpenTabDimension();
+		}
+
+		private static class HopperContentsFilterControl extends ContentsFilterControl.Advanced {
+			private HopperContentsFilterControl(StorageScreenBase<?> screen, Position position, ContentsFilterLogicContainer filterLogicContainer,
+					int slotsPerRow, ButtonDefinition.Toggle<ContentsFilterType> contentsFilterButton) {
+				super(screen, position, filterLogicContainer, slotsPerRow, contentsFilterButton);
+			}
+
+			@Override
+			protected int getTagListHeight() {
+				return TAG_LIST_HEIGHT;
+			}
 		}
 	}
 }
