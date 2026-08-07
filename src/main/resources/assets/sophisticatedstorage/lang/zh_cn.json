@@ -216,7 +216,7 @@
   "item.sophisticatedstorage.hopper_upgrade": "漏斗升级",
   "item.sophisticatedstorage.hopper_upgrade.tooltip": "允许从上面的方块中拉取物品，并将其输出到下面的方块中",
   "item.sophisticatedstorage.advanced_hopper_upgrade": "高级漏斗升级",
-  "item.sophisticatedstorage.advanced_hopper_upgrade.tooltip": "允许从上面的方块中拉取物品，并将其输出到下面的方块中\n更快，并有输入/输出选项",
+  "item.sophisticatedstorage.advanced_hopper_upgrade.tooltip": "在容器和相邻方块间移动物品\n速度更快，任意方向均可配置输入/输出",
   "item.sophisticatedstorage.infinity_upgrade": "无限升级（管理员）",
   "item.sophisticatedstorage.infinity_upgrade.tooltip": "使容器内的所有物品数量无限\n仅管理员可设置物品数量无限和破坏容器",
   "item.sophisticatedstorage.survival_infinity_upgrade": "生存模式无限升级",
