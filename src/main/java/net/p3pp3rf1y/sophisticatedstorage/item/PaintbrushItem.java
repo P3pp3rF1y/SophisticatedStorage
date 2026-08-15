@@ -46,10 +46,10 @@ import java.util.function.Consumer;
 
 public class PaintbrushItem extends ItemBase {
 	public static final Codec<Map<ResourceLocation, Integer>> REMAINING_PARTS_CODEC = Codec.unboundedMap(ResourceLocation.CODEC, ExtraCodecs.POSITIVE_INT);
+	private static final int MAX_REMAINING_PARTS = 64;
 
-	public static final StreamCodec<FriendlyByteBuf, Map<ResourceLocation, Integer>> REMAINING_PARTS_STREAM_CODEC = StreamCodec.of(
-			(buf, map) -> buf.writeMap(map, ResourceLocation.STREAM_CODEC, ByteBufCodecs.INT),
-			buf -> buf.readMap(ResourceLocation.STREAM_CODEC, ByteBufCodecs.INT));
+	public static final StreamCodec<FriendlyByteBuf, Map<ResourceLocation, Integer>> REMAINING_PARTS_STREAM_CODEC = ByteBufCodecs.map(HashMap::new,
+			ResourceLocation.STREAM_CODEC, ByteBufCodecs.INT, MAX_REMAINING_PARTS);
 
 	public PaintbrushItem(Properties properties) {
 		super(properties.stacksTo(1));
