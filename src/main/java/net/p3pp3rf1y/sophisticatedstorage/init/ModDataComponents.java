@@ -93,17 +93,8 @@ public class ModDataComponents {
 
 	private static final Codec<Set<Direction>> DIRECTION_SET_CODEC = CodecHelper.setOf(Direction.CODEC);
 
-	private static final StreamCodec<FriendlyByteBuf, Set<Direction>> DIRECTION_SET_STREAM_CODEC = new StreamCodec<>() {
-		@Override
-		public Set<Direction> decode(FriendlyByteBuf buf) {
-			return buf.readCollection(HashSet::new, b -> b.readEnum(Direction.class));
-		}
-
-		@Override
-		public void encode(FriendlyByteBuf buf, Set<Direction> directions) {
-			buf.writeCollection(directions, FriendlyByteBuf::writeEnum);
-		}
-	};
+	private static final StreamCodec<FriendlyByteBuf, Set<Direction>> DIRECTION_SET_STREAM_CODEC = ByteBufCodecs.collection(HashSet::new,
+			Direction.STREAM_CODEC, Direction.values().length);
 
 	public static final Supplier<DataComponentType<Set<Direction>>> PULL_DIRECTIONS = DATA_COMPONENT_TYPES.register("pull_directions",
 			() -> new DataComponentType.Builder<Set<Direction>>().persistent(DIRECTION_SET_CODEC).networkSynchronized(DIRECTION_SET_STREAM_CODEC).build());

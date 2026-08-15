@@ -3,6 +3,7 @@ package net.p3pp3rf1y.sophisticatedstorage.item;
 import com.mojang.serialization.Codec;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.StringRepresentable;
@@ -15,6 +16,7 @@ import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageTranslationHelper;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModDataComponents;
 
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.Map;
 
 public class BarrelBlockItem extends WoodStorageBlockItem {
@@ -25,9 +27,8 @@ public class BarrelBlockItem extends WoodStorageBlockItem {
 	public static final Codec<Map<BarrelMaterial, ResourceLocation>> MATERIALS_CODEC = Codec
 			.simpleMap(BarrelMaterial.CODEC, ResourceLocation.CODEC, StringRepresentable.keys(BarrelMaterial.values())).codec();
 
-	public static final StreamCodec<FriendlyByteBuf, Map<BarrelMaterial, ResourceLocation>> MATERIALS_STREAM_CODEC = StreamCodec.of(
-			(buf, map) -> buf.writeMap(map, BarrelMaterial.STREAM_CODEC, ResourceLocation.STREAM_CODEC),
-			buf -> buf.readMap(BarrelMaterial.STREAM_CODEC, ResourceLocation.STREAM_CODEC));
+	public static final StreamCodec<FriendlyByteBuf, Map<BarrelMaterial, ResourceLocation>> MATERIALS_STREAM_CODEC = ByteBufCodecs.map(HashMap::new,
+			BarrelMaterial.STREAM_CODEC, ResourceLocation.STREAM_CODEC, BarrelMaterial.values().length);
 
 	public static void toggleFlatTop(ItemStack stack) {
 		boolean flatTop = isFlatTop(stack);
