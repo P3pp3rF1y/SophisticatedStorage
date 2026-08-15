@@ -25,7 +25,7 @@ import java.util.Map;
 public record RequestControllerTargetHighlightsPayload(ItemStack stack, List<BlockPos> controllerPositions) implements CustomPacketPayload {
 	public static final Type<RequestControllerTargetHighlightsPayload> TYPE = new Type<>(SophisticatedStorage.getRL("request_controller_target_highlights"));
 	public static final StreamCodec<RegistryFriendlyByteBuf, RequestControllerTargetHighlightsPayload> STREAM_CODEC = StreamCodec.composite(
-			ItemStack.STREAM_CODEC, RequestControllerTargetHighlightsPayload::stack, BlockPos.STREAM_CODEC.apply(ByteBufCodecs.list()),
+			ItemStack.STREAM_CODEC, RequestControllerTargetHighlightsPayload::stack, BlockPos.STREAM_CODEC.apply(ByteBufCodecs.list(512)),
 			RequestControllerTargetHighlightsPayload::controllerPositions, RequestControllerTargetHighlightsPayload::new);
 	public static final int MATCHING_STACK_HIGHLIGHT_COLOR = 0x4CAF50;
 	public static final int MATCHING_ITEM_HIGHLIGHT_COLOR = 0x42A5F5;
