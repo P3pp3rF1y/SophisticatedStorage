@@ -109,6 +109,24 @@ class StorageRecipeViewerDisplaySpecTest {
 	}
 
 	@Test
+	void tierUpgradeFocusPreservesFlatWoodBarrelComponents() {
+		IRecipeViewerDisplayCatalog catalog = createCatalog();
+		ItemStack flatAcaciaBarrel = flatWoodStorageStack(ModBlocks.BARREL_ITEM.get(), WoodType.ACACIA);
+		ItemStack flatAcaciaIronBarrel = flatWoodStorageStack(ModBlocks.IRON_BARREL_ITEM.get(), WoodType.ACACIA);
+
+		List<CraftingDisplayVariant> usages = getCraftingUsagesFor(catalog, flatAcaciaBarrel).stream().filter(usage -> usage.inputs().size() == 9).toList();
+		List<CraftingDisplayVariant> recipes = getCraftingRecipesFor(catalog, flatAcaciaIronBarrel);
+
+		assertEquals(2, usages.size());
+		assertTrue(usages.stream().allMatch(usage -> ItemStack.isSameItemSameComponents(flatAcaciaBarrel, usage.inputs().get(4))));
+		assertTrue(usages.stream().anyMatch(
+				usage -> ItemStack.isSameItemSameComponents(flatWoodStorageStack(ModBlocks.COPPER_BARREL_ITEM.get(), WoodType.ACACIA), usage.firstOutput())));
+		assertEquals(2, recipes.size());
+		assertTrue(recipes.stream().anyMatch(recipe -> ItemStack.isSameItemSameComponents(flatAcaciaBarrel, recipe.inputs().get(4))));
+		assertTrue(recipes.stream().allMatch(recipe -> ItemStack.isSameItemSameComponents(flatAcaciaIronBarrel, recipe.firstOutput())));
+	}
+
+	@Test
 	void fullyTintedWoodStorageKeepsWoodTypeButHidesItInName() {
 		ItemStack spruceChest = woodStorageStack(ModBlocks.CHEST_ITEM.get(), WoodType.SPRUCE);
 		StorageBlockItem storageBlockItem = (StorageBlockItem) spruceChest.getItem();
@@ -345,6 +363,12 @@ class StorageRecipeViewerDisplaySpecTest {
 
 	private static ItemStack woodStorageStack(Item item, WoodType woodType) {
 		return WoodStorageBlockItem.setWoodType(new ItemStack(item), woodType);
+	}
+
+	private static ItemStack flatWoodStorageStack(Item item, WoodType woodType) {
+		ItemStack stack = woodStorageStack(item, woodType);
+		BarrelBlockItem.setFlatTop(stack, true);
+		return stack;
 	}
 
 	private static RecipeHolder<GenericWoodStorageRecipe> customGenericChestRecipeHolder(Item nonWoodIngredient) {

@@ -2,6 +2,7 @@ package net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.common;
 
 import net.minecraft.core.NonNullList;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -13,7 +14,9 @@ import net.p3pp3rf1y.sophisticatedstorage.item.ChestBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -48,8 +51,11 @@ public record TierUpgradeDisplayRecipe(Identifier id, RecipeHolder<CraftingRecip
 	}
 
 	public CraftingDisplaySpec toSpec() {
+		VariantLookup lookup = new VariantLookup(variantPairs);
 		return new CraftingDisplaySpec(id, shapeless, width, height, ingredients, variantPairs.stream().map(this::toVariant).toList(), getGlobalVariants(),
-				Set.of(recipeHolder.id().identifier()), new SourceResultFocusBehavior(storageIngredientIndex, this::focusSource, this::focusResult));
+				Set.of(recipeHolder.id().identifier()),
+				new SourceResultFocusBehavior(storageIngredientIndex, (variant, focusedInput) -> focusSource(variant, focusedInput, lookup),
+						(variant, focusedOutput) -> focusResult(variant, focusedOutput, lookup)));
 	}
 
 	private List<CraftingDisplayVariant> getGlobalVariants() {
@@ -69,26 +75,94 @@ public record TierUpgradeDisplayRecipe(Identifier id, RecipeHolder<CraftingRecip
 		return new CraftingDisplayVariant(inputs, List.of(pair.result()));
 	}
 
-	private Optional<CraftingDisplayVariant> focusSource(CraftingDisplayVariant variant, ItemStack focusedInput) {
+	private Optional<CraftingDisplayVariant> focusSource(CraftingDisplayVariant variant, ItemStack focusedInput, VariantLookup lookup) {
 		ItemStack source = getSource(variant);
-		Optional<TierUpgradeVariantPair> exactPair = findBySource(focusedInput);
+		Optional<TierUpgradeVariantPair> exactPair = lookup.findBySource(focusedInput);
 		if (exactPair.isPresent()) {
 			return exactPair.filter(pair -> ItemStack.isSameItemSameComponents(source, pair.source())).map(this::toVariant);
 		}
-		return findBySourceItem(focusedInput).filter(pair -> ItemStack.isSameItemSameComponents(source, pair.source()))
+		return lookup.findBySourceItem(focusedInput).filter(pair -> ItemStack.isSameItemSameComponents(source, pair.source()))
 				.map(pair -> withComponentsFromSource(pair, focusedInput)).map(this::toVariant);
 	}
 
-	private Optional<CraftingDisplayVariant> focusResult(CraftingDisplayVariant variant, ItemStack focusedOutput) {
-		Optional<TierUpgradeVariantPair> exactPair = findByResult(focusedOutput);
+	private Optional<CraftingDisplayVariant> focusResult(CraftingDisplayVariant variant, ItemStack focusedOutput, VariantLookup lookup) {
+		Optional<TierUpgradeVariantPair> exactPair = lookup.findByResult(focusedOutput);
 		if (exactPair.isPresent()) {
 			return exactPair.filter(pair -> ItemStack.isSameItemSameComponents(variant.firstOutput(), pair.result())).map(this::toVariant);
 		}
-		return findByResultItem(focusedOutput).filter(pair -> ItemStack.isSameItemSameComponents(variant.firstOutput(), pair.result()))
+		return lookup.findByResultItem(focusedOutput).filter(pair -> ItemStack.isSameItemSameComponents(variant.firstOutput(), pair.result()))
 				.map(pair -> withComponentsFromResult(pair, focusedOutput)).map(this::toVariant);
 	}
 
 	private static ItemStack getSource(CraftingDisplayVariant variant) {
 		return variant.inputs().stream().filter(stack -> !stack.isEmpty()).findFirst().orElse(ItemStack.EMPTY);
+	}
+
+	private static final class VariantLookup {
+		private final Map<Integer, List<TierUpgradeVariantPair>> sourcePairsByHash = new HashMap<>();
+		private final Map<Integer, List<TierUpgradeVariantPair>> resultPairsByHash = new HashMap<>();
+		private final Map<Item, TierUpgradeVariantPair> sourcePairsByItem = new HashMap<>();
+		private final Map<Item, TierUpgradeVariantPair> doubleChestSourcePairsByItem = new HashMap<>();
+		private final Map<Item, TierUpgradeVariantPair> resultPairsByItem = new HashMap<>();
+		private final Map<Item, TierUpgradeVariantPair> doubleChestResultPairsByItem = new HashMap<>();
+
+		private VariantLookup(List<TierUpgradeVariantPair> variantPairs) {
+			for (TierUpgradeVariantPair pair : variantPairs) {
+				addPair(sourcePairsByHash, pair.source(), pair);
+				addPair(resultPairsByHash, pair.result(), pair);
+				addFirstPair(sourcePairsByItem, doubleChestSourcePairsByItem, pair.source(), pair);
+				addFirstPair(resultPairsByItem, doubleChestResultPairsByItem, pair.result(), pair);
+			}
+		}
+
+		private Optional<TierUpgradeVariantPair> findBySource(ItemStack stack) {
+			List<TierUpgradeVariantPair> pairs = sourcePairsByHash.get(ItemStack.hashItemAndComponents(stack));
+			if (pairs != null) {
+				for (TierUpgradeVariantPair pair : pairs) {
+					if (ItemStack.isSameItemSameComponents(pair.source(), stack)) {
+						return Optional.of(pair);
+					}
+				}
+			}
+			return Optional.empty();
+		}
+
+		private Optional<TierUpgradeVariantPair> findBySourceItem(ItemStack stack) {
+			return Optional.ofNullable(getFirstPair(sourcePairsByItem, doubleChestSourcePairsByItem, stack));
+		}
+
+		private Optional<TierUpgradeVariantPair> findByResult(ItemStack stack) {
+			List<TierUpgradeVariantPair> pairs = resultPairsByHash.get(ItemStack.hashItemAndComponents(stack));
+			if (pairs != null) {
+				for (TierUpgradeVariantPair pair : pairs) {
+					if (ItemStack.isSameItemSameComponents(pair.result(), stack)) {
+						return Optional.of(pair);
+					}
+				}
+			}
+			return Optional.empty();
+		}
+
+		private Optional<TierUpgradeVariantPair> findByResultItem(ItemStack stack) {
+			return Optional.ofNullable(getFirstPair(resultPairsByItem, doubleChestResultPairsByItem, stack));
+		}
+
+		private static void addPair(Map<Integer, List<TierUpgradeVariantPair>> pairsByHash, ItemStack stack, TierUpgradeVariantPair pair) {
+			pairsByHash.computeIfAbsent(ItemStack.hashItemAndComponents(stack), ignored -> new ArrayList<>()).add(pair);
+		}
+
+		private static void addFirstPair(Map<Item, TierUpgradeVariantPair> pairsByItem, Map<Item, TierUpgradeVariantPair> doubleChestPairsByItem,
+				ItemStack stack, TierUpgradeVariantPair pair) {
+			Map<Item, TierUpgradeVariantPair> pairs = stack.getItem() instanceof ChestBlockItem && ChestBlockItem.isDoubleChest(stack)
+					? doubleChestPairsByItem
+					: pairsByItem;
+			pairs.putIfAbsent(stack.getItem(), pair);
+		}
+
+		private static TierUpgradeVariantPair getFirstPair(Map<Item, TierUpgradeVariantPair> pairsByItem,
+				Map<Item, TierUpgradeVariantPair> doubleChestPairsByItem, ItemStack stack) {
+			return (stack.getItem() instanceof ChestBlockItem && ChestBlockItem.isDoubleChest(stack) ? doubleChestPairsByItem : pairsByItem)
+					.get(stack.getItem());
+		}
 	}
 }
