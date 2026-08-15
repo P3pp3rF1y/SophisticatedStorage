@@ -116,6 +116,20 @@ class StorageRecipeViewerDisplaySpecTest {
 	}
 
 	@Test
+	void focusSourcePreservesFocusedFlatAcaciaBarrelComponents() {
+		IRecipeViewerDisplayCatalog catalog = createCatalog();
+		ItemStack flatAcaciaBasicBarrel = woodStorageStack(ModBlocks.BARREL_ITEM.get(), WoodType.ACACIA);
+		BarrelBlockItem.setFlatTop(flatAcaciaBasicBarrel, true);
+
+		List<CraftingDisplayVariant> usages = getCraftingUsagesFor(catalog, flatAcaciaBasicBarrel);
+
+		assertEquals(2, usages.size());
+		assertTrue(usages.stream().allMatch(usage -> ItemStack.isSameItemSameTags(flatAcaciaBasicBarrel, usage.inputs().get(4))));
+		assertTrue(usages.stream().anyMatch(usage -> ItemStack.isSameItemSameTags(flatAcaciaBarrel(ModBlocks.COPPER_BARREL_ITEM.get()), usage.firstOutput())));
+		assertTrue(usages.stream().anyMatch(usage -> ItemStack.isSameItemSameTags(flatAcaciaBarrel(ModBlocks.IRON_BARREL_ITEM.get()), usage.firstOutput())));
+	}
+
+	@Test
 	void tierUpgradeRecipePreservesFocusedWoodBarrelResultComponents() {
 		IRecipeViewerDisplayCatalog catalog = createCatalog();
 		ItemStack spruceIronBarrel = woodStorageStack(ModBlocks.IRON_BARREL_ITEM.get(), WoodType.SPRUCE);
@@ -369,6 +383,12 @@ class StorageRecipeViewerDisplaySpecTest {
 
 	private static ItemStack woodStorageStack(Item item, WoodType woodType) {
 		return WoodStorageBlockItem.setWoodType(new ItemStack(item), woodType);
+	}
+
+	private static ItemStack flatAcaciaBarrel(Item item) {
+		ItemStack stack = woodStorageStack(item, WoodType.ACACIA);
+		BarrelBlockItem.setFlatTop(stack, true);
+		return stack;
 	}
 
 	private static GenericWoodStorageRecipe customGenericChestRecipe(Item nonWoodIngredient) {
