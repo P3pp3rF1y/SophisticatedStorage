@@ -155,6 +155,29 @@ class StorageRecipeViewerDisplaySpecTest {
 	}
 
 	@Test
+	void tierUpgradeFocusPreservesFlatWoodBarrelComponents() {
+		IRecipeViewerDisplayCatalog catalog = createCatalog();
+		ItemStack flatAcaciaBarrel = flatTop(woodStorageStack(ModBlocks.BARREL_ITEM.get(), WoodType.ACACIA));
+		ItemStack flatAcaciaIronBarrel = flatTop(woodStorageStack(ModBlocks.IRON_BARREL_ITEM.get(), WoodType.ACACIA));
+
+		List<CraftingDisplayVariant> tierUsages = getCraftingUsagesFor(catalog, flatAcaciaBarrel).stream().filter(usage -> usage.inputs().size() > 4).toList();
+		List<CraftingDisplayVariant> tierRecipes = getCraftingRecipesFor(catalog, flatAcaciaIronBarrel).stream().filter(recipe -> recipe.inputs().size() > 4)
+				.toList();
+
+		assertEquals(2, tierUsages.size());
+		assertTrue(tierUsages.stream().allMatch(usage -> ItemStack.isSameItemSameComponents(flatAcaciaBarrel, usage.inputs().get(4))));
+		assertTrue(tierUsages.stream().anyMatch(usage -> ItemStack
+				.isSameItemSameComponents(flatTop(woodStorageStack(ModBlocks.COPPER_BARREL_ITEM.get(), WoodType.ACACIA)), usage.firstOutput())));
+		assertTrue(tierUsages.stream().anyMatch(usage -> ItemStack
+				.isSameItemSameComponents(flatTop(woodStorageStack(ModBlocks.IRON_BARREL_ITEM.get(), WoodType.ACACIA)), usage.firstOutput())));
+		assertEquals(2, tierRecipes.size());
+		assertTrue(tierRecipes.stream().anyMatch(recipe -> ItemStack.isSameItemSameComponents(flatAcaciaBarrel, recipe.inputs().get(4))));
+		assertTrue(tierRecipes.stream().anyMatch(recipe -> ItemStack
+				.isSameItemSameComponents(flatTop(woodStorageStack(ModBlocks.COPPER_BARREL_ITEM.get(), WoodType.ACACIA)), recipe.inputs().get(4))));
+		assertTrue(tierRecipes.stream().allMatch(recipe -> ItemStack.isSameItemSameComponents(flatAcaciaIronBarrel, recipe.firstOutput())));
+	}
+
+	@Test
 	void fullyTintedWoodStorageKeepsWoodTypeButHidesItInName() {
 		ItemStack spruceChest = woodStorageStack(ModBlocks.CHEST_ITEM.get(), WoodType.SPRUCE);
 		StorageBlockItem storageBlockItem = (StorageBlockItem) spruceChest.getItem();
