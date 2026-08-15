@@ -7,6 +7,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.network.NetworkEvent;
 import net.p3pp3rf1y.sophisticatedcore.inventory.ItemStackKey;
+import net.p3pp3rf1y.sophisticatedcore.network.PacketBufferHelper;
 import net.p3pp3rf1y.sophisticatedcore.network.PacketHandler;
 import net.p3pp3rf1y.sophisticatedcore.network.SyncBlockHighlightsMessage;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
@@ -20,6 +21,7 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 public record RequestControllerTargetHighlightsMessage(ItemStack stack, List<BlockPos> controllerPositions) {
+	private static final int MAX_CONTROLLER_POSITIONS = 512;
 	public static final int MATCHING_STACK_HIGHLIGHT_COLOR = 0x4CAF50;
 	public static final int MATCHING_ITEM_HIGHLIGHT_COLOR = 0x42A5F5;
 	public static final int EMPTY_TARGET_HIGHLIGHT_COLOR = 0xFFEB3B;
@@ -30,7 +32,8 @@ public record RequestControllerTargetHighlightsMessage(ItemStack stack, List<Blo
 	}
 
 	public static RequestControllerTargetHighlightsMessage decode(FriendlyByteBuf packetBuffer) {
-		return new RequestControllerTargetHighlightsMessage(packetBuffer.readItem(), packetBuffer.readList(FriendlyByteBuf::readBlockPos));
+		return new RequestControllerTargetHighlightsMessage(packetBuffer.readItem(),
+				PacketBufferHelper.readList(packetBuffer, FriendlyByteBuf::readBlockPos, MAX_CONTROLLER_POSITIONS));
 	}
 
 	static void onMessage(RequestControllerTargetHighlightsMessage msg, Supplier<NetworkEvent.Context> contextSupplier) {

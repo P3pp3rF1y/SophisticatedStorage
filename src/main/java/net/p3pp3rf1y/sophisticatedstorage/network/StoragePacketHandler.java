@@ -1,5 +1,6 @@
 package net.p3pp3rf1y.sophisticatedstorage.network;
 
+import net.minecraftforge.network.NetworkDirection;
 import net.p3pp3rf1y.sophisticatedcore.network.PacketHandler;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 
@@ -13,13 +14,16 @@ public class StoragePacketHandler extends PacketHandler {
 	@Override
 	public void registerMessages() {
 		registerMessage(OpenStorageInventoryMessage.class, OpenStorageInventoryMessage::encode, OpenStorageInventoryMessage::decode,
-				OpenStorageInventoryMessage::onMessage);
+				OpenStorageInventoryMessage::onMessage, NetworkDirection.PLAY_TO_SERVER);
 		registerMessage(RequestStorageContentsMessage.class, RequestStorageContentsMessage::encode, RequestStorageContentsMessage::decode,
-				RequestStorageContentsMessage::onMessage);
-		registerMessage(StorageContentsMessage.class, StorageContentsMessage::encode, StorageContentsMessage::decode, StorageContentsMessage::onMessage);
-		registerMessage(ScrolledToolMessage.class, ScrolledToolMessage::encode, ScrolledToolMessage::decode, ScrolledToolMessage::onMessage);
-		registerMessage(StorageOpennessMessage.class, StorageOpennessMessage::encode, StorageOpennessMessage::decode, StorageOpennessMessage::onMessage);
+				RequestStorageContentsMessage::onMessage, NetworkDirection.PLAY_TO_SERVER);
+		registerMessage(StorageContentsMessage.class, StorageContentsMessage::encode, StorageContentsMessage::decode, StorageContentsMessage::onMessage,
+				NetworkDirection.PLAY_TO_CLIENT);
+		registerMessage(ScrolledToolMessage.class, ScrolledToolMessage::encode, ScrolledToolMessage::decode, ScrolledToolMessage::onMessage,
+				NetworkDirection.PLAY_TO_SERVER);
+		registerMessage(StorageOpennessMessage.class, StorageOpennessMessage::encode, StorageOpennessMessage::decode, StorageOpennessMessage::onMessage,
+				NetworkDirection.PLAY_TO_CLIENT);
 		registerMessage(RequestControllerTargetHighlightsMessage.class, RequestControllerTargetHighlightsMessage::encode,
-				RequestControllerTargetHighlightsMessage::decode, RequestControllerTargetHighlightsMessage::onMessage);
+				RequestControllerTargetHighlightsMessage::decode, RequestControllerTargetHighlightsMessage::onMessage, NetworkDirection.PLAY_TO_SERVER);
 	}
 }
