@@ -49,8 +49,8 @@ import java.util.function.Consumer;
 public class PaintbrushItem extends ItemBase {
 	public static final Codec<Map<Identifier, Integer>> REMAINING_PARTS_CODEC = Codec.unboundedMap(Identifier.CODEC, ExtraCodecs.POSITIVE_INT);
 
-	public static final StreamCodec<FriendlyByteBuf, Map<Identifier, Integer>> REMAINING_PARTS_STREAM_CODEC = StreamCodec
-			.of((buf, map) -> buf.writeMap(map, Identifier.STREAM_CODEC, ByteBufCodecs.INT), buf -> buf.readMap(Identifier.STREAM_CODEC, ByteBufCodecs.INT));
+	public static final StreamCodec<FriendlyByteBuf, Map<Identifier, Integer>> REMAINING_PARTS_STREAM_CODEC = ByteBufCodecs.map(HashMap::new,
+			Identifier.STREAM_CODEC, ByteBufCodecs.INT, 64);
 
 	public PaintbrushItem(Properties properties) {
 		super(properties.stacksTo(1));
