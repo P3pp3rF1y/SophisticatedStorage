@@ -191,7 +191,7 @@ public abstract class MovingStorageWrapper implements IStorageWrapper {
 		if (isLocked() && allowsEmptySlotsMatchingItemInsertsWhenLocked()) {
 			if (contentsFilteredItemHandler == null) {
 				contentsFilteredItemHandler = new ContentsFilteredItemHandler(this::getInventoryIOHandler, () -> getInventoryHandler().getSlotTracker(),
-						() -> getSettingsHandler().getTypeCategory(MemorySettingsCategory.class));
+						() -> getSettingsHandler().getTypeCategory(MemorySettingsCategory.class), false);
 			}
 			return contentsFilteredItemHandler;
 		}
