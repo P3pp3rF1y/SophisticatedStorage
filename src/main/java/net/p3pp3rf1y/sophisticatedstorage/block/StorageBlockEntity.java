@@ -167,11 +167,12 @@ public abstract class StorageBlockEntity extends BlockEntity
 
 			@Override
 			public ITrackedContentsItemResourceHandler getInventoryForInputOutput() {
-				if (locked && allowsEmptySlotsMatchingItemInsertsWhenLocked()) {
+				if (locked) {
 					if (contentsFilteredItemHandler == null) {
 						contentsFilteredItemHandler = new ContentsFilteredItemHandler(super::getInventoryForInputOutput,
 								() -> getStorageWrapper().getInventoryHandler().getSlotTracker(),
-								() -> getStorageWrapper().getSettingsHandler().getTypeCategory(MemorySettingsCategory.class));
+								() -> getStorageWrapper().getSettingsHandler().getTypeCategory(MemorySettingsCategory.class),
+								!allowsEmptySlotsMatchingItemInsertsWhenLocked());
 					}
 					return contentsFilteredItemHandler;
 				}

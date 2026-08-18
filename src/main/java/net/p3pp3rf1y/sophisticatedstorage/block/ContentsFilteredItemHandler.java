@@ -19,12 +19,14 @@ public class ContentsFilteredItemHandler implements ITrackedContentsItemResource
 	private final Supplier<ITrackedContentsItemResourceHandler> itemHandlerGetter;
 	private final Supplier<ISlotTracker> slotTrackerGetter;
 	private final Supplier<MemorySettingsCategory> memorySettingsGetter;
+	private final boolean requireMatchingMemorySlot;
 
 	public ContentsFilteredItemHandler(Supplier<ITrackedContentsItemResourceHandler> itemHandlerGetter, Supplier<ISlotTracker> slotTrackerGetter,
-			Supplier<MemorySettingsCategory> memorySettingsGetter) {
+			Supplier<MemorySettingsCategory> memorySettingsGetter, boolean requireMatchingMemorySlot) {
 		this.itemHandlerGetter = itemHandlerGetter;
 		this.slotTrackerGetter = slotTrackerGetter;
 		this.memorySettingsGetter = memorySettingsGetter;
+		this.requireMatchingMemorySlot = requireMatchingMemorySlot;
 	}
 
 	@Override
@@ -57,7 +59,7 @@ public class ContentsFilteredItemHandler implements ITrackedContentsItemResource
 
 	@Override
 	public int insert(int index, ItemResource resource, int amount, TransactionContext tx) {
-		if (matchesContents(resource)) {
+		if (matchesContents(resource) && (!requireMatchingMemorySlot || matchesMemorySlot(index, resource))) {
 			return itemHandlerGetter.get().insert(index, resource, amount, tx);
 		}
 		return 0;
@@ -85,6 +87,11 @@ public class ContentsFilteredItemHandler implements ITrackedContentsItemResource
 
 	private boolean matchesContents(ItemResource resource) {
 		return slotTrackerGetter.get().getItems().contains(resource.getItem()) || memorySettingsGetter.get().matchesFilter(resource);
+	}
+
+	private boolean matchesMemorySlot(int index, ItemResource resource) {
+		MemorySettingsCategory memorySettings = memorySettingsGetter.get();
+		return memorySettings.isSlotSelected(index) && memorySettings.matchesFilter(index, resource);
 	}
 
 	@Override
