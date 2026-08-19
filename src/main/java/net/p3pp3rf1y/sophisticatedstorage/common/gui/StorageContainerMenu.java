@@ -133,7 +133,7 @@ public class StorageContainerMenu extends StorageContainerMenuBase<IStorageWrapp
 	public boolean stillValid(Player player) {
 		BlockPos pos = storageBlockEntity.getBlockPos();
 		BlockEntity be = player.level().getBlockEntity(pos);
-		return be instanceof StorageBlockEntity && (player.distanceToSqr(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D) <= 64.0D)
+		return be instanceof StorageBlockEntity && player.canInteractWithBlock(pos, 4.0F)
 				&& (!(be instanceof WoodStorageBlockEntity woodStorageBlockEntity) || !woodStorageBlockEntity.isPacked());
 	}
 
