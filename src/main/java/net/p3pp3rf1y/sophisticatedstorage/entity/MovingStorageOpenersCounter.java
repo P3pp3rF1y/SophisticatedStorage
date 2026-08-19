@@ -35,7 +35,7 @@ public abstract class MovingStorageOpenersCounter {
 			nextOpenRecheck = player.level().getGameTime() + CHECK_TICK_DELAY;
 		}
 
-		maxInteractionRange = Math.max(player.blockInteractionRange(), maxInteractionRange);
+		maxInteractionRange = Math.max(player.entityInteractionRange(), maxInteractionRange);
 	}
 
 	public void decrementOpeners(Player player, Entity entity) {
@@ -65,7 +65,7 @@ public abstract class MovingStorageOpenersCounter {
 		maxInteractionRange = 0.0;
 
 		for (Player player : playersWithStorageOpen) {
-			maxInteractionRange = Math.max(player.blockInteractionRange(), maxInteractionRange);
+			maxInteractionRange = Math.max(player.entityInteractionRange(), maxInteractionRange);
 		}
 
 		int numberOfPlayers = playersWithStorageOpen.size();
