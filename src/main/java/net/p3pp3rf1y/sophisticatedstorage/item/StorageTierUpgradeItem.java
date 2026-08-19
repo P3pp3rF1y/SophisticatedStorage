@@ -168,20 +168,23 @@ public class StorageTierUpgradeItem extends ItemBase {
 
 			chestBlockEntity.setBeingUpgraded(true);
 			otherBlockEntity.setBeingUpgraded(true);
+			StorageBlockEntity newMainBE;
 			if (chestBlockEntity.isMainChest()) {
-				StorageBlockEntity newMainBE = upgradeStorageBlock(pos, level, chestBlockEntity, getBlockState(state),
-						storageBlock.getNumberOfInventorySlots() * 2, storageBlock.getNumberOfUpgradeSlots());
+				newMainBE = upgradeStorageBlock(pos, level, chestBlockEntity, getBlockState(state), storageBlock.getNumberOfInventorySlots() * 2,
+						storageBlock.getNumberOfUpgradeSlots());
 				upgradeStorageBlock(otherPos, level, otherBlockEntity, otherBlockState, storageBlock.getNumberOfInventorySlots(),
 						storageBlock.getNumberOfUpgradeSlots()).setBeingUpgraded(false);
 				newMainBE.setBeingUpgraded(false);
 			} else {
 				StorageBlockEntity newOtherBE = upgradeStorageBlock(pos, level, chestBlockEntity, getBlockState(state),
 						storageBlock.getNumberOfInventorySlots(), storageBlock.getNumberOfUpgradeSlots());
-				upgradeStorageBlock(otherPos, level, otherBlockEntity, otherBlockState, storageBlock.getNumberOfInventorySlots() * 2,
-						storageBlock.getNumberOfUpgradeSlots()).setBeingUpgraded(false);
+				newMainBE = upgradeStorageBlock(otherPos, level, otherBlockEntity, otherBlockState, storageBlock.getNumberOfInventorySlots() * 2,
+						storageBlock.getNumberOfUpgradeSlots());
+				newMainBE.setBeingUpgraded(false);
 				newOtherBE.setBeingUpgraded(false);
 			}
 			otherBlockState.updateNeighbourShapes(level, otherPos, 3);
+			newMainBE.changeSlots(newMainBE.getStorageWrapper().getInventoryHandler().size());
 
 			return true;
 		}
