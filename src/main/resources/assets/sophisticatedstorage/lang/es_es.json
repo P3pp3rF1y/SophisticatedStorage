@@ -418,5 +418,5 @@
   "sophisticatedstorage.configuration.tooManyItemEntityDrops": "Máximo de caídas de objetos sueltos",
   "sophisticatedstorage.configuration.limitedBarrelCountDyeingEnabled": "Permitir teñido de barriles limitados",
   "sophisticatedstorage.configuration.controllerRange": "Rango de controlador",
-  "sophisticatedstorage.configuration.maxUpgradesPerStorage": "Límites de mejora"
+  "sophisticatedstorage.configuration.maxUpgradesPerStorage": "Límites de mejoras"
 }
