@@ -434,7 +434,7 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 
 	@Override
 	public void changeSlots(int newSlots) {
-		if (hasStorageData()) {
+		if (hasStorageData() && !isBeingUpgraded()) {
 			super.changeSlots(newSlots);
 		}
 	}

@@ -141,10 +141,9 @@ public class BarrelBlock extends WoodStorageBlockBase {
 	public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
 		super.setPlacedBy(level, pos, state, placer, stack);
 		WorldHelper.getBlockEntity(level, pos, BarrelBlockEntity.class).ifPresent(barrel -> {
-			Map<BarrelMaterial, ResourceLocation> materials = BarrelBlockItem.getMaterials(stack);
-			if (!materials.isEmpty()) {
-				barrel.setMaterials(new EnumMap<>(materials));
-			}
+			Map<BarrelMaterial, ResourceLocation> materials = new EnumMap<>(BarrelMaterial.class);
+			materials.putAll(BarrelBlockItem.getMaterials(stack));
+			barrel.setMaterials(materials);
 		});
 	}
 
