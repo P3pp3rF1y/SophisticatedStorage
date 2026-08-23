@@ -1,5 +1,6 @@
 package net.p3pp3rf1y.sophisticatedstorage.data;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import net.minecraft.data.BlockFamily;
 import net.minecraft.data.DataGenerator;
@@ -869,6 +870,41 @@ public class StorageRecipeProvider extends RecipeProvider {
 		}
 	}
 
+	private record FinishedRecipeWithFirstIngredient(FinishedRecipe delegate, String ingredientItemId) implements FinishedRecipe {
+		@Override
+		public void serializeRecipeData(JsonObject json) {
+			delegate.serializeRecipeData(json);
+
+			// Quark is absent from the datagen environment, so write its conditional ingredient by id.
+			JsonObject ingredient = new JsonObject();
+			ingredient.addProperty("item", ingredientItemId);
+			JsonArray ingredients = json.getAsJsonArray("ingredients");
+			ingredients.set(0, ingredient);
+		}
+
+		@Override
+		public ResourceLocation getId() {
+			return delegate.getId();
+		}
+
+		@Override
+		public RecipeSerializer<?> getType() {
+			return delegate.getType();
+		}
+
+		@Nullable
+		@Override
+		public JsonObject serializeAdvancement() {
+			return delegate.serializeAdvancement();
+		}
+
+		@Nullable
+		@Override
+		public ResourceLocation getAdvancementId() {
+			return delegate.getAdvancementId();
+		}
+	}
+
 	private void addChestRecipes(Consumer<FinishedRecipe> consumer) {
 		WoodStorageBlockBase.CUSTOM_TEXTURE_WOOD_TYPES.forEach((woodType, blockFamily) -> woodChestRecipe(consumer, woodType, blockFamily.getBaseBlock()));
 
@@ -906,15 +942,10 @@ public class StorageRecipeProvider extends RecipeProvider {
 
 	private void addQuarkChestRecipe(Consumer<FinishedRecipe> consumer, String name, WoodType woodType) {
 		String chestRegistryName = "quark:" + name;
-		Block chestBlock = getBlock(chestRegistryName);
-		ShapelessBasedRecipeBuilder.shapeless(WoodStorageBlockItem.setWoodType(new ItemStack(ModBlocks.CHEST_ITEM.get()), woodType)).requires(chestBlock)
+		ShapelessBasedRecipeBuilder.shapeless(WoodStorageBlockItem.setWoodType(new ItemStack(ModBlocks.CHEST_ITEM.get()), woodType)).requires(Blocks.CHEST)
 				.requires(Blocks.LEVER).condition(new ItemExistsCondition(chestRegistryName))
-				.save(consumer, SophisticatedStorage.getRL(woodType.name() + "_chest_from_quark_" + name));
-	}
-
-	private Block getBlock(String registryName) {
-		// noinspection ConstantConditions - could only fail in dev environment and crashing is preferred here to fix issues early
-		return ForgeRegistries.BLOCKS.getValue(new ResourceLocation(registryName));
+				.save(recipe -> consumer.accept(new FinishedRecipeWithFirstIngredient(recipe, chestRegistryName)),
+						SophisticatedStorage.getRL(woodType.name() + "_chest_from_quark_" + name));
 	}
 
 	private void addBarrelRecipes(Consumer<FinishedRecipe> consumer) {

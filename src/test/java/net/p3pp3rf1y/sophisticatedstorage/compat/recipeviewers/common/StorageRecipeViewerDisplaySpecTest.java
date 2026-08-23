@@ -41,6 +41,7 @@ import net.p3pp3rf1y.sophisticatedstorage.block.DecorationTableBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.DoubleChestTierUpgradeRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.DoubleChestTierUpgradeShapelessRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.GenericWoodStorageRecipe;
+import net.p3pp3rf1y.sophisticatedstorage.crafting.ShulkerBoxFromVanillaShapelessRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.StorageTierUpgradeRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.StorageTierUpgradeShapelessRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
@@ -209,6 +210,22 @@ class StorageRecipeViewerDisplaySpecTest {
 		assertTrue(usages.stream().allMatch(usage -> ItemStack.isSameItem(shulkerBox, usage.inputs().get(4))));
 		assertTrue(usages.stream().anyMatch(usage -> ItemStack.isSameItem(new ItemStack(ModBlocks.COPPER_SHULKER_BOX_ITEM.get()), usage.firstOutput())));
 		assertTrue(usages.stream().anyMatch(usage -> ItemStack.isSameItem(new ItemStack(ModBlocks.IRON_SHULKER_BOX_ITEM.get()), usage.firstOutput())));
+	}
+
+	@Test
+	void vanillaShulkerBoxConversionHasReplacementDisplaySpec() {
+		IRecipeViewerDisplayCatalog catalog = createCatalog();
+		ResourceLocation recipeId = new ResourceLocation(SophisticatedStorage.MOD_ID, "red_shulker_box_to_sophisticated");
+		CraftingDisplaySpec spec = catalog.getCraftingSpecs().stream().filter(candidate -> candidate.replacedRecipeIds().contains(recipeId)).findFirst()
+				.orElseThrow();
+
+		assertTrue(catalog.getCraftingSpecExtensionRecipeClasses().contains(ShulkerBoxFromVanillaShapelessRecipe.class));
+		assertTrue(catalog.getCraftingRecipes().stream().noneMatch(ShulkerBoxFromVanillaShapelessRecipe.class::isInstance));
+		assertTrue(spec.shapeless());
+		assertEquals(2, spec.getInputSlots(spec.getAllDisplays()).size());
+		assertTrue(spec.baseIngredients().stream().anyMatch(ingredient -> ingredient.test(new ItemStack(Blocks.RED_SHULKER_BOX))));
+		assertTrue(spec.baseIngredients().stream().anyMatch(ingredient -> ingredient.test(new ItemStack(Items.LEVER))));
+		assertTrue(ItemStack.isSameItem(new ItemStack(ModBlocks.SHULKER_BOX_ITEM.get()), spec.getAllDisplays().get(0).firstOutput()));
 	}
 
 	@Test

@@ -30,17 +30,17 @@ public class StorageRecipeViewerDisplays {
 		catalog.addCraftingSpecExtensionRecipeClass(DoubleChestTierUpgradeRecipe.class);
 		catalog.addCraftingSpecExtensionRecipeClass(DoubleChestTierUpgradeShapelessRecipe.class);
 		catalog.addCraftingSpecExtensionRecipeClass(ShulkerBoxFromChestRecipe.class);
+		catalog.addCraftingSpecExtensionRecipeClass(ShulkerBoxFromVanillaShapelessRecipe.class);
 		TierUpgradeRecipesMaker.getGroupedShapedCraftingRecipes(context::getSubtypeInterpreter).stream().map(TierUpgradeDisplayRecipe::toSpec)
 				.forEach(catalog::addCraftingSpec);
 		TierUpgradeRecipesMaker.getGroupedShapelessCraftingRecipes(context::getSubtypeInterpreter).stream().map(TierUpgradeDisplayRecipe::toSpec)
 				.forEach(catalog::addCraftingSpec);
 		ShulkerBoxFromChestRecipesMaker.getShapedRecipeSpecs(context::getSubtypeInterpreter).forEach(catalog::addCraftingSpec);
+		ShulkerBoxFromVanillaRecipesMaker.getShapelessRecipeSpecs().forEach(catalog::addCraftingSpec);
 		ClientRecipeHelper.transformAllRecipesOfType(RecipeType.CRAFTING, CraftingRecipe.class, recipe -> recipe).stream()
 				.filter(StorageRecipeViewerDisplays::isBaseStorageRecipe).forEach(catalog::addCraftingRecipe);
 		GenericWoodStorageRecipesMaker.getRecipes().forEach(catalog::addCraftingRecipe);
 		FlatBarrelRecipesMaker.getShapelessRecipes().forEach(catalog::addCraftingRecipe);
-		ClientRecipeHelper.transformAllRecipesOfType(RecipeType.CRAFTING, ShulkerBoxFromVanillaShapelessRecipe.class, recipe -> recipe)
-				.forEach(catalog::addCraftingRecipe);
 	}
 
 	private static boolean isBaseStorageRecipe(CraftingRecipe recipe) {

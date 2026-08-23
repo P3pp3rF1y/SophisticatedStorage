@@ -11,7 +11,9 @@
     }
   ],
   "ingredients": [
-    [],
+    {
+      "item": "quark:cherry_chest"
+    },
     {
       "item": "minecraft:lever"
     }
