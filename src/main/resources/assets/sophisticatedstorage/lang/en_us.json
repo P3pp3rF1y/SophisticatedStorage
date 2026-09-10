@@ -1,4 +1,11 @@
 {
+    "item.sophisticatedstorage.barrel.tooltip.tier" : "Tier: %s",
+    "storage_tier.sophisticatedstorage.wood" : "Wood",
+    "storage_tier.sophisticatedstorage.copper" : "Copper",
+    "storage_tier.sophisticatedstorage.iron" : "Iron",
+    "storage_tier.sophisticatedstorage.gold" : "Gold",
+    "storage_tier.sophisticatedstorage.diamond" : "Diamond",
+    "storage_tier.sophisticatedstorage.netherite" : "Netherite",
     "wood_name.sophisticatedstorage.oak" : "Oak",
     "wood_name.sophisticatedstorage.spruce" : "Spruce",
     "wood_name.sophisticatedstorage.birch" : "Birch",

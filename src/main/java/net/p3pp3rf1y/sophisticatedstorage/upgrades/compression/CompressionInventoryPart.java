@@ -42,6 +42,8 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 
 	private Map<Integer, SlotDefinition> slotDefinitions = new HashMap<>();
 	private final Map<Integer, ItemStack> calculatedStacks = new HashMap<>();
+	private final Map<Integer, Integer> lastCalculatedCounts = new HashMap<>();
+	private boolean isReconcilingStacks = false;
 
 	public CompressionInventoryPart(InventoryHandler parent, InventoryPartitioner.SlotRange slotRange, Supplier<MemorySettingsCategory> getMemorySettings) {
 		this.parent = parent;
@@ -117,14 +119,11 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 	}
 
 	private void updateSlotLimits(Map<Integer, SlotDefinition> definitions) {
-		int lastMultiplier = 1;
 		int totalLimit = 0;
 		for (int slot = slotRange.firstSlot(); slot < slotRange.firstSlot() + slotRange.numberOfSlots(); slot++) {
 			if (definitions.containsKey(slot) && definitions.get(slot).isAccessible()) {
-				if (slot != slotRange.firstSlot()) {
-					lastMultiplier = intMaxCappedMultiply(lastMultiplier, definitions.get(slot).prevSlotMultiplier);
-				}
-				totalLimit = intMaxCappedAddition(totalLimit, intMaxCappedMultiply(lastMultiplier, parent.getBaseStackLimit(new ItemStack(definitions.get(slot).item))));
+				SlotDefinition definition = definitions.get(slot);
+				totalLimit = intMaxCappedAddition(parent.getBaseStackLimit(new ItemStack(definition.item)), intMaxCappedMultiply(definition.prevSlotMultiplier, totalLimit));
 
 				definitions.get(slot).setSlotLimit(totalLimit);
 			}
@@ -140,7 +139,7 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 				continue;
 			}
 			if (!slotDefinition.isCompressible()) {
-				calculatedStacks.put(slot, parent.getSlotStack(slot).copy());
+				setCalculatedStack(slot, parent.getSlotStack(slot).copy());
 				continue;
 			}
 			int internalCount = parent.getSlotStack(slot).getCount();
@@ -154,10 +153,15 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 			if (Integer.MAX_VALUE - totalCalculated < maxStackSize) {
 				calculatedStack.setCount(Integer.MAX_VALUE - (prevFull ? Math.min(maxStackSize, internalLimit - internalCount) : maxStackSize));
 			}
-			calculatedStacks.put(slot, calculatedStack);
+			setCalculatedStack(slot, calculatedStack);
 
 			prevFull = internalLimit <= internalCount;
 		}
+	}
+
+	private void setCalculatedStack(int slot, ItemStack stack) {
+		calculatedStacks.put(slot, stack);
+		lastCalculatedCounts.put(slot, stack.getCount());
 	}
 
 	private void compactInternalSlots() {
@@ -204,6 +208,7 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 	private void clearCollections() {
 		slotDefinitions.clear();
 		calculatedStacks.clear();
+		lastCalculatedCounts.clear();
 		parent.onFilterItemsChanged();
 	}
 
@@ -289,8 +294,18 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 	}
 
 	@Override
+	public boolean canCompact() {
+		return false;
+	}
+
+	@Override
 	public ItemStack extractItem(int slot, int amount, boolean simulate) {
-		return extractItem(slot, amount, simulate, ItemStack::getMaxStackSize);
+		return extractItemIgnoringLimit(slot, amount, simulate);
+	}
+
+	@Override
+	public ItemStack extractItemIgnoringLimit(int slot, int amount, boolean simulate) {
+		return extractItem(slot, amount, simulate, stack -> Integer.MAX_VALUE);
 	}
 
 	private ItemStack extractItem(int slot, int amount, boolean simulate, ToIntFunction<ItemStack> getLimit) {
@@ -302,7 +317,7 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 		if (toExtract > 0) {
 			SlotDefinition slotDefinition = slotDefinitions.get(slot);
 			ItemStack slotStack = parent.getSlotStack(slot);
-			toExtract = Math.min(toExtract, getLimit.applyAsInt(slotStack));
+			toExtract = Math.min(toExtract, getLimit.applyAsInt(calculatedStacks.get(slot)));
 			ItemStack result = slotDefinition.isCompressible() ? new ItemStack(slotDefinition.item(), toExtract) : ItemHandlerHelper.copyStackWithSize(slotStack, toExtract);
 
 			if (!simulate) {
@@ -312,9 +327,10 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 				} else {
 					slotStack.shrink(toExtract);
 					parent.setSlotStack(slot, slotStack);
-					calculatedStacks.put(slot, slotStack.copy());
+					setCalculatedStack(slot, slotStack.copy());
 				}
 				removeDefinitionsIfEmpty(slot);
+				refreshCalculatedSlots();
 			}
 
 			return result;
@@ -417,7 +433,7 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 			int toSet = getCountChangeLeavingSpaceBeforeMaxInt(countBeforeChange - extractCount, slotCalculated, calculatedStack);
 			calculatedStack.setCount(toSet);
 
-			calculatedStacks.put(slotCalculated, calculatedStack);
+			setCalculatedStack(slotCalculated, calculatedStack);
 
 			multiplier = getPrevSlotMultiplier(slotCalculated);
 			extractCount = countBeforeChange / multiplier - calculatedStack.getCount() / multiplier;
@@ -447,7 +463,7 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 			int countSet = calculatedStack.getCount() - extractCount;
 			countSet = getCountChangeLeavingSpaceBeforeMaxInt(countSet, slot, calculatedStack);
 			calculatedStack.setCount(countSet);
-			calculatedStacks.put(slot, calculatedStack);
+			setCalculatedStack(slot, calculatedStack);
 			slot++;
 		}
 	}
@@ -470,6 +486,9 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 			definitions = getSlotDefinitions(stack.getItem(), slot, Map.of());
 		}
 
+		if (!hasValidSlotDefinitions(definitions, slot)) {
+			return stack;
+		}
 		limit = getStackLimit(definitions.get(slot));
 
 		int currentCalculatedCount = calculatedStacks.containsKey(slot) ? calculatedStacks.get(slot).getCount() : 0;
@@ -492,7 +511,9 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 		}
 
 		if (slotDefinitions.get(slot).isCompressible()) {
-			insertIntoInternalAndCalculated(slot, inserted);
+			if (!insertIntoInternalAndCalculated(slot, inserted)) {
+				return stack;
+			}
 		} else if (inserted > 0) {
 			calculatedStacks.compute(slot, (s, st) -> {
 				if (st ==null || st.isEmpty()) {
@@ -503,6 +524,7 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 				st.grow(inserted);
 				return st;
 			});
+			lastCalculatedCounts.put(slot, calculatedStacks.get(slot).getCount());
 			ItemStack slotStack = parent.getSlotStack(slot);
 			if (slotStack.isEmpty()) {
 				ItemStack copy = stack.copy();
@@ -514,11 +536,12 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 			}
 		}
 
+		refreshCalculatedSlots();
 		return result;
 	}
 
 	private boolean canNotBeInserted(int slot, ItemStack stack) {
-		if (stack.isEmpty()) {
+		if (stack.isEmpty() || slot < slotRange.firstSlot() || slot >= slotRange.firstSlot() + slotRange.numberOfSlots()) {
 			return true;
 		}
 
@@ -530,7 +553,21 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 		return !slotDefinition.isAccessible() || slotDefinition.item() != stack.getItem();
 	}
 
-	private void insertIntoInternalAndCalculated(int slotToStartFrom, long amountToInsert) {
+	private boolean hasValidSlotDefinitions(Map<Integer, SlotDefinition> definitions, int slot) {
+		SlotDefinition definition = definitions.get(slot);
+		return definition != null && definition.isAccessible() && definitions.values().stream().noneMatch(d -> d.isAccessible() && d.prevSlotMultiplier <= 0);
+	}
+
+	private void refreshCalculatedSlots() {
+		for (int slot = slotRange.firstSlot(); slot < slotRange.firstSlot() + slotRange.numberOfSlots(); slot++) {
+			parent.getSlotTracker().removeAndSetSlotIndexes(parent, slot, calculatedStacks.getOrDefault(slot, ItemStack.EMPTY));
+		}
+		for (int slot = slotRange.firstSlot(); slot < slotRange.firstSlot() + slotRange.numberOfSlots(); slot++) {
+			parent.triggerOnChangeListeners(slot);
+		}
+	}
+
+	private boolean insertIntoInternalAndCalculated(int slotToStartFrom, long amountToInsert) {
 		Map<Integer, Integer> toUpdate = new LinkedHashMap<>();
 		Map<Integer, Integer> calculatedAdditions = new LinkedHashMap<>();
 		int totalMultiplier = 1;
@@ -558,15 +595,19 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 				toUpdate.put(slot, 0);
 			}
 
-			if (amountToSet != 0) {
+			if (amountToSet != 0 && slot < slotToStartFrom) {
 				totalMultiplier /= getPrevSlotMultiplier(slot + 1);
 			}
 			slot++;
 		}
 
+		if (amountToSet != 0) {
+			return false;
+		}
+
 		//finish calculation of calculated addition to the follow up slots even though they are not getting their internal stack changed
 		while (slot < slotRange.firstSlot() + slotRange.numberOfSlots()) {
-			if (!slotDefinitions.containsKey(slot)) {
+			if (!slotDefinitions.containsKey(slot) || !slotDefinitions.get(slot).isAccessible()) {
 				break;
 			}
 
@@ -578,13 +619,17 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 
 		updateInternalStacksWithCounts(toUpdate);
 
-		calculatedAdditions.forEach(this::addToCalculatedStack);
+		calculatedAdditions.forEach((s, countToAdd) -> {
+			addToCalculatedStack(s, countToAdd);
+			lastCalculatedCounts.put(s, calculatedStacks.get(s).getCount());
+		});
+		return true;
 	}
 
 	private void addToCalculatedStack(int slot, int countToAdd) {
 		if (!calculatedStacks.containsKey(slot) || calculatedStacks.get(slot).isEmpty()) {
 			SlotDefinition slotDefinition = slotDefinitions.get(slot);
-			calculatedStacks.put(slot, new ItemStack(slotDefinition.item(), countToAdd));
+			setCalculatedStack(slot, new ItemStack(slotDefinition.item(), countToAdd));
 			return;
 		}
 		ItemStack currentCalculated = calculatedStacks.get(slot);
@@ -610,11 +655,33 @@ public class CompressionInventoryPart implements IInventoryPartHandler {
 
 	@Override
 	public void setStackInSlot(int slot, ItemStack stack, BiConsumer<Integer, ItemStack> setStackInSlotSuper) {
-		int currentCount = calculatedStacks.containsKey(slot) ? calculatedStacks.get(slot).getCount() : 0;
-		if (currentCount < stack.getCount()) {
-			insertItem(slot, ItemHandlerHelper.copyStackWithSize(stack, stack.getCount() - currentCount), false);
-		} else if (currentCount > stack.getCount()) {
-			extractItem(slot, currentCount - stack.getCount(), false, s -> Integer.MAX_VALUE);
+		if (!stack.isEmpty() && canNotBeInserted(slot, stack)) {
+			return;
+		}
+
+		int currentCount = lastCalculatedCounts.getOrDefault(slot, 0);
+		int newCount = stack.getCount();
+		if (currentCount != (calculatedStacks.containsKey(slot) ? calculatedStacks.get(slot).getCount() : 0)) {
+			setCalculatedStack(slot, new ItemStack(slotDefinitions.get(slot).item(), currentCount));
+		}
+
+		if (currentCount < newCount) {
+			insertItem(slot, ItemHandlerHelper.copyStackWithSize(stack, newCount - currentCount), false);
+		} else if (currentCount > newCount) {
+			extractItemIgnoringLimit(slot, currentCount - newCount, false);
+		}
+	}
+
+	@Override
+	public void onContentsChanged(int slot, BiConsumer<Integer, ItemStack> setStackInSlotSuper) {
+		if (isReconcilingStacks || !slotDefinitions.containsKey(slot)) {
+			return;
+		}
+		isReconcilingStacks = true;
+		try {
+			setStackInSlot(slot, calculatedStacks.getOrDefault(slot, ItemStack.EMPTY), setStackInSlotSuper);
+		} finally {
+			isReconcilingStacks = false;
 		}
 	}
 

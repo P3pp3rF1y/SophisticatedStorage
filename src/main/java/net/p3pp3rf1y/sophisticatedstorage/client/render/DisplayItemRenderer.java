@@ -25,8 +25,10 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.client.model.data.EmptyModelData;
 import net.p3pp3rf1y.sophisticatedcore.inventory.ItemStackKey;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
+import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockBase;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
+import net.p3pp3rf1y.sophisticatedstorage.compat.compressium.CompressiumDisplayModel;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 
 import java.util.HashSet;
@@ -56,7 +58,7 @@ public class DisplayItemRenderer {
 
 	public void renderDisplayItem(StorageBlockEntity blockEntity, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
 		blockEntity.getStorageWrapper().getRenderInfo().getItemDisplayRenderInfo().getDisplayItem().ifPresent(displayItem ->
-				renderSingleItem(poseStack, bufferSource, packedLight, packedOverlay, Minecraft.getInstance(), false, 0, 1, displayItem.getItem(), displayItem.getRotation()));
+				renderSingleItem(poseStack, bufferSource, packedLight, packedOverlay, Minecraft.getInstance(), false, blockEntity.getBlockState().getBlock() instanceof BarrelBlock, 0, 1, displayItem.getItem(), displayItem.getRotation()));
 	}
 
 	public void renderDisplayItems(StorageBlockEntity blockEntity, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, boolean renderOnlyCustom) {
@@ -76,12 +78,12 @@ public class DisplayItemRenderer {
 		int displayItemCount = storageBlock.getDisplayItemsCount(displayItems);
 		for (int displayItemIndex = 0; displayItemIndex < displayItemCount; displayItemIndex++) {
 			if (inaccessibleSlots.contains(displayItemIndex)) {
-				renderSingleItem(poseStack, bufferSource, packedLight, packedOverlay, minecraft, renderOnlyCustom, displayItemIndex, displayItemCount, INACCESSIBLE_SLOT_STACK, 0);
+				renderSingleItem(poseStack, bufferSource, packedLight, packedOverlay, minecraft, renderOnlyCustom, storageBlock instanceof BarrelBlock, displayItemIndex, displayItemCount, INACCESSIBLE_SLOT_STACK, 0);
 			}
 		}
 		int displayItemIndex = 0;
 		for (RenderInfo.DisplayItem displayItem : displayItems) {
-			renderSingleItem(poseStack, bufferSource, packedLight, packedOverlay, minecraft, renderOnlyCustom, storageBlock.hasFixedIndexDisplayItems() ? displayItem.getSlotIndex() : displayItemIndex, displayItemCount, displayItem.getItem(), displayItem.getRotation());
+			renderSingleItem(poseStack, bufferSource, packedLight, packedOverlay, minecraft, renderOnlyCustom, storageBlock instanceof BarrelBlock, storageBlock.hasFixedIndexDisplayItems() ? displayItem.getSlotIndex() : displayItemIndex, displayItemCount, displayItem.getItem(), displayItem.getRotation());
 			displayItemIndex++;
 		}
 	}
@@ -120,16 +122,20 @@ public class DisplayItemRenderer {
 		poseStack.popPose();
 	}
 
-	private void renderSingleItem(PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, Minecraft minecraft, boolean renderOnlyCustom, int displayItemIndex, int displayItemCount, ItemStack stack, int rotation) {
+	private void renderSingleItem(PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, Minecraft minecraft, boolean renderOnlyCustom, boolean isBarrel, int displayItemIndex, int displayItemCount, ItemStack stack, int rotation) {
 		if (stack.isEmpty()) {
 			return;
 		}
 		BakedModel itemModel = minecraft.getItemRenderer().getModel(stack, null, minecraft.player, 0);
+		if (isBarrel) {
+			itemModel = BarrelDisplayItem.getModel(stack, itemModel);
+		}
 		if (!itemModel.isCustomRenderer() && renderOnlyCustom) {
 			return;
 		}
 
-		float itemOffset = (float) getDisplayItemOffset(stack, itemModel, displayItemCount == 1 ? 1 : SMALL_3D_ITEM_SCALE);
+		float scale = displayItemCount == 1 ? 1 : SMALL_3D_ITEM_SCALE;
+		float itemOffset = (float) (isBarrel ? BarrelDisplayItem.getOffset(stack, itemModel, scale) : getDisplayItemOffset(stack, itemModel, scale));
 		poseStack.pushPose();
 
 		Vector3f frontOffset = getDisplayItemIndexFrontOffset(displayItemIndex, displayItemCount, (float) yCenterTranslation);
@@ -149,12 +155,18 @@ public class DisplayItemRenderer {
 	}
 
 	public static double getDisplayItemOffset(ItemStack item, BakedModel itemModel, float additionalScale) {
-		int hash = ItemStackKey.getHashCode(item) * 31 + Float.hashCode(additionalScale);
+		if (itemModel instanceof SporeBlossomDisplayModel) {
+			return SporeBlossomDisplayModel.FACE_CLEARANCE;
+		}
+		int hash = (ItemStackKey.getHashCode(item) * 31 + Float.hashCode(additionalScale)) * 31 + System.identityHashCode(itemModel);
 		Double offset = ITEM_HASHCODE_OFFSETS.getIfPresent(hash);
 		if (offset != null) {
 			return offset;
 		}
 		offset = calculateDisplayItemOffset(item, itemModel, additionalScale);
+		if (itemModel instanceof CompressiumDisplayModel) {
+			offset += 1 / 64D;
+		}
 		ITEM_HASHCODE_OFFSETS.put(hash, offset);
 		return offset;
 	}
