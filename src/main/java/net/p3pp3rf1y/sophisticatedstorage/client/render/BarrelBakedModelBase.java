@@ -513,7 +513,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 					continue;
 				}
 
-				BakedModel model = itemRenderer.getModel(item, null, minecraft.player, 0);
+				BakedModel model = BarrelDisplayItem.getModel(item, itemRenderer.getModel(item, null, minecraft.player, 0));
 				if (!model.isCustomRenderer()) {
 					int rotation = displayItem.getRotation();
 					for (Direction face : Direction.values()) {
@@ -604,7 +604,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 		QuadTransformer transformer = directionCache.getIfPresent(hash);
 
 		if (transformer == null) {
-			double offset = DisplayItemRenderer.getDisplayItemOffset(displayItem, model, itemScale);
+			double offset = BarrelDisplayItem.getOffset(displayItem, model, itemScale);
 			if (!isFlatTop) {
 				offset -= 1 / 16D;
 			}

@@ -150,6 +150,9 @@ public class LimitedBarrelBlock extends BarrelBlock {
 			return true;
 		}
 
+		if (hand == InteractionHand.MAIN_HAND && itemInHand.isEmpty() && hitVec.getDirection() == getFacing(state)) {
+			return use(state, level, pos, player, hand, hitVec).consumesAction();
+		}
 		return tryToDyeAll(state, level, pos, hitVec, itemInHand);
 	}
 

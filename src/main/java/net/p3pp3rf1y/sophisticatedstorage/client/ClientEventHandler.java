@@ -47,6 +47,7 @@ import net.p3pp3rf1y.sophisticatedstorage.client.init.ModItemColors;
 import net.p3pp3rf1y.sophisticatedstorage.client.init.ModParticles;
 import net.p3pp3rf1y.sophisticatedstorage.client.render.*;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
+import net.p3pp3rf1y.sophisticatedstorage.compat.compressium.CompressiumDisplayModel;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageContentsTooltip;
@@ -173,7 +174,7 @@ public class ClientEventHandler {
 			double mouseX = mh.xpos() * mc.getWindow().getGuiScaledWidth() / mc.getWindow().getScreenWidth();
 			double mouseY = mh.ypos() * mc.getWindow().getGuiScaledHeight() / mc.getWindow().getScreenHeight();
 			Slot selectedSlot = screen.findSlot(mouseX, mouseY);
-			if (selectedSlot != null && container.isNotPlayersInventorySlot(selectedSlot.index)) {
+			if (selectedSlot == null || container.isNotPlayersInventorySlot(selectedSlot.index)) {
 				container.sort();
 				return true;
 			}
@@ -202,6 +203,8 @@ public class ClientEventHandler {
 
 	private static void onRegisterReloadListeners(RegisterClientReloadListenersEvent event) {
 		event.registerReloadListener((ResourceManagerReloadListener) resourceManager -> {
+			CompressiumDisplayModel.clearCache();
+			LimitedBarrelRenderer.clearCountCache();
 			BarrelDynamicModelBase.invalidateCache();
 			BarrelBakedModelBase.invalidateCache();
 		});

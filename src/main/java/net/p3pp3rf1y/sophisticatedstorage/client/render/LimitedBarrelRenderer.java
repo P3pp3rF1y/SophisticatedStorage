@@ -1,8 +1,11 @@
 package net.p3pp3rf1y.sophisticatedstorage.client.render;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Vector3f;
+import com.mojang.math.Vector4f;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -10,9 +13,9 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.core.Direction;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextComponent;
+import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
@@ -34,6 +37,8 @@ public class LimitedBarrelRenderer extends BarrelRenderer<LimitedBarrelBlockEnti
 	private static final float MULTIPLE_ITEMS_FONT_SCALE = 1 / 96f;
 	private static final float SINGLE_ITEM_FONT_SCALE = 1 / 48f;
 	private static final Style COUNT_DISPLAY_STYLE = Style.EMPTY.withFont(UNIFORM_FONT).withBold(true);
+	private static final Cache<Long, CountLabel> COUNT_LABELS = CacheBuilder.newBuilder().maximumSize(4096).build();
+	private static Font cachedFont;
 	private final DisplayItemRenderer displayItemRenderer = new DisplayItemRenderer(0.5, new Vec3(0, 0, -1 / 16D));
 	private final DisplayItemRenderer flatDisplayItemRenderer = new DisplayItemRenderer(0.5, Vec3.ZERO);
 
@@ -162,23 +167,43 @@ public class LimitedBarrelRenderer extends BarrelRenderer<LimitedBarrelBlockEnti
 
 			float scale = slotCounts.size() == 1 ? SINGLE_ITEM_FONT_SCALE : MULTIPLE_ITEMS_FONT_SCALE;
 			poseStack.scale(scale, -scale, scale);
-			MutableComponent countString = new TextComponent(CountAbbreviator.abbreviate(count, slotCounts.size() == 1 ? 6 : 5)).withStyle(COUNT_DISPLAY_STYLE);
 			Font font = Minecraft.getInstance().font;
-			float countDisplayXOffset = -font.getSplitter().stringWidth(countString) / 2f;
-			poseStack.translate(countDisplayXOffset, 0, 0);
-			font.drawInBatch(countString, 0, 0, blockEntity.getSlotColor(displayItemIndex), false, poseStack.last().pose(), bufferSource, false, 0, packedLight);
+			CountLabel label = getCountLabel(font, count, slotCounts.size() == 1 ? 6 : 5);
+			poseStack.translate(-label.width() / 2f, 0, 0);
+			font.drawInBatch(label.text(), 0, 0, blockEntity.getSlotColor(displayItemIndex), false, poseStack.last().pose(), bufferSource, false, 0, packedLight);
 
 			poseStack.popPose();
 		}
 		poseStack.popPose();
 	}
 
+	public static void clearCountCache() {
+		COUNT_LABELS.invalidateAll();
+		cachedFont = null;
+	}
+
+	static CountLabel getCountLabel(Font font, int count, int maxCharacters) {
+		if (cachedFont != font) {
+			clearCountCache();
+			cachedFont = font;
+		}
+		long key = ((long) maxCharacters << 32) | (count & 0xFFFFFFFFL);
+		CountLabel label = COUNT_LABELS.getIfPresent(key);
+		if (label == null) {
+			FormattedCharSequence text = new TextComponent(CountAbbreviator.abbreviate(count, maxCharacters)).withStyle(COUNT_DISPLAY_STYLE).getVisualOrderText();
+			label = new CountLabel(text, font.getSplitter().stringWidth(text));
+			COUNT_LABELS.put(key, label);
+		}
+		return label;
+	}
+
+	record CountLabel(FormattedCharSequence text, float width) {}
+
 	private void renderFillLevel(PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, float fillLevel, float x, float y, boolean large, boolean translucentRender) {
 		poseStack.pushPose();
 		poseStack.translate(x + 1/16F/5F, y + 1/16F/5F, 0);
 		int barHeight = large ? 14 : 6;
 		poseStack.scale(1 / 16F / 5F * 3, fillLevel * 1 / 16F / 5F * (barHeight * 5 - 2), 1);
-		poseStack.pushPose();
 		VertexConsumer vertexConsumer;
 		if (translucentRender) {
 			//noinspection resource
@@ -188,13 +213,31 @@ public class LimitedBarrelRenderer extends BarrelRenderer<LimitedBarrelBlockEnti
 			vertexConsumer = FILL_INDICATORS_TEXTURE.buffer(bufferSource, RenderType::entityCutoutNoCull);
 		}
 		PoseStack.Pose pose = poseStack.last();
+		Vector4f position = new Vector4f();
 		Vector3f normal = new Vector3f(0, 1, 0);
 		normal.transform(pose.normal());
 		float minU = large ? 0 : 3 / 128F;
 		float maxV = large ? 68 / 128F : 28 / 128F;
-		RenderHelper.renderQuad(vertexConsumer, pose.pose(), normal, packedOverlay, packedLight, translucentRender ? 0.5F : 1, minU, (1 - fillLevel) * maxV, minU + 3 / 128F, maxV);
+		float maxU = minU + 3 / 128F;
+		float minV = (1 - fillLevel) * maxV;
+		float alpha = translucentRender ? 0.5F : 1;
+		renderFillVertex(vertexConsumer, pose, position, normal, 0, 1, maxU, minV, alpha, packedOverlay, packedLight);
+		renderFillVertex(vertexConsumer, pose, position, normal, 0, 0, maxU, maxV, alpha, packedOverlay, packedLight);
+		renderFillVertex(vertexConsumer, pose, position, normal, 1, 0, minU, maxV, alpha, packedOverlay, packedLight);
+		renderFillVertex(vertexConsumer, pose, position, normal, 1, 1, minU, minV, alpha, packedOverlay, packedLight);
 
 		poseStack.popPose();
-		poseStack.popPose();
+	}
+
+	static void renderFillVertex(VertexConsumer consumer, PoseStack.Pose pose, Vector4f position, Vector3f normal, float x, float y, float u, float v, float alpha, int packedOverlay, int packedLight) {
+		position.set(x, y, 0, 1);
+		position.transform(pose.pose());
+		consumer.vertex(position.x(), position.y(), position.z());
+		consumer.color(1, 1, 1, alpha);
+		consumer.uv(u, v);
+		consumer.overlayCoords(packedOverlay);
+		consumer.uv2(packedLight);
+		consumer.normal(normal.x(), normal.y(), normal.z());
+		consumer.endVertex();
 	}
 }
