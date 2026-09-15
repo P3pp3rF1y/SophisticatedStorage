@@ -9,7 +9,6 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
@@ -180,9 +179,6 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity, ChestRender
 		renderState.chestType = blockState.getValue(ChestBlock.TYPE);
 		renderState.block = blockState.getBlock();
 		renderState.facing = blockState.getValue(ChestBlock.FACING);
-		if (blockEntity.getLevel() != null) {
-			renderState.lightCoords = LevelRenderer.getLightCoords(blockEntity.getLevel(), blockEntity.getBlockPos().relative(renderState.facing));
-		}
 		float openNess = blockEntity.getOpenNess(partialTick);
 		openNess = 1.0F - openNess;
 		openNess = 1.0F - openNess * openNess * openNess;
