@@ -20,7 +20,6 @@ import net.minecraft.client.resources.model.sprite.SpriteGetter;
 import net.minecraft.client.resources.model.sprite.SpriteId;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.Identifier;
-import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.ChestType;
@@ -180,9 +179,6 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity, ChestRender
 		renderState.chestType = blockState.getValue(ChestBlock.TYPE);
 		renderState.block = blockState.getBlock();
 		renderState.facing = blockState.getValue(ChestBlock.FACING);
-		if (blockEntity.getLevel() != null) {
-			renderState.lightCoords = LightCoordsUtil.getLightCoords(blockEntity.getLevel(), blockEntity.getBlockPos().relative(renderState.facing));
-		}
 		float openNess = blockEntity.getOpenNess(partialTick);
 		openNess = 1.0F - openNess;
 		openNess = 1.0F - openNess * openNess * openNess;
