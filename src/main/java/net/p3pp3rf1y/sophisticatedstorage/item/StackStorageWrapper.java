@@ -13,10 +13,17 @@ import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.p3pp3rf1y.sophisticatedcore.init.ModCoreDataComponents;
 import net.p3pp3rf1y.sophisticatedcore.inventory.ContainerContents;
 import net.p3pp3rf1y.sophisticatedcore.inventory.StorageWrapperRepository;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.ClientLinkedStorageContents;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.ILinkedStorageContents;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageEndpointData;
 import net.p3pp3rf1y.sophisticatedcore.util.ValueIOHelper;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
-import net.p3pp3rf1y.sophisticatedstorage.block.*;
-import org.jspecify.annotations.Nullable;
+import net.p3pp3rf1y.sophisticatedstorage.block.ItemContentsStorage;
+import net.p3pp3rf1y.sophisticatedstorage.block.ShulkerBoxBlock;
+import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
+import net.p3pp3rf1y.sophisticatedstorage.block.StorageWrapper;
+
+import javax.annotation.Nullable;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -35,6 +42,12 @@ public class StackStorageWrapper extends StorageWrapper {
 
 	public static StackStorageWrapper fromStack(HolderLookup.Provider registries, ItemStack stack) {
 		StackStorageWrapper stackStorageWrapper = StorageWrapperRepository.getStorageWrapper(stack, StackStorageWrapper.class, StackStorageWrapper::new);
+		Optional<LinkedStorageEndpointData> linkedStorageEndpoint = StorageBlockEntity.getLinkedStorageEndpointData(stack);
+		if (linkedStorageEndpoint.isPresent()) {
+			ClientLinkedStorageContents.getContents(linkedStorageEndpoint.get().groupId()).map(ILinkedStorageContents::contents)
+					.ifPresent(stackStorageWrapper::replaceContents);
+			return stackStorageWrapper;
+		}
 		UUID uuid = stack.get(ModCoreDataComponents.STORAGE_UUID);
 		if (uuid != null) {
 			ItemContentsStorage itemContentsStorage = ItemContentsStorage.get();
@@ -70,6 +83,10 @@ public class StackStorageWrapper extends StorageWrapper {
 
 	@Override
 	public Optional<UUID> getContentsUuid() {
+		LinkedStorageEndpointData endpoint = storageStack.get(ModCoreDataComponents.LINKED_STORAGE_ENDPOINT);
+		if (endpoint != null) {
+			return Optional.of(endpoint.groupId());
+		}
 		return Optional.ofNullable(contentsUuid);
 	}
 
@@ -84,15 +101,6 @@ public class StackStorageWrapper extends StorageWrapper {
 			storageStack.set(ModCoreDataComponents.STORAGE_UUID, contentsUuid);
 			onContentsUpdated();
 		}
-	}
-
-	@Override
-	public ContainerContents getContents() {
-		if (contentsUuid == null) {
-			contentsUuid = getNewUuid();
-			setContentsUuid(contentsUuid);
-		}
-		return ItemContentsStorage.get().getOrCreateContents(contentsUuid);
 	}
 
 	@Override

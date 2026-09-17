@@ -25,7 +25,8 @@ import net.p3pp3rf1y.sophisticatedcore.util.InventorySorter;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.settings.StorageSettingsHandler;
-import org.jspecify.annotations.Nullable;
+
+import javax.annotation.Nullable;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -42,6 +43,7 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 	public static final String RENDER_DATA = "renderData";
 	public static final String SORT_BY = "sortBy";
 	private final Supplier<Runnable> getSaveHandler;
+	private final Supplier<Runnable> getInventorySaveHandler;
 
 	@Nullable
 	private InventoryHandler inventoryHandler = null;
@@ -77,12 +79,18 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 	};
 
 	protected StorageWrapper(Supplier<Runnable> getSaveHandler, Runnable onSerializeRenderData, Runnable markContentsDirty) {
-		this(getSaveHandler, onSerializeRenderData, markContentsDirty, 1, false);
+		this(getSaveHandler, getSaveHandler, onSerializeRenderData, markContentsDirty, 1, false);
 	}
 
 	protected StorageWrapper(Supplier<Runnable> getSaveHandler, Runnable onSerializeRenderData, Runnable markContentsDirty, int numberOfDisplayItems,
 			boolean showsCountsAndFillRatios) {
+		this(getSaveHandler, getSaveHandler, onSerializeRenderData, markContentsDirty, numberOfDisplayItems, showsCountsAndFillRatios);
+	}
+
+	protected StorageWrapper(Supplier<Runnable> getSaveHandler, Supplier<Runnable> getInventorySaveHandler, Runnable onSerializeRenderData,
+			Runnable markContentsDirty, int numberOfDisplayItems, boolean showsCountsAndFillRatios) {
 		this.getSaveHandler = getSaveHandler;
+		this.getInventorySaveHandler = getInventorySaveHandler;
 		renderDataHandler = new RenderDataHandler(renderData, renderData -> {
 			this.renderData = renderData;
 			onSerializeRenderData.run();
@@ -181,6 +189,19 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 		saveData(out);
 	}
 
+	void saveEndpointClientData(ValueOutput out, RenderData canonicalRenderData) {
+		out.store(RENDER_DATA, RenderData.CODEC, canonicalRenderData);
+		if (openTabId >= 0) {
+			out.putInt(OPEN_TAB_ID, openTabId);
+		}
+		if (mainColor != -1) {
+			out.putInt(MAIN_COLOR, mainColor);
+		}
+		if (accentColor != -1) {
+			out.putInt(ACCENT_COLOR, accentColor);
+		}
+	}
+
 	void saveData(ValueOutput out) {
 		out.store(RENDER_DATA, RenderData.CODEC, renderData);
 		if (contentsUuid != null) {
@@ -237,12 +258,15 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 		}
 	}
 
+	void loadEndpointClientData(ValueInput in) {
+		loadRenderData(in);
+		openTabId = in.getIntOr(OPEN_TAB_ID, -1);
+		mainColor = in.getIntOr(MAIN_COLOR, -1);
+		accentColor = in.getIntOr(ACCENT_COLOR, -1);
+	}
+
 	private void loadData(ValueInput in) {
-		renderData = in.read(RENDER_DATA, RenderData.CODEC).or(() -> in.read("renderInfo", RenderData.CODEC)) // TODO remove legacy deserialization likely after
-																												// major 1.22 release
-				.orElse(RenderData.EMPTY.copy());
-		renderDataHandler.reloadFrom(renderData);
-		renderDataValidationPending = true;
+		loadRenderData(in);
 		contentsUuid = in.read(UUID, UUIDUtil.CODEC).orElse(null);
 		openTabId = in.getIntOr(OPEN_TAB_ID, -1);
 		sortBy = in.read(SORT_BY, SortBy.CODEC).orElse(SortBy.NAME);
@@ -250,6 +274,14 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 		loadSlotNumbers(in);
 		mainColor = in.getIntOr(MAIN_COLOR, -1);
 		accentColor = in.getIntOr(ACCENT_COLOR, -1);
+	}
+
+	private void loadRenderData(ValueInput in) {
+		renderData = in.read(RENDER_DATA, RenderData.CODEC).or(() -> in.read("renderInfo", RenderData.CODEC)) // TODO remove legacy deserialization likely after
+				// major 1.22 release
+				.orElse(RenderData.EMPTY.copy());
+		renderDataHandler.reloadFrom(renderData);
+		renderDataValidationPending = true;
 	}
 
 	protected void loadSlotNumbers(ValueInput in) {
@@ -322,7 +354,7 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 	}
 
 	private InventoryHandler initInventoryHandler() {
-		InventoryHandler handler = new InventoryHandler(getNumberOfInventorySlots(), this, getContents(), getSaveHandler.get(),
+		InventoryHandler handler = new InventoryHandler(getNumberOfInventorySlots(), this, getContents(), getInventorySaveHandler.get(),
 				StackUpgradeItem.getInventorySlotLimit(this), Config.SERVER.stackUpgrade) {
 			@Override
 			protected boolean isAllowed(ItemResource resource) {
@@ -341,6 +373,18 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 
 	public ContainerContents getContents() {
 		return contents;
+	}
+
+	/**
+	 * Rebinds this wrapper to the linked-storage group's canonical contents. Linked endpoints never materialize group data in the packed-storage repository.
+	 */
+	public void replaceContents(ContainerContents contents) {
+		this.contents = contents;
+		onContentsUpdated();
+	}
+
+	public ContainerContents copyContentsForLinkedStorage() {
+		return contents.copy();
 	}
 
 	public int getNumberOfInventorySlots() {

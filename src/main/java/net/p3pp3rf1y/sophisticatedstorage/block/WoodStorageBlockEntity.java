@@ -15,7 +15,8 @@ import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderDataHandler;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
-import org.jspecify.annotations.Nullable;
+
+import javax.annotation.Nullable;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -81,13 +82,12 @@ public abstract class WoodStorageBlockEntity extends StorageBlockEntity {
 		if (packed) {
 			RenderDataHandler renderDataHandler = getStorageWrapper().getRenderDataHandler();
 			renderDataHandler.removeAllUpgradeClientData();
-			setUpdateBlockRender();
 		}
 	}
 
 	@Override
 	public boolean shouldDropContents() {
-		return !isPacked();
+		return !isPacked() && super.shouldDropContents();
 	}
 
 	@Nullable

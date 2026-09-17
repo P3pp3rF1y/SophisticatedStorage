@@ -60,7 +60,8 @@ import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.item.ShulkerBoxItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageToolItem;
-import org.jspecify.annotations.Nullable;
+
+import javax.annotation.Nullable;
 
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -134,8 +135,8 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 		player.awardStat(Stats.CUSTOM.get(Stats.OPEN_SHULKER_BOX));
 		player.openMenu(
 				new SimpleMenuProvider((w, p, pl) -> new StorageContainerMenu(w, pl, pos),
-						WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).map(StorageBlockEntity::getDisplayName).orElse(Component.empty())),
-				pos);
+						WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).map(StorageBlockEntity::getMenuDisplayName).orElse(Component.empty())),
+				buffer -> StorageContainerMenu.writeMenuData(buffer, player, pos));
 		if (player.level() instanceof ServerLevel serverLevel) {
 			PiglinAi.angerNearbyPiglins(serverLevel, player, true);
 		}
@@ -149,8 +150,9 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 	@Override
 	public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
 		WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).ifPresent(be -> {
+			boolean linkedStorage = stack.has(ModCoreDataComponents.LINKED_STORAGE_ENDPOINT);
 			UUID storageUuid = stack.get(ModCoreDataComponents.STORAGE_UUID);
-			if (storageUuid != null) {
+			if (storageUuid != null && !linkedStorage) {
 				ItemContentsStorage itemContentsStorage = ItemContentsStorage.get();
 				CompoundTag beTag = itemContentsStorage.getOrCreateAddtionalBeData(storageUuid);
 				CompoundTag storageWrapperTag = beTag.getCompound(StorageBlockEntity.STORAGE_WRAPPER).orElseGet(() -> {
@@ -180,7 +182,15 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 			}
 
 			be.getStorageWrapper().onInit(level);
-			be.tryToAddToController();
+			if (linkedStorage && level instanceof ServerLevel serverLevel) {
+				if (placer instanceof Player player && player.getAbilities().instabuild) {
+					be.restoreCreativeLinkedStorageEndpoint(serverLevel, stack);
+				} else {
+					be.restoreLinkedStorageEndpoint(serverLevel, stack);
+				}
+			} else {
+				be.tryToAddToController();
+			}
 
 			if (placer != null && placer.getOffhandItem().getItem() == ModItems.STORAGE_TOOL.get()) {
 				StorageToolItem.useOffHandOnPlaced(placer.getOffhandItem(), be);
@@ -230,7 +240,7 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 	public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
 		BlockEntity blockentity = level.getBlockEntity(pos);
 		if (blockentity instanceof ShulkerBoxBlockEntity shulkerBoxBlockEntity && !level.isClientSide() && player.isCreative()
-				&& hasAnyItems(shulkerBoxBlockEntity)) {
+				&& (shulkerBoxBlockEntity.isLinkedStorage() || hasAnyItems(shulkerBoxBlockEntity))) {
 			ItemStack shulkerBoxDrop = new ItemStack(this);
 			addShulkerContentsToStack(shulkerBoxDrop, shulkerBoxBlockEntity);
 
@@ -255,6 +265,12 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 
 	private void addShulkerContentsToStack(ItemStack stack, StorageBlockEntity be) {
 		StorageWrapper storageWrapper = be.getStorageWrapper();
+		if (be.isLinkedStorage()) {
+			be.copyLinkedStorageEndpointTo(stack);
+			addBasicPropertiesToStack(stack, be, storageWrapper);
+			StorageBlockItem.setShowsTier(stack, be.shouldShowTier());
+			return;
+		}
 		UUID shulkerBoxUuid = storageWrapper.getContentsUuid().orElse(UUID.randomUUID());
 		CompoundTag additionalBeData = be.saveWithoutMetadata(be.getLevel().registryAccess());
 		ContainerContents contents = be.getStorageWrapper().getContents().copy();

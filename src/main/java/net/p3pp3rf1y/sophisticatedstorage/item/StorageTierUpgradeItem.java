@@ -34,7 +34,8 @@ import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.block.*;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageTranslationHelper;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
-import org.jspecify.annotations.Nullable;
+
+import javax.annotation.Nullable;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -87,9 +88,23 @@ public class StorageTierUpgradeItem extends ItemBase {
 				.map(be -> tryUpgradeStorage(stack, pos, level, state, def, be, player)).orElse(InteractionResult.PASS)).orElse(InteractionResult.PASS);
 	}
 
+	private static StorageBlockEntity getTierUpgradePermissionStorage(StorageBlockEntity storageBlockEntity) {
+		if (storageBlockEntity instanceof ChestBlockEntity chestBlockEntity) {
+			ChestBlockEntity mainChestBlockEntity = chestBlockEntity.getMainChestBlockEntity();
+			if (mainChestBlockEntity != null) {
+				return mainChestBlockEntity;
+			}
+		}
+		return storageBlockEntity;
+	}
+
 	private <B extends BlockEntity> InteractionResult tryUpgradeStorage(ItemStack stack, BlockPos pos, Level level, BlockState state,
 			TierUpgradeDefinition<B> def, BlockEntity blockEntity, @Nullable Player player) {
 		B be = def.blockEntityClass().cast(blockEntity);
+		if (be instanceof StorageBlockEntity storageBlockEntity && level instanceof net.minecraft.server.level.ServerLevel serverLevel
+				&& !getTierUpgradePermissionStorage(storageBlockEntity).canUpgradeStorageTier(serverLevel)) {
+			return InteractionResult.FAIL;
+		}
 		if (def.isUpgradingBlocked().test(be)) {
 			return InteractionResult.PASS;
 		}
@@ -152,8 +167,14 @@ public class StorageTierUpgradeItem extends ItemBase {
 
 			level.setBlock(pos, newBlockState, 3);
 			level.setBlockEntity(newBlockEntity);
-			newBlockEntity.changeStorageSize(newInventorySize - newBlockEntity.getStorageWrapper().getInventoryHandler().size(),
-					newUpgradeSize - newBlockEntity.getStorageWrapper().getUpgradeHandler().size());
+			if (newBlockEntity.isLinkedStorage() && level instanceof net.minecraft.server.level.ServerLevel serverLevel) {
+				if (!newBlockEntity.completePrimaryLinkedStorageTierUpgrade(serverLevel, newInventorySize, newUpgradeSize)) {
+					throw new IllegalStateException("Could not update linked storage capacity after a primary tier upgrade");
+				}
+			} else {
+				newBlockEntity.changeStorageSize(newInventorySize - newBlockEntity.getStorageWrapper().getInventoryHandler().size(),
+						newUpgradeSize - newBlockEntity.getStorageWrapper().getUpgradeHandler().size());
+			}
 			WorldHelper.notifyBlockUpdate(newBlockEntity);
 			return newBlockEntity;
 		}

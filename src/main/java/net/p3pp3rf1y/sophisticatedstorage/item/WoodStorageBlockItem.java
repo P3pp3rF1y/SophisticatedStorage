@@ -13,9 +13,11 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.TranslationHelper;
+import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModDataComponents;
 import net.p3pp3rf1y.sophisticatedstorage.util.GenericWoodStorageHelper;
-import org.jspecify.annotations.Nullable;
+
+import javax.annotation.Nullable;
 
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -38,7 +40,7 @@ public class WoodStorageBlockItem extends StorageBlockItem {
 	public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay tooltipDisplay, Consumer<Component> tooltipAdder,
 			TooltipFlag tooltipFlag) {
 		super.appendHoverText(stack, context, tooltipDisplay, tooltipAdder, tooltipFlag);
-		if (isPacked(stack)) {
+		if (isPacked(stack) || StorageBlockEntity.hasLinkedStorageEndpoint(stack)) {
 			if (tooltipFlag.isAdvanced()) {
 				HolderLookup.Provider registries = context.registries();
 				if (registries != null) {
@@ -57,7 +59,7 @@ public class WoodStorageBlockItem extends StorageBlockItem {
 
 	@Override
 	public Optional<TooltipComponent> getTooltipImage(ItemStack stack) {
-		if (!isPacked(stack)) {
+		if (!isPacked(stack) && !StorageBlockEntity.hasLinkedStorageEndpoint(stack)) {
 			return Optional.empty();
 		}
 

@@ -128,8 +128,8 @@ public class BarrelBlock extends WoodStorageBlockBase {
 		player.awardStat(Stats.OPEN_BARREL);
 		player.openMenu(
 				new SimpleMenuProvider((w, p, pl) -> instantiateContainerMenu(w, pl, pos),
-						WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).map(StorageBlockEntity::getDisplayName).orElse(Component.empty())),
-				pos);
+						WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).map(StorageBlockEntity::getMenuDisplayName).orElse(Component.empty())),
+				buffer -> StorageContainerMenu.writeMenuData(buffer, player, pos));
 		if (player.level() instanceof ServerLevel serverLevel) {
 			PiglinAi.angerNearbyPiglins(serverLevel, player, true);
 		}
