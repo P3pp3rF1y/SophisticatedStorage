@@ -43,6 +43,7 @@ import net.p3pp3rf1y.sophisticatedstorage.client.render.*;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.item.ChestBlockItem;
+import net.p3pp3rf1y.sophisticatedstorage.item.LinkedStorageTooltip;
 import net.p3pp3rf1y.sophisticatedstorage.item.PaintbrushItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageContentsTooltip;
 import net.p3pp3rf1y.sophisticatedstorage.network.ScrolledToolMessage;
@@ -220,6 +221,7 @@ public class ClientEventHandler {
 	}
 
 	private static void registerTooltipComponent(RegisterClientTooltipComponentFactoriesEvent event) {
+		event.register(LinkedStorageTooltip.class, ClientLinkedStorageTooltip::new);
 		event.register(StorageContentsTooltip.class, ClientStorageContentsTooltip::new);
 	}
 

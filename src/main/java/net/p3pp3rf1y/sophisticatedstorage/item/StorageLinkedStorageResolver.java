@@ -1,0 +1,49 @@
+package net.p3pp3rf1y.sophisticatedstorage.item;
+
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraftforge.fml.util.thread.SidedThreadGroups;
+import net.minecraftforge.server.ServerLifecycleHooks;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageEndpointData;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageEndpointStackState;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageGroupManager;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageGroupsSavedData;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageStackData;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageStackLifecycle;
+import net.p3pp3rf1y.sophisticatedstorage.block.StorageWrapper;
+
+import java.util.Optional;
+
+public final class StorageLinkedStorageResolver {
+	private StorageLinkedStorageResolver() {
+	}
+
+	public static Optional<StorageWrapper> resolveServerCanonicalHost(ItemStack stack) {
+		if (Thread.currentThread().getThreadGroup() != SidedThreadGroups.SERVER) {
+			return Optional.empty();
+		}
+		MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
+		if (server == null) {
+			return Optional.empty();
+		}
+		ServerLevel overworld = server.getLevel(Level.OVERWORLD);
+		return overworld == null ? Optional.empty() : resolveCanonicalHost(overworld, stack);
+	}
+
+	private static Optional<StorageWrapper> resolveCanonicalHost(ServerLevel level, ItemStack stack) {
+		if (LinkedStorageStackLifecycle.classifyEndpoint(stack) != LinkedStorageEndpointStackState.ENDPOINT) {
+			return Optional.empty();
+		}
+		LinkedStorageEndpointData endpoint = LinkedStorageStackData.getEndpoint(stack);
+		if (endpoint == null) {
+			return Optional.empty();
+		}
+		LinkedStorageGroupManager manager = LinkedStorageGroupsSavedData.get(level).manager();
+		if (!manager.isEndpointMember(endpoint.groupId(), endpoint.endpointId())) {
+			return Optional.empty();
+		}
+		return manager.resolveVirtualHost(endpoint.groupId()).filter(StorageWrapper.class::isInstance).map(StorageWrapper.class::cast);
+	}
+}

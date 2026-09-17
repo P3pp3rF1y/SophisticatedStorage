@@ -2,7 +2,6 @@ package net.p3pp3rf1y.sophisticatedstorage.network;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Player;
@@ -16,7 +15,6 @@ import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageSettingsContainerMenu;
 
 import javax.annotation.Nullable;
-
 import java.util.function.Supplier;
 
 public class OpenStorageInventoryMessage {
@@ -40,21 +38,29 @@ public class OpenStorageInventoryMessage {
 		context.setPacketHandled(true);
 	}
 
-	private static void handleMessage(@Nullable ServerPlayer player, OpenStorageInventoryMessage msg) {
+	static void handleMessage(@Nullable ServerPlayer player, OpenStorageInventoryMessage msg) {
 		if (player == null) {
 			return;
 		}
 
-		boolean shouldTransferOpeners = player.containerMenu instanceof StorageSettingsContainerMenu settingsContainerMenu
-				&& settingsContainerMenu.getBlockPosition().equals(msg.pos);
-		if (shouldTransferOpeners) {
-			((StorageSettingsContainerMenu) player.containerMenu).transferOpenersToStorageMenu();
+		if (!(player.containerMenu instanceof StorageSettingsContainerMenu settingsContainerMenu) || !settingsContainerMenu.getBlockPosition().equals(msg.pos)
+				|| !settingsContainerMenu.stillValid(player)) {
+			return;
 		}
-		boolean openersAlreadyActive = shouldTransferOpeners;
-		NetworkHooks.openScreen(player,
-				new SimpleMenuProvider((w, p, pl) -> instantiateContainerMenu(msg, w, pl, openersAlreadyActive), WorldHelper
-						.getBlockEntity(player.level(), msg.pos, StorageBlockEntity.class).map(StorageBlockEntity::getDisplayName).orElse(Component.empty())),
-				msg.pos);
+
+		settingsContainerMenu.transferOpenersToStorageMenu();
+		WorldHelper.getBlockEntity(player.level(), msg.pos, StorageBlockEntity.class).ifPresent(storage -> {
+			NetworkHooks.openScreen(player, new SimpleMenuProvider((w, p, pl) -> instantiateContainerMenu(msg, w, pl, true), storage.getMenuDisplayName()),
+					buffer -> writeMenuData(player, msg.pos, buffer));
+		});
+	}
+
+	private static void writeMenuData(ServerPlayer player, BlockPos pos, FriendlyByteBuf buffer) {
+		if (player.level().getBlockState(pos).getBlock() instanceof LimitedBarrelBlock) {
+			buffer.writeBlockPos(pos);
+		} else {
+			StorageContainerMenu.writeMenuData(buffer, player, pos);
+		}
 	}
 
 	private static StorageContainerMenu instantiateContainerMenu(OpenStorageInventoryMessage msg, int windowId, Player player, boolean openersAlreadyActive) {

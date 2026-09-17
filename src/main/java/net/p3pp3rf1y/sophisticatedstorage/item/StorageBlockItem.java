@@ -1,12 +1,17 @@
 package net.p3pp3rf1y.sophisticatedstorage.item;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageStackData;
 import net.p3pp3rf1y.sophisticatedcore.util.BlockItemBase;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
 import net.p3pp3rf1y.sophisticatedstorage.block.IStorageBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.ITintableBlockItem;
+import net.p3pp3rf1y.sophisticatedstorage.block.StorageLinkedStorageEndpointAdapter;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageWrapper;
 import net.p3pp3rf1y.sophisticatedstorage.entity.StorageHolderBase;
 
@@ -14,11 +19,9 @@ import java.util.Optional;
 import java.util.UUID;
 
 public class StorageBlockItem extends BlockItemBase implements ITintableBlockItem {
-
 	public static final String ACCENT_COLOR_TAG = "accentColor";
 	public static final String MAIN_COLOR_TAG = "mainColor";
 	private static final String SHOWS_TIER_TAG = "showsTier";
-
 	public StorageBlockItem(Block block, Properties properties) {
 		super(block, properties);
 	}
@@ -114,6 +117,17 @@ public class StorageBlockItem extends BlockItemBase implements ITintableBlockIte
 
 	public static boolean isLocked(ItemStack stack) {
 		return NBTHelper.getBoolean(stack, StorageHolderBase.LOCKED_TAG).orElse(false);
+	}
+
+	@Override
+	public void inventoryTick(ItemStack stack, Level level, Entity entity, int itemSlot, boolean isSelected) {
+		super.inventoryTick(stack, level, entity, itemSlot, isSelected);
+		if (!(level instanceof ServerLevel serverLevel) || !stack.hasCustomHoverName() || !LinkedStorageStackData.isPrimaryEndpoint(stack)
+				|| !StorageLinkedStorageEndpointAdapter.isLinkedStorageEndpoint(stack)) {
+			return;
+		}
+
+		StorageLinkedStorageEndpointAdapter.synchronizePrimaryCarrier(serverLevel, stack);
 	}
 
 	public static void setLocked(ItemStack stack, boolean locked) {

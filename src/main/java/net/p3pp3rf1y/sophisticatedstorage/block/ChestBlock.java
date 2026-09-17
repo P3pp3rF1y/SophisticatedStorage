@@ -39,6 +39,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.network.NetworkHooks;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageStackData;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
@@ -62,6 +63,7 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 	protected static final VoxelShape SOUTH_AABB = Block.box(1.0D, 0.0D, 1.0D, 15.0D, 14.0D, 16.0D);
 	protected static final VoxelShape WEST_AABB = Block.box(0.0D, 0.0D, 1.0D, 15.0D, 14.0D, 15.0D);
 	protected static final VoxelShape EAST_AABB = Block.box(1.0D, 0.0D, 1.0D, 16.0D, 14.0D, 15.0D);
+	private boolean removingLinkedDoubleChest = false;
 
 	public ChestBlock(Supplier<Integer> numberOfInventorySlotsSupplier, Supplier<Integer> numberOfUpgradeSlotsSupplier) {
 		this(numberOfInventorySlotsSupplier, numberOfUpgradeSlotsSupplier, 2.5F);
@@ -136,7 +138,7 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 		} else if (getConnectedDirection(state) == facing) {
 			level.getBlockEntity(currentPos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get()).ifPresent(be -> {
 				if (!level.isClientSide() && !be.isBeingUpgraded() && !be.isPacked()) {
-					if (be.isMainChest() && state.getBlock() instanceof ChestBlock chestBlock) {
+					if (be.isMainChest() && !isLinkedChest(be) && state.getBlock() instanceof ChestBlock chestBlock) {
 						be.dropSecondPartContents(chestBlock, facingPos);
 					}
 				}
@@ -287,7 +289,8 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 			player.awardStat(Stats.CUSTOM.get(Stats.OPEN_CHEST));
 
 			NetworkHooks.openScreen((ServerPlayer) player,
-					new SimpleMenuProvider((w, p, pl) -> new StorageContainerMenu(w, pl, mainChestPos), b.getDisplayName()), mainChestPos);
+					new SimpleMenuProvider((w, p, pl) -> new StorageContainerMenu(w, pl, mainChestPos), b.getMenuDisplayName()),
+					buffer -> StorageContainerMenu.writeMenuData(buffer, player, mainChestPos));
 			PiglinAi.angerNearbyPiglins(player, true);
 
 			return InteractionResult.CONSUME;
@@ -307,14 +310,13 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 			level.setBlock(otherPartPos, leftState, blockUpdateFlags);
 			level.getBlockEntity(otherPartPos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get()).ifPresent(be -> {
 				setRenderBlockRenderProperties(stack, be);
-				if (be.getControllerPos().isEmpty()) {
-					be.tryToAddToController();
-				}
+				be.tryToAddToController();
 			});
 			joinChests(level, pos, otherPartPos, ChestType.RIGHT);
 			rightState.updateNeighbourShapes(level, pos, 3);
 			leftState.updateNeighbourShapes(level, otherPartPos, 3);
 			normalizeDoubleChestControllerRegistration(level, pos, otherPartPos);
+			restoreLinkedDoubleChestEndpoint(level, pos, stack, placer);
 			return;
 		}
 
@@ -350,6 +352,26 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 	private static void joinChests(LevelAccessor level, BlockPos pos, BlockPos otherPos, ChestType currentChestType) {
 		level.getBlockEntity(pos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get())
 				.ifPresent(currentBE -> level.getBlockEntity(otherPos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get()).ifPresent(otherChest -> {
+					ChestBlockEntity linkedEndpointHolder = currentBE.isLinkedStorage() ? currentBE : otherChest.isLinkedStorage() ? otherChest : null;
+					if (linkedEndpointHolder != null) {
+						ChestBlockEntity mainChest = currentChestType == ChestType.RIGHT ? currentBE : otherChest;
+						boolean primaryLinkedStorage = linkedEndpointHolder.isPrimaryLinkedStorage();
+						if (mainChest == linkedEndpointHolder || linkedEndpointHolder.transferLinkedStorageEndpointTo(mainChest)) {
+							ChestBlockEntity newChestPart = mainChest == currentBE ? otherChest : currentBE;
+							if (primaryLinkedStorage && newChestPart.joinWithLinkedPrimary(mainChest)) {
+								newChestPart.syncTogglesFrom(mainChest);
+							} else if (!primaryLinkedStorage) {
+								newChestPart.removeFromController();
+								newChestPart.tryToAddToController();
+								newChestPart.invalidateCaps();
+								newChestPart.syncTogglesFrom(mainChest);
+							}
+						}
+						return;
+					}
+					if (isLinkedChest(currentBE) || isLinkedChest(otherChest)) {
+						return;
+					}
 					if (!InventoryHelper.isEmpty(currentBE.getStorageWrapper().getUpgradeHandler())
 							&& !InventoryHelper.isEmpty(otherChest.getStorageWrapper().getUpgradeHandler())) {
 						return;
@@ -374,8 +396,12 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 	public void playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
 		if (state.getValue(TYPE) != ChestType.SINGLE) {
 			level.getBlockEntity(pos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get()).ifPresent(be -> {
-				be.setDestroyedByPlayer();
-				if ((be.isPacked() || Boolean.TRUE.equals(Config.COMMON.dropPacked.get())) && !be.isMainChest()) {
+				be.setDestroyedByPlayer(isLinkedChest(be));
+				if (isPrimaryLinkedChest(be)) {
+					ChestBlockEntity mainChest = be.getMainChestBlockEntity();
+					be.prepareLinkedPrimaryDoubleChestDrop(mainChest == null ? null : mainChest.getLinkedStorageEndpointData());
+				}
+				if (!isLinkedChest(be) && (be.isPacked() || Boolean.TRUE.equals(Config.COMMON.dropPacked.get())) && !be.isMainChest()) {
 					// copy storage wrapper to "not main" chest so that its data can be transferred to stack properly
 					BlockPos otherPartPos = pos.relative(getConnectedDirection(state));
 					level.getBlockEntity(otherPartPos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get()).ifPresent(mainBe -> {
@@ -394,9 +420,21 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 
 	@Override
 	public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean isMoving) {
+		if (!level.isClientSide && !removingLinkedDoubleChest && state.getValue(TYPE) != ChestType.SINGLE && !(newState.getBlock() instanceof ChestBlock)) {
+			level.getBlockEntity(pos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get()).filter(ChestBlock::isLinkedChest).ifPresent(be -> {
+				BlockPos otherPartPos = pos.relative(getConnectedDirection(state));
+				if (!isPrimaryLinkedChest(be)) {
+					splitLinkedSecondaryChest(level, state, otherPartPos, be);
+				} else if (level.getBlockState(otherPartPos).is(this)) {
+					removingLinkedDoubleChest = true;
+					level.removeBlock(otherPartPos, false);
+					removingLinkedDoubleChest = false;
+				}
+			});
+		}
 		if (state.getValue(TYPE) != ChestType.SINGLE) {
 			level.getBlockEntity(pos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get()).ifPresent(be -> {
-				if (be.isPacked()) {
+				if (be.isPacked() && !isLinkedChest(be)) {
 					level.removeBlock(pos.relative(getConnectedDirection(state)), false);
 				}
 			});
@@ -406,7 +444,29 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 
 	@Override
 	public void addDropData(ItemStack stack, StorageBlockEntity be) {
-		if (be instanceof ChestBlockEntity chestBlockEntity && chestBlockEntity.isPacked() && be.getBlockState().getValue(TYPE) != ChestType.SINGLE) {
+		if (be instanceof ChestBlockEntity chestBlockEntity && chestBlockEntity.getLinkedPrimaryDoubleChestDropEndpoint() != null) {
+			ChestBlockEntity mainChest = chestBlockEntity.getMainChestBlockEntity();
+			if (mainChest != null) {
+				super.addDropData(stack, mainChest);
+			} else {
+				addNameWoodAndTintData(stack, chestBlockEntity);
+			}
+			LinkedStorageStackData.setEndpoint(stack, chestBlockEntity.getLinkedPrimaryDoubleChestDropEndpoint());
+			LinkedStorageStackData.setPrimaryEndpoint(stack, true);
+			ChestBlockItem.setDoubleChest(stack, true);
+			return;
+		}
+		if (be instanceof ChestBlockEntity chestBlockEntity && chestBlockEntity.getBlockState().getValue(TYPE) != ChestType.SINGLE
+				&& isLinkedChest(chestBlockEntity) && !isPrimaryLinkedChest(chestBlockEntity)) {
+			addNameWoodAndTintData(stack, chestBlockEntity);
+			return;
+		}
+		if (be instanceof ChestBlockEntity chestBlockEntity && chestBlockEntity.getBlockState().getValue(TYPE) != ChestType.SINGLE
+				&& isLinkedChest(chestBlockEntity)) {
+			ChestBlockEntity mainChest = chestBlockEntity.getMainChestBlockEntity();
+			super.addDropData(stack, mainChest == null ? chestBlockEntity : mainChest);
+			ChestBlockItem.setDoubleChest(stack, true);
+		} else if (be instanceof ChestBlockEntity chestBlockEntity && chestBlockEntity.isPacked() && be.getBlockState().getValue(TYPE) != ChestType.SINGLE) {
 			super.addDropData(stack, be);
 			ChestBlockItem.setDoubleChest(stack, true);
 		} else {
@@ -415,7 +475,56 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 	}
 
 	@Override
+	protected boolean shouldRestoreLinkedStorageEndpoint(ItemStack stack) {
+		return !ChestBlockItem.isDoubleChest(stack);
+	}
+
+	private static void restoreLinkedDoubleChestEndpoint(Level level, BlockPos pos, ItemStack stack, @Nullable LivingEntity placer) {
+		if (!(level instanceof ServerLevel serverLevel) || !StorageBlockEntity.hasLinkedStorageEndpoint(stack)) {
+			return;
+		}
+		WorldHelper.getBlockEntity(level, pos, ChestBlockEntity.class).ifPresent(mainChest -> {
+			if (placer instanceof Player player && player.getAbilities().instabuild) {
+				mainChest.restoreCreativeLinkedStorageEndpoint(serverLevel, stack);
+			} else {
+				mainChest.restoreLinkedStorageEndpoint(serverLevel, stack);
+			}
+			mainChest.tryToAddToController();
+		});
+	}
+
+	private static boolean isLinkedChest(ChestBlockEntity chestBlockEntity) {
+		ChestBlockEntity mainChest = chestBlockEntity.getMainChestBlockEntity();
+		return mainChest != null && mainChest.isLinkedStorage();
+	}
+
+	private static boolean isPrimaryLinkedChest(ChestBlockEntity chestBlockEntity) {
+		ChestBlockEntity mainChest = chestBlockEntity.getMainChestBlockEntity();
+		return mainChest != null && mainChest.isPrimaryLinkedStorage();
+	}
+
+	private static void splitLinkedSecondaryChest(Level level, BlockState state, BlockPos otherPartPos, ChestBlockEntity brokenChest) {
+		if (!level.getBlockState(otherPartPos).is(state.getBlock())) {
+			return;
+		}
+
+		boolean brokenMainChest = brokenChest.isMainChest();
+		ChestBlockEntity mainChest = brokenChest.getMainChestBlockEntity();
+		level.setBlock(otherPartPos, level.getBlockState(otherPartPos).setValue(TYPE, ChestType.SINGLE), UPDATE_CLIENTS | UPDATE_KNOWN_SHAPE);
+		if (brokenMainChest && mainChest != null) {
+			WorldHelper.getBlockEntity(level, otherPartPos, ChestBlockEntity.class).ifPresent(mainChest::transferLinkedStorageEndpointTo);
+		}
+	}
+
+	@Override
 	protected void packStorage(Player player, InteractionHand hand, WoodStorageBlockEntity b, ItemStack stackInHand) {
+		if (b instanceof ChestBlockEntity chestBlockEntity) {
+			ChestBlockEntity mainChest = chestBlockEntity.getMainChestBlockEntity();
+			if (mainChest != null && mainChest.isLinkedStorage()) {
+				super.packStorage(player, hand, mainChest, stackInHand);
+				return;
+			}
+		}
 		super.packStorage(player, hand, b, stackInHand);
 
 		if (b.getBlockState().getValue(TYPE) == ChestType.SINGLE) {
@@ -499,7 +608,8 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 	public void entityInside(BlockState state, Level world, BlockPos pos, Entity entity) {
 		super.entityInside(state, world, pos, entity);
 		if (!world.isClientSide && entity instanceof ItemEntity itemEntity) {
-			WorldHelper.getBlockEntity(world, pos, ChestBlockEntity.class).ifPresent(te -> tryToPickup(world, itemEntity, te.getMainStorageWrapper()));
+			WorldHelper.getBlockEntity(world, pos, ChestBlockEntity.class).filter(te -> !te.isSecondaryLinkedStorageEndpoint(world))
+					.ifPresent(te -> tryToPickup(world, itemEntity, te.getMainStorageWrapper()));
 		}
 	}
 

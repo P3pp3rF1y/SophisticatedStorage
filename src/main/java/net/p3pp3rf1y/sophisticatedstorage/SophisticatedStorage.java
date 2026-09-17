@@ -9,6 +9,8 @@ import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLEnvironment;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageHostFactories;
+import net.p3pp3rf1y.sophisticatedstorage.block.StorageLinkedStorageHostWrapper;
 import net.p3pp3rf1y.sophisticatedstorage.client.ClientEventHandler;
 import net.p3pp3rf1y.sophisticatedstorage.common.CommonEventHandler;
 import net.p3pp3rf1y.sophisticatedstorage.data.DataGenerators;
@@ -50,6 +52,7 @@ public class SophisticatedStorage {
 	}
 
 	private static void setup(FMLCommonSetupEvent event) {
+		LinkedStorageHostFactories.register(StorageLinkedStorageHostWrapper.FACTORY_ID, StorageLinkedStorageHostWrapper::create);
 		StoragePacketHandler.INSTANCE.init();
 		ModCompat.compatsSetup();
 		event.enqueueWork(ModBlocks::registerDispenseBehavior);

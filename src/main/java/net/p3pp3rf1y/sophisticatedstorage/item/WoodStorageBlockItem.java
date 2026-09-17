@@ -19,6 +19,9 @@ import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.fml.DistExecutor;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.TranslationHelper;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.ClientLinkedStorageContents;
+import net.p3pp3rf1y.sophisticatedcore.network.PacketHandler;
+import net.p3pp3rf1y.sophisticatedcore.network.RequestLinkedStorageContentsMessage;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
 import net.p3pp3rf1y.sophisticatedstorage.block.ItemContentsStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
@@ -30,7 +33,6 @@ import javax.annotation.Nullable;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class WoodStorageBlockItem extends StorageBlockItem {
@@ -50,12 +52,12 @@ public class WoodStorageBlockItem extends StorageBlockItem {
 	}
 
 	@Override
-	public void appendHoverText(ItemStack stack, @Nullable Level worldIn, List<Component> tooltip, TooltipFlag flagIn) {
-		super.appendHoverText(stack, worldIn, tooltip, flagIn);
-		if (isPacked(stack)) {
-			if (flagIn == TooltipFlag.ADVANCED) {
-				stack.getCapability(CapabilityStorageWrapper.getCapabilityInstance()).ifPresent(
-						w -> w.getContentsUuid().ifPresent(uuid -> tooltip.add(Component.literal("UUID: " + uuid).withStyle(ChatFormatting.DARK_GRAY))));
+	public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
+		super.appendHoverText(stack, level, tooltip, flag);
+		if (isPacked(stack) || StorageBlockEntity.hasLinkedStorageEndpoint(stack)) {
+			if (flag == TooltipFlag.ADVANCED && isPacked(stack)) {
+				stack.getCapability(CapabilityStorageWrapper.getCapabilityInstance()).ifPresent(wrapper -> wrapper.getContentsUuid()
+						.ifPresent(uuid -> tooltip.add(Component.literal("UUID: " + uuid).withStyle(ChatFormatting.DARK_GRAY))));
 			}
 			if (!Screen.hasShiftDown()) {
 				tooltip.add(Component
@@ -68,38 +70,33 @@ public class WoodStorageBlockItem extends StorageBlockItem {
 
 	@Override
 	public Optional<TooltipComponent> getTooltipImage(ItemStack stack) {
-		if (!isPacked(stack)) {
+		if (!isPacked(stack) && !StorageBlockEntity.hasLinkedStorageEndpoint(stack)) {
 			return Optional.empty();
 		}
-
-		AtomicReference<TooltipComponent> ret = new AtomicReference<>(null);
-		DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
-			Minecraft mc = Minecraft.getInstance();
-			if (Screen.hasShiftDown() || (mc.player != null && !mc.player.containerMenu.getCarried().isEmpty())) {
-				ret.set(new StorageContentsTooltip(stack));
-			}
-		});
+		AtomicReference<TooltipComponent> ret = new AtomicReference<>();
+		DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> ret.set(getTooltipImage(stack, Minecraft.getInstance())));
 		return Optional.ofNullable(ret.get());
 	}
 
-	@Override
-	public void setMainColor(ItemStack storageStack, int mainColor) {
-		super.setMainColor(storageStack, mainColor);
-	}
-
-	@Override
-	public void setAccentColor(ItemStack storageStack, int accentColor) {
-		super.setAccentColor(storageStack, accentColor);
-	}
-
-	public static Optional<WoodType> getWoodType(ItemStack storageStack) {
-		return NBTHelper.getString(storageStack, WOOD_TYPE_TAG).flatMap(woodType -> WoodType.values().filter(wt -> wt.name().equals(woodType)).findFirst());
+	@Nullable
+	private static TooltipComponent getTooltipImage(ItemStack stack, Minecraft minecraft) {
+		Optional<LinkedStorageTooltip> linkedTooltip = StorageBlockEntity.getLinkedStorageEndpointData(stack)
+				.flatMap(endpoint -> StorageBlockEntity.getLinkedStorageEndpointRole(stack).map(role -> new LinkedStorageTooltip(role, endpoint.groupId())));
+		if (!Screen.hasShiftDown() && (minecraft.player == null || minecraft.player.containerMenu.getCarried().isEmpty())) {
+			linkedTooltip
+					.filter(tooltip -> minecraft.player != null
+							&& ClientLinkedStorageContents.shouldRequestSnapshot(tooltip.groupId(), minecraft.player.level().getGameTime()))
+					.ifPresent(tooltip -> PacketHandler.INSTANCE.sendToServer(new RequestLinkedStorageContentsMessage(tooltip.groupId(),
+							ClientLinkedStorageContents.getRevision(tooltip.groupId()).orElse(-1L))));
+			return linkedTooltip.orElse(null);
+		}
+		return new StorageContentsTooltip(stack, linkedTooltip.orElse(null));
 	}
 
 	@Override
 	public ICapabilityProvider initCapabilities(ItemStack stack, @Nullable CompoundTag nbt) {
 		return new ICapabilityProvider() {
-			private IStorageWrapper wrapper = null;
+			private IStorageWrapper wrapper;
 
 			@Nonnull
 			@Override
@@ -112,20 +109,23 @@ public class WoodStorageBlockItem extends StorageBlockItem {
 			}
 
 			private void initWrapper() {
-				if (wrapper == null) {
-					UUID uuid = getContentsUuid(stack).orElse(null);
-					StorageWrapper storageWrapper = new StackStorageWrapper(stack);
-					if (uuid != null) {
-						CompoundTag compoundtag = ItemContentsStorage.get().getOrCreateStorageContents(uuid)
-								.getCompound(StorageBlockEntity.STORAGE_WRAPPER_TAG);
-						storageWrapper.load(compoundtag);
-						storageWrapper.setContentsUuid(uuid); // setting here because client side the uuid isn't in contentsnbt before this data is synced from
-																// server and it would create a new one otherwise
-					}
-					wrapper = storageWrapper;
+				if (wrapper != null) {
+					return;
 				}
+				StorageWrapper storageWrapper = new StackStorageWrapper(stack);
+				if (!StorageBlockEntity.hasLinkedStorageEndpoint(stack)) {
+					getContentsUuid(stack).ifPresent(uuid -> {
+						storageWrapper.load(ItemContentsStorage.get().getOrCreateStorageContents(uuid).getCompound(StorageBlockEntity.STORAGE_WRAPPER_TAG));
+						storageWrapper.setContentsUuid(uuid);
+					});
+				}
+				wrapper = storageWrapper;
 			}
 		};
+	}
+
+	public static Optional<WoodType> getWoodType(ItemStack storageStack) {
+		return NBTHelper.getString(storageStack, WOOD_TYPE_TAG).flatMap(woodType -> WoodType.values().filter(wt -> wt.name().equals(woodType)).findFirst());
 	}
 
 	public static ItemStack setWoodType(ItemStack storageStack, WoodType woodType) {
@@ -143,9 +143,8 @@ public class WoodStorageBlockItem extends StorageBlockItem {
 	}
 
 	public static Component getDisplayName(String descriptionId, @Nullable WoodType woodType) {
-		if (woodType == null) {
-			return Component.translatable(descriptionId, "", "");
-		}
-		return Component.translatable(descriptionId, GenericWoodStorageHelper.getWoodDisplayName(woodType), " ");
+		return woodType == null
+				? Component.translatable(descriptionId, "", "")
+				: Component.translatable(descriptionId, GenericWoodStorageHelper.getWoodDisplayName(woodType), " ");
 	}
 }

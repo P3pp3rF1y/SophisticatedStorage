@@ -95,7 +95,7 @@ public abstract class WoodStorageBlockEntity extends StorageBlockEntity {
 
 	@Override
 	public boolean shouldDropContents() {
-		return !isPacked();
+		return !isPacked() && !isLinkedStorage();
 	}
 
 	@Nonnull

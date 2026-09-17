@@ -904,10 +904,7 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 			Map<BarrelMaterial, ResourceLocation> materials = BarrelBlockItem.getMaterials(stack);
 			String woodName = isGenericWood
 					? null
-					: woodType.map(WoodType::name)
-							.orElse(barrelBakedModel.barrelHasAccentColor && barrelBakedModel.barrelHasMainColor && materials.isEmpty()
-									? null
-									: WoodType.ACACIA.name());
+					: woodType.map(WoodType::name).orElse(hasAccentColor && hasMainColor && materials.isEmpty() ? null : WoodType.ACACIA.name());
 			boolean packed = WoodStorageBlockItem.isPacked(stack);
 			boolean barrelShowsTier = StorageBlockItem.showsTier(stack);
 			Item item = stack.getItem();

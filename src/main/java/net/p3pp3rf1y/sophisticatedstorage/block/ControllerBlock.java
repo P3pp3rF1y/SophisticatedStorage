@@ -100,19 +100,26 @@ public class ControllerBlock extends BlockBase implements ISneakItemInteractionB
 
 		WorldHelper.getBlockEntity(level, pos, ControllerBlockEntity.class).ifPresent(controller -> {
 			AtomicBoolean appliedUpgrade = new AtomicBoolean(false);
-			controller.getStoragePositions().forEach(storagePos -> WorldHelper.getBlockEntity(level, storagePos, StorageBlockEntity.class).ifPresent(be -> {
-				if (be.getBlockState().getBlock() instanceof StorageBlockBase storageblock) {
-					ItemStack itemInHand = player.getItemInHand(hand);
-					if (storageblock.tryAddSingleUpgrade(player, hand, be, itemInHand)) {
-						appliedUpgrade.set(true);
-					} else if (itemInHand.getItem() instanceof StorageTierUpgradeItem storageTierUpgradeItem && storageTierUpgradeItem
-							.tryUpgradeStorage(itemInHand, level, storagePos, be.getBlockState(), player) == InteractionResult.SUCCESS) {
-						appliedUpgrade.set(true);
+			ItemStack itemInHand = player.getItemInHand(hand);
+			if (itemInHand.getItem() instanceof StorageTierUpgradeItem storageTierUpgradeItem) {
+				controller.getStorageTierUpgradePositions()
+						.forEach(storagePos -> WorldHelper.getBlockEntity(level, storagePos, StorageBlockEntity.class).ifPresent(be -> {
+							if (storageTierUpgradeItem.tryUpgradeStorage(itemInHand, level, storagePos, be.getBlockState(),
+									player) == InteractionResult.SUCCESS) {
+								appliedUpgrade.set(true);
+							}
+						}));
+			} else {
+				controller.getStoragePositions().forEach(storagePos -> WorldHelper.getBlockEntity(level, storagePos, StorageBlockEntity.class).ifPresent(be -> {
+					if (be.getBlockState().getBlock() instanceof StorageBlockBase storageblock) {
+						if (storageblock.tryAddSingleUpgrade(player, hand, be, itemInHand)) {
+							appliedUpgrade.set(true);
+						}
 					}
-				}
-			}));
+				}));
+			}
 
-			if (!appliedUpgrade.get()) {
+			if (!appliedUpgrade.get() && !(itemInHand.getItem() instanceof StorageTierUpgradeItem)) {
 				controller.depositPlayerItems(player, hand);
 			}
 		});
