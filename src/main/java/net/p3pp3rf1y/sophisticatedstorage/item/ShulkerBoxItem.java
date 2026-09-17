@@ -21,9 +21,11 @@ import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.neoforged.neoforge.transfer.transaction.Transaction;
 import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 import net.p3pp3rf1y.sophisticatedcore.api.IStashStorageItem;
+import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.TranslationHelper;
 import net.p3pp3rf1y.sophisticatedcore.settings.memory.MemorySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
+import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
 
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -37,7 +39,7 @@ public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageIte
 	public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay tooltipDisplay, Consumer<Component> tooltipAdder,
 			TooltipFlag tooltipFlag) {
 		super.appendHoverText(stack, context, tooltipDisplay, tooltipAdder, tooltipFlag);
-		if (tooltipFlag.isAdvanced()) {
+		if (tooltipFlag.isAdvanced() && !StorageBlockEntity.hasLinkedStorageEndpoint(stack)) {
 			HolderLookup.Provider registries = context.registries();
 			if (registries != null) {
 				StackStorageWrapper.fromStack(registries, stack).getContentsUuid()
@@ -72,6 +74,9 @@ public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageIte
 			return;
 		}
 		ItemStack stack = itemEntity.getItem();
+		if (StorageBlockEntity.hasLinkedStorageEndpoint(stack)) {
+			return;
+		}
 		StackStorageWrapper storageWrapper = StackStorageWrapper.fromStack(level.registryAccess(), stack);
 		InventoryHelper.dropItems(storageWrapper.getInventoryHandler(), level, itemEntity.getX(), itemEntity.getY(), itemEntity.getZ());
 		InventoryHelper.dropItems(storageWrapper.getUpgradeHandler(), level, itemEntity.getX(), itemEntity.getY(), itemEntity.getZ());
@@ -79,20 +84,23 @@ public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageIte
 
 	@Override
 	public Optional<TooltipComponent> getInventoryTooltip(ItemStack stack) {
-		return Optional.of(new StorageContentsTooltip(stack));
+		LinkedStorageTooltip linkedStorageTooltip = StorageBlockEntity.getLinkedStorageEndpointData(stack)
+				.flatMap(endpoint -> StorageBlockEntity.getLinkedStorageEndpointRole(stack).map(role -> new LinkedStorageTooltip(role, endpoint.groupId())))
+				.orElse(null);
+		return Optional.of(new StorageContentsTooltip(stack, linkedStorageTooltip));
 	}
 
 	public int stash(HolderLookup.Provider registries, ItemStack storageStack, ItemResource resource, int amount, TransactionContext tx) {
-		StackStorageWrapper wrapper = StackStorageWrapper.fromStack(registries, storageStack);
-		if (wrapper.getContentsUuid().isEmpty()) {
-			wrapper.ensureContentsUuid();
+		IStorageWrapper wrapper = getStashWrapper(registries, storageStack);
+		if (wrapper instanceof StackStorageWrapper stackStorageWrapper && wrapper.getContentsUuid().isEmpty()) {
+			stackStorageWrapper.ensureContentsUuid();
 		}
 		return wrapper.getInventoryForUpgradeProcessing().insert(resource, amount, tx);
 	}
 
 	@Override
 	public StashResult getItemStashable(HolderLookup.Provider registries, ItemStack storageStack, ItemStack stack) {
-		StackStorageWrapper wrapper = StackStorageWrapper.fromStack(registries, storageStack);
+		IStorageWrapper wrapper = getStashWrapper(registries, storageStack);
 
 		try (Transaction tx = Transaction.openRoot()) {
 			if (wrapper.getInventoryForUpgradeProcessing().insert(ItemResource.of(stack), stack.getCount(), tx) == 0) {
@@ -105,6 +113,10 @@ public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageIte
 		}
 
 		return StashResult.SPACE;
+	}
+
+	private IStorageWrapper getStashWrapper(HolderLookup.Provider registries, ItemStack storageStack) {
+		return StorageLinkedStorageResolver.resolveServerCanonicalHost(storageStack).orElseGet(() -> StackStorageWrapper.fromStack(registries, storageStack));
 	}
 
 	@Override

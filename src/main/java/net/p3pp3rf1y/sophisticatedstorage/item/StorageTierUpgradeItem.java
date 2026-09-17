@@ -6,6 +6,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
@@ -90,6 +92,14 @@ public class StorageTierUpgradeItem extends ItemBase {
 	private <B extends BlockEntity> InteractionResult tryUpgradeStorage(ItemStack stack, BlockPos pos, Level level, BlockState state,
 			TierUpgradeDefinition<B> def, BlockEntity blockEntity, @Nullable Player player) {
 		B be = def.blockEntityClass().cast(blockEntity);
+		if (level instanceof ServerLevel serverLevel && be instanceof StorageBlockEntity storageBlockEntity
+				&& !getTierUpgradeTarget(storageBlockEntity).canUpgradeStorageTier(serverLevel)) {
+			if (player != null) {
+				player.playSound(SoundEvents.NOTE_BLOCK_BASS.value(), 1, 0.7F);
+				player.sendOverlayMessage(StorageTranslationHelper.INSTANCE.translStatusMessage("tier_upgrade_main_linked_storage_only"));
+			}
+			return InteractionResult.FAIL;
+		}
 		if (def.isUpgradingBlocked().test(be)) {
 			return InteractionResult.PASS;
 		}
@@ -113,6 +123,16 @@ public class StorageTierUpgradeItem extends ItemBase {
 			stack.shrink(countRequired);
 		}
 		return InteractionResult.SUCCESS;
+	}
+
+	private StorageBlockEntity getTierUpgradeTarget(StorageBlockEntity storageBlockEntity) {
+		if (storageBlockEntity instanceof ChestBlockEntity chestBlockEntity) {
+			ChestBlockEntity mainChestBlockEntity = chestBlockEntity.getMainChestBlockEntity();
+			if (mainChestBlockEntity != null) {
+				return mainChestBlockEntity;
+			}
+		}
+		return storageBlockEntity;
 	}
 
 	private static class StorageTierUpgradeDefinition extends TierUpgradeDefinition<StorageBlockEntity> {
@@ -147,13 +167,20 @@ public class StorageTierUpgradeItem extends ItemBase {
 			newBlockEntity.loadAdditional(ValueIOHelper.inputFromCompoundTag(level.registryAccess(), beTag));
 
 			blockEntity.setBeingUpgraded(true);
+			blockEntity.closeMenusForThisBlock();
 			level.removeBlockEntity(pos);
 			level.removeBlock(pos, false);
 
 			level.setBlock(pos, newBlockState, 3);
 			level.setBlockEntity(newBlockEntity);
-			newBlockEntity.changeStorageSize(newInventorySize - newBlockEntity.getStorageWrapper().getInventoryHandler().size(),
-					newUpgradeSize - newBlockEntity.getStorageWrapper().getUpgradeHandler().size());
+			if (newBlockEntity.isLinkedStorage() && level instanceof ServerLevel serverLevel) {
+				if (!newBlockEntity.completePrimaryLinkedStorageTierUpgrade(serverLevel, newInventorySize, newUpgradeSize)) {
+					throw new IllegalStateException("Could not update linked storage capacity after a primary tier upgrade");
+				}
+			} else {
+				newBlockEntity.changeStorageSize(newInventorySize - newBlockEntity.getStorageWrapper().getInventoryHandler().size(),
+						newUpgradeSize - newBlockEntity.getStorageWrapper().getUpgradeHandler().size());
+			}
 			WorldHelper.notifyBlockUpdate(newBlockEntity);
 			return newBlockEntity;
 		}

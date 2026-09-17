@@ -16,6 +16,6 @@ public class LimitedBarrelSettingsContainerMenu extends StorageSettingsContainer
 	}
 
 	public static LimitedBarrelSettingsContainerMenu fromBuffer(int windowId, Inventory playerInventory, FriendlyByteBuf buffer) {
-		return new LimitedBarrelSettingsContainerMenu(windowId, playerInventory.player, buffer.readBlockPos());
+		return new LimitedBarrelSettingsContainerMenu(windowId, playerInventory.player, StorageContainerMenu.readMenuData(buffer, playerInventory.player));
 	}
 }

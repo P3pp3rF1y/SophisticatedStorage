@@ -5,6 +5,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -188,6 +189,9 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 			if (result.getCount() != stackInHand.getCount()) {
 				if (isLocked()) {
 					memorySettings.selectSlot(slot);
+					if (player instanceof ServerPlayer serverPlayer) {
+						syncLinkedStorageContentsToPlayer(serverPlayer);
+					}
 				}
 				player.setItemInHand(hand, result);
 				return true;
@@ -197,6 +201,9 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 			if (result.getCount() != stackInHand.getCount()) {
 				if (isLocked()) {
 					memorySettings.selectSlot(slot);
+					if (player instanceof ServerPlayer serverPlayer) {
+						syncLinkedStorageContentsToPlayer(serverPlayer);
+					}
 				}
 				player.setItemInHand(hand, result);
 				return true;
