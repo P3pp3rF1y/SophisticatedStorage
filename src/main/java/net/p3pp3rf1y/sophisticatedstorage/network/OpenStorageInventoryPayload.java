@@ -28,17 +28,15 @@ public record OpenStorageInventoryPayload(BlockPos pos) implements CustomPacketP
 
 	public static void handlePayload(OpenStorageInventoryPayload payload, IPayloadContext context) {
 		Player player = context.player();
-		boolean shouldTransferOpeners = player.containerMenu instanceof StorageSettingsContainerMenu settingsContainerMenu
-				&& settingsContainerMenu.getBlockPosition().equals(payload.pos);
-		if (shouldTransferOpeners) {
-			StorageSettingsContainerMenu settingsContainerMenu = (StorageSettingsContainerMenu) player.containerMenu;
-			settingsContainerMenu.transferOpenersToStorageMenu();
+		if (!(player.containerMenu instanceof StorageSettingsContainerMenu settingsContainerMenu)
+				|| !settingsContainerMenu.getBlockPosition().equals(payload.pos) || !settingsContainerMenu.stillValid(player)) {
+			return;
 		}
-		boolean openersAlreadyActive = shouldTransferOpeners;
+		settingsContainerMenu.transferOpenersToStorageMenu();
 
-		player.openMenu(new SophisticatedMenuProvider((w, p, pl) -> instantiateContainerMenu(w, pl, payload.pos, openersAlreadyActive), WorldHelper
-				.getBlockEntity(player.level(), payload.pos, StorageBlockEntity.class).map(StorageBlockEntity::getDisplayName).orElse(Component.empty()),
-				false), payload.pos);
+		player.openMenu(new SophisticatedMenuProvider((w, p, pl) -> instantiateContainerMenu(w, pl, payload.pos, true), WorldHelper
+				.getBlockEntity(player.level(), payload.pos, StorageBlockEntity.class).map(StorageBlockEntity::getMenuDisplayName).orElse(Component.empty()),
+				false), buffer -> StorageContainerMenu.writeMenuData(buffer, player, payload.pos));
 	}
 
 	private static StorageContainerMenu instantiateContainerMenu(int windowId, Player player, BlockPos pos, boolean openersAlreadyActive) {

@@ -3,7 +3,9 @@ package net.p3pp3rf1y.sophisticatedstorage.block;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.Connection;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -28,6 +30,7 @@ import javax.annotation.Nullable;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 public class ControllerBlockEntity extends ControllerBlockEntityBase
 		implements
@@ -101,7 +104,7 @@ public class ControllerBlockEntity extends ControllerBlockEntityBase
 	public void toggleLock() {
 		Set<ILockable> unlockedStorages = new HashSet<>();
 		Set<ILockable> lockedStorages = new HashSet<>();
-		getStoragePositions().forEach(storagePosition -> WorldHelper.getLoadedBlockEntity(level, storagePosition, ILockable.class).ifPresent(lockable -> {
+		getStorageGroupAnchors().forEach(storagePosition -> WorldHelper.getLoadedBlockEntity(level, storagePosition, ILockable.class).ifPresent(lockable -> {
 			if (lockable.isLocked()) {
 				lockedStorages.add(lockable);
 			} else {
@@ -130,7 +133,7 @@ public class ControllerBlockEntity extends ControllerBlockEntityBase
 	public void toggleLockVisibility() {
 		Set<ILockable> invisibleLockStorages = new HashSet<>();
 		Set<ILockable> visibleLockStorages = new HashSet<>();
-		getStoragePositions().forEach(storagePosition -> WorldHelper.getLoadedBlockEntity(level, storagePosition, ILockable.class).ifPresent(lockable -> {
+		getStorageGroupAnchors().forEach(storagePosition -> WorldHelper.getLoadedBlockEntity(level, storagePosition, ILockable.class).ifPresent(lockable -> {
 			if (lockable.isLocked()) {
 				if (lockable.shouldShowLock()) {
 					visibleLockStorages.add(lockable);
@@ -156,7 +159,7 @@ public class ControllerBlockEntity extends ControllerBlockEntityBase
 	public void toggleCountVisibility() {
 		Set<ICountDisplay> invisibleCountStorages = new HashSet<>();
 		Set<ICountDisplay> visibleCountStorages = new HashSet<>();
-		getStoragePositions()
+		getStorageGroupAnchors()
 				.forEach(storagePosition -> WorldHelper.getLoadedBlockEntity(level, storagePosition, ICountDisplay.class).ifPresent(countDisplay -> {
 					if (countDisplay.shouldShowCounts()) {
 						visibleCountStorages.add(countDisplay);
@@ -186,13 +189,14 @@ public class ControllerBlockEntity extends ControllerBlockEntityBase
 	public void toggleTierVisiblity() {
 		Set<ITierDisplay> invisibleTierStorages = new HashSet<>();
 		Set<ITierDisplay> visibleTierStorages = new HashSet<>();
-		getStoragePositions().forEach(storagePosition -> WorldHelper.getLoadedBlockEntity(level, storagePosition, ITierDisplay.class).ifPresent(tierDisplay -> {
-			if (tierDisplay.shouldShowTier()) {
-				visibleTierStorages.add(tierDisplay);
-			} else {
-				invisibleTierStorages.add(tierDisplay);
-			}
-		}));
+		getStorageGroupAnchors()
+				.forEach(storagePosition -> WorldHelper.getLoadedBlockEntity(level, storagePosition, ITierDisplay.class).ifPresent(tierDisplay -> {
+					if (tierDisplay.shouldShowTier()) {
+						visibleTierStorages.add(tierDisplay);
+					} else {
+						invisibleTierStorages.add(tierDisplay);
+					}
+				}));
 
 		if (invisibleTierStorages.isEmpty()) {
 			visibleTierStorages.forEach(ITierDisplay::toggleTierVisiblity);
@@ -210,7 +214,7 @@ public class ControllerBlockEntity extends ControllerBlockEntityBase
 	public void toggleUpgradesVisiblity() {
 		Set<IUpgradeDisplay> invisibleUpgradeStorages = new HashSet<>();
 		Set<IUpgradeDisplay> visibleUpgradeStorages = new HashSet<>();
-		getStoragePositions()
+		getStorageBlockPositions()
 				.forEach(storagePosition -> WorldHelper.getLoadedBlockEntity(level, storagePosition, IUpgradeDisplay.class).ifPresent(upgradeDisplay -> {
 					if (upgradeDisplay.shouldShowUpgrades()) {
 						visibleUpgradeStorages.add(upgradeDisplay);
@@ -235,7 +239,7 @@ public class ControllerBlockEntity extends ControllerBlockEntityBase
 	public void toggleFillLevelVisibility() {
 		Set<IFillLevelDisplay> invisibleFillLevelStorages = new HashSet<>();
 		Set<IFillLevelDisplay> visibleFillLevelStorages = new HashSet<>();
-		getStoragePositions()
+		getStorageBlockPositions()
 				.forEach(storagePosition -> WorldHelper.getLoadedBlockEntity(level, storagePosition, IFillLevelDisplay.class).ifPresent(fillLevelDisplay -> {
 					if (fillLevelDisplay.shouldShowFillLevels()) {
 						visibleFillLevelStorages.add(fillLevelDisplay);
@@ -277,6 +281,11 @@ public class ControllerBlockEntity extends ControllerBlockEntityBase
 		loadSimpleMaterialData(in);
 		cachedStorageEdges = null;
 		cachedLinkedBlockEdges = null;
+	}
+
+	@Override
+	public void onDataPacket(Connection net, ValueInput in) {
+		loadAdditional(in);
 	}
 
 	@Override
@@ -325,11 +334,34 @@ public class ControllerBlockEntity extends ControllerBlockEntityBase
 	public List<VoxelOutliner.Edge> getStorageBlockEdges() {
 		if (cachedStorageEdges == null) {
 			Set<BlockPos> positions = new HashSet<>();
-			getStoragePositions().stream().filter(pos -> !getLinkedBlocks().contains(pos))
-					.forEach(pos -> positions.addAll(StoragePositionGroups.getGroup(level, pos).memberPositions()));
+			getStorageBlockPositions().forEach(pos -> positions.addAll(StoragePositionGroups.getGroup(level, pos).memberPositions()));
 			cachedStorageEdges = VoxelOutliner.computeRenderableEdges(positions);
 		}
 		return cachedStorageEdges;
+	}
+
+	@Override
+	protected Set<BlockPos> getStorageMemberPositions(BlockPos storagePos) {
+		return super.getStorageMemberPositions(storagePos).stream()
+				.flatMap(memberPosition -> StoragePositionGroups.getGroup(level, memberPosition).memberPositions().stream())
+				.collect(Collectors.toCollection(LinkedHashSet::new));
+	}
+
+	public Set<BlockPos> getStorageBlockPositions() {
+		Set<BlockPos> positions = new HashSet<>();
+		getStoragePositions().stream().filter(pos -> !getLinkedBlocks().contains(pos)).forEach(pos -> positions.addAll(getStorageMemberPositions(pos)));
+		return positions;
+	}
+
+	private Set<BlockPos> getStorageGroupAnchors() {
+		return StoragePositionGroups.getGroups(level, getStorageBlockPositions()).keySet();
+	}
+
+	public Set<BlockPos> getStorageTierUpgradePositions() {
+		return getStorageBlockPositions().stream()
+				.filter(storagePos -> WorldHelper.getLoadedBlockEntity(level, storagePos, StorageBlockEntity.class)
+						.map(storage -> !(level instanceof ServerLevel serverLevel) || storage.canUpgradeStorageTier(serverLevel)).orElse(false))
+				.collect(Collectors.toSet());
 	}
 
 	public List<VoxelOutliner.Edge> getLinkedBlockEdges() {
@@ -352,6 +384,10 @@ public class ControllerBlockEntity extends ControllerBlockEntityBase
 		result.addAll(stackStorages.getOrDefault(stackKey, Collections.emptySet()));
 		result.addAll(memorizedStackStorages.getOrDefault(stackKey.hashCode(), Collections.emptySet()));
 		return result;
+	}
+
+	public List<BlockPos> getHighlightStoragePositions(Collection<BlockPos> storagePositions) {
+		return storagePositions.stream().flatMap(storagePos -> getStorageMemberPositions(storagePos).stream()).distinct().toList();
 	}
 
 	public List<BlockPos> getItemStorages(ItemStackKey stackKey) {
@@ -380,7 +416,7 @@ public class ControllerBlockEntity extends ControllerBlockEntityBase
 		ItemResource copy = stackKey.toResource();
 		positions.removeIf(p -> {
 			try (Transaction tx = Transaction.openRoot()) {
-				return insertIntoStorage(p, copy, 1, tx) > 0;
+				return insertIntoStorage(p, copy, 1, tx) == 0;
 			}
 		});
 		return new ArrayList<>(positions);

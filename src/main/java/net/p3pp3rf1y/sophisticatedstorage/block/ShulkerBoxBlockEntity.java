@@ -96,6 +96,10 @@ public class ShulkerBoxBlockEntity extends StorageBlockEntity {
 
 	@Override
 	protected boolean isAllowedInStorage(ItemResource resource) {
+		return isItemAllowed(resource);
+	}
+
+	public static boolean isItemAllowed(ItemResource resource) {
 		Block block = Block.byItem(resource.getItem());
 		return !(block instanceof ShulkerBoxBlock) && !(block instanceof net.minecraft.world.level.block.ShulkerBoxBlock)
 				&& !Config.SERVER.shulkerBoxDisallowedItems.isItemDisallowed(resource.getItem());

@@ -13,6 +13,9 @@ import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.p3pp3rf1y.sophisticatedcore.init.ModCoreDataComponents;
 import net.p3pp3rf1y.sophisticatedcore.inventory.ContainerContents;
 import net.p3pp3rf1y.sophisticatedcore.inventory.StorageWrapperRepository;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.ClientLinkedStorageContents;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.ILinkedStorageContents;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageEndpointData;
 import net.p3pp3rf1y.sophisticatedcore.util.ValueIOHelper;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.block.*;
@@ -35,6 +38,12 @@ public class StackStorageWrapper extends StorageWrapper {
 
 	public static StackStorageWrapper fromStack(HolderLookup.Provider registries, ItemStack stack) {
 		StackStorageWrapper stackStorageWrapper = StorageWrapperRepository.getStorageWrapper(stack, StackStorageWrapper.class, StackStorageWrapper::new);
+		Optional<LinkedStorageEndpointData> linkedStorageEndpoint = StorageBlockEntity.getLinkedStorageEndpointData(stack);
+		if (linkedStorageEndpoint.isPresent()) {
+			ClientLinkedStorageContents.getContents(linkedStorageEndpoint.get().groupId()).map(ILinkedStorageContents::contents)
+					.ifPresent(stackStorageWrapper::replaceContents);
+			return stackStorageWrapper;
+		}
 		UUID uuid = stack.get(ModCoreDataComponents.STORAGE_UUID);
 		if (uuid != null) {
 			ItemContentsStorage itemContentsStorage = ItemContentsStorage.get();
@@ -70,6 +79,10 @@ public class StackStorageWrapper extends StorageWrapper {
 
 	@Override
 	public Optional<UUID> getContentsUuid() {
+		Optional<LinkedStorageEndpointData> linkedStorageEndpoint = StorageBlockEntity.getLinkedStorageEndpointData(storageStack);
+		if (linkedStorageEndpoint.isPresent()) {
+			return linkedStorageEndpoint.map(LinkedStorageEndpointData::groupId);
+		}
 		return Optional.ofNullable(contentsUuid);
 	}
 
@@ -88,6 +101,9 @@ public class StackStorageWrapper extends StorageWrapper {
 
 	@Override
 	public ContainerContents getContents() {
+		if (StorageBlockEntity.getLinkedStorageEndpointData(storageStack).isPresent()) {
+			return super.getContents();
+		}
 		if (contentsUuid == null) {
 			contentsUuid = getNewUuid();
 			setContentsUuid(contentsUuid);

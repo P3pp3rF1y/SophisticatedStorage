@@ -12,6 +12,9 @@ import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.SortBy;
 import net.p3pp3rf1y.sophisticatedcore.inventory.*;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.ILinkedStorageEndpointProvider;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageEndpointData;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageEndpointRole;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderData;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderDataHandler;
 import net.p3pp3rf1y.sophisticatedcore.settings.SettingsHandler;
@@ -31,7 +34,7 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializable {
+abstract class StorageWrapperBase implements IStorageWrapper, ValueIOSerializable {
 	public static final String MAIN_COLOR = "mainColor";
 	public static final String ACCENT_COLOR = "accentColor";
 	private static final String UUID = "uuid";
@@ -75,16 +78,18 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 	private final Map<Class<? extends IUpgradeWrapper>, Consumer<? extends IUpgradeWrapper>> upgradeDefaultsHandlers = new HashMap<>();
 	private Runnable onInventoryForInputOutputHandlerRefresh = () -> {
 	};
-
-	protected StorageWrapper(Supplier<Runnable> getSaveHandler, Runnable onSerializeRenderData, Runnable markContentsDirty) {
+	@Nullable
+	private IStorageWrapper linkedStorage;
+	protected StorageWrapperBase(Supplier<Runnable> getSaveHandler, Runnable onSerializeRenderData, Runnable markContentsDirty) {
 		this(getSaveHandler, onSerializeRenderData, markContentsDirty, 1, false);
 	}
 
-	protected StorageWrapper(Supplier<Runnable> getSaveHandler, Runnable onSerializeRenderData, Runnable markContentsDirty, int numberOfDisplayItems,
+	protected StorageWrapperBase(Supplier<Runnable> getSaveHandler, Runnable onSerializeRenderData, Runnable markContentsDirty, int numberOfDisplayItems,
 			boolean showsCountsAndFillRatios) {
 		this.getSaveHandler = getSaveHandler;
 		renderDataHandler = new RenderDataHandler(renderData, renderData -> {
 			this.renderData = renderData;
+			onRenderDataSerialized(renderData);
 			onSerializeRenderData.run();
 			getSaveHandler.get().run();
 		}, showsCountsAndFillRatios);
@@ -97,7 +102,7 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 
 			@Override
 			protected boolean canDeselectDisplayItems() {
-				return StorageWrapper.this.canDeselectDisplayItems();
+				return StorageWrapperBase.this.canDeselectDisplayItems();
 			}
 		};
 	}
@@ -106,17 +111,27 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 		return true;
 	}
 
+	protected void onRenderDataSerialized(RenderData renderData) {
+		// Hook for virtual storage wrappers that persist their render data in a carrier snapshot.
+	}
+
 	public void setContentsUuid(@Nullable UUID contentsUuid) {
 		this.contentsUuid = contentsUuid;
 	}
 
 	@Override
 	public SettingsHandler getSettingsHandler() {
+		if (linkedStorage != null) {
+			return linkedStorage.getSettingsHandler();
+		}
 		return settingsHandler;
 	}
 
 	@Override
 	public UpgradeHandler getUpgradeHandler() {
+		if (linkedStorage != null) {
+			return linkedStorage.getUpgradeHandler();
+		}
 		UpgradeHandler handler = upgradeHandler;
 		if (handler == null) {
 			upgradeHandlerInitializing = true;
@@ -181,6 +196,19 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 		saveData(out);
 	}
 
+	void saveEndpointClientData(ValueOutput out, RenderData canonicalRenderData) {
+		out.store(RENDER_DATA, RenderData.CODEC, canonicalRenderData);
+		if (openTabId >= 0) {
+			out.putInt(OPEN_TAB_ID, openTabId);
+		}
+		if (mainColor != -1) {
+			out.putInt(MAIN_COLOR, mainColor);
+		}
+		if (accentColor != -1) {
+			out.putInt(ACCENT_COLOR, accentColor);
+		}
+	}
+
 	void saveData(ValueOutput out) {
 		out.store(RENDER_DATA, RenderData.CODEC, renderData);
 		if (contentsUuid != null) {
@@ -237,12 +265,15 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 		}
 	}
 
+	void loadEndpointClientData(ValueInput in) {
+		loadRenderData(in);
+		openTabId = in.getIntOr(OPEN_TAB_ID, -1);
+		mainColor = in.getIntOr(MAIN_COLOR, -1);
+		accentColor = in.getIntOr(ACCENT_COLOR, -1);
+	}
+
 	private void loadData(ValueInput in) {
-		renderData = in.read(RENDER_DATA, RenderData.CODEC).or(() -> in.read("renderInfo", RenderData.CODEC)) // TODO remove legacy deserialization likely after
-																												// major 1.22 release
-				.orElse(RenderData.EMPTY.copy());
-		renderDataHandler.reloadFrom(renderData);
-		renderDataValidationPending = true;
+		loadRenderData(in);
 		contentsUuid = in.read(UUID, UUIDUtil.CODEC).orElse(null);
 		openTabId = in.getIntOr(OPEN_TAB_ID, -1);
 		sortBy = in.read(SORT_BY, SortBy.CODEC).orElse(SortBy.NAME);
@@ -250,6 +281,14 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 		loadSlotNumbers(in);
 		mainColor = in.getIntOr(MAIN_COLOR, -1);
 		accentColor = in.getIntOr(ACCENT_COLOR, -1);
+	}
+
+	private void loadRenderData(ValueInput in) {
+		renderData = in.read(RENDER_DATA, RenderData.CODEC).or(() -> in.read("renderInfo", RenderData.CODEC)) // TODO remove legacy deserialization likely after
+				// major 1.22 release
+				.orElse(RenderData.EMPTY.copy());
+		renderDataHandler.reloadFrom(renderData);
+		renderDataValidationPending = true;
 	}
 
 	protected void loadSlotNumbers(ValueInput in) {
@@ -309,11 +348,17 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 
 	@Override
 	public ITrackedContentsItemResourceHandler getInventoryForUpgradeProcessing() {
+		if (linkedStorage != null) {
+			return linkedStorage.getInventoryForUpgradeProcessing();
+		}
 		return getInventoryHandler();
 	}
 
 	@Override
 	public InventoryHandler getInventoryHandler() {
+		if (linkedStorage != null) {
+			return linkedStorage.getInventoryHandler();
+		}
 		InventoryHandler handler = inventoryHandler;
 		if (handler == null) {
 			handler = initInventoryHandler();
@@ -343,7 +388,19 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 		return contents;
 	}
 
+	public void replaceContents(ContainerContents contents) {
+		this.contents = contents;
+		onContentsUpdated();
+	}
+
+	public ContainerContents copyContentsForLinkedStorage() {
+		return contents.copy();
+	}
+
 	public int getNumberOfInventorySlots() {
+		if (linkedStorage != null) {
+			return linkedStorage.getInventoryHandler().size();
+		}
 		if (numberOfInventorySlots > 0) {
 			return numberOfInventorySlots;
 		}
@@ -363,6 +420,9 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 
 	@Override
 	public int getNumberOfSlotRows() {
+		if (linkedStorage != null) {
+			return linkedStorage.getNumberOfSlotRows();
+		}
 		int itemInventorySlots = getNumberOfInventorySlots();
 		return (int) Math.ceil(itemInventorySlots <= 81 ? (double) itemInventorySlots / 9 : (double) itemInventorySlots / 12);
 	}
@@ -376,6 +436,9 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 	}
 
 	private int getNumberOfUpgradeSlots() {
+		if (linkedStorage != null) {
+			return linkedStorage.getUpgradeHandler().size();
+		}
 		if (numberOfUpgradeSlots >= 0) {
 			return numberOfUpgradeSlots;
 		}
@@ -431,17 +494,28 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 
 	@Override
 	public void setSortBy(SortBy sortBy) {
+		if (linkedStorage != null) {
+			linkedStorage.setSortBy(sortBy);
+			return;
+		}
 		this.sortBy = sortBy;
 		save();
 	}
 
 	@Override
 	public SortBy getSortBy() {
+		if (linkedStorage != null) {
+			return linkedStorage.getSortBy();
+		}
 		return sortBy;
 	}
 
 	@Override
 	public void sort() {
+		if (linkedStorage != null) {
+			linkedStorage.sort();
+			return;
+		}
 		Set<Integer> slotIndexesExcludedFromSort = new HashSet<>();
 		slotIndexesExcludedFromSort.addAll(getSettingsHandler().getTypeCategory(NoSortSettingsCategory.class).getNoSortSlots());
 		slotIndexesExcludedFromSort.addAll(getInventoryHandler().getNoSortSlots());
@@ -461,6 +535,10 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 
 	@Override
 	public void onContentsUpdated() {
+		if (linkedStorage != null) {
+			refreshInventoryForInputOutput();
+			return;
+		}
 		inventoryHandler = null;
 		upgradeHandler = null;
 		settingsHandler.reloadFrom(contents.settings());
@@ -519,5 +597,42 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 
 	public <T extends IUpgradeWrapper> void registerUpgradeDefaultsHandler(Class<T> upgradeClass, Consumer<T> defaultsHandler) {
 		upgradeDefaultsHandlers.put(upgradeClass, defaultsHandler);
+	}
+
+	void setLinkedStorage(@Nullable IStorageWrapper linkedStorage) {
+		this.linkedStorage = linkedStorage;
+		refreshInventoryForInputOutput();
+	}
+
+}
+
+public abstract class StorageWrapper extends StorageWrapperBase implements ILinkedStorageEndpointProvider {
+	@Nullable
+	private LinkedStorageEndpointData linkedStorageEndpoint;
+	@Nullable
+	private LinkedStorageEndpointRole linkedStorageEndpointRole;
+
+	protected StorageWrapper(Supplier<Runnable> getSaveHandler, Runnable onSerializeRenderData, Runnable markContentsDirty) {
+		super(getSaveHandler, onSerializeRenderData, markContentsDirty);
+	}
+
+	protected StorageWrapper(Supplier<Runnable> getSaveHandler, Runnable onSerializeRenderData, Runnable markContentsDirty, int numberOfDisplayItems,
+			boolean showsCountsAndFillRatios) {
+		super(getSaveHandler, onSerializeRenderData, markContentsDirty, numberOfDisplayItems, showsCountsAndFillRatios);
+	}
+
+	void setLinkedStorageEndpoint(@Nullable LinkedStorageEndpointData linkedStorageEndpoint, @Nullable LinkedStorageEndpointRole linkedStorageEndpointRole) {
+		this.linkedStorageEndpoint = linkedStorageEndpoint;
+		this.linkedStorageEndpointRole = linkedStorageEndpointRole;
+	}
+
+	@Override
+	public Optional<LinkedStorageEndpointData> getLinkedStorageEndpoint() {
+		return Optional.ofNullable(linkedStorageEndpoint);
+	}
+
+	@Override
+	public Optional<LinkedStorageEndpointRole> getLinkedStorageEndpointRole() {
+		return Optional.ofNullable(linkedStorageEndpointRole);
 	}
 }

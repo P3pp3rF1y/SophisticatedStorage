@@ -21,9 +21,11 @@ import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.neoforged.neoforge.transfer.transaction.Transaction;
 import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 import net.p3pp3rf1y.sophisticatedcore.api.IStashStorageItem;
+import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.TranslationHelper;
 import net.p3pp3rf1y.sophisticatedcore.settings.memory.MemorySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
+import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
 
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -79,10 +81,17 @@ public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageIte
 
 	@Override
 	public Optional<TooltipComponent> getInventoryTooltip(ItemStack stack) {
-		return Optional.of(new StorageContentsTooltip(stack));
+		LinkedStorageTooltip linkedStorageTooltip = StorageBlockEntity.getLinkedStorageEndpointData(stack)
+				.flatMap(endpoint -> StorageBlockEntity.getLinkedStorageEndpointRole(stack).map(role -> new LinkedStorageTooltip(role, endpoint.groupId())))
+				.orElse(null);
+		return Optional.of(new StorageContentsTooltip(stack, linkedStorageTooltip));
 	}
 
 	public int stash(HolderLookup.Provider registries, ItemStack storageStack, ItemResource resource, int amount, TransactionContext tx) {
+		Optional<IStorageWrapper> linkedHost = StorageLinkedStorageResolver.resolveServerCanonicalHost(storageStack);
+		if (linkedHost.isPresent()) {
+			return linkedHost.get().getInventoryForUpgradeProcessing().insert(resource, amount, tx);
+		}
 		StackStorageWrapper wrapper = StackStorageWrapper.fromStack(registries, storageStack);
 		if (wrapper.getContentsUuid().isEmpty()) {
 			wrapper.ensureContentsUuid();
@@ -92,7 +101,7 @@ public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageIte
 
 	@Override
 	public StashResult getItemStashable(HolderLookup.Provider registries, ItemStack storageStack, ItemStack stack) {
-		StackStorageWrapper wrapper = StackStorageWrapper.fromStack(registries, storageStack);
+		IStorageWrapper wrapper = getStashWrapper(registries, storageStack);
 
 		try (Transaction tx = Transaction.openRoot()) {
 			if (wrapper.getInventoryForUpgradeProcessing().insert(ItemResource.of(stack), stack.getCount(), tx) == 0) {
@@ -105,6 +114,10 @@ public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageIte
 		}
 
 		return StashResult.SPACE;
+	}
+
+	private IStorageWrapper getStashWrapper(HolderLookup.Provider registries, ItemStack storageStack) {
+		return StorageLinkedStorageResolver.resolveServerCanonicalHost(storageStack).orElseGet(() -> StackStorageWrapper.fromStack(registries, storageStack));
 	}
 
 	@Override

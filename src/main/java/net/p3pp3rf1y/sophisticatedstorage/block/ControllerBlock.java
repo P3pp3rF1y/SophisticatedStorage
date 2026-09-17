@@ -91,18 +91,23 @@ public class ControllerBlock extends BlockBase implements ISneakItemInteractionB
 
 		WorldHelper.getBlockEntity(level, pos, ControllerBlockEntity.class).ifPresent(controller -> {
 			AtomicBoolean appliedUpgrade = new AtomicBoolean(false);
-			controller.getStoragePositions().forEach(storagePos -> WorldHelper.getBlockEntity(level, storagePos, StorageBlockEntity.class).ifPresent(be -> {
-				if (be.getBlockState().getBlock() instanceof StorageBlockBase storageblock) {
-					if (storageblock.tryAddSingleUpgrade(player, be, stack).consumesAction()) {
-						appliedUpgrade.set(true);
-					} else if (stack.getItem() instanceof StorageTierUpgradeItem storageTierUpgradeItem
-							&& storageTierUpgradeItem.tryUpgradeStorage(stack, level, storagePos, be.getBlockState(), player).consumesAction()) {
+			if (stack.getItem() instanceof StorageTierUpgradeItem storageTierUpgradeItem) {
+				controller.getStorageTierUpgradePositions()
+						.forEach(storagePos -> WorldHelper.getBlockEntity(level, storagePos, StorageBlockEntity.class).ifPresent(be -> {
+							if (storageTierUpgradeItem.tryUpgradeStorage(stack, level, storagePos, be.getBlockState(), player) == InteractionResult.SUCCESS) {
+								appliedUpgrade.set(true);
+							}
+						}));
+			} else {
+				controller.getStoragePositions().forEach(storagePos -> WorldHelper.getBlockEntity(level, storagePos, StorageBlockEntity.class).ifPresent(be -> {
+					if (be.getBlockState().getBlock() instanceof StorageBlockBase storageBlock
+							&& storageBlock.tryAddSingleUpgrade(player, be, stack).consumesAction()) {
 						appliedUpgrade.set(true);
 					}
-				}
-			}));
+				}));
+			}
 
-			if (!appliedUpgrade.get()) {
+			if (!appliedUpgrade.get() && !(stack.getItem() instanceof StorageTierUpgradeItem)) {
 				controller.depositPlayerItems(player, hand);
 			}
 		});
@@ -121,8 +126,8 @@ public class ControllerBlock extends BlockBase implements ISneakItemInteractionB
 			AtomicBoolean result = new AtomicBoolean(false);
 			controller.getStoragePositions().forEach(storagePos -> {
 				Block block = level.getBlockState(storagePos).getBlock();
-				if (block instanceof StorageBlockBase storageblock
-						&& storageblock.tryFillUpgrades(player, hand, level, storagePos, player.getItemInHand(hand))) {
+				if (block instanceof StorageBlockBase storageBlock
+						&& storageBlock.tryFillUpgrades(player, hand, level, storagePos, player.getItemInHand(hand))) {
 					result.set(true);
 				}
 			});

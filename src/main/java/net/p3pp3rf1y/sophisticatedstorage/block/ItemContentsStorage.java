@@ -19,6 +19,7 @@ import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+
 //TODO after 1.22 remove support for legacy UUID deserialization via strings
 public class ItemContentsStorage extends SavedData {
 	private static final SavedDataType<ItemContentsStorage> TYPE = new SavedDataType<>(

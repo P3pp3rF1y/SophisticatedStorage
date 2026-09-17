@@ -5,11 +5,14 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.Connection;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Clearable;
@@ -28,15 +31,23 @@ import net.neoforged.fml.util.thread.SidedThreadGroups;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.p3pp3rf1y.sophisticatedcore.controller.ControllerBlockEntityBase;
+import net.p3pp3rf1y.sophisticatedcore.controller.ControllerStorageKey;
 import net.p3pp3rf1y.sophisticatedcore.controller.IControllableStorage;
 import net.p3pp3rf1y.sophisticatedcore.controller.ILinkable;
+import net.p3pp3rf1y.sophisticatedcore.init.ModCoreDataComponents;
+import net.p3pp3rf1y.sophisticatedcore.inventory.ContainerContents;
 import net.p3pp3rf1y.sophisticatedcore.inventory.ITrackedContentsItemResourceHandler;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.*;
 import net.p3pp3rf1y.sophisticatedcore.settings.itemdisplay.ItemDisplaySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.settings.memory.MemorySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.ITickableUpgrade;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.ValueIOHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
+import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageTranslationHelper;
+import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
+import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageSettingsContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.network.StorageOpennessPayload;
 import net.p3pp3rf1y.sophisticatedstorage.upgrades.INeighborChangeListenerUpgrade;
 import org.jspecify.annotations.Nullable;
@@ -51,9 +62,12 @@ public abstract class StorageBlockEntity extends BlockEntity
 			Nameable,
 			ITierDisplay,
 			IUpgradeDisplay,
-			Clearable {
+			Clearable,
+			ILinkedStorageBlockEndpoint {
 	public static final String STORAGE_WRAPPER = "storageWrapper";
-	public static final String UPDATE_BLOCK_RENDER_TAG = "updateBlockRender";
+	public static final String UPDATE_BLOCK_RENDER = "updateBlockRender";
+	private static final String LINKED_STORAGE_ENDPOINT = "linkedStorageEndpoint";
+	private static final String LINKED_STORAGE_PRIMARY = "linkedStoragePrimary";
 	private final StorageWrapper storageWrapper;
 	@Nullable
 	protected Component displayName = null;
@@ -76,6 +90,15 @@ public abstract class StorageBlockEntity extends BlockEntity
 	private boolean showUpgrades = false;
 	@Nullable
 	private ContentsFilteredItemHandler contentsFilteredItemHandler = null;
+	private static final StorageLinkedStorageEndpointAdapter LINKED_STORAGE_ENDPOINT_ADAPTER = new StorageLinkedStorageEndpointAdapter();
+	@Nullable
+	private LinkedStorageEndpointData linkedStorageEndpoint;
+	@Nullable
+	private StorageLinkedStorageHostWrapper linkedStorageHost;
+	private Runnable linkedStorageSubscription = () -> {
+	};
+	private Runnable linkedStorageRootContentsReplacementSubscription = () -> {
+	};
 
 	private record DisplayTintKey(int displayIndex, int tintIndex) {
 	}
@@ -235,15 +258,24 @@ public abstract class StorageBlockEntity extends BlockEntity
 	}
 
 	private void saveStorageWrapperClientData(ValueOutput out) {
-		storageWrapper.saveClientData(out.child(STORAGE_WRAPPER));
+		if (linkedStorageHost != null) {
+			storageWrapper.saveEndpointClientData(out.child(STORAGE_WRAPPER), linkedStorageHost.getRenderDataHandler().getData());
+		} else {
+			storageWrapper.saveClientData(out.child(STORAGE_WRAPPER));
+		}
 	}
 
 	protected void saveSynchronizedData(ValueOutput out) {
+		if (linkedStorageEndpoint != null) {
+			out.store(LINKED_STORAGE_ENDPOINT, LinkedStorageEndpointData.CODEC, linkedStorageEndpoint);
+			out.putBoolean(LINKED_STORAGE_PRIMARY,
+					storageWrapper.getLinkedStorageEndpointRole().orElse(LinkedStorageEndpointRole.SECONDARY) == LinkedStorageEndpointRole.PRIMARY);
+		}
 		if (displayName != null) {
 			out.store("displayName", ComponentSerialization.CODEC, displayName);
 		}
 		if (updateBlockRender) {
-			out.putBoolean(UPDATE_BLOCK_RENDER_TAG, true);
+			out.putBoolean(UPDATE_BLOCK_RENDER, true);
 		}
 		updateBlockRender = false;
 		if (locked) {
@@ -311,31 +343,49 @@ public abstract class StorageBlockEntity extends BlockEntity
 	@Override
 	public void loadAdditional(ValueInput in) {
 		super.loadAdditional(in);
-		loadStorageWrapper(in);
 		loadSynchronizedData(in);
+		loadStorageWrapper(in);
 
 		isLinkedToController = in.getBooleanOr("isLinkedToController", false);
 	}
 
 	private void loadStorageWrapper(ValueInput in) {
-		in.child(STORAGE_WRAPPER).ifPresent(storageWrapper::deserialize);
+		in.child(STORAGE_WRAPPER).ifPresent(wrapperData -> {
+			if (linkedStorageEndpoint == null) {
+				storageWrapper.deserialize(wrapperData);
+			} else {
+				storageWrapper.loadEndpointClientData(wrapperData);
+			}
+		});
 	}
 
 	@Override
 	public void onLoad() {
 		super.onLoad();
+		if (level instanceof ServerLevel serverLevel && linkedStorageEndpoint != null) {
+			if (LinkedStorageGroupsSavedData.get(serverLevel).manager().isEndpointMember(linkedStorageEndpoint.groupId(), linkedStorageEndpoint.endpointId())) {
+				bindLinkedStorage(serverLevel, linkedStorageEndpoint);
+			} else {
+				clearLinkedStorage();
+			}
+		}
 		storageWrapper.onInit(level);
 		registerWithControllerOnLoad();
 	}
 
 	public void loadSynchronizedData(ValueInput in) {
+		linkedStorageEndpoint = in.read(LINKED_STORAGE_ENDPOINT, LinkedStorageEndpointData.CODEC).orElse(null);
+		if (linkedStorageEndpoint != null) {
+			storageWrapper.setLinkedStorageEndpoint(linkedStorageEndpoint,
+					in.getBooleanOr(LINKED_STORAGE_PRIMARY, false) ? LinkedStorageEndpointRole.PRIMARY : LinkedStorageEndpointRole.SECONDARY);
+		}
 		displayName = in.read("displayName", ComponentSerialization.CODEC).orElse(null);
 		locked = in.getBooleanOr("locked", false);
 		showLock = in.getBooleanOr("showLock", true);
 		showTier = in.getBooleanOr("showTier", true);
 		showUpgrades = in.getBooleanOr("showUpgrades", false);
 		if (level != null && level.isClientSide()) {
-			if (in.getBooleanOr(UPDATE_BLOCK_RENDER_TAG, false)) {
+			if (in.getBooleanOr(UPDATE_BLOCK_RENDER, false)) {
 				WorldHelper.notifyBlockUpdate(this);
 			}
 		}
@@ -346,10 +396,12 @@ public abstract class StorageBlockEntity extends BlockEntity
 	public void onChunkUnloaded() {
 		super.onChunkUnloaded();
 		chunkBeingUnloaded = true;
+		closeLinkedStorageSubscription();
 	}
 
 	@Override
 	public void setRemoved() {
+		closeLinkedStorageSubscription();
 		if (!isBeingUpgraded && !chunkBeingUnloaded && level != null) {
 			removeFromController();
 		}
@@ -365,8 +417,8 @@ public abstract class StorageBlockEntity extends BlockEntity
 
 	@Override
 	public void onDataPacket(Connection net, ValueInput in) {
-		loadStorageWrapperClient(in);
 		loadSynchronizedData(in);
+		loadStorageWrapperClient(in);
 	}
 
 	public void setUpdateBlockRender() {
@@ -383,21 +435,35 @@ public abstract class StorageBlockEntity extends BlockEntity
 
 	@Override
 	public void handleUpdateTag(ValueInput input) {
-		loadStorageWrapperClient(input);
 		loadSynchronizedData(input);
+		loadStorageWrapperClient(input);
 	}
 
 	private void loadStorageWrapperClient(ValueInput in) {
-		storageWrapper.loadClientData(in.childOrEmpty(STORAGE_WRAPPER));
+		if (linkedStorageEndpoint == null) {
+			storageWrapper.loadClientData(in.childOrEmpty(STORAGE_WRAPPER));
+		} else {
+			storageWrapper.loadEndpointClientData(in.childOrEmpty(STORAGE_WRAPPER));
+		}
 	}
 
 	public static void serverTick(Level level, BlockPos blockPos, StorageBlockEntity storageBlockEntity) {
+		if (storageBlockEntity.isSecondaryLinkedStorageEndpoint(level)) {
+			return;
+		}
+		if (level instanceof ServerLevel serverLevel) {
+			StorageLinkedStorageJukeboxPlaybackAnchors.refreshBlockAnchor(serverLevel, storageBlockEntity);
+		}
 		storageBlockEntity.getStorageWrapper().getUpgradeHandler().getWrappersThatImplement(ITickableUpgrade.class)
 				.forEach(upgrade -> upgrade.tick(null, level, blockPos));
 	}
 
 	@Override
 	public StorageWrapper getStorageWrapper() {
+		return storageWrapper;
+	}
+
+	public StorageWrapper getMenuStorageWrapper() {
 		return storageWrapper;
 	}
 
@@ -414,6 +480,14 @@ public abstract class StorageBlockEntity extends BlockEntity
 		return getBlockState().getBlock().getName();
 	}
 
+	public Component getMenuDisplayName() {
+		if (level instanceof ServerLevel serverLevel && linkedStorageEndpoint != null && isLinkedStorageEndpointMember(serverLevel, linkedStorageEndpoint)
+				&& linkedStorageHost != null) {
+			return linkedStorageHost.getLinkedStorageDisplayName().filter(name -> !name.getString().isEmpty()).orElseGet(this::getDisplayName);
+		}
+		return getDisplayName();
+	}
+
 	@SuppressWarnings("unused") // resource param used in override
 	protected boolean isAllowedInStorage(ItemResource resource) {
 		return true;
@@ -424,6 +498,43 @@ public abstract class StorageBlockEntity extends BlockEntity
 		getStorageWrapper().changeSize(additionalInventorySlots, additionalUpgradeSlots);
 		changeSlots(currentInventorySlots + additionalInventorySlots);
 		invalidateCapabilitiesAndControllerCache();
+	}
+
+	public boolean canUpgradeStorageTier(ServerLevel serverLevel) {
+		return linkedStorageEndpoint == null || LinkedStorageGroupsSavedData.get(serverLevel).manager().isPrimaryEndpoint(linkedStorageEndpoint.groupId(),
+				linkedStorageEndpoint.endpointId());
+	}
+
+	public boolean isPrimaryLinkedStorage() {
+		return level instanceof ServerLevel serverLevel && linkedStorageEndpoint != null && canUpgradeStorageTier(serverLevel);
+	}
+
+	public boolean completePrimaryLinkedStorageTierUpgrade(ServerLevel serverLevel, int inventorySlots, int upgradeSlots) {
+		if (linkedStorageEndpoint == null) {
+			return false;
+		}
+
+		LinkedStorageGroupManager manager = LinkedStorageGroupsSavedData.get(serverLevel).manager();
+		if (!manager.isPrimaryEndpoint(linkedStorageEndpoint.groupId(), linkedStorageEndpoint.endpointId())) {
+			return false;
+		}
+
+		bindLinkedStorage(serverLevel, linkedStorageEndpoint);
+		if (linkedStorageHost == null) {
+			return false;
+		}
+
+		linkedStorageHost.changeSize(inventorySlots - linkedStorageHost.getInventoryHandler().size(),
+				upgradeSlots - linkedStorageHost.getUpgradeHandler().size());
+		manager.resolveContents(linkedStorageEndpoint.groupId()).orElseThrow().setContents(linkedStorageEndpoint.groupId(),
+				linkedStorageHost.copyContentsForLinkedStorage());
+		manager.updatePrimaryHostDescriptor(linkedStorageEndpoint.groupId(), linkedStorageEndpoint.endpointId(),
+				new LinkedStorageHostDescriptor(StorageLinkedStorageHostWrapper.FACTORY_ID, StorageLinkedStorageHostWrapper.createVirtualCarrier(this)));
+		changeSlots(inventorySlots);
+		invalidateCapabilitiesAndControllerCache();
+		setChanged();
+		WorldHelper.notifyBlockUpdate(this);
+		return true;
 	}
 
 	public void dropContents() {
@@ -449,8 +560,13 @@ public abstract class StorageBlockEntity extends BlockEntity
 		invalidateCapabilitiesAndControllerCache();
 	}
 
-	public void setCustomName(Component customName) {
+	public void setCustomName(@Nullable Component customName) {
 		displayName = customName;
+		if (level instanceof ServerLevel serverLevel && linkedStorageEndpoint != null) {
+			LinkedStorageGroupsSavedData.get(serverLevel).manager().updatePrimaryHostDescriptor(linkedStorageEndpoint.groupId(),
+					linkedStorageEndpoint.endpointId(),
+					new LinkedStorageHostDescriptor(StorageLinkedStorageHostWrapper.FACTORY_ID, StorageLinkedStorageHostWrapper.createVirtualCarrier(this)));
+		}
 		setChanged();
 	}
 
@@ -460,7 +576,257 @@ public abstract class StorageBlockEntity extends BlockEntity
 	}
 
 	public boolean shouldDropContents() {
+		return linkedStorageEndpoint == null;
+	}
+
+	@Override
+	@Nullable
+	public LinkedStorageEndpointData getLinkedStorageEndpointData() {
+		return linkedStorageEndpoint;
+	}
+
+	@Override
+	public ILinkedStorageEndpointAdapter<ILinkedStorageBlockEndpoint> getLinkedStorageBlockEndpointAdapter() {
+		return LINKED_STORAGE_ENDPOINT_ADAPTER;
+	}
+
+	public boolean isLinkedStorageLinkCandidate() {
+		return linkedStorageEndpoint != null || isLinkedStorageCandidate();
+	}
+
+	@Override
+	public Component getLinkedStorageLinkFailureMessage() {
+		return this instanceof WoodStorageBlockEntity woodStorageBlockEntity && woodStorageBlockEntity.isPacked()
+				? StorageTranslationHelper.INSTANCE.translStatusMessage("ender_linker.packed_storage")
+				: ILinkedStorageBlockEndpoint.super.getLinkedStorageLinkFailureMessage();
+	}
+
+	public boolean isLinkedStorageCandidate() {
+		if (isLinked() || this instanceof WoodStorageBlockEntity woodStorageBlockEntity && woodStorageBlockEntity.isPacked()) {
+			return false;
+		}
+		return this instanceof ShulkerBoxBlockEntity || this instanceof BarrelBlockEntity
+				|| this instanceof ChestBlockEntity chestBlockEntity && chestBlockEntity.isMainChest();
+	}
+
+	public boolean isLinkedStorage() {
+		return linkedStorageEndpoint != null;
+	}
+
+	public void writeLinkedStorageMenuData(FriendlyByteBuf buffer) {
+		if (!(level instanceof ServerLevel serverLevel) || linkedStorageEndpoint == null || !isLinkedStorageEndpointMember(serverLevel, linkedStorageEndpoint)
+				|| linkedStorageHost == null) {
+			buffer.writeBoolean(false);
+			return;
+		}
+
+		LinkedStorageGroupManager manager = LinkedStorageGroupsSavedData.get(serverLevel).manager();
+		Optional<ILinkedStorageContents> contents = manager.resolveContents(linkedStorageEndpoint.groupId());
+		Optional<LinkedStorageSnapshotProfile> profile = linkedStorageHost.getLinkedStorageSnapshotProfile();
+		Optional<CompoundTag> virtualCarrier = linkedStorageHost.getVirtualCarrierSnapshot();
+		if (contents.isEmpty() || profile.isEmpty() || virtualCarrier.isEmpty()) {
+			buffer.writeBoolean(false);
+			return;
+		}
+
+		buffer.writeBoolean(true);
+		buffer.writeUUID(linkedStorageEndpoint.groupId());
+		buffer.writeUUID(linkedStorageEndpoint.endpointId());
+		buffer.writeBoolean(manager.isPrimaryEndpoint(linkedStorageEndpoint.groupId(), linkedStorageEndpoint.endpointId()));
+		buffer.writeVarLong(manager.getRevision(linkedStorageEndpoint.groupId()));
+		ComponentSerialization.TRUSTED_CONTEXT_FREE_STREAM_CODEC.encode(buffer, profile.get().groupName());
+		FriendlyByteBuf.writeNbt(buffer, (CompoundTag) ContainerContents.CODEC.encodeStart(NbtOps.INSTANCE, contents.get().contents()).getOrThrow());
+		buffer.writeVarInt(profile.get().inventorySlots());
+		buffer.writeVarInt(profile.get().upgradeSlots());
+		buffer.writeVarInt(profile.get().columnsTaken());
+		FriendlyByteBuf.writeNbt(buffer, virtualCarrier.get());
+	}
+
+	public void bindClientLinkedStorage(LinkedStorageEndpointData endpoint, LinkedStorageEndpointRole endpointRole, ILinkedStorageContents contents,
+			CompoundTag virtualCarrier, Component groupName, int inventorySlots, int upgradeSlots) {
+		closeLinkedStorageSubscription();
+		linkedStorageEndpoint = endpoint;
+		StorageLinkedStorageHostWrapper.applyClientSnapshotProfile(virtualCarrier, groupName, inventorySlots, upgradeSlots);
+		linkedStorageHost = StorageLinkedStorageHostWrapper.create(contents, virtualCarrier);
+		storageWrapper.setLinkedStorage(linkedStorageHost);
+		storageWrapper.setLinkedStorageEndpoint(endpoint, endpointRole);
+		refreshLinkedStorageState();
+	}
+
+	public void copyLinkedStorageEndpointTo(ItemStack stack) {
+		if (linkedStorageEndpoint == null) {
+			return;
+		}
+		stack.set(ModCoreDataComponents.LINKED_STORAGE_ENDPOINT, linkedStorageEndpoint);
+		if (level instanceof ServerLevel serverLevel && LinkedStorageGroupsSavedData.get(serverLevel).manager()
+				.isPrimaryEndpoint(linkedStorageEndpoint.groupId(), linkedStorageEndpoint.endpointId())) {
+			stack.set(ModCoreDataComponents.LINKED_STORAGE_PRIMARY_ENDPOINT, true);
+		} else {
+			stack.remove(ModCoreDataComponents.LINKED_STORAGE_PRIMARY_ENDPOINT);
+		}
+		stack.remove(ModCoreDataComponents.STORAGE_UUID);
+	}
+
+	public void restoreLinkedStorageEndpoint(ServerLevel serverLevel, ItemStack stack) {
+		LinkedStorageEndpointData endpoint = stack.get(ModCoreDataComponents.LINKED_STORAGE_ENDPOINT);
+		if (endpoint == null || !isLinkedStorageEndpointMember(serverLevel, endpoint) || !bindLinkedStorage(serverLevel, endpoint)) {
+			clearLinkedStorage();
+			return;
+		}
+		reregisterWithController();
+	}
+
+	public static boolean hasLinkedStorageEndpoint(ItemStack stack) {
+		return getLinkedStorageEndpointData(stack).isPresent();
+	}
+
+	public static Optional<LinkedStorageEndpointData> getLinkedStorageEndpointData(ItemStack stack) {
+		return Optional.ofNullable(stack.get(ModCoreDataComponents.LINKED_STORAGE_ENDPOINT));
+	}
+
+	public static Optional<LinkedStorageEndpointRole> getLinkedStorageEndpointRole(ItemStack stack) {
+		return LinkedStorageStackLifecycle.getEndpointRole(stack);
+	}
+
+	boolean bindLinkedStorage(ServerLevel serverLevel, LinkedStorageEndpointData endpoint) {
+		if (!isLinkedStorageCandidate()) {
+			clearLinkedStorage();
+			return false;
+		}
+
+		LinkedStorageGroupManager manager = LinkedStorageGroupsSavedData.get(serverLevel).manager();
+		if (linkedStorageEndpoint != null && !linkedStorageEndpoint.equals(endpoint)) {
+			clearLinkedStorage();
+		}
+		return manager.resolveVirtualHost(endpoint.groupId()).filter(StorageLinkedStorageHostWrapper.class::isInstance)
+				.map(StorageLinkedStorageHostWrapper.class::cast).map(host -> {
+					closeMenusForThisBlock();
+					closeLinkedStorageSubscription();
+					linkedStorageEndpoint = endpoint;
+					linkedStorageHost = host;
+					storageWrapper.setLinkedStorage(host);
+					storageWrapper.setLinkedStorageEndpoint(endpoint,
+							manager.isPrimaryEndpoint(endpoint.groupId(), endpoint.endpointId())
+									? LinkedStorageEndpointRole.PRIMARY
+									: LinkedStorageEndpointRole.SECONDARY);
+					StorageLinkedStorageJukeboxPlaybackAnchors.refreshBlockAnchor(serverLevel, this);
+					linkedStorageSubscription = manager.subscribeToGroupChanges(endpoint.groupId(), this::refreshLinkedStorageState);
+					linkedStorageRootContentsReplacementSubscription = manager.subscribeToRootContentsReplacements(endpoint.groupId(),
+							this::closeMenusForThisBlock);
+					refreshLinkedStorageState();
+					return true;
+				}).orElseGet(() -> {
+					clearLinkedStorage();
+					return false;
+				});
+	}
+
+	private void clearLinkedStorage() {
+		boolean hadLinkedStorage = linkedStorageEndpoint != null || linkedStorageHost != null;
+		closeLinkedStorageSubscription();
+		linkedStorageEndpoint = null;
+		linkedStorageHost = null;
+		storageWrapper.setLinkedStorage(null);
+		storageWrapper.setLinkedStorageEndpoint(null, null);
+		if (hadLinkedStorage && level instanceof ServerLevel) {
+			setChanged();
+		}
+	}
+
+	public void restoreCreativeLinkedStorageEndpoint(ServerLevel serverLevel, ItemStack stack) {
+		LinkedStorageEndpointData sourceEndpoint = stack.get(ModCoreDataComponents.LINKED_STORAGE_ENDPOINT);
+		if (sourceEndpoint == null) {
+			return;
+		}
+		LinkedStorageGroupManager manager = LinkedStorageGroupsSavedData.get(serverLevel).manager();
+		manager.createSecondaryEndpoint(sourceEndpoint).ifPresent(endpoint -> {
+			if (bindLinkedStorage(serverLevel, endpoint)) {
+				reregisterWithController();
+			} else {
+				manager.unregisterEndpoint(endpoint.groupId(), endpoint.endpointId());
+			}
+		});
+	}
+
+	public void syncLinkedStorageContentsToPlayer(ServerPlayer player) {
+		if (linkedStorageEndpoint != null) {
+			ServerLevel serverLevel = player.level();
+			LinkedStorageGroupsSavedData.get(serverLevel).manager().resolveContents(linkedStorageEndpoint.groupId()).ifPresent(contents -> PacketDistributor
+					.sendToPlayer(player, LinkedStorageContentsPayload.createSnapshot(serverLevel, linkedStorageEndpoint.groupId())));
+		}
+	}
+
+	boolean transferLinkedStorageEndpointTo(StorageBlockEntity target) {
+		if (!(level instanceof ServerLevel serverLevel) || target.getLevel() != serverLevel || linkedStorageEndpoint == null) {
+			return false;
+		}
+
+		LinkedStorageEndpointData endpoint = linkedStorageEndpoint;
+		Component customName = getCustomName();
+		closeMenusForThisBlock();
+		clearLinkedStorage();
+		if (!target.bindLinkedStorage(serverLevel, endpoint)) {
+			return false;
+		}
+
+		target.setCustomName(customName);
 		return true;
+	}
+
+	private boolean isLinkedStorageEndpointMember(ServerLevel serverLevel, LinkedStorageEndpointData endpoint) {
+		return LinkedStorageGroupsSavedData.get(serverLevel).manager().isEndpointMember(endpoint.groupId(), endpoint.endpointId());
+	}
+
+	void onLinkedStorageEndpointLinked() {
+		setChanged();
+		reregisterWithController();
+		refreshLinkedStorageState();
+	}
+
+	private void refreshLinkedStorageState() {
+		if (linkedStorageHost == null) {
+			return;
+		}
+		storageWrapper.refreshInventoryForInputOutput();
+		storageWrapper.getRenderDataHandler().reloadFrom(linkedStorageHost.getRenderDataHandler().getData());
+		if (level != null && !level.isClientSide() && getBlockState().getBlock() instanceof IStorageBlock storageBlock) {
+			storageBlock.setTicking(level, getBlockPos(), getBlockState(),
+					!isSecondaryLinkedStorageEndpoint(level) && !storageWrapper.getUpgradeHandler().getWrappersThatImplement(ITickableUpgrade.class).isEmpty());
+		}
+		contentsFilteredItemHandler = null;
+		setUpdateBlockRender();
+		setChanged();
+		if (level != null && !level.isClientSide()) {
+			WorldHelper.notifyBlockUpdate(this);
+		}
+	}
+
+	public boolean isSecondaryLinkedStorageEndpoint(Level level) {
+		return storageWrapper.getLinkedStorageEndpointRole().map(role -> role == LinkedStorageEndpointRole.SECONDARY)
+				.orElseGet(() -> linkedStorageEndpoint != null && level instanceof ServerLevel serverLevel && !LinkedStorageGroupsSavedData.get(serverLevel)
+						.manager().isPrimaryEndpoint(linkedStorageEndpoint.groupId(), linkedStorageEndpoint.endpointId()));
+	}
+
+	private void closeLinkedStorageSubscription() {
+		linkedStorageSubscription.run();
+		linkedStorageSubscription = () -> {
+		};
+		linkedStorageRootContentsReplacementSubscription.run();
+		linkedStorageRootContentsReplacementSubscription = () -> {
+		};
+	}
+
+	public void closeMenusForThisBlock() {
+		if (!(level instanceof ServerLevel serverLevel)) {
+			return;
+		}
+		serverLevel.players().forEach(player -> {
+			if ((player.containerMenu instanceof StorageContainerMenu storageContainerMenu && storageContainerMenu.getStorageBlockEntity() == this)
+					|| (player.containerMenu instanceof StorageSettingsContainerMenu storageSettingsContainerMenu
+							&& storageSettingsContainerMenu.getBlockPosition().equals(worldPosition))) {
+				player.closeContainer();
+			}
+		});
 	}
 
 	@Override
@@ -488,12 +854,38 @@ public abstract class StorageBlockEntity extends BlockEntity
 	}
 
 	@Override
+	public ControllerStorageKey getControllerStorageKey() {
+		return linkedStorageEndpoint == null
+				? IControllableStorage.super.getControllerStorageKey()
+				: new ControllerStorageKey(getControlledStorageBlockPos(), linkedStorageEndpoint.groupId());
+	}
+
+	@Override
+	public boolean isControllerStorageAccessible() {
+		return !locked;
+	}
+
+	@Override
+	public void onInventoryInputOutputHandlerRefresh() {
+		if (linkedStorageEndpoint == null || level == null || level.isClientSide()) {
+			IControllableStorage.super.onInventoryInputOutputHandlerRefresh();
+			return;
+		}
+
+		getControllerPos().flatMap(controllerPos -> WorldHelper.getLoadedBlockEntity(level, controllerPos, ControllerBlockEntityBase.class))
+				.ifPresent(controller -> controller.rebindStorage(getStorageBlockPos()));
+	}
+
+	@Override
 	public Level getStorageBlockLevel() {
 		return Objects.requireNonNull(getLevel());
 	}
 
 	@Override
 	public void linkToController(BlockPos controllerPos) {
+		if (isLinkedStorage()) {
+			return;
+		}
 		if (getControllerPos().isPresent()) {
 			return;
 		}
