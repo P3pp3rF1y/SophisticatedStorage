@@ -6,6 +6,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
@@ -88,6 +91,21 @@ public class StorageTierUpgradeItem extends ItemBase {
 	private <B extends BlockEntity> InteractionResult tryUpgradeStorage(ItemStack stack, BlockPos pos, Level level, BlockState state,
 			TierUpgradeDefinition<B> def, BlockEntity blockEntity, @Nullable Player player) {
 		B be = def.blockEntityClass().cast(blockEntity);
+		StorageBlockEntity tierUpgradePermissionStorage = be instanceof StorageBlockEntity storageBlockEntity ? storageBlockEntity : null;
+		if (tierUpgradePermissionStorage instanceof ChestBlockEntity chestBlockEntity) {
+			ChestBlockEntity mainChestBlockEntity = chestBlockEntity.getMainChestBlockEntity();
+			if (mainChestBlockEntity != null) {
+				tierUpgradePermissionStorage = mainChestBlockEntity;
+			}
+		}
+		if (level instanceof ServerLevel serverLevel && tierUpgradePermissionStorage != null
+				&& !tierUpgradePermissionStorage.canUpgradeStorageTier(serverLevel)) {
+			if (player != null) {
+				player.playNotifySound(SoundEvents.NOTE_BLOCK_BASS.value(), SoundSource.PLAYERS, 1, 0.7F);
+				player.displayClientMessage(StorageTranslationHelper.INSTANCE.translStatusMessage("tier_upgrade_main_linked_storage_only"), true);
+			}
+			return InteractionResult.FAIL;
+		}
 		if (def.isUpgradingBlocked().test(be)) {
 			return InteractionResult.PASS;
 		}
@@ -146,13 +164,20 @@ public class StorageTierUpgradeItem extends ItemBase {
 			newBlockEntity.loadAdditional(beTag, level.registryAccess());
 
 			blockEntity.setBeingUpgraded(true);
+			blockEntity.closeMenusForThisBlock();
 			level.removeBlockEntity(pos);
 			level.removeBlock(pos, false);
 
 			level.setBlock(pos, newBlockState, 3);
 			level.setBlockEntity(newBlockEntity);
-			newBlockEntity.changeStorageSize(newInventorySize - newBlockEntity.getStorageWrapper().getInventoryHandler().getSlots(),
-					newUpgradeSize - newBlockEntity.getStorageWrapper().getUpgradeHandler().getSlots());
+			if (newBlockEntity.isLinkedStorage() && level instanceof ServerLevel serverLevel) {
+				if (!newBlockEntity.completePrimaryLinkedStorageTierUpgrade(serverLevel, newInventorySize, newUpgradeSize)) {
+					throw new IllegalStateException("Could not update linked storage capacity after a primary tier upgrade");
+				}
+			} else {
+				newBlockEntity.changeStorageSize(newInventorySize - newBlockEntity.getStorageWrapper().getInventoryHandler().getSlots(),
+						newUpgradeSize - newBlockEntity.getStorageWrapper().getUpgradeHandler().getSlots());
+			}
 			WorldHelper.notifyBlockUpdate(newBlockEntity);
 			return newBlockEntity;
 		}

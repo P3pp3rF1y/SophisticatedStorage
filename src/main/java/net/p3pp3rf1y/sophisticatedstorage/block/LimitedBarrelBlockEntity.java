@@ -8,6 +8,7 @@ import net.minecraft.nbt.IntTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -185,11 +186,18 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 		}
 
 		if (stackInSlot.isEmpty()) {
-			ItemStack result = invHandler.insertItemOnlyToSlot(slot, stackInHand, true);
-			if (result.getCount() != stackInHand.getCount()) {
-				result = invHandler.insertItemOnlyToSlot(slot, stackInHand, false);
-				if (isLocked()) {
-					memorySettings.selectSlot(slot);
+			if (invHandler.isItemValid(slot, stackInHand, player)) {
+				ItemStack result = invHandler.insertItemOnlyToSlot(slot, stackInHand, true);
+				if (result.getCount() != stackInHand.getCount()) {
+					result = invHandler.insertItemOnlyToSlot(slot, stackInHand, false);
+					if (isLocked()) {
+						memorySettings.selectSlot(slot);
+						if (player instanceof ServerPlayer serverPlayer) {
+							syncLinkedStorageContentsToPlayer(serverPlayer);
+						}
+					}
+					player.setItemInHand(hand, result);
+					return true;
 				}
 				player.setItemInHand(hand, result);
 				return true;
@@ -200,6 +208,9 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 				result = invHandler.insertItemOnlyToSlot(slot, stackInHand, false);
 				if (isLocked()) {
 					memorySettings.selectSlot(slot);
+					if (player instanceof ServerPlayer serverPlayer) {
+						syncLinkedStorageContentsToPlayer(serverPlayer);
+					}
 				}
 				player.setItemInHand(hand, result);
 				return true;
@@ -259,9 +270,12 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 	public void onLoad() {
 		super.onLoad();
 
-		SettingsHandler settingsHandler = getStorageWrapper().getSettingsHandler();
-		settingsHandler.getTypeCategory(MemorySettingsCategory.class).setIgnoreNbt(false);
-		setFixedSettings(getStorageWrapper(), getStorageWrapper().getNumberOfInventorySlots());
+		if (!isLinkedStorage()) {
+			SettingsHandler settingsHandler = getStorageWrapper().getSettingsHandler();
+			settingsHandler.getTypeCategory(MemorySettingsCategory.class).setIgnoreNbt(false);
+			setFixedSettings(getStorageWrapper(), getStorageWrapper().getNumberOfInventorySlots());
+			settingsHandler.getTypeCategory(ItemDisplaySettingsCategory.class).itemsChanged();
+		}
 	}
 
 	@Override
@@ -276,7 +290,7 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 	@Override
 	public void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
 		super.loadAdditional(tag, registries);
-		if (level == null || !level.isClientSide()) {
+		if (!isLinkedStorage() && (level == null || !level.isClientSide())) {
 			setFixedSettings(getStorageWrapper(), getStorageWrapper().getNumberOfInventorySlots());
 		}
 	}

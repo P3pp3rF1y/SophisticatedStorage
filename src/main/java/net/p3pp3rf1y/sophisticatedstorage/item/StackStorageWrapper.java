@@ -7,6 +7,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.p3pp3rf1y.sophisticatedcore.init.ModCoreDataComponents;
 import net.p3pp3rf1y.sophisticatedcore.inventory.StorageWrapperRepository;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.ClientLinkedStorageContents;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageEndpointData;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.block.*;
 
@@ -29,6 +31,10 @@ public class StackStorageWrapper extends StorageWrapper {
 
 	public static StackStorageWrapper fromStack(HolderLookup.Provider registries, ItemStack stack) {
 		StackStorageWrapper stackStorageWrapper = StorageWrapperRepository.getStorageWrapper(stack, StackStorageWrapper.class, StackStorageWrapper::new);
+		if (StorageBlockEntity.getLinkedStorageEndpointData(stack).isPresent()) {
+			stackStorageWrapper.loadLinkedStorageContents();
+			return stackStorageWrapper;
+		}
 		UUID uuid = stack.get(ModCoreDataComponents.STORAGE_UUID);
 		if (uuid != null) {
 			CompoundTag compoundtag = ItemContentsStorage.get().getOrCreateStorageContents(uuid).getCompound(StorageBlockEntity.STORAGE_WRAPPER_TAG);
@@ -54,15 +60,18 @@ public class StackStorageWrapper extends StorageWrapper {
 
 	@Override
 	public Optional<UUID> getContentsUuid() {
-		return Optional.ofNullable(contentsUuid);
+		return getLinkedStorageGroupId().or(() -> Optional.ofNullable(contentsUuid));
 	}
 
 	public boolean hasContents() {
-		return StorageBlockItem.getEntityWrapperTagFromStack(storageStack).isPresent() || contentsUuid != null;
+		return getLinkedStorageGroupId().isPresent() || StorageBlockItem.getEntityWrapperTagFromStack(storageStack).isPresent() || contentsUuid != null;
 	}
 
 	@Override
 	public void setContentsUuid(@Nullable UUID contentsUuid) {
+		if (getLinkedStorageGroupId().isPresent()) {
+			return;
+		}
 		super.setContentsUuid(contentsUuid);
 		if (contentsUuid != null) {
 			storageStack.set(ModCoreDataComponents.STORAGE_UUID, contentsUuid);
@@ -80,6 +89,13 @@ public class StackStorageWrapper extends StorageWrapper {
 
 	@Override
 	protected CompoundTag getContentsNbt() {
+		Optional<CompoundTag> linkedStorageContents = getLinkedStorageContents();
+		if (linkedStorageContents.isPresent()) {
+			return linkedStorageContents.get();
+		}
+		if (getLinkedStorageGroupId().isPresent()) {
+			return new CompoundTag();
+		}
 		return StorageBlockItem.getEntityWrapperTagFromStack(storageStack).map(wrapperTag -> wrapperTag.getCompound(CONTENTS_TAG)).orElseGet(() -> {
 			if (contentsUuid == null) {
 				contentsUuid = getNewUuid();
@@ -87,6 +103,18 @@ public class StackStorageWrapper extends StorageWrapper {
 			return ItemContentsStorage.get().getOrCreateStorageContents(contentsUuid).getCompound(StorageBlockEntity.STORAGE_WRAPPER_TAG)
 					.getCompound(CONTENTS_TAG);
 		});
+	}
+
+	private Optional<UUID> getLinkedStorageGroupId() {
+		return StorageBlockEntity.getLinkedStorageEndpointData(storageStack).map(LinkedStorageEndpointData::groupId);
+	}
+
+	private Optional<CompoundTag> getLinkedStorageContents() {
+		return getLinkedStorageGroupId().flatMap(ClientLinkedStorageContents::getContents).map(contents -> contents.contents().getCompound(CONTENTS_TAG));
+	}
+
+	private void loadLinkedStorageContents() {
+		getLinkedStorageGroupId().flatMap(ClientLinkedStorageContents::getContents).ifPresent(contents -> load(contents.contents()));
 	}
 
 	@Override
@@ -108,6 +136,10 @@ public class StackStorageWrapper extends StorageWrapper {
 
 	@Override
 	protected void loadSlotNumbers(CompoundTag tag) {
+		if (StorageBlockEntity.hasLinkedStorageEndpoint(storageStack)) {
+			super.loadSlotNumbers(tag);
+			return;
+		}
 		StorageBlockItem.getEntityWrapperTagFromStack(storageStack).ifPresentOrElse(wrapperTag -> {
 			numberOfInventorySlots = wrapperTag.getInt(NUMBER_OF_INVENTORY_SLOTS_TAG);
 			numberOfUpgradeSlots = wrapperTag.getInt(NUMBER_OF_UPGRADE_SLOTS_TAG);

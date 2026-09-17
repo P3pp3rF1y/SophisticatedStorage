@@ -2,14 +2,18 @@ package net.p3pp3rf1y.sophisticatedstorage.item;
 
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.neoforged.neoforge.common.extensions.IDataComponentHolderExtension;
 import net.p3pp3rf1y.sophisticatedcore.init.ModCoreDataComponents;
 import net.p3pp3rf1y.sophisticatedcore.util.BlockItemBase;
 import net.p3pp3rf1y.sophisticatedstorage.block.IStorageBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.ITintableBlockItem;
+import net.p3pp3rf1y.sophisticatedstorage.block.StorageLinkedStorageEndpointAdapter;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageWrapper;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModDataComponents;
 
@@ -18,7 +22,6 @@ import java.util.Optional;
 import static net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity.STORAGE_WRAPPER_TAG;
 
 public class StorageBlockItem extends BlockItemBase implements ITintableBlockItem {
-
 	public StorageBlockItem(Block block, Properties properties) {
 		super(block, properties);
 	}
@@ -120,6 +123,17 @@ public class StorageBlockItem extends BlockItemBase implements ITintableBlockIte
 
 	public static boolean isLocked(ItemStack stack) {
 		return stack.getOrDefault(ModDataComponents.LOCKED, false);
+	}
+
+	@Override
+	public void inventoryTick(ItemStack stack, Level level, Entity entity, int itemSlot, boolean isSelected) {
+		super.inventoryTick(stack, level, entity, itemSlot, isSelected);
+		if (!(level instanceof ServerLevel serverLevel) || !stack.has(DataComponents.CUSTOM_NAME) || !stack.has(ModCoreDataComponents.LINKED_STORAGE_ENDPOINT)
+				|| !Boolean.TRUE.equals(stack.get(ModCoreDataComponents.LINKED_STORAGE_PRIMARY_ENDPOINT))) {
+			return;
+		}
+
+		StorageLinkedStorageEndpointAdapter.synchronizePrimaryCarrier(serverLevel, stack);
 	}
 
 	public static void setLocked(ItemStack stack, boolean locked) {
