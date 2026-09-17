@@ -17,6 +17,9 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryHandler;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.ILinkedStorageBlockEndpoint;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageEndpointData;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageEndpointRole;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.DisplaySide;
 import net.p3pp3rf1y.sophisticatedcore.settings.ISettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.settings.SettingsHandler;
@@ -90,13 +93,44 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 	};
 
 	private boolean isDestroyedByPlayer = false;
+	private boolean wasLinkedStorageWhenDestroyed = false;
+	@Nullable
+	private LinkedStorageEndpointData linkedPrimaryDoubleChestDropEndpoint = null;
 
 	public void joinWithChest(ChestBlockEntity mainBE) {
+		if (isLinkedStorage() || mainBE.isLinkedStorage()) {
+			return;
+		}
 		expandAndMoveItemsAndSettings(mainBE);
 		removeFromController();
 		setNotLinked();
 		tryToAddToController();
 		invalidateCapabilities();
+	}
+
+	public boolean joinWithLinkedPrimary(ChestBlockEntity mainBE) {
+		if (!(level instanceof ServerLevel serverLevel) || !mainBE.isPrimaryLinkedStorage()) {
+			return false;
+		}
+
+		InventoryHandler mainInventoryHandler = mainBE.getStorageWrapper().getInventoryHandler();
+		int originalNumberOfSlots = mainInventoryHandler.size();
+		if (!(mainBE.getBlockState().getBlock() instanceof ChestBlock chestBlock) || !mainBE.completePrimaryLinkedStorageTierUpgrade(serverLevel,
+				2 * chestBlock.getNumberOfInventorySlots(), mainBE.getStorageWrapper().getUpgradeHandler().size())) {
+			return false;
+		}
+
+		mainInventoryHandler = mainBE.getStorageWrapper().getInventoryHandler();
+		moveStacksToMain(getStorageWrapper().getInventoryHandler(), mainInventoryHandler, originalNumberOfSlots);
+		moveUpgradesToMain(getStorageWrapper().getUpgradeHandler(), mainBE.getStorageWrapper().getUpgradeHandler());
+		copySettings(this, mainBE, 0, originalNumberOfSlots);
+		deleteSettingsFromSlot(this, 0);
+		mainBE.completePrimaryLinkedStorageTierUpgrade(serverLevel, mainBE.getStorageWrapper().getInventoryHandler().size(),
+				mainBE.getStorageWrapper().getUpgradeHandler().size());
+		removeFromController();
+		tryToAddToController();
+		invalidateCapabilities();
+		return true;
 	}
 
 	public ChestLidController getChestLidController() {
@@ -183,7 +217,7 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 
 	@Override
 	public void dropContents() {
-		if (isDestroyedByPlayer && getBlockState().getValue(ChestBlock.TYPE) != ChestType.SINGLE) {
+		if (isDestroyedByPlayer && !wasLinkedStorageWhenDestroyed && getBlockState().getValue(ChestBlock.TYPE) != ChestType.SINGLE) {
 			if (!isMainChest()) {
 				moveMyStacksFromMain();
 			} else {
@@ -392,6 +426,9 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 	}
 
 	public void dropSecondPartContents(ChestBlock chestBlock, BlockPos dropPosition) {
+		if (isLinkedStorage()) {
+			return;
+		}
 		InventoryHandler invHandler = getStorageWrapper().getInventoryHandler();
 
 		List<ItemStack> dropItems = new ArrayList<>();
@@ -419,8 +456,22 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 		WorldHelper.notifyBlockUpdate(this);
 	}
 
-	public void setDestroyedByPlayer() {
+	public void setDestroyedByPlayer(boolean linkedStorage) {
 		isDestroyedByPlayer = true;
+		wasLinkedStorageWhenDestroyed = linkedStorage;
+	}
+
+	public void prepareLinkedPrimaryDoubleChestDrop(@Nullable LinkedStorageEndpointData endpoint) {
+		linkedPrimaryDoubleChestDropEndpoint = endpoint;
+	}
+
+	@Nullable
+	public LinkedStorageEndpointData getLinkedPrimaryDoubleChestDropEndpoint() {
+		return linkedPrimaryDoubleChestDropEndpoint;
+	}
+
+	public boolean isPrimaryLinkedStorage() {
+		return getStorageWrapper().getLinkedStorageEndpointRole().orElse(null) == LinkedStorageEndpointRole.PRIMARY;
 	}
 
 	@Override
@@ -451,7 +502,16 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 
 	@Override
 	public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+		ChestBlock chestBlock = state.getBlock() instanceof ChestBlock block ? block : null;
+		boolean primaryLinkedChest = chestBlock != null && state.getValue(ChestBlock.TYPE) != ChestType.SINGLE
+				&& getMainChestBlockEntity() instanceof ChestBlockEntity mainChest && mainChest.isPrimaryLinkedStorage();
+		if (primaryLinkedChest) {
+			chestBlock.onLinkedChestRemoved(level, pos, state, this);
+		}
 		super.preRemoveSideEffects(pos, state);
+		if (!primaryLinkedChest && chestBlock != null && state.getValue(ChestBlock.TYPE) != ChestType.SINGLE) {
+			chestBlock.onLinkedChestRemoved(level, pos, state, this);
+		}
 		if (getBlockState().getValue(ChestBlock.TYPE) != ChestType.SINGLE && isPacked()) {
 			level.removeBlock(pos.relative(ChestBlock.getConnectedDirection(state)), false);
 		}
@@ -472,6 +532,12 @@ public class ChestBlockEntity extends WoodStorageBlockEntity {
 		}
 
 		return worldPosition;
+	}
+
+	@Override
+	public ILinkedStorageBlockEndpoint getLinkedStorageInteractionTarget() {
+		ChestBlockEntity mainChest = getMainChestBlockEntity();
+		return mainChest == null ? this : mainChest;
 	}
 
 	@Override

@@ -10,6 +10,8 @@ import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageHostFactories;
+import net.p3pp3rf1y.sophisticatedstorage.block.StorageLinkedStorageHostWrapper;
 import net.p3pp3rf1y.sophisticatedstorage.client.ClientEventHandler;
 import net.p3pp3rf1y.sophisticatedstorage.common.CommonEventHandler;
 import net.p3pp3rf1y.sophisticatedstorage.data.DataGenerators;
@@ -50,6 +52,7 @@ public class SophisticatedStorage {
 	private static void setup(FMLCommonSetupEvent event) {
 		event.enqueueWork(ModBlocks::registerDispenseBehavior);
 		event.enqueueWork(ModBlocks::registerCauldronInteractions);
+		event.enqueueWork(() -> LinkedStorageHostFactories.register(StorageLinkedStorageHostWrapper.FACTORY_ID, StorageLinkedStorageHostWrapper::create));
 	}
 
 	public static ResourceLocation getRL(String regName) {

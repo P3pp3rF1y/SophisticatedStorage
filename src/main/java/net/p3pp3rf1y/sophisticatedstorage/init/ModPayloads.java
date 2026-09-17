@@ -3,7 +3,13 @@ package net.p3pp3rf1y.sophisticatedstorage.init;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
-import net.p3pp3rf1y.sophisticatedstorage.network.*;
+import net.p3pp3rf1y.sophisticatedstorage.network.OpenStorageInventoryPayload;
+import net.p3pp3rf1y.sophisticatedstorage.network.RequestControllerTargetHighlightsPayload;
+import net.p3pp3rf1y.sophisticatedstorage.network.RequestPlayerSettingsPayload;
+import net.p3pp3rf1y.sophisticatedstorage.network.RequestStorageContentsPayload;
+import net.p3pp3rf1y.sophisticatedstorage.network.ScrolledToolPayload;
+import net.p3pp3rf1y.sophisticatedstorage.network.StorageContentsPayload;
+import net.p3pp3rf1y.sophisticatedstorage.network.StorageOpennessPayload;
 
 public class ModPayloads {
 	private ModPayloads() {

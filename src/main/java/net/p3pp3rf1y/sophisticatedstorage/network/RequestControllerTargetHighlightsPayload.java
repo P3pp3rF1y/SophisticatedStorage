@@ -46,9 +46,9 @@ public record RequestControllerTargetHighlightsPayload(ItemStack stack, List<Blo
 			payload.controllerPositions().forEach(pos -> {
 				Level level = player.level();
 				WorldHelper.getLoadedBlockEntity(level, pos, ControllerBlockEntity.class).ifPresent(controller -> {
-					stackStorages.addAll(controller.getStackStorages(stackKey));
-					itemStorages.addAll(controller.getItemStorages(stackKey));
-					emptyTargetSlotStorages.addAll(controller.getEmptyTargetSlotStorages(stackKey));
+					stackStorages.addAll(controller.getHighlightStoragePositions(controller.getStackStorages(stackKey)));
+					itemStorages.addAll(controller.getHighlightStoragePositions(controller.getItemStorages(stackKey)));
+					emptyTargetSlotStorages.addAll(controller.getHighlightStoragePositions(controller.getEmptyTargetSlotStorages(stackKey)));
 				});
 			});
 
