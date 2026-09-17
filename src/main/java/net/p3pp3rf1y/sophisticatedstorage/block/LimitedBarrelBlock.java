@@ -137,7 +137,7 @@ public class LimitedBarrelBlock extends BarrelBlock {
 				return InteractionResult.SUCCESS;
 			}
 		}
-		return InteractionResult.PASS;
+		return InteractionResult.SUCCESS;
 	}
 
 	@Override

@@ -9,6 +9,8 @@ import net.minecraft.data.BlockFamily;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
@@ -25,12 +27,14 @@ import net.minecraft.world.level.block.state.properties.WoodType;
 import net.minecraft.world.phys.BlockHitResult;
 import net.p3pp3rf1y.sophisticatedcore.init.ModCoreDataComponents;
 import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryHandler;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageEndpointRole;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.ITickableUpgrade;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeHandler;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
+import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageTranslationHelper;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.item.PackingTapeItem;
@@ -67,7 +71,7 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 	public void onBlockExploded(BlockState state, ServerLevel level, BlockPos pos, Explosion explosion) {
 		if (Boolean.TRUE.equals(Config.COMMON.dropPacked.get())) {
 			WorldHelper.getBlockEntity(level, pos, WoodStorageBlockEntity.class).ifPresent(wbe -> {
-				if (isNonEmpty(wbe)) {
+				if (!wbe.isLinkedStorage() && isNonEmpty(wbe)) {
 					wbe.setPacked(true);
 				}
 			});
@@ -78,6 +82,10 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 	public void addDropData(ItemStack stack, StorageBlockEntity be) {
 		if (be instanceof WoodStorageBlockEntity wbe) {
 			addNameWoodAndTintData(stack, wbe);
+			if (wbe.isLinkedStorage()) {
+				wbe.copyLinkedStorageEndpointTo(stack);
+				return;
+			}
 			boolean packed = wbe.isPacked() || shouldNonEmptyDropPacked(wbe);
 			if (packed) {
 				StorageWrapper storageWrapper = be.getStorageWrapper();
@@ -107,7 +115,7 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 		return !InventoryHelper.isEmpty(wbe.getStorageWrapper().getInventoryHandler()) || !InventoryHelper.isEmpty(wbe.getStorageWrapper().getUpgradeHandler());
 	}
 
-	private void addNameWoodAndTintData(ItemStack stack, WoodStorageBlockEntity wbe) {
+	protected void addNameWoodAndTintData(ItemStack stack, WoodStorageBlockEntity wbe) {
 		if (stack.getItem() instanceof ITintableBlockItem tintableBlockItem) {
 			int mainColor = wbe.getStorageWrapper().getMainColor();
 			if (mainColor != -1) {
@@ -182,10 +190,12 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 			WorldHelper.getBlockEntity(level, pos, WoodStorageBlockEntity.class).ifPresent(be -> setRenderBlockRenderProperties(stack, be));
 			return;
 		}
+		ServerLevel serverLevel = (ServerLevel) level;
 
 		WorldHelper.getBlockEntity(level, pos, WoodStorageBlockEntity.class).ifPresent(be -> {
+			boolean linkedStorage = StorageBlockEntity.hasLinkedStorageEndpoint(stack);
 			UUID storageUuid = stack.get(ModCoreDataComponents.STORAGE_UUID);
-			if (storageUuid != null) {
+			if (storageUuid != null && !linkedStorage) {
 				ItemContentsStorage itemContentsStorage = ItemContentsStorage.get();
 				if (itemContentsStorage.has(storageUuid)) {
 					be.setBeingUpgraded(true);
@@ -199,19 +209,38 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 				}
 			}
 
-			if (stack.has(DataComponents.CUSTOM_NAME)) {
+			if (stack.has(DataComponents.CUSTOM_NAME)
+					&& (!linkedStorage || StorageBlockEntity.getLinkedStorageEndpointRole(stack).orElse(null) == LinkedStorageEndpointRole.PRIMARY)) {
 				be.setCustomName(stack.getHoverName());
 			}
+			if (stack.has(DataComponents.CUSTOM_NAME)
+					&& StorageBlockEntity.getLinkedStorageEndpointRole(stack).orElse(null) == LinkedStorageEndpointRole.PRIMARY) {
+				StorageLinkedStorageEndpointAdapter.synchronizePrimaryCarrier(serverLevel, stack);
+			}
 			setRenderBlockRenderProperties(stack, be);
+			boolean restoredLinkedStorage = false;
+			if (linkedStorage && shouldRestoreLinkedStorageEndpoint(stack)) {
+				if (placer instanceof Player player && player.getAbilities().instabuild) {
+					restoredLinkedStorage = be.restoreCreativeLinkedStorageEndpoint(serverLevel, stack);
+				} else {
+					restoredLinkedStorage = be.restoreLinkedStorageEndpoint(serverLevel, stack);
+				}
+			}
 
 			be.getStorageWrapper().onInit(level);
-			be.tryToAddToController();
+			if (!linkedStorage || restoredLinkedStorage) {
+				be.tryToAddToController();
+			}
 
 			if (placer != null && placer.getOffhandItem().getItem() == ModItems.STORAGE_TOOL.get()) {
 				StorageToolItem.useOffHandOnPlaced(placer.getOffhandItem(), be);
 			}
 			be.setBeingUpgraded(false);
 		});
+	}
+
+	protected boolean shouldRestoreLinkedStorageEndpoint(ItemStack stack) {
+		return true;
 	}
 
 	private void setNewSize(ItemStack stack, WoodStorageBlockEntity be) {
@@ -234,7 +263,7 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 	public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
 		BlockState ret = super.playerWillDestroy(level, pos, state, player);
 		WorldHelper.getBlockEntity(level, pos, WoodStorageBlockEntity.class).ifPresent(wbe -> {
-			if (Boolean.TRUE.equals(Config.COMMON.dropPacked.get()) && isNonEmpty(wbe)) {
+			if (!wbe.isLinkedStorage() && Boolean.TRUE.equals(Config.COMMON.dropPacked.get()) && isNonEmpty(wbe)) {
 				wbe.setPacked(true);
 			}
 
@@ -272,6 +301,11 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 	}
 
 	protected InteractionResult packStorage(Player player, InteractionHand hand, WoodStorageBlockEntity b, ItemStack stackInHand) {
+		if (b.isLinkedStorage()) {
+			player.playNotifySound(SoundEvents.NOTE_BLOCK_BASS.value(), SoundSource.PLAYERS, 1, 0.7F);
+			player.displayClientMessage(StorageTranslationHelper.INSTANCE.translStatusMessage("packing_tape_linked_storage"), true);
+			return InteractionResult.SUCCESS;
+		}
 		if (!player.isCreative()) {
 			stackInHand.setDamageValue(stackInHand.getDamageValue() + 1);
 		}
