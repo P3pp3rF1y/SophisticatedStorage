@@ -13,6 +13,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.TranslationHelper;
+import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModDataComponents;
 import net.p3pp3rf1y.sophisticatedstorage.util.GenericWoodStorageHelper;
 
@@ -39,10 +40,10 @@ public class WoodStorageBlockItem extends StorageBlockItem {
 	public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay tooltipDisplay, Consumer<Component> tooltipAdder,
 			TooltipFlag tooltipFlag) {
 		super.appendHoverText(stack, context, tooltipDisplay, tooltipAdder, tooltipFlag);
-		if (isPacked(stack)) {
+		if (isPacked(stack) || StorageBlockEntity.hasLinkedStorageEndpoint(stack)) {
 			if (tooltipFlag.isAdvanced()) {
 				HolderLookup.Provider registries = context.registries();
-				if (registries != null) {
+				if (registries != null && isPacked(stack)) {
 					StackStorageWrapper.fromStack(registries, stack).getContentsUuid()
 							.ifPresent(uuid -> tooltipAdder.accept(Component.literal("UUID: " + uuid).withStyle(ChatFormatting.DARK_GRAY)));
 				}
@@ -58,7 +59,7 @@ public class WoodStorageBlockItem extends StorageBlockItem {
 
 	@Override
 	public Optional<TooltipComponent> getTooltipImage(ItemStack stack) {
-		if (!isPacked(stack)) {
+		if (!isPacked(stack) && !StorageBlockEntity.hasLinkedStorageEndpoint(stack)) {
 			return Optional.empty();
 		}
 

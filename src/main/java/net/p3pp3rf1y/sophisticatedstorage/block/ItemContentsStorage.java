@@ -15,6 +15,7 @@ import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 public class ItemContentsStorage extends SavedData {
@@ -47,6 +48,10 @@ public class ItemContentsStorage extends SavedData {
 
 	public boolean has(UUID storageUuid) {
 		return storageContents.containsKey(storageUuid);
+	}
+
+	public Optional<CompoundTag> getStorageContents(UUID storageUuid) {
+		return Optional.ofNullable(storageContents.get(storageUuid));
 	}
 
 	public CompoundTag getOrCreateStorageContents(UUID storageUuid) {

@@ -3,6 +3,9 @@ package net.p3pp3rf1y.sophisticatedstorage.item;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.block.Block;
@@ -10,6 +13,7 @@ import net.p3pp3rf1y.sophisticatedcore.init.ModCoreDataComponents;
 import net.p3pp3rf1y.sophisticatedcore.util.BlockItemBase;
 import net.p3pp3rf1y.sophisticatedstorage.block.IStorageBlock;
 import net.p3pp3rf1y.sophisticatedstorage.block.ITintableBlockItem;
+import net.p3pp3rf1y.sophisticatedstorage.block.StorageLinkedStorageEndpointAdapter;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageWrapper;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModDataComponents;
 
@@ -114,6 +118,17 @@ public class StorageBlockItem extends BlockItemBase implements ITintableBlockIte
 
 	public static boolean isLocked(ItemStack stack) {
 		return stack.getOrDefault(ModDataComponents.LOCKED, false);
+	}
+
+	@Override
+	public void inventoryTick(ItemStack stack, ServerLevel level, Entity entity, EquipmentSlot slot) {
+		super.inventoryTick(stack, level, entity, slot);
+		if (!stack.has(DataComponents.CUSTOM_NAME) || !stack.has(ModCoreDataComponents.LINKED_STORAGE_ENDPOINT)
+				|| !Boolean.TRUE.equals(stack.get(ModCoreDataComponents.LINKED_STORAGE_PRIMARY_ENDPOINT))) {
+			return;
+		}
+
+		StorageLinkedStorageEndpointAdapter.synchronizePrimaryCarrier(level, stack);
 	}
 
 	public static void setLocked(ItemStack stack, boolean locked) {

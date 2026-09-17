@@ -70,7 +70,8 @@ public abstract class StorageBlockBase extends BlockBase implements IStorageBloc
 	}
 
 	protected void renderUpgrades(Level level, RandomSource rand, BlockPos pos, Direction facing, RenderInfo renderInfo, BlockState storageBlockState) {
-		if (Minecraft.getInstance().isPaused()) {
+		if (Minecraft.getInstance().isPaused() || WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class)
+				.filter(storageBlockEntity -> storageBlockEntity.isSecondaryLinkedStorageEndpoint(level)).isPresent()) {
 			return;
 		}
 		renderInfo.getUpgradeClientData().forEach((type, data) -> UpgradeClientRegistry.getUpgradeClientTickHandler(type).ifPresent(renderer -> {
@@ -101,7 +102,8 @@ public abstract class StorageBlockBase extends BlockBase implements IStorageBloc
 	public void entityInside(BlockState state, Level level, BlockPos pos, Entity entity, InsideBlockEffectApplier effectApplier) {
 		super.entityInside(state, level, pos, entity, effectApplier);
 		if (!level.isClientSide && entity instanceof ItemEntity itemEntity) {
-			WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).ifPresent(be -> tryToPickup(level, itemEntity, be.getStorageWrapper()));
+			WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).filter(be -> !be.isSecondaryLinkedStorageEndpoint(level))
+					.ifPresent(be -> tryToPickup(level, itemEntity, be.getStorageWrapper()));
 		}
 	}
 

@@ -8,6 +8,9 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.storage.ValueInput;
 import net.p3pp3rf1y.sophisticatedcore.init.ModCoreDataComponents;
 import net.p3pp3rf1y.sophisticatedcore.inventory.StorageWrapperRepository;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.ClientLinkedStorageContents;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.ILinkedStorageContents;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageEndpointData;
 import net.p3pp3rf1y.sophisticatedcore.util.ValueIOHelper;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.block.*;
@@ -31,6 +34,10 @@ public class StackStorageWrapper extends StorageWrapper {
 
 	public static StackStorageWrapper fromStack(HolderLookup.Provider registries, ItemStack stack) {
 		StackStorageWrapper stackStorageWrapper = StorageWrapperRepository.getStorageWrapper(stack, StackStorageWrapper.class, StackStorageWrapper::new);
+		if (StorageBlockEntity.getLinkedStorageEndpointData(stack).isPresent()) {
+			stackStorageWrapper.loadLinkedStorageContents(registries);
+			return stackStorageWrapper;
+		}
 		UUID uuid = stack.get(ModCoreDataComponents.STORAGE_UUID);
 		if (uuid != null) {
 			CompoundTag compoundtag = ItemContentsStorage.get().getOrCreateStorageContents(uuid).getCompoundOrEmpty(StorageBlockEntity.STORAGE_WRAPPER);
@@ -56,6 +63,10 @@ public class StackStorageWrapper extends StorageWrapper {
 
 	@Override
 	public Optional<UUID> getContentsUuid() {
+		Optional<UUID> linkedStorageGroupId = getLinkedStorageGroupId();
+		if (linkedStorageGroupId.isPresent()) {
+			return linkedStorageGroupId;
+		}
 		return Optional.ofNullable(contentsUuid);
 	}
 
@@ -65,6 +76,9 @@ public class StackStorageWrapper extends StorageWrapper {
 
 	@Override
 	public void setContentsUuid(@Nullable UUID contentsUuid) {
+		if (getLinkedStorageGroupId().isPresent()) {
+			return;
+		}
 		super.setContentsUuid(contentsUuid);
 		if (contentsUuid != null) {
 			storageStack.set(ModCoreDataComponents.STORAGE_UUID, contentsUuid);
@@ -82,6 +96,13 @@ public class StackStorageWrapper extends StorageWrapper {
 
 	@Override
 	protected CompoundTag getContentsNbt() {
+		Optional<CompoundTag> linkedStorageContents = getLinkedStorageContents();
+		if (linkedStorageContents.isPresent()) {
+			return linkedStorageContents.get();
+		}
+		if (getLinkedStorageGroupId().isPresent()) {
+			return new CompoundTag();
+		}
 		return StorageBlockItem.getEntityWrapperTagFromStack(storageStack).map(wrapperTag -> wrapperTag.getCompoundOrEmpty(CONTENTS_TAG)).orElseGet(() -> {
 			if (contentsUuid == null) {
 				contentsUuid = getNewUuid();
@@ -89,6 +110,20 @@ public class StackStorageWrapper extends StorageWrapper {
 			return ItemContentsStorage.get().getOrCreateStorageContents(contentsUuid).getCompoundOrEmpty(StorageBlockEntity.STORAGE_WRAPPER)
 					.getCompoundOrEmpty(CONTENTS_TAG);
 		});
+	}
+
+	private Optional<UUID> getLinkedStorageGroupId() {
+		return StorageBlockEntity.getLinkedStorageEndpointData(storageStack).map(LinkedStorageEndpointData::groupId);
+	}
+
+	private Optional<CompoundTag> getLinkedStorageContents() {
+		return getLinkedStorageGroupId().flatMap(groupId -> ClientLinkedStorageContents.getContents(groupId)).map(ILinkedStorageContents::contents)
+				.map(contents -> contents.getCompoundOrEmpty(CONTENTS_TAG));
+	}
+
+	private void loadLinkedStorageContents(HolderLookup.Provider registries) {
+		getLinkedStorageGroupId().flatMap(ClientLinkedStorageContents::getContents)
+				.ifPresent(contents -> deserialize(ValueIOHelper.inputFromCompoundTag(registries, contents.contents())));
 	}
 
 	@Override
@@ -110,6 +145,10 @@ public class StackStorageWrapper extends StorageWrapper {
 
 	@Override
 	protected void loadSlotNumbers(ValueInput in) {
+		if (StorageBlockEntity.hasLinkedStorageEndpoint(storageStack)) {
+			super.loadSlotNumbers(in);
+			return;
+		}
 		StorageBlockItem.getEntityWrapperTagFromStack(storageStack).ifPresentOrElse(wrapperTag -> {
 			numberOfInventorySlots = wrapperTag.getIntOr(NUMBER_OF_INVENTORY_SLOTS, 0);
 			numberOfUpgradeSlots = wrapperTag.getIntOr(NUMBER_OF_UPGRADE_SLOTS, 0);

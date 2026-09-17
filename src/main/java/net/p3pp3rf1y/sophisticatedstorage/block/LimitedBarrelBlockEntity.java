@@ -5,6 +5,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.ExtraCodecs;
@@ -189,6 +190,9 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 				result = invHandler.insertItemOnlyToSlot(slot, stackInHand, false);
 				if (isLocked()) {
 					memorySettings.selectSlot(slot);
+					if (player instanceof ServerPlayer serverPlayer) {
+						syncLinkedStorageContentsToPlayer(serverPlayer);
+					}
 				}
 				player.setItemInHand(hand, result);
 				return true;
@@ -199,6 +203,9 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 				result = invHandler.insertItemOnlyToSlot(slot, stackInHand, false);
 				if (isLocked()) {
 					memorySettings.selectSlot(slot);
+					if (player instanceof ServerPlayer serverPlayer) {
+						syncLinkedStorageContentsToPlayer(serverPlayer);
+					}
 				}
 				player.setItemInHand(hand, result);
 				return true;
@@ -258,9 +265,11 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 	public void onLoad() {
 		super.onLoad();
 
-		SettingsHandler settingsHandler = getStorageWrapper().getSettingsHandler();
-		settingsHandler.getTypeCategory(MemorySettingsCategory.class).setIgnoreNbt(false);
-		setFixedSettings(getStorageWrapper(), getStorageWrapper().getNumberOfInventorySlots());
+		if (!isLinkedStorage()) {
+			SettingsHandler settingsHandler = getStorageWrapper().getSettingsHandler();
+			settingsHandler.getTypeCategory(MemorySettingsCategory.class).setIgnoreNbt(false);
+			setFixedSettings(getStorageWrapper(), getStorageWrapper().getNumberOfInventorySlots());
+		}
 	}
 
 	@Override
