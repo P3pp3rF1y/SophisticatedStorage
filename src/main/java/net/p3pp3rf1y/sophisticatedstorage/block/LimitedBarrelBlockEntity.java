@@ -8,6 +8,7 @@ import net.minecraft.nbt.IntTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -182,6 +183,9 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 					result = invHandler.insertItemOnlyToSlot(slot, stackInHand, false);
 					if (isLocked()) {
 						memorySettings.selectSlot(slot);
+						if (player instanceof ServerPlayer serverPlayer) {
+							syncLinkedStorageContentsToPlayer(serverPlayer);
+						}
 					}
 					player.setItemInHand(hand, result);
 					return true;
@@ -193,6 +197,9 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 				result = invHandler.insertItemOnlyToSlot(slot, stackInHand, false);
 				if (isLocked()) {
 					memorySettings.selectSlot(slot);
+					if (player instanceof ServerPlayer serverPlayer) {
+						syncLinkedStorageContentsToPlayer(serverPlayer);
+					}
 				}
 				player.setItemInHand(hand, result);
 				return true;
@@ -252,12 +259,12 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 	public void onLoad() {
 		super.onLoad();
 
-		SettingsHandler settingsHandler = getStorageWrapper().getSettingsHandler();
-		settingsHandler.getTypeCategory(MemorySettingsCategory.class).setIgnoreNbt(false);
-		setFixedSettings(getStorageWrapper(), getStorageWrapper().getNumberOfInventorySlots());
-
-		// TODO remove in the future when this is not needed - updates legacy limited barrel counts and fill levels
-		settingsHandler.getTypeCategory(ItemDisplaySettingsCategory.class).itemsChanged();
+		if (!isLinkedStorage()) {
+			SettingsHandler settingsHandler = getStorageWrapper().getSettingsHandler();
+			settingsHandler.getTypeCategory(MemorySettingsCategory.class).setIgnoreNbt(false);
+			setFixedSettings(getStorageWrapper(), getStorageWrapper().getNumberOfInventorySlots());
+			settingsHandler.getTypeCategory(ItemDisplaySettingsCategory.class).itemsChanged();
+		}
 	}
 
 	@Override

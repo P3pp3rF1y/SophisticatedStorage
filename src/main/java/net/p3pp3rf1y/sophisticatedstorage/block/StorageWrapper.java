@@ -12,6 +12,9 @@ import net.p3pp3rf1y.sophisticatedcore.inventory.ITrackedContentsItemHandler;
 import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryHandler;
 import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryIOHandler;
 import net.p3pp3rf1y.sophisticatedcore.inventory.ItemStackKey;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.ILinkedStorageEndpointProvider;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageEndpointData;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageEndpointRole;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
 import net.p3pp3rf1y.sophisticatedcore.settings.SettingsHandler;
 import net.p3pp3rf1y.sophisticatedcore.settings.itemdisplay.ItemDisplaySettingsCategory;
@@ -32,7 +35,7 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public abstract class StorageWrapper implements IStorageWrapper {
+public abstract class StorageWrapper implements IStorageWrapper, ILinkedStorageEndpointProvider {
 	public static final String MAIN_COLOR_TAG = "mainColor";
 	public static final String ACCENT_COLOR_TAG = "accentColor";
 	private static final String UUID_TAG = "uuid";
@@ -76,6 +79,12 @@ public abstract class StorageWrapper implements IStorageWrapper {
 	private final Map<Class<? extends IUpgradeWrapper>, Consumer<? extends IUpgradeWrapper>> upgradeDefaultsHandlers = new HashMap<>();
 	private Runnable onInventoryForInputOutputHandlerRefresh = () -> {
 	};
+	@Nullable
+	private IStorageWrapper linkedStorage = null;
+	@Nullable
+	private LinkedStorageEndpointData linkedStorageEndpoint;
+	@Nullable
+	private LinkedStorageEndpointRole linkedStorageEndpointRole;
 
 	protected StorageWrapper(Supplier<Runnable> getSaveHandler, Runnable onSerializeRenderInfo, Runnable markContentsDirty) {
 		this(getSaveHandler, onSerializeRenderInfo, markContentsDirty, 1, false);
@@ -88,6 +97,7 @@ public abstract class StorageWrapper implements IStorageWrapper {
 			@Override
 			protected void serializeRenderInfo(CompoundTag renderInfo) {
 				renderInfoNbt = renderInfo;
+				onRenderInfoSerialized(renderInfo);
 				onSerializeRenderInfo.run();
 			}
 
@@ -114,17 +124,27 @@ public abstract class StorageWrapper implements IStorageWrapper {
 		return true;
 	}
 
+	protected void onRenderInfoSerialized(CompoundTag renderInfo) {
+		// Hook for linked virtual hosts to include their render projection in the carrier snapshot.
+	}
+
 	public void setContentsUuid(@Nullable UUID contentsUuid) {
 		this.contentsUuid = contentsUuid;
 	}
 
 	@Override
 	public SettingsHandler getSettingsHandler() {
+		if (linkedStorage != null) {
+			return linkedStorage.getSettingsHandler();
+		}
 		return settingsHandler;
 	}
 
 	@Override
 	public UpgradeHandler getUpgradeHandler() {
+		if (linkedStorage != null) {
+			return linkedStorage.getUpgradeHandler();
+		}
 		UpgradeHandler handler = upgradeHandler;
 		if (handler == null) {
 			handler = new UpgradeHandler(getNumberOfUpgradeSlots(), this, getContentsNbt(), getSaveHandler.get(), () -> {
@@ -169,6 +189,9 @@ public abstract class StorageWrapper implements IStorageWrapper {
 	protected abstract void onUpgradeRefresh();
 
 	public CompoundTag save(CompoundTag tag) {
+		if (linkedStorage != null) {
+			return saveEndpointData(tag);
+		}
 		saveContents(tag);
 		saveData(tag);
 		return tag;
@@ -179,6 +202,9 @@ public abstract class StorageWrapper implements IStorageWrapper {
 	}
 
 	CompoundTag saveData(CompoundTag tag) {
+		if (linkedStorage != null) {
+			return saveEndpointData(tag);
+		}
 		if (!settingsNbt.isEmpty()) {
 			tag.put(SETTINGS_TAG, settingsNbt);
 		}
@@ -210,6 +236,33 @@ public abstract class StorageWrapper implements IStorageWrapper {
 		return tag;
 	}
 
+	CompoundTag saveEndpointData(CompoundTag tag) {
+		if (!renderInfoNbt.isEmpty()) {
+			tag.put(RENDER_INFO_TAG, renderInfoNbt.copy());
+		}
+		if (openTabId >= 0) {
+			tag.putInt(OPEN_TAB_ID_TAG, openTabId);
+		}
+		if (mainColor != -1) {
+			tag.putInt(MAIN_COLOR_TAG, mainColor);
+		}
+		if (accentColor != -1) {
+			tag.putInt(ACCENT_COLOR_TAG, accentColor);
+		}
+		return tag;
+	}
+
+	CompoundTag saveCanonicalData(CompoundTag tag) {
+		tag.put(CONTENTS_TAG, getContentsNbt().copy());
+		if (!settingsNbt.isEmpty()) {
+			tag.put(SETTINGS_TAG, settingsNbt.copy());
+		}
+		tag.putInt(NUMBER_OF_INVENTORY_SLOTS_TAG, getNumberOfInventorySlots());
+		tag.putInt(NUMBER_OF_UPGRADE_SLOTS_TAG, getNumberOfUpgradeSlots());
+		tag.putString(SORT_BY_TAG, sortBy.getSerializedName());
+		return tag;
+	}
+
 	public void load(CompoundTag tag) {
 		loadContents(tag);
 		loadData(tag);
@@ -223,6 +276,30 @@ public abstract class StorageWrapper implements IStorageWrapper {
 		if (Thread.currentThread().getThreadGroup() == SidedThreadGroups.SERVER && getRenderInfo().getUpgradeItems().size() != getUpgradeHandler().getSlots()) {
 			getUpgradeHandler().setRenderUpgradeItems();
 		}
+	}
+
+	void loadEndpointData(CompoundTag tag) {
+		renderInfoNbt = tag.getCompound(RENDER_INFO_TAG);
+		renderInfo.deserializeFrom(renderInfoNbt);
+		renderInfoValidationPending = true;
+		openTabId = NBTHelper.getInt(tag, OPEN_TAB_ID_TAG).orElse(-1);
+		mainColor = NBTHelper.getInt(tag, MAIN_COLOR_TAG).orElse(-1);
+		accentColor = NBTHelper.getInt(tag, ACCENT_COLOR_TAG).orElse(-1);
+	}
+
+	void loadCanonicalData(CompoundTag tag) {
+		contentsNbt = tag.contains(CONTENTS_TAG) ? tag.getCompound(CONTENTS_TAG) : new CompoundTag();
+		settingsNbt = tag.getCompound(SETTINGS_TAG);
+		if (!tag.contains(SETTINGS_TAG)) {
+			tag.put(SETTINGS_TAG, settingsNbt);
+		}
+		settingsHandler.reloadFrom(settingsNbt);
+		numberOfInventorySlots = tag.getInt(NUMBER_OF_INVENTORY_SLOTS_TAG);
+		numberOfUpgradeSlots = tag.getInt(NUMBER_OF_UPGRADE_SLOTS_TAG);
+		sortBy = NBTHelper.getString(tag, SORT_BY_TAG).map(SortBy::fromName).orElse(SortBy.NAME);
+		inventoryHandler = null;
+		upgradeHandler = null;
+		inventoryIOHandler = null;
 	}
 
 	private void loadData(CompoundTag tag) {
@@ -278,11 +355,17 @@ public abstract class StorageWrapper implements IStorageWrapper {
 
 	@Override
 	public ITrackedContentsItemHandler getInventoryForUpgradeProcessing() {
+		if (linkedStorage != null) {
+			return linkedStorage.getInventoryForUpgradeProcessing();
+		}
 		return getInventoryHandler();
 	}
 
 	@Override
 	public InventoryHandler getInventoryHandler() {
+		if (linkedStorage != null) {
+			return linkedStorage.getInventoryHandler();
+		}
 		InventoryHandler handler = inventoryHandler;
 		if (handler == null) {
 			handler = initInventoryHandler();
@@ -313,6 +396,9 @@ public abstract class StorageWrapper implements IStorageWrapper {
 	}
 
 	public int getNumberOfInventorySlots() {
+		if (linkedStorage != null) {
+			return linkedStorage.getInventoryHandler().getSlots();
+		}
 		if (numberOfInventorySlots > 0) {
 			return numberOfInventorySlots;
 		}
@@ -341,6 +427,9 @@ public abstract class StorageWrapper implements IStorageWrapper {
 
 	@Override
 	public int getNumberOfSlotRows() {
+		if (linkedStorage != null) {
+			return linkedStorage.getNumberOfSlotRows();
+		}
 		int itemInventorySlots = getNumberOfInventorySlots();
 		return (int) Math.ceil(itemInventorySlots <= 81 ? (double) itemInventorySlots / 9 : (double) itemInventorySlots / 12);
 	}
@@ -354,6 +443,9 @@ public abstract class StorageWrapper implements IStorageWrapper {
 	}
 
 	private int getNumberOfUpgradeSlots() {
+		if (linkedStorage != null) {
+			return linkedStorage.getUpgradeHandler().getSlots();
+		}
 		if (numberOfUpgradeSlots >= 0) {
 			return numberOfUpgradeSlots;
 		}
@@ -409,17 +501,28 @@ public abstract class StorageWrapper implements IStorageWrapper {
 
 	@Override
 	public void setSortBy(SortBy sortBy) {
+		if (linkedStorage != null) {
+			linkedStorage.setSortBy(sortBy);
+			return;
+		}
 		this.sortBy = sortBy;
 		save();
 	}
 
 	@Override
 	public SortBy getSortBy() {
+		if (linkedStorage != null) {
+			return linkedStorage.getSortBy();
+		}
 		return sortBy;
 	}
 
 	@Override
 	public void sort() {
+		if (linkedStorage != null) {
+			linkedStorage.sort();
+			return;
+		}
 		Set<Integer> slotIndexesExcludedFromSort = new HashSet<>();
 		slotIndexesExcludedFromSort.addAll(getSettingsHandler().getTypeCategory(NoSortSettingsCategory.class).getNoSortSlots());
 		slotIndexesExcludedFromSort.addAll(getInventoryHandler().getNoSortSlots());
@@ -439,6 +542,10 @@ public abstract class StorageWrapper implements IStorageWrapper {
 
 	@Override
 	public void onContentsNbtUpdated() {
+		if (linkedStorage != null) {
+			refreshInventoryForInputOutput();
+			return;
+		}
 		inventoryHandler = null;
 		upgradeHandler = null;
 		refreshInventoryForUpgradeProcessing();
@@ -488,6 +595,12 @@ public abstract class StorageWrapper implements IStorageWrapper {
 	}
 
 	public void changeSize(int additionalInventorySlots, int additionalUpgradeSlots) {
+		if (linkedStorage != null) {
+			if (linkedStorage instanceof StorageWrapper storageWrapper) {
+				storageWrapper.changeSize(additionalInventorySlots, additionalUpgradeSlots);
+			}
+			return;
+		}
 		numberOfInventorySlots += additionalInventorySlots;
 		getInventoryHandler().changeSlots(additionalInventorySlots);
 
@@ -497,5 +610,56 @@ public abstract class StorageWrapper implements IStorageWrapper {
 
 	public <T extends IUpgradeWrapper> void registerUpgradeDefaultsHandler(Class<T> upgradeClass, Consumer<T> defaultsHandler) {
 		upgradeDefaultsHandlers.put(upgradeClass, defaultsHandler);
+	}
+
+	void setLinkedStorage(@Nullable IStorageWrapper linkedStorage) {
+		this.linkedStorage = linkedStorage;
+		inventoryIOHandler = null;
+		upgradeCachesInvalidatedHandler.run();
+		onInventoryForInputOutputHandlerRefresh.run();
+	}
+
+	void setLinkedStorageEndpoint(@Nullable LinkedStorageEndpointData linkedStorageEndpoint, @Nullable LinkedStorageEndpointRole linkedStorageEndpointRole) {
+		this.linkedStorageEndpoint = linkedStorageEndpoint;
+		this.linkedStorageEndpointRole = linkedStorageEndpointRole;
+	}
+
+	@Override
+	public Optional<LinkedStorageEndpointData> getLinkedStorageEndpoint() {
+		return Optional.ofNullable(linkedStorageEndpoint);
+	}
+
+	@Override
+	public Optional<LinkedStorageEndpointRole> getLinkedStorageEndpointRole() {
+		return Optional.ofNullable(linkedStorageEndpointRole);
+	}
+
+	boolean isLinkedStorage() {
+		return linkedStorage != null;
+	}
+
+	void clearCanonicalStorageData() {
+		contentsNbt = new CompoundTag();
+		settingsNbt = new CompoundTag();
+		settingsHandler.reloadFrom(settingsNbt);
+		contentsUuid = null;
+		numberOfInventorySlots = 0;
+		numberOfUpgradeSlots = -1;
+		sortBy = SortBy.NAME;
+		inventoryHandler = null;
+		upgradeHandler = null;
+		inventoryIOHandler = null;
+	}
+
+	void synchronizeLinkedRenderInfo(CompoundTag renderInfo) {
+		if (renderInfoNbt.equals(renderInfo)) {
+			return;
+		}
+		renderInfoNbt = renderInfo.copy();
+		this.renderInfo.deserializeFrom(renderInfoNbt);
+	}
+
+	CompoundTag getRenderInfoNbt() {
+		return renderInfoNbt.copy();
 	}
 }

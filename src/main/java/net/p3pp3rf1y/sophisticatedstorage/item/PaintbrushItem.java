@@ -80,7 +80,7 @@ public class PaintbrushItem extends ItemBase {
 			if (player.isCrouching()) {
 				addSimpleMaterialPartsNeeded(materialsToApply, controllerBe, allPartsNeeded);
 			} else {
-				for (BlockPos storagePosition : controllerBe.getStoragePositions()) {
+				for (BlockPos storagePosition : controllerBe.getStorageBlockPositions()) {
 					addStorageMaterialPartsNeeded(materialsToApply, controllerBe, storagePosition, allPartsNeeded);
 				}
 			}
@@ -146,7 +146,7 @@ public class PaintbrushItem extends ItemBase {
 		if (be instanceof StorageBlockEntity storageBe) {
 			allPartsNeeded = getStorageDyePartsNeeded(mainColorToSet, accentColorToSet, storageBe.getStorageWrapper());
 		} else if (be instanceof ControllerBlockEntity controllerBe) {
-			for (BlockPos storagePosition : controllerBe.getStoragePositions()) {
+			for (BlockPos storagePosition : controllerBe.getStorageBlockPositions()) {
 				addStorageDyePartsNeeded(mainColorToSet, accentColorToSet, controllerBe, storagePosition, allPartsNeeded);
 			}
 		}
@@ -268,7 +268,7 @@ public class PaintbrushItem extends ItemBase {
 			return;
 		}
 
-		for (BlockPos pos : controllerBe.getStoragePositions()) {
+		for (BlockPos pos : controllerBe.getStorageBlockPositions()) {
 			WorldHelper.getBlockEntity(level, pos, StorageBlockEntity.class).ifPresent(storageBe -> paintStorage(player, paintbrush, storageBe, 0.6f));
 		}
 	}
