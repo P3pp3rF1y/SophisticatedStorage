@@ -87,7 +87,7 @@ public class StorageContainerMenu extends StorageContainerMenuBase<IStorageWrapp
 	public static void writeMenuData(FriendlyByteBuf buffer, Player player, BlockPos pos) {
 		buffer.writeBlockPos(pos);
 		WorldHelper.getBlockEntity(player.level(), pos, StorageBlockEntity.class)
-				.ifPresentOrElse(storageBlockEntity -> storageBlockEntity.writeLinkedStorageMenuData(buffer), () -> buffer.writeBoolean(false));
+				.ifPresentOrElse(storageBlockEntity -> storageBlockEntity.writeLinkedStorageMenuData(buffer, player), () -> buffer.writeBoolean(false));
 	}
 
 	public static BlockPos readMenuData(FriendlyByteBuf buffer, Player player) {
@@ -100,7 +100,8 @@ public class StorageContainerMenu extends StorageContainerMenuBase<IStorageWrapp
 		LinkedStorageEndpointRole endpointRole = buffer.readBoolean() ? LinkedStorageEndpointRole.PRIMARY : LinkedStorageEndpointRole.SECONDARY;
 		long revision = buffer.readVarLong();
 		Component groupName = ComponentSerialization.TRUSTED_CONTEXT_FREE_STREAM_CODEC.decode(buffer);
-		ContainerContents contents = ContainerContents.CODEC.parse(NbtOps.INSTANCE, Objects.requireNonNull(buffer.readNbt())).getOrThrow();
+		ContainerContents contents = ContainerContents.CODEC
+				.parse(player.registryAccess().createSerializationContext(NbtOps.INSTANCE), Objects.requireNonNull(buffer.readNbt())).getOrThrow();
 		int inventorySlots = buffer.readVarInt();
 		int upgradeSlots = buffer.readVarInt();
 		int columnsTaken = buffer.readVarInt();

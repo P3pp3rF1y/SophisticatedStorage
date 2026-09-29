@@ -613,7 +613,7 @@ public abstract class StorageBlockEntity extends BlockEntity
 		return linkedStorageEndpoint != null;
 	}
 
-	public void writeLinkedStorageMenuData(FriendlyByteBuf buffer) {
+	public void writeLinkedStorageMenuData(FriendlyByteBuf buffer, Player player) {
 		if (!(level instanceof ServerLevel serverLevel) || linkedStorageEndpoint == null || !isLinkedStorageEndpointMember(serverLevel, linkedStorageEndpoint)
 				|| linkedStorageHost == null) {
 			buffer.writeBoolean(false);
@@ -635,7 +635,8 @@ public abstract class StorageBlockEntity extends BlockEntity
 		buffer.writeBoolean(manager.isPrimaryEndpoint(linkedStorageEndpoint.groupId(), linkedStorageEndpoint.endpointId()));
 		buffer.writeVarLong(manager.getRevision(linkedStorageEndpoint.groupId()));
 		ComponentSerialization.TRUSTED_CONTEXT_FREE_STREAM_CODEC.encode(buffer, profile.get().groupName());
-		FriendlyByteBuf.writeNbt(buffer, (CompoundTag) ContainerContents.CODEC.encodeStart(NbtOps.INSTANCE, contents.get().contents()).getOrThrow());
+		FriendlyByteBuf.writeNbt(buffer, (CompoundTag) ContainerContents.CODEC
+				.encodeStart(player.registryAccess().createSerializationContext(NbtOps.INSTANCE), contents.get().contents()).getOrThrow());
 		buffer.writeVarInt(profile.get().inventorySlots());
 		buffer.writeVarInt(profile.get().upgradeSlots());
 		buffer.writeVarInt(profile.get().columnsTaken());
