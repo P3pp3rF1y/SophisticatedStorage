@@ -88,7 +88,8 @@ public class ShulkerBoxBlock extends StorageBlockBase implements IAdditionalDrop
 			}
 		};
 		return properties.strength(2.0F, explosionResistance).forceSolidOn().dynamicShape().noOcclusion().isSuffocating(statePredicate)
-				.isViewBlocking(statePredicate).pushReaction(PushReaction.DESTROY).mapColor(DyeColor.PURPLE);
+				.isViewBlocking((state, blockGetter, pos, nearPlaneBox) -> statePredicate.test(state, blockGetter, pos)).pushReaction(PushReaction.POPPED)
+				.mapColor(DyeColor.PURPLE);
 	}
 
 	@Override

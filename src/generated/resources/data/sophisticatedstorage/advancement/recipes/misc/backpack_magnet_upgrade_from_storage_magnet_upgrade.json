@@ -23,7 +23,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "sophisticatedstorage:backpack_magnet_upgrade_from_storage_magnet_upgrade"
+        "recipes": "sophisticatedstorage:backpack_magnet_upgrade_from_storage_magnet_upgrade"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

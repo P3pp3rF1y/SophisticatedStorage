@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "sophisticatedstorage:bamboo_chest"
+        "recipes": "sophisticatedstorage:bamboo_chest"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

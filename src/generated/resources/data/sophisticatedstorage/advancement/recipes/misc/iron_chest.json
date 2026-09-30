@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "sophisticatedstorage:iron_chest"
+        "recipes": "sophisticatedstorage:iron_chest"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

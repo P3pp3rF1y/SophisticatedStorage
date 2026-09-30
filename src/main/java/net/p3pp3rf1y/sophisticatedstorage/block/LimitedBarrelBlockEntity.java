@@ -8,6 +8,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Prediction;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
@@ -247,7 +248,7 @@ public class LimitedBarrelBlockEntity extends BarrelBlockEntity implements ICoun
 				getLevel().playSound(null, getBlockPos(), SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, .2f,
 						(RandHelper.getRandomMinusOneToOne(getLevel().getRandom()) * .7f + 1) * 2);
 			} else {
-				player.drop(stackTaken, false);
+				player.drop(stackTaken, false, Prediction.PREDICTED);
 			}
 			tx.commit();
 			return true;

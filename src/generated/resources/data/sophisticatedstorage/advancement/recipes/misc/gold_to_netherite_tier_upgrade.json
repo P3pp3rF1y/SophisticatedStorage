@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "sophisticatedstorage:gold_to_netherite_tier_upgrade"
+        "recipes": "sophisticatedstorage:gold_to_netherite_tier_upgrade"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

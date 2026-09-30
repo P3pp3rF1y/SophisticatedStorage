@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "sophisticatedstorage:storage_io"
+        "recipes": "sophisticatedstorage:storage_io"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

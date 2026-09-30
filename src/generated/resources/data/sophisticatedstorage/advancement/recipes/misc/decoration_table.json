@@ -3,7 +3,7 @@
   "criteria": {
     "has_the_recipe": {
       "conditions": {
-        "recipe": "sophisticatedstorage:decoration_table"
+        "recipes": "sophisticatedstorage:decoration_table"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

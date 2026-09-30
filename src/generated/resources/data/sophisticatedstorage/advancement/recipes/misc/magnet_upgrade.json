@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "sophisticatedstorage:magnet_upgrade"
+        "recipes": "sophisticatedstorage:magnet_upgrade"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

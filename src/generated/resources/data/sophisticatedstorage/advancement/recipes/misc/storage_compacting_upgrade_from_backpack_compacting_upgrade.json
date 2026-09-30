@@ -23,7 +23,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "sophisticatedstorage:storage_compacting_upgrade_from_backpack_compacting_upgrade"
+        "recipes": "sophisticatedstorage:storage_compacting_upgrade_from_backpack_compacting_upgrade"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

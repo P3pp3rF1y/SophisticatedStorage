@@ -23,7 +23,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "sophisticatedstorage:storage_blasting_upgrade_from_backpack_blasting_upgrade"
+        "recipes": "sophisticatedstorage:storage_blasting_upgrade_from_backpack_blasting_upgrade"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

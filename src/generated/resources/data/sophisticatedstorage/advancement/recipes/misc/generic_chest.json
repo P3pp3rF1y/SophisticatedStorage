@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "sophisticatedstorage:generic_chest"
+        "recipes": "sophisticatedstorage:generic_chest"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

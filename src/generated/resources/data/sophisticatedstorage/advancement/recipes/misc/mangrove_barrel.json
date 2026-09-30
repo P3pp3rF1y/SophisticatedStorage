@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "sophisticatedstorage:mangrove_barrel"
+        "recipes": "sophisticatedstorage:mangrove_barrel"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

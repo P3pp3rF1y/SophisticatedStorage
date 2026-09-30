@@ -9,7 +9,7 @@
   "criteria": {
     "has_the_recipe": {
       "conditions": {
-        "recipe": "sophisticatedstorage:alchemy_upgrade"
+        "recipes": "sophisticatedstorage:alchemy_upgrade"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

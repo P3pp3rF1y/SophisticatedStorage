@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "sophisticatedstorage:advanced_filter_upgrade"
+        "recipes": "sophisticatedstorage:advanced_filter_upgrade"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

@@ -52,8 +52,8 @@ public class DecorationTableRenderer implements BlockEntityRenderer<DecorationTa
 
 		poseStack.pushPose();
 		poseStack.translate(0.5, 1.125, 0.5);
-		poseStack.mulPose(renderState.facing.getOpposite().getRotation());
-		poseStack.mulPose(Axis.XN.rotationDegrees(90));
+		poseStack.rotate(renderState.facing.getOpposite().getRotation());
+		poseStack.rotate(Axis.XN.rotationDegrees(90));
 		poseStack.translate(0, 0, -0.1);
 		poseStack.scale(0.5f, 0.5f, 0.5f);
 		renderState.result.submit(poseStack, submitNodeCollector, renderState.lightCoords, OverlayTexture.NO_OVERLAY, 0);

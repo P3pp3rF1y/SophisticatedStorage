@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "sophisticatedstorage:diamond_shulker_box"
+        "recipes": "sophisticatedstorage:diamond_shulker_box"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

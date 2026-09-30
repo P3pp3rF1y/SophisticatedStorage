@@ -9,7 +9,7 @@
   "criteria": {
     "has_the_recipe": {
       "conditions": {
-        "recipe": "sophisticatedstorage:hopper_upgrade"
+        "recipes": "sophisticatedstorage:hopper_upgrade"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

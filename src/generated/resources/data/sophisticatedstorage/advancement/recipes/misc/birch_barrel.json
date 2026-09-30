@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "sophisticatedstorage:birch_barrel"
+        "recipes": "sophisticatedstorage:birch_barrel"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

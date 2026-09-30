@@ -23,7 +23,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "sophisticatedstorage:backpack_feeding_upgrade_from_storage_feeding_upgrade"
+        "recipes": "sophisticatedstorage:backpack_feeding_upgrade_from_storage_feeding_upgrade"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

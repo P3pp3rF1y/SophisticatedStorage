@@ -125,12 +125,12 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity, ChestRender
 		DisplaySide displaySide = displayItem.displaySide();
 
 		if (displaySide == DisplaySide.LEFT) {
-			poseStack.mulPose(Axis.YP.rotationDegrees(-90));
+			poseStack.rotate(Axis.YP.rotationDegrees(-90));
 			if (renderState.chestType == ChestType.LEFT) {
 				poseStack.translate(0, 0, -1);
 			}
 		} else if (displaySide == DisplaySide.RIGHT) {
-			poseStack.mulPose(Axis.YP.rotationDegrees(90));
+			poseStack.rotate(Axis.YP.rotationDegrees(90));
 			if (renderState.chestType == ChestType.RIGHT) {
 				poseStack.translate(0, 0, -1);
 			}
@@ -150,7 +150,7 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity, ChestRender
 		poseStack.pushPose();
 		if (lidAngle > 0) {
 			poseStack.translate(0, 9 / 16D, 14 / 16D);
-			poseStack.mulPose(Axis.XP.rotationDegrees(lidAngle * 90));
+			poseStack.rotate(Axis.XP.rotationDegrees(lidAngle * 90));
 			poseStack.translate(0, -9 / 16D, -14 / 16D);
 		}
 		if (chestType == ChestType.LEFT) {
@@ -204,7 +204,7 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity, ChestRender
 		poseStack.pushPose();
 		float f = renderState.facing.toYRot();
 		poseStack.translate(0.5D, 0.5D, 0.5D);
-		poseStack.mulPose(Axis.YP.rotationDegrees(-f));
+		poseStack.rotate(Axis.YP.rotationDegrees(-f));
 		poseStack.translate(-0.5D, -0.5D, -0.5D);
 
 		if (!renderState.isGenericWood && (renderState.woodType.isPresent() || !(renderState.hasMainColor && renderState.hasAccentColor))
@@ -226,7 +226,8 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity, ChestRender
 			subRenderer.submitHiddenTier(submitNodeCollector, poseStack, renderState);
 		}
 
-		if (renderState.displayItems.isEmpty() || renderState.displayItems.getFirst().displaySide() != DisplaySide.FRONT) {
+		boolean showsLock = renderState.displayItems.isEmpty() || renderState.displayItems.getFirst().displaySide() != DisplaySide.FRONT;
+		if (showsLock) {
 			subRenderer.submitChestLock(submitNodeCollector, renderState, poseStack);
 		}
 
@@ -239,7 +240,7 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity, ChestRender
 		} else {
 			poseStack.pushPose();
 			poseStack.translate(0.5, 0.5, 0.5);
-			poseStack.mulPose(Axis.YP.rotationDegrees(180));
+			poseStack.rotate(Axis.YP.rotationDegrees(180));
 			boolean holdsItemThatShowsUpgrades = holdsItemThatShowsUpgrades();
 
 			poseStack.pushPose();
@@ -253,11 +254,11 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity, ChestRender
 				if (renderState.showUpgradesOnTop) {
 					if (renderState.open > 0) {
 						poseStack.translate(0, 9 / 16D, 14 / 16D);
-						poseStack.mulPose(Axis.XP.rotationDegrees(renderState.open * 90));
+						poseStack.rotate(Axis.XP.rotationDegrees(renderState.open * 90));
 						poseStack.translate(0, -9 / 16D, -14 / 16D);
 					}
 					poseStack.translate(0.5, 0.5, (0.5 - 1 / 16f));
-					poseStack.mulPose(Axis.XP.rotationDegrees(90));
+					poseStack.rotate(Axis.XP.rotationDegrees(90));
 					poseStack.translate(-0.5, -(0.5 - 1 / 16f), -(0.5 - 2 / 16f));
 				}
 				displayItemRenderer.submitUpgradeItems(submitNodeCollector, renderState, poseStack, OverlayTexture.NO_OVERLAY, holdsItemThatShowsUpgrades);
@@ -277,6 +278,9 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity, ChestRender
 			poseStack.popPose();
 		}
 
+		if (renderState.breakProgress != null) {
+			subRenderer.submitBreakingOverlay(submitNodeCollector, renderState, poseStack, showsLock);
+		}
 		poseStack.popPose();
 	}
 
@@ -316,7 +320,7 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity, ChestRender
 			poseStack.translate(-0.005D, -0.005D, -0.005D);
 			poseStack.scale(1.01f, 1.01f, 1.01f);
 			submitNodeCollector.submitModel(hiddenTierModel, renderState.open, poseStack, RenderTypes.entityTranslucent(tierMaterial.atlasLocation()),
-					renderState.lightCoords, OverlayTexture.NO_OVERLAY, 0x7FFFFFFF, sprites.get(tierMaterial), 0, renderState.breakProgress);
+					renderState.lightCoords, OverlayTexture.NO_OVERLAY, 0x7FFFFFFF, sprites.get(tierMaterial), 0);
 			poseStack.popPose();
 		}
 
@@ -337,7 +341,7 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity, ChestRender
 				poseStack.scale(1.001F, 1.001F, 1.001F);
 			}
 			submitNodeCollector.submitModel(coreModel, renderState.open, poseStack, renderType, renderState.lightCoords, OverlayTexture.NO_OVERLAY, color,
-					sprite, 0, renderState.breakProgress);
+					sprite, 0);
 			if (renderState.open > 0) {
 				poseStack.popPose();
 			}
@@ -355,7 +359,17 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity, ChestRender
 
 		private void submitChestLock(SubmitNodeCollector submitNodeCollector, ChestRenderState renderState, PoseStack poseStack) {
 			submitNodeCollector.submitModel(lockModel, renderState.open, poseStack, tierMaterial.renderType(RenderTypes::entityCutout), renderState.lightCoords,
-					OverlayTexture.NO_OVERLAY, -1, sprites.get(tierMaterial), 0, renderState.breakProgress);
+					OverlayTexture.NO_OVERLAY, -1, sprites.get(tierMaterial), 0);
+		}
+
+		private void submitBreakingOverlay(SubmitNodeCollector submitNodeCollector, ChestRenderState renderState, PoseStack poseStack, boolean showsLock) {
+			RenderType renderType = tierMaterial.renderType(RenderTypes::entityCutout);
+			submitNodeCollector.order(1).submitCrumblingOverlay(coreModel, renderState.open, poseStack, renderType, renderState.lightCoords,
+					OverlayTexture.NO_OVERLAY, -1, renderState.breakProgress);
+			if (showsLock) {
+				submitNodeCollector.order(1).submitCrumblingOverlay(lockModel, renderState.open, poseStack, renderType, renderState.lightCoords,
+						OverlayTexture.NO_OVERLAY, -1, renderState.breakProgress);
+			}
 		}
 
 		private SpriteId getTierMaterial(Block block) {

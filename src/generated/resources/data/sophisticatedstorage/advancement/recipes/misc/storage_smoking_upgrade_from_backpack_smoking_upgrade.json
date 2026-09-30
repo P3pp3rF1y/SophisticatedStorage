@@ -23,7 +23,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "sophisticatedstorage:storage_smoking_upgrade_from_backpack_smoking_upgrade"
+        "recipes": "sophisticatedstorage:storage_smoking_upgrade_from_backpack_smoking_upgrade"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

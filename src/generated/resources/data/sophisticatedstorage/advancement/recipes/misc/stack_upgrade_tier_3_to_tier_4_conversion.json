@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "sophisticatedstorage:stack_upgrade_tier_3_to_tier_4_conversion"
+        "recipes": "sophisticatedstorage:stack_upgrade_tier_3_to_tier_4_conversion"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

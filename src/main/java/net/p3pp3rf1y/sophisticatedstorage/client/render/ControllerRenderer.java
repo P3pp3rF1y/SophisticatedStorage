@@ -54,7 +54,7 @@ public class ControllerRenderer implements BlockEntityRenderer<ControllerBlockEn
 			poseStack.translate(translateX, translateY, translateZ);
 			Quaternionf rotation = playerLookDirection.getRotation();
 			rotation.mul(Axis.XP.rotationDegrees(-90.0F));
-			poseStack.mulPose(rotation);
+			poseStack.rotate(rotation);
 			poseStack.translate(-0.45f, 0.45f, 0);
 
 			poseStack.scale(scale, -scale, (float) zScale);

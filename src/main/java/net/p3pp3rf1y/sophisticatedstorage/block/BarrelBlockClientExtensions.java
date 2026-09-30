@@ -9,8 +9,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.neoforged.neoforge.client.extensions.common.IClientBlockExtensions;
 import net.p3pp3rf1y.sophisticatedstorage.client.particle.CustomTintTerrainParticle;
@@ -26,16 +24,14 @@ public class BarrelBlockClientExtensions implements IClientBlockExtensions {
 	}
 
 	@Override
-	public boolean addHitEffects(BlockState state, Level level, HitResult target, ParticleEngine manager) {
-		if (state.getBlock() != barrelBlock || !(level instanceof ClientLevel clientLevel) || !(target instanceof BlockHitResult blockHitResult)) {
+	public boolean addHitEffects(BlockState state, Level level, BlockPos pos, Direction sideHit, ParticleEngine manager) {
+		if (state.getBlock() != barrelBlock || !(level instanceof ClientLevel clientLevel)) {
 			return false;
 		}
-		if ((barrelBlock instanceof LimitedBarrelBlock && barrelBlock.getFacing(state) == blockHitResult.getDirection())) {
+		if ((barrelBlock instanceof LimitedBarrelBlock && barrelBlock.getFacing(state) == sideHit)) {
 			return true;
 		}
 
-		Direction sideHit = blockHitResult.getDirection();
-		BlockPos pos = blockHitResult.getBlockPos();
 		if (state.getRenderShape() != RenderShape.INVISIBLE) {
 			int i = pos.getX();
 			int j = pos.getY();

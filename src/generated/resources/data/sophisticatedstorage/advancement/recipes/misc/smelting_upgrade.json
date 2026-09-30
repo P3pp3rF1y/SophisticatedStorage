@@ -9,7 +9,7 @@
   "criteria": {
     "has_the_recipe": {
       "conditions": {
-        "recipe": "sophisticatedstorage:smelting_upgrade"
+        "recipes": "sophisticatedstorage:smelting_upgrade"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

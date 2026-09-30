@@ -251,11 +251,6 @@ public class LimitedBarrelBlock extends BarrelBlock {
 		}).orElse(false);
 	}
 
-	public boolean isLookingAtFront(Player player, BlockPos pos, BlockState state) {
-		return getHitResult(player).map(blockHitResult -> blockHitResult.getBlockPos().equals(pos) && blockHitResult.getDirection() == getFacing(state))
-				.orElse(false);
-	}
-
 	@Override
 	public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
 		super.setPlacedBy(level, pos, state, placer, stack);

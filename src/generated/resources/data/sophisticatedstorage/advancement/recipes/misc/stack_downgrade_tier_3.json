@@ -9,7 +9,7 @@
   "criteria": {
     "has_the_recipe": {
       "conditions": {
-        "recipe": "sophisticatedstorage:stack_downgrade_tier_3"
+        "recipes": "sophisticatedstorage:stack_downgrade_tier_3"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

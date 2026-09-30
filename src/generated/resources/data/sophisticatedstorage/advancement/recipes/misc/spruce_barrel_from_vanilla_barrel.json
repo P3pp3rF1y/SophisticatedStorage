@@ -9,7 +9,7 @@
   "criteria": {
     "has_the_recipe": {
       "conditions": {
-        "recipe": "sophisticatedstorage:spruce_barrel_from_vanilla_barrel"
+        "recipes": "sophisticatedstorage:spruce_barrel_from_vanilla_barrel"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

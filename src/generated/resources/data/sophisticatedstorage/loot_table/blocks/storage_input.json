@@ -2,24 +2,24 @@
   "type": "minecraft:block",
   "pools": [
     {
-      "conditions": [
-        {
-          "condition": "minecraft:survives_explosion"
-        }
-      ],
+      "condition": {
+        "type": "minecraft:survives_explosion"
+      },
       "entries": [
         {
           "type": "minecraft:item",
-          "functions": [
-            {
-              "function": "sophisticatedstorage:copy_storage_data"
-            }
-          ],
+          "modifier": {
+            "type": "sophisticatedstorage:copy_storage_data"
+          },
           "name": "sophisticatedstorage:storage_input"
         }
       ],
       "name": "main",
-      "rolls": 1.0
+      "rolls": {
+        "type": "minecraft:uniform",
+        "max": 1,
+        "min": 1
+      }
     }
   ],
   "random_sequence": "sophisticatedstorage:blocks/storage_input"

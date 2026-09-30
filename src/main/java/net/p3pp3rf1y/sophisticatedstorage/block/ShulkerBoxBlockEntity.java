@@ -120,7 +120,7 @@ public class ShulkerBoxBlockEntity extends StorageBlockEntity {
 			List<Entity> list = level.getEntities(null, aabb);
 			if (!list.isEmpty()) {
 				for (Entity entity : list) {
-					if (entity.getPistonPushReaction() != PushReaction.IGNORE) {
+					if (entity.getPistonPushReaction() != PushReaction.IGNORE_ENTITY) {
 						entity.move(MoverType.SHULKER_BOX, new Vec3((aabb.getXsize() + 0.01D) * direction.getStepX(),
 								(aabb.getYsize() + 0.01D) * direction.getStepY(), (aabb.getZsize() + 0.01D) * direction.getStepZ()));
 					}

@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "sophisticatedstorage:netherite_shulker_box"
+        "recipes": "sophisticatedstorage:netherite_shulker_box"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

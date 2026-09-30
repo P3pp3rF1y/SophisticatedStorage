@@ -9,7 +9,7 @@
   "criteria": {
     "has_the_recipe": {
       "conditions": {
-        "recipe": "sophisticatedstorage:warped_barrel"
+        "recipes": "sophisticatedstorage:warped_barrel"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

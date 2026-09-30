@@ -78,7 +78,7 @@ public class ShulkerBoxItemRenderer implements SpecialModelRenderer<ShulkerBoxIt
 		PoseStack posestack = new PoseStack();
 		posestack.translate(0.5D, 0.5D, 0.5D);
 		posestack.scale(0.9995F, 0.9995F, 0.9995F);
-		posestack.mulPose(Direction.SOUTH.getRotation());
+		posestack.rotate(Direction.SOUTH.getRotation());
 		posestack.scale(1.0F, -1.0F, -1.0F);
 		posestack.translate(0.0D, -1.0D, 0.0D);
 		ShulkerBoxBlockEntity shulkerBoxItem = shulkerBoxBlockEntities.getUnchecked(ModBlocks.SHULKER_BOX_ITEM.get());

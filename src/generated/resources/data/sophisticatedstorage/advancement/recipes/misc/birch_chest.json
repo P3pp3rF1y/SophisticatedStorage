@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "sophisticatedstorage:birch_chest"
+        "recipes": "sophisticatedstorage:birch_chest"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

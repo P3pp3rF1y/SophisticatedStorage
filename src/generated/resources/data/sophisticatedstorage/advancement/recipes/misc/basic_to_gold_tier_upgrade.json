@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "sophisticatedstorage:basic_to_gold_tier_upgrade"
+        "recipes": "sophisticatedstorage:basic_to_gold_tier_upgrade"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

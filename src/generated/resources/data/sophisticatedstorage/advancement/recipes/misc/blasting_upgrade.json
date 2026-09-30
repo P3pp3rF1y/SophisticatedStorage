@@ -9,7 +9,7 @@
   "criteria": {
     "has_the_recipe": {
       "conditions": {
-        "recipe": "sophisticatedstorage:blasting_upgrade"
+        "recipes": "sophisticatedstorage:blasting_upgrade"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

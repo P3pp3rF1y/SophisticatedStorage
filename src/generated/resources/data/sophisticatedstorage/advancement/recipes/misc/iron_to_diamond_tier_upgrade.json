@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "sophisticatedstorage:iron_to_diamond_tier_upgrade"
+        "recipes": "sophisticatedstorage:iron_to_diamond_tier_upgrade"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

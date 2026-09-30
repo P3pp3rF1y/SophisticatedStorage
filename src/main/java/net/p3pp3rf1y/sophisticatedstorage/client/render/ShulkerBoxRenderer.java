@@ -102,41 +102,44 @@ public class ShulkerBoxRenderer extends StorageRenderer<ShulkerBoxBlockEntity, S
 		poseStack.mulPose(net.minecraft.client.renderer.blockentity.ShulkerBoxRenderer.modelTransform(renderState.facing));
 
 		if (renderState.mainColor == -1 || renderState.accentColor == -1) {
-			submitNodeCollector.submitModel(model, renderState, poseStack, renderState.lightCoords, OverlayTexture.NO_OVERLAY, -1, NO_TINT_MATERIAL, sprites, 0,
-					renderState.breakProgress);
+			submitNodeCollector.submitModel(model, renderState, poseStack, renderState.lightCoords, OverlayTexture.NO_OVERLAY, -1, NO_TINT_MATERIAL, sprites,
+					0);
 		}
 		if (renderState.mainColor != -1) {
 			submitNodeCollector.submitModel(model, renderState, poseStack, renderState.lightCoords, OverlayTexture.NO_OVERLAY,
-					0xFF000000 | renderState.mainColor, TINTABLE_MAIN_MATERIAL, sprites, 0, renderState.breakProgress);
+					0xFF000000 | renderState.mainColor, TINTABLE_MAIN_MATERIAL, sprites, 0);
 		}
 		if (renderState.accentColor != -1) {
 			submitNodeCollector.submitModel(model, renderState, poseStack, renderState.lightCoords, OverlayTexture.NO_OVERLAY,
-					0xFF000000 | renderState.accentColor, TINTABLE_ACCENT_MATERIAL, sprites, 0, renderState.breakProgress);
+					0xFF000000 | renderState.accentColor, TINTABLE_ACCENT_MATERIAL, sprites, 0);
 		}
 		SpriteId tierMaterial = getTierMaterial(renderState.block);
 		if (renderState.showsTier) {
-			submitNodeCollector.submitModel(model, renderState, poseStack, renderState.lightCoords, OverlayTexture.NO_OVERLAY, -1, tierMaterial, sprites, 0,
-					renderState.breakProgress);
+			submitNodeCollector.submitModel(model, renderState, poseStack, renderState.lightCoords, OverlayTexture.NO_OVERLAY, -1, tierMaterial, sprites, 0);
 		} else if (holdsItemThatShowsHiddenTiers()) {
 			poseStack.pushPose();
 			poseStack.translate(0, -0.01, 0);
 			poseStack.scale(1.01f, 1.01f, 1.01f);
 			submitNodeCollector.submitModel(model, renderState, poseStack, RenderTypes.entityTranslucent(tierMaterial.atlasLocation()), renderState.lightCoords,
-					OverlayTexture.NO_OVERLAY, 0x7FFFFFFF, sprites.get(tierMaterial), 0, renderState.breakProgress);
+					OverlayTexture.NO_OVERLAY, 0x7FFFFFFF, sprites.get(tierMaterial), 0);
 			poseStack.popPose();
+		}
+		if (renderState.breakProgress != null) {
+			submitNodeCollector.order(1).submitCrumblingOverlay(model, renderState, poseStack, tierMaterial.renderType(model.renderType()),
+					renderState.lightCoords, OverlayTexture.NO_OVERLAY, -1, renderState.breakProgress);
 		}
 
 		poseStack.popPose();
 
 		poseStack.pushPose();
 		poseStack.translate(0.5, 0.5, 0.5);
-		poseStack.mulPose(getNorthBasedRotation(renderState.facing));
+		poseStack.rotate(getNorthBasedRotation(renderState.facing));
 		boolean holdsItemThatShowsUpgrades = holdsItemThatShowsUpgrades();
 
 		float zOffset = 0;
 		if (renderState.lidProgress > 0) {
 			zOffset = renderState.lidProgress * 0.5f;
-			poseStack.mulPose(Axis.ZP.rotationDegrees(270.0F * renderState.lidProgress));
+			poseStack.rotate(Axis.ZP.rotationDegrees(270.0F * renderState.lidProgress));
 		}
 
 		poseStack.translate(-0.5D, -0.5D, -0.5D - zOffset);

@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "sophisticatedstorage:oak_chest"
+        "recipes": "sophisticatedstorage:oak_chest"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

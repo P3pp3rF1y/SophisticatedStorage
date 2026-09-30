@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "sophisticatedstorage:basic_to_iron_tier_from_basic_to_copper_tier"
+        "recipes": "sophisticatedstorage:basic_to_iron_tier_from_basic_to_copper_tier"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

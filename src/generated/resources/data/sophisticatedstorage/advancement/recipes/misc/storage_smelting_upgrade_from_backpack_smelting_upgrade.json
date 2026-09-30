@@ -23,7 +23,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "sophisticatedstorage:storage_smelting_upgrade_from_backpack_smelting_upgrade"
+        "recipes": "sophisticatedstorage:storage_smelting_upgrade_from_backpack_smelting_upgrade"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

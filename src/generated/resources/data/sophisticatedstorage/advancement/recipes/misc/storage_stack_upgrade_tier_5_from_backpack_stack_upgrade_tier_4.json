@@ -23,7 +23,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "sophisticatedstorage:storage_stack_upgrade_tier_5_from_backpack_stack_upgrade_tier_4"
+        "recipes": "sophisticatedstorage:storage_stack_upgrade_tier_5_from_backpack_stack_upgrade_tier_4"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

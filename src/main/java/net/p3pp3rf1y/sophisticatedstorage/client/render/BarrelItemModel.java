@@ -16,6 +16,7 @@ import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.resources.model.ResolvedModel;
 import net.minecraft.client.resources.model.cuboid.ItemTransform;
 import net.minecraft.client.resources.model.cuboid.ItemTransforms;
+import net.minecraft.client.resources.model.geometry.ItemQuads;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.ItemOwner;
@@ -115,7 +116,7 @@ public record BarrelItemModel(BarrelBlockStateModelBase model, @Nullable BarrelB
 		layerState.setUsesBlockLight(true);
 		layerState.setParticleMaterial(updatedModel.particleMaterial());
 		layerState.setItemTransform(ITEM_TRANSFORMS.getTransform(itemDisplayContext));
-		layerState.prepareQuadList().addAll(quads);
+		layerState.setQuads(ItemQuads.split(quads));
 	}
 
 	public record Unbaked(Identifier model, @Nullable Identifier flatTopModel, List<ItemTintSource> tints) implements ItemModel.Unbaked {

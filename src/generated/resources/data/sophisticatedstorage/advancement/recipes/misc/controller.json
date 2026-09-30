@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "sophisticatedstorage:controller"
+        "recipes": "sophisticatedstorage:controller"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

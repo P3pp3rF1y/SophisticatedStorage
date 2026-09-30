@@ -23,7 +23,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "sophisticatedstorage:backpack_advanced_alchemy_upgrade_from_storage_advanced_alchemy_upgrade"
+        "recipes": "sophisticatedstorage:backpack_advanced_alchemy_upgrade_from_storage_advanced_alchemy_upgrade"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

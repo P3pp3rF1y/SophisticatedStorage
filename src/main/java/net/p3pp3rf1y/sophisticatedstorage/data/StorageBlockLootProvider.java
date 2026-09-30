@@ -1,11 +1,10 @@
 package net.p3pp3rf1y.sophisticatedstorage.data;
 
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.data.PackOutput;
 import net.minecraft.data.loot.BlockLootSubProvider;
 import net.minecraft.data.loot.LootTableProvider;
+import net.minecraft.data.loot.LootTableSubProvider;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.ItemLike;
@@ -16,23 +15,22 @@ import net.minecraft.world.level.storage.loot.entries.LootItem;
 import net.minecraft.world.level.storage.loot.functions.CopyComponentsFunction;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
-import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
+import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProviders;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 
 public class StorageBlockLootProvider extends LootTableProvider {
-	StorageBlockLootProvider(PackOutput packOutput, CompletableFuture<HolderLookup.Provider> registries) {
-		super(packOutput, Set.of(), List.of(new SubProviderEntry(SubProvider::new, LootContextParamSets.BLOCK)), registries);
+	StorageBlockLootProvider() {
+		super(Set.of(), List.of(new SubProviderEntry(SubProvider::new, LootContextParamSets.BLOCK)));
 	}
 
 	private static class SubProvider extends BlockLootSubProvider {
-		protected SubProvider(HolderLookup.Provider registries) {
-			super(Set.of(), FeatureFlags.REGISTRY.allFlags(), registries);
+		protected SubProvider(LootTableSubProvider.Context context) {
+			super(Set.of(), FeatureFlags.REGISTRY.allFlags(), context);
 		}
 
 		@Override
@@ -99,19 +97,19 @@ public class StorageBlockLootProvider extends LootTableProvider {
 		}
 
 		private static LootTable.Builder dropStorageWithContents(Item storageItem) {
-			LootPool.Builder pool = LootPool.lootPool().name("main").setRolls(ConstantValue.exactly(1)).add(LootItem.lootTableItem(storageItem))
+			LootPool.Builder pool = LootPool.lootPool().name("main").setRolls(ContextIntProviders.between(1, 1)).add(LootItem.lootTableItem(storageItem))
 					.apply(CopyComponentsFunction.copyComponentsFromBlockEntity(LootContextParams.BLOCK_ENTITY).include(DataComponents.CUSTOM_NAME))
 					.apply(CopyStorageDataFunction.builder());
 			return LootTable.lootTable().withPool(pool);
 		}
 
 		public LootTable.Builder dropBlock(ItemLike item) {
-			return LootTable.lootTable().withPool(
-					applyExplosionCondition(item, LootPool.lootPool().name("main").setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(item))));
+			return LootTable.lootTable().withPool(applyExplosionCondition(item,
+					LootPool.lootPool().name("main").setRolls(ContextIntProviders.between(1, 1)).add(LootItem.lootTableItem(item))));
 		}
 
 		private LootTable.Builder dropSimpleMaterialBlock(ItemLike item) {
-			return LootTable.lootTable().withPool(applyExplosionCondition(item, LootPool.lootPool().name("main").setRolls(ConstantValue.exactly(1.0F))
+			return LootTable.lootTable().withPool(applyExplosionCondition(item, LootPool.lootPool().name("main").setRolls(ContextIntProviders.between(1, 1))
 					.add(LootItem.lootTableItem(item).apply(CopyStorageDataFunction.builder()))));
 		}
 	}

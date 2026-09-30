@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "sophisticatedstorage:acacia_chest"
+        "recipes": "sophisticatedstorage:acacia_chest"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

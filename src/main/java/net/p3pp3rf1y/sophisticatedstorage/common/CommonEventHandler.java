@@ -60,18 +60,15 @@ public class CommonEventHandler {
 	}
 
 	private void onLimitedBarrelLeftClicked(PlayerInteractEvent.LeftClickBlock event) {
-		Player player = event.getEntity();
-		if (!player.isCreative()) {
+		if (event.getLevel().isClientSide() || event.getAction() != PlayerInteractEvent.LeftClickBlock.Action.START) {
 			return;
 		}
 
 		BlockPos pos = event.getPos();
 		Level level = event.getLevel();
 		BlockState state = level.getBlockState(pos);
-		if (!(state.getBlock() instanceof LimitedBarrelBlock limitedBarrel)) {
-			return;
-		}
-		if (limitedBarrel.tryToTakeItem(state, level, pos, player)) {
+		if (state.getBlock() instanceof LimitedBarrelBlock limitedBarrel && event.getFace() == limitedBarrel.getFacing(state)) {
+			limitedBarrel.tryToTakeItem(state, level, pos, event.getEntity());
 			event.setCanceled(true);
 		}
 	}

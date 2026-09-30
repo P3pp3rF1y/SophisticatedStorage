@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "sophisticatedstorage:jungle_barrel"
+        "recipes": "sophisticatedstorage:jungle_barrel"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

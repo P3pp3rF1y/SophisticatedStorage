@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "sophisticatedstorage:netherite_barrel"
+        "recipes": "sophisticatedstorage:netherite_barrel"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

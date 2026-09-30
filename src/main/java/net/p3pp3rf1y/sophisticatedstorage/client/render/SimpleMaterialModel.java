@@ -34,6 +34,7 @@ import net.minecraft.client.resources.model.UnbakedModel;
 import net.minecraft.client.resources.model.cuboid.ItemTransform;
 import net.minecraft.client.resources.model.cuboid.ItemTransforms;
 import net.minecraft.client.resources.model.geometry.BakedQuad;
+import net.minecraft.client.resources.model.geometry.ItemQuads;
 import net.minecraft.client.resources.model.geometry.QuadCollection;
 import net.minecraft.client.resources.model.sprite.Material;
 import net.minecraft.client.resources.model.sprite.TextureSlots;
@@ -308,10 +309,11 @@ public class SimpleMaterialModel extends AbstractUnbakedModel {
 		TextureAtlasSprite oldSprite = quad.materialInfo().sprite();
 		ChunkSectionLayer layer = newSprite.transparency().hasTranslucent() ? ChunkSectionLayer.TRANSLUCENT : ChunkSectionLayer.CUTOUT;
 		QuadBakingVertexConsumer quadBuilder = new QuadBakingVertexConsumer();
-		quadBuilder.setSprite(newSprite, layer, layer.translucent() ? Sheets.translucentBlockItemSheet() : Sheets.cutoutBlockItemSheet());
+		quadBuilder.setSprite(newSprite, layer, layer.translucent() ? Sheets.translucentBlockItemSheet() : Sheets.cutoutBlockItemSheet(),
+				Sheets.translucentBlockItemSheet(), Sheets.translucentBlockItemSheet());
 		quadBuilder.setDirection(quad.direction());
 		quadBuilder.setTintIndex(-1);
-		quadBuilder.setShade(quad.materialInfo().shade());
+		quadBuilder.setShadeOverride(quad.materialInfo().shadeDirectionOverride());
 		quadBuilder.setLightEmission(quad.materialInfo().lightEmission());
 		quadBuilder.setAmbientOcclusion(quad.materialInfo().ambientOcclusion());
 		Direction normal = quad.direction();
@@ -381,7 +383,7 @@ public class SimpleMaterialModel extends AbstractUnbakedModel {
 				layerState.setLocalTransform(transformation);
 				properties.applyToLayer(layerState, itemDisplayContext);
 				layerState.setItemTransform(ITEM_TRANSFORMS.getTransform(itemDisplayContext));
-				layerState.prepareQuadList().addAll(model.getItemQuads(material, clientLevel != null ? clientLevel.getRandom() : RandomSource.create(42L)));
+				layerState.setQuads(ItemQuads.split(model.getItemQuads(material, clientLevel != null ? clientLevel.getRandom() : RandomSource.create(42L))));
 			}, () -> {
 				ItemStackRenderState.LayerRenderState layerState = state.newLayer();
 				layerState.setExtents(extents);
@@ -390,7 +392,7 @@ public class SimpleMaterialModel extends AbstractUnbakedModel {
 				layerState.setLocalTransform(transformation);
 				properties.applyToLayer(layerState, itemDisplayContext);
 				layerState.setItemTransform(ITEM_TRANSFORMS.getTransform(itemDisplayContext));
-				layerState.prepareQuadList().addAll(model.baseQuads.getAll());
+				layerState.setQuads(ItemQuads.split(model.baseQuads.getAll()));
 			});
 		}
 

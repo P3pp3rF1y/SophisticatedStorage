@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "sophisticatedstorage:spruce_barrel"
+        "recipes": "sophisticatedstorage:spruce_barrel"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

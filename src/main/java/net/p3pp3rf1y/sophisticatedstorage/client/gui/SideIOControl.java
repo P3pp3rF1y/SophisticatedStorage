@@ -1,5 +1,6 @@
 package net.p3pp3rf1y.sophisticatedstorage.client.gui;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -38,11 +39,11 @@ public class SideIOControl extends CompositeWidgetBase<WidgetBase> {
 
 	private void addSideIOButton(SideIOContainer container, Position position1, BlockSide side) {
 		addChild(new SideIOToggleButton(position1, StorageButtonDefinitions.IO_MODE, button -> {
-			if (button == 0 && Minecraft.getInstance().hasShiftDown()) {
+			if (button == InputConstants.MOUSE_BUTTON_LEFT && Minecraft.getInstance().hasShiftDown()) {
 				container.setSideIOToOff(side);
-			} else if (button == 0) {
+			} else if (button == InputConstants.MOUSE_BUTTON_LEFT) {
 				container.toggleSideIO(side);
-			} else if (button == 1) {
+			} else if (button == InputConstants.MOUSE_BUTTON_RIGHT) {
 				container.toggleSideIOBackwards(side);
 			}
 		}, () -> container.getSideIOMode(side), side, container::toDirection));

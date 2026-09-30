@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "sophisticatedstorage:cherry_barrel"
+        "recipes": "sophisticatedstorage:cherry_barrel"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

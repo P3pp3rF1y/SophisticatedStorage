@@ -9,7 +9,7 @@
   "criteria": {
     "has_the_recipe": {
       "conditions": {
-        "recipe": "sophisticatedstorage:oak_chest_from_vanilla_chest"
+        "recipes": "sophisticatedstorage:oak_chest_from_vanilla_chest"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

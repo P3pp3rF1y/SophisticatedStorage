@@ -26,7 +26,7 @@ public class BarrelRenderer<T extends BarrelBlockEntity> extends BarrelRendererB
 		poseStack.pushPose();
 
 		poseStack.translate(0.5, 0.5, 0.5);
-		poseStack.mulPose(DisplayItemRenderer.getNorthBasedRotation(renderState.facing));
+		poseStack.rotate(DisplayItemRenderer.getNorthBasedRotation(renderState.facing));
 		poseStack.translate(-0.5, -0.5, -(0.5 - (renderState.flatTop ? 0 : 1 / 16f)));
 
 		boolean holdsItemThatShowsUpgrades = holdsItemThatShowsUpgrades();

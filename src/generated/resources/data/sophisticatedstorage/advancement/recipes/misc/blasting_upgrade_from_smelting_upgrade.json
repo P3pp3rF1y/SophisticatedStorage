@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "sophisticatedstorage:blasting_upgrade_from_smelting_upgrade"
+        "recipes": "sophisticatedstorage:blasting_upgrade_from_smelting_upgrade"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

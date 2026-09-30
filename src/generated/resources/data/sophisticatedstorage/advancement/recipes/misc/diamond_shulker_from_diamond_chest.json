@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "sophisticatedstorage:diamond_shulker_from_diamond_chest"
+        "recipes": "sophisticatedstorage:diamond_shulker_from_diamond_chest"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "sophisticatedstorage:diamond_barrel"
+        "recipes": "sophisticatedstorage:diamond_barrel"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

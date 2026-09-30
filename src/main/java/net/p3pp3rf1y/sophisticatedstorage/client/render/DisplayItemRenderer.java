@@ -137,7 +137,7 @@ public class DisplayItemRenderer {
 
 		Vector3f frontOffset = getDisplayItemIndexFrontOffset(displayItemIndex, displayItemCount, (float) yCenterTranslation);
 		poseStack.translate(frontOffset.x(), frontOffset.y(), -itemOffset - zOffset * getDisplayItemPixelOffset(item, itemScale));
-		poseStack.mulPose(Axis.ZP.rotationDegrees(rotation));
+		poseStack.rotate(Axis.ZP.rotationDegrees(rotation));
 		poseStack.scale(itemScale, itemScale, itemScale);
 
 		item.submit(poseStack, submitNodeCollector, packedLight, packedOverlay, 0);

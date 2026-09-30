@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "sophisticatedstorage:copper_shulker_from_copper_chest"
+        "recipes": "sophisticatedstorage:copper_shulker_from_copper_chest"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

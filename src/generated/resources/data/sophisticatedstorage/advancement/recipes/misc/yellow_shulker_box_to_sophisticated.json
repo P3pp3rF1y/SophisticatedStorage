@@ -9,7 +9,7 @@
   "criteria": {
     "has_the_recipe": {
       "conditions": {
-        "recipe": "sophisticatedstorage:yellow_shulker_box_to_sophisticated"
+        "recipes": "sophisticatedstorage:yellow_shulker_box_to_sophisticated"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

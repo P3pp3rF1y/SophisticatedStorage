@@ -100,7 +100,7 @@ public class StorageContainerMenu extends StorageContainerMenuBase<IStorageWrapp
 		Optional<LinkedStorageSnapshot> snapshot = WorldHelper.getBlockEntity(player.level(), pos, StorageBlockEntity.class)
 				.filter(StorageBlockEntity::isLinkedStorage).map(storage -> getLinkedStorageSnapshot(player, storage));
 		buffer.writeBoolean(snapshot.isPresent());
-		snapshot.ifPresent(value -> writeLinkedStorageSnapshot(buffer, value));
+		snapshot.ifPresent(value -> writeLinkedStorageSnapshot(buffer, player, value));
 	}
 
 	public static BlockPos readMenuData(FriendlyByteBuf buffer, Player player) {
@@ -113,7 +113,8 @@ public class StorageContainerMenu extends StorageContainerMenuBase<IStorageWrapp
 		LinkedStorageEndpointRole endpointRole = buffer.readBoolean() ? LinkedStorageEndpointRole.PRIMARY : LinkedStorageEndpointRole.SECONDARY;
 		long revision = buffer.readVarLong();
 		Component groupName = ComponentSerialization.TRUSTED_CONTEXT_FREE_STREAM_CODEC.decode(buffer);
-		ContainerContents contents = ContainerContents.CODEC.parse(NbtOps.INSTANCE, Objects.requireNonNull(buffer.readNbt())).getOrThrow();
+		ContainerContents contents = ContainerContents.CODEC
+				.parse(player.registryAccess().createSerializationContext(NbtOps.INSTANCE), Objects.requireNonNull(buffer.readNbt())).getOrThrow();
 		int inventorySlots = buffer.readVarInt();
 		int upgradeSlots = buffer.readVarInt();
 		int columnsTaken = buffer.readVarInt();
@@ -148,13 +149,14 @@ public class StorageContainerMenu extends StorageContainerMenuBase<IStorageWrapp
 				host.getInventoryHandler().size(), host.getUpgradeHandler().size(), host.getColumnsTaken(), virtualCarrier);
 	}
 
-	private static void writeLinkedStorageSnapshot(FriendlyByteBuf buffer, LinkedStorageSnapshot snapshot) {
+	private static void writeLinkedStorageSnapshot(FriendlyByteBuf buffer, Player player, LinkedStorageSnapshot snapshot) {
 		buffer.writeUUID(snapshot.endpoint().groupId());
 		buffer.writeUUID(snapshot.endpoint().endpointId());
 		buffer.writeBoolean(snapshot.endpointRole() == LinkedStorageEndpointRole.PRIMARY);
 		buffer.writeVarLong(snapshot.revision());
 		ComponentSerialization.TRUSTED_CONTEXT_FREE_STREAM_CODEC.encode(buffer, snapshot.groupName());
-		FriendlyByteBuf.writeNbt(buffer, (CompoundTag) ContainerContents.CODEC.encodeStart(NbtOps.INSTANCE, snapshot.contents()).getOrThrow());
+		FriendlyByteBuf.writeNbt(buffer, (CompoundTag) ContainerContents.CODEC
+				.encodeStart(player.registryAccess().createSerializationContext(NbtOps.INSTANCE), snapshot.contents()).getOrThrow());
 		buffer.writeVarInt(snapshot.inventorySlots());
 		buffer.writeVarInt(snapshot.upgradeSlots());
 		buffer.writeVarInt(snapshot.columnsTaken());

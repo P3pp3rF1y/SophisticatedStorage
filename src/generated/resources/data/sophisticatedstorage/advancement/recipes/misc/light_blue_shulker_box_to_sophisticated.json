@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "sophisticatedstorage:light_blue_shulker_box_to_sophisticated"
+        "recipes": "sophisticatedstorage:light_blue_shulker_box_to_sophisticated"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

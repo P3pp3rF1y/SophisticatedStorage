@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "sophisticatedstorage:iron_barrel"
+        "recipes": "sophisticatedstorage:iron_barrel"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

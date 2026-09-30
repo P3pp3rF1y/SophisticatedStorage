@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "sophisticatedstorage:limited_iron_barrel_3_from_limited_copper_barrel_3"
+        "recipes": "sophisticatedstorage:limited_iron_barrel_3_from_limited_copper_barrel_3"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

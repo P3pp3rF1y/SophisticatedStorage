@@ -23,7 +23,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "sophisticatedstorage:backpack_void_upgrade_from_storage_void_upgrade"
+        "recipes": "sophisticatedstorage:backpack_void_upgrade_from_storage_void_upgrade"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

@@ -9,7 +9,7 @@
   "criteria": {
     "has_the_recipe": {
       "conditions": {
-        "recipe": "sophisticatedstorage:compression_upgrade"
+        "recipes": "sophisticatedstorage:compression_upgrade"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

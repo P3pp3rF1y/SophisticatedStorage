@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "sophisticatedstorage:gold_barrel"
+        "recipes": "sophisticatedstorage:gold_barrel"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

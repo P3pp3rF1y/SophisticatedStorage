@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "sophisticatedstorage:acacia_limited_barrel_1"
+        "recipes": "sophisticatedstorage:acacia_limited_barrel_1"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

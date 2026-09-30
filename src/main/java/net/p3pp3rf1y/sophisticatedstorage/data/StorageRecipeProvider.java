@@ -2,14 +2,15 @@ package net.p3pp3rf1y.sophisticatedstorage.data;
 
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementHolder;
+import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
-import net.minecraft.core.HolderLookup;
+import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.BlockFamily;
-import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.*;
+import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.ItemTags;
@@ -40,8 +41,8 @@ import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 
 import javax.annotation.Nullable;
 
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 public class StorageRecipeProvider extends RecipeProvider {
 	private static final String HAS_UPGRADE_BASE_CRITERION_NAME = "has_upgrade_base";
@@ -53,9 +54,9 @@ public class StorageRecipeProvider extends RecipeProvider {
 
 	private final HolderGetter<Item> items;
 
-	public StorageRecipeProvider(HolderLookup.Provider provider, RecipeOutput recipeOutput) {
-		super(provider, recipeOutput);
-		items = provider.lookupOrThrow(Registries.ITEM);
+	public StorageRecipeProvider(BootstrapContext<Recipe<?>> recipes, BootstrapContext<Advancement> advancements) {
+		super(recipes, advancements);
+		items = output.lookup(Registries.ITEM);
 	}
 
 	@Override
@@ -863,8 +864,13 @@ public class StorageRecipeProvider extends RecipeProvider {
 		}
 
 		@Override
-		public void includeRootAdvancement() {
-			delegate.includeRootAdvancement();
+		public <S> HolderGetter<S> lookup(ResourceKey<? extends Registry<? extends S>> registry) {
+			return delegate.lookup(registry);
+		}
+
+		@Override
+		public <S> Stream<Holder.Reference<S>> listContextElements(ResourceKey<? extends Registry<? extends S>> registry) {
+			return delegate.listContextElements(registry);
 		}
 	}
 
@@ -994,20 +1000,4 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.save(recipeOutput, ResourceKey.create(Registries.RECIPE, SophisticatedStorage.getIdentifier(vanillaShulkerBoxName + "_to_sophisticated")));
 	}
 
-	public static class Runner extends RecipeProvider.Runner {
-
-		protected Runner(PackOutput packOutput, CompletableFuture<HolderLookup.Provider> registries) {
-			super(packOutput, registries);
-		}
-
-		@Override
-		protected RecipeProvider createRecipeProvider(HolderLookup.Provider provider, RecipeOutput recipeOutput) {
-			return new StorageRecipeProvider(provider, recipeOutput);
-		}
-
-		@Override
-		public String getName() {
-			return "Sophisticated Storage Recipes";
-		}
-	}
 }

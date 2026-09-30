@@ -1,6 +1,6 @@
 {
   "model": {
-    "type": "sophisticatedstorage:simple_material",
+    "type": "minecraft:model",
     "model": "sophisticatedstorage:block/storage_input"
   }
 }

@@ -23,7 +23,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "sophisticatedstorage:storage_stonecutter_upgrade_from_backpack_stonecutter_upgrade"
+        "recipes": "sophisticatedstorage:storage_stonecutter_upgrade_from_backpack_stonecutter_upgrade"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

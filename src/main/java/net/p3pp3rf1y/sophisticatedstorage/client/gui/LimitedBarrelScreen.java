@@ -45,7 +45,7 @@ public class LimitedBarrelScreen extends StorageScreen {
 
 	public static void drawSlotBg(AbstractContainerScreen<?> screen, GuiGraphicsExtractor guiGraphics, int x, int y, int slotsNumber) {
 		TextureBlitData backgroundTexture = getBackgroundTexture(slotsNumber);
-		GuiHelper.blit(guiGraphics, x + screen.getXSize() / 2 - backgroundTexture.getWidth() / 2 - 1, y + 17, backgroundTexture);
+		GuiHelper.blit(guiGraphics, x + screen.getImageWidth() / 2 - backgroundTexture.getWidth() / 2 - 1, y + 17, backgroundTexture);
 	}
 
 	@Override

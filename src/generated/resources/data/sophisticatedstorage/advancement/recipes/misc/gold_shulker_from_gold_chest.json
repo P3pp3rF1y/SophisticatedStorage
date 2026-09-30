@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "sophisticatedstorage:gold_shulker_from_gold_chest"
+        "recipes": "sophisticatedstorage:gold_shulker_from_gold_chest"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

@@ -6,6 +6,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.neoforged.neoforge.event.level.LevelEvent;
+import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.client.render.ClientStorageContentsTooltipBase;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.ClientLinkedStorageContents;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.RequestLinkedStorageContentsPayload;
@@ -38,7 +39,12 @@ public class ClientStorageContentsTooltip extends ClientStorageContentsTooltipBa
 			linkedStorageTooltip.extractImage(font, x, y, w, h, graphics);
 			y += linkedStorageTooltip.getHeight(font);
 		}
-		extractTooltip(StackStorageWrapper.fromStack(Minecraft.getInstance().level.registryAccess(), storageItem), font, x, y, graphics);
+		extractTooltip(font, x, y, graphics);
+	}
+
+	@Override
+	protected IStorageWrapper getTooltipStorageWrapper() {
+		return StackStorageWrapper.fromStack(Minecraft.getInstance().level.registryAccess(), storageItem);
 	}
 
 	public ClientStorageContentsTooltip(StorageContentsTooltip tooltip) {

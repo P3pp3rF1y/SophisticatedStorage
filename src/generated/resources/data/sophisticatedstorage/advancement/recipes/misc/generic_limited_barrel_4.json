@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "sophisticatedstorage:generic_limited_barrel_4"
+        "recipes": "sophisticatedstorage:generic_limited_barrel_4"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

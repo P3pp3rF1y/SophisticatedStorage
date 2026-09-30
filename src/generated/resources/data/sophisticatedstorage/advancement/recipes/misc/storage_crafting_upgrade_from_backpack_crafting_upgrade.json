@@ -23,7 +23,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "sophisticatedstorage:storage_crafting_upgrade_from_backpack_crafting_upgrade"
+        "recipes": "sophisticatedstorage:storage_crafting_upgrade_from_backpack_crafting_upgrade"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

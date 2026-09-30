@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "sophisticatedstorage:oak_barrel"
+        "recipes": "sophisticatedstorage:oak_barrel"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

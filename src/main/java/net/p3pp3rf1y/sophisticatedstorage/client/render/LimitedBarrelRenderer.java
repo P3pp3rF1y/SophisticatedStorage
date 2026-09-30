@@ -53,9 +53,9 @@ public class LimitedBarrelRenderer extends BarrelRendererBase<LimitedBarrelBlock
 				|| holdsItemThatShowsFillLevels()) {
 			poseStack.pushPose();
 			poseStack.translate(0.5, 0.5, 0.5);
-			poseStack.mulPose(DisplayItemRenderer.getNorthBasedRotation(renderState.horizontalFacing));
+			poseStack.rotate(DisplayItemRenderer.getNorthBasedRotation(renderState.horizontalFacing));
 			if (renderState.verticalFacing != VerticalFacing.NO) {
-				poseStack.mulPose(DisplayItemRenderer.getNorthBasedRotation(renderState.verticalFacing.getDirection()));
+				poseStack.rotate(DisplayItemRenderer.getNorthBasedRotation(renderState.verticalFacing.getDirection()));
 			}
 			poseStack.translate(-0.5, -0.5, -(0.5 - (renderState.flatTop ? 0 : 1 / 16f)));
 
@@ -138,9 +138,9 @@ public class LimitedBarrelRenderer extends BarrelRendererBase<LimitedBarrelBlock
 
 		poseStack.pushPose();
 		poseStack.translate(0.5, 0.5, 0.5);
-		poseStack.mulPose(DisplayItemRenderer.getNorthBasedRotation(renderState.horizontalFacing.getOpposite()));
+		poseStack.rotate(DisplayItemRenderer.getNorthBasedRotation(renderState.horizontalFacing.getOpposite()));
 		if (renderState.verticalFacing != VerticalFacing.NO) {
-			poseStack.mulPose(DisplayItemRenderer.getNorthBasedRotation(renderState.verticalFacing.getDirection().getOpposite()));
+			poseStack.rotate(DisplayItemRenderer.getNorthBasedRotation(renderState.verticalFacing.getDirection().getOpposite()));
 		}
 		poseStack.translate(0.5, -0.5, 0.5);
 

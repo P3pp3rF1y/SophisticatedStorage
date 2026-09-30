@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "sophisticatedstorage:dark_oak_storage_connector"
+        "recipes": "sophisticatedstorage:dark_oak_storage_connector"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

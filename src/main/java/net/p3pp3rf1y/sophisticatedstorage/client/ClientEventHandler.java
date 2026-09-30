@@ -196,14 +196,12 @@ public class ClientEventHandler {
 		if (!(state.getBlock() instanceof LimitedBarrelBlock limitedBarrel)) {
 			return;
 		}
-		if (limitedBarrel.isLookingAtFront(player, pos, state)) {
+		if (event.getFace() == limitedBarrel.getFacing(state)) {
 			if (player.isCreative()) {
 				event.setCanceled(true);
 			} else {
-				if (event.getEntity().getDestroySpeed(state, event.getPos()) < 2) {
-					event.setUseItem(TriState.FALSE);
-					Minecraft.getInstance().gameMode.destroyDelay = 5;
-				}
+				event.setUseItem(TriState.FALSE);
+				Minecraft.getInstance().gameMode.destroyDelay = 5;
 			}
 		}
 	}

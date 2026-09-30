@@ -1,11 +1,11 @@
 package net.p3pp3rf1y.sophisticatedstorage.client.render;
 
-import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.Std140Builder;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import com.mojang.renderpearl.api.buffers.GpuBuffer;
 import net.minecraft.client.gui.render.pip.PictureInPictureRenderer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.core.BlockPos;
@@ -37,8 +37,8 @@ public class StorageBlockPreviewPipRenderer extends PictureInPictureRenderer<Sto
 	@Override
 	protected void renderToTexture(StorageBlockPreviewRenderState renderState, PoseStack poseStack, SubmitNodeCollector submitNodeCollector) {
 		setupPreviewLighting();
-		poseStack.mulPose(Axis.XN.rotationDegrees(-renderState.xAxisRotation()));
-		poseStack.mulPose(Axis.YP.rotationDegrees(-renderState.yAxisRotation()));
+		poseStack.rotate(Axis.XN.rotationDegrees(-renderState.xAxisRotation()));
+		poseStack.rotate(Axis.YP.rotationDegrees(-renderState.yAxisRotation()));
 		poseStack.scale(renderState.previewScale(), -renderState.previewScale(), -renderState.previewScale());
 		applyStoragePreviewCounterTransform(poseStack, renderState.storageBlockEntity().getBlockState());
 		poseStack.translate(-0.5, -0.5, -0.5);
@@ -97,15 +97,15 @@ public class StorageBlockPreviewPipRenderer extends PictureInPictureRenderer<Sto
 		if (state.getBlock() instanceof LimitedBarrelBlock) {
 			VerticalFacing verticalFacing = state.getValue(LimitedBarrelBlock.VERTICAL_FACING);
 			if (verticalFacing != VerticalFacing.NO) {
-				poseStack.mulPose(DisplayItemRenderer.getNorthBasedRotation(verticalFacing.getDirection()).conjugate());
+				poseStack.rotate(DisplayItemRenderer.getNorthBasedRotation(verticalFacing.getDirection()).conjugate());
 			}
-			poseStack.mulPose(DisplayItemRenderer.getNorthBasedRotation(state.getValue(LimitedBarrelBlock.HORIZONTAL_FACING)).conjugate());
+			poseStack.rotate(DisplayItemRenderer.getNorthBasedRotation(state.getValue(LimitedBarrelBlock.HORIZONTAL_FACING)).conjugate());
 		} else if (state.hasProperty(BarrelBlock.FACING)) {
-			poseStack.mulPose(DisplayItemRenderer.getNorthBasedRotation(state.getValue(BarrelBlock.FACING)).conjugate());
+			poseStack.rotate(DisplayItemRenderer.getNorthBasedRotation(state.getValue(BarrelBlock.FACING)).conjugate());
 		} else if (state.hasProperty(ShulkerBoxBlock.FACING)) {
-			poseStack.mulPose(DisplayItemRenderer.getNorthBasedRotation(state.getValue(ShulkerBoxBlock.FACING)).conjugate());
+			poseStack.rotate(DisplayItemRenderer.getNorthBasedRotation(state.getValue(ShulkerBoxBlock.FACING)).conjugate());
 		} else if (state.hasProperty(ChestBlock.FACING)) {
-			poseStack.mulPose(Axis.YP.rotationDegrees(state.getValue(ChestBlock.FACING).toYRot() - Direction.NORTH.toYRot()));
+			poseStack.rotate(Axis.YP.rotationDegrees(state.getValue(ChestBlock.FACING).toYRot() - Direction.NORTH.toYRot()));
 		}
 	}
 }

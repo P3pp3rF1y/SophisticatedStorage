@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "sophisticatedstorage:crimson_chest"
+        "recipes": "sophisticatedstorage:crimson_chest"
       },
       "trigger": "minecraft:recipe_unlocked"
     }
