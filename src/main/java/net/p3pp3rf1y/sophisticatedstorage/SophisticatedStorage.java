@@ -29,9 +29,9 @@ public class SophisticatedStorage {
 	@SuppressWarnings("java:S1118") // needs to be public for mod to work
 	public SophisticatedStorage(IEventBus modBus, Dist dist, ModContainer container) {
 		networkProtocolVersion = container.getModInfo().getVersion().toString();
-		container.registerConfig(ModConfig.Type.SERVER, Config.SERVER_SPEC);
+		container.registerConfig(ModConfig.Type.SYNCED, Config.SERVER_SPEC);
 		container.registerConfig(ModConfig.Type.CLIENT, Config.CLIENT_SPEC);
-		container.registerConfig(ModConfig.Type.COMMON, Config.COMMON_SPEC);
+		container.registerConfig(ModConfig.Type.LOCAL, Config.COMMON_SPEC);
 		if (dist == Dist.CLIENT && !ModList.get().isLoaded("configured")) {
 			container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
 		}
