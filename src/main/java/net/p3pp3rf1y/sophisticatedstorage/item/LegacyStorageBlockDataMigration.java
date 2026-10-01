@@ -2,7 +2,6 @@ package net.p3pp3rf1y.sophisticatedstorage.item;
 
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.item.ItemStack;
@@ -12,6 +11,7 @@ import net.p3pp3rf1y.sophisticatedcore.common.gui.SortBy;
 import net.p3pp3rf1y.sophisticatedcore.init.ModCoreDataComponents;
 import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryHandler;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeHandler;
+import net.p3pp3rf1y.sophisticatedcore.util.LegacyItemStackMigration;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageWrapper;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModDataComponents;
@@ -33,7 +33,6 @@ public final class LegacyStorageBlockDataMigration {
 	private static final String LOCKED_TAG = "locked";
 	private static final String SHOWS_TIER_TAG = "showsTier";
 	private static final String BLOCK_ENTITY_TAG = "BlockEntityTag";
-	private static final String REAL_COUNT_TAG = "realCount";
 
 	private LegacyStorageBlockDataMigration() {
 	}
@@ -107,30 +106,8 @@ public final class LegacyStorageBlockDataMigration {
 	}
 
 	private static void normalizeInventory(CompoundTag contentsNbt, String inventoryTag) {
-		if (!contentsNbt.contains(inventoryTag)) {
-			return;
-		}
-
-		CompoundTag inventoryNbt = contentsNbt.getCompound(inventoryTag);
-		if (!inventoryNbt.contains("Items")) {
-			return;
-		}
-
-		ListTag items = inventoryNbt.getList("Items", Tag.TAG_COMPOUND);
-		for (Tag item : items) {
-			normalizeItemStackCount((CompoundTag) item);
-		}
-	}
-
-	private static void normalizeItemStackCount(CompoundTag itemTag) {
-		if (itemTag.contains("count")) {
-			return;
-		}
-
-		if (itemTag.contains(REAL_COUNT_TAG)) {
-			itemTag.putInt("count", itemTag.getInt(REAL_COUNT_TAG));
-		} else if (itemTag.contains("Count")) {
-			itemTag.putInt("count", itemTag.getByte("Count"));
+		if (contentsNbt.contains(inventoryTag)) {
+			LegacyItemStackMigration.normalizeInventory(contentsNbt.getCompound(inventoryTag));
 		}
 	}
 
