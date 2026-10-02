@@ -15,6 +15,7 @@ import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageSettingsContainerMenu;
 
 import javax.annotation.Nullable;
+
 import java.util.function.Supplier;
 
 public class OpenStorageInventoryMessage {
