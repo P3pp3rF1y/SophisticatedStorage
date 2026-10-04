@@ -1,5 +1,6 @@
 package net.p3pp3rf1y.sophisticatedstorage.crafting;
 
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.CraftingInput;
@@ -15,6 +16,7 @@ import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.item.ChestBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.StackStorageWrapper;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
+import net.p3pp3rf1y.sophisticatedstorage.item.StorageLinkedStorageResolver;
 
 import java.util.List;
 import java.util.Optional;
@@ -35,11 +37,14 @@ public class StorageTierUpgradeRecipe implements CraftingRecipe, IWrapperRecipe<
 
 	@Override
 	public boolean matches(CraftingInput input, Level level) {
-		return compose.matches(input, level) && getOriginalStorage(input).isPresent();
+		return compose.matches(input, level) && getOriginalStorage(input).filter(storage -> canUpgrade(storage, level)).isPresent();
 	}
 
 	@Override
 	public ItemStack assemble(CraftingInput input) {
+		if (getOriginalStorage(input).filter(StorageTierUpgradeRecipe::isPrimaryOrUnlinked).isEmpty()) {
+			return ItemStack.EMPTY;
+		}
 		ItemStack upgradedStorage = compose.assemble(input);
 		getOriginalStorage(input).ifPresent(originalStorage -> {
 			upgradedStorage.applyComponents(originalStorage.getComponentsPatch());
@@ -50,6 +55,16 @@ public class StorageTierUpgradeRecipe implements CraftingRecipe, IWrapperRecipe<
 			StorageBlockItem.setNumberOfUpgradeSlots(upgradedStorage, storageWrapper.getDefaultNumberOfUpgradeSlots());
 		}
 		return upgradedStorage;
+	}
+
+	public static boolean canUpgrade(ItemStack storage, Level level) {
+		return isPrimaryOrUnlinked(storage) && (!(level instanceof ServerLevel serverLevel) || StorageLinkedStorageResolver.isPrimary(serverLevel, storage)
+				|| !storage.has(ModCoreDataComponents.LINKED_STORAGE_ENDPOINT));
+	}
+
+	public static boolean isPrimaryOrUnlinked(ItemStack storage) {
+		return !storage.has(ModCoreDataComponents.LINKED_STORAGE_ENDPOINT)
+				|| Boolean.TRUE.equals(storage.get(ModCoreDataComponents.LINKED_STORAGE_PRIMARY_ENDPOINT));
 	}
 
 	@Override

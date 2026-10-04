@@ -45,7 +45,7 @@ public final class StorageItemDisplaySettingsPreviewProvider implements IItemDis
 
 	@Override
 	public Optional<ItemStack> getItemDisplaySettingsPreviewStack(SettingsScreen screen, ItemDisplaySettingsContainer container, int selectedSlot) {
-		ItemStack wrappedStorageStack = screen.getMenu().getStorageWrapper().getWrappedStorageStack().copy();
+		ItemStack wrappedStorageStack = screen.getMenu().getStorageSettingsTabIcon().copy();
 		return wrappedStorageStack.isEmpty() ? Optional.empty() : Optional.of(wrappedStorageStack);
 	}
 
@@ -65,15 +65,14 @@ public final class StorageItemDisplaySettingsPreviewProvider implements IItemDis
 			return true;
 		}
 
-		return createPreviewStorage(screen.getMenu().getStorageWrapper()).map(previewStorage -> {
+		return createPreviewStorage(screen.getMenu().getStorageWrapper(), screen.getMenu().getStorageSettingsTabIcon()).map(previewStorage -> {
 			submitStorageBlockPreview(guiGraphics, x, y, width, height, xAxisRotation, yAxisRotation, partialTicks, previewStorage.blockEntity(),
 					previewStorage.otherChest());
 			return true;
 		}).orElse(false);
 	}
 
-	private Optional<PreviewStorage> createPreviewStorage(IStorageWrapper sourceWrapper) {
-		ItemStack wrappedStorageStack = sourceWrapper.getWrappedStorageStack();
+	private Optional<PreviewStorage> createPreviewStorage(IStorageWrapper sourceWrapper, ItemStack wrappedStorageStack) {
 		if (!(wrappedStorageStack.getItem() instanceof BlockItem blockItem)) {
 			return Optional.empty();
 		}

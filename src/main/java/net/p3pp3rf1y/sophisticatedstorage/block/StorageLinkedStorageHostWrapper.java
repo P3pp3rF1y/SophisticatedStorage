@@ -4,6 +4,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.ILinkedStorageContents;
@@ -177,10 +179,29 @@ public class StorageLinkedStorageHostWrapper extends StorageWrapper
 		return StorageLinkedStorageVirtualCarrier.from(storageBlockEntity).toTag();
 	}
 
+	public static CompoundTag createVirtualCarrier(ItemStack stack, net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper storageWrapper) {
+		return new StorageLinkedStorageVirtualCarrier(storageWrapper.getStorageType(), getCompatibilityKey(stack), stack.getHoverName().getString(),
+				storageWrapper.getInventoryHandler().size(), storageWrapper.getUpgradeHandler().size(), storageWrapper.getBaseStackSizeMultiplier(),
+				storageWrapper.getRenderDataHandler().getData()).toTag();
+	}
+
+	public void persistCanonicalContents() {
+		contents.setContents(contents.groupId(), contents.contents().copy());
+	}
+
 	public static String getCompatibilityKey(StorageBlockEntity storageBlockEntity) {
-		return storageBlockEntity instanceof LimitedBarrelBlockEntity
-				? "limited:" + storageBlockEntity.getStorageWrapper().getInventoryHandler().size()
-				: STANDARD_COMPATIBILITY_KEY;
+		if (storageBlockEntity instanceof LimitedBarrelBlockEntity
+				&& storageBlockEntity.getBlockState().getBlock() instanceof LimitedBarrelBlock block) {
+			return "limited:" + block.getNumberOfInventorySlots();
+		}
+		return STANDARD_COMPATIBILITY_KEY;
+	}
+
+	public static String getCompatibilityKey(ItemStack stack) {
+		if (stack.getItem() instanceof BlockItem blockItem && blockItem.getBlock() instanceof LimitedBarrelBlock block) {
+			return "limited:" + block.getNumberOfInventorySlots();
+		}
+		return STANDARD_COMPATIBILITY_KEY;
 	}
 
 	public static String getCompatibilityKey(CompoundTag virtualCarrier) {

@@ -15,7 +15,7 @@ import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.SettingsContainerMenu;
 import net.p3pp3rf1y.sophisticatedcore.inventory.ContainerContents;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.ClientLinkedStorageContents;
-import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageContentsPayload;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageSettingsPayload;
 import net.p3pp3rf1y.sophisticatedcore.util.NoopStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.block.ChestBlock;
@@ -62,11 +62,15 @@ public class StorageSettingsContainerMenu extends SettingsContainerMenu<IStorage
 		}
 		WorldHelper.getBlockEntity(player.level(), pos, StorageBlockEntity.class).filter(StorageBlockEntity::isLinkedStorage).ifPresent(storage -> {
 			UUID groupId = storage.getLinkedStorageEndpointData().groupId();
-			if (!ClientLinkedStorageContents.removeUpdatedGroup(groupId)) {
+			boolean snapshotChanged = ClientLinkedStorageContents.removeUpdatedGroup(groupId);
+			boolean settingsChanged = ClientLinkedStorageContents.removeUpdatedSettings(groupId);
+			if (!snapshotChanged && !settingsChanged) {
 				return;
 			}
 			ClientLinkedStorageContents.getContents(groupId).ifPresent(contents -> {
-				storage.updateClientLinkedStorageContents(groupId);
+				if (snapshotChanged) {
+					storage.updateClientLinkedStorageContents(groupId);
+				}
 				storageWrapper.getSettingsHandler().reloadFrom(contents.contents().settings());
 			});
 		});
@@ -83,7 +87,7 @@ public class StorageSettingsContainerMenu extends SettingsContainerMenu<IStorage
 			if (lastSettingsData == null || !lastSettingsData.equals(settingsData)) {
 				lastSettingsData = settingsData.copy();
 				PacketDistributor.sendToPlayer(serverPlayer,
-						LinkedStorageContentsPayload.createSnapshot(serverPlayer.level(), storage.getLinkedStorageEndpointData().groupId()));
+						new LinkedStorageSettingsPayload(storage.getLinkedStorageEndpointData().groupId(), lastSettingsData));
 			}
 		});
 	}

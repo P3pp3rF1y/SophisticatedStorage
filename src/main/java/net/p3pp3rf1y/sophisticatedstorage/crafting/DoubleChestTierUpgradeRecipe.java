@@ -35,11 +35,14 @@ public class DoubleChestTierUpgradeRecipe implements CraftingRecipe, IWrapperRec
 
 	@Override
 	public boolean matches(CraftingInput input, Level level) {
-		return compose.matches(input, level) && getDoubleChest(input).isPresent();
+		return compose.matches(input, level) && getDoubleChest(input).filter(storage -> StorageTierUpgradeRecipe.canUpgrade(storage, level)).isPresent();
 	}
 
 	@Override
 	public ItemStack assemble(CraftingInput input) {
+		if (getDoubleChest(input).filter(StorageTierUpgradeRecipe::isPrimaryOrUnlinked).isEmpty()) {
+			return ItemStack.EMPTY;
+		}
 		ItemStack upgradedStorage = compose.assemble(input);
 		getDoubleChest(input).ifPresent(originalStorage -> {
 			upgradedStorage.applyComponents(originalStorage.getComponentsPatch());
