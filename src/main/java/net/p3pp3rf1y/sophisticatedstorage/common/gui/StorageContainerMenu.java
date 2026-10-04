@@ -22,11 +22,11 @@ import net.p3pp3rf1y.sophisticatedcore.common.gui.StorageContainerMenuBase;
 import net.p3pp3rf1y.sophisticatedcore.inventory.ContainerContents;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.ClientLinkedStorageContents;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.ILinkedStorageContents;
-import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageContentsPayload;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageEndpointData;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageEndpointRole;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageGroupManager;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageGroupsSavedData;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageSettingsPayload;
 import net.p3pp3rf1y.sophisticatedcore.settings.itemdisplay.ItemDisplaySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.settings.memory.MemorySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.util.NoopStorageWrapper;
@@ -122,6 +122,7 @@ public class StorageContainerMenu extends StorageContainerMenuBase<IStorageWrapp
 		ClientLinkedStorageContents.updateContents(endpoint.groupId(), revision, contents, groupName, inventorySlots, upgradeSlots, columnsTaken);
 		WorldHelper.getBlockEntity(player.level(), pos, StorageBlockEntity.class)
 				.ifPresent(storage -> storage.bindClientLinkedStorage(endpoint, endpointRole, virtualCarrier));
+		ClientLinkedStorageContents.removeUpdatedGroup(endpoint.groupId());
 		return pos;
 	}
 
@@ -200,15 +201,15 @@ public class StorageContainerMenu extends StorageContainerMenuBase<IStorageWrapp
 		ContainerContents.SettingsData settingsData = storageWrapper.getSettingsHandler().getSettingsData();
 		if (lastSettingsData == null || !lastSettingsData.equals(settingsData)) {
 			lastSettingsData = settingsData.copy();
-			PacketDistributor.sendToPlayer(serverPlayer,
-					LinkedStorageContentsPayload.createSnapshot(serverPlayer.level(), storageBlockEntity.getLinkedStorageEndpointData().groupId()));
+			PacketDistributor.sendToPlayer(serverPlayer, new LinkedStorageSettingsPayload(storageBlockEntity.getLinkedStorageEndpointData().groupId(),
+					storageWrapper.getSettingsHandler().getSettingsData().copy()));
 		}
 	}
 
 	private void sendLinkedStorageSettingsToClient() {
 		if (player instanceof ServerPlayer serverPlayer && storageBlockEntity.getLinkedStorageEndpointData() != null) {
-			PacketDistributor.sendToPlayer(serverPlayer,
-					LinkedStorageContentsPayload.createSnapshot(serverPlayer.level(), storageBlockEntity.getLinkedStorageEndpointData().groupId()));
+			PacketDistributor.sendToPlayer(serverPlayer, new LinkedStorageSettingsPayload(storageBlockEntity.getLinkedStorageEndpointData().groupId(),
+					storageWrapper.getSettingsHandler().getSettingsData().copy()));
 		}
 	}
 
@@ -218,13 +219,19 @@ public class StorageContainerMenu extends StorageContainerMenuBase<IStorageWrapp
 			return false;
 		}
 		UUID groupId = storageBlockEntity.getLinkedStorageEndpointData().groupId();
-		if (!ClientLinkedStorageContents.removeUpdatedGroup(groupId)) {
+		boolean snapshotChanged = ClientLinkedStorageContents.removeUpdatedGroup(groupId);
+		boolean settingsChanged = ClientLinkedStorageContents.removeUpdatedSettings(groupId);
+		if (!snapshotChanged && !settingsChanged) {
 			return false;
 		}
 		return ClientLinkedStorageContents.getContents(groupId).map(contents -> {
-			storageBlockEntity.updateClientLinkedStorageContents(groupId);
+			if (snapshotChanged) {
+				storageBlockEntity.updateClientLinkedStorageContents(groupId);
+			}
 			storageWrapper.getSettingsHandler().reloadFrom(contents.contents().settings());
-			refreshAllSlots();
+			if (snapshotChanged) {
+				refreshUpgradeControls();
+			}
 			return true;
 		}).orElse(false);
 	}

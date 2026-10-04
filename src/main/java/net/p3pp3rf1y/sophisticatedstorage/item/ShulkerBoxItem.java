@@ -122,16 +122,22 @@ public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageIte
 	@Override
 	public boolean overrideStackedOnOther(ItemStack storageStack, Slot slot, ClickAction action, Player player) {
 		if (hasCreativeScreenContainerOpen(player) || storageStack.getCount() > 1 || !slot.mayPickup(player) || slot.getItem().isEmpty()
-				|| action != ClickAction.PRIMARY) {
+				|| action != ClickAction.SECONDARY) {
 			return super.overrideStackedOnOther(storageStack, slot, action, player);
 		}
 
 		ItemStack stackToStash = slot.getItem();
+		int countToTake;
 		try (Transaction tx = Transaction.openRoot()) {
-			int stashed = stash(player.level().registryAccess(), storageStack, ItemResource.of(stackToStash), stackToStash.getCount(), tx);
-			if (stashed > 0) {
-				tx.commit();
-				slot.safeTake(stashed, stashed, player);
+			countToTake = stash(player.level().registryAccess(), storageStack, ItemResource.of(stackToStash), stackToStash.getCount(), tx);
+		}
+		if (countToTake > 0) {
+			ItemStack takeResult = slot.safeTake(countToTake, countToTake, player);
+			if (!takeResult.isEmpty()) {
+				try (Transaction tx = Transaction.openRoot()) {
+					stash(player.level().registryAccess(), storageStack, ItemResource.of(takeResult), takeResult.getCount(), tx);
+					tx.commit();
+				}
 				return true;
 			}
 		}
@@ -141,7 +147,7 @@ public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageIte
 	@Override
 	public boolean overrideOtherStackedOnMe(ItemStack storageStack, ItemStack otherStack, Slot slot, ClickAction action, Player player,
 			SlotAccess carriedAccess) {
-		if (hasCreativeScreenContainerOpen(player) || storageStack.getCount() > 1 || !slot.mayPlace(storageStack) || action != ClickAction.PRIMARY) {
+		if (hasCreativeScreenContainerOpen(player) || storageStack.getCount() > 1 || !slot.mayPlace(storageStack) || action != ClickAction.SECONDARY) {
 			return super.overrideOtherStackedOnMe(storageStack, otherStack, slot, action, player, carriedAccess);
 		}
 
