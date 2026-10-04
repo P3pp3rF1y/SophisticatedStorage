@@ -1,6 +1,7 @@
 package net.p3pp3rf1y.sophisticatedstorage.crafting;
 
 import net.minecraft.core.HolderLookup;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.RecipeSerializer;
@@ -9,6 +10,8 @@ import net.minecraft.world.level.Level;
 import net.p3pp3rf1y.sophisticatedcore.crafting.IWrapperRecipe;
 import net.p3pp3rf1y.sophisticatedcore.crafting.RecipeWrapperSerializer;
 import net.p3pp3rf1y.sophisticatedcore.init.ModCoreDataComponents;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageEndpointData;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageGroupsSavedData;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.item.ChestBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.StackStorageWrapper;
@@ -31,11 +34,14 @@ public class StorageTierUpgradeRecipe extends ShapedRecipe implements IWrapperRe
 
 	@Override
 	public boolean matches(CraftingInput input, Level level) {
-		return super.matches(input, level) && getOriginalStorage(input).isPresent();
+		return super.matches(input, level) && getOriginalStorage(input).filter(storage -> canUpgrade(storage, level)).isPresent();
 	}
 
 	@Override
 	public ItemStack assemble(CraftingInput input, HolderLookup.Provider registries) {
+		if (getOriginalStorage(input).filter(StorageTierUpgradeRecipe::isPrimaryOrUnlinked).isEmpty()) {
+			return ItemStack.EMPTY;
+		}
 		ItemStack upgradedStorage = super.assemble(input, registries);
 		getOriginalStorage(input).ifPresent(originalStorage -> {
 			upgradedStorage.applyComponents(originalStorage.getComponents());
@@ -63,6 +69,20 @@ public class StorageTierUpgradeRecipe extends ShapedRecipe implements IWrapperRe
 		}
 
 		return Optional.empty();
+	}
+
+	static boolean canUpgrade(ItemStack storage, Level level) {
+		if (!isPrimaryOrUnlinked(storage)) {
+			return false;
+		}
+		LinkedStorageEndpointData endpoint = storage.get(ModCoreDataComponents.LINKED_STORAGE_ENDPOINT);
+		return endpoint == null || !(level instanceof ServerLevel serverLevel)
+				|| LinkedStorageGroupsSavedData.get(serverLevel).manager().isPrimaryEndpoint(endpoint.groupId(), endpoint.endpointId());
+	}
+
+	static boolean isPrimaryOrUnlinked(ItemStack storage) {
+		return !storage.has(ModCoreDataComponents.LINKED_STORAGE_ENDPOINT)
+				|| Boolean.TRUE.equals(storage.get(ModCoreDataComponents.LINKED_STORAGE_PRIMARY_ENDPOINT));
 	}
 
 	@Override

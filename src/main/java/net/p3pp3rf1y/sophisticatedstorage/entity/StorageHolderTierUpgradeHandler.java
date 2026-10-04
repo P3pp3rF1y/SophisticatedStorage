@@ -1,14 +1,27 @@
 package net.p3pp3rf1y.sophisticatedstorage.entity;
 
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
+import net.p3pp3rf1y.sophisticatedcore.init.ModCoreDataComponents;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageEndpointData;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageGroupManager;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageGroupsSavedData;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageHostDescriptor;
+import net.p3pp3rf1y.sophisticatedcore.settings.itemdisplay.ItemDisplaySettingsCategory;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockBase;
+import net.p3pp3rf1y.sophisticatedstorage.block.StorageLinkedStorageHostWrapper;
+import net.p3pp3rf1y.sophisticatedstorage.block.StorageWrapper;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageTranslationHelper;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.item.ChestBlockItem;
@@ -16,6 +29,7 @@ import net.p3pp3rf1y.sophisticatedstorage.item.StorageTierUpgradeItem;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 public class StorageHolderTierUpgradeHandler {
 
@@ -30,6 +44,13 @@ public class StorageHolderTierUpgradeHandler {
 
 		ItemStack storageStack = storageHolder.getSyncedStorageStack();
 		if (!storageHolder.isOpen() && !storageHolder.isPacked()) {
+			if (storageHolder.isLinkedStorage() && !storageHolder.isPrimaryLinkedStorage()) {
+				if (!player.level().isClientSide()) {
+					player.playNotifySound(SoundEvents.NOTE_BLOCK_BASS.value(), SoundSource.PLAYERS, 1, 0.7F);
+					player.displayClientMessage(StorageTranslationHelper.INSTANCE.translStatusMessage("tier_upgrade_main_linked_storage_only"), true);
+				}
+				return InteractionResult.FAIL;
+			}
 			StorageHolderUpgradeDefinition upgradeDefinition = tierDefinitions.get(storageStack.getItem());
 			boolean cannotBeUpgradedWithThisUpgradeItem = upgradeDefinition == null;
 			if (cannotBeUpgradedWithThisUpgradeItem) {
@@ -44,10 +65,17 @@ public class StorageHolderTierUpgradeHandler {
 			}
 
 			if (!player.level().isClientSide()) {
-				upgradeDefinition.upgradeStorageHolder(storageHolder, storageStack);
+				if (storageHolder.isLinkedStorage()) {
+					if (!(player.level() instanceof ServerLevel serverLevel)
+							|| !upgradeDefinition.upgradeLinkedStorageHolder(serverLevel, storageHolder, storageStack)) {
+						return InteractionResult.FAIL;
+					}
+				} else {
+					upgradeDefinition.upgradeStorageHolder(storageHolder, storageStack);
+				}
 
 				if (!player.isCreative()) {
-					itemInHand.shrink(1);
+					itemInHand.shrink(countRequired);
 				}
 			}
 
@@ -274,6 +302,49 @@ public class StorageHolderTierUpgradeHandler {
 							storageBlock.getNumberOfUpgradeSlots());
 				}
 			}
+		}
+
+		public boolean upgradeLinkedStorageHolder(ServerLevel level, StorageHolderBase storageHolder, ItemStack storageItem) {
+			LinkedStorageEndpointData endpoint = storageItem.get(ModCoreDataComponents.LINKED_STORAGE_ENDPOINT);
+			if (endpoint == null || !(upgradedItem.getBlock() instanceof StorageBlockBase storageBlock)) {
+				return false;
+			}
+			LinkedStorageGroupManager manager = LinkedStorageGroupsSavedData.get(level).manager();
+			if (!manager.isPrimaryEndpoint(endpoint.groupId(), endpoint.endpointId())) {
+				return false;
+			}
+			Optional<StorageLinkedStorageHostWrapper> host = manager.resolveVirtualHost(endpoint.groupId())
+					.filter(StorageLinkedStorageHostWrapper.class::isInstance).map(StorageLinkedStorageHostWrapper.class::cast);
+			Optional<LinkedStorageHostDescriptor> descriptor = manager.getHostDescriptor(endpoint.groupId());
+			if (host.isEmpty() || descriptor.isEmpty() || !descriptor.get().factoryId().equals(StorageLinkedStorageHostWrapper.FACTORY_ID)) {
+				return false;
+			}
+			int inventorySlots = storageBlock.getNumberOfInventorySlots() * (isDoubleChest(storageItem) ? 2 : 1);
+			int upgradeSlots = storageBlock.getNumberOfUpgradeSlots();
+			ItemStack upgradedStack = new ItemStack(upgradedItem);
+			upgradedStack.applyComponents(storageItem.getComponents());
+			upgradedStack.set(ModCoreDataComponents.NUMBER_OF_INVENTORY_SLOTS, inventorySlots);
+			upgradedStack.set(ModCoreDataComponents.NUMBER_OF_UPGRADE_SLOTS, upgradeSlots);
+			CompoundTag carrier = StorageLinkedStorageHostWrapper.withDisplayName(descriptor.get().virtualCarrier(), upgradedStack.getHoverName());
+			carrier.putInt("inventorySlots", inventorySlots);
+			carrier.putInt("upgradeSlots", upgradeSlots);
+			carrier.putInt("baseStackSizeMultiplier", storageBlock.getBaseStackSizeMultiplier());
+			host.get().changeSize(inventorySlots - host.get().getInventoryHandler().getSlots(), upgradeSlots - host.get().getUpgradeHandler().getSlots());
+			host.get().getSettingsHandler().getTypeCategory(ItemDisplaySettingsCategory.class).itemsChanged();
+			CompoundTag renderInfo = host.get().getRenderInfo().getNbt().copy();
+			carrier.put(StorageWrapper.RENDER_INFO_TAG, renderInfo.copy());
+			upgradedStack.set(ModCoreDataComponents.RENDER_INFO_TAG, CustomData.of(renderInfo));
+			host.get().persistCanonicalContents();
+			if (!manager.updatePrimaryHostDescriptor(endpoint.groupId(), endpoint.endpointId(),
+					new LinkedStorageHostDescriptor(StorageLinkedStorageHostWrapper.FACTORY_ID, carrier))) {
+				return false;
+			}
+			storageHolder.setStorageItem(upgradedStack);
+			if (isDoubleChest(storageItem)) {
+				storageHolder.getAuxiliaryStorageHolder().ifPresent(auxiliaryStorageHolder -> upgradeIndividualStorageHolder(auxiliaryStorageHolder,
+						auxiliaryStorageHolder.getSyncedStorageStack(), inventorySlots, upgradeSlots));
+			}
+			return true;
 		}
 
 		private void upgradeIndividualStorageHolder(StorageHolderBase storageHolder, ItemStack storageItem, int newNumberOfInventorySlots,

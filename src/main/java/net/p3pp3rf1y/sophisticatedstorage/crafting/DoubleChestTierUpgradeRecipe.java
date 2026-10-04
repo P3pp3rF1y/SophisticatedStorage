@@ -31,11 +31,14 @@ public class DoubleChestTierUpgradeRecipe extends ShapedRecipe implements IWrapp
 
 	@Override
 	public boolean matches(CraftingInput input, Level level) {
-		return super.matches(input, level) && getDoubleChest(input).isPresent();
+		return super.matches(input, level) && getDoubleChest(input).filter(storage -> StorageTierUpgradeRecipe.canUpgrade(storage, level)).isPresent();
 	}
 
 	@Override
 	public ItemStack assemble(CraftingInput input, HolderLookup.Provider registries) {
+		if (getDoubleChest(input).filter(StorageTierUpgradeRecipe::isPrimaryOrUnlinked).isEmpty()) {
+			return ItemStack.EMPTY;
+		}
 		ItemStack upgradedStorage = super.assemble(input, registries);
 		getDoubleChest(input).ifPresent(originalStorage -> {
 			upgradedStorage.applyComponents(originalStorage.getComponents());

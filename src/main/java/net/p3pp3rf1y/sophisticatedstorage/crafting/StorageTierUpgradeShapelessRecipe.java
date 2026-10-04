@@ -31,11 +31,14 @@ public class StorageTierUpgradeShapelessRecipe extends ShapelessRecipe implement
 
 	@Override
 	public boolean matches(CraftingInput input, Level level) {
-		return super.matches(input, level) && getOriginalStorage(input).isPresent();
+		return super.matches(input, level) && getOriginalStorage(input).filter(storage -> StorageTierUpgradeRecipe.canUpgrade(storage, level)).isPresent();
 	}
 
 	@Override
 	public ItemStack assemble(CraftingInput input, HolderLookup.Provider registries) {
+		if (getOriginalStorage(input).filter(StorageTierUpgradeRecipe::isPrimaryOrUnlinked).isEmpty()) {
+			return ItemStack.EMPTY;
+		}
 		ItemStack upgradedStorage = super.assemble(input, registries);
 		getOriginalStorage(input).ifPresent(originalStorage -> upgradedStorage.applyComponents(originalStorage.getComponents()));
 		if (upgradedStorage.has(ModCoreDataComponents.STORAGE_UUID)) {

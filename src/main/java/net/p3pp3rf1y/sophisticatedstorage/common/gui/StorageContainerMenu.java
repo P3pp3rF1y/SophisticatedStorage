@@ -18,10 +18,9 @@ import net.p3pp3rf1y.sophisticatedcore.common.gui.ISyncedContainer;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.SophisticatedMenuProvider;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.StorageContainerMenuBase;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.ClientLinkedStorageContents;
-import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageContentsPayload;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageEndpointData;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageEndpointRole;
-import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageGroupsSavedData;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageSettingsPayload;
 import net.p3pp3rf1y.sophisticatedcore.settings.itemdisplay.ItemDisplaySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.settings.memory.MemorySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeHandler;
@@ -32,16 +31,12 @@ import net.p3pp3rf1y.sophisticatedstorage.block.WoodStorageBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageTranslationHelper;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 
-import javax.annotation.Nullable;
-
 import java.util.Objects;
 import java.util.Optional;
 
 public class StorageContainerMenu extends StorageContainerMenuBase<IStorageWrapper> implements ISyncedContainer {
 	private static final String SOURCE_CONTAINER_ID_TAG = "sourceContainerId";
 	private final StorageBlockEntity storageBlockEntity;
-	@Nullable
-	private CompoundTag lastLinkedStorageSettingsNbt = null;
 	private boolean stopOpenersOnRemove = true;
 
 	public StorageContainerMenu(int containerId, Player player, BlockPos pos) {
@@ -116,6 +111,7 @@ public class StorageContainerMenu extends StorageContainerMenuBase<IStorageWrapp
 			WorldHelper.getBlockEntity(player.level(), pos, StorageBlockEntity.class)
 					.ifPresent(storageBlockEntity -> storageBlockEntity.bindClientLinkedStorage(endpoint, endpointRole, linkedContents, virtualCarrier));
 		});
+		ClientLinkedStorageContents.removeUpdatedGroup(endpoint.groupId());
 		return pos;
 	}
 
@@ -138,7 +134,6 @@ public class StorageContainerMenu extends StorageContainerMenuBase<IStorageWrapp
 					return;
 				}
 				storageWrapper.getSettingsHandler().getTypeCategory(ItemDisplaySettingsCategory.class).itemsChanged();
-				sendLinkedStorageSettingsToClient();
 			}
 		};
 	}
@@ -148,22 +143,10 @@ public class StorageContainerMenu extends StorageContainerMenuBase<IStorageWrapp
 		sendLinkedStorageSettingsToClient();
 	}
 
-	@Override
-	public void broadcastChanges() {
-		super.broadcastChanges();
-		if (storageBlockEntity.getLinkedStorageEndpointData() instanceof LinkedStorageEndpointData endpoint) {
-			CompoundTag settingsNbt = storageWrapper.getSettingsHandler().getNbt();
-			if (lastLinkedStorageSettingsNbt == null || !lastLinkedStorageSettingsNbt.equals(settingsNbt)) {
-				lastLinkedStorageSettingsNbt = settingsNbt.copy();
-				sendLinkedStorageSettingsToClient();
-			}
-		}
-	}
-
 	private void sendLinkedStorageSettingsToClient() {
 		if (player instanceof ServerPlayer serverPlayer && storageBlockEntity.getLinkedStorageEndpointData() instanceof LinkedStorageEndpointData endpoint) {
-			LinkedStorageGroupsSavedData.get(serverPlayer.serverLevel()).manager().resolveContents(endpoint.groupId()).ifPresent(contents -> PacketDistributor
-					.sendToPlayer(serverPlayer, LinkedStorageContentsPayload.createSnapshot(serverPlayer.serverLevel(), endpoint.groupId())));
+			PacketDistributor.sendToPlayer(serverPlayer,
+					new LinkedStorageSettingsPayload(endpoint.groupId(), storageWrapper.getSettingsHandler().getNbt().copy()));
 		}
 	}
 
@@ -212,12 +195,20 @@ public class StorageContainerMenu extends StorageContainerMenuBase<IStorageWrapp
 
 	@Override
 	public boolean detectSettingsChangeAndReload() {
-		if (player.level().isClientSide && storageBlockEntity.getLinkedStorageEndpointData() instanceof LinkedStorageEndpointData endpoint
-				&& ClientLinkedStorageContents.removeUpdatedGroup(endpoint.groupId())) {
+		if (player.level().isClientSide && storageBlockEntity.getLinkedStorageEndpointData() instanceof LinkedStorageEndpointData endpoint) {
+			boolean snapshotChanged = ClientLinkedStorageContents.removeUpdatedGroup(endpoint.groupId());
+			boolean settingsChanged = ClientLinkedStorageContents.removeUpdatedSettings(endpoint.groupId());
+			if (!snapshotChanged && !settingsChanged) {
+				return false;
+			}
 			ClientLinkedStorageContents.getContents(endpoint.groupId()).ifPresent(contents -> {
-				storageBlockEntity.updateClientLinkedStorageContents(endpoint.groupId());
+				if (snapshotChanged) {
+					storageBlockEntity.updateClientLinkedStorageContents(endpoint.groupId());
+				}
 				storageWrapper.getSettingsHandler().reloadFrom(contents.getContents().getCompound("settings"));
-				refreshUpgradeControls();
+				if (snapshotChanged) {
+					refreshUpgradeControls();
+				}
 			});
 			return true;
 		}
