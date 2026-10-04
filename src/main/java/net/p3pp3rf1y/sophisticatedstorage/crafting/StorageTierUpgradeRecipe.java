@@ -2,6 +2,7 @@ package net.p3pp3rf1y.sophisticatedstorage.crafting;
 
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeSerializer;
@@ -9,6 +10,9 @@ import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.minecraft.world.level.Level;
 import net.p3pp3rf1y.sophisticatedcore.crafting.IWrapperRecipe;
 import net.p3pp3rf1y.sophisticatedcore.crafting.RecipeWrapperSerializer;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageEndpointData;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageGroupsSavedData;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageStackData;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.item.ChestBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.StackStorageWrapper;
@@ -36,11 +40,14 @@ public class StorageTierUpgradeRecipe extends ShapedRecipe implements IWrapperRe
 
 	@Override
 	public boolean matches(CraftingContainer inv, Level level) {
-		return super.matches(inv, level) && getOriginalStorage(inv).isPresent();
+		return super.matches(inv, level) && getOriginalStorage(inv).filter(storage -> canUpgrade(storage, level)).isPresent();
 	}
 
 	@Override
 	public ItemStack assemble(CraftingContainer inv, RegistryAccess registryAccess) {
+		if (getOriginalStorage(inv).filter(StorageTierUpgradeRecipe::isPrimaryOrUnlinked).isEmpty()) {
+			return ItemStack.EMPTY;
+		}
 		ItemStack upgradedStorage = super.assemble(inv, registryAccess);
 		getOriginalStorage(inv).ifPresent(originalStorage -> upgradedStorage.setTag(originalStorage.getTag()));
 		if (StorageBlockItem.getContentsUuid(upgradedStorage).isPresent()) {
@@ -66,6 +73,19 @@ public class StorageTierUpgradeRecipe extends ShapedRecipe implements IWrapperRe
 		}
 
 		return Optional.empty();
+	}
+
+	static boolean canUpgrade(ItemStack storage, Level level) {
+		if (!isPrimaryOrUnlinked(storage)) {
+			return false;
+		}
+		LinkedStorageEndpointData endpoint = LinkedStorageStackData.getEndpoint(storage);
+		return endpoint == null || !(level instanceof ServerLevel serverLevel)
+				|| LinkedStorageGroupsSavedData.get(serverLevel).manager().isPrimaryEndpoint(endpoint.groupId(), endpoint.endpointId());
+	}
+
+	static boolean isPrimaryOrUnlinked(ItemStack storage) {
+		return LinkedStorageStackData.getEndpoint(storage) == null || LinkedStorageStackData.isPrimaryEndpoint(storage);
 	}
 
 	@Override

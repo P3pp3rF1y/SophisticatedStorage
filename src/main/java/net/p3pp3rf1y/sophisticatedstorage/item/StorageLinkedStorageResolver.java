@@ -32,6 +32,11 @@ public final class StorageLinkedStorageResolver {
 		return overworld == null ? Optional.empty() : resolveCanonicalHost(overworld, stack);
 	}
 
+	public static boolean isPrimary(ServerLevel level, ItemStack stack) {
+		LinkedStorageEndpointData endpoint = LinkedStorageStackData.getEndpoint(stack);
+		return endpoint != null && LinkedStorageGroupsSavedData.get(level).manager().isPrimaryEndpoint(endpoint.groupId(), endpoint.endpointId());
+	}
+
 	private static Optional<StorageWrapper> resolveCanonicalHost(ServerLevel level, ItemStack stack) {
 		if (LinkedStorageStackLifecycle.classifyEndpoint(stack) != LinkedStorageEndpointStackState.ENDPOINT) {
 			return Optional.empty();

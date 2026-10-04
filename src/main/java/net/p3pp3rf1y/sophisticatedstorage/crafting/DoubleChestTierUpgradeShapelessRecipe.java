@@ -35,11 +35,14 @@ public class DoubleChestTierUpgradeShapelessRecipe extends ShapelessRecipe imple
 
 	@Override
 	public boolean matches(CraftingContainer inv, Level level) {
-		return super.matches(inv, level) && getOriginalStorage(inv).isPresent();
+		return super.matches(inv, level) && getOriginalStorage(inv).filter(storage -> StorageTierUpgradeRecipe.canUpgrade(storage, level)).isPresent();
 	}
 
 	@Override
 	public ItemStack assemble(CraftingContainer inv, RegistryAccess registries) {
+		if (getOriginalStorage(inv).filter(StorageTierUpgradeRecipe::isPrimaryOrUnlinked).isEmpty()) {
+			return ItemStack.EMPTY;
+		}
 		ItemStack upgradedStorage = super.assemble(inv, registries);
 		getOriginalStorage(inv).ifPresent(originalStorage -> upgradedStorage.setTag(originalStorage.getTag()));
 		if (StorageBlockItem.getContentsUuid(upgradedStorage).isPresent()) {

@@ -3,6 +3,7 @@ package net.p3pp3rf1y.sophisticatedstorage.entity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
@@ -21,6 +22,9 @@ import net.p3pp3rf1y.sophisticatedcore.api.IStorageSavedData;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.api.IUpgradeRenderer;
 import net.p3pp3rf1y.sophisticatedcore.client.render.UpgradeRenderRegistry;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.ILinkedStorageBlockEndpoint;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageEndpointData;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageStackData;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.IUpgradeRenderData;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.UpgradeRenderDataType;
@@ -52,6 +56,10 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 
 	protected boolean updateRenderAttributes = false;
 	protected IStorageWrapper storageWrapper = NoopStorageWrapper.INSTANCE;
+	@Nullable
+	private StorageLinkedStorageHostWrapper clientLinkedStorageHost;
+	@Nullable
+	private LinkedStorageEndpointData clientLinkedStorageEndpoint;
 	protected boolean isMainStorage = true;
 	private final boolean showChestUpgradesOnTop;
 
@@ -125,6 +133,10 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 
 	public void updateStorageWrapper() {
 		ItemStack storageItem = getSyncedStorageStack();
+		if (StorageBlockEntity.hasLinkedStorageEndpoint(storageItem)) {
+			storageWrapper = NoopStorageWrapper.INSTANCE;
+			return;
+		}
 		if (!NBTHelper.hasTag(storageItem, StorageWrapper.UUID_TAG)) {
 			NBTHelper.setUniqueId(storageItem, StorageWrapper.UUID_TAG, UUID.randomUUID());
 			setStorageItem(storageItem);
@@ -152,6 +164,8 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 	public void setStorageItem(ItemStack storageItem) {
 		setSyncedStorageStack(storageItem);
 		storageWrapper = NoopStorageWrapper.INSTANCE; // reset storage wrapper to force update when it's next requested
+		clientLinkedStorageHost = null;
+		clientLinkedStorageEndpoint = null;
 		updateRenderAttributes = true;
 	}
 
@@ -159,12 +173,46 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 		if (isPacked()) {
 			return NoopStorageWrapper.INSTANCE;
 		}
+		ItemStack storageItem = getSyncedStorageStack();
+		if (StorageBlockEntity.hasLinkedStorageEndpoint(storageItem)) {
+			if (getLevel() instanceof ServerLevel) {
+				return StorageLinkedStorageResolver.resolveServerCanonicalHost(storageItem).map(host -> (IStorageWrapper) host)
+						.orElse(NoopStorageWrapper.INSTANCE);
+			}
+			return clientLinkedStorageHost == null ? NoopStorageWrapper.INSTANCE : clientLinkedStorageHost;
+		}
 
-		if (!getSyncedStorageStack().isEmpty() && storageWrapper == NoopStorageWrapper.INSTANCE) {
+		if (!storageItem.isEmpty() && storageWrapper == NoopStorageWrapper.INSTANCE) {
 			updateStorageWrapper();
 		}
 
 		return storageWrapper;
+	}
+
+	public boolean isLinkedStorage() {
+		return StorageBlockEntity.hasLinkedStorageEndpoint(getSyncedStorageStack());
+	}
+
+	public Component getMenuDisplayName(Component fallback) {
+		if (isLinkedStorage() && getStorageWrapper() instanceof StorageLinkedStorageHostWrapper host) {
+			return host.getLinkedStorageDisplayName().filter(name -> !name.getString().isEmpty()).orElse(fallback);
+		}
+		return fallback;
+	}
+
+	public boolean isPrimaryLinkedStorage() {
+		return getLevel() instanceof ServerLevel serverLevel && StorageLinkedStorageResolver.isPrimary(serverLevel, getSyncedStorageStack());
+	}
+
+	public void bindClientLinkedStorage(StorageLinkedStorageHostWrapper host) {
+		clientLinkedStorageHost = host;
+		clientLinkedStorageEndpoint = LinkedStorageStackData.getEndpoint(getSyncedStorageStack());
+	}
+
+	public void refreshClientLinkedStorage() {
+		if (clientLinkedStorageHost != null) {
+			clientLinkedStorageHost.onLinkedStorageContentsChanged();
+		}
 	}
 
 	public boolean isBarrel() {
@@ -331,6 +379,24 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 			clientTick(level);
 			return;
 		}
+		if (isLinkedStorage()) {
+			IStorageWrapper linkedHost = getStorageWrapper();
+			if (linkedHost != NoopStorageWrapper.INSTANCE) {
+				CompoundTag renderInfo = linkedHost.getRenderInfo().getNbt();
+				ItemStack projected = getSyncedStorageStack().copy();
+				if (!projected.getOrCreateTag().getCompound(StorageWrapper.RENDER_INFO_TAG).equals(renderInfo)) {
+					projected.getOrCreateTag().put(StorageWrapper.RENDER_INFO_TAG, renderInfo.copy());
+					setSyncedStorageStack(projected);
+					updateRenderAttributes = true;
+				}
+			}
+		}
+		if (isPacked() || isLinkedStorage() && !isPrimaryLinkedStorage()) {
+			return;
+		}
+		if (isLinkedStorage() && level instanceof ServerLevel serverLevel && this instanceof ILinkedStorageBlockEndpoint endpoint) {
+			StorageLinkedStorageJukeboxPlaybackAnchors.refreshEntityAnchor(serverLevel, entity, endpoint);
+		}
 		runTickableUpgrades(level);
 		runPickupOnItemEntities(level);
 	}
@@ -409,12 +475,16 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 		}
 		updateRenderAttributes = true;
 		storageWrapper = NoopStorageWrapper.INSTANCE;
+		if (!Objects.equals(clientLinkedStorageEndpoint, LinkedStorageStackData.getEndpoint(getSyncedStorageStack()))) {
+			clientLinkedStorageHost = null;
+			clientLinkedStorageEndpoint = null;
+		}
 	}
 
 	protected abstract void refreshRenderBlockEntity();
 
 	public InteractionResult openContainerMenu(Player player) {
-		if (isPacked(getSyncedStorageStack())) {
+		if (isPacked(getSyncedStorageStack()) || isLinkedStorage() && getStorageWrapper() == NoopStorageWrapper.INSTANCE) {
 			return InteractionResult.PASS;
 		}
 

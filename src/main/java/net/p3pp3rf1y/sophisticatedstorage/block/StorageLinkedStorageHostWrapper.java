@@ -4,7 +4,9 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
+import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.ILinkedStorageContents;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.ILinkedStorageVirtualHost;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageSnapshotProfile;
@@ -32,6 +34,10 @@ public class StorageLinkedStorageHostWrapper extends StorageWrapper implements I
 
 	public static StorageLinkedStorageHostWrapper create(ILinkedStorageContents contents, CompoundTag virtualCarrier) {
 		return new StorageLinkedStorageHostWrapper(contents, virtualCarrier);
+	}
+
+	public void persistCanonicalContents() {
+		contents.setContents(saveCanonicalData(new CompoundTag()));
 	}
 
 	public static void applyClientSnapshotProfile(CompoundTag virtualCarrier, Component groupName, int inventorySlots, int upgradeSlots) {
@@ -148,6 +154,25 @@ public class StorageLinkedStorageHostWrapper extends StorageWrapper implements I
 		virtualCarrier.putInt(BASE_STACK_SIZE_MULTIPLIER_TAG, storageWrapper.getBaseStackSizeMultiplier());
 		virtualCarrier.put(RENDER_INFO_TAG, storageWrapper.getRenderInfoNbt());
 		return virtualCarrier;
+	}
+
+	public static CompoundTag createVirtualCarrier(ItemStack stack, IStorageWrapper wrapper) {
+		CompoundTag virtualCarrier = new CompoundTag();
+		virtualCarrier.putString(STORAGE_TYPE_TAG, wrapper.getStorageType());
+		virtualCarrier.putString(COMPATIBILITY_KEY_TAG, getCompatibilityKey(stack));
+		virtualCarrier.putString(DISPLAY_NAME_TAG, stack.getHoverName().getString());
+		virtualCarrier.putInt(INVENTORY_SLOTS_TAG, wrapper.getInventoryHandler().getSlots());
+		virtualCarrier.putInt(UPGRADE_SLOTS_TAG, wrapper.getUpgradeHandler().getSlots());
+		virtualCarrier.putInt(BASE_STACK_SIZE_MULTIPLIER_TAG, wrapper.getBaseStackSizeMultiplier());
+		virtualCarrier.put(RENDER_INFO_TAG, wrapper.getRenderInfo().getNbt());
+		return virtualCarrier;
+	}
+
+	public static String getCompatibilityKey(ItemStack stack) {
+		if (stack.getItem() instanceof BlockItem blockItem && blockItem.getBlock() instanceof LimitedBarrelBlock block) {
+			return "limited:" + block.getNumberOfInventorySlots();
+		}
+		return STANDARD_COMPATIBILITY_KEY;
 	}
 
 	public static String getCompatibilityKey(StorageBlockEntity storageBlockEntity) {

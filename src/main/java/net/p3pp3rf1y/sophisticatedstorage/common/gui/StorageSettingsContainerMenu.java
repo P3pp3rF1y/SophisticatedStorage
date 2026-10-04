@@ -15,7 +15,7 @@ import net.p3pp3rf1y.sophisticatedcore.common.gui.SettingsContainerMenu;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.ClientLinkedStorageContents;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.ILinkedStorageContents;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageEndpointData;
-import net.p3pp3rf1y.sophisticatedcore.network.LinkedStorageContentsMessage;
+import net.p3pp3rf1y.sophisticatedcore.network.LinkedStorageSettingsMessage;
 import net.p3pp3rf1y.sophisticatedcore.network.PacketHandler;
 import net.p3pp3rf1y.sophisticatedcore.util.NoopStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
@@ -61,10 +61,17 @@ public class StorageSettingsContainerMenu extends SettingsContainerMenu<IStorage
 		}
 		WorldHelper.getBlockEntity(player.level(), pos, StorageBlockEntity.class).ifPresent(storageBlockEntity -> {
 			LinkedStorageEndpointData endpoint = storageBlockEntity.getLinkedStorageEndpointData();
-			if (endpoint != null && ClientLinkedStorageContents.removeUpdatedGroup(endpoint.groupId())) {
+			if (endpoint != null) {
+				boolean snapshotChanged = ClientLinkedStorageContents.removeUpdatedGroup(endpoint.groupId());
+				boolean settingsChanged = ClientLinkedStorageContents.removeUpdatedSettings(endpoint.groupId());
+				if (!snapshotChanged && !settingsChanged) {
+					return;
+				}
 				ILinkedStorageContents contents = ClientLinkedStorageContents.getContents(endpoint.groupId())
 						.orElseThrow(() -> new IllegalStateException("Updated linked storage group has no snapshot: " + endpoint.groupId()));
-				storageBlockEntity.updateClientLinkedStorageContents(endpoint.groupId());
+				if (snapshotChanged) {
+					storageBlockEntity.updateClientLinkedStorageContents(endpoint.groupId());
+				}
 				storageWrapper.getSettingsHandler().reloadFrom(contents.getContents().getCompound("settings"));
 			}
 		});
@@ -80,9 +87,8 @@ public class StorageSettingsContainerMenu extends SettingsContainerMenu<IStorage
 		CompoundTag settingsNbt = storageWrapper.getSettingsHandler().getNbt();
 		if (lastSettingsNbt == null || !lastSettingsNbt.equals(settingsNbt)) {
 			lastSettingsNbt = settingsNbt.copy();
-			WorldHelper.getBlockEntity(player.level(), pos, StorageBlockEntity.class).map(StorageBlockEntity::getLinkedStorageEndpointData)
-					.ifPresent(endpoint -> PacketHandler.INSTANCE.sendToClient(serverPlayer,
-							LinkedStorageContentsMessage.createSnapshot(serverPlayer.serverLevel(), endpoint.groupId())));
+			WorldHelper.getBlockEntity(player.level(), pos, StorageBlockEntity.class).map(StorageBlockEntity::getLinkedStorageEndpointData).ifPresent(
+					endpoint -> PacketHandler.INSTANCE.sendToClient(serverPlayer, new LinkedStorageSettingsMessage(endpoint.groupId(), lastSettingsNbt)));
 		}
 	}
 
