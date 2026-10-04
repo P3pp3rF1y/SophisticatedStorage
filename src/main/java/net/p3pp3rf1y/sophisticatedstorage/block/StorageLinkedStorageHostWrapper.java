@@ -5,6 +5,8 @@ import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.ILinkedStorageContents;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.ILinkedStorageVirtualHost;
@@ -150,9 +152,32 @@ public class StorageLinkedStorageHostWrapper extends StorageWrapperBase implemen
 		return virtualCarrier;
 	}
 
+	public static CompoundTag createVirtualCarrier(ItemStack stack, net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper storageWrapper) {
+		CompoundTag virtualCarrier = new CompoundTag();
+		virtualCarrier.putString(STORAGE_TYPE_TAG, storageWrapper.getStorageType());
+		virtualCarrier.putString(COMPATIBILITY_KEY_TAG, getCompatibilityKey(stack));
+		virtualCarrier.putString(DISPLAY_NAME_TAG, stack.getHoverName().getString());
+		virtualCarrier.putInt(INVENTORY_SLOTS_TAG, storageWrapper.getInventoryHandler().size());
+		virtualCarrier.putInt(UPGRADE_SLOTS_TAG, storageWrapper.getUpgradeHandler().size());
+		virtualCarrier.putInt(BASE_STACK_SIZE_MULTIPLIER_TAG, storageWrapper.getBaseStackSizeMultiplier());
+		virtualCarrier.put(RENDER_INFO_TAG, RenderData.CODEC.encodeStart(NbtOps.INSTANCE, storageWrapper.getRenderDataHandler().getData()).getOrThrow());
+		return virtualCarrier;
+	}
+
+	public void persistCanonicalContents() {
+		contents.setContents(contents.groupId(), contents.contents().copy());
+	}
+
 	public static String getCompatibilityKey(StorageBlockEntity storageBlockEntity) {
 		if (storageBlockEntity instanceof LimitedBarrelBlockEntity
 				&& storageBlockEntity.getBlockState().getBlock() instanceof LimitedBarrelBlock limitedBarrelBlock) {
+			return "limited:" + limitedBarrelBlock.getNumberOfInventorySlots();
+		}
+		return STANDARD_COMPATIBILITY_KEY;
+	}
+
+	public static String getCompatibilityKey(ItemStack stack) {
+		if (stack.getItem() instanceof BlockItem blockItem && blockItem.getBlock() instanceof LimitedBarrelBlock limitedBarrelBlock) {
 			return "limited:" + limitedBarrelBlock.getNumberOfInventorySlots();
 		}
 		return STANDARD_COMPATIBILITY_KEY;

@@ -128,11 +128,17 @@ public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageIte
 		}
 
 		ItemStack stackToStash = slot.getItem();
+		int countToTake;
 		try (Transaction tx = Transaction.openRoot()) {
-			int stashed = stash(player.level().registryAccess(), storageStack, ItemResource.of(stackToStash), stackToStash.getCount(), tx);
-			if (stashed > 0) {
-				tx.commit();
-				slot.safeTake(stashed, stashed, player);
+			countToTake = stash(player.level().registryAccess(), storageStack, ItemResource.of(stackToStash), stackToStash.getCount(), tx);
+		}
+		if (countToTake > 0) {
+			ItemStack takeResult = slot.safeTake(countToTake, countToTake, player);
+			if (!takeResult.isEmpty()) {
+				try (Transaction tx = Transaction.openRoot()) {
+					stash(player.level().registryAccess(), storageStack, ItemResource.of(takeResult), takeResult.getCount(), tx);
+					tx.commit();
+				}
 				return true;
 			}
 		}

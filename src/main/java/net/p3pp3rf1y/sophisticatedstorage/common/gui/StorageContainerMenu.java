@@ -13,6 +13,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.neoforged.neoforge.network.PacketDistributor;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.ISyncedContainer;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.SophisticatedMenuProvider;
@@ -21,6 +22,7 @@ import net.p3pp3rf1y.sophisticatedcore.inventory.ContainerContents;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.ClientLinkedStorageContents;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageEndpointData;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageEndpointRole;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageSettingsPayload;
 import net.p3pp3rf1y.sophisticatedcore.settings.itemdisplay.ItemDisplaySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.settings.memory.MemorySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.util.NoopStorageWrapper;
@@ -110,6 +112,7 @@ public class StorageContainerMenu extends StorageContainerMenuBase<IStorageWrapp
 		ClientLinkedStorageContents.getContents(endpoint.groupId()).ifPresent(
 				linkedContents -> WorldHelper.getBlockEntity(player.level(), pos, StorageBlockEntity.class).ifPresent(storageBlockEntity -> storageBlockEntity
 						.bindClientLinkedStorage(endpoint, endpointRole, linkedContents, virtualCarrier, groupName, inventorySlots, upgradeSlots)));
+		ClientLinkedStorageContents.removeUpdatedGroup(endpoint.groupId());
 		return pos;
 	}
 
@@ -136,19 +139,30 @@ public class StorageContainerMenu extends StorageContainerMenuBase<IStorageWrapp
 
 	@Override
 	protected void sendStorageSettingsToClient() {
-		if (!player.level().isClientSide() && player instanceof ServerPlayer serverPlayer) {
-			storageBlockEntity.syncLinkedStorageContentsToPlayer(serverPlayer);
+		if (player instanceof ServerPlayer serverPlayer && storageBlockEntity.getLinkedStorageEndpointData() != null) {
+			PacketDistributor.sendToPlayer(serverPlayer, new LinkedStorageSettingsPayload(storageBlockEntity.getLinkedStorageEndpointData().groupId(),
+					storageWrapper.getSettingsHandler().getSettingsData().copy()));
 		}
 	}
 
 	@Override
 	public boolean detectSettingsChangeAndReload() {
-		return storageBlockEntity.getLinkedStorageEndpointData() != null && player.level().isClientSide()
-				&& ClientLinkedStorageContents.removeUpdatedGroup(storageBlockEntity.getLinkedStorageEndpointData().groupId())
-				&& ClientLinkedStorageContents.getContents(storageBlockEntity.getLinkedStorageEndpointData().groupId()).map(contents -> {
-					storageWrapper.getSettingsHandler().reloadFrom(contents.contents().settings());
-					return true;
-				}).orElse(false);
+		if (player.level().isClientSide() && storageBlockEntity.getLinkedStorageEndpointData() != null) {
+			var endpoint = storageBlockEntity.getLinkedStorageEndpointData();
+			boolean snapshotChanged = ClientLinkedStorageContents.removeUpdatedGroup(endpoint.groupId());
+			boolean settingsChanged = ClientLinkedStorageContents.removeUpdatedSettings(endpoint.groupId());
+			if (!snapshotChanged && !settingsChanged) {
+				return false;
+			}
+			ClientLinkedStorageContents.getContents(endpoint.groupId()).ifPresent(contents -> {
+				storageWrapper.getSettingsHandler().reloadFrom(contents.contents().settings());
+				if (snapshotChanged) {
+					refreshUpgradeControls();
+				}
+			});
+			return true;
+		}
+		return false;
 	}
 
 	@Override
