@@ -40,8 +40,7 @@ public class StorageTierUpgradeShapelessRecipe extends CustomShapelessRecipe imp
 			return ItemStack.EMPTY;
 		}
 		ItemStack upgradedStorage = super.assemble(input);
-		getOriginalStorage(input)
-				.ifPresent(originalStorage -> upgradedStorage.applyComponents(originalStorage.getComponentsPatch()));
+		getOriginalStorage(input).ifPresent(originalStorage -> upgradedStorage.applyComponents(originalStorage.getComponentsPatch()));
 		if (upgradedStorage.has(ModCoreDataComponents.STORAGE_UUID)) {
 			StackStorageWrapper storageWrapper = new StackStorageWrapper(upgradedStorage);
 			StorageBlockItem.setNumberOfInventorySlots(upgradedStorage, storageWrapper.getDefaultNumberOfInventorySlots());
