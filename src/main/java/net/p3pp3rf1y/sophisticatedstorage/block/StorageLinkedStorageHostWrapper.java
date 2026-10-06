@@ -190,8 +190,7 @@ public class StorageLinkedStorageHostWrapper extends StorageWrapper
 	}
 
 	public static String getCompatibilityKey(StorageBlockEntity storageBlockEntity) {
-		if (storageBlockEntity instanceof LimitedBarrelBlockEntity
-				&& storageBlockEntity.getBlockState().getBlock() instanceof LimitedBarrelBlock block) {
+		if (storageBlockEntity instanceof LimitedBarrelBlockEntity && storageBlockEntity.getBlockState().getBlock() instanceof LimitedBarrelBlock block) {
 			return "limited:" + block.getNumberOfInventorySlots();
 		}
 		return STANDARD_COMPATIBILITY_KEY;
