@@ -50,6 +50,7 @@ public class StorageLinkedStorageHostWrapper extends StorageWrapper implements I
 		super(() -> contents::markChanged, contents::markRenderDirty, contents::markChanged, getNumberOfDisplayItems(virtualCarrier),
 				tracksCountsAndFillRatios(virtualCarrier));
 		this.contents = contents;
+		setUpgradeCachesInvalidatedHandler(contents::onHandlersInvalidated);
 		this.virtualCarrier = virtualCarrier.copy();
 		loadCanonicalData(contents.contents());
 		synchronizeLinkedRenderInfo(virtualCarrier.getCompound(RENDER_INFO_TAG));

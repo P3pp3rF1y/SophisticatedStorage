@@ -6,6 +6,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.neoforged.fml.util.thread.SidedThreadGroups;
+import net.neoforged.neoforge.energy.IEnergyStorage;
+import net.p3pp3rf1y.sophisticatedcore.api.IStorageFluidHandler;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.SortBy;
 import net.p3pp3rf1y.sophisticatedcore.inventory.ITrackedContentsItemHandler;
@@ -81,6 +83,14 @@ public abstract class StorageWrapper implements IStorageWrapper, ILinkedStorageE
 	};
 	@Nullable
 	private IStorageWrapper linkedStorage = null;
+	@Nullable
+	private Object linkedInventory;
+	@Nullable
+	private Object linkedUpgrades;
+	@Nullable
+	private IStorageFluidHandler linkedFluidHandler;
+	@Nullable
+	private IEnergyStorage linkedEnergyStorage;
 	@Nullable
 	private LinkedStorageEndpointData linkedStorageEndpoint;
 	@Nullable
@@ -543,7 +553,9 @@ public abstract class StorageWrapper implements IStorageWrapper, ILinkedStorageE
 	@Override
 	public void onContentsNbtUpdated() {
 		if (linkedStorage != null) {
-			refreshInventoryForInputOutput();
+			if (updateLinkedHandlers()) {
+				refreshInventoryForInputOutput();
+			}
 			return;
 		}
 		inventoryHandler = null;
@@ -585,20 +597,25 @@ public abstract class StorageWrapper implements IStorageWrapper, ILinkedStorageE
 
 	@Override
 	public void setColumnsTaken(int columnsTaken, boolean hasChanged) {
+		if (linkedStorage != null) {
+			linkedStorage.setColumnsTaken(columnsTaken, hasChanged);
+			return;
+		}
 		this.columnsTaken = columnsTaken;
 		save();
 	}
 
 	@Override
 	public int getColumnsTaken() {
-		return columnsTaken;
+		return linkedStorage != null ? linkedStorage.getColumnsTaken() : columnsTaken;
 	}
 
 	public void changeSize(int additionalInventorySlots, int additionalUpgradeSlots) {
 		if (linkedStorage != null) {
-			if (linkedStorage instanceof StorageWrapper storageWrapper) {
-				storageWrapper.changeSize(additionalInventorySlots, additionalUpgradeSlots);
+			if (!(linkedStorage instanceof StorageWrapper storageWrapper)) {
+				throw new IllegalStateException("Storage capacity resizing requires a Storage-native canonical host");
 			}
+			storageWrapper.changeSize(additionalInventorySlots, additionalUpgradeSlots);
 			return;
 		}
 		numberOfInventorySlots += additionalInventorySlots;
@@ -613,10 +630,35 @@ public abstract class StorageWrapper implements IStorageWrapper, ILinkedStorageE
 	}
 
 	void setLinkedStorage(@Nullable IStorageWrapper linkedStorage) {
+		if (this.linkedStorage == linkedStorage) {
+			return;
+		}
 		this.linkedStorage = linkedStorage;
-		inventoryIOHandler = null;
-		upgradeCachesInvalidatedHandler.run();
-		onInventoryForInputOutputHandlerRefresh.run();
+		updateLinkedHandlers();
+		refreshInventoryForInputOutput();
+	}
+
+	private boolean updateLinkedHandlers() {
+		Object inventory = linkedStorage == null ? null : linkedStorage.getInventoryHandler();
+		Object upgrades = linkedStorage == null ? null : linkedStorage.getUpgradeHandler();
+		IStorageFluidHandler fluid = linkedStorage == null ? null : linkedStorage.getFluidHandler().orElse(null);
+		IEnergyStorage energy = linkedStorage == null ? null : linkedStorage.getEnergyStorage().orElse(null);
+		boolean changed = linkedInventory != inventory || linkedUpgrades != upgrades || linkedFluidHandler != fluid || linkedEnergyStorage != energy;
+		linkedInventory = inventory;
+		linkedUpgrades = upgrades;
+		linkedFluidHandler = fluid;
+		linkedEnergyStorage = energy;
+		return changed;
+	}
+
+	@Override
+	public Optional<IStorageFluidHandler> getFluidHandler() {
+		return linkedStorage == null ? Optional.empty() : linkedStorage.getFluidHandler();
+	}
+
+	@Override
+	public Optional<IEnergyStorage> getEnergyStorage() {
+		return linkedStorage == null ? Optional.empty() : linkedStorage.getEnergyStorage();
 	}
 
 	void setLinkedStorageEndpoint(@Nullable LinkedStorageEndpointData linkedStorageEndpoint, @Nullable LinkedStorageEndpointRole linkedStorageEndpointRole) {
@@ -652,6 +694,9 @@ public abstract class StorageWrapper implements IStorageWrapper, ILinkedStorageE
 	}
 
 	void synchronizeLinkedRenderInfo(CompoundTag renderInfo) {
+		renderInfo = renderInfo.copy();
+		renderInfo.remove(RenderInfo.TANKS_TAG);
+		renderInfo.remove(RenderInfo.BATTERY_TAG);
 		if (renderInfoNbt.equals(renderInfo)) {
 			return;
 		}

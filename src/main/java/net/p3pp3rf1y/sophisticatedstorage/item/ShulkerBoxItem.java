@@ -18,11 +18,14 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.p3pp3rf1y.sophisticatedcore.api.IStashStorageItem;
+import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.TranslationHelper;
+import net.p3pp3rf1y.sophisticatedcore.init.ModCoreDataComponents;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.EnderLinkerItem;
 import net.p3pp3rf1y.sophisticatedcore.settings.memory.MemorySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
+import net.p3pp3rf1y.sophisticatedcore.util.NoopStorageWrapper;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
-import net.p3pp3rf1y.sophisticatedstorage.block.StorageWrapper;
 
 import java.util.List;
 import java.util.Optional;
@@ -88,7 +91,7 @@ public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageIte
 	}
 
 	public ItemStack stash(HolderLookup.Provider registries, ItemStack storageStack, ItemStack stack, boolean simulate) {
-		StorageWrapper wrapper = getStashWrapper(registries, storageStack);
+		IStorageWrapper wrapper = getStashWrapper(registries, storageStack);
 		if (wrapper instanceof StackStorageWrapper stackStorageWrapper && stackStorageWrapper.getContentsUuid().isEmpty()) {
 			stackStorageWrapper.ensureContentsUuid();
 		}
@@ -97,7 +100,7 @@ public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageIte
 
 	@Override
 	public StashResult getItemStashable(HolderLookup.Provider registries, ItemStack storageStack, ItemStack stack) {
-		StorageWrapper wrapper = getStashWrapper(registries, storageStack);
+		IStorageWrapper wrapper = getStashWrapper(registries, storageStack);
 
 		if (wrapper.getInventoryForUpgradeProcessing().insertItem(stack, true).getCount() == stack.getCount()) {
 			return StashResult.NO_SPACE;
@@ -110,14 +113,17 @@ public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageIte
 		return StashResult.SPACE;
 	}
 
-	private StorageWrapper getStashWrapper(HolderLookup.Provider registries, ItemStack storageStack) {
-		return StorageLinkedStorageResolver.resolveServerCanonicalHost(storageStack).orElseGet(() -> StackStorageWrapper.fromStack(registries, storageStack));
+	private IStorageWrapper getStashWrapper(HolderLookup.Provider registries, ItemStack storageStack) {
+		if (storageStack.has(ModCoreDataComponents.LINKED_STORAGE_ENDPOINT)) {
+			return StorageLinkedStorageResolver.resolveServerCanonicalHost(storageStack).orElse(NoopStorageWrapper.INSTANCE);
+		}
+		return StackStorageWrapper.fromStack(registries, storageStack);
 	}
 
 	@Override
 	public boolean overrideStackedOnOther(ItemStack storageStack, Slot slot, ClickAction action, Player player) {
 		if (hasCreativeScreenContainerOpen(player) || storageStack.getCount() > 1 || !slot.mayPickup(player) || slot.getItem().isEmpty()
-				|| action != ClickAction.SECONDARY) {
+				|| slot.getItem().getItem() instanceof EnderLinkerItem || action != ClickAction.SECONDARY) {
 			return super.overrideStackedOnOther(storageStack, slot, action, player);
 		}
 
@@ -136,7 +142,8 @@ public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageIte
 	@Override
 	public boolean overrideOtherStackedOnMe(ItemStack storageStack, ItemStack otherStack, Slot slot, ClickAction action, Player player,
 			SlotAccess carriedAccess) {
-		if (hasCreativeScreenContainerOpen(player) || storageStack.getCount() > 1 || !slot.mayPlace(storageStack) || action != ClickAction.SECONDARY) {
+		if (hasCreativeScreenContainerOpen(player) || storageStack.getCount() > 1 || !slot.mayPlace(storageStack)
+				|| otherStack.getItem() instanceof EnderLinkerItem || action != ClickAction.SECONDARY) {
 			return super.overrideOtherStackedOnMe(storageStack, otherStack, slot, action, player, carriedAccess);
 		}
 

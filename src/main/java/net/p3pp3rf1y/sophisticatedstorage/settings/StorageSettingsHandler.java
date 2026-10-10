@@ -3,6 +3,7 @@ package net.p3pp3rf1y.sophisticatedstorage.settings;
 import net.minecraft.nbt.CompoundTag;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryHandler;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
 import net.p3pp3rf1y.sophisticatedcore.settings.ISettingsCategory;
@@ -74,5 +75,10 @@ public abstract class StorageSettingsHandler extends SettingsHandler {
 	public void reloadFrom(CompoundTag contentsNbt) {
 		this.contentsNbt = contentsNbt;
 		super.reloadFrom(contentsNbt);
+	}
+
+	@Override
+	public void reloadFromStorageContents(CompoundTag storageContents) {
+		reloadFrom(storageContents.getCompound(IStorageWrapper.SETTINGS_TAG));
 	}
 }

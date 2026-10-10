@@ -27,6 +27,7 @@ import net.p3pp3rf1y.sophisticatedcore.api.IUpgradeRenderer;
 import net.p3pp3rf1y.sophisticatedcore.client.render.UpgradeRenderRegistry;
 import net.p3pp3rf1y.sophisticatedcore.init.ModCoreDataComponents;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.ILinkedStorageBlockEndpoint;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.ILinkedStorageVirtualHost;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageEndpointData;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.IUpgradeRenderData;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
@@ -37,7 +38,6 @@ import net.p3pp3rf1y.sophisticatedcore.upgrades.ITickableUpgrade;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.NoopStorageWrapper;
 import net.p3pp3rf1y.sophisticatedstorage.block.*;
-import net.p3pp3rf1y.sophisticatedstorage.block.StorageLinkedStorageHostWrapper;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModDataComponents;
 import net.p3pp3rf1y.sophisticatedstorage.item.*;
 import org.joml.Vector3f;
@@ -54,7 +54,7 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 	protected boolean updateRenderAttributes = false;
 	protected IStorageWrapper storageWrapper = NoopStorageWrapper.INSTANCE;
 	@Nullable
-	private StorageLinkedStorageHostWrapper clientLinkedStorageHost;
+	private IStorageWrapper clientLinkedStorageHost;
 	@Nullable
 	private LinkedStorageEndpointData clientLinkedStorageEndpoint;
 	protected boolean isMainStorage = true;
@@ -180,9 +180,8 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 		}
 		ItemStack storageItem = getSyncedStorageStack();
 		if (StorageBlockEntity.hasLinkedStorageEndpoint(storageItem)) {
-			if (getLevel() instanceof ServerLevel) {
-				return StorageLinkedStorageResolver.resolveServerCanonicalHost(storageItem).map(host -> (IStorageWrapper) host)
-						.orElse(NoopStorageWrapper.INSTANCE);
+			if (getLevel() instanceof ServerLevel serverLevel) {
+				return StorageLinkedStorageResolver.resolveCanonicalHost(serverLevel, storageItem).orElse(NoopStorageWrapper.INSTANCE);
 			}
 			return clientLinkedStorageHost == null ? NoopStorageWrapper.INSTANCE : clientLinkedStorageHost;
 		}
@@ -199,7 +198,7 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 	}
 
 	public Component getMenuDisplayName(Component fallback) {
-		if (isLinkedStorage() && getStorageWrapper() instanceof StorageLinkedStorageHostWrapper host) {
+		if (isLinkedStorage() && getStorageWrapper() instanceof ILinkedStorageVirtualHost host) {
 			return host.getLinkedStorageDisplayName().filter(name -> !name.getString().isEmpty()).orElse(fallback);
 		}
 		return fallback;
@@ -209,14 +208,14 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 		return getLevel() instanceof ServerLevel serverLevel && StorageLinkedStorageResolver.isPrimary(serverLevel, getSyncedStorageStack());
 	}
 
-	public void bindClientLinkedStorage(StorageLinkedStorageHostWrapper host) {
+	public void bindClientLinkedStorage(IStorageWrapper host) {
 		clientLinkedStorageHost = host;
 		clientLinkedStorageEndpoint = getSyncedStorageStack().get(ModCoreDataComponents.LINKED_STORAGE_ENDPOINT);
 	}
 
 	public void refreshClientLinkedStorage() {
 		if (clientLinkedStorageHost != null) {
-			clientLinkedStorageHost.onLinkedStorageContentsChanged();
+			((ILinkedStorageVirtualHost) clientLinkedStorageHost).onLinkedStorageContentsChanged();
 		}
 	}
 
@@ -400,7 +399,9 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 		if (isLinkedStorage()) {
 			IStorageWrapper linkedHost = getStorageWrapper();
 			if (linkedHost != NoopStorageWrapper.INSTANCE) {
-				CompoundTag renderInfo = linkedHost.getRenderInfo().getNbt();
+				CompoundTag renderInfo = linkedHost.getRenderInfo().getNbt().copy();
+				renderInfo.remove(RenderInfo.TANKS_TAG);
+				renderInfo.remove(RenderInfo.BATTERY_TAG);
 				CustomData previous = getSyncedStorageStack().get(ModCoreDataComponents.RENDER_INFO_TAG);
 				if (previous == null || !previous.copyTag().equals(renderInfo)) {
 					ItemStack projected = getSyncedStorageStack().copy();

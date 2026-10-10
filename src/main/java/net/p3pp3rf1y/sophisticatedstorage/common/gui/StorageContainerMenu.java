@@ -5,6 +5,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Inventory;
@@ -33,6 +34,7 @@ import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 
 public class StorageContainerMenu extends StorageContainerMenuBase<IStorageWrapper> implements ISyncedContainer {
 	private static final String SOURCE_CONTAINER_ID_TAG = "sourceContainerId";
@@ -62,6 +64,11 @@ public class StorageContainerMenu extends StorageContainerMenuBase<IStorageWrapp
 
 	public StorageBlockEntity getStorageBlockEntity() {
 		return storageBlockEntity;
+	}
+
+	@Override
+	public Optional<UUID> getLinkedStorageGroupId() {
+		return Optional.ofNullable(storageBlockEntity.getLinkedStorageEndpointData()).map(LinkedStorageEndpointData::groupId);
 	}
 
 	@Override
@@ -105,11 +112,12 @@ public class StorageContainerMenu extends StorageContainerMenuBase<IStorageWrapp
 		int inventorySlots = buffer.readVarInt();
 		int upgradeSlots = buffer.readVarInt();
 		int columnsTaken = buffer.readVarInt();
+		ResourceLocation factoryId = buffer.readResourceLocation();
 		CompoundTag virtualCarrier = Objects.requireNonNull(buffer.readNbt());
 		ClientLinkedStorageContents.updateContents(endpoint.groupId(), revision, contents, groupName, inventorySlots, upgradeSlots, columnsTaken);
 		ClientLinkedStorageContents.getContents(endpoint.groupId()).ifPresent(linkedContents -> {
-			WorldHelper.getBlockEntity(player.level(), pos, StorageBlockEntity.class)
-					.ifPresent(storageBlockEntity -> storageBlockEntity.bindClientLinkedStorage(endpoint, endpointRole, linkedContents, virtualCarrier));
+			WorldHelper.getBlockEntity(player.level(), pos, StorageBlockEntity.class).ifPresent(
+					storageBlockEntity -> storageBlockEntity.bindClientLinkedStorage(endpoint, endpointRole, linkedContents, factoryId, virtualCarrier));
 		});
 		ClientLinkedStorageContents.removeUpdatedGroup(endpoint.groupId());
 		return pos;
@@ -141,6 +149,14 @@ public class StorageContainerMenu extends StorageContainerMenuBase<IStorageWrapp
 	@Override
 	protected void sendStorageSettingsToClient() {
 		sendLinkedStorageSettingsToClient();
+	}
+
+	@Override
+	protected void onUpgradeChanged() {
+		super.onUpgradeChanged();
+		if (player instanceof ServerPlayer serverPlayer) {
+			storageBlockEntity.syncLinkedStorageContentsToPlayer(serverPlayer);
+		}
 	}
 
 	private void sendLinkedStorageSettingsToClient() {
@@ -205,9 +221,10 @@ public class StorageContainerMenu extends StorageContainerMenuBase<IStorageWrapp
 				if (snapshotChanged) {
 					storageBlockEntity.updateClientLinkedStorageContents(endpoint.groupId());
 				}
-				storageWrapper.getSettingsHandler().reloadFrom(contents.getContents().getCompound("settings"));
+				storageWrapper.getSettingsHandler().reloadFromStorageContents(contents.getContents());
 				if (snapshotChanged) {
-					refreshUpgradeControls();
+					refreshAllSlots();
+					onUpgradesChanged();
 				}
 			});
 			return true;

@@ -388,6 +388,14 @@ public class ModBlocks {
 	}
 
 	private static void registerCapabilities(RegisterCapabilitiesEvent event) {
+		event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, CHEST_BLOCK_ENTITY_TYPE.get(), StorageBlockEntity::getExternalFluidHandler);
+		event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, SHULKER_BOX_BLOCK_ENTITY_TYPE.get(), StorageBlockEntity::getExternalFluidHandler);
+		event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, LIMITED_BARREL_BLOCK_ENTITY_TYPE.get(), StorageBlockEntity::getExternalFluidHandler);
+		event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, BARREL_BLOCK_ENTITY_TYPE.get(), StorageBlockEntity::getExternalFluidHandler);
+		event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, CHEST_BLOCK_ENTITY_TYPE.get(), StorageBlockEntity::getExternalEnergyStorage);
+		event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, SHULKER_BOX_BLOCK_ENTITY_TYPE.get(), StorageBlockEntity::getExternalEnergyStorage);
+		event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, LIMITED_BARREL_BLOCK_ENTITY_TYPE.get(), StorageBlockEntity::getExternalEnergyStorage);
+		event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, BARREL_BLOCK_ENTITY_TYPE.get(), StorageBlockEntity::getExternalEnergyStorage);
 		event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, CONTROLLER_BLOCK_ENTITY_TYPE.get(), ControllerBlockEntity::getExternalItemHandler);
 		event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, CHEST_BLOCK_ENTITY_TYPE.get(), ChestBlockEntity::getExternalItemHandler);
 		event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, SHULKER_BOX_BLOCK_ENTITY_TYPE.get(), ShulkerBoxBlockEntity::getExternalItemHandler);

@@ -4,6 +4,7 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.p3pp3rf1y.sophisticatedcore.compat.trashslot.TrashSlotScreenRegistry;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.*;
+import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageSettingsTabControl;
 
 public class ModBlocksClient {
 	private ModBlocksClient() {
@@ -14,6 +15,7 @@ public class ModBlocksClient {
 	}
 
 	private static void onMenuScreenRegister(RegisterMenuScreensEvent event) {
+		StorageSettingsTabControl.registerFactories();
 		event.register(ModBlocks.STORAGE_CONTAINER_TYPE.get(), StorageScreen::constructScreen);
 		event.register(ModBlocks.SETTINGS_CONTAINER_TYPE.get(), StorageSettingsScreen::constructScreen);
 		event.register(ModBlocks.LIMITED_BARREL_CONTAINER_TYPE.get(), LimitedBarrelScreen::new);

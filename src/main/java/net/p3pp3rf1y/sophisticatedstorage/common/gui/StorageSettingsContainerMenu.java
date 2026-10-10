@@ -72,7 +72,7 @@ public class StorageSettingsContainerMenu extends SettingsContainerMenu<IStorage
 				if (snapshotChanged) {
 					storageBlockEntity.updateClientLinkedStorageContents(endpoint.groupId());
 				}
-				storageWrapper.getSettingsHandler().reloadFrom(contents.getContents().getCompound("settings"));
+				storageWrapper.getSettingsHandler().reloadFromStorageContents(contents.getContents());
 			}
 		});
 	}
