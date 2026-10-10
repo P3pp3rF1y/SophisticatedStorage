@@ -395,6 +395,9 @@ public abstract class StorageBlockEntity extends BlockEntity
 	public void onChunkUnloaded() {
 		super.onChunkUnloaded();
 		chunkBeingUnloaded = true;
+		if (level != null) {
+			unloadFromController();
+		}
 		closeLinkedStorageSubscription();
 	}
 
