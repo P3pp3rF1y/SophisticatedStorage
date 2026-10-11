@@ -18,6 +18,7 @@ import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 //TODO after 1.22 remove support for legacy UUID deserialization via strings
@@ -58,6 +59,14 @@ public class ItemContentsStorage extends SavedData {
 
 	public boolean has(UUID storageUuid) {
 		return additionalBeData.containsKey(storageUuid);
+	}
+
+	public Optional<ContainerContents> findContents(UUID storageUuid) {
+		return Optional.ofNullable(storageContents.get(storageUuid));
+	}
+
+	public Optional<CompoundTag> findAdditionalBeData(UUID storageUuid) {
+		return Optional.ofNullable(additionalBeData.get(storageUuid));
 	}
 
 	public CompoundTag getOrCreateAddtionalBeData(UUID storageUuid) {

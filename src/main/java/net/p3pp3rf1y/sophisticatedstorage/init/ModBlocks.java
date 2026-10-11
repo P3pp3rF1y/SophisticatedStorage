@@ -449,6 +449,14 @@ public class ModBlocks {
 	}
 
 	private static void registerCapabilities(RegisterCapabilitiesEvent event) {
+		event.registerBlockEntity(Capabilities.Fluid.BLOCK, CHEST_BLOCK_ENTITY_TYPE.get(), StorageBlockEntity::getExternalFluidHandler);
+		event.registerBlockEntity(Capabilities.Fluid.BLOCK, SHULKER_BOX_BLOCK_ENTITY_TYPE.get(), StorageBlockEntity::getExternalFluidHandler);
+		event.registerBlockEntity(Capabilities.Fluid.BLOCK, LIMITED_BARREL_BLOCK_ENTITY_TYPE.get(), StorageBlockEntity::getExternalFluidHandler);
+		event.registerBlockEntity(Capabilities.Fluid.BLOCK, BARREL_BLOCK_ENTITY_TYPE.get(), StorageBlockEntity::getExternalFluidHandler);
+		event.registerBlockEntity(Capabilities.Energy.BLOCK, CHEST_BLOCK_ENTITY_TYPE.get(), StorageBlockEntity::getExternalEnergyHandler);
+		event.registerBlockEntity(Capabilities.Energy.BLOCK, SHULKER_BOX_BLOCK_ENTITY_TYPE.get(), StorageBlockEntity::getExternalEnergyHandler);
+		event.registerBlockEntity(Capabilities.Energy.BLOCK, LIMITED_BARREL_BLOCK_ENTITY_TYPE.get(), StorageBlockEntity::getExternalEnergyHandler);
+		event.registerBlockEntity(Capabilities.Energy.BLOCK, BARREL_BLOCK_ENTITY_TYPE.get(), StorageBlockEntity::getExternalEnergyHandler);
 		event.registerBlockEntity(Capabilities.Item.BLOCK, CONTROLLER_BLOCK_ENTITY_TYPE.get(),
 				(controllerBlockEntity, side) -> controllerBlockEntity.getExternalItemResourceHandler());
 		event.registerBlockEntity(Capabilities.Item.BLOCK, CHEST_BLOCK_ENTITY_TYPE.get(), ChestBlockEntity::getExternalItemHandler);

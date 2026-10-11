@@ -34,6 +34,7 @@ import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 
 public class StorageContainerMenu extends StorageContainerMenuBase<IStorageWrapper> implements ISyncedContainer {
 	private static final String SOURCE_CONTAINER_ID_TAG = "sourceContainerId";
@@ -107,11 +108,12 @@ public class StorageContainerMenu extends StorageContainerMenuBase<IStorageWrapp
 		int inventorySlots = buffer.readVarInt();
 		int upgradeSlots = buffer.readVarInt();
 		int columnsTaken = buffer.readVarInt();
+		var factoryId = buffer.readIdentifier();
 		CompoundTag virtualCarrier = Objects.requireNonNull(buffer.readNbt());
 		ClientLinkedStorageContents.updateContents(endpoint.groupId(), revision, contents, groupName, inventorySlots, upgradeSlots, columnsTaken);
 		ClientLinkedStorageContents.getContents(endpoint.groupId()).ifPresent(
 				linkedContents -> WorldHelper.getBlockEntity(player.level(), pos, StorageBlockEntity.class).ifPresent(storageBlockEntity -> storageBlockEntity
-						.bindClientLinkedStorage(endpoint, endpointRole, linkedContents, virtualCarrier, groupName, inventorySlots, upgradeSlots)));
+						.bindClientLinkedStorage(endpoint, endpointRole, linkedContents, factoryId, virtualCarrier, groupName, inventorySlots, upgradeSlots)));
 		ClientLinkedStorageContents.removeUpdatedGroup(endpoint.groupId());
 		return pos;
 	}
@@ -119,6 +121,11 @@ public class StorageContainerMenu extends StorageContainerMenuBase<IStorageWrapp
 	@Override
 	public Optional<BlockPos> getBlockPosition() {
 		return Optional.of(storageBlockEntity.getBlockPos());
+	}
+
+	@Override
+	public Optional<UUID> getLinkedStorageGroupId() {
+		return Optional.ofNullable(storageBlockEntity.getLinkedStorageEndpointData()).map(LinkedStorageEndpointData::groupId);
 	}
 
 	@Override
@@ -155,9 +162,13 @@ public class StorageContainerMenu extends StorageContainerMenuBase<IStorageWrapp
 				return false;
 			}
 			ClientLinkedStorageContents.getContents(endpoint.groupId()).ifPresent(contents -> {
+				if (snapshotChanged) {
+					storageBlockEntity.updateClientLinkedStorageContents(endpoint.groupId());
+				}
 				storageWrapper.getSettingsHandler().reloadFrom(contents.contents().settings());
 				if (snapshotChanged) {
-					refreshUpgradeControls();
+					refreshAllSlots();
+					onUpgradesChanged();
 				}
 			});
 			return true;

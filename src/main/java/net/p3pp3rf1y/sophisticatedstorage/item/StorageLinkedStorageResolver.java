@@ -37,7 +37,7 @@ public final class StorageLinkedStorageResolver {
 		return endpoint != null && LinkedStorageGroupsSavedData.get(level).manager().isPrimaryEndpoint(endpoint.groupId(), endpoint.endpointId());
 	}
 
-	private static Optional<IStorageWrapper> resolveCanonicalHost(ServerLevel level, ItemStack stack) {
+	public static Optional<IStorageWrapper> resolveCanonicalHost(ServerLevel level, ItemStack stack) {
 		if (LinkedStorageStackLifecycle.classifyEndpoint(stack) != LinkedStorageEndpointStackState.ENDPOINT) {
 			return Optional.empty();
 		}

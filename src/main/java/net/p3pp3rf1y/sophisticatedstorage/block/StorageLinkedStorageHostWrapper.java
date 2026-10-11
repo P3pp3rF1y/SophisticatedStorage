@@ -48,6 +48,7 @@ public class StorageLinkedStorageHostWrapper extends StorageWrapperBase implemen
 		super(() -> contents::markChanged, contents::markRenderDirty, contents::markChanged, getNumberOfDisplayItems(virtualCarrier),
 				tracksCountsAndFillRatios(virtualCarrier));
 		this.contents = contents;
+		setUpgradeCachesInvalidatedHandler(contents::onHandlersInvalidated);
 		this.virtualCarrier = virtualCarrier.copy();
 		replaceContents(contents.contents());
 		synchronizeLinkedRenderData(virtualCarrier.getCompoundOrEmpty(RENDER_INFO_TAG));
@@ -69,6 +70,16 @@ public class StorageLinkedStorageHostWrapper extends StorageWrapperBase implemen
 	@Override
 	public Optional<UUID> getContentsUuid() {
 		return Optional.of(contents.groupId());
+	}
+
+	@Override
+	public void setColumnsTaken(int columnsTaken, boolean hasChanged) {
+		contents.setColumnsTaken(columnsTaken);
+	}
+
+	@Override
+	public int getColumnsTaken() {
+		return contents.getColumnsTaken();
 	}
 
 	@Override
