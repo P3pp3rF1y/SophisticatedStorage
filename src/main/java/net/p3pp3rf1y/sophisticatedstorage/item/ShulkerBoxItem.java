@@ -23,8 +23,11 @@ import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 import net.p3pp3rf1y.sophisticatedcore.api.IStashStorageItem;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.TranslationHelper;
+import net.p3pp3rf1y.sophisticatedcore.init.ModCoreDataComponents;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.EnderLinkerItem;
 import net.p3pp3rf1y.sophisticatedcore.settings.memory.MemorySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
+import net.p3pp3rf1y.sophisticatedcore.util.NoopStorageWrapper;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
 
 import java.util.Optional;
@@ -95,12 +98,18 @@ public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageIte
 		if (wrapper instanceof StackStorageWrapper stackStorageWrapper && wrapper.getContentsUuid().isEmpty()) {
 			stackStorageWrapper.ensureContentsUuid();
 		}
+		if (wrapper == NoopStorageWrapper.INSTANCE) {
+			return 0;
+		}
 		return wrapper.getInventoryForUpgradeProcessing().insert(resource, amount, tx);
 	}
 
 	@Override
 	public StashResult getItemStashable(HolderLookup.Provider registries, ItemStack storageStack, ItemStack stack) {
 		IStorageWrapper wrapper = getStashWrapper(registries, storageStack);
+		if (wrapper == NoopStorageWrapper.INSTANCE) {
+			return StashResult.NO_SPACE;
+		}
 
 		try (Transaction tx = Transaction.openRoot()) {
 			if (wrapper.getInventoryForUpgradeProcessing().insert(ItemResource.of(stack), stack.getCount(), tx) == 0) {
@@ -116,13 +125,16 @@ public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageIte
 	}
 
 	private IStorageWrapper getStashWrapper(HolderLookup.Provider registries, ItemStack storageStack) {
-		return StorageLinkedStorageResolver.resolveServerCanonicalHost(storageStack).orElseGet(() -> StackStorageWrapper.fromStack(registries, storageStack));
+		if (storageStack.has(ModCoreDataComponents.LINKED_STORAGE_ENDPOINT)) {
+			return StorageLinkedStorageResolver.resolveServerCanonicalHost(storageStack).orElse(NoopStorageWrapper.INSTANCE);
+		}
+		return StackStorageWrapper.fromStack(registries, storageStack);
 	}
 
 	@Override
 	public boolean overrideStackedOnOther(ItemStack storageStack, Slot slot, ClickAction action, Player player) {
 		if (hasCreativeScreenContainerOpen(player) || storageStack.getCount() > 1 || !slot.mayPickup(player) || slot.getItem().isEmpty()
-				|| action != ClickAction.SECONDARY) {
+				|| slot.getItem().getItem() instanceof EnderLinkerItem || action != ClickAction.SECONDARY) {
 			return super.overrideStackedOnOther(storageStack, slot, action, player);
 		}
 
@@ -147,7 +159,8 @@ public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageIte
 	@Override
 	public boolean overrideOtherStackedOnMe(ItemStack storageStack, ItemStack otherStack, Slot slot, ClickAction action, Player player,
 			SlotAccess carriedAccess) {
-		if (hasCreativeScreenContainerOpen(player) || storageStack.getCount() > 1 || !slot.mayPlace(storageStack) || action != ClickAction.SECONDARY) {
+		if (hasCreativeScreenContainerOpen(player) || storageStack.getCount() > 1 || !slot.mayPlace(storageStack)
+				|| otherStack.getItem() instanceof EnderLinkerItem || action != ClickAction.SECONDARY) {
 			return super.overrideOtherStackedOnMe(storageStack, otherStack, slot, action, player, carriedAccess);
 		}
 

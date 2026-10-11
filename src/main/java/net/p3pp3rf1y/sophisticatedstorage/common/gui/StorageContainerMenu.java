@@ -6,6 +6,7 @@ import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -22,6 +23,7 @@ import net.p3pp3rf1y.sophisticatedcore.common.gui.StorageContainerMenuBase;
 import net.p3pp3rf1y.sophisticatedcore.inventory.ContainerContents;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.ClientLinkedStorageContents;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.ILinkedStorageContents;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.ILinkedStorageVirtualHost;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageEndpointData;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageEndpointRole;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageGroupManager;
@@ -32,7 +34,6 @@ import net.p3pp3rf1y.sophisticatedcore.settings.memory.MemorySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.util.NoopStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
-import net.p3pp3rf1y.sophisticatedstorage.block.StorageLinkedStorageHostWrapper;
 import net.p3pp3rf1y.sophisticatedstorage.block.WoodStorageBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageTranslationHelper;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
@@ -118,10 +119,11 @@ public class StorageContainerMenu extends StorageContainerMenuBase<IStorageWrapp
 		int inventorySlots = buffer.readVarInt();
 		int upgradeSlots = buffer.readVarInt();
 		int columnsTaken = buffer.readVarInt();
+		Identifier factoryId = buffer.readIdentifier();
 		CompoundTag virtualCarrier = Objects.requireNonNull(buffer.readNbt());
 		ClientLinkedStorageContents.updateContents(endpoint.groupId(), revision, contents, groupName, inventorySlots, upgradeSlots, columnsTaken);
 		WorldHelper.getBlockEntity(player.level(), pos, StorageBlockEntity.class)
-				.ifPresent(storage -> storage.bindClientLinkedStorage(endpoint, endpointRole, virtualCarrier));
+				.ifPresent(storage -> storage.bindClientLinkedStorage(endpoint, endpointRole, factoryId, virtualCarrier));
 		ClientLinkedStorageContents.removeUpdatedGroup(endpoint.groupId());
 		return pos;
 	}
@@ -136,9 +138,9 @@ public class StorageContainerMenu extends StorageContainerMenuBase<IStorageWrapp
 		if (!manager.isEndpointMember(endpoint.groupId(), endpoint.endpointId())) {
 			throw new IllegalStateException("Linked storage endpoint is not registered in its group");
 		}
-		StorageLinkedStorageHostWrapper host = manager.resolveVirtualHost(endpoint.groupId()).filter(StorageLinkedStorageHostWrapper.class::isInstance)
-				.map(StorageLinkedStorageHostWrapper.class::cast)
-				.orElseThrow(() -> new IllegalStateException("Linked storage group " + endpoint.groupId() + " does not have a storage host"));
+		ILinkedStorageVirtualHost host = manager.resolveVirtualHost(endpoint.groupId())
+				.orElseThrow(() -> new IllegalStateException("Linked storage group " + endpoint.groupId() + " does not have a virtual host"));
+		IStorageWrapper hostWrapper = (IStorageWrapper) host;
 		ILinkedStorageContents contents = manager.resolveContents(endpoint.groupId())
 				.orElseThrow(() -> new IllegalStateException("Failed to resolve linked storage contents for group " + endpoint.groupId()));
 		CompoundTag virtualCarrier = host.getVirtualCarrierSnapshot()
@@ -146,8 +148,10 @@ public class StorageContainerMenu extends StorageContainerMenuBase<IStorageWrapp
 		LinkedStorageEndpointRole endpointRole = manager.isPrimaryEndpoint(endpoint.groupId(), endpoint.endpointId())
 				? LinkedStorageEndpointRole.PRIMARY
 				: LinkedStorageEndpointRole.SECONDARY;
-		return new LinkedStorageSnapshot(endpoint, endpointRole, manager.getRevision(endpoint.groupId()), contents.contents().copy(), host.getDisplayName(),
-				host.getInventoryHandler().size(), host.getUpgradeHandler().size(), host.getColumnsTaken(), virtualCarrier);
+		return new LinkedStorageSnapshot(endpoint, endpointRole, manager.getRevision(endpoint.groupId()), contents.contents().copy(),
+				host.getLinkedStorageDisplayName().orElseGet(hostWrapper::getDisplayName), hostWrapper.getInventoryHandler().size(),
+				hostWrapper.getUpgradeHandler().size(), hostWrapper.getColumnsTaken(), manager.getHostDescriptor(endpoint.groupId()).orElseThrow().factoryId(),
+				virtualCarrier);
 	}
 
 	private static void writeLinkedStorageSnapshot(FriendlyByteBuf buffer, Player player, LinkedStorageSnapshot snapshot) {
@@ -161,16 +165,22 @@ public class StorageContainerMenu extends StorageContainerMenuBase<IStorageWrapp
 		buffer.writeVarInt(snapshot.inventorySlots());
 		buffer.writeVarInt(snapshot.upgradeSlots());
 		buffer.writeVarInt(snapshot.columnsTaken());
+		buffer.writeIdentifier(snapshot.factoryId());
 		FriendlyByteBuf.writeNbt(buffer, snapshot.virtualCarrier());
 	}
 
 	private record LinkedStorageSnapshot(LinkedStorageEndpointData endpoint, LinkedStorageEndpointRole endpointRole, long revision, ContainerContents contents,
-			Component groupName, int inventorySlots, int upgradeSlots, int columnsTaken, CompoundTag virtualCarrier) {
+			Component groupName, int inventorySlots, int upgradeSlots, int columnsTaken, Identifier factoryId, CompoundTag virtualCarrier) {
 	}
 
 	@Override
 	public Optional<BlockPos> getBlockPosition() {
 		return Optional.of(storageBlockEntity.getBlockPos());
+	}
+
+	@Override
+	public Optional<UUID> getLinkedStorageGroupId() {
+		return Optional.ofNullable(storageBlockEntity.getLinkedStorageEndpointData()).map(LinkedStorageEndpointData::groupId);
 	}
 
 	@Override
@@ -184,6 +194,9 @@ public class StorageContainerMenu extends StorageContainerMenuBase<IStorageWrapp
 			return;
 		}
 		storageWrapper.getSettingsHandler().getTypeCategory(ItemDisplaySettingsCategory.class).itemsChanged();
+		if (player instanceof ServerPlayer serverPlayer) {
+			storageBlockEntity.syncLinkedStorageContentsToPlayer(serverPlayer);
+		}
 		sendLinkedStorageSettingsToClient();
 	}
 
@@ -230,7 +243,8 @@ public class StorageContainerMenu extends StorageContainerMenuBase<IStorageWrapp
 			}
 			storageWrapper.getSettingsHandler().reloadFrom(contents.contents().settings());
 			if (snapshotChanged) {
-				refreshUpgradeControls();
+				refreshAllSlots();
+				onUpgradesChanged();
 			}
 			return true;
 		}).orElse(false);

@@ -59,6 +59,7 @@ public class StorageLinkedStorageHostWrapper extends StorageWrapper
 		super(() -> contents::markChanged, contents::markRenderDirty, contents::markChanged, virtualCarrier.numberOfDisplayItems(),
 				virtualCarrier.tracksCountsAndFillRatios());
 		this.contents = contents;
+		setUpgradeCachesInvalidatedHandler(contents::onHandlersInvalidated);
 		this.virtualCarrier = virtualCarrier;
 		this.linkedStorageEndpoint = linkedStorageEndpoint;
 		this.linkedStorageEndpointRole = linkedStorageEndpointRole;

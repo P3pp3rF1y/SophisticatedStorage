@@ -8,7 +8,9 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.fml.util.thread.SidedThreadGroups;
 import net.neoforged.neoforge.common.util.ValueIOSerializable;
+import net.neoforged.neoforge.transfer.energy.EnergyHandler;
 import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.p3pp3rf1y.sophisticatedcore.api.IStorageFluidHandler;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.SortBy;
 import net.p3pp3rf1y.sophisticatedcore.inventory.*;
@@ -81,6 +83,14 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 	@Nullable
 	private IStorageWrapper linkedStorage;
 	@Nullable
+	private Object linkedInventory;
+	@Nullable
+	private Object linkedUpgrades;
+	@Nullable
+	private IStorageFluidHandler linkedFluidHandler;
+	@Nullable
+	private EnergyHandler linkedEnergyHandler;
+	@Nullable
 	private LinkedStorageEndpointData linkedStorageEndpoint;
 	@Nullable
 	private LinkedStorageEndpointRole linkedStorageEndpointRole;
@@ -122,6 +132,16 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 
 	public void setContentsUuid(@Nullable UUID contentsUuid) {
 		this.contentsUuid = contentsUuid;
+	}
+
+	@Override
+	public Optional<IStorageFluidHandler> getFluidHandler() {
+		return linkedStorage == null ? Optional.empty() : linkedStorage.getFluidHandler();
+	}
+
+	@Override
+	public Optional<EnergyHandler> getEnergyHandler() {
+		return linkedStorage == null ? Optional.empty() : linkedStorage.getEnergyHandler();
 	}
 
 	@Override
@@ -566,7 +586,9 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 	@Override
 	public void onContentsUpdated() {
 		if (linkedStorage != null) {
-			refreshInventoryForInputOutput();
+			if (updateLinkedHandlers()) {
+				refreshInventoryForInputOutput();
+			}
 			return;
 		}
 		inventoryHandler = null;
@@ -607,6 +629,13 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 		return renderDataHandler;
 	}
 
+	void synchronizeLinkedRenderInfo(RenderData canonicalRenderData) {
+		RenderData projected = canonicalRenderData.withoutUpgradeRenderInfo();
+		if (!renderDataHandler.getData().equals(projected)) {
+			renderDataHandler.reloadFrom(projected);
+		}
+	}
+
 	@Override
 	public void setColumnsTaken(int columnsTaken, boolean hasChanged) {
 		if (linkedStorage != null) {
@@ -627,9 +656,10 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 
 	public void changeSize(int additionalInventorySlots, int additionalUpgradeSlots) {
 		if (linkedStorage != null) {
-			if (linkedStorage instanceof StorageWrapper storageWrapper) {
-				storageWrapper.changeSize(additionalInventorySlots, additionalUpgradeSlots);
+			if (!(linkedStorage instanceof StorageWrapper storageWrapper)) {
+				throw new IllegalStateException("Storage capacity resizing requires a Storage-native canonical host");
 			}
+			storageWrapper.changeSize(additionalInventorySlots, additionalUpgradeSlots);
 			return;
 		}
 		numberOfInventorySlots += additionalInventorySlots;
@@ -643,8 +673,25 @@ public abstract class StorageWrapper implements IStorageWrapper, ValueIOSerializ
 	}
 
 	void setLinkedStorage(@Nullable IStorageWrapper linkedStorage) {
+		if (this.linkedStorage == linkedStorage) {
+			return;
+		}
 		this.linkedStorage = linkedStorage;
+		updateLinkedHandlers();
 		refreshInventoryForInputOutput();
+	}
+
+	private boolean updateLinkedHandlers() {
+		Object inventory = linkedStorage == null ? null : linkedStorage.getInventoryHandler();
+		Object upgrades = linkedStorage == null ? null : linkedStorage.getUpgradeHandler();
+		IStorageFluidHandler fluid = linkedStorage == null ? null : linkedStorage.getFluidHandler().orElse(null);
+		EnergyHandler energy = linkedStorage == null ? null : linkedStorage.getEnergyHandler().orElse(null);
+		boolean changed = linkedInventory != inventory || linkedUpgrades != upgrades || linkedFluidHandler != fluid || linkedEnergyHandler != energy;
+		linkedInventory = inventory;
+		linkedUpgrades = upgrades;
+		linkedFluidHandler = fluid;
+		linkedEnergyHandler = energy;
+		return changed;
 	}
 
 	void setLinkedStorageEndpoint(@Nullable LinkedStorageEndpointData linkedStorageEndpoint, @Nullable LinkedStorageEndpointRole linkedStorageEndpointRole) {
