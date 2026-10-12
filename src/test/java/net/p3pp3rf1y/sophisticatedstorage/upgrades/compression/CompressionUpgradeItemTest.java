@@ -1,6 +1,8 @@
 package net.p3pp3rf1y.sophisticatedstorage.upgrades.compression;
 
 import net.minecraft.SharedConstants;
+import net.minecraft.core.component.DataComponentMap;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.Bootstrap;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -40,6 +42,11 @@ class CompressionUpgradeItemTest {
 	static void setup() {
 		SharedConstants.tryDetectVersion();
 		Bootstrap.bootStrap();
+
+		DataComponentMap components = DataComponentMap.builder().set(DataComponents.MAX_STACK_SIZE, 64).build();
+		for (Item item : new Item[]{Items.IRON_BLOCK, Items.IRON_INGOT, Items.IRON_NUGGET}) {
+			item.builtInRegistryHolder().bindComponents(components);
+		}
 
 		recipeHelperMock = Mockito.mockStatic(RecipeHelper.class);
 		recipeHelperMock.when(() -> RecipeHelper.getCompactingResult(stackOf(Items.IRON_NUGGET), eq(RecipeHelper.CompactingShape.THREE_BY_THREE_UNCRAFTABLE)))

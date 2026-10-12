@@ -77,6 +77,9 @@ public abstract class WoodStorageBlockEntity extends StorageBlockEntity {
 	}
 
 	public void setPacked(boolean packed) {
+		if (this.packed != packed) {
+			invalidateCapabilities();
+		}
 		this.packed = packed;
 		if (packed) {
 			RenderDataHandler renderDataHandler = getStorageWrapper().getRenderDataHandler();
