@@ -187,9 +187,8 @@ public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageIte
 	}
 
 	private static Optional<IStorageWrapper> getStashWrapper(ItemStack storageStack) {
-		Optional<StorageWrapper> linkedHost = StorageLinkedStorageResolver.resolveServerCanonicalHost(storageStack);
-		if (linkedHost.isPresent()) {
-			return Optional.of(linkedHost.get());
+		if (StorageBlockEntity.hasLinkedStorageEndpoint(storageStack)) {
+			return StorageLinkedStorageResolver.resolveServerCanonicalHost(storageStack);
 		}
 		return storageStack.getCapability(CapabilityStorageWrapper.getCapabilityInstance()).resolve().map(wrapper -> (IStorageWrapper) wrapper);
 	}

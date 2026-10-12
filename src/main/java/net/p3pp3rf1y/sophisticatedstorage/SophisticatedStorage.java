@@ -9,7 +9,10 @@ import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLEnvironment;
+import net.p3pp3rf1y.sophisticatedbackpacks.backpack.wrapper.BackpackLinkedStorageHostWrapper;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageEndpointAdapters;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageHostFactories;
+import net.p3pp3rf1y.sophisticatedstorage.block.StorageItemLinkedStorageEndpointAdapter;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageLinkedStorageHostWrapper;
 import net.p3pp3rf1y.sophisticatedstorage.client.ClientEventHandler;
 import net.p3pp3rf1y.sophisticatedstorage.common.CommonEventHandler;
@@ -53,6 +56,8 @@ public class SophisticatedStorage {
 
 	private static void setup(FMLCommonSetupEvent event) {
 		LinkedStorageHostFactories.register(StorageLinkedStorageHostWrapper.FACTORY_ID, StorageLinkedStorageHostWrapper::create);
+		LinkedStorageHostFactories.registerCompatibility(StorageLinkedStorageHostWrapper.FACTORY_ID, BackpackLinkedStorageHostWrapper.FACTORY_ID);
+		LinkedStorageEndpointAdapters.register(new StorageItemLinkedStorageEndpointAdapter());
 		StoragePacketHandler.INSTANCE.init();
 		ModCompat.compatsSetup();
 		event.enqueueWork(ModBlocks::registerDispenseBehavior);

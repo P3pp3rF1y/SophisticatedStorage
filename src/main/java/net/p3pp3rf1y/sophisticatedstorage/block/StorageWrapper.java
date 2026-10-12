@@ -5,8 +5,10 @@ import net.minecraft.nbt.NbtUtils;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraftforge.energy.IEnergyStorage;
 import net.minecraftforge.fml.util.thread.SidedThreadGroups;
 import net.minecraftforge.registries.ForgeRegistries;
+import net.p3pp3rf1y.sophisticatedcore.api.IStorageFluidHandler;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.SortBy;
 import net.p3pp3rf1y.sophisticatedcore.inventory.ITrackedContentsItemHandler;
@@ -82,6 +84,14 @@ public abstract class StorageWrapper implements IStorageWrapper, ILinkedStorageE
 	};
 	@Nullable
 	private IStorageWrapper linkedStorage = null;
+	@Nullable
+	private Object linkedInventory;
+	@Nullable
+	private Object linkedUpgrades;
+	@Nullable
+	private IStorageFluidHandler linkedFluidHandler;
+	@Nullable
+	private IEnergyStorage linkedEnergyStorage;
 	@Nullable
 	private LinkedStorageEndpointData linkedStorageEndpoint;
 	@Nullable
@@ -563,7 +573,9 @@ public abstract class StorageWrapper implements IStorageWrapper, ILinkedStorageE
 	@Override
 	public void refreshInventoryForInputOutput() {
 		inventoryIOHandler = null;
-		upgradeCachesInvalidatedHandler.run();
+		if (linkedStorage == null || refreshLinkedHandlers()) {
+			upgradeCachesInvalidatedHandler.run();
+		}
 		onInventoryForInputOutputHandlerRefresh.run();
 	}
 
@@ -589,13 +601,17 @@ public abstract class StorageWrapper implements IStorageWrapper, ILinkedStorageE
 
 	@Override
 	public void setColumnsTaken(int columnsTaken, boolean hasChanged) {
+		if (linkedStorage != null) {
+			linkedStorage.setColumnsTaken(columnsTaken, hasChanged);
+			return;
+		}
 		this.columnsTaken = columnsTaken;
 		save();
 	}
 
 	@Override
 	public int getColumnsTaken() {
-		return columnsTaken;
+		return linkedStorage != null ? linkedStorage.getColumnsTaken() : columnsTaken;
 	}
 
 	public void changeSize(int additionalInventorySlots, int additionalUpgradeSlots) {
@@ -617,10 +633,39 @@ public abstract class StorageWrapper implements IStorageWrapper, ILinkedStorageE
 	}
 
 	void setLinkedStorage(@Nullable IStorageWrapper linkedStorage) {
+		if (this.linkedStorage == linkedStorage) {
+			return;
+		}
 		this.linkedStorage = linkedStorage;
+		boolean handlersChanged = refreshLinkedHandlers();
 		inventoryIOHandler = null;
-		upgradeCachesInvalidatedHandler.run();
+		if (handlersChanged) {
+			upgradeCachesInvalidatedHandler.run();
+		}
 		onInventoryForInputOutputHandlerRefresh.run();
+	}
+
+	boolean refreshLinkedHandlers() {
+		Object inventory = linkedStorage == null ? null : linkedStorage.getInventoryHandler();
+		Object upgrades = linkedStorage == null ? null : linkedStorage.getUpgradeHandler();
+		IStorageFluidHandler fluid = linkedStorage == null ? null : linkedStorage.getFluidHandler().orElse(null);
+		IEnergyStorage energy = linkedStorage == null ? null : linkedStorage.getEnergyStorage().orElse(null);
+		boolean changed = linkedInventory != inventory || linkedUpgrades != upgrades || linkedFluidHandler != fluid || linkedEnergyStorage != energy;
+		linkedInventory = inventory;
+		linkedUpgrades = upgrades;
+		linkedFluidHandler = fluid;
+		linkedEnergyStorage = energy;
+		return changed;
+	}
+
+	@Override
+	public Optional<IStorageFluidHandler> getFluidHandler() {
+		return linkedStorage == null ? Optional.empty() : linkedStorage.getFluidHandler();
+	}
+
+	@Override
+	public Optional<IEnergyStorage> getEnergyStorage() {
+		return linkedStorage == null ? Optional.empty() : linkedStorage.getEnergyStorage();
 	}
 
 	void setLinkedStorageEndpoint(@Nullable LinkedStorageEndpointData linkedStorageEndpoint, @Nullable LinkedStorageEndpointRole linkedStorageEndpointRole) {
@@ -656,6 +701,9 @@ public abstract class StorageWrapper implements IStorageWrapper, ILinkedStorageE
 	}
 
 	void synchronizeLinkedRenderInfo(CompoundTag renderInfo) {
+		renderInfo = renderInfo.copy();
+		renderInfo.remove("tanks");
+		renderInfo.remove("battery");
 		if (renderInfoNbt.equals(renderInfo)) {
 			return;
 		}

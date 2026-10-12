@@ -8,6 +8,7 @@ import net.minecraft.network.Connection;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
@@ -25,8 +26,11 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.energy.IEnergyStorage;
+import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fml.util.thread.SidedThreadGroups;
 import net.minecraftforge.items.IItemHandler;
+import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.controller.ControllerBlockEntityBase;
 import net.p3pp3rf1y.sophisticatedcore.controller.ControllerStorageKey;
 import net.p3pp3rf1y.sophisticatedcore.controller.IControllableStorage;
@@ -87,6 +91,12 @@ public abstract class StorageBlockEntity extends BlockEntity
 	private LazyOptional<IItemHandler> itemHandlerCap;
 	@Nullable
 	private LazyOptional<IItemHandler> noSideItemHandlerCap;
+	@Nullable
+	private LazyOptional<IFluidHandler> fluidHandlerCap;
+	@Nullable
+	private LazyOptional<IEnergyStorage> energyStorageCap;
+	@Nullable
+	private ContentsFilteredFluidHandler contentsFilteredFluidHandler;
 	private boolean locked = false;
 	private boolean showLock = true;
 	private boolean showTier = true;
@@ -97,7 +107,8 @@ public abstract class StorageBlockEntity extends BlockEntity
 	@Nullable
 	private LinkedStorageEndpointData linkedStorageEndpoint;
 	@Nullable
-	private StorageLinkedStorageHostWrapper linkedStorageHost;
+	private IStorageWrapper linkedStorageHost;
+	private boolean refreshingLinkedStorage;
 	private Runnable linkedStorageSubscription = () -> {
 	};
 	private Runnable linkedStorageRootContentsReplacementSubscription = () -> {
@@ -251,7 +262,8 @@ public abstract class StorageBlockEntity extends BlockEntity
 	private void saveStorageWrapperClientData(CompoundTag tag) {
 		CompoundTag storageWrapperData = storageWrapper.saveData(new CompoundTag());
 		if (linkedStorageHost != null) {
-			storageWrapperData.put(StorageWrapper.RENDER_INFO_TAG, linkedStorageHost.getRenderInfoNbt());
+			storageWrapper.synchronizeLinkedRenderInfo(linkedStorageHost.getRenderInfo().getNbt());
+			storageWrapperData.put(StorageWrapper.RENDER_INFO_TAG, storageWrapper.getRenderInfoNbt());
 		}
 		tag.put(STORAGE_WRAPPER_TAG, storageWrapperData);
 	}
@@ -489,13 +501,12 @@ public abstract class StorageBlockEntity extends BlockEntity
 		}
 
 		bindLinkedStorage(serverLevel, linkedStorageEndpoint);
-		if (linkedStorageHost == null) {
+		if (!(linkedStorageHost instanceof StorageLinkedStorageHostWrapper storageHost)) {
 			return false;
 		}
 
-		linkedStorageHost.changeSize(inventorySlots - linkedStorageHost.getInventoryHandler().getSlots(),
-				upgradeSlots - linkedStorageHost.getUpgradeHandler().getSlots());
-		manager.resolveContents(linkedStorageEndpoint.groupId()).orElseThrow().setContents(linkedStorageHost.saveCanonicalData(new CompoundTag()));
+		storageHost.changeSize(inventorySlots - storageHost.getInventoryHandler().getSlots(), upgradeSlots - storageHost.getUpgradeHandler().getSlots());
+		manager.resolveContents(linkedStorageEndpoint.groupId()).orElseThrow().setContents(storageHost.saveCanonicalData(new CompoundTag()));
 		manager.updatePrimaryHostDescriptor(linkedStorageEndpoint.groupId(), linkedStorageEndpoint.endpointId(),
 				new LinkedStorageHostDescriptor(StorageLinkedStorageHostWrapper.FACTORY_ID, StorageLinkedStorageHostWrapper.createVirtualCarrier(this)));
 		changeSlots(inventorySlots);
@@ -530,7 +541,7 @@ public abstract class StorageBlockEntity extends BlockEntity
 
 	public void setCustomName(@Nullable Component customName) {
 		displayName = customName;
-		if (level instanceof ServerLevel serverLevel && linkedStorageEndpoint != null) {
+		if (level instanceof ServerLevel serverLevel && linkedStorageEndpoint != null && linkedStorageHost instanceof StorageLinkedStorageHostWrapper) {
 			LinkedStorageGroupsSavedData.get(serverLevel).manager().updatePrimaryHostDescriptor(linkedStorageEndpoint.groupId(),
 					linkedStorageEndpoint.endpointId(),
 					new LinkedStorageHostDescriptor(StorageLinkedStorageHostWrapper.FACTORY_ID, StorageLinkedStorageHostWrapper.createVirtualCarrier(this)));
@@ -540,6 +551,20 @@ public abstract class StorageBlockEntity extends BlockEntity
 
 	@Override
 	public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) {
+		if (cap == ForgeCapabilities.FLUID_HANDLER) {
+			if (fluidHandlerCap == null) {
+				IFluidHandler handler = getExternalFluidHandler(side);
+				fluidHandlerCap = handler == null ? LazyOptional.empty() : LazyOptional.of(() -> handler);
+			}
+			return fluidHandlerCap.cast();
+		}
+		if (cap == ForgeCapabilities.ENERGY) {
+			if (energyStorageCap == null) {
+				IEnergyStorage handler = getExternalEnergyStorage(side);
+				energyStorageCap = handler == null ? LazyOptional.empty() : LazyOptional.of(() -> handler);
+			}
+			return energyStorageCap.cast();
+		}
 		if (cap == ForgeCapabilities.ITEM_HANDLER) {
 			if (side == null) {
 				if (noSideItemHandlerCap == null) {
@@ -563,6 +588,15 @@ public abstract class StorageBlockEntity extends BlockEntity
 	}
 
 	private void invalidateStorageCap() {
+		if (fluidHandlerCap != null) {
+			fluidHandlerCap.invalidate();
+			fluidHandlerCap = null;
+		}
+		if (energyStorageCap != null) {
+			energyStorageCap.invalidate();
+			energyStorageCap = null;
+		}
+		contentsFilteredFluidHandler = null;
 		if (itemHandlerCap != null) {
 			LazyOptional<IItemHandler> tempItemHandlerCap = itemHandlerCap;
 			itemHandlerCap = null;
@@ -575,6 +609,32 @@ public abstract class StorageBlockEntity extends BlockEntity
 			tempNoSideItemHandlerCap.invalidate();
 			onInventoryInputOutputHandlerRefresh();
 		}
+	}
+
+	@Nullable
+	public IFluidHandler getExternalFluidHandler(@Nullable Direction side) {
+		if (!canExposeLinkedNonItemHandler()) {
+			return null;
+		}
+		IFluidHandler handler = storageWrapper.getFluidHandler().orElse(null);
+		if (handler == null) {
+			return null;
+		}
+		if (contentsFilteredFluidHandler == null || contentsFilteredFluidHandler.fluidHandler() != handler) {
+			contentsFilteredFluidHandler = new ContentsFilteredFluidHandler(handler, this::isLocked);
+		}
+		return contentsFilteredFluidHandler;
+	}
+
+	@Nullable
+	public IEnergyStorage getExternalEnergyStorage(@Nullable Direction side) {
+		return canExposeLinkedNonItemHandler() ? storageWrapper.getEnergyStorage().orElse(null) : null;
+	}
+
+	private boolean canExposeLinkedNonItemHandler() {
+		return level instanceof ServerLevel serverLevel && !isRemoved() && !chunkBeingUnloaded
+				&& !(this instanceof WoodStorageBlockEntity wood && wood.isPacked()) && linkedStorageEndpoint != null
+				&& isLinkedStorageEndpointMember(serverLevel, linkedStorageEndpoint);
 	}
 
 	public boolean shouldDropContents() {
@@ -658,26 +718,25 @@ public abstract class StorageBlockEntity extends BlockEntity
 		if (linkedStorageEndpoint != null && !linkedStorageEndpoint.equals(endpoint)) {
 			clearLinkedStorage();
 		}
-		manager.resolveVirtualHost(endpoint.groupId()).filter(StorageLinkedStorageHostWrapper.class::isInstance)
-				.map(StorageLinkedStorageHostWrapper.class::cast).ifPresentOrElse(host -> {
-					closeMenusForThisBlock();
-					closeLinkedStorageSubscription();
-					linkedStorageEndpoint = endpoint;
-					linkedStorageHost = host;
-					storageWrapper.clearCanonicalStorageData();
-					storageWrapper.setLinkedStorage(host);
-					storageWrapper.setLinkedStorageEndpoint(endpoint,
-							manager.isPrimaryEndpoint(endpoint.groupId(), endpoint.endpointId())
-									? LinkedStorageEndpointRole.PRIMARY
-									: LinkedStorageEndpointRole.SECONDARY);
-					StorageLinkedStorageJukeboxPlaybackAnchors.refreshBlockAnchor(serverLevel, this);
-					linkedStorageSubscription = manager.subscribeToGroupChanges(endpoint.groupId(), this::refreshLinkedStorageState);
-					linkedStorageRootContentsReplacementSubscription = manager.subscribeToRootContentsReplacements(endpoint.groupId(),
-							this::closeMenusForThisBlock);
-					refreshLinkedStorageState();
-				}, () -> {
-					clearLinkedStorage();
-				});
+		manager.resolveVirtualHost(endpoint, false).filter(IStorageWrapper.class::isInstance).map(IStorageWrapper.class::cast).ifPresentOrElse(host -> {
+			closeMenusForThisBlock();
+			closeLinkedStorageSubscription();
+			linkedStorageEndpoint = endpoint;
+			linkedStorageHost = host;
+			storageWrapper.clearCanonicalStorageData();
+			storageWrapper.setLinkedStorage(host);
+			invalidateStorageCap();
+			storageWrapper.setLinkedStorageEndpoint(endpoint,
+					manager.isPrimaryEndpoint(endpoint.groupId(), endpoint.endpointId())
+							? LinkedStorageEndpointRole.PRIMARY
+							: LinkedStorageEndpointRole.SECONDARY);
+			StorageLinkedStorageJukeboxPlaybackAnchors.refreshBlockAnchor(serverLevel, this);
+			linkedStorageSubscription = manager.subscribeToGroupChanges(endpoint.groupId(), this::refreshLinkedStorageState);
+			linkedStorageRootContentsReplacementSubscription = manager.subscribeToRootContentsReplacements(endpoint.groupId(), this::closeMenusForThisBlock);
+			refreshLinkedStorageState();
+		}, () -> {
+			clearLinkedStorage();
+		});
 	}
 
 	private void clearLinkedStorage() {
@@ -686,6 +745,7 @@ public abstract class StorageBlockEntity extends BlockEntity
 		linkedStorageEndpoint = null;
 		linkedStorageHost = null;
 		storageWrapper.setLinkedStorage(null);
+		invalidateStorageCap();
 		storageWrapper.setLinkedStorageEndpoint(null, null);
 		if (hadLinkedStorage && level instanceof ServerLevel) {
 			setChanged();
@@ -736,7 +796,7 @@ public abstract class StorageBlockEntity extends BlockEntity
 
 		LinkedStorageGroupManager manager = LinkedStorageGroupsSavedData.get(serverLevel).manager();
 		Optional<ILinkedStorageContents> contents = manager.resolveContents(linkedStorageEndpoint.groupId());
-		Optional<CompoundTag> virtualCarrier = linkedStorageHost.getVirtualCarrierSnapshot();
+		Optional<CompoundTag> virtualCarrier = ((ILinkedStorageVirtualHost) linkedStorageHost).getVirtualCarrierSnapshot();
 		if (contents.isEmpty() || virtualCarrier.isEmpty()) {
 			buffer.writeBoolean(false);
 			return;
@@ -747,31 +807,42 @@ public abstract class StorageBlockEntity extends BlockEntity
 		buffer.writeUUID(linkedStorageEndpoint.endpointId());
 		buffer.writeBoolean(manager.isPrimaryEndpoint(linkedStorageEndpoint.groupId(), linkedStorageEndpoint.endpointId()));
 		buffer.writeVarLong(manager.getRevision(linkedStorageEndpoint.groupId()));
-		buffer.writeComponent(linkedStorageHost.getDisplayName());
+		buffer.writeComponent(((ILinkedStorageVirtualHost) linkedStorageHost).getLinkedStorageDisplayName().orElse(getDisplayName()));
 		buffer.writeNbt(contents.get().getContents());
 		buffer.writeVarInt(linkedStorageHost.getInventoryHandler().getSlots());
 		buffer.writeVarInt(linkedStorageHost.getUpgradeHandler().getSlots());
 		buffer.writeVarInt(linkedStorageHost.getColumnsTaken());
+		buffer.writeResourceLocation(manager.getHostDescriptor(linkedStorageEndpoint.groupId()).orElseThrow().factoryId());
 		buffer.writeNbt(virtualCarrier.get());
 	}
 
 	public void bindClientLinkedStorage(LinkedStorageEndpointData endpoint, LinkedStorageEndpointRole endpointRole, ILinkedStorageContents contents,
 			CompoundTag virtualCarrier) {
+		bindClientLinkedStorage(endpoint, endpointRole, contents, StorageLinkedStorageHostWrapper.FACTORY_ID, virtualCarrier);
+	}
+
+	public void bindClientLinkedStorage(LinkedStorageEndpointData endpoint, LinkedStorageEndpointRole endpointRole, ILinkedStorageContents contents,
+			ResourceLocation factoryId, CompoundTag virtualCarrier) {
 		closeLinkedStorageSubscription();
 		linkedStorageEndpoint = endpoint;
-		StorageLinkedStorageHostWrapper.applyClientSnapshotProfile(virtualCarrier, ClientLinkedStorageContents.getGroupName(endpoint.groupId()).orElseThrow(),
-				ClientLinkedStorageContents.getInventorySlots(endpoint.groupId()).orElseThrow(),
-				ClientLinkedStorageContents.getUpgradeSlots(endpoint.groupId()).orElseThrow());
-		linkedStorageHost = StorageLinkedStorageHostWrapper.create(contents, virtualCarrier);
+		if (factoryId.equals(StorageLinkedStorageHostWrapper.FACTORY_ID)) {
+			StorageLinkedStorageHostWrapper.applyClientSnapshotProfile(virtualCarrier,
+					ClientLinkedStorageContents.getGroupName(endpoint.groupId()).orElseThrow(),
+					ClientLinkedStorageContents.getInventorySlots(endpoint.groupId()).orElseThrow(),
+					ClientLinkedStorageContents.getUpgradeSlots(endpoint.groupId()).orElseThrow());
+		}
+		linkedStorageHost = LinkedStorageHostFactories.get(factoryId).map(factory -> factory.create(contents, virtualCarrier))
+				.filter(IStorageWrapper.class::isInstance).map(IStorageWrapper.class::cast).orElseThrow();
 		storageWrapper.clearCanonicalStorageData();
 		storageWrapper.setLinkedStorage(linkedStorageHost);
+		invalidateStorageCap();
 		storageWrapper.setLinkedStorageEndpoint(endpoint, endpointRole);
 		refreshLinkedStorageState();
 	}
 
 	public void updateClientLinkedStorageContents(UUID groupId) {
 		if (linkedStorageEndpoint != null && linkedStorageEndpoint.groupId().equals(groupId) && linkedStorageHost != null) {
-			linkedStorageHost.onLinkedStorageContentsChanged();
+			((ILinkedStorageVirtualHost) linkedStorageHost).onLinkedStorageContentsChanged();
 		}
 	}
 
@@ -794,21 +865,39 @@ public abstract class StorageBlockEntity extends BlockEntity
 	}
 
 	private void refreshLinkedStorageState() {
-		if (linkedStorageHost == null) {
+		if (linkedStorageHost == null || refreshingLinkedStorage) {
 			return;
 		}
-		storageWrapper.synchronizeLinkedRenderInfo(linkedStorageHost.getRenderInfoNbt());
-		storageWrapper.onContentsNbtUpdated();
-		if (level != null && !level.isClientSide && getBlockState().getBlock() instanceof IStorageBlock storageBlock) {
-			storageBlock.setTicking(level, getBlockPos(), getBlockState(),
-					!isSecondaryLinkedStorageEndpoint(level) && !storageWrapper.getUpgradeHandler().getWrappersThatImplement(ITickableUpgrade.class).isEmpty());
-		}
-		invalidateStorageCap();
-		contentsFilteredItemHandler = null;
-		setUpdateBlockRender();
-		setChanged();
-		if (level != null && !level.isClientSide) {
-			WorldHelper.notifyBlockUpdate(this);
+		refreshingLinkedStorage = true;
+		try {
+			if (level instanceof ServerLevel serverLevel && linkedStorageEndpoint != null) {
+				Optional<IStorageWrapper> currentHost = LinkedStorageGroupsSavedData.get(serverLevel).manager().resolveVirtualHost(linkedStorageEndpoint, false)
+						.filter(IStorageWrapper.class::isInstance).map(IStorageWrapper.class::cast);
+				if (currentHost.isEmpty()) {
+					clearLinkedStorage();
+					return;
+				}
+				linkedStorageHost = currentHost.get();
+				storageWrapper.setLinkedStorage(linkedStorageHost);
+			}
+			boolean handlersChanged = storageWrapper.refreshLinkedHandlers();
+			storageWrapper.synchronizeLinkedRenderInfo(linkedStorageHost.getRenderInfo().getNbt());
+			storageWrapper.onContentsNbtUpdated();
+			if (level != null && !level.isClientSide && getBlockState().getBlock() instanceof IStorageBlock storageBlock) {
+				storageBlock.setTicking(level, getBlockPos(), getBlockState(), !isSecondaryLinkedStorageEndpoint(level)
+						&& !storageWrapper.getUpgradeHandler().getWrappersThatImplement(ITickableUpgrade.class).isEmpty());
+			}
+			if (handlersChanged) {
+				invalidateStorageCap();
+			}
+			contentsFilteredItemHandler = null;
+			setUpdateBlockRender();
+			setChanged();
+			if (level != null && !level.isClientSide) {
+				WorldHelper.notifyBlockUpdate(this);
+			}
+		} finally {
+			refreshingLinkedStorage = false;
 		}
 	}
 
@@ -1071,6 +1160,10 @@ public abstract class StorageBlockEntity extends BlockEntity
 	}
 
 	public void onNeighborChange(BlockPos neighborPos) {
+		if (linkedStorageEndpoint != null && (!(level instanceof ServerLevel serverLevel) || !LinkedStorageGroupsSavedData.get(serverLevel).manager()
+				.isPrimaryEndpoint(linkedStorageEndpoint.groupId(), linkedStorageEndpoint.endpointId()))) {
+			return;
+		}
 		Direction direction = getNeighborDirection(neighborPos);
 		if (direction == null) {
 			return;

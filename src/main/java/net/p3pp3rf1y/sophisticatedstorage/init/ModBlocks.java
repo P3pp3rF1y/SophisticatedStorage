@@ -402,6 +402,7 @@ public class ModBlocks {
 
 	private static void registerContainers(FMLClientSetupEvent evt) {
 		DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
+			StorageSettingsTabControl.registerFactories();
 			MenuScreens.register(STORAGE_CONTAINER_TYPE.get(), StorageScreen::constructScreen);
 			MenuScreens.register(SETTINGS_CONTAINER_TYPE.get(), StorageSettingsScreen::constructScreen);
 			MenuScreens.register(LIMITED_BARREL_CONTAINER_TYPE.get(), LimitedBarrelScreen::new);

@@ -75,4 +75,9 @@ public abstract class StorageSettingsHandler extends SettingsHandler {
 		this.contentsNbt = contentsNbt;
 		super.reloadFrom(contentsNbt);
 	}
+
+	@Override
+	public void reloadFromStorageContents(CompoundTag storageContents) {
+		reloadFrom(storageContents.getCompound("settings"));
+	}
 }

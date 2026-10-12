@@ -23,6 +23,7 @@ import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.api.IUpgradeRenderer;
 import net.p3pp3rf1y.sophisticatedcore.client.render.UpgradeRenderRegistry;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.ILinkedStorageBlockEndpoint;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.ILinkedStorageVirtualHost;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageEndpointData;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageStackData;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.IUpgradeRenderData;
@@ -57,7 +58,7 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 	protected boolean updateRenderAttributes = false;
 	protected IStorageWrapper storageWrapper = NoopStorageWrapper.INSTANCE;
 	@Nullable
-	private StorageLinkedStorageHostWrapper clientLinkedStorageHost;
+	private ILinkedStorageVirtualHost clientLinkedStorageHost;
 	@Nullable
 	private LinkedStorageEndpointData clientLinkedStorageEndpoint;
 	protected boolean isMainStorage = true;
@@ -176,10 +177,9 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 		ItemStack storageItem = getSyncedStorageStack();
 		if (StorageBlockEntity.hasLinkedStorageEndpoint(storageItem)) {
 			if (getLevel() instanceof ServerLevel) {
-				return StorageLinkedStorageResolver.resolveServerCanonicalHost(storageItem).map(host -> (IStorageWrapper) host)
-						.orElse(NoopStorageWrapper.INSTANCE);
+				return StorageLinkedStorageResolver.resolveServerCanonicalHost(storageItem).orElse(NoopStorageWrapper.INSTANCE);
 			}
-			return clientLinkedStorageHost == null ? NoopStorageWrapper.INSTANCE : clientLinkedStorageHost;
+			return clientLinkedStorageHost instanceof IStorageWrapper host ? host : NoopStorageWrapper.INSTANCE;
 		}
 
 		if (!storageItem.isEmpty() && storageWrapper == NoopStorageWrapper.INSTANCE) {
@@ -194,7 +194,7 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 	}
 
 	public Component getMenuDisplayName(Component fallback) {
-		if (isLinkedStorage() && getStorageWrapper() instanceof StorageLinkedStorageHostWrapper host) {
+		if (isLinkedStorage() && getStorageWrapper() instanceof ILinkedStorageVirtualHost host) {
 			return host.getLinkedStorageDisplayName().filter(name -> !name.getString().isEmpty()).orElse(fallback);
 		}
 		return fallback;
@@ -204,7 +204,7 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 		return getLevel() instanceof ServerLevel serverLevel && StorageLinkedStorageResolver.isPrimary(serverLevel, getSyncedStorageStack());
 	}
 
-	public void bindClientLinkedStorage(StorageLinkedStorageHostWrapper host) {
+	public void bindClientLinkedStorage(ILinkedStorageVirtualHost host) {
 		clientLinkedStorageHost = host;
 		clientLinkedStorageEndpoint = LinkedStorageStackData.getEndpoint(getSyncedStorageStack());
 	}
@@ -382,7 +382,9 @@ public abstract class StorageHolderBase implements ILockable, ICountDisplay, ITi
 		if (isLinkedStorage()) {
 			IStorageWrapper linkedHost = getStorageWrapper();
 			if (linkedHost != NoopStorageWrapper.INSTANCE) {
-				CompoundTag renderInfo = linkedHost.getRenderInfo().getNbt();
+				CompoundTag renderInfo = linkedHost.getRenderInfo().getNbt().copy();
+				renderInfo.remove("tanks");
+				renderInfo.remove("battery");
 				ItemStack projected = getSyncedStorageStack().copy();
 				if (!projected.getOrCreateTag().getCompound(StorageWrapper.RENDER_INFO_TAG).equals(renderInfo)) {
 					projected.getOrCreateTag().put(StorageWrapper.RENDER_INFO_TAG, renderInfo.copy());

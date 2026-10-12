@@ -10,6 +10,8 @@ import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.ChestType;
+import net.p3pp3rf1y.sophisticatedbackpacks.settings.BackpackMainSettingsCategory;
+import net.p3pp3rf1y.sophisticatedbackpacks.settings.BackpackMainSettingsContainer;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.SettingsContainerMenu;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.ClientLinkedStorageContents;
@@ -17,6 +19,9 @@ import net.p3pp3rf1y.sophisticatedcore.linkedstorage.ILinkedStorageContents;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageEndpointData;
 import net.p3pp3rf1y.sophisticatedcore.network.LinkedStorageSettingsMessage;
 import net.p3pp3rf1y.sophisticatedcore.network.PacketHandler;
+import net.p3pp3rf1y.sophisticatedcore.settings.ISettingsCategory;
+import net.p3pp3rf1y.sophisticatedcore.settings.SettingsContainerBase;
+import net.p3pp3rf1y.sophisticatedcore.settings.main.MainSettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.util.NoopStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.block.ChestBlock;
@@ -55,6 +60,22 @@ public class StorageSettingsContainerMenu extends SettingsContainerMenu<IStorage
 	}
 
 	@Override
+	protected <C extends ISettingsCategory, T extends SettingsContainerBase<C>> ISettingsContainerFactory<C, T> getSettingsContainerFactory(String name) {
+		ISettingsContainerFactory<C, T> canonicalFactory = getCanonicalSettingsContainerFactory(name);
+		return canonicalFactory != null ? canonicalFactory : super.getSettingsContainerFactory(name);
+	}
+
+	public static <C extends ISettingsCategory, T extends SettingsContainerBase<C>> ISettingsContainerFactory<C, T> getCanonicalSettingsContainerFactory(
+			String name) {
+		if (BackpackMainSettingsCategory.NAME.equals(name)) {
+			ISettingsContainerFactory<MainSettingsCategory, BackpackMainSettingsContainer> factory = BackpackMainSettingsContainer::new;
+			// noinspection unchecked
+			return (ISettingsContainerFactory<C, T>) (ISettingsContainerFactory<?, ?>) factory;
+		}
+		return null;
+	}
+
+	@Override
 	public void detectSettingsChangeAndReload() {
 		if (!player.level().isClientSide) {
 			return;
@@ -72,7 +93,7 @@ public class StorageSettingsContainerMenu extends SettingsContainerMenu<IStorage
 				if (snapshotChanged) {
 					storageBlockEntity.updateClientLinkedStorageContents(endpoint.groupId());
 				}
-				storageWrapper.getSettingsHandler().reloadFrom(contents.getContents().getCompound("settings"));
+				storageWrapper.getSettingsHandler().reloadFromStorageContents(contents.getContents());
 			}
 		});
 	}
