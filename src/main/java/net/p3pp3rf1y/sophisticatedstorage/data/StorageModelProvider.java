@@ -70,7 +70,7 @@ public class StorageModelProvider extends SophisticatedModelProvider {
 		ModBlocks.STORAGE_CONNECTOR_BLOCKS.values().stream().map(Supplier::get).forEach(blockModels::createTrivialCube);
 
 		generateCustomModelBlock(blockModels, ModBlocks.DECORATION_TABLE.get(), BlockModelGenerators.ROTATION_HORIZONTAL_FACING);
-		generateCustomModelBlock(blockModels, ModBlocks.STORAGE_LINK.get(), BlockModelGenerators.ROTATIONS_COLUMN_WITH_FACING);
+		generateSimpleMaterialModelBlock(blockModels, ModBlocks.STORAGE_LINK.get(), BlockModelGenerators.ROTATIONS_COLUMN_WITH_FACING);
 	}
 
 	private void generateBlockWithCustomBlockStateModel(BlockModelGenerators blockModels, String loaderName, Block baseBlock, ModelTemplate itemModelTemplate,
@@ -135,6 +135,14 @@ public class StorageModelProvider extends SophisticatedModelProvider {
 		blockModels.blockStateOutput
 				.accept(MultiVariantGenerator.dispatch(block, BlockModelGenerators.plainVariant(blockModelId)).with(facingPropertyDispatch));
 		blockModels.itemModelOutput.accept(block.asItem(), ItemModelUtils.plainModel(blockModelId));
+	}
+
+	private static void generateSimpleMaterialModelBlock(BlockModelGenerators blockModels, Block block,
+			PropertyDispatch<VariantMutator> facingPropertyDispatch) {
+		Identifier blockModelId = ModelLocationUtils.getModelLocation(block);
+		blockModels.blockStateOutput.accept(MultiVariantGenerator.dispatch(block, MultiVariant.of(new SimpleMaterialBlockStateModelBuilder(blockModelId)))
+				.with(facingPropertyDispatch).with(PropertyDispatch.modify(SimpleMaterialBlockData.OPAQUE).select(false, NOP).select(true, NOP)));
+		blockModels.itemModelOutput.accept(block.asItem(), new SimpleMaterialModel.SimpleMaterialItemModel.Unbaked(blockModelId));
 	}
 
 	private static Identifier getFlatTopModelLocation(Block block) {

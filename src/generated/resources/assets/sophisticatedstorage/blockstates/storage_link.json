@@ -1,27 +1,65 @@
 {
   "variants": {
-    "facing=down": {
+    "facing=down,opaque=false": {
+      "type": "sophisticatedstorage:simple_material_blockstate_model_loader",
       "model": "sophisticatedstorage:block/storage_link",
       "x": 180
     },
-    "facing=east": {
+    "facing=down,opaque=true": {
+      "type": "sophisticatedstorage:simple_material_blockstate_model_loader",
+      "model": "sophisticatedstorage:block/storage_link",
+      "x": 180
+    },
+    "facing=east,opaque=false": {
+      "type": "sophisticatedstorage:simple_material_blockstate_model_loader",
       "model": "sophisticatedstorage:block/storage_link",
       "x": 90,
       "y": 90
     },
-    "facing=north": {
+    "facing=east,opaque=true": {
+      "type": "sophisticatedstorage:simple_material_blockstate_model_loader",
+      "model": "sophisticatedstorage:block/storage_link",
+      "x": 90,
+      "y": 90
+    },
+    "facing=north,opaque=false": {
+      "type": "sophisticatedstorage:simple_material_blockstate_model_loader",
       "model": "sophisticatedstorage:block/storage_link",
       "x": 90
     },
-    "facing=south": {
+    "facing=north,opaque=true": {
+      "type": "sophisticatedstorage:simple_material_blockstate_model_loader",
+      "model": "sophisticatedstorage:block/storage_link",
+      "x": 90
+    },
+    "facing=south,opaque=false": {
+      "type": "sophisticatedstorage:simple_material_blockstate_model_loader",
       "model": "sophisticatedstorage:block/storage_link",
       "x": 90,
       "y": 180
     },
-    "facing=up": {
+    "facing=south,opaque=true": {
+      "type": "sophisticatedstorage:simple_material_blockstate_model_loader",
+      "model": "sophisticatedstorage:block/storage_link",
+      "x": 90,
+      "y": 180
+    },
+    "facing=up,opaque=false": {
+      "type": "sophisticatedstorage:simple_material_blockstate_model_loader",
       "model": "sophisticatedstorage:block/storage_link"
     },
-    "facing=west": {
+    "facing=up,opaque=true": {
+      "type": "sophisticatedstorage:simple_material_blockstate_model_loader",
+      "model": "sophisticatedstorage:block/storage_link"
+    },
+    "facing=west,opaque=false": {
+      "type": "sophisticatedstorage:simple_material_blockstate_model_loader",
+      "model": "sophisticatedstorage:block/storage_link",
+      "x": 90,
+      "y": 270
+    },
+    "facing=west,opaque=true": {
+      "type": "sophisticatedstorage:simple_material_blockstate_model_loader",
       "model": "sophisticatedstorage:block/storage_link",
       "x": 90,
       "y": 270
