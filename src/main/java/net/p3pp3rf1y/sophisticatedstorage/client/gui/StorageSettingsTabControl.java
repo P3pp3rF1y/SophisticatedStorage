@@ -1,9 +1,9 @@
 package net.p3pp3rf1y.sophisticatedstorage.client.gui;
 
-import net.p3pp3rf1y.sophisticatedbackpacks.settings.BackpackMainSettingsCategory;
-import net.p3pp3rf1y.sophisticatedbackpacks.settings.BackpackMainSettingsTab;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.Tab;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.Position;
+import net.p3pp3rf1y.sophisticatedcore.settings.SettingsContainerBase;
+import net.p3pp3rf1y.sophisticatedcore.settings.SettingsTab;
 import net.p3pp3rf1y.sophisticatedcore.settings.StorageSettingsTabControlBase;
 import net.p3pp3rf1y.sophisticatedcore.settings.itemdisplay.ItemDisplaySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.settings.itemdisplay.ItemDisplaySettingsTab;
@@ -17,10 +17,13 @@ public class StorageSettingsTabControl extends StorageSettingsTabControlBase {
 
 	public static void registerFactories() {
 		addFactory(MainSettingsCategory.NAME, StorageMainSettingsTab::new);
-		addFactory(BackpackMainSettingsCategory.NAME, BackpackMainSettingsTab::new);
 		addFactory(ItemDisplaySettingsCategory.NAME, ItemDisplaySettingsTab::new);
 		addFactory(NoSortSettingsCategory.NAME, NoSortSettingsTab::new);
 		addFactory(MemorySettingsCategory.NAME, MemorySettingsTab::new);
+	}
+
+	public static <C extends SettingsContainerBase<?>, T extends SettingsTab<C>> void registerCompatFactory(String name, ISettingsTabFactory<C, T> factory) {
+		addFactory(name, factory);
 	}
 
 	protected StorageSettingsTabControl(StorageSettingsScreen screen, Position position) {

@@ -10,8 +10,6 @@ import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.ChestType;
-import net.p3pp3rf1y.sophisticatedbackpacks.settings.BackpackMainSettingsCategory;
-import net.p3pp3rf1y.sophisticatedbackpacks.settings.BackpackMainSettingsContainer;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.SettingsContainerMenu;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.ClientLinkedStorageContents;
@@ -21,7 +19,7 @@ import net.p3pp3rf1y.sophisticatedcore.network.LinkedStorageSettingsMessage;
 import net.p3pp3rf1y.sophisticatedcore.network.PacketHandler;
 import net.p3pp3rf1y.sophisticatedcore.settings.ISettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.settings.SettingsContainerBase;
-import net.p3pp3rf1y.sophisticatedcore.settings.main.MainSettingsCategory;
+import net.p3pp3rf1y.sophisticatedcore.settings.SettingsHandler;
 import net.p3pp3rf1y.sophisticatedcore.util.NoopStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.block.ChestBlock;
@@ -29,7 +27,15 @@ import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.block.WoodStorageBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 
+import java.util.function.BiFunction;
+
 public class StorageSettingsContainerMenu extends SettingsContainerMenu<IStorageWrapper> {
+	private static BiFunction<String, SettingsHandler, ISettingsContainerFactory<?, ?>> canonicalFactoryResolver = (name, handler) -> null;
+
+	public static void setCanonicalFactoryResolver(BiFunction<String, SettingsHandler, ISettingsContainerFactory<?, ?>> resolver) {
+		canonicalFactoryResolver = resolver;
+	}
+
 	private final BlockPos pos;
 	private final boolean doubleChest;
 	private boolean stopOpenersOnRemove;
@@ -61,18 +67,20 @@ public class StorageSettingsContainerMenu extends SettingsContainerMenu<IStorage
 
 	@Override
 	protected <C extends ISettingsCategory, T extends SettingsContainerBase<C>> ISettingsContainerFactory<C, T> getSettingsContainerFactory(String name) {
-		ISettingsContainerFactory<C, T> canonicalFactory = getCanonicalSettingsContainerFactory(name);
+		ISettingsContainerFactory<C, T> canonicalFactory = getCanonicalSettingsContainerFactory(name, storageWrapper.getSettingsHandler());
 		return canonicalFactory != null ? canonicalFactory : super.getSettingsContainerFactory(name);
 	}
 
+	// Retain the category-only API for menus that do not pass their settings handler.
 	public static <C extends ISettingsCategory, T extends SettingsContainerBase<C>> ISettingsContainerFactory<C, T> getCanonicalSettingsContainerFactory(
 			String name) {
-		if (BackpackMainSettingsCategory.NAME.equals(name)) {
-			ISettingsContainerFactory<MainSettingsCategory, BackpackMainSettingsContainer> factory = BackpackMainSettingsContainer::new;
-			// noinspection unchecked
-			return (ISettingsContainerFactory<C, T>) (ISettingsContainerFactory<?, ?>) factory;
-		}
-		return null;
+		return getCanonicalSettingsContainerFactory(name, null);
+	}
+
+	public static <C extends ISettingsCategory, T extends SettingsContainerBase<C>> ISettingsContainerFactory<C, T> getCanonicalSettingsContainerFactory(
+			String name, SettingsHandler settingsHandler) {
+		// noinspection unchecked
+		return (ISettingsContainerFactory<C, T>) canonicalFactoryResolver.apply(name, settingsHandler);
 	}
 
 	@Override
