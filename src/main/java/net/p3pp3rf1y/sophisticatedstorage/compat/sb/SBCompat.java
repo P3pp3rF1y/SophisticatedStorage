@@ -4,13 +4,24 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.p3pp3rf1y.sophisticatedbackpacks.backpack.BackpackItem;
+import net.p3pp3rf1y.sophisticatedbackpacks.backpack.wrapper.BackpackLinkedStorageHostWrapper;
+import net.p3pp3rf1y.sophisticatedbackpacks.backpack.wrapper.BackpackSettingsHandler;
 import net.p3pp3rf1y.sophisticatedbackpacks.backpack.wrapper.BackpackWrapper;
 import net.p3pp3rf1y.sophisticatedbackpacks.backpack.wrapper.IBackpackWrapper;
 import net.p3pp3rf1y.sophisticatedbackpacks.init.ModItems;
+import net.p3pp3rf1y.sophisticatedbackpacks.settings.BackpackMainSettingsContainer;
+import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
+import net.p3pp3rf1y.sophisticatedcore.common.gui.SettingsContainerMenu;
 import net.p3pp3rf1y.sophisticatedcore.compat.ICompat;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageHostFactories;
+import net.p3pp3rf1y.sophisticatedcore.settings.ISettingsCategory;
+import net.p3pp3rf1y.sophisticatedcore.settings.SettingsContainerBase;
+import net.p3pp3rf1y.sophisticatedcore.settings.main.MainSettingsCategory;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelMaterial;
 import net.p3pp3rf1y.sophisticatedstorage.block.DecorationTableBlockEntity;
+import net.p3pp3rf1y.sophisticatedstorage.block.StorageLinkedStorageHostWrapper;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.DecorationTableInputSlotPreview;
+import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageSettingsContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.util.DecorationHelper;
 
 import java.util.Map;
@@ -18,6 +29,18 @@ import java.util.Map;
 public class SBCompat implements ICompat {
 	@Override
 	public void setup() {
+		LinkedStorageHostFactories.registerCompatibility(StorageLinkedStorageHostWrapper.FACTORY_ID, BackpackLinkedStorageHostWrapper.FACTORY_ID);
+		StorageSettingsContainerMenu.registerCanonicalFactoryResolver(new StorageSettingsContainerMenu.CanonicalFactoryResolver() {
+			@Override
+			public <C extends ISettingsCategory<?, ?>, T extends SettingsContainerBase<C>> SettingsContainerMenu.ISettingsContainerFactory<C, T> resolve(
+					IStorageWrapper wrapper, String name, SettingsContainerMenu.ISettingsContainerFactory<C, T> defaultFactory) {
+				if (name.equals(MainSettingsCategory.NAME) && wrapper.getSettingsHandler() instanceof BackpackSettingsHandler) {
+					// noinspection unchecked
+					return (SettingsContainerMenu.ISettingsContainerFactory<C, T>) (SettingsContainerMenu.ISettingsContainerFactory<MainSettingsCategory, BackpackMainSettingsContainer>) BackpackMainSettingsContainer::new;
+				}
+				return defaultFactory;
+			}
+		});
 		DecorationTableInputSlotPreview.registerPreviewStack(() -> new ItemStack(ModItems.BACKPACK.get()));
 
 		DecorationTableBlockEntity.registerItemDecorator(item -> item instanceof BackpackItem, new DecorationTableBlockEntity.IItemDecorator() {

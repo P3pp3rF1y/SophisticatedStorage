@@ -11,8 +11,6 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.ChestType;
 import net.neoforged.neoforge.network.PacketDistributor;
-import net.p3pp3rf1y.sophisticatedbackpacks.backpack.wrapper.BackpackSettingsHandler;
-import net.p3pp3rf1y.sophisticatedbackpacks.settings.BackpackMainSettingsContainer;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.SettingsContainerMenu;
 import net.p3pp3rf1y.sophisticatedcore.inventory.ContainerContents;
@@ -20,7 +18,6 @@ import net.p3pp3rf1y.sophisticatedcore.linkedstorage.ClientLinkedStorageContents
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageSettingsPayload;
 import net.p3pp3rf1y.sophisticatedcore.settings.ISettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.settings.SettingsContainerBase;
-import net.p3pp3rf1y.sophisticatedcore.settings.main.MainSettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.util.NoopStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
 import net.p3pp3rf1y.sophisticatedstorage.block.ChestBlock;
@@ -31,6 +28,23 @@ import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import java.util.UUID;
 
 public class StorageSettingsContainerMenu extends SettingsContainerMenu<IStorageWrapper> {
+	private static CanonicalFactoryResolver canonicalFactoryResolver = new CanonicalFactoryResolver() {
+		@Override
+		public <C extends ISettingsCategory<?, ?>, T extends SettingsContainerBase<C>> ISettingsContainerFactory<C, T> resolve(IStorageWrapper wrapper,
+				String name, ISettingsContainerFactory<C, T> defaultFactory) {
+			return defaultFactory;
+		}
+	};
+
+	public static void registerCanonicalFactoryResolver(CanonicalFactoryResolver resolver) {
+		canonicalFactoryResolver = resolver;
+	}
+
+	public interface CanonicalFactoryResolver {
+		<C extends ISettingsCategory<?, ?>, T extends SettingsContainerBase<C>> ISettingsContainerFactory<C, T> resolve(IStorageWrapper wrapper, String name,
+				ISettingsContainerFactory<C, T> defaultFactory);
+	}
+
 	private final BlockPos pos;
 	private final boolean doubleChest;
 	private boolean stopOpenersOnRemove;
@@ -67,11 +81,7 @@ public class StorageSettingsContainerMenu extends SettingsContainerMenu<IStorage
 
 	public static <C extends ISettingsCategory<?, ?>, T extends SettingsContainerBase<C>> ISettingsContainerFactory<C, T> getCanonicalSettingsContainerFactory(
 			IStorageWrapper wrapper, String name, ISettingsContainerFactory<C, T> defaultFactory) {
-		if (name.equals(MainSettingsCategory.NAME) && wrapper.getSettingsHandler() instanceof BackpackSettingsHandler) {
-			// noinspection unchecked
-			return (ISettingsContainerFactory<C, T>) (ISettingsContainerFactory<MainSettingsCategory, BackpackMainSettingsContainer>) BackpackMainSettingsContainer::new;
-		}
-		return defaultFactory;
+		return canonicalFactoryResolver.resolve(wrapper, name, defaultFactory);
 	}
 
 	@Override
