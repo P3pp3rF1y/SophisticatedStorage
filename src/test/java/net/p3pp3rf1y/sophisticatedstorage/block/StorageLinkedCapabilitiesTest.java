@@ -40,6 +40,7 @@ import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModDataComponents;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.upgrades.INeighborChangeListenerUpgrade;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
@@ -80,14 +81,17 @@ class StorageLinkedCapabilitiesTest {
 	static void bootstrapMinecraft() throws ReflectiveOperationException {
 		SharedConstants.tryDetectVersion();
 		Bootstrap.bootStrap();
-		if (!Config.SERVER_SPEC.isLoaded()) {
-			CommentedConfig config = CommentedConfig.inMemory();
-			Config.SERVER_SPEC.correct(config);
-			Constructor<?> constructor = Class.forName("net.neoforged.fml.config.LoadedConfig").getDeclaredConstructor(CommentedConfig.class, Path.class,
-					ModConfig.class);
-			constructor.setAccessible(true);
-			Config.SERVER_SPEC.acceptConfig((IConfigSpec.ILoadedConfig) constructor.newInstance(config, null, null));
-		}
+		CommentedConfig config = CommentedConfig.inMemory();
+		Config.SERVER_SPEC.correct(config);
+		Constructor<?> constructor = Class.forName("net.neoforged.fml.config.LoadedConfig").getDeclaredConstructor(CommentedConfig.class, Path.class,
+				ModConfig.class);
+		constructor.setAccessible(true);
+		Config.SERVER_SPEC.acceptConfig((IConfigSpec.ILoadedConfig) constructor.newInstance(config, null, null));
+	}
+
+	@AfterAll
+	static void unloadServerConfig() {
+		Config.SERVER_SPEC.acceptConfig(null);
 	}
 
 	@Test
