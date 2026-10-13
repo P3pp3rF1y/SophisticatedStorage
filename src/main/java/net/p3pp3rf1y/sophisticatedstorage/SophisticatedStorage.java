@@ -10,7 +10,6 @@ import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
-import net.p3pp3rf1y.sophisticatedbackpacks.backpack.wrapper.BackpackLinkedStorageHostWrapper;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageEndpointAdapters;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageHostFactories;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageItemLinkedStorageEndpointAdapter;
@@ -54,7 +53,6 @@ public class SophisticatedStorage {
 
 	private static void setup(FMLCommonSetupEvent event) {
 		LinkedStorageHostFactories.register(StorageLinkedStorageHostWrapper.FACTORY_ID, StorageLinkedStorageHostWrapper::create);
-		LinkedStorageHostFactories.registerCompatibility(StorageLinkedStorageHostWrapper.FACTORY_ID, BackpackLinkedStorageHostWrapper.FACTORY_ID);
 		LinkedStorageEndpointAdapters.register(new StorageItemLinkedStorageEndpointAdapter());
 		event.enqueueWork(ModBlocks::registerDispenseBehavior);
 		event.enqueueWork(ModBlocks::registerCauldronInteractions);
