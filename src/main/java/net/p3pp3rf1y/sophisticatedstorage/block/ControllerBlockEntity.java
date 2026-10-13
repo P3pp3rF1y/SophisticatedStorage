@@ -29,7 +29,6 @@ import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import javax.annotation.Nullable;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 public class ControllerBlockEntity extends ControllerBlockEntityBase
@@ -61,21 +60,21 @@ public class ControllerBlockEntity extends ControllerBlockEntityBase
 		boolean doubleClick = gameTime - lastDepositTime < 10;
 		lastDepositTime = gameTime;
 		if (doubleClick) {
-			AtomicBoolean insertedAny = new AtomicBoolean(false);
+			Map<Integer, Integer> insertedBySlot = new LinkedHashMap<>();
 			try (Transaction tx = Transaction.openRoot()) {
 				InventoryHelper.iteratePlayerInventory(player, (slot, stack) -> {
 					if (canDepositStack(stack, tx)) {
 						int inserted = insertItem(stack, tx, false);
 						if (inserted > 0) {
-							player.getInventory().removeItem(slot, inserted);
-							insertedAny.set(true);
+							insertedBySlot.put(slot, inserted);
 						}
 					}
 				});
-				if (insertedAny.get()) {
+				if (!insertedBySlot.isEmpty()) {
 					tx.commit();
 				}
 			}
+			insertedBySlot.forEach((slot, inserted) -> player.getInventory().removeItem(slot, inserted));
 			return;
 		}
 
@@ -84,20 +83,20 @@ public class ControllerBlockEntity extends ControllerBlockEntityBase
 			try (Transaction tx = Transaction.openRoot()) {
 				int inserted = insertItem(itemInHand, tx, false);
 				if (inserted > 0) {
+					tx.commit();
 					player.setItemInHand(hand,
 							inserted == itemInHand.getCount() ? ItemStack.EMPTY : itemInHand.copyWithCount(itemInHand.getCount() - inserted));
-					tx.commit();
 				}
 			}
 		}
 	}
 
 	private boolean canDepositStack(ItemStack stack) {
-		return hasItem(stack.getItem()) || isMemorizedItem(stack) || isFilterItem(stack.getItem()) || hasMatchingFilter(stack);
+		return !stack.isEmpty() && (hasItem(stack.getItem()) || isMemorizedItem(stack) || isFilterItem(stack.getItem()) || hasMatchingFilter(stack));
 	}
 
 	private boolean canDepositStack(ItemStack stack, TransactionContext tx) {
-		return hasItem(stack.getItem()) || isMemorizedItem(stack) || isFilterItem(stack.getItem()) || hasMatchingFilter(stack, tx);
+		return !stack.isEmpty() && (hasItem(stack.getItem()) || isMemorizedItem(stack) || isFilterItem(stack.getItem()) || hasMatchingFilter(stack, tx));
 	}
 
 	@Override
