@@ -1,13 +1,11 @@
 package net.p3pp3rf1y.sophisticatedstorage.client.render;
 
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.client.model.data.ModelData;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelBlock;
 
 import javax.annotation.Nullable;
@@ -35,15 +33,6 @@ public class BarrelDynamicModel extends BarrelDynamicModelBase<BarrelDynamicMode
 				Map<String, Map<DynamicBarrelBakingData.DynamicPart, DynamicBarrelBakingData>> woodDynamicBakingData,
 				Map<String, Map<BarrelModelPart, BakedModel>> woodPartitionedModelParts) {
 			super(baker, woodModelParts, flatTopModel, woodDynamicBakingData, woodPartitionedModelParts);
-		}
-
-		@Override
-		protected int getInWorldBlockHash(BlockState state, ModelData data, @Nullable RenderType renderType) {
-			int hash = super.getInWorldBlockHash(state, data, renderType);
-			hash = hash * 31 + (Boolean.TRUE.equals(state.getValue(BarrelBlock.OPEN)) ? 1 : 0);
-			hash = hash * 31 + state.getValue(BarrelBlock.FACING).get3DDataValue();
-
-			return hash;
 		}
 
 		@Override
