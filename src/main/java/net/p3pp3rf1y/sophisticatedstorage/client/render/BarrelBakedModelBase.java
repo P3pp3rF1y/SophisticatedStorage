@@ -94,7 +94,8 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 	private static final ModelProperty<List<Integer>> INACCESSIBLE_SLOTS = new ModelProperty<>();
 	private static final ModelProperty<Map<BarrelMaterial, ResourceLocation>> MATERIALS = new ModelProperty<>();
 	private static final ModelProperty<Map<ResourceLocation, Integer>> MATERIAL_TINT_COLORS = new ModelProperty<>();
-	public static final Cache<Integer, List<BakedQuad>> BAKED_QUADS_CACHE = CacheBuilder.newBuilder().expireAfterAccess(15L, TimeUnit.MINUTES).build();
+	private static final Cache<BarrelBakedModelCacheKey, List<BakedQuad>> BAKED_QUADS_CACHE = CacheBuilder.newBuilder().expireAfterAccess(15L, TimeUnit.MINUTES)
+			.build();
 	private static final Map<Integer, IQuadTransformer> DISPLAY_ROTATIONS = new HashMap<>();
 	private static final Vector3f DEFAULT_ROTATION = new Vector3f(0.0F, 0.0F, 0.0F);
 	private static final ItemTransforms ITEM_TRANSFORMS = createItemTransforms();
@@ -193,12 +194,6 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 	@Override
 	public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, RandomSource rand, ModelData extraData,
 			@Nullable RenderType renderType) {
-		int hash = createHash(state, side, extraData, renderType);
-		List<BakedQuad> quads = BAKED_QUADS_CACHE.getIfPresent(hash);
-		if (quads != null) {
-			return quads;
-		}
-
 		String woodName = null;
 		boolean hasMainColor;
 		boolean hasAccentColor;
@@ -225,6 +220,17 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 			materialTintColors = getMaterialTintColors(materials, null, null);
 			showsTier = barrelShowsTier;
 		}
+		boolean showsLocked = showsLocked(extraData);
+		List<RenderInfo.DisplayItem> displayItems = extraData.has(DISPLAY_ITEMS) ? extraData.get(DISPLAY_ITEMS) : null;
+		List<Integer> inaccessibleSlots = extraData.has(INACCESSIBLE_SLOTS) ? extraData.get(INACCESSIBLE_SLOTS) : null;
+		BarrelBakedModelCacheKey cacheKey = new BarrelBakedModelCacheKey(this, state, side, renderType, state == null ? barrelItem : null, woodName,
+				hasMainColor, hasAccentColor, isPacked, showsLocked, showsTier, state == null && flatTop, materials, materialTintColors, displayItems,
+				inaccessibleSlots);
+		List<BakedQuad> quads = BAKED_QUADS_CACHE.getIfPresent(cacheKey);
+		if (quads != null) {
+			return quads;
+		}
+		cacheKey = cacheKey.immutableCopy();
 
 		List<BakedQuad> ret = new ArrayList<>();
 
@@ -263,13 +269,13 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 		if (isPacked) {
 			addPartQuads(state, side, rand, ret, modelParts, BarrelModelPart.PACKED, renderType);
 		} else {
-			if (showsLocked(extraData)) {
+			if (showsLocked) {
 				addPartQuads(state, side, rand, ret, modelParts, BarrelModelPart.LOCKED, renderType);
 			}
 			addDisplayItemQuads(state, side, rand, ret, extraData, renderType);
 		}
 
-		BAKED_QUADS_CACHE.put(hash, ret);
+		BAKED_QUADS_CACHE.put(cacheKey, ret);
 
 		return ret;
 	}
@@ -431,76 +437,6 @@ public abstract class BarrelBakedModelBase implements IDynamicBakedModel {
 
 	private boolean showsTier(ModelData extraData) {
 		return extraData.has(SHOWS_TIER) && Boolean.TRUE.equals(extraData.get(SHOWS_TIER));
-	}
-
-	private int createHash(@Nullable BlockState state, @Nullable Direction side, ModelData data, @Nullable RenderType renderType) {
-		int hash;
-		if (state != null) {
-			hash = getInWorldBlockHash(state, data, renderType);
-		} else {
-			hash = getItemBlockHash();
-		}
-		hash = hash * 31 + (side == null ? 0 : side.get3DDataValue() + 1);
-		hash = getDisplayItemsHash(data, hash);
-		return hash;
-	}
-
-	private int getItemBlockHash() {
-		int hash = barrelItem.hashCode();
-		hash = hash * 31 + (barrelWoodName != null ? barrelWoodName.hashCode() + 1 : 0);
-		hash = hash * 31 + (barrelHasMainColor ? 1 : 0);
-		hash = hash * 31 + (barrelHasAccentColor ? 1 : 0);
-		hash = hash * 31 + (barrelIsPacked ? 1 : 0);
-		hash = hash * 31 + (barrelShowsTier ? 1 : 0);
-		hash = hash * 31 + (flatTop ? 1 : 0);
-		hash = hash * 31 + barrelMaterials.hashCode();
-		return hash;
-	}
-
-	protected int getInWorldBlockHash(BlockState state, ModelData data, @Nullable RenderType renderType) {
-		int hash = state.getBlock().hashCode();
-
-		hash = hash * 31 + (renderType == null ? 0 : renderType.hashCode());
-		// noinspection ConstantConditions
-		hash = hash * 31 + (data.has(WOOD_NAME) ? data.get(WOOD_NAME).hashCode() + 1 : 0);
-		hash = hash * 31 + (data.has(HAS_MAIN_COLOR) && Boolean.TRUE.equals(data.get(HAS_MAIN_COLOR)) ? 1 : 0);
-		hash = hash * 31 + (data.has(HAS_ACCENT_COLOR) && Boolean.TRUE.equals(data.get(HAS_ACCENT_COLOR)) ? 1 : 0);
-		hash = hash * 31 + (isPacked(data) ? 1 : 0);
-		hash = hash * 31 + (showsLocked(data) ? 1 : 0);
-		hash = hash * 31 + (showsTier(data) ? 1 : 0);
-		hash = hash * 31 + (Boolean.TRUE.equals(state.getValue(BarrelBlock.FLAT_TOP)) ? 1 : 0);
-		// noinspection ConstantConditions
-		hash = hash * 31 + (data.has(MATERIALS) ? data.get(MATERIALS).hashCode() : 0);
-		// noinspection ConstantConditions
-		hash = hash * 31 + (data.has(MATERIAL_TINT_COLORS) ? data.get(MATERIAL_TINT_COLORS).hashCode() : 0);
-		return hash;
-	}
-
-	private int getDisplayItemsHash(ModelData data, int hash) {
-		if (data.has(DISPLAY_ITEMS)) {
-			List<RenderInfo.DisplayItem> displayItems = data.get(DISPLAY_ITEMS);
-			// noinspection ConstantConditions
-			for (RenderInfo.DisplayItem displayItem : displayItems) {
-				hash = hash * 31 + getDisplayItemHash(displayItem);
-			}
-		}
-		if (data.has(INACCESSIBLE_SLOTS)) {
-			List<Integer> inaccessibleSlots = data.get(INACCESSIBLE_SLOTS);
-			// noinspection ConstantConditions
-			for (Integer inaccessibleSlot : inaccessibleSlots) {
-				hash = hash * 31 + inaccessibleSlot;
-			}
-		}
-		return hash;
-	}
-
-	private int getDisplayItemHash(RenderInfo.DisplayItem displayItem) {
-		int hash = displayItem.getRotation();
-		ItemStack stack = displayItem.getItem();
-		hash = hash * 31 + ItemStack.hashItemAndComponents(stack);
-		hash = hash * 31 + displayItem.getSlotIndex();
-		hash = hash * 31 + displayItem.getZOffset();
-		return hash;
 	}
 
 	private void addDisplayItemQuads(@Nullable BlockState state, @Nullable Direction side, RandomSource rand, List<BakedQuad> ret, ModelData data,
