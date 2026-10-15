@@ -4,9 +4,9 @@ import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.mojang.math.Transformation;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.client.renderer.block.dispatch.BlockModelRotation;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
 import net.minecraft.client.renderer.block.dispatch.ModelState;
 import net.minecraft.client.renderer.block.dispatch.Variant;
@@ -18,15 +18,17 @@ import net.minecraft.client.resources.model.UnbakedModel;
 import net.minecraft.client.resources.model.cuboid.CuboidModel;
 import net.minecraft.client.resources.model.cuboid.ItemTransforms;
 import net.minecraft.client.resources.model.geometry.QuadCollection;
+import net.minecraft.client.resources.model.geometry.UnbakedGeometry;
 import net.minecraft.client.resources.model.sprite.Material;
 import net.minecraft.client.resources.model.sprite.TextureSlots;
+import net.minecraft.core.Direction;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.context.ContextMap;
 import net.neoforged.neoforge.client.model.UnbakedModelLoader;
 import net.neoforged.neoforge.client.model.block.CustomUnbakedBlockStateModel;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.WoodStorageBlockBase;
-import org.joml.Quaternionfc;
+import org.joml.Matrix4fc;
 import org.jspecify.annotations.Nullable;
 
 import java.util.*;
@@ -34,7 +36,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public abstract class BarrelUnbakedModelBase implements UnbakedModel {
-	private static final Map<Integer, QuadCollection> BAKED_PART_MODELS = new ConcurrentHashMap<>();
+	private static final Map<BakedPartKey, QuadCollection> BAKED_PART_MODELS = new ConcurrentHashMap<>();
 	private static final String REFERENCE_PREFIX = "reference/";
 
 	public static void invalidateCache() {
@@ -129,8 +131,8 @@ public abstract class BarrelUnbakedModelBase implements UnbakedModel {
 		woodModels.forEach((woodName, partModels) -> {
 			ImmutableMap.Builder<BarrelModelPart, QuadCollection> partBuilder = ImmutableMap.builder();
 			partModels.forEach((part, model) -> {
-				int hash = getBakedModelHash(model, modelState, part);
-				QuadCollection quads = BAKED_PART_MODELS.computeIfAbsent(hash,
+				BakedPartKey key = new BakedPartKey(part, model.getTopGeometry(), textureDependencies(model), ModelStateKey.of(modelState));
+				QuadCollection quads = BAKED_PART_MODELS.computeIfAbsent(key,
 						h -> model.getTopGeometry().bake(findTopTextureSlots(model, baker), baker, modelState, model, ContextMap.EMPTY));
 				if (!quads.getAll().isEmpty()) {
 					partBuilder.put(part, quads);
@@ -185,47 +187,58 @@ public abstract class BarrelUnbakedModelBase implements UnbakedModel {
 		return woodDynamicBakingData;
 	}
 
-	@SuppressWarnings("java:S5803") // need to use textureMap to calculate hash based on it as well
-	private int getBakedModelHash(ResolvedModel model, ModelState modelTransform, BarrelModelPart part) {
-		int hash = part.hashCode();
+	private static List<Map<String, TextureSlots.SlotContents>> textureDependencies(ResolvedModel model) {
+		List<Map<String, TextureSlots.SlotContents>> textures = new ArrayList<>();
+		for (ResolvedModel current = model; current != null; current = current.parent()) {
+			textures.add(Map.copyOf(current.wrapped().textureSlots().values()));
+		}
+		return List.copyOf(textures);
+	}
 
-		hash = 31 * hash + getDepHash(model);
+	static final class BakedPartKey {
+		private final BarrelModelPart part;
+		private final UnbakedGeometry geometry;
+		private final List<Map<String, TextureSlots.SlotContents>> textures;
+		private final ModelStateKey modelState;
 
-		for (TextureSlots.SlotContents material : model.wrapped().textureSlots().values().values()) {
-			hash = 31 * hash + material.hashCode();
+		BakedPartKey(BarrelModelPart part, UnbakedGeometry geometry, List<Map<String, TextureSlots.SlotContents>> textures, ModelStateKey modelState) {
+			this.part = part;
+			this.geometry = geometry;
+			this.textures = List.copyOf(textures.stream().map(Map::copyOf).toList());
+			this.modelState = modelState;
 		}
 
-		Transformation transformation = modelTransform.transformation();
-		hash = 31 * hash + transformation.getMatrix().hashCode();
-		hash = 31 * hash + transformation.translation().hashCode();
-		hash = 31 * hash + robustHash(transformation.rightRotation());
-		hash = 31 * hash + robustHash(transformation.leftRotation());
-		hash = 31 * hash + transformation.scale().hashCode();
-		return hash;
+		@Override
+		public boolean equals(Object other) {
+			return other instanceof BakedPartKey key && part == key.part && geometry == key.geometry && textures.equals(key.textures)
+					&& modelState.equals(key.modelState);
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(part, System.identityHashCode(geometry), textures, modelState);
+		}
 	}
 
-	public static int robustHash(Quaternionfc q) {
-		long h = 1;
-		h = 31 * h + Float.floatToIntBits(q.w());
-		h = 31 * h + Float.floatToIntBits(q.x());
-		h = 31 * h + Float.floatToIntBits(q.y());
-		h = 31 * h + Float.floatToIntBits(q.z());
-		return Long.hashCode(h);
-	}
+	record ModelStateKey(List<List<Float>> matrices, boolean arbitraryRotation, boolean uvLocked) {
+		ModelStateKey {
+			matrices = List.copyOf(matrices.stream().map(List::copyOf).toList());
+		}
 
-	private int getDepHash(ResolvedModel model) {
-		int depHash = 0;
-		while (model != null && (model.wrapped() instanceof BarrelUnbakedModelBase || model.wrapped() instanceof CuboidModel)) {
-			if (model.wrapped() instanceof BarrelUnbakedModelBase barrelModel) {
-				if (barrelModel.parentLocation != null) {
-					depHash = 31 * depHash + barrelModel.parentLocation.hashCode();
-				}
-			} else if (model.wrapped() instanceof CuboidModel cuboidModel && cuboidModel.parent() != null) {
-				depHash = 31 * depHash + cuboidModel.parent().hashCode();
+		static ModelStateKey of(ModelState state) {
+			List<List<Float>> matrices = new ArrayList<>();
+			matrices.add(matrixValues(state.transformation().getMatrix()));
+			for (Direction direction : Direction.values()) {
+				matrices.add(matrixValues(state.faceTransformation(direction)));
+				matrices.add(matrixValues(state.inverseFaceTransformation(direction)));
 			}
-			model = model.parent();
+			return new ModelStateKey(matrices, state.mayApplyArbitraryRotation(), state instanceof BlockModelRotation.WithUvLock);
 		}
-		return depHash;
+
+		private static List<Float> matrixValues(Matrix4fc matrix) {
+			return List.of(matrix.m00(), matrix.m01(), matrix.m02(), matrix.m03(), matrix.m10(), matrix.m11(), matrix.m12(), matrix.m13(), matrix.m20(),
+					matrix.m21(), matrix.m22(), matrix.m23(), matrix.m30(), matrix.m31(), matrix.m32(), matrix.m33());
+		}
 	}
 
 	protected abstract BarrelBlockStateModelBase instantiateBlockStateModel(ModelBaker baker, Map<String, Map<BarrelModelPart, QuadCollection>> woodModelParts,
