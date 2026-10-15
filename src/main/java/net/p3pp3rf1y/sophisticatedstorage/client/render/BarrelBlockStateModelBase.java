@@ -86,7 +86,7 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 	private boolean flatTop = false;
 	private final Map<String, Map<DynamicBarrelBakingData.DynamicPart, DynamicBarrelBakingData>> woodDynamicBakingData;
 	private final Map<String, Map<BarrelModelPart, QuadCollection>> woodPartitionedModelParts;
-	private final Cache<Integer, QuadCollection> dynamicBakedModelCache = CacheBuilder.newBuilder().expireAfterAccess(1, TimeUnit.MINUTES).build();
+	private final Cache<DynamicModelKey, QuadCollection> dynamicBakedModelCache = CacheBuilder.newBuilder().expireAfterAccess(1, TimeUnit.MINUTES).build();
 
 	protected BarrelBlockStateModelBase(ModelBaker baker, Map<String, Map<BarrelModelPart, QuadCollection>> woodModelParts,
 			Map<String, Map<BarrelModelPart, TextureAtlasSprite>> particleIcons,
@@ -300,15 +300,15 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 		if (rendersUsingSplitModel) {
 			if (renderCore) {
 				addDynamicQuads(cutoutBuilder, translucentBuilder, materialSpriteData, materialTintColors,
-						getDynamicModel(woodName, bakingData, mats, DynamicBarrelBakingData.DynamicPart.CORE));
+						getDynamicModel(bakingData, mats, DynamicBarrelBakingData.DynamicPart.CORE));
 			}
 			if (renderTrim) {
 				addDynamicQuads(cutoutBuilder, translucentBuilder, materialSpriteData, materialTintColors,
-						getDynamicModel(woodName, bakingData, mats, DynamicBarrelBakingData.DynamicPart.TRIM));
+						getDynamicModel(bakingData, mats, DynamicBarrelBakingData.DynamicPart.TRIM));
 			}
 		} else {
 			addDynamicQuads(cutoutBuilder, translucentBuilder, materialSpriteData, materialTintColors,
-					getDynamicModel(woodName, bakingData, mats, DynamicBarrelBakingData.DynamicPart.WHOLE));
+					getDynamicModel(bakingData, mats, DynamicBarrelBakingData.DynamicPart.WHOLE));
 		}
 	}
 
@@ -341,15 +341,40 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 						quad.packedUV3(), quad.direction(), quad.materialInfo(), quad.bakedNormals(), BakedColors.of(tintColor));
 	}
 
-	private QuadCollection getDynamicModel(@Nullable String woodName, Map<DynamicBarrelBakingData.DynamicPart, DynamicBarrelBakingData> bakingData,
-			Map<String, Material> materials, DynamicBarrelBakingData.DynamicPart dynamicPart) {
-		int hash = Objects.hash(woodName, materials, dynamicPart.name());
-		QuadCollection bakedModel = dynamicBakedModelCache.getIfPresent(hash);
+	private QuadCollection getDynamicModel(Map<DynamicBarrelBakingData.DynamicPart, DynamicBarrelBakingData> bakingData, Map<String, Material> materials,
+			DynamicBarrelBakingData.DynamicPart dynamicPart) {
+		DynamicBarrelBakingData selectedData = bakingData.get(dynamicPart);
+		DynamicModelKey key = new DynamicModelKey(selectedData, materials);
+		QuadCollection bakedModel = dynamicBakedModelCache.getIfPresent(key);
 		if (bakedModel == null) {
-			bakedModel = compileAndBakeModel(materials, bakingData.get(dynamicPart));
-			dynamicBakedModelCache.put(hash, bakedModel);
+			bakedModel = compileAndBakeModel(key.materials(), selectedData);
+			dynamicBakedModelCache.put(key, bakedModel);
 		}
 		return bakedModel;
+	}
+
+	static final class DynamicModelKey {
+		private final DynamicBarrelBakingData bakingData;
+		private final Map<String, Material> materials;
+
+		DynamicModelKey(DynamicBarrelBakingData bakingData, Map<String, Material> materials) {
+			this.bakingData = bakingData;
+			this.materials = Map.copyOf(materials);
+		}
+
+		Map<String, Material> materials() {
+			return materials;
+		}
+
+		@Override
+		public boolean equals(Object other) {
+			return other instanceof DynamicModelKey key && bakingData == key.bakingData && materials.equals(key.materials);
+		}
+
+		@Override
+		public int hashCode() {
+			return 31 * System.identityHashCode(bakingData) + materials.hashCode();
+		}
 	}
 
 	private static BlockState getDefaultBlockState(Identifier blockName) {
@@ -393,14 +418,13 @@ public abstract class BarrelBlockStateModelBase implements DynamicBlockStateMode
 	}
 
 	private QuadCollection compileAndBakeModel(Map<String, Material> textures, DynamicBarrelBakingData bakingData) {
+		Map<String, Material> mergedTextures = new HashMap<>(textures);
 		bakingData.baseTextures().forEach((textureName, texture) -> {
-			if (!textures.containsKey(textureName)) {
-				textures.put(textureName, texture);
-			}
+			mergedTextures.putIfAbsent(textureName, texture);
 		});
 
 		TextureSlots.Data.Builder texturesBuilder = new TextureSlots.Data.Builder();
-		textures.forEach(texturesBuilder::addTexture);
+		mergedTextures.forEach(texturesBuilder::addTexture);
 		TextureSlots.Resolver resolver = new TextureSlots.Resolver();
 		resolver.addLast(texturesBuilder.build());
 
