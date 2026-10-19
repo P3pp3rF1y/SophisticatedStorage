@@ -85,7 +85,12 @@ public class StorageInputBlockEntity extends StorageIOBlockEntity {
 
 		@Override
 		public int extract(int slot, ItemResource itemResource, int amount, TransactionContext transaction) {
-			return itemResourceHandler.insert(slot, itemResource, amount, transaction);
+			return 0;
+		}
+
+		@Override
+		public int extract(ItemResource itemResource, int amount, TransactionContext transaction) {
+			return 0;
 		}
 	}
 }
