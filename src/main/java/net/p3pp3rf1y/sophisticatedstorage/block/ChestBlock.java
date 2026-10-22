@@ -339,7 +339,7 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 		normalizeDoubleChestControllerRegistration(level, pos, otherPos);
 	}
 
-	private static void normalizeDoubleChestControllerRegistration(Level level, BlockPos pos, BlockPos otherPos) {
+	public static void normalizeDoubleChestControllerRegistration(Level level, BlockPos pos, BlockPos otherPos) {
 		if (level.isClientSide()) {
 			return;
 		}
