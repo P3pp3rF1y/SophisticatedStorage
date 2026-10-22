@@ -6,10 +6,15 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.ContainerOpenersCounter;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.phys.AABB;
+
+import java.util.List;
 
 public abstract class SophisticatedOpenersCounter extends ContainerOpenersCounter {
 	private boolean isForPhysicalBlock = true;
+	private double maxInteractionRange;
 
 	public void setForPhysicalBlock(boolean isForPhysicalBlock) {
 		this.isForPhysicalBlock = isForPhysicalBlock;
@@ -27,11 +32,31 @@ public abstract class SophisticatedOpenersCounter extends ContainerOpenersCounte
 		}
 
 		openerCountChanged(level, pos, state, i, openCount);
+		maxInteractionRange = Math.max(player.getBlockReach(), maxInteractionRange);
+	}
+
+	@Override
+	public void decrementOpeners(Player player, Level level, BlockPos pos, BlockState state) {
+		super.decrementOpeners(player, level, pos, state);
+		if (getOpenerCount() == 0) {
+			maxInteractionRange = 0.0;
+		}
+	}
+
+	private List<Player> getPlayersWithContainerOpen(Level level, BlockPos pos) {
+		AABB searchBox = new AABB(pos).inflate(maxInteractionRange + 4.0);
+		return level.getEntities(EntityTypeTest.forClass(Player.class), searchBox, this::isOwnContainer);
 	}
 
 	@Override
 	public void recheckOpeners(Level level, BlockPos pos, BlockState state) {
-		int i = this.getOpenCount(level, pos);
+		List<Player> playersWithContainerOpen = getPlayersWithContainerOpen(level, pos);
+		maxInteractionRange = 0.0;
+		for (Player player : playersWithContainerOpen) {
+			maxInteractionRange = Math.max(player.getBlockReach(), maxInteractionRange);
+		}
+
+		int i = playersWithContainerOpen.size();
 		int j = this.openCount;
 		if (j != i) {
 			boolean flag = i != 0;
