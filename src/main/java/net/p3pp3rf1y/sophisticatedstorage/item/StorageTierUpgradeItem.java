@@ -289,15 +289,15 @@ public class StorageTierUpgradeItem extends ItemBase {
 			}
 
 			StorageBlockEntity upgradedBe = upgradeStorage(pos, level, state, be);
-			upgradedBe.tryToAddToController();
 			if (otherState != null && otherState.getValue(net.minecraft.world.level.block.ChestBlock.TYPE) != ChestType.SINGLE
 					&& state.getBlock() instanceof net.minecraft.world.level.block.ChestBlock) {
 				BlockPos otherPos = pos.relative(net.minecraft.world.level.block.ChestBlock.getConnectedDirection(state));
 				B otherBE = WorldHelper.getBlockEntity(level, otherPos, blockEntityClass()).orElse(null);
 				if (otherBE == null) {
+					upgradedBe.tryToAddToController();
 					return true;
 				}
-				upgradeStorage(otherPos, level, otherState, otherBE);
+				StorageBlockEntity otherUpgradedBe = upgradeStorage(otherPos, level, otherState, otherBE);
 				level.getBlockEntity(otherPos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get()).ifPresent(otherChestBE -> {
 					level.getBlockEntity(pos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get()).ifPresent(mainBE -> {
 						if (state.getValue(net.minecraft.world.level.block.ChestBlock.TYPE) == ChestType.LEFT) {
@@ -309,7 +309,11 @@ public class StorageTierUpgradeItem extends ItemBase {
 					WorldHelper.notifyBlockUpdate(otherChestBE);
 				});
 				level.getBlockState(otherPos).updateNeighbourShapes(level, otherPos, 3);
+				ChestBlock.normalizeDoubleChestControllerRegistration(level, pos, otherPos);
+				upgradedBe.invalidateCapabilities();
+				otherUpgradedBe.invalidateCapabilities();
 			}
+			upgradedBe.tryToAddToController();
 			return true;
 		}
 
