@@ -8,6 +8,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.TypedEntityData;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.p3pp3rf1y.sophisticatedcore.common.gui.SortBy;
 import net.p3pp3rf1y.sophisticatedcore.init.ModCoreDataComponents;
 import net.p3pp3rf1y.sophisticatedcore.inventory.ContainerContents;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.*;
@@ -87,6 +88,11 @@ public final class StorageItemLinkedStorageEndpointAdapter implements ILinkedSto
 	@Override
 	public ContainerContents copyCanonicalContents(ServerLevel level, ItemStack stack) {
 		return readContents(level, stack);
+	}
+
+	@Override
+	public SortBy getSortBy(ServerLevel level, ItemStack stack) {
+		return createCarrier(level, stack).getStorageWrapper().getSortBy();
 	}
 
 	@Override

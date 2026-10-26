@@ -4,6 +4,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.transfer.ResourceHandlerUtil;
+import net.p3pp3rf1y.sophisticatedcore.common.gui.SortBy;
 import net.p3pp3rf1y.sophisticatedcore.init.ModCoreDataComponents;
 import net.p3pp3rf1y.sophisticatedcore.inventory.ContainerContents;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.*;
@@ -43,6 +44,11 @@ public class StorageLinkedStorageEndpointAdapter implements ILinkedStorageEndpoi
 	@Override
 	public void bindEndpoint(ServerLevel level, ILinkedStorageBlockEndpoint endpoint, LinkedStorageEndpointData endpointData) {
 		requireCandidate(endpoint).bindLinkedStorage(level, endpointData);
+	}
+
+	@Override
+	public SortBy getSortBy(ServerLevel level, ILinkedStorageBlockEndpoint endpoint) {
+		return requireCandidate(endpoint).getStorageWrapper().getSortBy();
 	}
 
 	@Override
