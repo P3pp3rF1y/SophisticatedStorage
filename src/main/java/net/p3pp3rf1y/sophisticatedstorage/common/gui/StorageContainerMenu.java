@@ -17,6 +17,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.ISyncedContainer;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.SophisticatedMenuProvider;
+import net.p3pp3rf1y.sophisticatedcore.common.gui.SortBy;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.StorageContainerMenuBase;
 import net.p3pp3rf1y.sophisticatedcore.inventory.ContainerContents;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.ClientLinkedStorageContents;
@@ -108,9 +109,10 @@ public class StorageContainerMenu extends StorageContainerMenuBase<IStorageWrapp
 		int inventorySlots = buffer.readVarInt();
 		int upgradeSlots = buffer.readVarInt();
 		int columnsTaken = buffer.readVarInt();
+		SortBy sortBy = buffer.readEnum(SortBy.class);
 		var factoryId = buffer.readIdentifier();
 		CompoundTag virtualCarrier = Objects.requireNonNull(buffer.readNbt());
-		ClientLinkedStorageContents.updateContents(endpoint.groupId(), revision, contents, groupName, inventorySlots, upgradeSlots, columnsTaken);
+		ClientLinkedStorageContents.updateContents(endpoint.groupId(), revision, contents, groupName, inventorySlots, upgradeSlots, columnsTaken, sortBy);
 		ClientLinkedStorageContents.getContents(endpoint.groupId()).ifPresent(
 				linkedContents -> WorldHelper.getBlockEntity(player.level(), pos, StorageBlockEntity.class).ifPresent(storageBlockEntity -> storageBlockEntity
 						.bindClientLinkedStorage(endpoint, endpointRole, linkedContents, factoryId, virtualCarrier, groupName, inventorySlots, upgradeSlots)));

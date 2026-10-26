@@ -690,6 +690,7 @@ public abstract class StorageBlockEntity extends BlockEntity
 		buffer.writeVarInt(profile.get().inventorySlots());
 		buffer.writeVarInt(profile.get().upgradeSlots());
 		buffer.writeVarInt(profile.get().columnsTaken());
+		buffer.writeEnum(contents.get().getSortBy());
 		buffer.writeIdentifier(manager.getHostDescriptor(linkedStorageEndpoint.groupId()).orElseThrow().factoryId());
 		FriendlyByteBuf.writeNbt(buffer, virtualCarrier.get());
 	}

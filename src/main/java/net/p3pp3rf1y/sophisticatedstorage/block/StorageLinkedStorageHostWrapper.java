@@ -8,6 +8,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.p3pp3rf1y.sophisticatedcore.common.gui.SortBy;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.ILinkedStorageContents;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.ILinkedStorageVirtualHost;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageSnapshotProfile;
@@ -80,6 +81,16 @@ public class StorageLinkedStorageHostWrapper extends StorageWrapperBase implemen
 	@Override
 	public int getColumnsTaken() {
 		return contents.getColumnsTaken();
+	}
+
+	@Override
+	public SortBy getSortBy() {
+		return contents.getSortBy();
+	}
+
+	@Override
+	public void setSortBy(SortBy sortBy) {
+		contents.setSortBy(sortBy);
 	}
 
 	@Override
