@@ -40,6 +40,12 @@ public class StorageLinkedStorageHostWrapper extends StorageWrapper implements I
 		contents.setContents(saveCanonicalData(new CompoundTag()));
 	}
 
+	@Override
+	protected void saveSortBy() {
+		contents.contents().putString(SORT_BY_TAG, getSortBy().getSerializedName());
+		contents.markChanged();
+	}
+
 	public static void applyClientSnapshotProfile(CompoundTag virtualCarrier, Component groupName, int inventorySlots, int upgradeSlots) {
 		virtualCarrier.putString(DISPLAY_NAME_TAG, groupName.getString());
 		virtualCarrier.putInt(INVENTORY_SLOTS_TAG, inventorySlots);
