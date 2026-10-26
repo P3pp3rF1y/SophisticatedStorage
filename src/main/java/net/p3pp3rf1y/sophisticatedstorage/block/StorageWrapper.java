@@ -520,6 +520,10 @@ public abstract class StorageWrapper implements IStorageWrapper, ILinkedStorageE
 			return;
 		}
 		this.sortBy = sortBy;
+		saveSortBy();
+	}
+
+	protected void saveSortBy() {
 		save();
 	}
 
