@@ -19,6 +19,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.ISyncedContainer;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.SophisticatedMenuProvider;
+import net.p3pp3rf1y.sophisticatedcore.common.gui.SortBy;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.StorageContainerMenuBase;
 import net.p3pp3rf1y.sophisticatedcore.inventory.ContainerContents;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.ClientLinkedStorageContents;
@@ -119,9 +120,10 @@ public class StorageContainerMenu extends StorageContainerMenuBase<IStorageWrapp
 		int inventorySlots = buffer.readVarInt();
 		int upgradeSlots = buffer.readVarInt();
 		int columnsTaken = buffer.readVarInt();
+		SortBy sortBy = buffer.readEnum(SortBy.class);
 		Identifier factoryId = buffer.readIdentifier();
 		CompoundTag virtualCarrier = Objects.requireNonNull(buffer.readNbt());
-		ClientLinkedStorageContents.updateContents(endpoint.groupId(), revision, contents, groupName, inventorySlots, upgradeSlots, columnsTaken);
+		ClientLinkedStorageContents.updateContents(endpoint.groupId(), revision, contents, groupName, inventorySlots, upgradeSlots, columnsTaken, sortBy);
 		WorldHelper.getBlockEntity(player.level(), pos, StorageBlockEntity.class)
 				.ifPresent(storage -> storage.bindClientLinkedStorage(endpoint, endpointRole, factoryId, virtualCarrier));
 		ClientLinkedStorageContents.removeUpdatedGroup(endpoint.groupId());
@@ -150,8 +152,8 @@ public class StorageContainerMenu extends StorageContainerMenuBase<IStorageWrapp
 				: LinkedStorageEndpointRole.SECONDARY;
 		return new LinkedStorageSnapshot(endpoint, endpointRole, manager.getRevision(endpoint.groupId()), contents.contents().copy(),
 				host.getLinkedStorageDisplayName().orElseGet(hostWrapper::getDisplayName), hostWrapper.getInventoryHandler().size(),
-				hostWrapper.getUpgradeHandler().size(), hostWrapper.getColumnsTaken(), manager.getHostDescriptor(endpoint.groupId()).orElseThrow().factoryId(),
-				virtualCarrier);
+				hostWrapper.getUpgradeHandler().size(), hostWrapper.getColumnsTaken(), contents.getSortBy(),
+				manager.getHostDescriptor(endpoint.groupId()).orElseThrow().factoryId(), virtualCarrier);
 	}
 
 	private static void writeLinkedStorageSnapshot(FriendlyByteBuf buffer, Player player, LinkedStorageSnapshot snapshot) {
@@ -165,12 +167,13 @@ public class StorageContainerMenu extends StorageContainerMenuBase<IStorageWrapp
 		buffer.writeVarInt(snapshot.inventorySlots());
 		buffer.writeVarInt(snapshot.upgradeSlots());
 		buffer.writeVarInt(snapshot.columnsTaken());
+		buffer.writeEnum(snapshot.sortBy());
 		buffer.writeIdentifier(snapshot.factoryId());
 		FriendlyByteBuf.writeNbt(buffer, snapshot.virtualCarrier());
 	}
 
 	private record LinkedStorageSnapshot(LinkedStorageEndpointData endpoint, LinkedStorageEndpointRole endpointRole, long revision, ContainerContents contents,
-			Component groupName, int inventorySlots, int upgradeSlots, int columnsTaken, Identifier factoryId, CompoundTag virtualCarrier) {
+			Component groupName, int inventorySlots, int upgradeSlots, int columnsTaken, SortBy sortBy, Identifier factoryId, CompoundTag virtualCarrier) {
 	}
 
 	@Override
