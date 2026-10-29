@@ -7,6 +7,7 @@ import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.ClientLinkedStorageContents;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.RequestLinkedStorageContentsPayload;
+import net.p3pp3rf1y.sophisticatedcore.network.ItemStackReference;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
 
 import javax.annotation.Nullable;
@@ -19,18 +20,24 @@ public class StorageItemClient {
 
 	@Nullable
 	public static TooltipComponent getTooltipImage(ItemStack stack) {
+		return getTooltipImage(stack, stack);
+	}
+
+	@Nullable
+	public static TooltipComponent getTooltipImage(ItemStack stack, ItemStack contextStack) {
 		Minecraft mc = Minecraft.getInstance();
 		Optional<LinkedStorageTooltip> linkedStorageTooltip = StorageBlockEntity.getLinkedStorageEndpointData(stack)
 				.flatMap(endpoint -> StorageBlockEntity.getLinkedStorageEndpointRole(stack).map(role -> new LinkedStorageTooltip(role, endpoint.groupId())));
 		if (!Screen.hasShiftDown() && (mc.player == null || mc.player.containerMenu.getCarried().isEmpty())) {
 			linkedStorageTooltip.filter(
 					tooltip -> mc.player != null && ClientLinkedStorageContents.shouldRequestSnapshot(tooltip.groupId(), mc.player.level().getGameTime()))
-					.ifPresent(tooltip -> PacketDistributor.sendToServer(new RequestLinkedStorageContentsPayload(tooltip.groupId(),
-							ClientLinkedStorageContents.getRevision(tooltip.groupId()).orElse(-1L))));
+					.ifPresent(tooltip -> ItemStackReference.find(mc.player, contextStack)
+							.ifPresent(reference -> PacketDistributor.sendToServer(new RequestLinkedStorageContentsPayload(tooltip.groupId(),
+									ClientLinkedStorageContents.getRevision(tooltip.groupId()).orElse(-1L), reference))));
 			return linkedStorageTooltip.<TooltipComponent>map(tooltip -> tooltip).orElse(null);
 		}
 		if (Screen.hasShiftDown() || (mc.player != null && !mc.player.containerMenu.getCarried().isEmpty())) {
-			return new StorageContentsTooltip(stack, linkedStorageTooltip.orElse(null));
+			return new StorageContentsTooltip(stack, linkedStorageTooltip.orElse(null), contextStack);
 		}
 		return null;
 	}
