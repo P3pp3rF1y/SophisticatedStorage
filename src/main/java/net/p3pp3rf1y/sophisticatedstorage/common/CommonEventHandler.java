@@ -153,7 +153,15 @@ public class CommonEventHandler {
 		Level level = player.level();
 		BlockPos pos = event.getPos();
 		WorldHelper.getBlockEntity(level, pos, WoodStorageBlockEntity.class).ifPresent(wbe -> {
-			if (wbe.isPacked() || Boolean.TRUE.equals(Config.COMMON.dropPacked.get())) {
+			WoodStorageBlockEntity contentsOwner = wbe;
+			if (wbe instanceof ChestBlockEntity chest) {
+				ChestBlockEntity mainChest = chest.getMainChestBlockEntity();
+				if (mainChest != null) {
+					contentsOwner = mainChest;
+				}
+			}
+
+			if (!contentsOwner.shouldDropContents() || Boolean.TRUE.equals(Config.COMMON.dropPacked.get())) {
 				return;
 			}
 
