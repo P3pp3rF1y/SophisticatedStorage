@@ -28,9 +28,6 @@ import net.minecraftforge.fml.DistExecutor;
 import net.p3pp3rf1y.sophisticatedcore.api.IStashStorageItem;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.TranslationHelper;
-import net.p3pp3rf1y.sophisticatedcore.linkedstorage.ClientLinkedStorageContents;
-import net.p3pp3rf1y.sophisticatedcore.network.PacketHandler;
-import net.p3pp3rf1y.sophisticatedcore.network.RequestLinkedStorageContentsMessage;
 import net.p3pp3rf1y.sophisticatedcore.settings.memory.MemorySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 import net.p3pp3rf1y.sophisticatedstorage.block.ItemContentsStorage;
@@ -92,17 +89,7 @@ public class ShulkerBoxItem extends StorageBlockItem implements IStashStorageIte
 
 	@Nullable
 	private static TooltipComponent getTooltipImage(ItemStack stack, Minecraft minecraft) {
-		Optional<LinkedStorageTooltip> linkedTooltip = StorageBlockEntity.getLinkedStorageEndpointData(stack)
-				.flatMap(endpoint -> StorageBlockEntity.getLinkedStorageEndpointRole(stack).map(role -> new LinkedStorageTooltip(role, endpoint.groupId())));
-		if (!Screen.hasShiftDown() && (minecraft.player == null || minecraft.player.containerMenu.getCarried().isEmpty())) {
-			linkedTooltip
-					.filter(tooltip -> minecraft.player != null
-							&& ClientLinkedStorageContents.shouldRequestSnapshot(tooltip.groupId(), minecraft.player.level().getGameTime()))
-					.ifPresent(tooltip -> PacketHandler.INSTANCE.sendToServer(new RequestLinkedStorageContentsMessage(tooltip.groupId(),
-							ClientLinkedStorageContents.getRevision(tooltip.groupId()).orElse(-1L))));
-			return linkedTooltip.orElse(null);
-		}
-		return new StorageContentsTooltip(stack, linkedTooltip.orElse(null));
+		return StorageItemClient.getTooltipImage(stack);
 	}
 
 	@Override

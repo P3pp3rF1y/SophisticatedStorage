@@ -1,11 +1,13 @@
 package net.p3pp3rf1y.sophisticatedstorage.client.render;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.event.level.LevelEvent;
 import net.p3pp3rf1y.sophisticatedcore.client.render.ClientStorageContentsTooltipBase;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.ClientLinkedStorageContents;
+import net.p3pp3rf1y.sophisticatedcore.network.ItemStackReference;
 import net.p3pp3rf1y.sophisticatedcore.network.PacketHandler;
 import net.p3pp3rf1y.sophisticatedcore.network.RequestLinkedStorageContentsMessage;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageBlockEntity;
@@ -21,6 +23,7 @@ import java.util.UUID;
 
 public class ClientStorageContentsTooltip extends ClientStorageContentsTooltipBase {
 	private final ItemStack storageItem;
+	private final ItemStack contextStack;
 	@Nullable
 	private final ClientLinkedStorageTooltip linkedStorageTooltip;
 
@@ -44,6 +47,7 @@ public class ClientStorageContentsTooltip extends ClientStorageContentsTooltipBa
 
 	public ClientStorageContentsTooltip(StorageContentsTooltip tooltip) {
 		storageItem = tooltip.getStorageItem();
+		contextStack = tooltip.contextStack();
 		LinkedStorageTooltip linkedStorageTooltip = tooltip.linkedStorageTooltip();
 		this.linkedStorageTooltip = linkedStorageTooltip == null ? null : new ClientLinkedStorageTooltip(linkedStorageTooltip);
 	}
@@ -60,9 +64,13 @@ public class ClientStorageContentsTooltip extends ClientStorageContentsTooltipBa
 
 	@Override
 	protected void sendInventorySyncRequest(UUID uuid) {
-		StorageBlockEntity.getLinkedStorageEndpointData(storageItem).ifPresentOrElse(
-				endpoint -> PacketHandler.INSTANCE.sendToServer(
-						new RequestLinkedStorageContentsMessage(endpoint.groupId(), ClientLinkedStorageContents.getRevision(endpoint.groupId()).orElse(-1L))),
-				() -> StoragePacketHandler.INSTANCE.sendToServer(new RequestStorageContentsMessage(uuid)));
+		if (Minecraft.getInstance().player == null) {
+			return;
+		}
+		ItemStackReference.find(Minecraft.getInstance().player, contextStack)
+				.ifPresent(reference -> StorageBlockEntity.getLinkedStorageEndpointData(storageItem).ifPresentOrElse(
+						endpoint -> PacketHandler.INSTANCE.sendToServer(new RequestLinkedStorageContentsMessage(endpoint.groupId(),
+								ClientLinkedStorageContents.getRevision(endpoint.groupId()).orElse(-1L), reference)),
+						() -> StoragePacketHandler.INSTANCE.sendToServer(new RequestStorageContentsMessage(uuid, reference))));
 	}
 }
