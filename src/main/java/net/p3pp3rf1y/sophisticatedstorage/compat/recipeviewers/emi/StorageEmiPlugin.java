@@ -13,6 +13,7 @@ import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.widget.Bounds;
 import dev.emi.emi.api.widget.WidgetHolder;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -75,7 +76,9 @@ public class StorageEmiPlugin implements EmiPlugin {
 	@Override
 	public void register(EmiRegistry registry) {
 		registerGuiHandlers(registry);
-		registerRecipes(registry);
+		EmiCraftingRecipeHandler craftingRecipeHandler = new EmiCraftingRecipeHandler();
+		registerRecipes(registry, craftingRecipeHandler);
+		registry.addRecipeHandler(MenuType.CRAFTING, craftingRecipeHandler);
 		registerDefaultComparisons(registry);
 		registerRecipeHandlers(registry);
 		registerWorkstations(registry);
@@ -114,7 +117,7 @@ public class StorageEmiPlugin implements EmiPlugin {
 		screen.getSortButtonsRectangle().ifPresent(r -> consumer.accept(new Bounds(r.getX(), r.getY(), r.getWidth(), r.getHeight())));
 	}
 
-	private void registerRecipes(EmiRegistry registry) {
+	private void registerRecipes(EmiRegistry registry, EmiCraftingRecipeHandler craftingRecipeHandler) {
 		Map<BlockItem, PropertyBasedSubtypeInterpreter> subtypeInterpreters = getSubtypeInterpreters();
 		IRecipeViewerDisplayCatalog catalog = createCatalog(subtypeInterpreters);
 		Set<ResourceLocation> craftingRecipeIds = catalog.getCraftingRecipes().stream().map(RecipeHolder::id).collect(Collectors.toSet());
@@ -122,12 +125,27 @@ public class StorageEmiPlugin implements EmiPlugin {
 				&& (catalog.replacesCraftingRecipe(recipe.getBackingRecipe()) || craftingRecipeIds.contains(recipe.getBackingRecipe().id())));
 
 		catalog.getGroupedCraftingSpecs().stream().flatMap(spec -> spec.getAllDisplays().stream())
-				.flatMap(recipeHolder -> GroupedCraftingEmiRecipe.ofGroupedUsageAndFocusedRecipes(recipeHolder).stream()).forEach(registry::addRecipe);
+				.flatMap(recipeHolder -> GroupedCraftingEmiRecipe.ofGroupedUsageAndFocusedRecipes(recipeHolder).stream()).forEach(recipe -> {
+					craftingRecipeHandler.addRecipe(recipe);
+					registry.addRecipe(recipe);
+				});
 		catalog.getCraftingRecipes().stream().filter(recipeHolder -> !catalog.replacesCraftingRecipe(recipeHolder))
-				.flatMap(recipeHolder -> wrapSyntheticCraftingRecipe(recipeHolder).stream()).forEach(registry::addRecipe);
+				.flatMap(recipeHolder -> wrapSyntheticCraftingRecipe(recipeHolder).stream())
+				.forEach(recipe -> registerSyntheticCraftingRecipe(registry, craftingRecipeHandler, recipe));
 
-		catalog.getCraftingSpecs().stream().flatMap(spec -> CraftingSpecEmiRecipe.ofGroupedUsageAndFocusedRecipes(spec).stream()).forEach(registry::addRecipe);
+		catalog.getCraftingSpecs().stream().flatMap(spec -> CraftingSpecEmiRecipe.ofGroupedUsageAndFocusedRecipes(spec).stream()).forEach(recipe -> {
+			craftingRecipeHandler.addRecipe(recipe);
+			registry.addRecipe(recipe);
+		});
 
+	}
+
+	private static void registerSyntheticCraftingRecipe(EmiRegistry registry, EmiCraftingRecipeHandler craftingRecipeHandler, EmiRecipe recipe) {
+		if (recipe instanceof SyntheticCraftingRecipe syntheticRecipe) {
+			craftingRecipeHandler.addRecipe(syntheticRecipe, syntheticRecipe.shapeless, syntheticRecipe.width, syntheticRecipe.displayInputSlots,
+					syntheticRecipe.output.getItemStack());
+		}
+		registry.addRecipe(recipe);
 	}
 
 	private static IRecipeViewerDisplayCatalog createCatalog(Map<BlockItem, PropertyBasedSubtypeInterpreter> subtypeInterpreters) {
@@ -211,16 +229,21 @@ public class StorageEmiPlugin implements EmiPlugin {
 	private static class SyntheticCraftingRecipe extends BasicEmiRecipe {
 		private final RecipeHolder<CraftingRecipe> recipeHolder;
 		private final List<EmiIngredient> displayInputs;
+		private final List<List<ItemStack>> displayInputSlots;
 		private final EmiStack output;
 		private final boolean shapeless;
+		private final int width;
 
 		private SyntheticCraftingRecipe(ResourceLocation id, RecipeHolder<CraftingRecipe> recipeHolder, List<EmiIngredient> displayInputs,
 				IntPredicate inputIndexFilter, boolean indexOutput) {
 			super(VanillaEmiRecipeCategories.CRAFTING, id.withPath(path -> path.startsWith("/") ? path : "/" + path), 118, 54);
 			this.recipeHolder = recipeHolder;
 			this.displayInputs = displayInputs;
+			displayInputSlots = displayInputs.stream().map(EmiIngredient::getEmiStacks).map(stacks -> stacks.stream().map(EmiStack::getItemStack).toList())
+					.toList();
 			output = EmiStack.of(ClientRecipeHelper.getResultItem(recipeHolder.value()));
 			shapeless = recipeHolder.value() instanceof ShapelessRecipe;
+			width = shapeless ? displayInputs.size() : ((net.minecraft.world.item.crafting.ShapedRecipe) recipeHolder.value()).getWidth();
 			for (int inputIndex = 0; inputIndex < displayInputs.size(); inputIndex++) {
 				if (inputIndexFilter.test(inputIndex)) {
 					inputs.add(displayInputs.get(inputIndex));
@@ -246,6 +269,12 @@ public class StorageEmiPlugin implements EmiPlugin {
 		@Override
 		public RecipeHolder<?> getBackingRecipe() {
 			return recipeHolder;
+		}
+
+		@Override
+		public boolean supportsRecipeTree() {
+			// Lookup indexes intentionally omit broad inputs or outputs; the handler owns the complete fill view.
+			return false;
 		}
 	}
 
