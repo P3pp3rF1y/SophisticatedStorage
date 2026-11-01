@@ -681,7 +681,7 @@ public abstract class StorageBlockEntity extends BlockEntity
 	}
 
 	public boolean isLinkedStorageCandidate() {
-		if (isLinked() || this instanceof WoodStorageBlockEntity woodStorageBlockEntity && woodStorageBlockEntity.isPacked()) {
+		if (this instanceof WoodStorageBlockEntity woodStorageBlockEntity && woodStorageBlockEntity.isPacked()) {
 			return false;
 		}
 		return this instanceof ShulkerBoxBlockEntity || this instanceof BarrelBlockEntity
@@ -858,7 +858,15 @@ public abstract class StorageBlockEntity extends BlockEntity
 
 	void onLinkedStorageEndpointLinked() {
 		setChanged();
-		reregisterWithController();
+		if (isLinked()) {
+			getControllerPos().ifPresent(controllerPos -> {
+				removeFromController();
+				setNotLinked();
+				linkToController(controllerPos);
+			});
+		} else {
+			reregisterWithController();
+		}
 		refreshLinkedStorageState();
 	}
 
@@ -977,9 +985,6 @@ public abstract class StorageBlockEntity extends BlockEntity
 
 	@Override
 	public void linkToController(BlockPos controllerPos) {
-		if (isLinkedStorage()) {
-			return;
-		}
 		if (getControllerPos().isPresent()) {
 			return;
 		}
