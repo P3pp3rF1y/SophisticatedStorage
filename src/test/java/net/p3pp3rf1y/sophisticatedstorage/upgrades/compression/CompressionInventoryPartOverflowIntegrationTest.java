@@ -16,6 +16,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -26,7 +27,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.*;
 
-class CompressionInventoryPartOverflowTest {
+class CompressionInventoryPartOverflowIntegrationTest {
 	private MockedStatic<RecipeHelper> recipes;
 
 	@BeforeEach
@@ -172,6 +173,14 @@ class CompressionInventoryPartOverflowTest {
 				contents.setStackInSlot(invocation.getArgument(0), invocation.getArgument(1));
 				return null;
 			}).when(inventory).setSlotStack(anyInt(), any(ItemStack.class));
+			when(inventory.getSlotTracker()).thenReturn(tracker);
+			doAnswer(invocation -> {
+				Map<Integer, ItemStack> updates = invocation.getArgument(0);
+				Set<Integer> affected = invocation.getArgument(1);
+				updates.forEach(contents::setStackInSlot);
+				affected.forEach(slot -> tracker.removeAndSetSlotIndexes(inventory, slot, inventory.getStackInSlot(slot)));
+				return null;
+			}).when(inventory).setSlotStacks(anyMap(), anySet());
 			when(inventory.getStackInSlot(anyInt())).thenAnswer(invocation -> part.getStackInSlot(invocation.getArgument(0), contents::getStackInSlot));
 			when(inventory.getStackLimit(anyInt(), any(ItemStack.class)))
 					.thenAnswer(invocation -> part.getStackLimit(invocation.getArgument(0), invocation.getArgument(1)));
@@ -190,7 +199,7 @@ class CompressionInventoryPartOverflowTest {
 		private ItemStack insert(int slot, ItemStack stack, boolean simulate) {
 			ItemStack remainder = part.insertItem(slot, stack, simulate, contents::insertItem);
 			if (!simulate) {
-				tracker.refreshSlotIndexesFrom(inventory);
+				tracker.removeAndSetSlotIndexes(inventory, slot, inventory.getStackInSlot(slot));
 			}
 			return remainder;
 		}
