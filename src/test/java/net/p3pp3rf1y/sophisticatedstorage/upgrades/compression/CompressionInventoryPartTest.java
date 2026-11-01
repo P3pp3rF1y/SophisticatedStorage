@@ -1,30 +1,19 @@
 package net.p3pp3rf1y.sophisticatedstorage.upgrades.compression;
 
-import net.minecraft.SharedConstants;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.Bootstrap;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.p3pp3rf1y.sophisticatedcore.inventory.ISlotTracker;
 import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryHandler;
 import net.p3pp3rf1y.sophisticatedcore.settings.memory.MemorySettingsCategory;
-import net.p3pp3rf1y.sophisticatedcore.util.MathHelper;
-import net.p3pp3rf1y.sophisticatedcore.util.RecipeHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.SlotRange;
-import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import java.util.*;
@@ -36,110 +25,11 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
-public class CompressionInventoryPartTest {
-	private static MockedStatic<RecipeHelper> recipeHelperMock;
-	private static MockedStatic<SophisticatedStorage> ss;
-
-	@BeforeAll
-	public static void setup() {
-		SharedConstants.tryDetectVersion();
-		Bootstrap.bootStrap();
-
-		recipeHelperMock = Mockito.mockStatic(RecipeHelper.class);
-
-		recipeHelperMock.when(() -> RecipeHelper.getCompactingResult(stackOf(Items.IRON_NUGGET), eq(RecipeHelper.CompactingShape.THREE_BY_THREE_UNCRAFTABLE)))
-				.thenReturn(AccessHelper.initCompactingResult(new ItemStack(Items.IRON_INGOT), Collections.emptyList()));
-		recipeHelperMock.when(() -> RecipeHelper.getCompactingResult(stackOf(Items.IRON_INGOT), eq(RecipeHelper.CompactingShape.THREE_BY_THREE_UNCRAFTABLE)))
-				.thenReturn(AccessHelper.initCompactingResult(new ItemStack(Items.IRON_BLOCK), Collections.emptyList()));
-
-		recipeHelperMock.when(() -> RecipeHelper.getItemCompactingShapes(any(ItemStack.class))).thenReturn(Set.of(RecipeHelper.CompactingShape.NONE));
-		recipeHelperMock.when(() -> RecipeHelper.getItemCompactingShapes(stackOf(Items.IRON_NUGGET)))
-				.thenReturn(Set.of(RecipeHelper.CompactingShape.THREE_BY_THREE_UNCRAFTABLE));
-		recipeHelperMock.when(() -> RecipeHelper.getItemCompactingShapes(stackOf(Items.IRON_INGOT)))
-				.thenReturn(Set.of(RecipeHelper.CompactingShape.THREE_BY_THREE_UNCRAFTABLE));
-
-		recipeHelperMock.when(() -> RecipeHelper.getUncompactingResult(any(ItemStack.class))).thenReturn(RecipeHelper.UncompactingResult.EMPTY);
-		recipeHelperMock.when(() -> RecipeHelper.getUncompactingResult(stackOf(Items.IRON_BLOCK)))
-				.thenReturn(new RecipeHelper.UncompactingResult(new ItemStack(Items.IRON_INGOT), RecipeHelper.CompactingShape.THREE_BY_THREE_UNCRAFTABLE));
-		recipeHelperMock.when(() -> RecipeHelper.getUncompactingResult(stackOf(Items.IRON_INGOT)))
-				.thenReturn(new RecipeHelper.UncompactingResult(new ItemStack(Items.IRON_NUGGET), RecipeHelper.CompactingShape.THREE_BY_THREE_UNCRAFTABLE));
-
-		recipeHelperMock.when(() -> RecipeHelper.getCompactingResult(stackOf(Items.QUARTZ), eq(RecipeHelper.CompactingShape.TWO_BY_TWO_UNCRAFTABLE)))
-				.thenReturn(AccessHelper.initCompactingResult(new ItemStack(Items.QUARTZ_BLOCK), Collections.emptyList()));
-		recipeHelperMock.when(() -> RecipeHelper.getCompactingResult(stackOf(Items.QUARTZ_BLOCK), eq(RecipeHelper.CompactingShape.THREE_BY_THREE_UNCRAFTABLE)))
-				.thenReturn(AccessHelper.initCompactingResult(new ItemStack(Items.STICK), Collections.emptyList()));
-		recipeHelperMock.when(() -> RecipeHelper.getCompactingResult(stackOf(Items.STICK), eq(RecipeHelper.CompactingShape.THREE_BY_THREE_UNCRAFTABLE)))
-				.thenReturn(AccessHelper.initCompactingResult(new ItemStack(Items.DEAD_BUSH), Collections.emptyList()));
-
-		recipeHelperMock.when(() -> RecipeHelper.getItemCompactingShapes(stackOf(Items.QUARTZ)))
-				.thenReturn(Set.of(RecipeHelper.CompactingShape.TWO_BY_TWO_UNCRAFTABLE));
-		recipeHelperMock.when(() -> RecipeHelper.getItemCompactingShapes(stackOf(Items.QUARTZ_BLOCK)))
-				.thenReturn(Set.of(RecipeHelper.CompactingShape.THREE_BY_THREE_UNCRAFTABLE));
-		recipeHelperMock.when(() -> RecipeHelper.getItemCompactingShapes(stackOf(Items.STICK)))
-				.thenReturn(Set.of(RecipeHelper.CompactingShape.THREE_BY_THREE_UNCRAFTABLE));
-
-		recipeHelperMock.when(() -> RecipeHelper.getUncompactingResult(stackOf(Items.DEAD_BUSH)))
-				.thenReturn(new RecipeHelper.UncompactingResult(new ItemStack(Items.STICK), RecipeHelper.CompactingShape.THREE_BY_THREE_UNCRAFTABLE));
-		recipeHelperMock.when(() -> RecipeHelper.getUncompactingResult(stackOf(Items.STICK)))
-				.thenReturn(new RecipeHelper.UncompactingResult(new ItemStack(Items.QUARTZ_BLOCK), RecipeHelper.CompactingShape.THREE_BY_THREE_UNCRAFTABLE));
-		recipeHelperMock.when(() -> RecipeHelper.getUncompactingResult(stackOf(Items.QUARTZ_BLOCK)))
-				.thenReturn(new RecipeHelper.UncompactingResult(new ItemStack(Items.QUARTZ), RecipeHelper.CompactingShape.TWO_BY_TWO_UNCRAFTABLE));
-
-		ss = Mockito.mockStatic(SophisticatedStorage.class);
-		ss.when(() -> SophisticatedStorage.getRL(anyString())).thenAnswer(i -> new ResourceLocation(i.getArgument(0)));
-	}
-
-	private static ItemStack stackOf(Item item) {
-		return argThat(stack -> stack.getItem() == item);
-	}
+public class CompressionInventoryPartTest extends CompressionInventoryPartTestSupport {
 
 	@BeforeEach
 	public void testSetup() throws Exception {
 		MockitoAnnotations.openMocks(this).close();
-	}
-
-	@AfterAll
-	public static void tearDown() {
-		recipeHelperMock.close();
-		ss.close();
-	}
-
-	private InventoryHandler getFilledInventoryHandler(Map<Integer, ItemStack> slotStacks, int baseSlotLimit) {
-		InventoryHandler inventoryHandler = Mockito.mock(InventoryHandler.class);
-		ISlotTracker slotTracker = Mockito.mock(ISlotTracker.class);
-		when(inventoryHandler.getSlotTracker()).thenReturn(slotTracker);
-		when(inventoryHandler.getBaseStackLimit(any(ItemStack.class))).thenAnswer(i -> {
-			ItemStack stack = i.getArgument(0);
-			int limit = MathHelper.intMaxCappedMultiply(stack.getMaxStackSize(), (baseSlotLimit / 64));
-			int remainder = baseSlotLimit % 64;
-			if (remainder > 0) {
-				limit = MathHelper.intMaxCappedAddition(limit, remainder * stack.getMaxStackSize() / 64);
-			}
-			return limit;
-		});
-		when(inventoryHandler.getBaseSlotLimit()).thenReturn(baseSlotLimit);
-
-		Map<Integer, ItemStack> internalStacks = new HashMap<>();
-
-		doAnswer(i -> {
-			internalStacks.put(i.getArgument(0), i.getArgument(1));
-			return null;
-		}).when(inventoryHandler).setSlotStack(anyInt(), any(ItemStack.class));
-
-		when(inventoryHandler.getSlotStack(anyInt())).thenAnswer(i -> {
-			int slot = i.getArgument(0);
-			return internalStacks.containsKey(slot) ? internalStacks.get(slot) : slotStacks.get(slot);
-		});
-
-		return inventoryHandler;
-	}
-
-	private static MemorySettingsCategory getMemorySettings(InventoryHandler invHandler, Map<Integer, ItemStack> slotFilterStacks) {
-		MemorySettingsCategory memorySettingsCategory = Mockito.spy(new MemorySettingsCategory(() -> invHandler, new CompoundTag(), compoundTag -> {
-		}));
-		when(memorySettingsCategory.getSlotFilterStack(anyInt(), anyBoolean()))
-				.thenAnswer(i -> Optional.ofNullable(slotFilterStacks.get((int) i.getArgument(0))));
-		return memorySettingsCategory;
 	}
 
 	@ParameterizedTest
@@ -163,15 +53,6 @@ public class CompressionInventoryPartTest {
 	private CompressionInventoryPart initCompressionInventoryPart(Map<Integer, ItemStack> slotStacksInput, InventoryHandler invHandler, int minSlot) {
 		return initCompressionInventoryPart(invHandler, new SlotRange(minSlot, minSlot + slotStacksInput.size()),
 				() -> getMemorySettings(invHandler, Map.of()));
-	}
-
-	private CompressionInventoryPart initCompressionInventoryPart(InventoryHandler invHandler, SlotRange slotRange,
-			Supplier<MemorySettingsCategory> getMemorySettings) {
-		CompressionInventoryPart spiedPart = spy(new CompressionInventoryPart(invHandler, slotRange, getMemorySettings));
-		doReturn(Optional.empty()).when(spiedPart).getDecompressionResultFromConfig(any(Item.class));
-		doReturn(Optional.empty()).when(spiedPart).getCompressionResultFromConfig(any(ItemStack.class));
-		spiedPart.onInit();
-		return spiedPart;
 	}
 
 	@Test
@@ -311,6 +192,81 @@ public class CompressionInventoryPartTest {
 				{Map.of(0, new ItemStack(Items.IRON_INGOT, 3), 1, ItemStack.EMPTY, 2, ItemStack.EMPTY), 64, 1, 14, new ItemStack(Items.IRON_NUGGET, 14),
 						Map.of(0, new ItemStack(Items.IRON_INGOT, 1), 1, new ItemStack(Items.IRON_NUGGET, 4)),
 						Map.of(0, new ItemStack(Items.IRON_INGOT, 1), 1, new ItemStack(Items.IRON_NUGGET, 13), 2, ItemStack.EMPTY)}};
+	}
+
+	@Test
+	void extractItemCompactsFollowUpSlotsIntoNewSpace() {
+		InventoryHandler handler = getFilledInventoryHandler(
+				Map.of(0, new ItemStack(Items.IRON_BLOCK, 64), 1, new ItemStack(Items.IRON_INGOT, 64), 2, new ItemStack(Items.IRON_NUGGET, 64)), 64);
+		CompressionInventoryPart part = initCompressionInventoryPart(handler, new SlotRange(0, 3), () -> getMemorySettings(handler, Map.of()));
+
+		part.extractItem(1, 1, false);
+
+		assertEquals(64, handler.getSlotStack(0).getCount());
+		assertEquals(64, handler.getSlotStack(1).getCount());
+		assertEquals(55, handler.getSlotStack(2).getCount());
+		assertEquals(640, part.getStackInSlot(1, s -> ItemStack.EMPTY).getCount());
+		assertEquals(5815, part.getStackInSlot(2, s -> ItemStack.EMPTY).getCount());
+	}
+
+	@ParameterizedTest
+	@MethodSource("extractItemCompactsEveryRepresentationParams")
+	void extractItemCompactsEveryRepresentation(ExtractItemCompactsEveryRepresentationParams params) {
+		InventoryHandler inventory = getFilledInventoryHandler(
+				Map.of(4, new ItemStack(Items.IRON_BLOCK, 64), 5, new ItemStack(Items.IRON_INGOT, 64), 6, new ItemStack(Items.IRON_NUGGET, 64)), 64);
+		CompressionInventoryPart part = initCompressionInventoryPart(inventory, new SlotRange(4, 3), () -> getMemorySettings(inventory, Map.of()));
+		clearInvocations(inventory);
+
+		ItemStack simulated = part.extractItem(4 + params.slot(), params.amount(), true);
+		verify(inventory, never()).setSlotStacks(anyMap(), anySet());
+		ItemStack extracted = part.extractItem(4 + params.slot(), params.amount(), false);
+
+		assertEquals(simulated.getCount(), extracted.getCount());
+		assertIronContents(inventory, part, 4, 64, 5824L - extracted.getCount() * params.weight());
+	}
+
+	private record ExtractItemCompactsEveryRepresentationParams(int slot, int amount, int weight) {
+	}
+
+	private static List<ExtractItemCompactsEveryRepresentationParams> extractItemCompactsEveryRepresentationParams() {
+		List<ExtractItemCompactsEveryRepresentationParams> params = new ArrayList<>();
+		for (int slot = 0; slot < 3; slot++) {
+			for (int amount : new int[]{0, 1, 8, 9, 63, 64, 1000}) {
+				params.add(new ExtractItemCompactsEveryRepresentationParams(slot, amount, slot == 0 ? 81 : slot == 1 ? 9 : 1));
+			}
+		}
+		return params;
+	}
+
+	@Test
+	void onInitSettlesMultilevelCarries() {
+		InventoryHandler inventory = getFilledInventoryHandler(Map.of(0, ItemStack.EMPTY, 1, ItemStack.EMPTY, 2, new ItemStack(Items.IRON_NUGGET, 81)), 256);
+		CompressionInventoryPart part = initCompressionInventoryPart(inventory, new SlotRange(0, 3), () -> getMemorySettings(inventory, Map.of()));
+		assertIronContents(inventory, part, 0, 256, 81);
+	}
+
+	@Test
+	void insertItemRequestsCalculatedSiblingTrackingAfterCarry() {
+		InventoryHandler inventory = getFilledInventoryHandler(
+				Map.of(0, new ItemStack(Items.IRON_BLOCK, 64), 1, new ItemStack(Items.IRON_INGOT, 63), 2, new ItemStack(Items.IRON_NUGGET, 8)), 64);
+		CompressionInventoryPart part = initCompressionInventoryPart(inventory, new SlotRange(0, 3), () -> getMemorySettings(inventory, Map.of()));
+		clearInvocations(inventory.getSlotTracker());
+		part.insertItem(2, new ItemStack(Items.IRON_NUGGET), false, (slot, stack, simulate) -> stack);
+		verify(inventory.getSlotTracker()).removeAndSetSlotIndexes(eq(inventory), eq(1),
+				argThat(stack -> stack.is(Items.IRON_INGOT) && stack.getCount() == 640));
+		verify(inventory.getSlotTracker()).removeAndSetSlotIndexes(eq(inventory), eq(2),
+				argThat(stack -> stack.is(Items.IRON_NUGGET) && stack.getCount() == 5760));
+	}
+
+	@Test
+	void onSlotLimitChangeCompactsIntoNewCapacity() {
+		InventoryHandler inventory = getFilledInventoryHandler(
+				Map.of(0, new ItemStack(Items.IRON_BLOCK, 64), 1, new ItemStack(Items.IRON_INGOT, 64), 2, new ItemStack(Items.IRON_NUGGET, 64)), 64);
+		CompressionInventoryPart part = initCompressionInventoryPart(inventory, new SlotRange(0, 3), () -> getMemorySettings(inventory, Map.of()));
+		when(inventory.getBaseStackLimit(any(ItemStack.class))).thenReturn(256);
+		part.onSlotLimitChange();
+		assertIronContents(inventory, part, 0, 256, 5824);
+		assertEquals(23296, part.getSlotLimit(2));
 	}
 
 	@Test
@@ -884,6 +840,20 @@ public class CompressionInventoryPartTest {
 						Map.of(0, new ItemStack(Items.IRON_BLOCK, 2), 1, new ItemStack(Items.IRON_INGOT, 18), 2, new ItemStack(Items.IRON_NUGGET, 162)), 1,
 						new ItemStack(Items.IRON_INGOT, 2), new ItemStack(Items.IRON_INGOT, 18), new ItemStack(Items.IRON_INGOT, 36),
 						new ItemStack(Items.IRON_INGOT, 54), new ItemStack(Items.IRON_INGOT, 18)));
+	}
+
+	@Test
+	void insertItemRejectsOversizedRawAndCalculatedCountsWithoutGrowingRemainder() {
+		InventoryHandler inventory = getFilledInventoryHandler(
+				Map.of(0, new ItemStack(Items.IRON_BLOCK, 128), 1, new ItemStack(Items.IRON_INGOT, 128), 2, new ItemStack(Items.IRON_NUGGET, 128)), 64);
+		CompressionInventoryPart part = initCompressionInventoryPart(inventory, new SlotRange(0, 3), () -> getMemorySettings(inventory, Map.of()));
+		clearInvocations(inventory);
+		for (boolean simulate : new boolean[]{true, false}) {
+			ItemStack result = part.insertItem(2, new ItemStack(Items.IRON_NUGGET), simulate, (slot, stack, simulated) -> stack);
+			assertEquals(1, result.getCount());
+		}
+		verify(inventory, never()).setSlotStacks(anyMap(), anySet());
+		assertEquals(128, inventory.getSlotStack(2).getCount());
 	}
 
 	@Test
