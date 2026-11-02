@@ -44,7 +44,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
-class CompressionInventoryPartOverflowTest {
+class CompressionInventoryPartOverflowIntegrationTest {
 	private MockedStatic<RecipeHelper> recipes;
 	private MockedStatic<SophisticatedStorage> storage;
 
