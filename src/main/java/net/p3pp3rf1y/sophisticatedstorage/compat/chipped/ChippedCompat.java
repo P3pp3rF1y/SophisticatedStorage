@@ -19,6 +19,7 @@ import net.p3pp3rf1y.sophisticatedcore.compat.ICompat;
 import net.p3pp3rf1y.sophisticatedcore.compat.chipped.BlockTransformationUpgradeContainer;
 import net.p3pp3rf1y.sophisticatedcore.compat.chipped.BlockTransformationUpgradeItem;
 import net.p3pp3rf1y.sophisticatedcore.compat.chipped.BlockTransformationUpgradeWrapper;
+import net.p3pp3rf1y.sophisticatedcore.util.LegacyUpgradeDataMigration;
 import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.emi.StorageEmiPlugin;
@@ -47,6 +48,7 @@ public class ChippedCompat implements ICompat {
 
 	@Override
 	public void init(IEventBus modBus) {
+		LegacyUpgradeDataMigration.registerBlockTransformationMigrator(BlockTransformationUpgradeItem.class);
 		modBus.addListener(this::registerContainers);
 
 		if (ModList.get().isLoaded(CompatModIds.JEI)) {

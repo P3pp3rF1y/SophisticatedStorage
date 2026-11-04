@@ -18,6 +18,7 @@ import net.p3pp3rf1y.sophisticatedstorage.client.ClientEventHandler;
 import net.p3pp3rf1y.sophisticatedstorage.common.CommonEventHandler;
 import net.p3pp3rf1y.sophisticatedstorage.data.DataGenerators;
 import net.p3pp3rf1y.sophisticatedstorage.init.*;
+import net.p3pp3rf1y.sophisticatedstorage.upgrades.LegacyStorageUpgradeDataMigration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -30,6 +31,7 @@ public class SophisticatedStorage {
 
 	@SuppressWarnings("java:S1118") // needs to be public for mod to work
 	public SophisticatedStorage(IEventBus modBus, Dist dist, ModContainer container) {
+		LegacyStorageUpgradeDataMigration.registerMigrators();
 		networkProtocolVersion = container.getModInfo().getVersion().toString();
 		container.registerConfig(ModConfig.Type.SERVER, Config.SERVER_SPEC);
 		container.registerConfig(ModConfig.Type.CLIENT, Config.CLIENT_SPEC);
