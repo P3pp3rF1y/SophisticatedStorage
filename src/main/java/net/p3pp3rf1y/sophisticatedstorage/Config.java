@@ -62,6 +62,10 @@ public class Config {
 		COMMON = commonSpec.getLeft();
 	}
 
+	public static boolean isGenericWoodStorageModEnabled(String modId) {
+		return !SERVER_SPEC.isLoaded() || SERVER.genericWoodStorageModIdsIsAllowList.get() == SERVER.genericWoodStorageModIds.get().contains(modId);
+	}
+
 	public static class Common {
 		public final ModConfigSpec.BooleanValue dropPacked;
 
@@ -177,6 +181,8 @@ public class Config {
 		public final MaxUgradesPerStorageConfig maxUpgradesPerStorage;
 		public final ModConfigSpec.BooleanValue limitedBarrelCountDyeingEnabled;
 		public final ModConfigSpec.IntValue controllerRange;
+		public final ModConfigSpec.ConfigValue<List<? extends String>> genericWoodStorageModIds;
+		public final ModConfigSpec.BooleanValue genericWoodStorageModIdsIsAllowList;
 
 		public void initListeners(IEventBus modBus) {
 			modBus.addListener(this::onConfigReload);
@@ -204,6 +210,16 @@ public class Config {
 
 		public Server(ModConfigSpec.Builder builder) {
 			builder.comment("Server Settings").push("server");
+
+			genericWoodStorageModIds = builder.comment(
+					"Mod IDs matched against the registry namespace of the resolved planks used for generic wood storage variants. Only affects automatically discovered generic woods.",
+					"Disabled woods still work as crafting ingredients, but produce the recipe's default storage variant. Existing storages keep their wood appearance.")
+					.worldRestart().defineListAllowEmpty("genericWoodStorageModIds", ArrayList::new, () -> "biomesoplenty",
+							value -> value instanceof String modId && modId.matches("[a-z0-9_.-]+"));
+			genericWoodStorageModIdsIsAllowList = builder.comment(
+					"If true, only woods from listed mods get generic storage variants. If false, woods from listed mods are blocked and all other compatible woods are enabled.",
+					"An empty allow list disables all generic wood variants; an empty block list enables all compatible generic woods.").worldRestart()
+					.define("genericWoodStorageModIdsIsAllowList", false);
 
 			woodBarrel = new StorageConfig(builder, "Wood Barrel", 27, 1);
 			copperBarrel = new StorageConfig(builder, "Copper Barrel", 45, 1);

@@ -317,6 +317,8 @@
   "sophisticatedstorage.configuration.client": "Client",
   "sophisticatedstorage.configuration.common": "Common",
   "sophisticatedstorage.configuration.server": "Server",
+  "sophisticatedstorage.configuration.genericWoodStorageModIds": "Generic Wood Storage Mod IDs",
+  "sophisticatedstorage.configuration.genericWoodStorageModIdsIsAllowList": "Use Generic Wood Storage Mod IDs as Allow List",
   "sophisticatedstorage.configuration.dropPacked": "Always Drop Packed",
   "sophisticatedstorage.configuration.showHigherTierGenericWoodVariants": "Show Higher Tier Generic Wood Variants",
   "sophisticatedstorage.configuration.showHigherTierTintedVariants": "Show Tinted Tier Variants",
