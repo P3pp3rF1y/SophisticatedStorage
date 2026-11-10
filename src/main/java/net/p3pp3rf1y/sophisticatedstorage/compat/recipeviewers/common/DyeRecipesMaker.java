@@ -98,7 +98,7 @@ public class DyeRecipesMaker {
 		Set<ItemStack> ret = new LinkedHashSet<>();
 		WoodStorageBlockBase.CUSTOM_TEXTURE_WOOD_TYPES.keySet()
 				.forEach(woodType -> ret.add(WoodStorageBlockItem.setWoodType(new ItemStack(woodStorageBlock), woodType)));
-		GenericWoodStorageHelper.getGenericWoodTypes()
+		GenericWoodStorageHelper.getEnabledGenericWoodTypes()
 				.forEach(woodType -> ret.add(WoodStorageBlockItem.setWoodType(new ItemStack(woodStorageBlock), woodType)));
 		return List.copyOf(ret);
 	}

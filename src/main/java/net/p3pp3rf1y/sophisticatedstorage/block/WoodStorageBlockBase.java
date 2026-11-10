@@ -150,7 +150,7 @@ public abstract class WoodStorageBlockBase extends StorageBlockBase implements I
 		} else {
 			CUSTOM_TEXTURE_WOOD_TYPES.keySet().forEach(woodType -> itemConsumer.accept(WoodStorageBlockItem.setWoodType(new ItemStack(this), woodType)));
 			if (shouldShowGenericWoodVariants()) {
-				GenericWoodStorageHelper.getGenericWoodTypes()
+				GenericWoodStorageHelper.getEnabledGenericWoodTypes()
 						.forEach(woodType -> itemConsumer.accept(WoodStorageBlockItem.setWoodType(new ItemStack(this), woodType)));
 			}
 		}
