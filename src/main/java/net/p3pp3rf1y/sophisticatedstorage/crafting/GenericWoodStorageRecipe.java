@@ -134,7 +134,8 @@ public class GenericWoodStorageRecipe implements CraftingRecipe, IWrapperRecipe<
 	@Override
 	public ItemStack assemble(CraftingInput input) {
 		ItemStack result = compose.assemble(input);
-		getGenericWoodType(input).ifPresent(woodType -> WoodStorageBlockItem.setWoodType(result, woodType));
+		getGenericWoodType(input).filter(GenericWoodStorageHelper::isGenericWoodEnabled)
+				.ifPresent(woodType -> WoodStorageBlockItem.setWoodType(result, woodType));
 		return result;
 	}
 

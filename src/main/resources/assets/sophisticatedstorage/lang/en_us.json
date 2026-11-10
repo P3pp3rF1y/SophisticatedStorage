@@ -315,6 +315,8 @@
   "gui.sophisticatedstorage.status.ender_linker.packed_storage": "Packed storage cannot be linked",
   "gui.sophisticatedstorage.status.packing_tape_linked_storage": "Linked storage cannot be packed",
   "gui.sophisticatedstorage.tooltip.parts_stored": "Parts Stored",
+  "sophisticatedstorage.configuration.genericWoodStorageModIds": "Generic Wood Storage Mod IDs",
+  "sophisticatedstorage.configuration.genericWoodStorageModIdsIsAllowList": "Use Generic Wood Storage Mod IDs as Allow List",
   "sophisticatedstorage.configuration.dropPacked": "Always Drop Packed",
   "sophisticatedstorage.configuration.showHigherTierGenericWoodVariants": "Show Higher Tier Generic Wood Variants",
   "sophisticatedstorage.configuration.showHigherTierTintedVariants": "Show Tinted Tier Variants",
