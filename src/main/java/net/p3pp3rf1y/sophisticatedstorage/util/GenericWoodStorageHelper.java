@@ -12,6 +12,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.properties.WoodType;
+import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.block.WoodStorageBlockBase;
 
 import javax.annotation.Nullable;
@@ -48,6 +49,14 @@ public class GenericWoodStorageHelper {
 
 	public static Collection<WoodType> getGenericWoodTypes() {
 		return getCacheState().genericWoods().keySet();
+	}
+
+	public static boolean isGenericWoodEnabled(WoodType woodType) {
+		return getGenericWoodInfo(woodType).map(info -> Config.isGenericWoodStorageModEnabled(info.planksLocation().getNamespace())).orElse(false);
+	}
+
+	public static Collection<WoodType> getEnabledGenericWoodTypes() {
+		return getGenericWoodTypes().stream().filter(GenericWoodStorageHelper::isGenericWoodEnabled).toList();
 	}
 
 	public static void invalidateCache() {

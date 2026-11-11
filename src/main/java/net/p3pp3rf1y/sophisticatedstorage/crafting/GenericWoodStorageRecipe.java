@@ -46,7 +46,8 @@ public class GenericWoodStorageRecipe extends ShapedRecipe implements IWrapperRe
 	@Override
 	public ItemStack assemble(CraftingContainer inv, RegistryAccess registries) {
 		ItemStack result = super.assemble(inv, registries);
-		getGenericWoodType(inv).ifPresent(woodType -> WoodStorageBlockItem.setWoodType(result, woodType));
+		getGenericWoodType(inv).filter(GenericWoodStorageHelper::isGenericWoodEnabled)
+				.ifPresent(woodType -> WoodStorageBlockItem.setWoodType(result, woodType));
 		return result;
 	}
 

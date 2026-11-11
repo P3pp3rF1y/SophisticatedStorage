@@ -24,7 +24,7 @@ public class GenericWoodStorageRecipesMaker {
 	public static List<CraftingRecipe> getRecipes() {
 		return ClientRecipeHelper.transformAllRecipesOfTypeIntoMultiple(RecipeType.CRAFTING, GenericWoodStorageRecipe.class, recipe -> {
 			List<CraftingRecipe> recipes = new ArrayList<>();
-			GenericWoodStorageHelper.getGenericWoodTypes().forEach(
+			GenericWoodStorageHelper.getEnabledGenericWoodTypes().forEach(
 					woodType -> GenericWoodStorageHelper.getGenericWoodInfo(woodType).ifPresent(info -> recipes.add(createRecipe(recipe, woodType, info))));
 			return recipes;
 		});
