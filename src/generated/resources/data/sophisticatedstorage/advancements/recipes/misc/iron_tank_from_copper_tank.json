@@ -1,0 +1,35 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_copper_tank": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "sophisticatedstorage:copper_tank"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "sophisticatedstorage:iron_tank_from_copper_tank"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_copper_tank",
+      "has_the_recipe"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "sophisticatedstorage:iron_tank_from_copper_tank"
+    ]
+  },
+  "sends_telemetry_event": true
+}

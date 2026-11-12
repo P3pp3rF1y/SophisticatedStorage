@@ -11,7 +11,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.common.capabilities.CapabilityToken;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
@@ -31,7 +30,7 @@ class ControllerDepositPlayerItemsTest {
 		Bootstrap.bootStrap();
 		// Forge normally transforms CapabilityToken; supply capabilities for this plain JVM test.
 		try (MockedStatic<CapabilityManager> manager = mockStatic(CapabilityManager.class)) {
-			manager.when(() -> CapabilityManager.get(any(CapabilityToken.class))).thenAnswer(ignored -> mock(Capability.class));
+			manager.when(() -> CapabilityManager.get(any(CapabilityToken.class))).thenAnswer(ignored -> StorageTankTestBootstrap.createCapability());
 			assertTrue(ForgeCapabilities.ITEM_HANDLER != null);
 		}
 	}

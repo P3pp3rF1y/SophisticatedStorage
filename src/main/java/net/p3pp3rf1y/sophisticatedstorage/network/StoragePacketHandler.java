@@ -13,6 +13,8 @@ public class StoragePacketHandler extends PacketHandler {
 
 	@Override
 	public void registerMessages() {
+		registerMessage(TankMenuUpdateMessage.class, TankMenuUpdateMessage::encode, TankMenuUpdateMessage::decode, TankMenuUpdateMessage::onMessage,
+				NetworkDirection.PLAY_TO_CLIENT);
 		registerMessage(OpenStorageInventoryMessage.class, OpenStorageInventoryMessage::encode, OpenStorageInventoryMessage::decode,
 				OpenStorageInventoryMessage::onMessage, NetworkDirection.PLAY_TO_SERVER);
 		registerMessage(RequestStorageContentsMessage.class, RequestStorageContentsMessage::encode, RequestStorageContentsMessage::decode,

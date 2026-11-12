@@ -13,10 +13,13 @@ import net.p3pp3rf1y.sophisticatedcore.crafting.RecipeWrapperSerializer;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageEndpointData;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageGroupsSavedData;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageStackData;
+import net.p3pp3rf1y.sophisticatedstorage.block.TankBlock;
+import net.p3pp3rf1y.sophisticatedstorage.block.TankItemContents;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.item.ChestBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.StackStorageWrapper;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
+import net.p3pp3rf1y.sophisticatedstorage.item.TankBlockItem;
 
 import java.util.LinkedHashSet;
 import java.util.Optional;
@@ -49,13 +52,20 @@ public class StorageTierUpgradeRecipe extends ShapedRecipe implements IWrapperRe
 			return ItemStack.EMPTY;
 		}
 		ItemStack upgradedStorage = super.assemble(inv, registryAccess);
-		getOriginalStorage(inv).ifPresent(originalStorage -> upgradedStorage.setTag(originalStorage.getTag()));
+		getOriginalStorage(inv).ifPresent(originalStorage -> upgradedStorage.setTag(originalStorage.hasTag() ? originalStorage.getTag().copy() : null));
 		if (StorageBlockItem.getContentsUuid(upgradedStorage).isPresent()) {
 			StackStorageWrapper storageWrapper = new StackStorageWrapper(upgradedStorage);
 			StorageBlockItem.setNumberOfInventorySlots(upgradedStorage, storageWrapper.getDefaultNumberOfInventorySlots());
 			StorageBlockItem.setNumberOfUpgradeSlots(upgradedStorage, storageWrapper.getDefaultNumberOfUpgradeSlots());
 		}
+		updateTankUpgradeSlots(upgradedStorage);
 		return upgradedStorage;
+	}
+
+	static void updateTankUpgradeSlots(ItemStack upgradedStorage) {
+		if (upgradedStorage.getItem() instanceof TankBlockItem tankItem && LinkedStorageStackData.getEndpoint(upgradedStorage) == null) {
+			TankItemContents.setUpgradeSlots(upgradedStorage, ((TankBlock) tankItem.getBlock()).getTier().upgradeSlots());
+		}
 	}
 
 	@Override
@@ -66,7 +76,7 @@ public class StorageTierUpgradeRecipe extends ShapedRecipe implements IWrapperRe
 	private Optional<ItemStack> getOriginalStorage(CraftingContainer inv) {
 		for (int slot = 0; slot < inv.getContainerSize(); slot++) {
 			ItemStack slotStack = inv.getItem(slot);
-			if (slotStack.getItem() instanceof StorageBlockItem
+			if ((slotStack.getItem() instanceof StorageBlockItem || slotStack.getItem() instanceof TankBlockItem)
 					&& (!(slotStack.getItem() instanceof ChestBlockItem) || !ChestBlockItem.isDoubleChest(slotStack))) {
 				return Optional.of(slotStack);
 			}

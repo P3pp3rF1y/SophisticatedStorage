@@ -1,5 +1,13 @@
 package net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.common;
 
+import mezz.jei.api.constants.VanillaTypes;
+import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
+import mezz.jei.api.gui.builder.IRecipeSlotBuilder;
+import mezz.jei.api.gui.ingredient.ICraftingGridHelper;
+import mezz.jei.api.ingredients.ITypedIngredient;
+import mezz.jei.api.recipe.IFocus;
+import mezz.jei.api.recipe.IFocusGroup;
+import mezz.jei.api.recipe.RecipeIngredientRole;
 import net.minecraft.SharedConstants;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.LayeredRegistryAccess;
@@ -7,6 +15,8 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.Bootstrap;
 import net.minecraft.server.RegistryLayer;
@@ -22,8 +32,13 @@ import net.minecraft.world.level.WorldDataConfiguration;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.properties.WoodType;
+import net.minecraft.world.level.material.Fluids;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.CapabilityManager;
+import net.minecraftforge.common.capabilities.CapabilityToken;
 import net.minecraftforge.common.crafting.CraftingHelper;
 import net.minecraftforge.common.crafting.VanillaIngredientSerializer;
+import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.loading.moddiscovery.ModFile;
 import net.minecraftforge.fml.loading.moddiscovery.ModInfo;
@@ -31,13 +46,21 @@ import net.minecraftforge.forgespi.language.IModFileInfo;
 import net.minecraftforge.forgespi.language.IModInfo;
 import net.minecraftforge.forgespi.locating.IModFile;
 import net.minecraftforge.registries.*;
+import net.p3pp3rf1y.sophisticatedbackpacks.api.CapabilityBackpackWrapper;
+import net.p3pp3rf1y.sophisticatedbackpacks.backpack.BackpackItem;
+import net.p3pp3rf1y.sophisticatedbackpacks.compat.recipeviewers.common.BackpackTierUpgradeDisplayRecipe;
+import net.p3pp3rf1y.sophisticatedbackpacks.compat.recipeviewers.common.BackpackTierUpgradeVariantPair;
 import net.p3pp3rf1y.sophisticatedcore.SophisticatedCore;
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.*;
+import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.jei.CraftingDisplayCatalogRecipeManagerPlugin;
+import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.jei.CraftingSpecCategoryExtension;
 import net.p3pp3rf1y.sophisticatedcore.init.ModRecipes;
 import net.p3pp3rf1y.sophisticatedcore.util.ColorHelper;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.block.BarrelMaterial;
 import net.p3pp3rf1y.sophisticatedstorage.block.DecorationTableBlockEntity;
+import net.p3pp3rf1y.sophisticatedstorage.block.StorageWrapper;
+import net.p3pp3rf1y.sophisticatedstorage.block.TankItemContents;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.DoubleChestTierUpgradeRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.DoubleChestTierUpgradeShapelessRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.GenericWoodStorageRecipe;
@@ -49,10 +72,15 @@ import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.item.BarrelBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.ChestBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
+import net.p3pp3rf1y.sophisticatedstorage.item.TankBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.util.GenericWoodStorageHelper;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
@@ -69,12 +97,214 @@ import java.util.*;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @Tag("recipeViewerRegression")
 class StorageRecipeViewerDisplaySpecTest {
+	@Test
+	void getCraftingSpecsIncludesEveryShapedAndShapelessTankUpgrade() {
+		IRecipeViewerDisplayCatalog catalog = createCatalog();
+		List<CraftingDisplaySpec> tankSpecs = catalog.getCraftingSpecs().stream()
+				.filter(spec -> spec.getGlobalDisplays().stream().anyMatch(variant -> variant.firstOutput().getItem() instanceof TankBlockItem)).toList();
+		assertEquals(6, tankSpecs.size());
+		assertEquals(1, tankSpecs.stream().filter(CraftingDisplaySpec::shapeless).count());
+	}
+
+	@ParameterizedTest
+	@MethodSource("tankUpgradeLookups")
+	void getCraftingDisplaysIncludesEachTankUpgradeWithoutDuplicates(TankUpgradeLookup params) {
+		IRecipeViewerDisplayCatalog catalog = createCatalog();
+		List<CraftingDisplayVariant> displays = params.usages
+				? getCraftingUsagesFor(catalog, new ItemStack(params.source))
+				: getCraftingRecipesFor(catalog, new ItemStack(params.result));
+		assertEquals(1, displays.stream().filter(variant -> variant.firstOutput().is(params.result) && hasInput(variant, params.source)).count());
+	}
+
+	private static Stream<TankUpgradeLookup> tankUpgradeLookups() {
+		List<Item> sources = List.of(ModBlocks.TANK_ITEM.get(), ModBlocks.TANK_ITEM.get(), ModBlocks.COPPER_TANK_ITEM.get(), ModBlocks.IRON_TANK_ITEM.get(),
+				ModBlocks.GOLD_TANK_ITEM.get(), ModBlocks.DIAMOND_TANK_ITEM.get());
+		List<Item> results = List.of(ModBlocks.COPPER_TANK_ITEM.get(), ModBlocks.IRON_TANK_ITEM.get(), ModBlocks.IRON_TANK_ITEM.get(),
+				ModBlocks.GOLD_TANK_ITEM.get(), ModBlocks.DIAMOND_TANK_ITEM.get(), ModBlocks.NETHERITE_TANK_ITEM.get());
+		return IntStream.range(0, sources.size()).boxed().flatMap(index -> Stream.of(new TankUpgradeLookup(sources.get(index), results.get(index), true),
+				new TankUpgradeLookup(sources.get(index), results.get(index), false)));
+	}
+
+	private record TankUpgradeLookup(Item source, Item result, boolean usages) {
+	}
+
+	@ParameterizedTest
+	@ValueSource(booleans = {false, true})
+	void getRecipesForFocusDoesNotAddSyntheticDuplicatesForFilledTanks(boolean outputFocus) {
+		IRecipeViewerDisplayCatalog catalog = createCatalog();
+		ItemStack source = filledDiamondTank();
+		ItemStack result = new ItemStack(ModBlocks.NETHERITE_TANK_ITEM.get());
+		result.setTag(source.getTag().copy());
+		CraftingDisplayCatalogRecipeManagerPlugin plugin = new CraftingDisplayCatalogRecipeManagerPlugin(() -> catalog,
+				stack -> stack.getItem() instanceof TankBlockItem);
+		ITypedIngredient<ItemStack> focus = typedIngredient(outputFocus ? result : source);
+
+		List<CraftingRecipe> recipes = outputFocus ? plugin.getRecipesForOutput(focus) : plugin.getRecipesForInput(focus);
+
+		assertTrue(recipes.isEmpty());
+	}
+
+	@ParameterizedTest
+	@ValueSource(booleans = {false, true})
+	void setRecipeKeepsFilledTankContentsInTheIndexedRecipeForEitherFocus(boolean outputFocus) {
+		IRecipeViewerDisplayCatalog catalog = createCatalog();
+		ItemStack source = filledDiamondTank();
+		ItemStack result = new ItemStack(ModBlocks.NETHERITE_TANK_ITEM.get());
+		result.setTag(source.getTag().copy());
+		CraftingDisplaySpec spec = catalog.getCraftingUsagesFor(source).get(0).spec();
+		CraftingRecipe recipe = recipeWithId(spec, spec.recipe(spec.getGlobalDisplays()), spec.replacedRecipeIds().iterator().next());
+		CraftingSpecCategoryExtension<CraftingRecipe> extension = new CraftingSpecCategoryExtension<>(recipe, ignored -> spec,
+				stack -> stack.getItem() instanceof TankBlockItem);
+		IRecipeLayoutBuilder builder = Mockito.mock(IRecipeLayoutBuilder.class);
+		ICraftingGridHelper grid = Mockito.mock(ICraftingGridHelper.class);
+		List<List<ItemStack>> inputs = new ArrayList<>();
+		List<ItemStack> outputs = new ArrayList<>();
+		Mockito.when(grid.createAndSetInputs(Mockito.eq(builder), Mockito.anyList(), Mockito.eq(spec.width()), Mockito.eq(spec.height())))
+				.thenAnswer(invocation -> {
+					inputs.addAll(invocation.getArgument(1));
+					return Collections.nCopies(spec.baseIngredients().size(), Mockito.mock(IRecipeSlotBuilder.class));
+				});
+		Mockito.when(grid.createAndSetOutputs(Mockito.eq(builder), Mockito.anyList())).thenAnswer(invocation -> {
+			outputs.addAll(invocation.getArgument(1));
+			return Mockito.mock(IRecipeSlotBuilder.class);
+		});
+		IFocusGroup focuses = itemFocus(outputFocus ? result : source, outputFocus);
+
+		extension.setRecipe(builder, grid, focuses);
+
+		int sourceIndex = ((SourceResultFocusBehavior) spec.focusBehavior()).sourceInputIndex();
+		assertEquals(1, inputs.get(sourceIndex).size());
+		assertSameStack(source, inputs.get(sourceIndex).get(0));
+		assertEquals(1, outputs.size());
+		assertSameStack(result, outputs.get(0));
+	}
+
+	@Test
+	void getRecipesForInputRetainsSyntheticTintedBarrelUpgrades() {
+		IRecipeViewerDisplayCatalog catalog = createCatalog();
+		ItemStack source = tintedStack(ModBlocks.DIAMOND_BARREL_ITEM.get());
+		CraftingDisplayCatalogRecipeManagerPlugin plugin = new CraftingDisplayCatalogRecipeManagerPlugin(() -> catalog,
+				stack -> stack.getItem() instanceof StorageBlockItem);
+
+		List<CraftingRecipe> recipes = plugin.getRecipesForInput(typedIngredient(source));
+
+		assertEquals(1, recipes.size());
+		assertTrue(recipes.get(0).getResultItem(null).is(ModBlocks.NETHERITE_BARREL_ITEM.get()));
+	}
+
+	private static ItemStack filledDiamondTank() {
+		ItemStack source = new ItemStack(ModBlocks.DIAMOND_TANK_ITEM.get());
+		CompoundTag data = TankItemContents.read(source);
+		data.getCompound(StorageWrapper.CONTENTS_TAG).getCompound("tankFluid").put("fluid", new FluidStack(Fluids.WATER, 12000).writeToNBT(new CompoundTag()));
+		TankItemContents.write(source, data);
+		source.setHoverName(Component.literal("Filled portable tank"));
+		return source;
+	}
+
+	@ParameterizedTest
+	@EnumSource(BackpackFocus.class)
+	void getRecipesForInputKeepsBackpackColorVariantsWithoutDuplicatingOrdinaryMetadata(BackpackFocus focusKind) {
+		createCatalog();
+		RecipeViewerDisplayCatalog catalog = backpackTierCatalog();
+		ItemStack source = backpackFocusStack(Items.STICK, focusKind);
+		CraftingDisplayCatalogRecipeManagerPlugin plugin = new CraftingDisplayCatalogRecipeManagerPlugin(() -> catalog, stack -> true);
+
+		List<CraftingRecipe> recipes = plugin.getRecipesForInput(typedIngredient(source));
+
+		assertEquals(focusKind == BackpackFocus.TINTED ? 1 : 0, recipes.size());
+		if (focusKind == BackpackFocus.TINTED) {
+			assertSameStack(backpackFocusStack(Items.BLAZE_ROD, focusKind), recipes.get(0).getResultItem(null));
+		}
+	}
+
+	@ParameterizedTest
+	@EnumSource(BackpackFocus.class)
+	void getRecipesForOutputKeepsBackpackColorVariantsWithoutDuplicatingOrdinaryMetadata(BackpackFocus focusKind) {
+		createCatalog();
+		RecipeViewerDisplayCatalog catalog = backpackTierCatalog();
+		ItemStack result = backpackFocusStack(Items.BLAZE_ROD, focusKind);
+		CraftingDisplayCatalogRecipeManagerPlugin plugin = new CraftingDisplayCatalogRecipeManagerPlugin(() -> catalog, stack -> true);
+
+		List<CraftingRecipe> recipes = plugin.getRecipesForOutput(typedIngredient(result));
+
+		assertEquals(focusKind == BackpackFocus.TINTED ? 1 : 0, recipes.size());
+		if (focusKind == BackpackFocus.TINTED) {
+			assertSameStack(result, recipes.get(0).getResultItem(null));
+		}
+	}
+
+	private static RecipeViewerDisplayCatalog backpackTierCatalog() {
+		try (MockedStatic<CapabilityManager> capabilities = Mockito.mockStatic(CapabilityManager.class)) {
+			capabilities.when(() -> CapabilityManager.get(Mockito.any(CapabilityToken.class))).thenAnswer(ignored -> Mockito.mock(Capability.class));
+			CapabilityBackpackWrapper.getCapabilityInstance();
+		}
+		NonNullList<Ingredient> ingredients = NonNullList.of(Ingredient.EMPTY, Ingredient.of(Items.STICK));
+		ResourceLocation recipeId = new ResourceLocation("test", "backpack_tier");
+		CraftingRecipe recipe = new ShapedRecipe(recipeId, "", CraftingBookCategory.MISC, 1, 1, ingredients, new ItemStack(Items.BLAZE_ROD));
+		BackpackTierUpgradeVariantPair ordinary = new BackpackTierUpgradeVariantPair(new ItemStack(Items.STICK), new ItemStack(Items.BLAZE_ROD));
+		BackpackTierUpgradeVariantPair tinted = new BackpackTierUpgradeVariantPair(backpackFocusStack(Items.STICK, BackpackFocus.TINTED),
+				backpackFocusStack(Items.BLAZE_ROD, BackpackFocus.TINTED));
+		RecipeViewerDisplayCatalog catalog = new RecipeViewerDisplayCatalog();
+		catalog.addCraftingSpec(new BackpackTierUpgradeDisplayRecipe(new ResourceLocation("test", "backpack_tier_display"), recipe, 1, 1, ingredients, 0,
+				List.of(ordinary, tinted)).toSpec());
+		return catalog;
+	}
+
+	private static ItemStack backpackFocusStack(Item item, BackpackFocus focusKind) {
+		ItemStack stack = new ItemStack(item);
+		if (focusKind == BackpackFocus.TINTED) {
+			BackpackItem.setColors(stack, 0x112233, 0x445566);
+		} else if (focusKind == BackpackFocus.NAMED) {
+			stack.setHoverName(Component.literal("Named backpack"));
+		}
+		return stack;
+	}
+
+	private enum BackpackFocus {
+		PLAIN, NAMED, TINTED
+	}
+
+	@SuppressWarnings("unchecked")
+	private static ITypedIngredient<ItemStack> typedIngredient(ItemStack stack) {
+		ITypedIngredient<ItemStack> ingredient = Mockito.mock(ITypedIngredient.class);
+		Mockito.when(ingredient.getIngredient(VanillaTypes.ITEM_STACK)).thenReturn(Optional.of(stack));
+		Mockito.when(ingredient.getIngredient()).thenReturn(stack);
+		return ingredient;
+	}
+
+	@SuppressWarnings("unchecked")
+	private static IFocusGroup itemFocus(ItemStack stack, boolean output) {
+		IFocus<ItemStack> focus = Mockito.mock(IFocus.class);
+		ITypedIngredient<ItemStack> ingredient = typedIngredient(stack);
+		Mockito.when(focus.getTypedValue()).thenReturn(ingredient);
+		IFocusGroup focuses = Mockito.mock(IFocusGroup.class);
+		Mockito.when(focuses.getItemStackFocuses(RecipeIngredientRole.INPUT)).thenAnswer(ignored -> output ? Stream.empty() : Stream.of(focus));
+		Mockito.when(focuses.getItemStackFocuses(RecipeIngredientRole.OUTPUT)).thenAnswer(ignored -> output ? Stream.of(focus) : Stream.empty());
+		return focuses;
+	}
+
+	@ParameterizedTest
+	@ValueSource(booleans = {false, true})
+	void getCraftingDisplaysPreservesFocusedPortableTankComponents(boolean usages) {
+		IRecipeViewerDisplayCatalog catalog = createCatalog();
+		ItemStack source = new ItemStack(ModBlocks.DIAMOND_TANK_ITEM.get());
+		TankItemContents.height(source, 3);
+		source.setHoverName(Component.literal("Portable tank"));
+		ItemStack result = new ItemStack(ModBlocks.NETHERITE_TANK_ITEM.get());
+		result.setTag(source.getTag().copy());
+		List<CraftingDisplayVariant> displays = usages ? getCraftingUsagesFor(catalog, source) : getCraftingRecipesFor(catalog, result);
+		assertEquals(1, displays.size());
+		assertTrue(hasInputMatching(displays.get(0), source));
+		assertSameStack(result, displays.get(0).firstOutput());
+	}
+
 	@Test
 	void tierUpgradeUsagePreservesFocusedBarrelComponentsAndDoesNotDuplicate() {
 		IRecipeViewerDisplayCatalog catalog = createCatalog();
@@ -374,15 +604,16 @@ class StorageRecipeViewerDisplaySpecTest {
 	}
 
 	@Test
-	void upgradeIngredientUsesShowSingleAndDoubleChestTierUpgradeRecipesWithCorrectSources() {
+	void upgradeIngredientUsesShowTankAndSingleAndDoubleChestTierUpgradeRecipesWithCorrectSources() {
 		IRecipeViewerDisplayCatalog catalog = createChestCatalog();
 
 		List<CraftingDisplayVariant> usages = getCraftingUsagesFor(catalog, new ItemStack(Items.IRON_INGOT));
 		List<CraftingRecipe> recipes = catalog.getCraftingUsagesFor(new ItemStack(Items.IRON_INGOT)).stream()
 				.flatMap(view -> view.variants().stream().map(view.spec()::recipe)).toList();
 
-		assertEquals(16, usages.size());
-		assertEquals(16, recipes.size());
+		assertEquals(18, usages.size());
+		assertEquals(18, recipes.size());
+		assertEquals(2, usages.stream().filter(variant -> variant.firstOutput().getItem() instanceof TankBlockItem).count());
 		assertTrue(usages.stream()
 				.anyMatch(variant -> !ChestBlockItem.isDoubleChest(variant.inputs().get(4)) && !ChestBlockItem.isDoubleChest(variant.firstOutput())));
 		assertTrue(usages.stream()
@@ -488,6 +719,14 @@ class StorageRecipeViewerDisplaySpecTest {
 
 	private static List<CraftingDisplayVariant> getCraftingRecipesFor(IRecipeViewerDisplayCatalog catalog, ItemStack stack) {
 		return catalog.getCraftingRecipesFor(stack).stream().flatMap(view -> view.variants().stream()).toList();
+	}
+
+	private static boolean hasInput(CraftingDisplayVariant variant, Item item) {
+		return variant.inputs().stream().anyMatch(stack -> stack.is(item));
+	}
+
+	private static boolean hasInputMatching(CraftingDisplayVariant variant, ItemStack stack) {
+		return variant.inputs().stream().anyMatch(input -> ItemStack.isSameItemSameTags(input, stack));
 	}
 
 	private static CraftingRecipe recipeWithId(CraftingDisplaySpec spec, CraftingRecipe displayRecipe, ResourceLocation id) {

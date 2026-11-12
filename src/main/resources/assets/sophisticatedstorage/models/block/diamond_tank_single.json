@@ -1,0 +1,52 @@
+{
+	"parent": "minecraft:block/block", "render_type": "minecraft:cutout_mipped", "ambientocclusion": false,
+	"textures": {
+		"0": "sophisticatedstorage:block/tank_side", "1": "sophisticatedstorage:block/tank_top", "2": "sophisticatedstorage:block/tank_bottom",
+		"3": "sophisticatedstorage:block/tank_pillar", "4": "sophisticatedstorage:block/tank_glass_pane", "5": "sophisticatedstorage:block/tank_inside",
+		"6": "sophisticatedstorage:block/tank_glass_pane_standalone", "7": "sophisticatedstorage:block/tank_pillar_standalone",
+		"particle": "sophisticatedstorage:block/tank_side", "tier_side": "sophisticatedstorage:block/diamond_barrel_side",
+		"tier_top": "sophisticatedstorage:block/diamond_barrel_top", "tier_bottom": "sophisticatedstorage:block/diamond_barrel_bottom"
+	},
+	"elements": [
+		{"name": "bottom_band", "from": [0, 0, 0], "to": [16, 2, 16], "shade": true, "faces": {
+			"north": {"uv": [0, 14, 16, 16], "cullface": "north", "texture": "#0"}, "east": {"uv": [0, 14, 16, 16], "cullface": "east", "texture": "#0"},
+			"south": {"uv": [0, 14, 16, 16], "cullface": "south", "texture": "#0"}, "west": {"uv": [0, 14, 16, 16], "cullface": "west", "texture": "#0"},
+			"up": {"uv": [0, 0, 16, 16], "texture": "#5"}, "down": {"uv": [0, 0, 16, 16], "cullface": "down", "texture": "#2"}}},
+		{"name": "top_band", "from": [0, 14, 0], "to": [16, 16, 16], "shade": true, "faces": {
+			"north": {"uv": [0, 0, 16, 2], "cullface": "north", "texture": "#0"}, "east": {"uv": [0, 0, 16, 2], "cullface": "east", "texture": "#0"},
+			"south": {"uv": [0, 0, 16, 2], "cullface": "south", "texture": "#0"}, "west": {"uv": [0, 0, 16, 2], "cullface": "west", "texture": "#0"},
+			"up": {"uv": [0, 0, 16, 16], "cullface": "up", "texture": "#1"}, "down": {"uv": [0, 0, 16, 16], "texture": "#5"}}},
+		{"name": "nw_pillar", "from": [1, 2, 1], "to": [3, 14, 3], "shade": true, "faces": {
+			"north": {"uv": [0, 2, 2, 14], "texture": "#7"}, "east": {"uv": [0, 2, 2, 14], "texture": "#7"},
+			"south": {"uv": [0, 2, 2, 14], "texture": "#7"}, "west": {"uv": [0, 2, 2, 14], "texture": "#7"}}},
+		{"name": "ne_pillar", "from": [13, 2, 1], "to": [15, 14, 3], "shade": true, "faces": {
+			"north": {"uv": [0, 2, 2, 14], "texture": "#7"}, "east": {"uv": [0, 2, 2, 14], "texture": "#7"},
+			"south": {"uv": [0, 2, 2, 14], "texture": "#7"}, "west": {"uv": [0, 2, 2, 14], "texture": "#7"}}},
+		{"name": "sw_pillar", "from": [1, 2, 13], "to": [3, 14, 15], "shade": true, "faces": {
+			"north": {"uv": [0, 2, 2, 14], "texture": "#7"}, "east": {"uv": [0, 2, 2, 14], "texture": "#7"},
+			"south": {"uv": [0, 2, 2, 14], "texture": "#7"}, "west": {"uv": [0, 2, 2, 14], "texture": "#7"}}},
+		{"name": "se_pillar", "from": [13, 2, 13], "to": [15, 14, 15], "shade": true, "faces": {
+			"north": {"uv": [0, 2, 2, 14], "texture": "#7"}, "east": {"uv": [0, 2, 2, 14], "texture": "#7"},
+			"south": {"uv": [0, 2, 2, 14], "texture": "#7"}, "west": {"uv": [0, 2, 2, 14], "texture": "#7"}}},
+		{"name": "glass_north", "from": [3, 2, 1.5], "to": [13, 14, 2.5], "shade": true, "faces": {
+			"north": {"uv": [0, 2, 10, 14], "texture": "#6"}, "south": {"uv": [0, 2, 10, 14], "texture": "#6"}}},
+		{"name": "glass_south", "from": [3, 2, 13.5], "to": [13, 14, 14.5], "shade": true, "faces": {
+			"north": {"uv": [0, 2, 10, 14], "texture": "#6"}, "south": {"uv": [0, 2, 10, 14], "texture": "#6"}}},
+		{"name": "glass_west", "from": [1.5, 2, 3], "to": [2.5, 14, 13], "shade": true, "faces": {
+			"west": {"uv": [0, 2, 10, 14], "texture": "#6"}, "east": {"uv": [0, 2, 10, 14], "texture": "#6"}}},
+		{"name": "glass_east", "from": [13.5, 2, 3], "to": [14.5, 14, 13], "shade": true, "faces": {
+			"west": {"uv": [0, 2, 10, 14], "texture": "#6"}, "east": {"uv": [0, 2, 10, 14], "texture": "#6"}}},
+		{"name": "bottom_band_tier_overlay", "from": [-0.01, -0.01, -0.01], "to": [16.01, 2, 16.01], "shade": true, "faces": {
+			"north": {"uv": [0, 14, 16, 16], "cullface": "north", "texture": "#tier_side"},
+			"east": {"uv": [0, 14, 16, 16], "cullface": "east", "texture": "#tier_side"},
+			"south": {"uv": [0, 14, 16, 16], "cullface": "south", "texture": "#tier_side"},
+			"west": {"uv": [0, 14, 16, 16], "cullface": "west", "texture": "#tier_side"},
+			"down": {"uv": [0, 0, 16, 16], "cullface": "down", "texture": "#tier_bottom"}}},
+		{"name": "top_band_tier_overlay", "from": [-0.01, 14, -0.01], "to": [16.01, 16.01, 16.01], "shade": true, "faces": {
+			"north": {"uv": [0, 0, 16, 2], "cullface": "north", "texture": "#tier_side"},
+			"east": {"uv": [0, 0, 16, 2], "cullface": "east", "texture": "#tier_side"},
+			"south": {"uv": [0, 0, 16, 2], "cullface": "south", "texture": "#tier_side"},
+			"west": {"uv": [0, 0, 16, 2], "cullface": "west", "texture": "#tier_side"},
+			"up": {"uv": [0, 0, 16, 16], "cullface": "up", "texture": "#tier_top"}}}
+	]
+}

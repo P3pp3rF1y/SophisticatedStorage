@@ -6,6 +6,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.network.NetworkEvent;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageToolItem;
+import net.p3pp3rf1y.sophisticatedstorage.item.TankBlockItem;
 
 import javax.annotation.Nullable;
 
@@ -40,6 +41,8 @@ public class ScrolledToolMessage {
 		ItemStack stack = player.getMainHandItem();
 		if (stack.getItem() == ModItems.STORAGE_TOOL.get()) {
 			StorageToolItem.cycleMode(stack, msg.next);
+		} else if (stack.getItem() instanceof TankBlockItem) {
+			TankBlockItem.cycleMode(stack, msg.next);
 		}
 	}
 }

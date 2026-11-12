@@ -96,6 +96,8 @@ import net.p3pp3rf1y.sophisticatedstorage.crafting.*;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.DropPackedDisabledCondition;
 import net.p3pp3rf1y.sophisticatedstorage.data.CopyStorageDataFunction;
 import net.p3pp3rf1y.sophisticatedstorage.item.*;
+import net.p3pp3rf1y.sophisticatedstorage.upgrades.TankPumpUpgradeItem;
+import net.p3pp3rf1y.sophisticatedstorage.upgrades.TankXpPumpUpgradeItem;
 import net.p3pp3rf1y.sophisticatedstorage.upgrades.compression.CompressionUpgradeItem;
 import net.p3pp3rf1y.sophisticatedstorage.upgrades.hopper.HopperUpgradeContainer;
 import net.p3pp3rf1y.sophisticatedstorage.upgrades.hopper.HopperUpgradeItem;
@@ -219,12 +221,9 @@ public class ModItems {
 	public static final RegistryObject<JukeboxUpgradeItem> ADVANCED_JUKEBOX_UPGRADE = ITEMS.register("advanced_jukebox_upgrade",
 			() -> new JukeboxUpgradeItem(Config.SERVER.maxUpgradesPerStorage, Config.SERVER.advancedJukeboxUpgrade.numberOfSlots::get,
 					Config.SERVER.advancedJukeboxUpgrade.slotsInRow::get));
-	public static final RegistryObject<PumpUpgradeItem> PUMP_UPGRADE = ITEMS.register("pump_upgrade",
-			() -> new PumpUpgradeItem(false, false, true, Config.SERVER.pumpUpgrade, Config.SERVER.maxUpgradesPerStorage));
-	public static final RegistryObject<PumpUpgradeItem> ADVANCED_PUMP_UPGRADE = ITEMS.register("advanced_pump_upgrade",
-			() -> new PumpUpgradeItem(true, false, true, Config.SERVER.pumpUpgrade, Config.SERVER.maxUpgradesPerStorage));
-	public static final RegistryObject<XpPumpUpgradeItem> XP_PUMP_UPGRADE = ITEMS.register("xp_pump_upgrade",
-			() -> new XpPumpUpgradeItem(Config.SERVER.xpPumpUpgrade, Config.SERVER.maxUpgradesPerStorage));
+	public static final RegistryObject<PumpUpgradeItem> PUMP_UPGRADE = ITEMS.register("pump_upgrade", () -> new TankPumpUpgradeItem(false));
+	public static final RegistryObject<PumpUpgradeItem> ADVANCED_PUMP_UPGRADE = ITEMS.register("advanced_pump_upgrade", () -> new TankPumpUpgradeItem(true));
+	public static final RegistryObject<XpPumpUpgradeItem> XP_PUMP_UPGRADE = ITEMS.register("xp_pump_upgrade", TankXpPumpUpgradeItem::new);
 	public static final RegistryObject<CompressionUpgradeItem> COMPRESSION_UPGRADE = ITEMS.register("compression_upgrade", CompressionUpgradeItem::new);
 	public static final RegistryObject<HopperUpgradeItem> HOPPER_UPGRADE = ITEMS.register("hopper_upgrade",
 			() -> new HopperUpgradeItem(Config.SERVER.hopperUpgrade.inputFilterSlots::get, Config.SERVER.hopperUpgrade.outputFilterSlots::get,
@@ -288,6 +287,12 @@ public class ModItems {
 	public static RegistryObject<CreativeModeTab> CREATIVE_TAB = CREATIVE_MODE_TABS.register("main",
 			() -> CreativeModeTab.builder().icon(() -> WoodStorageBlockItem.setWoodType(new ItemStack(ModBlocks.GOLD_BARREL_ITEM.get()), WoodType.SPRUCE))
 					.title(Component.translatable("itemGroup.sophisticatedstorage")).displayItems((featureFlags, output) -> {
+						output.accept(ModBlocks.TANK_ITEM.get());
+						output.accept(ModBlocks.COPPER_TANK_ITEM.get());
+						output.accept(ModBlocks.IRON_TANK_ITEM.get());
+						output.accept(ModBlocks.GOLD_TANK_ITEM.get());
+						output.accept(ModBlocks.DIAMOND_TANK_ITEM.get());
+						output.accept(ModBlocks.NETHERITE_TANK_ITEM.get());
 						ITEMS.getEntries().stream().filter(i -> i.get() instanceof ItemBase)
 								.forEach(i -> ((ItemBase) i.get()).addCreativeTabItems(output::accept));
 						ModBlocks.ITEMS.getEntries().stream().filter(i -> i.get() instanceof BlockItemBase)

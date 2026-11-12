@@ -1,0 +1,25 @@
+{
+  "type": "sophisticatedstorage:storage_tier_upgrade",
+  "conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:diamond_tank"
+    }
+  ],
+  "key": {
+    "D": {
+      "tag": "forge:gems/diamond"
+    },
+    "S": {
+      "item": "sophisticatedstorage:gold_tank"
+    }
+  },
+  "pattern": [
+    "DDD",
+    "DSD",
+    "DDD"
+  ],
+  "result": {
+    "item": "sophisticatedstorage:diamond_tank"
+  }
+}

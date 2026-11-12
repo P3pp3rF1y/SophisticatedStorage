@@ -1,0 +1,20 @@
+{
+  "type": "sophisticatedstorage:storage_tier_upgrade_shapeless",
+  "conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:netherite_tank"
+    }
+  ],
+  "ingredients": [
+    {
+      "item": "sophisticatedstorage:diamond_tank"
+    },
+    {
+      "tag": "forge:ingots/netherite"
+    }
+  ],
+  "result": {
+    "item": "sophisticatedstorage:netherite_tank"
+  }
+}

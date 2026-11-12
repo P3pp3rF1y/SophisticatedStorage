@@ -11,7 +11,10 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.p3pp3rf1y.sophisticatedcore.controller.ControllerBlockEntityBase;
 import net.p3pp3rf1y.sophisticatedcore.inventory.ItemStackKey;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
@@ -44,6 +47,22 @@ public class ControllerBlockEntity extends ControllerBlockEntityBase
 
 	public ControllerBlockEntity(BlockPos pos, BlockState state) {
 		super(ModBlocks.CONTROLLER_BLOCK_ENTITY_TYPE.get(), pos, state);
+	}
+
+	public IFluidHandler getExternalFluidHandler(@Nullable Direction side) {
+		return new ControllerFluidHandler(() -> isRemoved() || level == null || level.isClientSide
+				? List.of()
+				: getLoadedStorageRepresentatives().stream().filter(INativeControllerFluidStorage.class::isInstance)
+						.map(INativeControllerFluidStorage.class::cast).map(INativeControllerFluidStorage::getControllerFluidHandler).flatMap(Optional::stream)
+						.toList());
+	}
+
+	@Override
+	public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) {
+		if (cap == ForgeCapabilities.FLUID_HANDLER) {
+			return LazyOptional.of(() -> getExternalFluidHandler(side)).cast();
+		}
+		return super.getCapability(cap, side);
 	}
 
 	@Override

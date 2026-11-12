@@ -116,7 +116,12 @@ public abstract class StorageBlockEntity extends BlockEntity
 
 	protected StorageBlockEntity(BlockPos pos, BlockState state, BlockEntityType<? extends StorageBlockEntity> blockEntityType) {
 		super(blockEntityType, pos, state);
-		storageWrapper = new StorageWrapper(() -> this::setChanged, () -> {
+		storageWrapper = createStorageWrapper();
+		storageWrapper.setUpgradeCachesInvalidatedHandler(this::onUpgradeCachesInvalidated);
+	}
+
+	protected StorageWrapper createStorageWrapper() {
+		return new StorageWrapper(() -> this::setChanged, () -> {
 			if (level != null && !level.isClientSide) {
 				WorldHelper.notifyBlockUpdate(this);
 			}
@@ -218,7 +223,6 @@ public abstract class StorageBlockEntity extends BlockEntity
 				return super.getInventoryForInputOutput();
 			}
 		};
-		storageWrapper.setUpgradeCachesInvalidatedHandler(this::onUpgradeCachesInvalidated);
 	}
 
 	protected boolean canRefreshUpgrades() {
@@ -587,7 +591,7 @@ public abstract class StorageBlockEntity extends BlockEntity
 		invalidateStorageCap();
 	}
 
-	private void invalidateStorageCap() {
+	protected void invalidateStorageCap() {
 		if (fluidHandlerCap != null) {
 			fluidHandlerCap.invalidate();
 			fluidHandlerCap = null;

@@ -10,6 +10,7 @@ import net.minecraftforge.fml.util.thread.SidedThreadGroups;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageFluidHandler;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
+import net.p3pp3rf1y.sophisticatedcore.api.StorageContentsType;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.SortBy;
 import net.p3pp3rf1y.sophisticatedcore.inventory.ITrackedContentsItemHandler;
 import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryHandler;
@@ -135,6 +136,11 @@ public abstract class StorageWrapper implements IStorageWrapper, ILinkedStorageE
 		return true;
 	}
 
+	@Override
+	public Set<StorageContentsType> getSupportedContents() {
+		return Set.of(StorageContentsType.ITEM);
+	}
+
 	protected void onRenderInfoSerialized(CompoundTag renderInfo) {
 		// Hook for linked virtual hosts to include their render projection in the carrier snapshot.
 	}
@@ -158,7 +164,7 @@ public abstract class StorageWrapper implements IStorageWrapper, ILinkedStorageE
 		}
 		UpgradeHandler handler = upgradeHandler;
 		if (handler == null) {
-			handler = new UpgradeHandler(getNumberOfUpgradeSlots(), this, getContentsNbt(), getSaveHandler.get(), () -> {
+			handler = createUpgradeHandler(getNumberOfUpgradeSlots(), getContentsNbt(), getSaveHandler.get(), () -> {
 				if (inventoryHandler != null) {
 					inventoryHandler.clearListeners();
 					inventoryHandler.setBaseSlotLimit(StackUpgradeItem.getInventorySlotLimit(this));
@@ -167,26 +173,28 @@ public abstract class StorageWrapper implements IStorageWrapper, ILinkedStorageE
 				refreshInventoryForInputOutput();
 				getSettingsHandler().getTypeCategory(ItemDisplaySettingsCategory.class).itemsChanged(); // in case stack upgrade changed need to send updated
 																										// fill ratios to client
-			}) {
-				@Override
-				public boolean isItemValid(int slot, ItemStack stack) {
-					// noinspection ConstantConditions - by this time the upgrade has registryName so it can't be null
-					return super.isItemValid(slot, stack)
-							&& (stack.isEmpty() || SophisticatedStorage.MOD_ID.equals(ForgeRegistries.ITEMS.getKey(stack.getItem()).getNamespace())
-									|| stack.is(ModItems.STORAGE_UPGRADE_TAG));
-				}
-
-				@Override
-				public void refreshUpgradeWrappers() {
-					super.refreshUpgradeWrappers();
-					onUpgradeRefresh();
-				}
-
-			};
+			});
 			upgradeHandler = handler;
 			upgradeDefaultsHandlers.forEach(this::registerUpgradeDefaultsHandlerInUpgradeHandler);
 		}
 		return handler;
+	}
+
+	protected UpgradeHandler createUpgradeHandler(int slots, CompoundTag contents, Runnable saveHandler, Runnable invalidateCaches) {
+		return new UpgradeHandler(slots, this, contents, saveHandler, invalidateCaches) {
+			@Override
+			public boolean isItemValid(int slot, ItemStack stack) {
+				return super.isItemValid(slot, stack)
+						&& (stack.isEmpty() || SophisticatedStorage.MOD_ID.equals(ForgeRegistries.ITEMS.getKey(stack.getItem()).getNamespace())
+								|| stack.is(ModItems.STORAGE_UPGRADE_TAG));
+			}
+
+			@Override
+			public void refreshUpgradeWrappers() {
+				super.refreshUpgradeWrappers();
+				onUpgradeRefresh();
+			}
+		};
 	}
 
 	private <T extends IUpgradeWrapper> void registerUpgradeDefaultsHandlerInUpgradeHandler(Class<T> wrapperClass,
@@ -689,6 +697,10 @@ public abstract class StorageWrapper implements IStorageWrapper, ILinkedStorageE
 
 	boolean isLinkedStorage() {
 		return linkedStorage != null;
+	}
+
+	protected Optional<IStorageWrapper> getLinkedStorage() {
+		return Optional.ofNullable(linkedStorage);
 	}
 
 	void clearCanonicalStorageData() {

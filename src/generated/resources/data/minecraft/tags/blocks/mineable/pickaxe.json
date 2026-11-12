@@ -10,6 +10,12 @@
     "sophisticatedstorage:storage_link",
     "sophisticatedstorage:storage_io",
     "sophisticatedstorage:storage_input",
-    "sophisticatedstorage:storage_output"
+    "sophisticatedstorage:storage_output",
+    "sophisticatedstorage:tank",
+    "sophisticatedstorage:copper_tank",
+    "sophisticatedstorage:iron_tank",
+    "sophisticatedstorage:gold_tank",
+    "sophisticatedstorage:diamond_tank",
+    "sophisticatedstorage:netherite_tank"
   ]
 }

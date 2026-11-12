@@ -25,6 +25,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.p3pp3rf1y.sophisticatedcore.client.gui.StorageScreenBase;
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.IRecipeViewerDisplayCatalog;
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.IRecipeViewerDisplayContext;
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.RecipeViewerDisplayCatalog;
@@ -33,6 +34,7 @@ import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.rei.*;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageScreen;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageSettingsScreen;
+import net.p3pp3rf1y.sophisticatedstorage.client.gui.TankScreen;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.common.StorageRecipeViewerDisplays;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
@@ -76,21 +78,25 @@ public class StorageReiClientPlugin implements REIClientPlugin {
 
 	@Override
 	public void registerExclusionZones(ExclusionZones zones) {
-		zones.register(StorageScreen.class, screen -> {
-			List<Rect2i> ret = new ArrayList<>();
-			screen.getUpgradeSlotsRectangle().ifPresent(ret::add);
-			ret.addAll(screen.getUpgradeSettingsControl().getTabRectangles());
-			screen.getSortButtonsRectangle().ifPresent(ret::add);
-			return ret.stream().map(r -> new Rectangle(r.getX(), r.getY(), r.getWidth(), r.getHeight())).toList();
-		});
+		zones.register(StorageScreen.class, StorageReiClientPlugin::getStorageExclusionZones);
+		zones.register(TankScreen.class, StorageReiClientPlugin::getStorageExclusionZones);
 
 		zones.register(StorageSettingsScreen.class,
 				screen -> screen.getExtendedControlsRectangles().stream().map(r -> new Rectangle(r.getX(), r.getY(), r.getWidth(), r.getHeight())).toList());
 	}
 
+	private static List<Rectangle> getStorageExclusionZones(StorageScreenBase<?> screen) {
+		List<Rect2i> ret = new ArrayList<>();
+		screen.getUpgradeSlotsRectangle().ifPresent(ret::add);
+		ret.addAll(screen.getUpgradeSettingsControl().getTabRectangles());
+		screen.getSortButtonsRectangle().ifPresent(ret::add);
+		return ret.stream().map(r -> new Rectangle(r.getX(), r.getY(), r.getWidth(), r.getHeight())).toList();
+	}
+
 	@Override
 	public void registerScreens(ScreenRegistry registry) {
 		registry.registerDraggableStackVisitor(new ReiStorageGhostIngredientHandler<>(StorageScreen.class));
+		registry.registerDraggableStackVisitor(new ReiStorageGhostIngredientHandler<>(TankScreen.class));
 		registry.registerDraggableStackVisitor(new ReiSettingsGhostIngredientHandler<>(StorageSettingsScreen.class));
 	}
 

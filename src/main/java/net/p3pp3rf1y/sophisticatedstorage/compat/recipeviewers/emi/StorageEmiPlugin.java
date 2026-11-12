@@ -22,6 +22,7 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.ShapelessRecipe;
 import net.minecraft.world.level.block.Block;
+import net.p3pp3rf1y.sophisticatedcore.client.gui.StorageScreenBase;
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.ClientRecipeHelper;
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.IRecipeViewerDisplayCatalog;
 import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.common.IRecipeViewerDisplayContext;
@@ -33,6 +34,7 @@ import net.p3pp3rf1y.sophisticatedstorage.client.gui.LimitedBarrelScreen;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.LimitedBarrelSettingsScreen;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageScreen;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageSettingsScreen;
+import net.p3pp3rf1y.sophisticatedstorage.client.gui.TankScreen;
 import net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.common.StorageRecipeViewerDisplays;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.GenericWoodStorageRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
@@ -96,11 +98,13 @@ public class StorageEmiPlugin implements EmiPlugin {
 
 	private void registerGuiHandlers(EmiRegistry registry) {
 		registry.addExclusionArea(StorageScreen.class, StorageEmiPlugin::addStorageExclusionArea);
+		registry.addExclusionArea(TankScreen.class, StorageEmiPlugin::addStorageExclusionArea);
 		registry.addExclusionArea(LimitedBarrelScreen.class, StorageEmiPlugin::addStorageExclusionArea);
 		registry.addExclusionArea(StorageSettingsScreen.class, StorageEmiPlugin::addSettingsExclusionArea);
 		registry.addExclusionArea(LimitedBarrelSettingsScreen.class, StorageEmiPlugin::addSettingsExclusionArea);
 
 		registry.addDragDropHandler(StorageScreen.class, new EmiStorageGhostDragDropHandler<>());
+		registry.addDragDropHandler(TankScreen.class, new EmiStorageGhostDragDropHandler<>());
 		registry.addDragDropHandler(LimitedBarrelScreen.class, new EmiStorageGhostDragDropHandler<>());
 		registry.addDragDropHandler(StorageSettingsScreen.class, new EmiSettingsGhostDragDropHandler<>());
 		registry.addDragDropHandler(LimitedBarrelSettingsScreen.class, new EmiSettingsGhostDragDropHandler<>());
@@ -113,7 +117,7 @@ public class StorageEmiPlugin implements EmiPlugin {
 		screen.getExtendedControlsRectangles().forEach(r -> consumer.accept(new Bounds(r.getX(), r.getY(), r.getWidth(), r.getHeight())));
 	}
 
-	private static void addStorageExclusionArea(StorageScreen screen, Consumer<Bounds> consumer) {
+	private static void addStorageExclusionArea(StorageScreenBase<?> screen, Consumer<Bounds> consumer) {
 		// noinspection ConstantValue
 		if (screen == null || screen.getUpgradeSettingsControl() == null) {
 			return;

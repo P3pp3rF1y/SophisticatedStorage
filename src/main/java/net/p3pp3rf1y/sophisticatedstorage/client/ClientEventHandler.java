@@ -46,6 +46,7 @@ import net.p3pp3rf1y.sophisticatedstorage.item.ChestBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.LinkedStorageTooltip;
 import net.p3pp3rf1y.sophisticatedstorage.item.PaintbrushItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageContentsTooltip;
+import net.p3pp3rf1y.sophisticatedstorage.item.TankBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.network.ScrolledToolMessage;
 import net.p3pp3rf1y.sophisticatedstorage.network.StoragePacketHandler;
 import net.p3pp3rf1y.sophisticatedstorage.util.GenericWoodStorageHelper;
@@ -69,6 +70,7 @@ public class ClientEventHandler {
 	public static void registerHandlers() {
 		IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
 		modBus.addListener(ClientEventHandler::onModelRegistry);
+		modBus.addListener(TankItemRenderer::onModifyBakingResult);
 		modBus.addListener(ClientEventHandler::registerLayer);
 		modBus.addListener(ClientEventHandler::registerTooltipComponent);
 		modBus.addListener(ClientEventHandler::registerOverlay);
@@ -162,7 +164,7 @@ public class ClientEventHandler {
 			return;
 		}
 		ItemStack stack = player.getMainHandItem();
-		if (stack.getItem() != ModItems.STORAGE_TOOL.get()) {
+		if (stack.getItem() != ModItems.STORAGE_TOOL.get() && !(stack.getItem() instanceof TankBlockItem)) {
 			return;
 		}
 		StoragePacketHandler.INSTANCE.sendToServer(new ScrolledToolMessage(evt.getScrollDelta() > 0));
@@ -234,6 +236,7 @@ public class ClientEventHandler {
 		event.registerBlockEntityRenderer(ModBlocks.BARREL_BLOCK_ENTITY_TYPE.get(), context -> new BarrelRenderer<>());
 		event.registerBlockEntityRenderer(ModBlocks.LIMITED_BARREL_BLOCK_ENTITY_TYPE.get(), context -> new LimitedBarrelRenderer());
 		event.registerBlockEntityRenderer(ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get(), ChestRenderer::new);
+		event.registerBlockEntityRenderer(ModBlocks.TANK_BLOCK_ENTITY_TYPE.get(), context -> new TankRenderer());
 		event.registerBlockEntityRenderer(ModBlocks.SHULKER_BOX_BLOCK_ENTITY_TYPE.get(), ShulkerBoxRenderer::new);
 		event.registerBlockEntityRenderer(ModBlocks.CONTROLLER_BLOCK_ENTITY_TYPE.get(), context -> new ControllerRenderer());
 		event.registerBlockEntityRenderer(ModBlocks.STORAGE_LINK_BLOCK_ENTITY_TYPE.get(), context -> new SimpleMaterialOverlayRenderer<>());

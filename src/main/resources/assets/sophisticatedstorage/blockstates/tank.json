@@ -1,0 +1,12 @@
+{
+  "multipart": [
+    {"when": {"form": "single"}, "apply": {"model": "sophisticatedstorage:block/wood_tank_single"}},
+    {"when": {"form": "bottom"}, "apply": {"model": "sophisticatedstorage:block/wood_tank_bottom"}},
+    {"when": {"form": "middle"}, "apply": {"model": "sophisticatedstorage:block/wood_tank_middle"}},
+    {"when": {"form": "top"}, "apply": {"model": "sophisticatedstorage:block/wood_tank_top"}},
+    {"when": {"form": "single", "packed": "true"}, "apply": {"model": "sophisticatedstorage:block/tank_packed_single"}},
+    {"when": {"form": "bottom", "packed": "true"}, "apply": {"model": "sophisticatedstorage:block/tank_packed_bottom"}},
+    {"when": {"form": "middle", "packed": "true"}, "apply": {"model": "sophisticatedstorage:block/tank_packed_middle"}},
+    {"when": {"form": "top", "packed": "true"}, "apply": {"model": "sophisticatedstorage:block/tank_packed_top"}}
+  ]
+}

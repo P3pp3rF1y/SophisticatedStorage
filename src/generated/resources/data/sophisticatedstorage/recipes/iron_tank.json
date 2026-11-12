@@ -1,0 +1,25 @@
+{
+  "type": "sophisticatedstorage:storage_tier_upgrade",
+  "conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:iron_tank"
+    }
+  ],
+  "key": {
+    "I": {
+      "tag": "forge:ingots/iron"
+    },
+    "S": {
+      "item": "sophisticatedstorage:tank"
+    }
+  },
+  "pattern": [
+    "III",
+    "ISI",
+    "III"
+  ],
+  "result": {
+    "item": "sophisticatedstorage:iron_tank"
+  }
+}

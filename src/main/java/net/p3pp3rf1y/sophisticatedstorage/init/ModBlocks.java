@@ -206,6 +206,18 @@ public class ModBlocks {
 	public static final RegistryObject<BlockItem> DIAMOND_CHEST_ITEM = ITEMS.register("diamond_chest", () -> new ChestBlockItem(DIAMOND_CHEST.get()));
 	public static final RegistryObject<BlockItem> NETHERITE_CHEST_ITEM = ITEMS.register("netherite_chest",
 			() -> new ChestBlockItem(NETHERITE_CHEST.get(), new Properties().fireResistant()));
+	public static final RegistryObject<TankBlock> TANK = BLOCKS.register("tank", () -> new TankBlock(TankTier.WOOD));
+	public static final RegistryObject<TankBlock> COPPER_TANK = BLOCKS.register("copper_tank", () -> new TankBlock(TankTier.COPPER));
+	public static final RegistryObject<TankBlock> IRON_TANK = BLOCKS.register("iron_tank", () -> new TankBlock(TankTier.IRON));
+	public static final RegistryObject<TankBlock> GOLD_TANK = BLOCKS.register("gold_tank", () -> new TankBlock(TankTier.GOLD));
+	public static final RegistryObject<TankBlock> DIAMOND_TANK = BLOCKS.register("diamond_tank", () -> new TankBlock(TankTier.DIAMOND));
+	public static final RegistryObject<TankBlock> NETHERITE_TANK = BLOCKS.register("netherite_tank", () -> new TankBlock(TankTier.NETHERITE));
+	public static final RegistryObject<BlockItem> TANK_ITEM = ITEMS.register("tank", () -> new TankBlockItem(TANK.get()));
+	public static final RegistryObject<BlockItem> COPPER_TANK_ITEM = ITEMS.register("copper_tank", () -> new TankBlockItem(COPPER_TANK.get()));
+	public static final RegistryObject<BlockItem> IRON_TANK_ITEM = ITEMS.register("iron_tank", () -> new TankBlockItem(IRON_TANK.get()));
+	public static final RegistryObject<BlockItem> GOLD_TANK_ITEM = ITEMS.register("gold_tank", () -> new TankBlockItem(GOLD_TANK.get()));
+	public static final RegistryObject<BlockItem> DIAMOND_TANK_ITEM = ITEMS.register("diamond_tank", () -> new TankBlockItem(DIAMOND_TANK.get()));
+	public static final RegistryObject<BlockItem> NETHERITE_TANK_ITEM = ITEMS.register("netherite_tank", () -> new TankBlockItem(NETHERITE_TANK.get()));
 
 	private static final String SHULKER_BOX_REG_NAME = "shulker_box";
 	public static final RegistryObject<ShulkerBoxBlock> SHULKER_BOX = BLOCKS.register(SHULKER_BOX_REG_NAME,
@@ -304,6 +316,11 @@ public class ModBlocks {
 			() -> BlockEntityType.Builder
 					.of(ChestBlockEntity::new, CHEST.get(), COPPER_CHEST.get(), IRON_CHEST.get(), GOLD_CHEST.get(), DIAMOND_CHEST.get(), NETHERITE_CHEST.get())
 					.build(null));
+	@SuppressWarnings("ConstantConditions")
+	public static final RegistryObject<BlockEntityType<TankBlockEntity>> TANK_BLOCK_ENTITY_TYPE = BLOCK_ENTITY_TYPES.register("tank",
+			() -> BlockEntityType.Builder
+					.of(TankBlockEntity::new, TANK.get(), COPPER_TANK.get(), IRON_TANK.get(), GOLD_TANK.get(), DIAMOND_TANK.get(), NETHERITE_TANK.get())
+					.build(null));
 
 	@SuppressWarnings("ConstantConditions") // no datafixer type needed
 	public static final RegistryObject<BlockEntityType<ShulkerBoxBlockEntity>> SHULKER_BOX_BLOCK_ENTITY_TYPE = BLOCK_ENTITY_TYPES.register(SHULKER_BOX_REG_NAME,
@@ -342,6 +359,8 @@ public class ModBlocks {
 
 	public static final RegistryObject<MenuType<StorageContainerMenu>> STORAGE_CONTAINER_TYPE = MENU_TYPES.register("storage",
 			() -> IForgeMenuType.create(StorageContainerMenu::fromBuffer));
+	public static final RegistryObject<MenuType<TankContainerMenu>> TANK_CONTAINER_TYPE = MENU_TYPES.register("tank",
+			() -> IForgeMenuType.create(TankContainerMenu::fromBuffer));
 
 	public static final RegistryObject<MenuType<LimitedBarrelContainerMenu>> LIMITED_BARREL_CONTAINER_TYPE = MENU_TYPES.register(LIMITED_BARREL_NAME,
 			() -> IForgeMenuType.create(LimitedBarrelContainerMenu::fromBuffer));
@@ -404,6 +423,7 @@ public class ModBlocks {
 		DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
 			StorageSettingsTabControl.registerFactories();
 			MenuScreens.register(STORAGE_CONTAINER_TYPE.get(), StorageScreen::constructScreen);
+			MenuScreens.register(TANK_CONTAINER_TYPE.get(), TankScreen::new);
 			MenuScreens.register(SETTINGS_CONTAINER_TYPE.get(), StorageSettingsScreen::constructScreen);
 			MenuScreens.register(LIMITED_BARREL_CONTAINER_TYPE.get(), LimitedBarrelScreen::new);
 			MenuScreens.register(LIMITED_BARREL_SETTINGS_CONTAINER_TYPE.get(), LimitedBarrelSettingsScreen::new);

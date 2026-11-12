@@ -12,7 +12,9 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.p3pp3rf1y.sophisticatedcore.controller.ControllerBlockEntityBase;
 import net.p3pp3rf1y.sophisticatedcore.controller.IControllerBoundable;
 import net.p3pp3rf1y.sophisticatedcore.controller.ILinkable;
@@ -33,6 +35,7 @@ public class StorageIOBlockEntity extends BlockEntity implements IControllerBoun
 	private boolean overlayHidden = false;
 	private boolean chunkBeingUnloaded = false;
 	private Map<Capability<?>, Map<Direction, LazyOptional<?>>> capabilitySideCache = new HashMap<>();
+	private LazyOptional<IFluidHandler> fluidHandlerCap;
 	protected StorageIOBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
 		super(type, pos, state);
 	}
@@ -64,6 +67,10 @@ public class StorageIOBlockEntity extends BlockEntity implements IControllerBoun
 			WorldHelper.notifyBlockUpdate(this);
 		} else {
 			capabilitySideCache.clear();
+			if (fluidHandlerCap != null) {
+				fluidHandlerCap.invalidate();
+				fluidHandlerCap = null;
+			}
 		}
 	}
 
@@ -112,6 +119,10 @@ public class StorageIOBlockEntity extends BlockEntity implements IControllerBoun
 			copy.forEach((side, lazyOptional) -> lazyOptional.invalidate());
 		});
 		capabilitySideCache.clear();
+		if (fluidHandlerCap != null) {
+			fluidHandlerCap.invalidate();
+			fluidHandlerCap = null;
+		}
 	}
 
 	@Override
@@ -206,6 +217,7 @@ public class StorageIOBlockEntity extends BlockEntity implements IControllerBoun
 	@Override
 	public void onLoad() {
 		super.onLoad();
+		chunkBeingUnloaded = false;
 		SimpleMaterialBlockData.updateOpaqueState(this, getMaterial());
 	}
 
@@ -233,6 +245,13 @@ public class StorageIOBlockEntity extends BlockEntity implements IControllerBoun
 	@Override
 	@SuppressWarnings("java:S1640") // can't use EnumMap because one of keys is null
 	public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) {
+		if (cap == ForgeCapabilities.FLUID_HANDLER) {
+			if (fluidHandlerCap == null) {
+				IFluidHandler handler = getExternalFluidHandler(side);
+				fluidHandlerCap = handler == null ? LazyOptional.empty() : LazyOptional.of(() -> handler);
+			}
+			return fluidHandlerCap.cast();
+		}
 		if (getControllerPos().isEmpty()) {
 			return super.getCapability(cap, side);
 		}
@@ -269,6 +288,22 @@ public class StorageIOBlockEntity extends BlockEntity implements IControllerBoun
 
 	protected <T> T wrapCapability(Capability<T> cap, T capability) {
 		return capability;
+	}
+
+	@Nullable
+	public IFluidHandler getExternalFluidHandler(@Nullable Direction side) {
+		if (getControllerPos().isEmpty() || level == null || isRemoved() || chunkBeingUnloaded) {
+			return null;
+		}
+		return new ControllerFluidHandler(() -> getControllerFluidHandlers(side));
+	}
+
+	private List<IFluidHandler> getControllerFluidHandlers(@Nullable Direction side) {
+		if (controllerPos == null || level == null || level.isClientSide() || isRemoved() || chunkBeingUnloaded) {
+			return List.of();
+		}
+		return WorldHelper.getLoadedBlockEntity(level, controllerPos, ControllerBlockEntity.class).filter(controller -> !controller.isRemoved())
+				.map(controller -> List.of(controller.getExternalFluidHandler(side))).orElseGet(List::of);
 	}
 
 	@Override

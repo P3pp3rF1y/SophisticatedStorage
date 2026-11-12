@@ -92,8 +92,30 @@ public class StorageTierUpgradeItem extends ItemBase {
 	}
 
 	public InteractionResult tryUpgradeStorage(ItemStack stack, Level level, BlockPos pos, BlockState state, @Nullable Player player) {
+		if (state.getBlock() instanceof TankBlock tankBlock) {
+			return tier.getTankUpgrade(tankBlock).map(target -> WorldHelper.getBlockEntity(level, pos, TankBlockEntity.class)
+					.flatMap(TankBlockEntity::getPrimary).map(primary -> tryUpgradeTank(stack, primary, target, player)).orElse(InteractionResult.FAIL))
+					.orElse(InteractionResult.PASS);
+		}
 		return tier.getBlockUpgradeDefinition(state.getBlock()).map(def -> WorldHelper.getBlockEntity(level, pos, def.blockEntityClass())
 				.map(be -> tryUpgradeStorage(stack, pos, level, state, def, be, player)).orElse(InteractionResult.PASS)).orElse(InteractionResult.PASS);
+	}
+
+	private InteractionResult tryUpgradeTank(ItemStack stack, TankBlockEntity primary, TankBlock target, @Nullable Player player) {
+		if (stack.getCount() < primary.getHeight()) {
+			if (player != null) {
+				player.displayClientMessage(Component.translatable(StorageTranslationHelper.INSTANCE.translGui("status.too_low_tier_upgrade_count"),
+						primary.getHeight(), stack.getHoverName()), true);
+			}
+			return InteractionResult.FAIL;
+		}
+		if (!primary.changeTier(target)) {
+			return InteractionResult.FAIL;
+		}
+		if (player == null || !player.getAbilities().instabuild) {
+			stack.shrink(primary.getHeight());
+		}
+		return InteractionResult.SUCCESS;
 	}
 
 	private <B extends BlockEntity> InteractionResult tryUpgradeStorage(ItemStack stack, BlockPos pos, Level level, BlockState state,
@@ -1091,6 +1113,23 @@ public class StorageTierUpgradeItem extends ItemBase {
 																																																																																										ModBlocks.LIMITED_NETHERITE_BARREL_4
 																																																																																												.get())));
 
+		private static final Map<TierUpgrade, Map<TankBlock, TankBlock>> TANK_UPGRADES = Map.ofEntries(
+				Map.entry(BASIC_TO_COPPER, Map.of(ModBlocks.TANK.get(), ModBlocks.COPPER_TANK.get())),
+				Map.entry(BASIC_TO_IRON, Map.of(ModBlocks.TANK.get(), ModBlocks.IRON_TANK.get())),
+				Map.entry(BASIC_TO_GOLD, Map.of(ModBlocks.TANK.get(), ModBlocks.GOLD_TANK.get())),
+				Map.entry(BASIC_TO_DIAMOND, Map.of(ModBlocks.TANK.get(), ModBlocks.DIAMOND_TANK.get())),
+				Map.entry(BASIC_TO_NETHERITE, Map.of(ModBlocks.TANK.get(), ModBlocks.NETHERITE_TANK.get())),
+				Map.entry(COPPER_TO_IRON, Map.of(ModBlocks.COPPER_TANK.get(), ModBlocks.IRON_TANK.get())),
+				Map.entry(COPPER_TO_GOLD, Map.of(ModBlocks.COPPER_TANK.get(), ModBlocks.GOLD_TANK.get())),
+				Map.entry(COPPER_TO_DIAMOND, Map.of(ModBlocks.COPPER_TANK.get(), ModBlocks.DIAMOND_TANK.get())),
+				Map.entry(COPPER_TO_NETHERITE, Map.of(ModBlocks.COPPER_TANK.get(), ModBlocks.NETHERITE_TANK.get())),
+				Map.entry(IRON_TO_GOLD, Map.of(ModBlocks.IRON_TANK.get(), ModBlocks.GOLD_TANK.get())),
+				Map.entry(IRON_TO_DIAMOND, Map.of(ModBlocks.IRON_TANK.get(), ModBlocks.DIAMOND_TANK.get())),
+				Map.entry(IRON_TO_NETHERITE, Map.of(ModBlocks.IRON_TANK.get(), ModBlocks.NETHERITE_TANK.get())),
+				Map.entry(GOLD_TO_DIAMOND, Map.of(ModBlocks.GOLD_TANK.get(), ModBlocks.DIAMOND_TANK.get())),
+				Map.entry(GOLD_TO_NETHERITE, Map.of(ModBlocks.GOLD_TANK.get(), ModBlocks.NETHERITE_TANK.get())),
+				Map.entry(DIAMOND_TO_NETHERITE, Map.of(ModBlocks.DIAMOND_TANK.get(), ModBlocks.NETHERITE_TANK.get())));
+
 		private final Map<Block, TierUpgradeDefinition<?>> blockUpgradeDefinitions;
 
 		TierUpgrade(Map<Block, TierUpgradeDefinition<?>> blockUpgradeDefinitions) {
@@ -1103,6 +1142,10 @@ public class StorageTierUpgradeItem extends ItemBase {
 
 		private Optional<TierUpgradeDefinition<?>> getBlockUpgradeDefinition(Block block) {
 			return Optional.ofNullable(blockUpgradeDefinitions.get(block));
+		}
+
+		private Optional<TankBlock> getTankUpgrade(TankBlock current) {
+			return Optional.ofNullable(TANK_UPGRADES.getOrDefault(this, Map.of()).get(current));
 		}
 	}
 }

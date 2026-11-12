@@ -1,0 +1,34 @@
+{
+  "type": "sophisticatedcore:upgrade_next_tier",
+  "conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:advanced_pump_upgrade"
+    }
+  ],
+  "key": {
+    "D": {
+      "tag": "forge:gems/diamond"
+    },
+    "G": {
+      "tag": "forge:ingots/gold"
+    },
+    "I": {
+      "item": "minecraft:dispenser"
+    },
+    "P": {
+      "item": "sophisticatedstorage:pump_upgrade"
+    },
+    "R": {
+      "tag": "forge:dusts/redstone"
+    }
+  },
+  "pattern": [
+    "DID",
+    "GPG",
+    "RRR"
+  ],
+  "result": {
+    "item": "sophisticatedstorage:advanced_pump_upgrade"
+  }
+}

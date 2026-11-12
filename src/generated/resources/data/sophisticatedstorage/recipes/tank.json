@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "G": {
+      "tag": "forge:glass"
+    },
+    "I": {
+      "tag": "forge:ingots/iron"
+    },
+    "S": {
+      "tag": "forge:stone"
+    }
+  },
+  "pattern": [
+    "SGS",
+    "G G",
+    "IGI"
+  ],
+  "result": {
+    "item": "sophisticatedstorage:tank"
+  },
+  "show_notification": true
+}

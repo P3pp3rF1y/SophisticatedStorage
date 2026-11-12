@@ -143,6 +143,13 @@ public class Config {
 		public final StorageConfig diamondChest;
 		public final StorageConfig netheriteChest;
 
+		public final TankConfig woodTank;
+		public final TankConfig copperTank;
+		public final TankConfig ironTank;
+		public final TankConfig goldTank;
+		public final TankConfig diamondTank;
+		public final TankConfig netheriteTank;
+
 		public final StorageConfig shulkerBox;
 		public final StorageConfig copperShulkerBox;
 		public final StorageConfig ironShulkerBox;
@@ -266,6 +273,13 @@ public class Config {
 			diamondChest = new StorageConfig(builder, "Diamond Chest", 108, 4);
 			netheriteChest = new StorageConfig(builder, "Netherite Chest", 132, 5);
 
+			woodTank = new TankConfig(builder, "Wood Tank", 8000, 1);
+			copperTank = new TankConfig(builder, "Copper Tank", 12000, 1);
+			ironTank = new TankConfig(builder, "Iron Tank", 16000, 2);
+			goldTank = new TankConfig(builder, "Gold Tank", 32000, 3);
+			diamondTank = new TankConfig(builder, "Diamond Tank", 64000, 4);
+			netheriteTank = new TankConfig(builder, "Netherite Tank", 128000, 5);
+
 			shulkerBox = new StorageConfig(builder, "Shulker Box", 27, 1);
 			copperShulkerBox = new StorageConfig(builder, "Copper Shulker Box", 45, 1);
 			ironShulkerBox = new StorageConfig(builder, "Iron Shulker Box", 54, 2);
@@ -331,6 +345,19 @@ public class Config {
 				inventorySlotCount = builder.comment("Number of inventory slots in the storage").defineInRange("inventorySlotCount", inventorySlotCountDefault,
 						1, 180);
 				upgradeSlotCount = builder.comment("Number of upgrade slots in the storage").defineInRange("upgradeSlotCount", upgradeSlotCountDefault, 0, 10);
+				builder.pop();
+			}
+		}
+
+		public static class TankConfig {
+			public final ForgeConfigSpec.IntValue capacity;
+			public final ForgeConfigSpec.IntValue upgradeSlotCount;
+
+			public TankConfig(ForgeConfigSpec.Builder builder, String storagePrefix, int capacityDefault, int upgradeSlotCountDefault) {
+				builder.comment(storagePrefix + " Settings").push(storagePrefix.replace(" ", ""));
+				capacity = builder.comment("Fluid capacity in mB per tank block; tank height and stack upgrades multiply this capacity")
+						.defineInRange("capacity", capacityDefault, 1, Integer.MAX_VALUE);
+				upgradeSlotCount = builder.comment("Number of upgrade slots in the tank").defineInRange("upgradeSlotCount", upgradeSlotCountDefault, 0, 10);
 				builder.pop();
 			}
 		}

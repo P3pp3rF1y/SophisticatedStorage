@@ -6,6 +6,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.p3pp3rf1y.sophisticatedcore.inventory.IItemHandlerSimpleInserter;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
@@ -36,6 +37,13 @@ public class StorageOutputBlockEntity extends StorageIOBlockEntity {
 		}
 
 		return super.wrapCapability(cap, capability);
+	}
+
+	@Nullable
+	@Override
+	public IFluidHandler getExternalFluidHandler(@Nullable Direction side) {
+		IFluidHandler handler = super.getExternalFluidHandler(side);
+		return handler == null ? null : new RestrictedFluidHandler(handler, false, true);
 	}
 
 	private static class OutputOnlyItemHandlerWrapper implements IItemHandler {

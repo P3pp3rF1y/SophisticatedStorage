@@ -27,10 +27,12 @@ import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.jei.subtypes.JeiSubt
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageScreen;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageSettingsScreen;
+import net.p3pp3rf1y.sophisticatedstorage.client.gui.TankScreen;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.common.StorageRecipeViewerDisplays;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
+import net.p3pp3rf1y.sophisticatedstorage.item.TankBlockItem;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -78,6 +80,16 @@ public class StorageJeiPlugin implements IModPlugin {
 				return ret;
 			}
 		});
+		registration.addGuiContainerHandler(TankScreen.class, new IGuiContainerHandler<>() {
+			@Override
+			public List<Rect2i> getGuiExtraAreas(TankScreen gui) {
+				List<Rect2i> ret = new ArrayList<>();
+				gui.getUpgradeSlotsRectangle().ifPresent(ret::add);
+				ret.addAll(gui.getUpgradeSettingsControl().getTabRectangles());
+				gui.getSortButtonsRectangle().ifPresent(ret::add);
+				return ret;
+			}
+		});
 
 		registration.addGuiContainerHandler(StorageSettingsScreen.class, new IGuiContainerHandler<>() {
 			@Override
@@ -87,6 +99,7 @@ public class StorageJeiPlugin implements IModPlugin {
 		});
 
 		registration.addGhostIngredientHandler(StorageScreen.class, new JeiStorageGhostIngredientHandler<>());
+		registration.addGhostIngredientHandler(TankScreen.class, new JeiStorageGhostIngredientHandler<>());
 		registration.addGhostIngredientHandler(SettingsScreen.class, new JeiSettingsGhostIngredientHandler<>());
 	}
 
@@ -100,15 +113,15 @@ public class StorageJeiPlugin implements IModPlugin {
 	public void registerVanillaCategoryExtensions(IVanillaCategoryExtensionRegistration registration) {
 		GroupedCraftingRecipeCategoryExtension.registerOnce(registration);
 		JeiCraftingSpecExtensionRegistrar.registerCraftingSpecExtensions(registration, this::getCatalog,
-				stack -> stack.getItem() instanceof StorageBlockItem || stack.is(Items.SHULKER_SHELL));
+				stack -> stack.getItem() instanceof StorageBlockItem || stack.getItem() instanceof TankBlockItem || stack.is(Items.SHULKER_SHELL));
 	}
 
 	@Override
 	public void registerAdvanced(IAdvancedRegistration registration) {
-		registration.addTypedRecipeManagerPlugin(RecipeTypes.CRAFTING,
-				new GroupedCraftingRecipeManagerPlugin(() -> getCatalog().getGroupedCraftingSpecs(), stack -> stack.getItem() instanceof StorageBlockItem));
+		registration.addTypedRecipeManagerPlugin(RecipeTypes.CRAFTING, new GroupedCraftingRecipeManagerPlugin(() -> getCatalog().getGroupedCraftingSpecs(),
+				stack -> stack.getItem() instanceof StorageBlockItem || stack.getItem() instanceof TankBlockItem));
 		registration.addTypedRecipeManagerPlugin(RecipeTypes.CRAFTING, new CraftingDisplayCatalogRecipeManagerPlugin(this::getCatalog,
-				stack -> stack.getItem() instanceof StorageBlockItem || stack.is(Items.SHULKER_SHELL)));
+				stack -> stack.getItem() instanceof StorageBlockItem || stack.getItem() instanceof TankBlockItem || stack.is(Items.SHULKER_SHELL)));
 	}
 
 	private IRecipeViewerDisplayCatalog getCatalog() {
