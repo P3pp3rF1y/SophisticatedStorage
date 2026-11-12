@@ -14,6 +14,7 @@ public class ModPayloads {
 		registrar.playToServer(OpenStorageInventoryPayload.TYPE, OpenStorageInventoryPayload.STREAM_CODEC, OpenStorageInventoryPayload::handlePayload);
 		registrar.playToServer(RequestStorageContentsPayload.TYPE, RequestStorageContentsPayload.STREAM_CODEC, RequestStorageContentsPayload::handlePayload);
 		registrar.playToClient(StorageContentsPayload.TYPE, StorageContentsPayload.STREAM_CODEC, StorageContentsPayload::handlePayload);
+		registrar.playToClient(TankMenuUpdatePayload.TYPE, TankMenuUpdatePayload.STREAM_CODEC, TankMenuUpdatePayload::handlePayload);
 		registrar.playToServer(ScrolledToolPayload.TYPE, ScrolledToolPayload.STREAM_CODEC, ScrolledToolPayload::handlePayload);
 		registrar.playToServer(RequestPlayerSettingsPayload.TYPE, RequestPlayerSettingsPayload.STREAM_CODEC,
 				(payload, context) -> RequestPlayerSettingsPayload.handlePayload(context));

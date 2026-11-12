@@ -1,0 +1,5 @@
+{
+  "parent":"minecraft:block/block","render_type":"minecraft:cutout_mipped","ambientocclusion":false,
+  "textures":{"side":"sophisticatedstorage:block/barrel_side_packed","particle":"sophisticatedstorage:block/barrel_side_packed"},
+  "elements":[{"from":[1.484,0,1.484],"to":[14.516,16,14.516],"faces":{"north":{"uv":[1.5,0,14.5,16],"texture":"#side"},"south":{"uv":[1.5,0,14.5,16],"texture":"#side"},"west":{"uv":[1.5,0,14.5,16],"texture":"#side"},"east":{"uv":[1.5,0,14.5,16],"texture":"#side"}}}]
+}

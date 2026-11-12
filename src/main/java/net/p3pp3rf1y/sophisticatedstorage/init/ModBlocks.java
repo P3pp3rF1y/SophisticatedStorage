@@ -218,6 +218,26 @@ public class ModBlocks {
 	public static final Supplier<BlockItem> NETHERITE_CHEST_ITEM = ITEMS.registerItem("netherite_chest",
 			properties -> new ChestBlockItem(NETHERITE_CHEST.get(), properties.useBlockDescriptionPrefix().fireResistant()));
 
+	public static final Supplier<TankBlock> TANK = BLOCKS.registerBlock("tank", properties -> new TankBlock(TankTier.WOOD, properties));
+	public static final Supplier<TankBlock> COPPER_TANK = BLOCKS.registerBlock("copper_tank", properties -> new TankBlock(TankTier.COPPER, properties));
+	public static final Supplier<TankBlock> IRON_TANK = BLOCKS.registerBlock("iron_tank", properties -> new TankBlock(TankTier.IRON, properties));
+	public static final Supplier<TankBlock> GOLD_TANK = BLOCKS.registerBlock("gold_tank", properties -> new TankBlock(TankTier.GOLD, properties));
+	public static final Supplier<TankBlock> DIAMOND_TANK = BLOCKS.registerBlock("diamond_tank", properties -> new TankBlock(TankTier.DIAMOND, properties));
+	public static final Supplier<TankBlock> NETHERITE_TANK = BLOCKS.registerBlock("netherite_tank",
+			properties -> new TankBlock(TankTier.NETHERITE, properties));
+	public static final Supplier<BlockItem> TANK_ITEM = ITEMS.registerItem("tank",
+			properties -> new TankBlockItem(TANK.get(), properties.useBlockDescriptionPrefix()));
+	public static final Supplier<BlockItem> COPPER_TANK_ITEM = ITEMS.registerItem("copper_tank",
+			properties -> new TankBlockItem(COPPER_TANK.get(), properties.useBlockDescriptionPrefix()));
+	public static final Supplier<BlockItem> IRON_TANK_ITEM = ITEMS.registerItem("iron_tank",
+			properties -> new TankBlockItem(IRON_TANK.get(), properties.useBlockDescriptionPrefix()));
+	public static final Supplier<BlockItem> GOLD_TANK_ITEM = ITEMS.registerItem("gold_tank",
+			properties -> new TankBlockItem(GOLD_TANK.get(), properties.useBlockDescriptionPrefix()));
+	public static final Supplier<BlockItem> DIAMOND_TANK_ITEM = ITEMS.registerItem("diamond_tank",
+			properties -> new TankBlockItem(DIAMOND_TANK.get(), properties.useBlockDescriptionPrefix()));
+	public static final Supplier<BlockItem> NETHERITE_TANK_ITEM = ITEMS.registerItem("netherite_tank",
+			properties -> new TankBlockItem(NETHERITE_TANK.get(), properties.useBlockDescriptionPrefix().fireResistant()));
+
 	private static final String SHULKER_BOX_REG_NAME = "shulker_box";
 	public static final Supplier<ShulkerBoxBlock> SHULKER_BOX = BLOCKS.registerBlock(SHULKER_BOX_REG_NAME,
 			properties -> new ShulkerBoxBlock(Config.SERVER.shulkerBox, properties));
@@ -361,6 +381,11 @@ public class ModBlocks {
 					NETHERITE_CHEST.get()));
 
 	@SuppressWarnings("ConstantConditions") // no datafixer type needed
+	public static final Supplier<BlockEntityType<TankBlockEntity>> TANK_BLOCK_ENTITY_TYPE = BLOCK_ENTITY_TYPES.register("tank",
+			() -> new BlockEntityType<>(TankBlockEntity::new, TANK.get(), COPPER_TANK.get(), IRON_TANK.get(), GOLD_TANK.get(), DIAMOND_TANK.get(),
+					NETHERITE_TANK.get()));
+
+	@SuppressWarnings("ConstantConditions") // no datafixer type needed
 	public static final Supplier<BlockEntityType<ShulkerBoxBlockEntity>> SHULKER_BOX_BLOCK_ENTITY_TYPE = BLOCK_ENTITY_TYPES.register(SHULKER_BOX_REG_NAME,
 			() -> new BlockEntityType<>(ShulkerBoxBlockEntity::new, SHULKER_BOX.get(), COPPER_SHULKER_BOX.get(), IRON_SHULKER_BOX.get(), GOLD_SHULKER_BOX.get(),
 					DIAMOND_SHULKER_BOX.get(), NETHERITE_SHULKER_BOX.get()));
@@ -395,6 +420,8 @@ public class ModBlocks {
 
 	public static final Supplier<MenuType<StorageContainerMenu>> STORAGE_CONTAINER_TYPE = MENU_TYPES.register("storage",
 			() -> IMenuTypeExtension.create(StorageContainerMenu::fromBuffer));
+	public static final Supplier<MenuType<TankContainerMenu>> TANK_CONTAINER_TYPE = MENU_TYPES.register("tank",
+			() -> IMenuTypeExtension.create(TankContainerMenu::fromBuffer));
 
 	public static final Supplier<MenuType<LimitedBarrelContainerMenu>> LIMITED_BARREL_CONTAINER_TYPE = MENU_TYPES.register(LIMITED_BARREL_NAME,
 			() -> IMenuTypeExtension.create(LimitedBarrelContainerMenu::fromBuffer));
@@ -449,6 +476,11 @@ public class ModBlocks {
 	}
 
 	private static void registerCapabilities(RegisterCapabilitiesEvent event) {
+		event.registerBlockEntity(Capabilities.Fluid.BLOCK, TANK_BLOCK_ENTITY_TYPE.get(), TankBlockEntity::getExternalFluidHandler);
+		event.registerBlockEntity(Capabilities.Fluid.BLOCK, CONTROLLER_BLOCK_ENTITY_TYPE.get(), ControllerBlockEntity::getExternalFluidHandler);
+		event.registerBlockEntity(Capabilities.Fluid.BLOCK, STORAGE_IO_BLOCK_ENTITY_TYPE.get(), StorageIOBlockEntity::getExternalFluidHandler);
+		event.registerBlockEntity(Capabilities.Fluid.BLOCK, STORAGE_INPUT_BLOCK_ENTITY_TYPE.get(), StorageInputBlockEntity::getExternalFluidHandler);
+		event.registerBlockEntity(Capabilities.Fluid.BLOCK, STORAGE_OUTPUT_BLOCK_ENTITY_TYPE.get(), StorageOutputBlockEntity::getExternalFluidHandler);
 		event.registerBlockEntity(Capabilities.Fluid.BLOCK, CHEST_BLOCK_ENTITY_TYPE.get(), StorageBlockEntity::getExternalFluidHandler);
 		event.registerBlockEntity(Capabilities.Fluid.BLOCK, SHULKER_BOX_BLOCK_ENTITY_TYPE.get(), StorageBlockEntity::getExternalFluidHandler);
 		event.registerBlockEntity(Capabilities.Fluid.BLOCK, LIMITED_BARREL_BLOCK_ENTITY_TYPE.get(), StorageBlockEntity::getExternalFluidHandler);

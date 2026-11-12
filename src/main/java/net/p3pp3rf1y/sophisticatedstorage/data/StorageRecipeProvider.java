@@ -68,6 +68,7 @@ public class StorageRecipeProvider extends RecipeProvider {
 		addLimitedBarrelRecipes(output);
 		addChestRecipes(output);
 		addShulkerBoxRecipes(output);
+		addTankRecipes(output);
 		addControllerRelatedRecipes(output);
 		addUpgradeRecipes(output);
 		addTierUpgradeItemRecipes(output);
@@ -545,7 +546,25 @@ public class StorageRecipeProvider extends RecipeProvider {
 				.requires(Tags.Items.INGOTS_NETHERITE).unlockedBy(HAS_LEVER_CRITERION_NAME, has(Items.LEVER)).save(recipeOutput);
 	}
 
+	private void addTankRecipes(RecipeOutput recipeOutput) {
+		ShapedRecipeBuilder.shaped(items, RecipeCategory.MISC, ModBlocks.TANK_ITEM.get()).pattern("SGS").pattern("G G").pattern("IGI")
+				.define('S', Tags.Items.STONES).define('G', Tags.Items.GLASS_BLOCKS).define('I', Tags.Items.INGOTS_IRON)
+				.unlockedBy("has_glass", has(Tags.Items.GLASS_BLOCKS)).save(recipeOutput);
+		addStorageTierUpgradeRecipes(recipeOutput, ModBlocks.TANK_ITEM.get(), ModBlocks.COPPER_TANK_ITEM.get(), ModBlocks.IRON_TANK_ITEM.get(),
+				ModBlocks.GOLD_TANK_ITEM.get(), ModBlocks.DIAMOND_TANK_ITEM.get(), ModBlocks.NETHERITE_TANK_ITEM.get());
+	}
+
 	private void addUpgradeRecipes(RecipeOutput recipeOutput) {
+		ShapeBasedRecipeBuilder.shaped(items, ModItems.PUMP_UPGRADE.get()).pattern("GUG").pattern("PBS").pattern("GUG").define('G', Tags.Items.GLASS_BLOCKS)
+				.define('U', Items.BUCKET).define('P', Items.PISTON).define('B', ModItems.UPGRADE_BASE.get()).define('S', Items.STICKY_PISTON)
+				.unlockedBy(HAS_UPGRADE_BASE_CRITERION_NAME, has(ModItems.UPGRADE_BASE.get())).save(recipeOutput);
+		ShapeBasedRecipeBuilder.shaped(items, ModItems.ADVANCED_PUMP_UPGRADE.get(), UpgradeNextTierRecipe::new).pattern("DID").pattern("GPG").pattern("RRR")
+				.define('D', Tags.Items.GEMS_DIAMOND).define('I', Items.DISPENSER).define('G', Tags.Items.INGOTS_GOLD).define('P', ModItems.PUMP_UPGRADE.get())
+				.define('R', Tags.Items.DUSTS_REDSTONE).unlockedBy("has_pump_upgrade", has(ModItems.PUMP_UPGRADE.get())).save(recipeOutput);
+		ShapeBasedRecipeBuilder.shaped(items, ModItems.XP_PUMP_UPGRADE.get(), UpgradeNextTierRecipe::new).pattern("RER").pattern("CPC").pattern("RER")
+				.define('R', Tags.Items.DUSTS_REDSTONE).define('E', Items.ENDER_EYE).define('C', Items.EXPERIENCE_BOTTLE)
+				.define('P', ModItems.ADVANCED_PUMP_UPGRADE.get()).unlockedBy("has_advanced_pump_upgrade", has(ModItems.ADVANCED_PUMP_UPGRADE.get()))
+				.save(recipeOutput);
 		ShapeBasedRecipeBuilder.shaped(items, ModItems.UPGRADE_BASE.get()).pattern("PIP").pattern("IPI").pattern("PIP").define('P', ItemTags.PLANKS)
 				.define('I', Tags.Items.INGOTS_IRON).unlockedBy("has_iron_ingot", has(Tags.Items.INGOTS_IRON)).save(recipeOutput);
 

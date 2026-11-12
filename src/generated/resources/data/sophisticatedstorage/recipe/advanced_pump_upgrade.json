@@ -1,0 +1,24 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:advanced_pump_upgrade"
+    }
+  ],
+  "type": "sophisticatedcore:upgrade_next_tier",
+  "key": {
+    "D": "#c:gems/diamond",
+    "G": "#c:ingots/gold",
+    "I": "minecraft:dispenser",
+    "P": "sophisticatedstorage:pump_upgrade",
+    "R": "#c:dusts/redstone"
+  },
+  "pattern": [
+    "DID",
+    "GPG",
+    "RRR"
+  ],
+  "result": {
+    "id": "sophisticatedstorage:advanced_pump_upgrade"
+  }
+}

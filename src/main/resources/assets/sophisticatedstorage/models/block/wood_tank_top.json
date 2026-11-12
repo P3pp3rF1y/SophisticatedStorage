@@ -1,0 +1,15 @@
+{
+  "parent":"minecraft:block/block","render_type":"minecraft:cutout_mipped","ambientocclusion":false,
+  "textures":{"0":"sophisticatedstorage:block/tank_side","1":"sophisticatedstorage:block/tank_top","2":"sophisticatedstorage:block/tank_bottom","3":"sophisticatedstorage:block/tank_pillar_top","4":"sophisticatedstorage:block/tank_glass_pane","5":"sophisticatedstorage:block/tank_inside","particle":"sophisticatedstorage:block/tank_side"},
+  "elements":[
+    {"name":"top_band","from":[0,14,0],"to":[16,16,16],"faces":{"down":{"uv":[0,0,16,16],"texture":"#5"},"up":{"uv":[0,0,16,16],"cullface":"up","texture":"#1"},"north":{"uv":[0,0,16,2],"cullface":"north","texture":"#0"},"south":{"uv":[0,0,16,2],"cullface":"south","texture":"#0"},"west":{"uv":[0,0,16,2],"cullface":"west","texture":"#0"},"east":{"uv":[0,0,16,2],"cullface":"east","texture":"#0"}}},
+    {"name":"nw_pillar","from":[1,0,1],"to":[3,14,3],"faces":{"north":{"uv":[0,0,2,14],"texture":"#3"},"south":{"uv":[0,0,2,14],"texture":"#3"},"west":{"uv":[0,0,2,14],"texture":"#3"},"east":{"uv":[0,0,2,14],"texture":"#3"}}},
+    {"name":"ne_pillar","from":[13,0,1],"to":[15,14,3],"faces":{"north":{"uv":[0,0,2,14],"texture":"#3"},"south":{"uv":[0,0,2,14],"texture":"#3"},"west":{"uv":[0,0,2,14],"texture":"#3"},"east":{"uv":[0,0,2,14],"texture":"#3"}}},
+    {"name":"sw_pillar","from":[1,0,13],"to":[3,14,15],"faces":{"north":{"uv":[0,0,2,14],"texture":"#3"},"south":{"uv":[0,0,2,14],"texture":"#3"},"west":{"uv":[0,0,2,14],"texture":"#3"},"east":{"uv":[0,0,2,14],"texture":"#3"}}},
+    {"name":"se_pillar","from":[13,0,13],"to":[15,14,15],"faces":{"north":{"uv":[0,0,2,14],"texture":"#3"},"south":{"uv":[0,0,2,14],"texture":"#3"},"west":{"uv":[0,0,2,14],"texture":"#3"},"east":{"uv":[0,0,2,14],"texture":"#3"}}},
+    {"name":"glass_north","from":[3,0,1.5],"to":[13,14,2.5],"faces":{"north":{"uv":[0,0,10,14],"texture":"#4"},"south":{"uv":[0,0,10,14],"texture":"#4"}}},
+    {"name":"glass_south","from":[3,0,13.5],"to":[13,14,14.5],"faces":{"north":{"uv":[0,0,10,14],"texture":"#4"},"south":{"uv":[0,0,10,14],"texture":"#4"}}},
+    {"name":"glass_west","from":[1.5,0,3],"to":[2.5,14,13],"faces":{"west":{"uv":[0,0,10,14],"texture":"#4"},"east":{"uv":[0,0,10,14],"texture":"#4"}}},
+    {"name":"glass_east","from":[13.5,0,3],"to":[14.5,14,13],"faces":{"west":{"uv":[0,0,10,14],"texture":"#4"},"east":{"uv":[0,0,10,14],"texture":"#4"}}}
+  ]
+}

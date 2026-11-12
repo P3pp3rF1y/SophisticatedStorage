@@ -4,6 +4,8 @@ import com.mojang.math.Quadrant;
 import net.minecraft.client.data.models.BlockModelGenerators;
 import net.minecraft.client.data.models.ItemModelGenerators;
 import net.minecraft.client.data.models.MultiVariant;
+import net.minecraft.client.data.models.blockstates.ConditionBuilder;
+import net.minecraft.client.data.models.blockstates.MultiPartGenerator;
 import net.minecraft.client.data.models.blockstates.MultiVariantGenerator;
 import net.minecraft.client.data.models.blockstates.PropertyDispatch;
 import net.minecraft.client.data.models.model.*;
@@ -68,9 +70,34 @@ public class StorageModelProvider extends SophisticatedModelProvider {
 		generateCubeBottomTopReuseTopOnBottom(blockModels, ModBlocks.STORAGE_INPUT.get());
 		generateCubeBottomTopReuseTopOnBottom(blockModels, ModBlocks.STORAGE_OUTPUT.get());
 		ModBlocks.STORAGE_CONNECTOR_BLOCKS.values().stream().map(Supplier::get).forEach(blockModels::createTrivialCube);
+		for (Supplier<TankBlock> tank : List.of(ModBlocks.TANK, ModBlocks.COPPER_TANK, ModBlocks.IRON_TANK, ModBlocks.GOLD_TANK, ModBlocks.DIAMOND_TANK,
+				ModBlocks.NETHERITE_TANK)) {
+			generateTank(blockModels, tank.get());
+		}
 
 		generateCustomModelBlock(blockModels, ModBlocks.DECORATION_TABLE.get(), BlockModelGenerators.ROTATION_HORIZONTAL_FACING);
 		generateCustomModelBlock(blockModels, ModBlocks.STORAGE_LINK.get(), BlockModelGenerators.ROTATIONS_COLUMN_WITH_FACING);
+	}
+
+	private void generateTank(BlockModelGenerators blockModels, TankBlock block) {
+		Identifier id = BuiltInRegistries.BLOCK.getKey(block);
+		MultiPartGenerator generator = MultiPartGenerator.multiPart(block);
+		for (TankForm form : TankForm.values()) {
+			String suffix = form.getSerializedName();
+			Identifier wood = Identifier.fromNamespaceAndPath(modId, "block/wood_tank_" + suffix);
+			Identifier tier = Identifier.fromNamespaceAndPath(modId, "block/" + id.getPath() + "_" + suffix);
+			Identifier packed = Identifier.fromNamespaceAndPath(modId, "block/tank_packed_" + suffix);
+			if (block == ModBlocks.TANK.get()) {
+				generator.with(new ConditionBuilder().term(TankBlock.FORM, form).term(TankBlock.SHOW_TIER, true), BlockModelGenerators.plainVariant(wood));
+				generator.with(new ConditionBuilder().term(TankBlock.FORM, form).term(TankBlock.SHOW_TIER, false), BlockModelGenerators.plainVariant(wood));
+			} else {
+				generator.with(new ConditionBuilder().term(TankBlock.FORM, form).term(TankBlock.SHOW_TIER, true), BlockModelGenerators.plainVariant(tier));
+				generator.with(new ConditionBuilder().term(TankBlock.FORM, form).term(TankBlock.SHOW_TIER, false), BlockModelGenerators.plainVariant(wood));
+			}
+			generator.with(new ConditionBuilder().term(TankBlock.FORM, form).term(TankBlock.PACKED, true), BlockModelGenerators.plainVariant(packed));
+		}
+		blockModels.blockStateOutput.accept(generator);
+		blockModels.itemModelOutput.accept(block.asItem(), ItemModelUtils.specialModel(id.withPrefix("item/"), new TankItemRenderer.Unbaked()));
 	}
 
 	private void generateBlockWithCustomBlockStateModel(BlockModelGenerators blockModels, String loaderName, Block baseBlock, ModelTemplate itemModelTemplate,

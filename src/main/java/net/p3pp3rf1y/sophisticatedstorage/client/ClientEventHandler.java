@@ -42,6 +42,7 @@ import net.p3pp3rf1y.sophisticatedstorage.item.ChestBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.LinkedStorageTooltip;
 import net.p3pp3rf1y.sophisticatedstorage.item.PaintbrushItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageContentsTooltip;
+import net.p3pp3rf1y.sophisticatedstorage.item.TankBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.network.RequestPlayerSettingsPayload;
 import net.p3pp3rf1y.sophisticatedstorage.network.ScrolledToolPayload;
 import net.p3pp3rf1y.sophisticatedstorage.util.GenericWoodStorageHelper;
@@ -111,6 +112,7 @@ public class ClientEventHandler {
 	}
 
 	private static void registerSpecialModelRenderers(RegisterSpecialModelRendererEvent event) {
+		event.register(SophisticatedStorage.getIdentifier("tank"), TankItemRenderer.Unbaked.MAP_CODEC);
 		event.register(ModBlocks.CHEST_ITEM.getId(), ChestItemRenderer.Unbaked.MAP_CODEC);
 		event.register(ModBlocks.SHULKER_BOX_ITEM.getId(), ShulkerBoxItemRenderer.Unbaked.MAP_CODEC);
 	}
@@ -180,7 +182,7 @@ public class ClientEventHandler {
 			return;
 		}
 		ItemStack stack = player.getMainHandItem();
-		if (stack.getItem() != ModItems.STORAGE_TOOL.get()) {
+		if (stack.getItem() != ModItems.STORAGE_TOOL.get() && !(stack.getItem() instanceof TankBlockItem)) {
 			return;
 		}
 		ClientPacketDistributor.sendToServer(new ScrolledToolPayload(evt.getScrollDeltaY() > 0));
@@ -252,6 +254,7 @@ public class ClientEventHandler {
 	}
 
 	private static void registerEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {
+		event.registerBlockEntityRenderer(ModBlocks.TANK_BLOCK_ENTITY_TYPE.get(), TankRenderer::new);
 		event.registerBlockEntityRenderer(ModBlocks.BARREL_BLOCK_ENTITY_TYPE.get(), BarrelRenderer::new);
 		event.registerBlockEntityRenderer(ModBlocks.LIMITED_BARREL_BLOCK_ENTITY_TYPE.get(), LimitedBarrelRenderer::new);
 		event.registerBlockEntityRenderer(ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get(), ChestRenderer::new);

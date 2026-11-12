@@ -14,6 +14,8 @@ import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageEndpointAdapte
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageHostFactories;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageItemLinkedStorageEndpointAdapter;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageLinkedStorageHostWrapper;
+import net.p3pp3rf1y.sophisticatedstorage.block.TankItemLinkedStorageEndpointAdapter;
+import net.p3pp3rf1y.sophisticatedstorage.block.TankLinkedStorageHostWrapper;
 import net.p3pp3rf1y.sophisticatedstorage.client.ClientEventHandler;
 import net.p3pp3rf1y.sophisticatedstorage.common.CommonEventHandler;
 import net.p3pp3rf1y.sophisticatedstorage.data.DataGenerators;
@@ -54,6 +56,8 @@ public class SophisticatedStorage {
 	private static void setup(FMLCommonSetupEvent event) {
 		LinkedStorageHostFactories.register(StorageLinkedStorageHostWrapper.FACTORY_ID, StorageLinkedStorageHostWrapper::create);
 		LinkedStorageEndpointAdapters.register(new StorageItemLinkedStorageEndpointAdapter());
+		LinkedStorageHostFactories.register(TankLinkedStorageHostWrapper.FACTORY_ID, TankLinkedStorageHostWrapper::create);
+		LinkedStorageEndpointAdapters.register(new TankItemLinkedStorageEndpointAdapter());
 		event.enqueueWork(ModBlocks::registerDispenseBehavior);
 		event.enqueueWork(ModBlocks::registerCauldronInteractions);
 	}
