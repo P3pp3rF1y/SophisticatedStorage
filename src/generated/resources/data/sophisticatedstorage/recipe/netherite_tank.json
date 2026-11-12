@@ -1,0 +1,17 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:netherite_tank"
+    }
+  ],
+  "type": "sophisticatedstorage:storage_tier_upgrade_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "sophisticatedstorage:diamond_tank",
+    "#c:ingots/netherite"
+  ],
+  "result": {
+    "id": "sophisticatedstorage:netherite_tank"
+  }
+}

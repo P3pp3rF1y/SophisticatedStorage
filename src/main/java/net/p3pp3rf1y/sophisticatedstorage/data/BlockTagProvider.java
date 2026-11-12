@@ -32,7 +32,9 @@ public class BlockTagProvider extends BlockTagsProvider {
 
 		tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.SHULKER_BOX.get(), ModBlocks.COPPER_SHULKER_BOX.get(), ModBlocks.IRON_SHULKER_BOX.get(),
 				ModBlocks.GOLD_SHULKER_BOX.get(), ModBlocks.DIAMOND_SHULKER_BOX.get(), ModBlocks.NETHERITE_SHULKER_BOX.get(), ModBlocks.CONTROLLER.get(),
-				ModBlocks.STORAGE_LINK.get(), ModBlocks.STORAGE_IO.get(), ModBlocks.STORAGE_INPUT.get(), ModBlocks.STORAGE_OUTPUT.get());
+				ModBlocks.STORAGE_LINK.get(), ModBlocks.STORAGE_IO.get(), ModBlocks.STORAGE_INPUT.get(), ModBlocks.STORAGE_OUTPUT.get(), ModBlocks.TANK.get(),
+				ModBlocks.COPPER_TANK.get(), ModBlocks.IRON_TANK.get(), ModBlocks.GOLD_TANK.get(), ModBlocks.DIAMOND_TANK.get(),
+				ModBlocks.NETHERITE_TANK.get());
 		tag(BlockTags.GUARDED_BY_PIGLINS).add(ModBlocks.BARREL.get(), ModBlocks.COPPER_BARREL.get(), ModBlocks.IRON_BARREL.get(), ModBlocks.GOLD_BARREL.get(),
 				ModBlocks.DIAMOND_BARREL.get(), ModBlocks.NETHERITE_BARREL.get(), ModBlocks.LIMITED_BARREL_1.get(), ModBlocks.LIMITED_COPPER_BARREL_1.get(),
 				ModBlocks.LIMITED_IRON_BARREL_1.get(), ModBlocks.LIMITED_GOLD_BARREL_1.get(), ModBlocks.LIMITED_DIAMOND_BARREL_1.get(),

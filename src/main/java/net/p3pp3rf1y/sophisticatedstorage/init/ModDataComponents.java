@@ -10,6 +10,7 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
@@ -22,6 +23,7 @@ import net.p3pp3rf1y.sophisticatedstorage.block.LimitedBarrelBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.item.BarrelBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.PaintbrushItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageToolItem;
+import net.p3pp3rf1y.sophisticatedstorage.item.TankBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.util.StreamCodecs;
 
 import java.util.HashSet;
@@ -35,6 +37,17 @@ public class ModDataComponents {
 
 	private static final DeferredRegister<DataComponentType<?>> DATA_COMPONENT_TYPES = DeferredRegister.create(BuiltInRegistries.DATA_COMPONENT_TYPE,
 			SophisticatedStorage.MOD_ID);
+	public static final Supplier<DataComponentType<Integer>> TANK_HEIGHT = DATA_COMPONENT_TYPES.register("tank_height",
+			() -> new DataComponentType.Builder<Integer>().persistent(Codec.intRange(1, 5)).networkSynchronized(ByteBufCodecs.VAR_INT).build());
+	public static final Supplier<DataComponentType<TankBlockItem.Mode>> TANK_ITEM_MODE = DATA_COMPONENT_TYPES.register("tank_item_mode",
+			() -> new DataComponentType.Builder<TankBlockItem.Mode>().persistent(TankBlockItem.Mode.CODEC).networkSynchronized(TankBlockItem.Mode.STREAM_CODEC)
+					.build());
+	public static final Supplier<DataComponentType<ItemContainerContents>> TANK_UPGRADES = DATA_COMPONENT_TYPES.register("tank_upgrades",
+			() -> new DataComponentType.Builder<ItemContainerContents>().persistent(CodecHelper.LENIENT_ITEM_CONTAINER_CONTENTS_CODEC)
+					.networkSynchronized(ItemContainerContents.STREAM_CODEC).cacheEncoding().build());
+	public static final Supplier<DataComponentType<ItemContainerContents>> TANK_CONTAINERS = DATA_COMPONENT_TYPES.register("tank_containers",
+			() -> new DataComponentType.Builder<ItemContainerContents>().persistent(CodecHelper.LENIENT_ITEM_CONTAINER_CONTENTS_CODEC)
+					.networkSynchronized(ItemContainerContents.STREAM_CODEC).cacheEncoding().build());
 	public static final Supplier<DataComponentType<StorageToolItem.Mode>> TOOL_MODE = DATA_COMPONENT_TYPES.register("tool_mode",
 			() -> new DataComponentType.Builder<StorageToolItem.Mode>().persistent(StorageToolItem.Mode.CODEC)
 					.networkSynchronized(StorageToolItem.Mode.STREAM_CODEC).build());

@@ -19,13 +19,14 @@ public class ToolInfoOverlay {
 		if (player == null || mc.options.hideGui || !mc.options.getCameraType().isFirstPerson() || mc.gameMode.getPlayerMode() == GameType.SPECTATOR) {
 			return;
 		}
-		InventoryHelper.getItemFromEitherHand(player, ModItems.STORAGE_TOOL.get()).ifPresent(storageTool -> {
-			Component overlayMessage = StorageToolItem.getOverlayMessage(storageTool);
+		Component overlayMessage = InventoryHelper.getItemFromEitherHand(player, ModItems.STORAGE_TOOL.get()).map(StorageToolItem::getOverlayMessage)
+				.orElse(null);
+		if (overlayMessage != null) {
 			Font font = mc.font;
 			int i = font.width(overlayMessage);
 			int x = (guiGraphics.guiWidth() - i) / 2;
 			int y = guiGraphics.guiHeight() - 75;
 			guiGraphics.text(font, overlayMessage, x + 1, y, DyeColor.WHITE.getTextColor(), false);
-		});
+		}
 	};
 }

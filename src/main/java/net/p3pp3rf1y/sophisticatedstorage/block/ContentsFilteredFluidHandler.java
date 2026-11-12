@@ -34,11 +34,16 @@ public record ContentsFilteredFluidHandler(IStorageFluidHandler fluidHandler, Bo
 	}
 
 	@Override
+	public int insert(int index, FluidResource resource, int amount, TransactionContext tx) {
+		return insert(index, resource, amount, tx, true);
+	}
+
+	@Override
 	public int insert(int index, FluidResource resource, int amount, TransactionContext tx, boolean ignoreInOutLimit) {
 		return matchesContents(resource) ? fluidHandler.insert(index, resource, amount, tx, ignoreInOutLimit) : 0;
 	}
 
-	private boolean matchesContents(FluidResource resource) {
+	boolean matchesContents(FluidResource resource) {
 		if (!isLocked.getAsBoolean()) {
 			return true;
 		}
@@ -50,6 +55,11 @@ public record ContentsFilteredFluidHandler(IStorageFluidHandler fluidHandler, Bo
 			}
 		}
 		return false;
+	}
+
+	@Override
+	public int extract(int index, FluidResource resource, int amount, TransactionContext tx) {
+		return extract(index, resource, amount, tx, true);
 	}
 
 	@Override

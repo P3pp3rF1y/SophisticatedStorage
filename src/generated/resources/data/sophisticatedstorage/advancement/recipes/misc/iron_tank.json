@@ -1,0 +1,38 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:iron_tank"
+    }
+  ],
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_tank": {
+      "conditions": {
+        "items": [
+          {
+            "items": "sophisticatedstorage:tank"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "sophisticatedstorage:iron_tank"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_tank"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "sophisticatedstorage:iron_tank"
+    ]
+  }
+}

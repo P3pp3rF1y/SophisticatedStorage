@@ -1,6 +1,7 @@
 package net.p3pp3rf1y.sophisticatedstorage.block;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
@@ -17,6 +18,7 @@ import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.neoforged.neoforge.transfer.transaction.Transaction;
 import net.neoforged.neoforge.transfer.transaction.TransactionContext;
+import net.p3pp3rf1y.sophisticatedcore.api.IStorageFluidHandler;
 import net.p3pp3rf1y.sophisticatedcore.controller.ControllerBlockEntityBase;
 import net.p3pp3rf1y.sophisticatedcore.inventory.ItemStackKey;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
@@ -50,6 +52,14 @@ public class ControllerBlockEntity extends ControllerBlockEntityBase
 
 	public ControllerBlockEntity(BlockPos pos, BlockState state) {
 		super(ModBlocks.CONTROLLER_BLOCK_ENTITY_TYPE.get(), pos, state);
+	}
+
+	public IStorageFluidHandler getExternalFluidHandler(@Nullable Direction side) {
+		return new ControllerFluidHandler(() -> isRemoved() || level == null || level.isClientSide()
+				? List.of()
+				: getLoadedStorageRepresentatives().stream().filter(INativeControllerFluidStorage.class::isInstance)
+						.map(INativeControllerFluidStorage.class::cast).map(INativeControllerFluidStorage::getControllerFluidHandler).flatMap(Optional::stream)
+						.toList());
 	}
 
 	public void depositPlayerItems(Player player, InteractionHand hand) {

@@ -1,0 +1,22 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:gold_tank"
+    }
+  ],
+  "type": "sophisticatedstorage:storage_tier_upgrade",
+  "category": "misc",
+  "key": {
+    "G": "#c:ingots/gold",
+    "S": "sophisticatedstorage:iron_tank"
+  },
+  "pattern": [
+    "GGG",
+    "GSG",
+    "GGG"
+  ],
+  "result": {
+    "id": "sophisticatedstorage:gold_tank"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "sophisticatedstorage:item/iron_tank",
+    "model": {
+      "type": "sophisticatedstorage:tank"
+    }
+  }
+}

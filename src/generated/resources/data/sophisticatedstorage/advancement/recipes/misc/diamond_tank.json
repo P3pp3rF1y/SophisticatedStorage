@@ -1,0 +1,38 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:diamond_tank"
+    }
+  ],
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_gold_tank": {
+      "conditions": {
+        "items": [
+          {
+            "items": "sophisticatedstorage:gold_tank"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "sophisticatedstorage:diamond_tank"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_gold_tank"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "sophisticatedstorage:diamond_tank"
+    ]
+  }
+}

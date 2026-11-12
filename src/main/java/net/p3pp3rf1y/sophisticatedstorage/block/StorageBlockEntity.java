@@ -113,7 +113,7 @@ public abstract class StorageBlockEntity extends BlockEntity
 
 	protected StorageBlockEntity(BlockPos pos, BlockState state, BlockEntityType<? extends StorageBlockEntity> blockEntityType) {
 		super(blockEntityType, pos, state);
-		storageWrapper = new StorageWrapper(() -> this::setChanged, () -> {
+		storageWrapper = this instanceof TankBlockEntity tank ? tank.createTankStorageWrapper() : new StorageWrapper(() -> this::setChanged, () -> {
 			if (level != null && !level.isClientSide()) {
 				WorldHelper.notifyBlockUpdate(this);
 			}
@@ -262,7 +262,9 @@ public abstract class StorageBlockEntity extends BlockEntity
 	}
 
 	private void saveStorageWrapper(ValueOutput out) {
-		out.putChild(STORAGE_WRAPPER, storageWrapper);
+		if (!(this instanceof TankBlockEntity tank) || tank.isPrimary()) {
+			out.putChild(STORAGE_WRAPPER, storageWrapper);
+		}
 	}
 
 	private void saveStorageWrapperClientData(ValueOutput out) {
@@ -576,7 +578,10 @@ public abstract class StorageBlockEntity extends BlockEntity
 		if (level instanceof ServerLevel serverLevel && linkedStorageEndpoint != null) {
 			LinkedStorageGroupsSavedData.get(serverLevel).manager().updatePrimaryHostDescriptor(linkedStorageEndpoint.groupId(),
 					linkedStorageEndpoint.endpointId(),
-					new LinkedStorageHostDescriptor(StorageLinkedStorageHostWrapper.FACTORY_ID, StorageLinkedStorageHostWrapper.createVirtualCarrier(this)));
+					this instanceof TankBlockEntity tank
+							? new LinkedStorageHostDescriptor(TankLinkedStorageHostWrapper.FACTORY_ID, tank.createTankCarrier())
+							: new LinkedStorageHostDescriptor(StorageLinkedStorageHostWrapper.FACTORY_ID,
+									StorageLinkedStorageHostWrapper.createVirtualCarrier(this)));
 		}
 		setChanged();
 	}

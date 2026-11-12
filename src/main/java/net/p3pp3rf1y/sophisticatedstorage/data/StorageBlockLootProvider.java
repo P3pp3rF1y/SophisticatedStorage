@@ -37,6 +37,12 @@ public class StorageBlockLootProvider extends LootTableProvider {
 
 		@Override
 		public void generate() {
+			add(ModBlocks.TANK.get(), LootTable.lootTable());
+			add(ModBlocks.COPPER_TANK.get(), LootTable.lootTable());
+			add(ModBlocks.IRON_TANK.get(), LootTable.lootTable());
+			add(ModBlocks.GOLD_TANK.get(), LootTable.lootTable());
+			add(ModBlocks.DIAMOND_TANK.get(), LootTable.lootTable());
+			add(ModBlocks.NETHERITE_TANK.get(), LootTable.lootTable());
 			add(ModBlocks.BARREL.get(), dropStorageWithContents(ModBlocks.BARREL_ITEM.get()));
 			add(ModBlocks.COPPER_BARREL.get(), dropStorageWithContents(ModBlocks.COPPER_BARREL_ITEM.get()));
 			add(ModBlocks.IRON_BARREL.get(), dropStorageWithContents(ModBlocks.IRON_BARREL_ITEM.get()));

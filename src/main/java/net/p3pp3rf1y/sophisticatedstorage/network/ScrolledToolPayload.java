@@ -9,6 +9,7 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageToolItem;
+import net.p3pp3rf1y.sophisticatedstorage.item.TankBlockItem;
 
 public record ScrolledToolPayload(boolean next) implements CustomPacketPayload {
 	public static final Type<ScrolledToolPayload> TYPE = new Type<>(SophisticatedStorage.getIdentifier("scrolled_tool"));
@@ -24,6 +25,8 @@ public record ScrolledToolPayload(boolean next) implements CustomPacketPayload {
 		ItemStack stack = context.player().getMainHandItem();
 		if (stack.getItem() == ModItems.STORAGE_TOOL.get()) {
 			StorageToolItem.cycleMode(stack, payload.next);
+		} else if (stack.getItem() instanceof TankBlockItem) {
+			TankBlockItem.cycleMode(stack, payload.next);
 		}
 	}
 }

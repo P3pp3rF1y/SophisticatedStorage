@@ -19,6 +19,7 @@ import net.neoforged.neoforge.capabilities.BlockCapabilityCache;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.p3pp3rf1y.sophisticatedcore.api.IStorageFluidHandler;
 import net.p3pp3rf1y.sophisticatedcore.controller.ControllerBlockEntityBase;
 import net.p3pp3rf1y.sophisticatedcore.controller.IControllerBoundable;
 import net.p3pp3rf1y.sophisticatedcore.controller.ILinkable;
@@ -28,6 +29,7 @@ import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -200,6 +202,7 @@ public class StorageIOBlockEntity extends BlockEntity implements IControllerBoun
 	@Override
 	public void onLoad() {
 		super.onLoad();
+		chunkBeingUnloaded = false;
 		SimpleMaterialBlockData.updateOpaqueState(this, getMaterial());
 	}
 
@@ -252,6 +255,22 @@ public class StorageIOBlockEntity extends BlockEntity implements IControllerBoun
 			return WorldHelper.getBlockEntity(getLevel(), getControllerPos().get(), ControllerBlockEntity.class)
 					.map(ControllerBlockEntity::getExternalItemResourceHandler).orElse(null);
 		}
+	}
+
+	@Nullable
+	public IStorageFluidHandler getExternalFluidHandler(@Nullable Direction side) {
+		if (getControllerPos().isEmpty() || level == null || isRemoved() || chunkBeingUnloaded) {
+			return null;
+		}
+		return new ControllerFluidHandler(() -> getControllerFluidHandlers(side));
+	}
+
+	private List<IStorageFluidHandler> getControllerFluidHandlers(@Nullable Direction side) {
+		if (controllerPos == null || level == null || level.isClientSide() || isRemoved() || chunkBeingUnloaded) {
+			return List.of();
+		}
+		return WorldHelper.getLoadedBlockEntity(level, controllerPos, ControllerBlockEntity.class).filter(controller -> !controller.isRemoved())
+				.map(controller -> List.of(controller.getExternalFluidHandler(side))).orElseGet(List::of);
 	}
 
 	@Override

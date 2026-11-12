@@ -12,6 +12,7 @@ import net.neoforged.neoforge.transfer.energy.EnergyHandler;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageFluidHandler;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
+import net.p3pp3rf1y.sophisticatedcore.api.StorageContentsType;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.SortBy;
 import net.p3pp3rf1y.sophisticatedcore.inventory.*;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.ILinkedStorageEndpointProvider;
@@ -121,6 +122,11 @@ abstract class StorageWrapperBase implements IStorageWrapper, ValueIOSerializabl
 		return true;
 	}
 
+	@Override
+	public Set<StorageContentsType> getSupportedContents() {
+		return Set.of(StorageContentsType.ITEM);
+	}
+
 	protected void onRenderDataSerialized(RenderData renderData) {
 		// Hook for virtual storage wrappers that persist their render data in a carrier snapshot.
 	}
@@ -155,7 +161,7 @@ abstract class StorageWrapperBase implements IStorageWrapper, ValueIOSerializabl
 		UpgradeHandler handler = upgradeHandler;
 		if (handler == null) {
 			upgradeHandlerInitializing = true;
-			handler = new UpgradeHandler(getNumberOfUpgradeSlots(), this, getContents(), getSaveHandler.get(), () -> {
+			handler = createUpgradeHandler(getNumberOfUpgradeSlots(), getContents(), getSaveHandler.get(), () -> {
 				if (inventoryHandler != null) {
 					inventoryHandler.clearListeners();
 					inventoryHandler.setBaseSlotLimit(StackUpgradeItem.getInventorySlotLimit(this));
@@ -164,24 +170,27 @@ abstract class StorageWrapperBase implements IStorageWrapper, ValueIOSerializabl
 				refreshInventoryForInputOutput();
 				getSettingsHandler().getTypeCategory(ItemDisplaySettingsCategory.class).itemsChanged(); // in case stack upgrade changed need to send updated
 																										// fill ratios to client
-			}) {
-				@Override
-				public boolean isValid(int index, ItemResource resource) {
-					return super.isValid(index, resource) && (resource.isEmpty() || resource.is(ModItems.STORAGE_UPGRADE_TAG));
-				}
-
-				@Override
-				public void refreshUpgradeWrappers() {
-					super.refreshUpgradeWrappers();
-					onUpgradeRefresh();
-				}
-
-			};
+			});
 			upgradeHandler = handler;
 			upgradeDefaultsHandlers.forEach(this::registerUpgradeDefaultsHandlerInUpgradeHandler);
 			upgradeHandlerInitializing = false;
 		}
 		return handler;
+	}
+
+	protected UpgradeHandler createUpgradeHandler(int slots, ContainerContents contents, Runnable saveHandler, Runnable invalidateCaches) {
+		return new UpgradeHandler(slots, this, contents, saveHandler, invalidateCaches) {
+			@Override
+			public boolean isValid(int index, ItemResource resource) {
+				return super.isValid(index, resource) && (resource.isEmpty() || resource.is(ModItems.STORAGE_UPGRADE_TAG));
+			}
+
+			@Override
+			public void refreshUpgradeWrappers() {
+				super.refreshUpgradeWrappers();
+				onUpgradeRefresh();
+			}
+		};
 	}
 
 	public boolean isUpgradeHandlerInitializing() {
@@ -646,6 +655,10 @@ abstract class StorageWrapperBase implements IStorageWrapper, ValueIOSerializabl
 		this.linkedStorage = linkedStorage;
 		updateLinkedHandlers();
 		refreshInventoryForInputOutput();
+	}
+
+	protected Optional<IStorageWrapper> getLinkedStorage() {
+		return Optional.ofNullable(linkedStorage);
 	}
 
 	private boolean updateLinkedHandlers() {
