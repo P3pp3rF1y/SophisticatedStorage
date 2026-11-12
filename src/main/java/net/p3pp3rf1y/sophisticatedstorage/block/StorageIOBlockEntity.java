@@ -15,6 +15,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.capabilities.BlockCapabilityCache;
 import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.p3pp3rf1y.sophisticatedcore.controller.ControllerBlockEntityBase;
 import net.p3pp3rf1y.sophisticatedcore.controller.IControllerBoundable;
@@ -26,6 +27,7 @@ import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import javax.annotation.Nullable;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -198,6 +200,7 @@ public class StorageIOBlockEntity extends BlockEntity implements IControllerBoun
 	@Override
 	public void onLoad() {
 		super.onLoad();
+		chunkBeingUnloaded = false;
 		SimpleMaterialBlockData.updateOpaqueState(this, getMaterial());
 	}
 
@@ -252,6 +255,22 @@ public class StorageIOBlockEntity extends BlockEntity implements IControllerBoun
 			return WorldHelper.getBlockEntity(getLevel(), getControllerPos().get(), ControllerBlockEntity.class).map(c -> c.getExternalItemHandler(side))
 					.orElse(null);
 		}
+	}
+
+	@Nullable
+	public IFluidHandler getExternalFluidHandler(@Nullable Direction side) {
+		if (getControllerPos().isEmpty() || level == null || isRemoved() || chunkBeingUnloaded) {
+			return null;
+		}
+		return new ControllerFluidHandler(() -> getControllerFluidHandlers(side));
+	}
+
+	private List<IFluidHandler> getControllerFluidHandlers(@Nullable Direction side) {
+		if (controllerPos == null || level == null || level.isClientSide() || isRemoved() || chunkBeingUnloaded) {
+			return List.of();
+		}
+		return WorldHelper.getLoadedBlockEntity(level, controllerPos, ControllerBlockEntity.class).filter(controller -> !controller.isRemoved())
+				.map(controller -> List.of(controller.getExternalFluidHandler(side))).orElseGet(List::of);
 	}
 
 	@Override

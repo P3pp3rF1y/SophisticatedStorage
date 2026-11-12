@@ -13,6 +13,7 @@ import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.item.ChestBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.StackStorageWrapper;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
+import net.p3pp3rf1y.sophisticatedstorage.item.TankBlockItem;
 
 import java.util.Optional;
 
@@ -46,6 +47,7 @@ public class StorageTierUpgradeShapelessRecipe extends ShapelessRecipe implement
 			StorageBlockItem.setNumberOfInventorySlots(upgradedStorage, storageWrapper.getDefaultNumberOfInventorySlots());
 			StorageBlockItem.setNumberOfUpgradeSlots(upgradedStorage, storageWrapper.getDefaultNumberOfUpgradeSlots());
 		}
+		StorageTierUpgradeRecipe.updateTankUpgradeSlots(upgradedStorage);
 		return upgradedStorage;
 	}
 
@@ -57,7 +59,7 @@ public class StorageTierUpgradeShapelessRecipe extends ShapelessRecipe implement
 	private Optional<ItemStack> getOriginalStorage(CraftingInput inv) {
 		for (int slot = 0; slot < inv.size(); slot++) {
 			ItemStack slotStack = inv.getItem(slot);
-			if (slotStack.getItem() instanceof StorageBlockItem
+			if ((slotStack.getItem() instanceof StorageBlockItem || slotStack.getItem() instanceof TankBlockItem)
 					&& (!(slotStack.getItem() instanceof ChestBlockItem) || !ChestBlockItem.isDoubleChest(slotStack))) {
 				return Optional.of(slotStack);
 			}

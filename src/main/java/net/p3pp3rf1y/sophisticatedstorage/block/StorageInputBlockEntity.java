@@ -4,6 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.p3pp3rf1y.sophisticatedcore.inventory.IItemHandlerSimpleInserter;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
@@ -39,6 +40,13 @@ public class StorageInputBlockEntity extends StorageIOBlockEntity {
 	protected void invalidateItemHandlerCache() {
 		super.invalidateItemHandlerCache();
 		itemHandler = null;
+	}
+
+	@Nullable
+	@Override
+	public IFluidHandler getExternalFluidHandler(@Nullable Direction side) {
+		IFluidHandler handler = super.getExternalFluidHandler(side);
+		return handler == null ? null : new RestrictedFluidHandler(handler, true, false);
 	}
 
 	private static class SingleSlotInputItemHandlerWrapper implements IItemHandler {

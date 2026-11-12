@@ -1,0 +1,16 @@
+{
+  "multipart": [
+    {"when": {"form": "single", "show_tier": "true"}, "apply": {"model": "sophisticatedstorage:block/gold_tank_single"}},
+    {"when": {"form": "bottom", "show_tier": "true"}, "apply": {"model": "sophisticatedstorage:block/gold_tank_bottom"}},
+    {"when": {"form": "middle", "show_tier": "true"}, "apply": {"model": "sophisticatedstorage:block/gold_tank_middle"}},
+    {"when": {"form": "top", "show_tier": "true"}, "apply": {"model": "sophisticatedstorage:block/gold_tank_top"}},
+    {"when": {"form": "single", "show_tier": "false"}, "apply": {"model": "sophisticatedstorage:block/wood_tank_single"}},
+    {"when": {"form": "bottom", "show_tier": "false"}, "apply": {"model": "sophisticatedstorage:block/wood_tank_bottom"}},
+    {"when": {"form": "middle", "show_tier": "false"}, "apply": {"model": "sophisticatedstorage:block/wood_tank_middle"}},
+    {"when": {"form": "top", "show_tier": "false"}, "apply": {"model": "sophisticatedstorage:block/wood_tank_top"}},
+    {"when": {"form": "single", "packed": "true"}, "apply": {"model": "sophisticatedstorage:block/tank_packed_single"}},
+    {"when": {"form": "bottom", "packed": "true"}, "apply": {"model": "sophisticatedstorage:block/tank_packed_bottom"}},
+    {"when": {"form": "middle", "packed": "true"}, "apply": {"model": "sophisticatedstorage:block/tank_packed_middle"}},
+    {"when": {"form": "top", "packed": "true"}, "apply": {"model": "sophisticatedstorage:block/tank_packed_top"}}
+  ]
+}

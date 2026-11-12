@@ -13,6 +13,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.wrapper.PlayerMainInvWrapper;
 import net.p3pp3rf1y.sophisticatedcore.controller.ControllerBlockEntityBase;
@@ -50,6 +51,14 @@ public class ControllerBlockEntity extends ControllerBlockEntityBase
 
 	public ControllerBlockEntity(BlockPos pos, BlockState state) {
 		super(ModBlocks.CONTROLLER_BLOCK_ENTITY_TYPE.get(), pos, state);
+	}
+
+	public IFluidHandler getExternalFluidHandler(@Nullable Direction side) {
+		return new ControllerFluidHandler(() -> isRemoved() || level == null || level.isClientSide
+				? List.of()
+				: getLoadedStorageRepresentatives().stream().filter(INativeControllerFluidStorage.class::isInstance)
+						.map(INativeControllerFluidStorage.class::cast).map(INativeControllerFluidStorage::getControllerFluidHandler).flatMap(Optional::stream)
+						.toList());
 	}
 
 	public void depositPlayerItems(Player player, InteractionHand hand) {

@@ -110,7 +110,12 @@ public abstract class StorageBlockEntity extends BlockEntity
 
 	protected StorageBlockEntity(BlockPos pos, BlockState state, BlockEntityType<? extends StorageBlockEntity> blockEntityType) {
 		super(blockEntityType, pos, state);
-		storageWrapper = new StorageWrapper(() -> () -> {
+		storageWrapper = createStorageWrapper();
+		storageWrapper.setUpgradeCachesInvalidatedHandler(this::onUpgradeCachesInvalidated);
+	}
+
+	protected StorageWrapper createStorageWrapper() {
+		return new StorageWrapper(() -> () -> {
 			setChanged();
 		}, () -> {
 			if (level != null && !level.isClientSide) {
@@ -214,7 +219,6 @@ public abstract class StorageBlockEntity extends BlockEntity
 				return super.getInventoryForInputOutput();
 			}
 		};
-		storageWrapper.setUpgradeCachesInvalidatedHandler(this::onUpgradeCachesInvalidated);
 	}
 
 	protected boolean canRefreshUpgrades() {
@@ -551,10 +555,13 @@ public abstract class StorageBlockEntity extends BlockEntity
 		displayName = customName;
 		if (level instanceof ServerLevel serverLevel && linkedStorageEndpoint != null) {
 			LinkedStorageGroupsSavedData.get(serverLevel).manager().updatePrimaryHostDescriptor(linkedStorageEndpoint.groupId(),
-					linkedStorageEndpoint.endpointId(),
-					new LinkedStorageHostDescriptor(StorageLinkedStorageHostWrapper.FACTORY_ID, StorageLinkedStorageHostWrapper.createVirtualCarrier(this)));
+					linkedStorageEndpoint.endpointId(), createLinkedStorageHostDescriptor());
 		}
 		setChanged();
+	}
+
+	protected LinkedStorageHostDescriptor createLinkedStorageHostDescriptor() {
+		return new LinkedStorageHostDescriptor(StorageLinkedStorageHostWrapper.FACTORY_ID, StorageLinkedStorageHostWrapper.createVirtualCarrier(this));
 	}
 
 	@Nullable

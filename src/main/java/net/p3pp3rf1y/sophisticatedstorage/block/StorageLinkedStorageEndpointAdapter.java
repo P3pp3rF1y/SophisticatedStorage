@@ -16,7 +16,8 @@ public class StorageLinkedStorageEndpointAdapter implements ILinkedStorageEndpoi
 
 	@Override
 	public Compatibility getCompatibility(ServerLevel level, ILinkedStorageBlockEndpoint endpoint, LinkedStorageHostDescriptor hostDescriptor) {
-		if (!(endpoint instanceof StorageBlockEntity storageBlockEntity) || !storageBlockEntity.isLinkedStorageCandidate()) {
+		if (!(endpoint instanceof StorageBlockEntity storageBlockEntity) || endpoint instanceof TankBlockEntity
+				|| !storageBlockEntity.isLinkedStorageCandidate()) {
 			return Compatibility.INCOMPATIBLE;
 		}
 		if (!StorageLinkedStorageHostWrapper.getCompatibilityKey(storageBlockEntity)
@@ -75,7 +76,8 @@ public class StorageLinkedStorageEndpointAdapter implements ILinkedStorageEndpoi
 	}
 
 	private static StorageBlockEntity requireCandidate(ILinkedStorageBlockEndpoint endpoint) {
-		if (endpoint instanceof StorageBlockEntity storageBlockEntity && storageBlockEntity.isLinkedStorageCandidate()) {
+		if (endpoint instanceof StorageBlockEntity storageBlockEntity && !(endpoint instanceof TankBlockEntity)
+				&& storageBlockEntity.isLinkedStorageCandidate()) {
 			return storageBlockEntity;
 		}
 		throw new IllegalArgumentException("Unsupported linked storage endpoint");

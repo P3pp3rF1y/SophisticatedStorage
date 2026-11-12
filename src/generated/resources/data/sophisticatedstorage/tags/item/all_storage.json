@@ -1,5 +1,11 @@
 {
   "values": [
+    "sophisticatedstorage:tank",
+    "sophisticatedstorage:copper_tank",
+    "sophisticatedstorage:iron_tank",
+    "sophisticatedstorage:gold_tank",
+    "sophisticatedstorage:diamond_tank",
+    "sophisticatedstorage:netherite_tank",
     "sophisticatedstorage:barrel",
     "sophisticatedstorage:copper_barrel",
     "sophisticatedstorage:iron_barrel",

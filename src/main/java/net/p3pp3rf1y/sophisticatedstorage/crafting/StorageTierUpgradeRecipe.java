@@ -12,10 +12,12 @@ import net.p3pp3rf1y.sophisticatedcore.crafting.RecipeWrapperSerializer;
 import net.p3pp3rf1y.sophisticatedcore.init.ModCoreDataComponents;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageEndpointData;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageGroupsSavedData;
+import net.p3pp3rf1y.sophisticatedstorage.block.TankBlock;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.item.ChestBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.StackStorageWrapper;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
+import net.p3pp3rf1y.sophisticatedstorage.item.TankBlockItem;
 
 import java.util.Optional;
 
@@ -51,7 +53,14 @@ public class StorageTierUpgradeRecipe extends ShapedRecipe implements IWrapperRe
 			StorageBlockItem.setNumberOfInventorySlots(upgradedStorage, storageWrapper.getDefaultNumberOfInventorySlots());
 			StorageBlockItem.setNumberOfUpgradeSlots(upgradedStorage, storageWrapper.getDefaultNumberOfUpgradeSlots());
 		}
+		updateTankUpgradeSlots(upgradedStorage);
 		return upgradedStorage;
+	}
+
+	static void updateTankUpgradeSlots(ItemStack upgradedStorage) {
+		if (upgradedStorage.getItem() instanceof TankBlockItem tankItem && !upgradedStorage.has(ModCoreDataComponents.LINKED_STORAGE_ENDPOINT)) {
+			TankBlockItem.setNumberOfUpgradeSlots(upgradedStorage, ((TankBlock) tankItem.getBlock()).getTier().upgradeSlots());
+		}
 	}
 
 	@Override
@@ -62,7 +71,7 @@ public class StorageTierUpgradeRecipe extends ShapedRecipe implements IWrapperRe
 	private Optional<ItemStack> getOriginalStorage(CraftingInput input) {
 		for (int slot = 0; slot < input.size(); slot++) {
 			ItemStack slotStack = input.getItem(slot);
-			if (slotStack.getItem() instanceof StorageBlockItem
+			if ((slotStack.getItem() instanceof StorageBlockItem || slotStack.getItem() instanceof TankBlockItem)
 					&& (!(slotStack.getItem() instanceof ChestBlockItem) || !ChestBlockItem.isDoubleChest(slotStack))) {
 				return Optional.of(slotStack);
 			}

@@ -1,0 +1,33 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:xp_pump_upgrade"
+    }
+  ],
+  "type": "sophisticatedcore:upgrade_next_tier",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "minecraft:experience_bottle"
+    },
+    "E": {
+      "item": "minecraft:ender_eye"
+    },
+    "P": {
+      "item": "sophisticatedstorage:advanced_pump_upgrade"
+    },
+    "R": {
+      "tag": "c:dusts/redstone"
+    }
+  },
+  "pattern": [
+    "RER",
+    "CPC",
+    "RER"
+  ],
+  "result": {
+    "count": 1,
+    "id": "sophisticatedstorage:xp_pump_upgrade"
+  }
+}

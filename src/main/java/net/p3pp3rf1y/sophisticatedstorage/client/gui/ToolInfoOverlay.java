@@ -12,20 +12,20 @@ import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageToolItem;
 
 public class ToolInfoOverlay {
-
 	public static final LayeredDraw.Layer HUD_TOOL_INFO = (guiGraphics, deltaTracker) -> {
 		Minecraft mc = Minecraft.getInstance();
 		LocalPlayer player = mc.player;
 		if (player == null || mc.options.hideGui || !mc.options.getCameraType().isFirstPerson() || mc.gameMode.getPlayerMode() == GameType.SPECTATOR) {
 			return;
 		}
-		InventoryHelper.getItemFromEitherHand(player, ModItems.STORAGE_TOOL.get()).ifPresent(storageTool -> {
-			Component overlayMessage = StorageToolItem.getOverlayMessage(storageTool);
+		Component overlayMessage = InventoryHelper.getItemFromEitherHand(player, ModItems.STORAGE_TOOL.get()).map(StorageToolItem::getOverlayMessage)
+				.orElse(null);
+		if (overlayMessage != null) {
 			Font font = mc.font;
 			int i = font.width(overlayMessage);
 			int x = (guiGraphics.guiWidth() - i) / 2;
 			int y = guiGraphics.guiHeight() - 75;
 			guiGraphics.drawString(font, overlayMessage, x + 1, y, DyeColor.WHITE.getTextColor(), false);
-		});
+		}
 	};
 }

@@ -33,6 +33,8 @@ public class ItemTagProvider extends ItemTagsProvider {
 		tag(BASE_TIER_WOODEN_STORAGE_TAG).add(ModBlocks.BARREL_ITEM.get(), ModBlocks.CHEST_ITEM.get());
 
 		IntrinsicTagAppender<Item> allStorageTag = tag(ModBlocks.ALL_STORAGE_TAG);
+		allStorageTag.add(ModBlocks.TANK_ITEM.get(), ModBlocks.COPPER_TANK_ITEM.get(), ModBlocks.IRON_TANK_ITEM.get(), ModBlocks.GOLD_TANK_ITEM.get(),
+				ModBlocks.DIAMOND_TANK_ITEM.get(), ModBlocks.NETHERITE_TANK_ITEM.get());
 		BuiltInRegistries.ITEM.stream().filter(item -> item instanceof StorageBlockItem).forEach(allStorageTag::add);
 
 		IntrinsicTagAppender<Item> upgradeTag = tag(ModItems.STORAGE_UPGRADE_TAG);

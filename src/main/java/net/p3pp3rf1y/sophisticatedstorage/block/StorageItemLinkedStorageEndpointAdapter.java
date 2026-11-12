@@ -13,13 +13,14 @@ import net.p3pp3rf1y.sophisticatedcore.inventory.InventoryHandler;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.*;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeHandler;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
+import net.p3pp3rf1y.sophisticatedstorage.item.TankBlockItem;
 
 import java.util.UUID;
 
 public final class StorageItemLinkedStorageEndpointAdapter implements ILinkedStorageItemEndpointAdapter {
 	@Override
 	public boolean supports(ItemStack stack) {
-		return stack.getItem() instanceof StorageBlockItem item && item.getBlock() instanceof StorageBlockBase;
+		return !(stack.getItem() instanceof TankBlockItem) && stack.getItem() instanceof StorageBlockItem item && item.getBlock() instanceof StorageBlockBase;
 	}
 
 	@Override

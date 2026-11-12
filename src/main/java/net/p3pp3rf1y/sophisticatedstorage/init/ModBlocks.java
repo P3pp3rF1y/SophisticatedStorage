@@ -62,6 +62,18 @@ public class ModBlocks {
 	private static final DeferredRegister<MenuType<?>> MENU_TYPES = DeferredRegister.create(BuiltInRegistries.MENU, SophisticatedStorage.MOD_ID);
 
 	private static final String BARREL_REG_NAME = "barrel";
+	public static final Supplier<TankBlock> TANK = BLOCKS.register("tank", () -> new TankBlock(TankTier.WOOD));
+	public static final Supplier<TankBlock> COPPER_TANK = BLOCKS.register("copper_tank", () -> new TankBlock(TankTier.COPPER));
+	public static final Supplier<TankBlock> IRON_TANK = BLOCKS.register("iron_tank", () -> new TankBlock(TankTier.IRON));
+	public static final Supplier<TankBlock> GOLD_TANK = BLOCKS.register("gold_tank", () -> new TankBlock(TankTier.GOLD));
+	public static final Supplier<TankBlock> DIAMOND_TANK = BLOCKS.register("diamond_tank", () -> new TankBlock(TankTier.DIAMOND));
+	public static final Supplier<TankBlock> NETHERITE_TANK = BLOCKS.register("netherite_tank", () -> new TankBlock(TankTier.NETHERITE));
+	public static final Supplier<TankBlockItem> TANK_ITEM = ITEMS.register("tank", () -> new TankBlockItem(TANK.get()));
+	public static final Supplier<TankBlockItem> COPPER_TANK_ITEM = ITEMS.register("copper_tank", () -> new TankBlockItem(COPPER_TANK.get()));
+	public static final Supplier<TankBlockItem> IRON_TANK_ITEM = ITEMS.register("iron_tank", () -> new TankBlockItem(IRON_TANK.get()));
+	public static final Supplier<TankBlockItem> GOLD_TANK_ITEM = ITEMS.register("gold_tank", () -> new TankBlockItem(GOLD_TANK.get()));
+	public static final Supplier<TankBlockItem> DIAMOND_TANK_ITEM = ITEMS.register("diamond_tank", () -> new TankBlockItem(DIAMOND_TANK.get()));
+	public static final Supplier<TankBlockItem> NETHERITE_TANK_ITEM = ITEMS.register("netherite_tank", () -> new TankBlockItem(NETHERITE_TANK.get()));
 	public static final Supplier<BarrelBlock> BARREL = BLOCKS.register(BARREL_REG_NAME,
 			() -> new BarrelBlock(Config.SERVER.woodBarrel.inventorySlotCount, Config.SERVER.woodBarrel.upgradeSlotCount, 0));
 	public static final Supplier<BarrelBlock> COPPER_BARREL = BLOCKS.register("copper_barrel",
@@ -275,6 +287,10 @@ public class ModBlocks {
 	public static final Supplier<BlockItem> DECORATION_TABLE_ITEM = ITEMS.register("decoration_table",
 			() -> new BlockItemBase(DECORATION_TABLE.get(), new Properties()));
 
+	@SuppressWarnings("ConstantConditions")
+	public static final Supplier<BlockEntityType<TankBlockEntity>> TANK_BLOCK_ENTITY_TYPE = BLOCK_ENTITY_TYPES.register("tank", () -> BlockEntityType.Builder
+			.of(TankBlockEntity::new, TANK.get(), COPPER_TANK.get(), IRON_TANK.get(), GOLD_TANK.get(), DIAMOND_TANK.get(), NETHERITE_TANK.get()).build(null));
+
 	@SuppressWarnings("ConstantConditions") // no datafixer type needed
 	public static final Supplier<BlockEntityType<BarrelBlockEntity>> BARREL_BLOCK_ENTITY_TYPE = BLOCK_ENTITY_TYPES.register(BARREL_REG_NAME,
 			() -> BlockEntityType.Builder.of(BarrelBlockEntity::new, BARREL.get(), COPPER_BARREL.get(), IRON_BARREL.get(), GOLD_BARREL.get(),
@@ -334,6 +350,8 @@ public class ModBlocks {
 
 	public static final Supplier<MenuType<StorageContainerMenu>> STORAGE_CONTAINER_TYPE = MENU_TYPES.register("storage",
 			() -> IMenuTypeExtension.create(StorageContainerMenu::fromBuffer));
+	public static final Supplier<MenuType<TankContainerMenu>> TANK_CONTAINER_TYPE = MENU_TYPES.register("tank",
+			() -> IMenuTypeExtension.create(TankContainerMenu::fromBuffer));
 
 	public static final Supplier<MenuType<LimitedBarrelContainerMenu>> LIMITED_BARREL_CONTAINER_TYPE = MENU_TYPES.register(LIMITED_BARREL_NAME,
 			() -> IMenuTypeExtension.create(LimitedBarrelContainerMenu::fromBuffer));
@@ -388,6 +406,13 @@ public class ModBlocks {
 	}
 
 	private static void registerCapabilities(RegisterCapabilitiesEvent event) {
+		event.registerItem(Capabilities.FluidHandler.ITEM, (stack, context) -> TankItemStorageWrapper.getCapability(stack), TANK_ITEM.get(),
+				COPPER_TANK_ITEM.get(), IRON_TANK_ITEM.get(), GOLD_TANK_ITEM.get(), DIAMOND_TANK_ITEM.get(), NETHERITE_TANK_ITEM.get());
+		event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, CONTROLLER_BLOCK_ENTITY_TYPE.get(), ControllerBlockEntity::getExternalFluidHandler);
+		event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, STORAGE_IO_BLOCK_ENTITY_TYPE.get(), StorageIOBlockEntity::getExternalFluidHandler);
+		event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, STORAGE_INPUT_BLOCK_ENTITY_TYPE.get(), StorageInputBlockEntity::getExternalFluidHandler);
+		event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, STORAGE_OUTPUT_BLOCK_ENTITY_TYPE.get(), StorageOutputBlockEntity::getExternalFluidHandler);
+		event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, TANK_BLOCK_ENTITY_TYPE.get(), TankBlockEntity::getExternalFluidHandler);
 		event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, CHEST_BLOCK_ENTITY_TYPE.get(), StorageBlockEntity::getExternalFluidHandler);
 		event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, SHULKER_BOX_BLOCK_ENTITY_TYPE.get(), StorageBlockEntity::getExternalFluidHandler);
 		event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, LIMITED_BARREL_BLOCK_ENTITY_TYPE.get(), StorageBlockEntity::getExternalFluidHandler);

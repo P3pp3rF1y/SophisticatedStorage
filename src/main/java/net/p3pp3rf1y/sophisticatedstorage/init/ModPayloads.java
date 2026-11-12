@@ -18,6 +18,7 @@ public class ModPayloads {
 		registrar.playToServer(RequestPlayerSettingsPayload.TYPE, RequestPlayerSettingsPayload.STREAM_CODEC,
 				(payload, context) -> RequestPlayerSettingsPayload.handlePayload(context));
 		registrar.playToClient(StorageOpennessPayload.TYPE, StorageOpennessPayload.STREAM_CODEC, StorageOpennessPayload::handlePayload);
+		registrar.playToClient(TankMenuUpdatePayload.TYPE, TankMenuUpdatePayload.STREAM_CODEC, TankMenuUpdatePayload::handlePayload);
 		registrar.playToServer(RequestControllerTargetHighlightsPayload.TYPE, RequestControllerTargetHighlightsPayload.STREAM_CODEC,
 				RequestControllerTargetHighlightsPayload::handlePayload);
 	}

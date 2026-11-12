@@ -31,7 +31,7 @@ public record ContentsFilteredFluidHandler(IFluidHandler fluidHandler, BooleanSu
 		return matchesContents(resource) ? fluidHandler.fill(resource, action) : 0;
 	}
 
-	private boolean matchesContents(FluidStack resource) {
+	boolean matchesContents(FluidStack resource) {
 		if (!isLocked.getAsBoolean()) {
 			return true;
 		}
