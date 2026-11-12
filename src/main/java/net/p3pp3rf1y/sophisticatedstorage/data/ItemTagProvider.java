@@ -31,6 +31,8 @@ public class ItemTagProvider extends ItemTagsProvider {
 
 		TagAppender<Item> allStorageTag = tag(ModBlocks.ALL_STORAGE_TAG);
 		BuiltInRegistries.ITEM.stream().filter(item -> item instanceof StorageBlockItem).map(ItemTagProvider::key).forEach(allStorageTag::add);
+		allStorageTag.add(key(ModBlocks.TANK_ITEM.get()), key(ModBlocks.COPPER_TANK_ITEM.get()), key(ModBlocks.IRON_TANK_ITEM.get()),
+				key(ModBlocks.GOLD_TANK_ITEM.get()), key(ModBlocks.DIAMOND_TANK_ITEM.get()), key(ModBlocks.NETHERITE_TANK_ITEM.get()));
 
 		TagAppender<Item> upgradeTag = tag(ModItems.STORAGE_UPGRADE_TAG);
 		BuiltInRegistries.ITEM.entrySet().stream()

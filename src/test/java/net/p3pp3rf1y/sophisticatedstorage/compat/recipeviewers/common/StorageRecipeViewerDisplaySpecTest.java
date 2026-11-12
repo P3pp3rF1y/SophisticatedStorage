@@ -5,6 +5,8 @@ import net.minecraft.commands.Commands;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.LayeredRegistryAccess;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.Bootstrap;
 import net.minecraft.server.RegistryLayer;
@@ -29,13 +31,18 @@ import net.p3pp3rf1y.sophisticatedstorage.crafting.GenericWoodStorageRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.StorageTierUpgradeRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.StorageTierUpgradeShapelessRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
+import net.p3pp3rf1y.sophisticatedstorage.init.ModDataComponents;
 import net.p3pp3rf1y.sophisticatedstorage.item.BarrelBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.ChestBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
+import net.p3pp3rf1y.sophisticatedstorage.item.TankBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.util.GenericWoodStorageHelper;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
@@ -46,11 +53,58 @@ import java.util.Optional;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @Tag("recipeViewerRegression")
 class StorageRecipeViewerDisplaySpecTest {
+	@Test
+	void getCraftingSpecsIncludesEveryShapedAndShapelessTankUpgrade() {
+		IRecipeViewerDisplayCatalog catalog = createCatalog();
+		List<CraftingDisplaySpec> tankSpecs = catalog.getCraftingSpecs().stream()
+				.filter(spec -> spec.getGlobalDisplays().stream().anyMatch(variant -> variant.firstOutput().getItem() instanceof TankBlockItem)).toList();
+		assertEquals(6, tankSpecs.size());
+		assertEquals(1, tankSpecs.stream().filter(CraftingDisplaySpec::shapeless).count());
+	}
+
+	@ParameterizedTest
+	@MethodSource("tankUpgradeLookups")
+	void getCraftingDisplaysIncludesEachTankUpgradeWithoutDuplicates(TankUpgradeLookup params) {
+		IRecipeViewerDisplayCatalog catalog = createCatalog();
+		List<CraftingDisplayVariant> displays = params.usages
+				? getCraftingUsagesFor(catalog, new ItemStack(params.source))
+				: getCraftingRecipesFor(catalog, new ItemStack(params.result));
+		assertEquals(1, displays.stream().filter(variant -> variant.firstOutput().is(params.result) && hasInput(variant, params.source)).count());
+	}
+
+	private static Stream<TankUpgradeLookup> tankUpgradeLookups() {
+		List<Item> sources = List.of(ModBlocks.TANK_ITEM.get(), ModBlocks.TANK_ITEM.get(), ModBlocks.COPPER_TANK_ITEM.get(), ModBlocks.IRON_TANK_ITEM.get(),
+				ModBlocks.GOLD_TANK_ITEM.get(), ModBlocks.DIAMOND_TANK_ITEM.get());
+		List<Item> results = List.of(ModBlocks.COPPER_TANK_ITEM.get(), ModBlocks.IRON_TANK_ITEM.get(), ModBlocks.IRON_TANK_ITEM.get(),
+				ModBlocks.GOLD_TANK_ITEM.get(), ModBlocks.DIAMOND_TANK_ITEM.get(), ModBlocks.NETHERITE_TANK_ITEM.get());
+		return IntStream.range(0, sources.size()).boxed().flatMap(index -> Stream.of(new TankUpgradeLookup(sources.get(index), results.get(index), true),
+				new TankUpgradeLookup(sources.get(index), results.get(index), false)));
+	}
+
+	private record TankUpgradeLookup(Item source, Item result, boolean usages) {
+	}
+
+	@ParameterizedTest
+	@ValueSource(booleans = {false, true})
+	void getCraftingDisplaysPreservesFocusedPortableTankComponents(boolean usages) {
+		IRecipeViewerDisplayCatalog catalog = createCatalog();
+		ItemStack source = new ItemStack(ModBlocks.DIAMOND_TANK_ITEM.get());
+		source.set(ModDataComponents.TANK_HEIGHT, 3);
+		source.set(DataComponents.CUSTOM_NAME, Component.literal("Portable tank"));
+		ItemStack result = source.transmuteCopy(ModBlocks.NETHERITE_TANK_ITEM.get(), 1);
+		List<CraftingDisplayVariant> displays = usages ? getCraftingUsagesFor(catalog, source) : getCraftingRecipesFor(catalog, result);
+		assertEquals(1, displays.size());
+		assertTrue(hasInputMatching(displays.getFirst(), source));
+		assertSameStack(result, displays.getFirst().firstOutput());
+	}
+
 	@Test
 	void tierUpgradeUsagePreservesFocusedBarrelComponentsAndDoesNotDuplicate() {
 		IRecipeViewerDisplayCatalog catalog = createCatalog();
@@ -212,7 +266,8 @@ class StorageRecipeViewerDisplaySpecTest {
 		ItemStack copperShulkerBox = new ItemStack(ModBlocks.COPPER_SHULKER_BOX_ITEM.get());
 		ItemStack ironShulkerBox = new ItemStack(ModBlocks.IRON_SHULKER_BOX_ITEM.get());
 
-		List<CraftingDisplayVariant> recipes = getCraftingRecipesFor(catalog, ironShulkerBox);
+		List<CraftingDisplayVariant> recipes = getCraftingRecipesFor(catalog, ironShulkerBox).stream()
+				.filter(StorageRecipeViewerDisplaySpecTest::isTierUpgradeDisplay).toList();
 
 		assertEquals(2, recipes.size());
 		assertTrue(recipes.stream().anyMatch(recipe -> ItemStack.isSameItem(shulkerBox, recipe.inputs().get(4))));
@@ -226,7 +281,8 @@ class StorageRecipeViewerDisplaySpecTest {
 		ItemStack ironShulkerBox = new ItemStack(ModBlocks.IRON_SHULKER_BOX_ITEM.get());
 		ItemStack goldShulkerBox = new ItemStack(ModBlocks.GOLD_SHULKER_BOX_ITEM.get());
 
-		List<CraftingDisplayVariant> recipes = getCraftingRecipesFor(catalog, goldShulkerBox);
+		List<CraftingDisplayVariant> recipes = getCraftingRecipesFor(catalog, goldShulkerBox).stream()
+				.filter(StorageRecipeViewerDisplaySpecTest::isTierUpgradeDisplay).toList();
 
 		assertEquals(1, recipes.size());
 		assertTrue(ItemStack.isSameItem(ironShulkerBox, recipes.getFirst().inputs().get(4)));
@@ -315,7 +371,8 @@ class StorageRecipeViewerDisplaySpecTest {
 	void singleChestUsesDoNotShowDoubleChestTierUpgradeRecipes() {
 		IRecipeViewerDisplayCatalog catalog = createChestCatalog();
 
-		List<CraftingDisplayVariant> usages = getCraftingUsagesFor(catalog, singleChest(ModBlocks.CHEST_ITEM.get()));
+		List<CraftingDisplayVariant> usages = getCraftingUsagesFor(catalog, singleChest(ModBlocks.CHEST_ITEM.get())).stream()
+				.filter(StorageRecipeViewerDisplaySpecTest::isTierUpgradeDisplay).toList();
 
 		assertEquals(2, usages.size());
 		assertTrue(
@@ -337,15 +394,16 @@ class StorageRecipeViewerDisplaySpecTest {
 	}
 
 	@Test
-	void upgradeIngredientUsesShowSingleAndDoubleChestTierUpgradeRecipesWithCorrectSources() {
+	void upgradeIngredientUsesShowTankAndSingleAndDoubleChestTierUpgradeRecipesWithCorrectSources() {
 		IRecipeViewerDisplayCatalog catalog = createChestCatalog();
 
 		List<CraftingDisplayVariant> usages = getCraftingUsagesFor(catalog, new ItemStack(Items.IRON_INGOT));
 		List<RecipeHolder<CraftingRecipe>> recipeHolders = catalog.getCraftingUsagesFor(new ItemStack(Items.IRON_INGOT)).stream()
 				.flatMap(view -> view.variants().stream().map(view.spec()::recipeHolder)).toList();
 
-		assertEquals(16, usages.size());
-		assertEquals(16, recipeHolders.size());
+		assertEquals(18, usages.size());
+		assertEquals(18, recipeHolders.size());
+		assertEquals(2, usages.stream().filter(variant -> variant.firstOutput().getItem() instanceof TankBlockItem).count());
 		assertTrue(usages.stream()
 				.anyMatch(variant -> !ChestBlockItem.isDoubleChest(variant.inputs().get(4)) && !ChestBlockItem.isDoubleChest(variant.firstOutput())));
 		assertTrue(usages.stream()
@@ -485,6 +543,18 @@ class StorageRecipeViewerDisplaySpecTest {
 
 	private static void assertSameStack(ItemStack expected, ItemStack actual) {
 		assertTrue(ItemStack.isSameItemSameComponents(expected, actual), "Expected " + expected + " but got " + actual);
+	}
+
+	private static boolean hasInput(CraftingDisplayVariant variant, Item item) {
+		return variant.inputs().stream().anyMatch(input -> input.is(item));
+	}
+
+	private static boolean hasInputMatching(CraftingDisplayVariant variant, ItemStack stack) {
+		return variant.inputs().stream().anyMatch(input -> ItemStack.isSameItemSameComponents(input, stack));
+	}
+
+	private static boolean isTierUpgradeDisplay(CraftingDisplayVariant variant) {
+		return variant.inputs().size() == 9 && variant.inputs().get(4).getItem() instanceof StorageBlockItem;
 	}
 
 	private final static class TestRecipeResources {

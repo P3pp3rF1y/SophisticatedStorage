@@ -1,0 +1,21 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:copper_tank"
+    }
+  ],
+  "type": "sophisticatedstorage:storage_tier_upgrade",
+  "key": {
+    "C": "#c:ingots/copper",
+    "S": "sophisticatedstorage:tank"
+  },
+  "pattern": [
+    "CCC",
+    "CSC",
+    "CCC"
+  ],
+  "result": {
+    "id": "sophisticatedstorage:copper_tank"
+  }
+}

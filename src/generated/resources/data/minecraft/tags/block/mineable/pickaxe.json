@@ -2,6 +2,12 @@
   "values": [
     "sophisticatedstorage:shulker_box",
     "sophisticatedstorage:copper_shulker_box",
+    "sophisticatedstorage:tank",
+    "sophisticatedstorage:copper_tank",
+    "sophisticatedstorage:iron_tank",
+    "sophisticatedstorage:gold_tank",
+    "sophisticatedstorage:diamond_tank",
+    "sophisticatedstorage:netherite_tank",
     "sophisticatedstorage:iron_shulker_box",
     "sophisticatedstorage:gold_shulker_box",
     "sophisticatedstorage:diamond_shulker_box",

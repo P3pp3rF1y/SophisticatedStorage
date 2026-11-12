@@ -77,6 +77,12 @@ public class StorageBlockLootProvider extends LootTableProvider {
 			add(ModBlocks.GOLD_SHULKER_BOX.get(), dropStorageWithContents(ModBlocks.GOLD_SHULKER_BOX_ITEM.get()));
 			add(ModBlocks.DIAMOND_SHULKER_BOX.get(), dropStorageWithContents(ModBlocks.DIAMOND_SHULKER_BOX_ITEM.get()));
 			add(ModBlocks.NETHERITE_SHULKER_BOX.get(), dropStorageWithContents(ModBlocks.NETHERITE_SHULKER_BOX_ITEM.get()));
+			add(ModBlocks.TANK.get(), LootTable.lootTable());
+			add(ModBlocks.COPPER_TANK.get(), LootTable.lootTable());
+			add(ModBlocks.IRON_TANK.get(), LootTable.lootTable());
+			add(ModBlocks.GOLD_TANK.get(), LootTable.lootTable());
+			add(ModBlocks.DIAMOND_TANK.get(), LootTable.lootTable());
+			add(ModBlocks.NETHERITE_TANK.get(), LootTable.lootTable());
 
 			add(ModBlocks.CONTROLLER.get(), dropSimpleMaterialBlock(ModBlocks.CONTROLLER_ITEM.get()));
 			add(ModBlocks.STORAGE_LINK.get(), dropSimpleMaterialBlock(ModBlocks.STORAGE_LINK_ITEM.get()));

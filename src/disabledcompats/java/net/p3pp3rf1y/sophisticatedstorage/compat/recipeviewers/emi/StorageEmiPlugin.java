@@ -40,6 +40,7 @@ import net.p3pp3rf1y.sophisticatedstorage.client.gui.LimitedBarrelScreen;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.LimitedBarrelSettingsScreen;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageScreen;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageSettingsScreen;
+import net.p3pp3rf1y.sophisticatedstorage.client.gui.TankScreen;
 import net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.common.StorageRecipeViewerDisplays;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.GenericWoodStorageRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
@@ -101,11 +102,13 @@ public class StorageEmiPlugin implements EmiPlugin {
 
 	private void registerGuiHandlers(EmiRegistry registry) {
 		registry.addExclusionArea(StorageScreen.class, StorageEmiPlugin::addStorageExclusionArea);
+		registry.addExclusionArea(TankScreen.class, StorageEmiPlugin::addTankExclusionArea);
 		registry.addExclusionArea(LimitedBarrelScreen.class, StorageEmiPlugin::addStorageExclusionArea);
 		registry.addExclusionArea(StorageSettingsScreen.class, StorageEmiPlugin::addSettingsExclusionArea);
 		registry.addExclusionArea(LimitedBarrelSettingsScreen.class, StorageEmiPlugin::addSettingsExclusionArea);
 
 		registry.addDragDropHandler(StorageScreen.class, new EmiStorageGhostDragDropHandler<>());
+		registry.addDragDropHandler(TankScreen.class, new EmiStorageGhostDragDropHandler<>());
 		registry.addDragDropHandler(LimitedBarrelScreen.class, new EmiStorageGhostDragDropHandler<>());
 		registry.addDragDropHandler(StorageSettingsScreen.class, new EmiSettingsGhostDragDropHandler<>());
 		registry.addDragDropHandler(LimitedBarrelSettingsScreen.class, new EmiSettingsGhostDragDropHandler<>());
@@ -126,6 +129,14 @@ public class StorageEmiPlugin implements EmiPlugin {
 		screen.getUpgradeSlotsRectangle().ifPresent(r -> consumer.accept(new Bounds(r.getX(), r.getY(), r.getWidth(), r.getHeight())));
 		screen.getUpgradeSettingsControl().getTabRectangles().forEach(r -> consumer.accept(new Bounds(r.getX(), r.getY(), r.getWidth(), r.getHeight())));
 		screen.getSortButtonsRectangle().ifPresent(r -> consumer.accept(new Bounds(r.getX(), r.getY(), r.getWidth(), r.getHeight())));
+	}
+
+	private static void addTankExclusionArea(TankScreen screen, Consumer<Bounds> consumer) {
+		if (screen == null || screen.getUpgradeSettingsControl() == null) {
+			return;
+		}
+		screen.getUpgradeSlotsRectangle().ifPresent(r -> consumer.accept(new Bounds(r.getX(), r.getY(), r.getWidth(), r.getHeight())));
+		screen.getUpgradeSettingsControl().getTabRectangles().forEach(r -> consumer.accept(new Bounds(r.getX(), r.getY(), r.getWidth(), r.getHeight())));
 	}
 
 	private void registerRecipes(EmiRegistry registry, EmiCraftingRecipeHandler craftingRecipeHandler) {

@@ -34,6 +34,7 @@ import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.rei.*;
 import net.p3pp3rf1y.sophisticatedstorage.SophisticatedStorage;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageScreen;
 import net.p3pp3rf1y.sophisticatedstorage.client.gui.StorageSettingsScreen;
+import net.p3pp3rf1y.sophisticatedstorage.client.gui.TankScreen;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.StorageContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.common.StorageRecipeViewerDisplays;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
@@ -87,6 +88,12 @@ public class StorageReiClientPlugin implements REIClientPlugin {
 			return ret.stream().map(r -> new Rectangle(r.getX(), r.getY(), r.getWidth(), r.getHeight())).toList();
 		});
 
+		zones.register(TankScreen.class, screen -> {
+			List<Rect2i> ret = new ArrayList<>();
+			screen.getUpgradeSlotsRectangle().ifPresent(ret::add);
+			ret.addAll(screen.getUpgradeSettingsControl().getTabRectangles());
+			return ret.stream().map(r -> new Rectangle(r.getX(), r.getY(), r.getWidth(), r.getHeight())).toList();
+		});
 		zones.register(StorageSettingsScreen.class,
 				screen -> screen.getExtendedControlsRectangles().stream().map(r -> new Rectangle(r.getX(), r.getY(), r.getWidth(), r.getHeight())).toList());
 	}
@@ -94,6 +101,7 @@ public class StorageReiClientPlugin implements REIClientPlugin {
 	@Override
 	public void registerScreens(ScreenRegistry registry) {
 		registry.registerDraggableStackVisitor(new ReiStorageGhostIngredientHandler<>(StorageScreen.class));
+		registry.registerDraggableStackVisitor(new ReiStorageGhostIngredientHandler<>(TankScreen.class));
 		registry.registerDraggableStackVisitor(new ReiSettingsGhostIngredientHandler<>(StorageSettingsScreen.class));
 	}
 

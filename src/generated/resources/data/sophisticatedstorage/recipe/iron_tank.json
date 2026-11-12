@@ -1,0 +1,21 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:iron_tank"
+    }
+  ],
+  "type": "sophisticatedstorage:storage_tier_upgrade",
+  "key": {
+    "I": "#c:ingots/iron",
+    "S": "sophisticatedstorage:tank"
+  },
+  "pattern": [
+    "III",
+    "ISI",
+    "III"
+  ],
+  "result": {
+    "id": "sophisticatedstorage:iron_tank"
+  }
+}

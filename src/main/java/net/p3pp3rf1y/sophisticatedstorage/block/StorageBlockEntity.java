@@ -114,7 +114,7 @@ public abstract class StorageBlockEntity extends BlockEntity
 
 	protected StorageBlockEntity(BlockPos pos, BlockState state, BlockEntityType<? extends StorageBlockEntity> blockEntityType) {
 		super(blockEntityType, pos, state);
-		storageWrapper = new StorageWrapper(() -> this::setChanged, () -> {
+		storageWrapper = this instanceof TankBlockEntity tank ? tank.createTankStorageWrapper() : new StorageWrapper(() -> this::setChanged, () -> {
 			if (level != null && !level.isClientSide()) {
 				WorldHelper.notifyBlockUpdate(this);
 			}
@@ -266,7 +266,9 @@ public abstract class StorageBlockEntity extends BlockEntity
 	}
 
 	private void saveStorageWrapper(ValueOutput out) {
-		out.putChild(STORAGE_WRAPPER, storageWrapper);
+		if (!(this instanceof TankBlockEntity tank) || tank.isPrimary()) {
+			out.putChild(STORAGE_WRAPPER, storageWrapper);
+		}
 	}
 
 	private void saveStorageWrapperClientData(ValueOutput out) {
@@ -370,6 +372,9 @@ public abstract class StorageBlockEntity extends BlockEntity
 	}
 
 	private void loadStorageWrapper(ValueInput in) {
+		if (this instanceof TankBlockEntity tank && !tank.isPrimary()) {
+			return;
+		}
 		in.child(STORAGE_WRAPPER).ifPresent(wrapperData -> {
 			if (linkedStorageEndpoint == null) {
 				storageWrapper.deserialize(wrapperData);
@@ -923,8 +928,10 @@ public abstract class StorageBlockEntity extends BlockEntity
 			return;
 		}
 		serverLevel.players().forEach(player -> {
-			if ((player.containerMenu instanceof StorageContainerMenu storageContainerMenu
-					&& storageContainerMenu.getBlockPosition().filter(worldPosition::equals).isPresent())
+			if ((this instanceof TankBlockEntity && player.containerMenu instanceof net.p3pp3rf1y.sophisticatedstorage.common.gui.TankContainerMenu tankMenu
+					&& tankMenu.getStorageBlockEntity() == this)
+					|| (player.containerMenu instanceof StorageContainerMenu storageContainerMenu
+							&& storageContainerMenu.getBlockPosition().filter(worldPosition::equals).isPresent())
 					|| (player.containerMenu instanceof StorageSettingsContainerMenu storageSettingsContainerMenu
 							&& storageSettingsContainerMenu.getBlockPosition().equals(worldPosition))) {
 				player.closeContainer();

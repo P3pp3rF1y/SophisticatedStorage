@@ -1,0 +1,24 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:pump_upgrade"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "B": "sophisticatedstorage:upgrade_base",
+    "G": "#c:glass_blocks",
+    "P": "minecraft:piston",
+    "S": "minecraft:sticky_piston",
+    "U": "minecraft:bucket"
+  },
+  "pattern": [
+    "GUG",
+    "PBS",
+    "GUG"
+  ],
+  "result": {
+    "id": "sophisticatedstorage:pump_upgrade"
+  }
+}

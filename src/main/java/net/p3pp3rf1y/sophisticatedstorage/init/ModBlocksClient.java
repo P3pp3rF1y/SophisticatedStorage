@@ -13,6 +13,7 @@ public class ModBlocksClient {
 	}
 
 	private static void onMenuScreenRegister(RegisterMenuScreensEvent event) {
+		event.register(ModBlocks.TANK_CONTAINER_TYPE.get(), TankScreen::new);
 		event.register(ModBlocks.STORAGE_CONTAINER_TYPE.get(), StorageScreen::constructScreen);
 		event.register(ModBlocks.SETTINGS_CONTAINER_TYPE.get(), StorageSettingsScreen::constructScreen);
 		event.register(ModBlocks.LIMITED_BARREL_CONTAINER_TYPE.get(), LimitedBarrelScreen::new);

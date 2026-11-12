@@ -21,6 +21,7 @@ import net.p3pp3rf1y.sophisticatedstorage.crafting.StorageTierUpgradeRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.StorageTierUpgradeShapelessRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.item.ChestBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
+import net.p3pp3rf1y.sophisticatedstorage.item.TankBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
 
 import java.util.ArrayList;
@@ -114,7 +115,7 @@ public class TierUpgradeRecipesMaker {
 	private static int findStorageIngredientIndex(List<Optional<Ingredient>> ingredients) {
 		for (int i = 0; i < ingredients.size(); i++) {
 			for (ItemStack ingredientItem : getIngredientItems(ingredients.get(i))) {
-				if (ingredientItem.getItem() instanceof StorageBlockItem) {
+				if (ingredientItem.getItem() instanceof StorageBlockItem || ingredientItem.getItem() instanceof TankBlockItem) {
 					return i;
 				}
 			}
@@ -166,6 +167,8 @@ public class TierUpgradeRecipesMaker {
 				Item item = ingredientItem.getItem();
 				if (item instanceof StorageBlockItem storageBlockItem) {
 					storageItems.addAll(addRecipeViewerVariants(storageBlockItem));
+				} else if (item instanceof TankBlockItem) {
+					storageItems.add(new ItemStack(item));
 				}
 			}
 		}

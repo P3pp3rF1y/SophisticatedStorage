@@ -1,0 +1,38 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:advanced_pump_upgrade"
+    }
+  ],
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_pump_upgrade": {
+      "conditions": {
+        "items": [
+          {
+            "items": "sophisticatedstorage:pump_upgrade"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipes": "sophisticatedstorage:advanced_pump_upgrade"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_pump_upgrade"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "sophisticatedstorage:advanced_pump_upgrade"
+    ]
+  }
+}

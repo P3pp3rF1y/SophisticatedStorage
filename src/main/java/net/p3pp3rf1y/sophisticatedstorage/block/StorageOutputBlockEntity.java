@@ -6,6 +6,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.neoforged.neoforge.transfer.transaction.TransactionContext;
+import net.p3pp3rf1y.sophisticatedcore.api.IStorageFluidHandler;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import org.jspecify.annotations.Nullable;
 
@@ -37,6 +38,13 @@ public class StorageOutputBlockEntity extends StorageIOBlockEntity {
 	protected void invalidateItemHandlerCache() {
 		super.invalidateItemHandlerCache();
 		itemHandler = null;
+	}
+
+	@Nullable
+	@Override
+	public IStorageFluidHandler getExternalFluidHandler(@Nullable Direction side) {
+		IStorageFluidHandler handler = super.getExternalFluidHandler(side);
+		return handler == null ? null : new RestrictedFluidHandler(handler, false, true);
 	}
 
 	private record OutputOnlyItemHandlerWrapper(ResourceHandler<ItemResource> itemHandler) implements ResourceHandler<ItemResource> {

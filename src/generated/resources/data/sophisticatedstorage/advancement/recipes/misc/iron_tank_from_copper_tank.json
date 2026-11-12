@@ -1,0 +1,38 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "sophisticatedcore:item_enabled",
+      "itemRegistryName": "sophisticatedstorage:iron_tank"
+    }
+  ],
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_copper_tank": {
+      "conditions": {
+        "items": [
+          {
+            "items": "sophisticatedstorage:copper_tank"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipes": "sophisticatedstorage:iron_tank_from_copper_tank"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_copper_tank"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "sophisticatedstorage:iron_tank_from_copper_tank"
+    ]
+  }
+}
