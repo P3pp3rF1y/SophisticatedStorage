@@ -59,6 +59,9 @@ final class StorageTankTestBootstrap {
 		CommentedConfig config = CommentedConfig.inMemory();
 		Config.SERVER_SPEC.correct(config);
 		Config.SERVER_SPEC.acceptConfig(config);
+		CommentedConfig commonConfig = CommentedConfig.inMemory();
+		Config.COMMON_SPEC.correct(commonConfig);
+		Config.COMMON_SPEC.acceptConfig(commonConfig);
 		registerTestItems();
 		initializeStorageSettingsHandler();
 	}
@@ -162,5 +165,6 @@ final class StorageTankTestBootstrap {
 
 	static void clearConfig() {
 		Config.SERVER_SPEC.acceptConfig(null);
+		Config.COMMON_SPEC.acceptConfig(null);
 	}
 }
