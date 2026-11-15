@@ -16,6 +16,7 @@ import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import net.neoforged.neoforge.transfer.transaction.Transaction;
 import net.p3pp3rf1y.sophisticatedcore.util.RegistryHelper;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
+import net.p3pp3rf1y.sophisticatedstorage.init.ModDataComponents;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -183,13 +184,17 @@ class TankTierVisibilityTest {
 		fill(original.primary(), 10000);
 		original.primary().pack();
 		ItemStack stack = original.primary().createPackedStack();
+		assertTrue(stack.getOrDefault(ModDataComponents.PACKED, false));
 		Fixture restored = fixture();
 		restored.primary().configureGroup(3);
 		restored.primary().restoreStack(stack);
 		assertHiddenColumn(restored, 3);
 		assertEquals(10000, restored.primary().getStorageWrapper().getTankFluidHandler().getFluidInTank(0).getAmount());
+		assertFalse(restored.primary().isPacked());
 		for (int index = 0; index < 3; index++) {
-			assertTrue(restored.members.get(BlockPos.ZERO.above(index)).getBlockState().getValue(TankBlock.PACKED));
+			TankBlockEntity segment = restored.members.get(BlockPos.ZERO.above(index));
+			assertFalse(segment.getBlockState().getValue(TankBlock.PACKED));
+			assertNotNull(segment.getExternalFluidHandler(Direction.NORTH));
 		}
 	}
 
