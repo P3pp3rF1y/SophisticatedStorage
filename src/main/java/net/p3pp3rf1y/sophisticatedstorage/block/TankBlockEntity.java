@@ -29,6 +29,7 @@ import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderData;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.ITickableUpgrade;
 import net.p3pp3rf1y.sophisticatedcore.util.ValueIOHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.WorldHelper;
+import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.common.gui.TankContainerMenu;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModDataComponents;
@@ -498,26 +499,38 @@ public class TankBlockEntity extends StorageBlockEntity implements INativeContro
 	private void removeSegment(BlockPos brokenPos, boolean creative) {
 		closeMenusForThisBlock();
 		if (packed || getLinkedStorageEndpointData() != null && (brokenPos.equals(worldPosition) || !isSecondaryLinkedStorageEndpoint(level))) {
-			removeGroupWithDrop(brokenPos, creative);
+			removeGroupWithDrop(brokenPos, creative, packed);
 			return;
 		}
 		if (getLinkedStorageEndpointData() != null) {
-			removeLinkedSegment(brokenPos, creative);
+			if (Config.COMMON.dropPacked.get()) {
+				removeGroupWithDrop(brokenPos, creative, true);
+			} else {
+				removeLinkedSegment(brokenPos, creative);
+			}
 			return;
 		}
 		Optional<TankSplitPlan> plan = splitPlan(brokenPos);
 		if (plan.isEmpty()) {
-			removeGroupWithDrop(brokenPos, creative);
+			removeGroupWithDrop(brokenPos, creative, false);
 			return;
 		}
-		splitUnlinkedGroup(brokenPos, creative, plan.get());
+		if (Config.COMMON.dropPacked.get() && (height > 1 || !plan.get().ejectedUpgrades().isEmpty() || getLocalWrapper().hasContainerItems())) {
+			removeGroupWithDrop(brokenPos, creative, true);
+		} else {
+			splitUnlinkedGroup(brokenPos, creative, plan.get());
+		}
 	}
-	private void removeGroupWithDrop(BlockPos brokenPos, boolean creative) {
+
+	private void removeGroupWithDrop(BlockPos brokenPos, boolean creative, boolean packDrop) {
 		if (creative && getStorageWrapper().getTankFluidHandler().getFluidInTank(0).isEmpty()) {
 			removeEmptyCreativeGroup(brokenPos);
 			return;
 		}
 		ItemStack drop = createPackedStack();
+		if (packDrop) {
+			drop.set(ModDataComponents.PACKED, true);
+		}
 		removeWholeGroup();
 		Block.popResource(level, brokenPos, drop);
 	}
@@ -643,9 +656,6 @@ public class TankBlockEntity extends StorageBlockEntity implements INativeContro
 		if (level instanceof ServerLevel server && hasLinkedStorageEndpoint(stack)) {
 			restoreLinkedStorageEndpoint(server, stack);
 			updateLinkedCarrier();
-		}
-		if (stack.getOrDefault(ModDataComponents.PACKED, false)) {
-			pack();
 		}
 	}
 	public static void tick(Level level, BlockPos pos, TankBlockEntity tank) {

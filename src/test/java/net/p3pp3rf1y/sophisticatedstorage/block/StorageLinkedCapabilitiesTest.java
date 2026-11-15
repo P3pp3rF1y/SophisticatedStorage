@@ -87,11 +87,15 @@ class StorageLinkedCapabilitiesTest {
 				ModConfig.class);
 		constructor.setAccessible(true);
 		Config.SERVER_SPEC.acceptConfig((IConfigSpec.ILoadedConfig) constructor.newInstance(config, null, null));
+		CommentedConfig commonConfig = CommentedConfig.inMemory();
+		Config.COMMON_SPEC.correct(commonConfig);
+		Config.COMMON_SPEC.acceptConfig((IConfigSpec.ILoadedConfig) constructor.newInstance(commonConfig, null, null));
 	}
 
 	@AfterAll
 	static void unloadServerConfig() {
 		Config.SERVER_SPEC.acceptConfig(null);
+		Config.COMMON_SPEC.acceptConfig(null);
 	}
 
 	@Test

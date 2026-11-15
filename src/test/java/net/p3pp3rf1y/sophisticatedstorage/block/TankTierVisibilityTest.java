@@ -189,7 +189,8 @@ class TankTierVisibilityTest {
 		assertHiddenColumn(restored, 3);
 		assertEquals(10000, restored.primary().getStorageWrapper().getTankFluidHandler().getFluidInTank(0).getAmount());
 		for (int index = 0; index < 3; index++) {
-			assertTrue(restored.members.get(BlockPos.ZERO.above(index)).getBlockState().getValue(TankBlock.PACKED));
+			assertFalse(restored.members.get(BlockPos.ZERO.above(index)).getBlockState().getValue(TankBlock.PACKED));
+			assertNotNull(restored.members.get(BlockPos.ZERO.above(index)).getExternalFluidHandler(null));
 		}
 	}
 

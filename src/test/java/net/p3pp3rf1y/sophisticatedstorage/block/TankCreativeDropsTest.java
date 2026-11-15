@@ -20,6 +20,7 @@ import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageEndpointData;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageGroupManager;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageGroupsSavedData;
 import net.p3pp3rf1y.sophisticatedcore.util.RegistryHelper;
+import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModDataComponents;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
@@ -29,6 +30,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.MockedStatic;
 
@@ -57,17 +59,53 @@ class TankCreativeDropsTest {
 	}
 
 	@ParameterizedTest
-	@ValueSource(booleans = {false, true})
-	void createPackedStackMarksOnlyPackedTanksAndPreservesTheirFluid(boolean packed) {
+	@CsvSource({"false,false", "false,true", "true,false", "true,true"})
+	void createPackedStackMarksOnlyPackedTanksAndPreservesTheirFluid(boolean dropPacked, boolean packed) {
 		try (Fixture fixture = new Fixture()) {
+			Config.COMMON.dropPacked.set(dropPacked);
 			fill(fixture.tank, 12000);
 			if (packed) {
 				fixture.tank.pack();
 			}
+
 			ItemStack stack = fixture.tank.createPackedStack();
+
 			assertEquals(packed, stack.getOrDefault(ModDataComponents.PACKED, false));
 			assertEquals(12000, fixture.tank.getStorageWrapper().getTankFluidHandler().getFluidInTank(0).getAmount());
 			assertEquals(12000, new TankItemStorageWrapper(stack).getTankFluidHandler().getFluidInTank(0).getAmount());
+		}
+	}
+
+	@Test
+	void onDestroyedByPlayerEjectsUpgradeWithoutDroppingEmptyTankWhenCreativeAndDropPackedIsEnabled() {
+		try (Fixture fixture = new Fixture()) {
+			Config.COMMON.dropPacked.set(true);
+			fixture.tank.getStorageWrapper().getUpgradeHandler().setStackInSlot(0, new ItemStack(ModItems.PUMP_UPGRADE.get()));
+
+			boolean removed = fixture.breakByPlayer(true);
+
+			assertTrue(removed);
+			assertTrue(fixture.tankDrops().isEmpty());
+			assertEquals(1, fixture.countDrops(ModItems.PUMP_UPGRADE.get()));
+		}
+	}
+
+	@Test
+	void onDestroyedByPlayerDropsPackedFluidBearingTankWithUpgradeWhenCreativeAndDropPackedIsEnabled() {
+		try (Fixture fixture = new Fixture()) {
+			Config.COMMON.dropPacked.set(true);
+			fixture.tank.getStorageWrapper().getUpgradeHandler().setStackInSlot(0, new ItemStack(ModItems.PUMP_UPGRADE.get()));
+			fill(fixture.tank, 1000);
+
+			boolean removed = fixture.breakByPlayer(true);
+
+			assertTrue(removed);
+			assertEquals(1, fixture.tankDrops().size());
+			assertEquals(0, fixture.countDrops(ModItems.PUMP_UPGRADE.get()));
+			assertTrue(fixture.tankDrops().getFirst().getOrDefault(ModDataComponents.PACKED, false));
+			TankItemStorageWrapper contents = new TankItemStorageWrapper(fixture.tankDrops().getFirst());
+			assertEquals(1000, contents.getTankFluidHandler().getFluidInTank(0).getAmount());
+			assertTrue(contents.getUpgradeHandler().getStackInSlot(0).is(ModItems.PUMP_UPGRADE));
 		}
 	}
 
@@ -242,6 +280,7 @@ class TankCreativeDropsTest {
 		}
 		@Override
 		public void close() {
+			Config.COMMON.dropPacked.set(false);
 			blockDrops.close();
 			registry.close();
 		}
