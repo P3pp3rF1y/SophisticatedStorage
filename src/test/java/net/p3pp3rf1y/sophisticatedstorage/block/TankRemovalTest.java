@@ -20,6 +20,7 @@ import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.neoforged.neoforge.transfer.transaction.Transaction;
 import net.p3pp3rf1y.sophisticatedcore.util.RegistryHelper;
+import net.p3pp3rf1y.sophisticatedstorage.Config;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModDataComponents;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
@@ -27,6 +28,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.MockedStatic;
 
@@ -58,9 +60,10 @@ class TankRemovalTest {
 	}
 
 	@ParameterizedTest
-	@ValueSource(ints = {0, 1, 2})
-	void onSegmentRemovedDropsWholeGroupWhenFluidWouldExceedSplitTankCapacity(int index) {
+	@CsvSource({"0,false", "1,false", "2,false", "0,true", "1,true", "2,true"})
+	void onSegmentRemovedDropsWholeGroupWhenFluidWouldExceedSplitTankCapacity(int index, boolean dropPacked) {
 		try (Fixture fixture = new Fixture()) {
+			Config.COMMON.dropPacked.set(dropPacked);
 			TankStorageWrapper storage = fixture.primary.getStorageWrapper();
 			storage.getUpgradeHandler().setStackInSlot(0, new ItemStack(ModItems.STACK_UPGRADE_TIER_1.get()));
 			storage.getUpgradeHandler().setStackInSlot(1, new ItemStack(ModItems.PUMP_UPGRADE.get()));
@@ -73,10 +76,13 @@ class TankRemovalTest {
 			fluid.set(DataComponents.CUSTOM_DATA, CustomData.of(identity));
 			fill(storage.getTankFluidHandler(), fluid);
 			fixture.primary.toggleLock();
+
 			fixture.remove(index, Blocks.AIR.defaultBlockState());
+
 			assertTrue(fixture.segments.isEmpty());
 			assertEquals(1, fixture.drops.size());
 			ItemStack drop = fixture.drops.getFirst();
+			assertFalse(drop.getOrDefault(ModDataComponents.PACKED, false));
 			assertEquals(4, drop.get(ModDataComponents.TANK_CONTAINERS).getStackInSlot(0).getCount());
 			assertEquals(3, drop.get(ModDataComponents.TANK_HEIGHT));
 			assertEquals(Component.literal("Preserved column"), drop.get(DataComponents.CUSTOM_NAME));
@@ -92,11 +98,236 @@ class TankRemovalTest {
 		}
 	}
 
+	@ParameterizedTest
+	@ValueSource(ints = {0, 1, 2})
+	void onSegmentRemovedKeepsSafeSplitColumnsTogetherWithContentsWhenDropPackedIsEnabled(int index) {
+		try (Fixture fixture = new Fixture()) {
+			Config.COMMON.dropPacked.set(true);
+			TankStorageWrapper storage = fixture.primary.getStorageWrapper();
+			storage.getUpgradeHandler().setStackInSlot(0, new ItemStack(ModItems.PUMP_UPGRADE.get()));
+			storage.getContainerInventory().set(0, ItemResource.of(Items.BUCKET), 4);
+			fixture.primary.setCustomName(Component.literal("Automatically packed"));
+			FluidStack fluid = new FluidStack(Fluids.WATER, 35000);
+			CompoundTag identity = new CompoundTag();
+			identity.putString("identity", "auto-packed water");
+			fluid.set(DataComponents.CUSTOM_DATA, CustomData.of(identity));
+			fill(storage.getTankFluidHandler(), fluid);
+			fixture.primary.toggleLock();
+
+			fixture.remove(index, Blocks.AIR.defaultBlockState());
+
+			assertTrue(fixture.segments.isEmpty());
+			assertEquals(1, fixture.drops.size());
+			ItemStack drop = fixture.drops.getFirst();
+			assertTrue(drop.getOrDefault(ModDataComponents.PACKED, false));
+			assertEquals(3, drop.get(ModDataComponents.TANK_HEIGHT));
+			TankItemStorageWrapper contents = new TankItemStorageWrapper(drop);
+			assertEquals(35000, contents.getTankFluidHandler().getFluidInTank(0).getAmount());
+			assertTrue(FluidStack.isSameFluidSameComponents(fluid, contents.getTankFluidHandler().getFluidInTank(0)));
+			assertTrue(contents.getUpgradeHandler().getStackInSlot(0).is(ModItems.PUMP_UPGRADE));
+			assertEquals(4, contents.getContainerInventory().getAmountAsLong(0));
+			assertEquals(Component.literal("Automatically packed"), drop.get(DataComponents.CUSTOM_NAME));
+			assertTrue(drop.get(ModDataComponents.LOCKED));
+		}
+	}
+
+	@Test
+	void onSegmentRemovedLeavesEmptySingleTankUnpackedWhenDropPackedIsEnabled() {
+		try (Fixture fixture = new Fixture(1)) {
+			Config.COMMON.dropPacked.set(true);
+
+			fixture.remove(0, Blocks.AIR.defaultBlockState());
+
+			assertTrue(fixture.segments.isEmpty());
+			assertEquals(1, fixture.drops.size());
+			ItemStack drop = fixture.drops.getFirst();
+			assertFalse(drop.getOrDefault(ModDataComponents.PACKED, false));
+			assertEquals(1, drop.getOrDefault(ModDataComponents.TANK_HEIGHT, 1));
+			TankItemStorageWrapper contents = new TankItemStorageWrapper(drop);
+			assertTrue(contents.getTankFluidHandler().getFluidInTank(0).isEmpty());
+			assertTrue(contents.getUpgradeHandler().getStackInSlot(0).isEmpty());
+			assertTrue(contents.getUpgradeHandler().getStackInSlot(1).isEmpty());
+			assertTrue(contents.getContainerInventory().getResource(2).isEmpty());
+		}
+	}
+
+	@Test
+	void onSegmentRemovedLeavesFluidBearingSingleTankUnpackedWhenDropPackedIsEnabled() {
+		try (Fixture fixture = new Fixture(1)) {
+			Config.COMMON.dropPacked.set(true);
+			fill(fixture.primary.getStorageWrapper().getTankFluidHandler(), new FluidStack(Fluids.WATER, 1000));
+
+			fixture.remove(0, Blocks.AIR.defaultBlockState());
+
+			assertTrue(fixture.segments.isEmpty());
+			assertEquals(1, fixture.drops.size());
+			ItemStack drop = fixture.drops.getFirst();
+			assertFalse(drop.getOrDefault(ModDataComponents.PACKED, false));
+			assertEquals(1, drop.getOrDefault(ModDataComponents.TANK_HEIGHT, 1));
+			TankItemStorageWrapper contents = new TankItemStorageWrapper(drop);
+			assertEquals(1000, contents.getTankFluidHandler().getFluidInTank(0).getAmount());
+			assertTrue(contents.getUpgradeHandler().getStackInSlot(0).isEmpty());
+			assertTrue(contents.getUpgradeHandler().getStackInSlot(1).isEmpty());
+			assertTrue(contents.getContainerInventory().getResource(2).isEmpty());
+		}
+	}
+
+	@Test
+	void onSegmentRemovedLeavesSingleTankUnpackedWithRequiredCapacityUpgrade() {
+		try (Fixture fixture = new Fixture(1)) {
+			Config.COMMON.dropPacked.set(true);
+			TankStorageWrapper storage = fixture.primary.getStorageWrapper();
+			storage.getUpgradeHandler().setStackInSlot(0, new ItemStack(ModItems.STACK_UPGRADE_TIER_1.get()));
+			fill(storage.getTankFluidHandler(), new FluidStack(Fluids.WATER, 40000));
+
+			fixture.remove(0, Blocks.AIR.defaultBlockState());
+
+			assertTrue(fixture.segments.isEmpty());
+			assertEquals(1, fixture.drops.size());
+			ItemStack drop = fixture.drops.getFirst();
+			assertFalse(drop.getOrDefault(ModDataComponents.PACKED, false));
+			assertEquals(1, drop.getOrDefault(ModDataComponents.TANK_HEIGHT, 1));
+			TankItemStorageWrapper contents = new TankItemStorageWrapper(drop);
+			assertEquals(40000, contents.getTankFluidHandler().getFluidInTank(0).getAmount());
+			assertTrue(contents.getUpgradeHandler().getStackInSlot(0).is(ModItems.STACK_UPGRADE_TIER_1));
+			assertTrue(contents.getUpgradeHandler().getStackInSlot(1).isEmpty());
+			assertTrue(contents.getContainerInventory().getResource(2).isEmpty());
+		}
+	}
+
+	@Test
+	void onSegmentRemovedPacksSingleTankWithUnneededCapacityUpgrade() {
+		try (Fixture fixture = new Fixture(1)) {
+			Config.COMMON.dropPacked.set(true);
+			TankStorageWrapper storage = fixture.primary.getStorageWrapper();
+			storage.getUpgradeHandler().setStackInSlot(0, new ItemStack(ModItems.STACK_UPGRADE_TIER_1.get()));
+			fill(storage.getTankFluidHandler(), new FluidStack(Fluids.WATER, 1000));
+
+			fixture.remove(0, Blocks.AIR.defaultBlockState());
+
+			assertTrue(fixture.segments.isEmpty());
+			assertEquals(1, fixture.drops.size());
+			ItemStack drop = fixture.drops.getFirst();
+			assertTrue(drop.getOrDefault(ModDataComponents.PACKED, false));
+			assertEquals(1, drop.getOrDefault(ModDataComponents.TANK_HEIGHT, 1));
+			TankItemStorageWrapper contents = new TankItemStorageWrapper(drop);
+			assertEquals(1000, contents.getTankFluidHandler().getFluidInTank(0).getAmount());
+			assertTrue(contents.getUpgradeHandler().getStackInSlot(0).is(ModItems.STACK_UPGRADE_TIER_1));
+			assertTrue(contents.getUpgradeHandler().getStackInSlot(1).isEmpty());
+			assertTrue(contents.getContainerInventory().getResource(2).isEmpty());
+		}
+	}
+
+	@Test
+	void onSegmentRemovedPacksSingleTankWithRequiredCapacityAndEjectablePumpUpgrades() {
+		try (Fixture fixture = new Fixture(1)) {
+			Config.COMMON.dropPacked.set(true);
+			TankStorageWrapper storage = fixture.primary.getStorageWrapper();
+			storage.getUpgradeHandler().setStackInSlot(0, new ItemStack(ModItems.STACK_UPGRADE_TIER_1.get()));
+			storage.getUpgradeHandler().setStackInSlot(1, new ItemStack(ModItems.PUMP_UPGRADE.get()));
+			fill(storage.getTankFluidHandler(), new FluidStack(Fluids.WATER, 40000));
+
+			fixture.remove(0, Blocks.AIR.defaultBlockState());
+
+			assertTrue(fixture.segments.isEmpty());
+			assertEquals(1, fixture.drops.size());
+			ItemStack drop = fixture.drops.getFirst();
+			assertTrue(drop.getOrDefault(ModDataComponents.PACKED, false));
+			assertEquals(1, drop.getOrDefault(ModDataComponents.TANK_HEIGHT, 1));
+			TankItemStorageWrapper contents = new TankItemStorageWrapper(drop);
+			assertEquals(40000, contents.getTankFluidHandler().getFluidInTank(0).getAmount());
+			assertTrue(contents.getUpgradeHandler().getStackInSlot(0).is(ModItems.STACK_UPGRADE_TIER_1));
+			assertTrue(contents.getUpgradeHandler().getStackInSlot(1).is(ModItems.PUMP_UPGRADE));
+			assertTrue(contents.getContainerInventory().getResource(2).isEmpty());
+		}
+	}
+
+	@Test
+	void onSegmentRemovedPacksEmptySingleTankWithEjectablePumpUpgrade() {
+		try (Fixture fixture = new Fixture(1)) {
+			Config.COMMON.dropPacked.set(true);
+			fixture.primary.getStorageWrapper().getUpgradeHandler().setStackInSlot(1, new ItemStack(ModItems.PUMP_UPGRADE.get()));
+
+			fixture.remove(0, Blocks.AIR.defaultBlockState());
+
+			assertTrue(fixture.segments.isEmpty());
+			assertEquals(1, fixture.drops.size());
+			ItemStack drop = fixture.drops.getFirst();
+			assertTrue(drop.getOrDefault(ModDataComponents.PACKED, false));
+			assertEquals(1, drop.getOrDefault(ModDataComponents.TANK_HEIGHT, 1));
+			TankItemStorageWrapper contents = new TankItemStorageWrapper(drop);
+			assertTrue(contents.getTankFluidHandler().getFluidInTank(0).isEmpty());
+			assertTrue(contents.getUpgradeHandler().getStackInSlot(0).isEmpty());
+			assertTrue(contents.getUpgradeHandler().getStackInSlot(1).is(ModItems.PUMP_UPGRADE));
+			assertTrue(contents.getContainerInventory().getResource(2).isEmpty());
+		}
+	}
+
+	@Test
+	void onSegmentRemovedPacksEmptySingleTankWithContainerItems() {
+		try (Fixture fixture = new Fixture(1)) {
+			Config.COMMON.dropPacked.set(true);
+			fixture.primary.getStorageWrapper().getContainerInventory().set(2, ItemResource.of(Items.BUCKET), 3);
+
+			fixture.remove(0, Blocks.AIR.defaultBlockState());
+
+			assertTrue(fixture.segments.isEmpty());
+			assertEquals(1, fixture.drops.size());
+			ItemStack drop = fixture.drops.getFirst();
+			assertTrue(drop.getOrDefault(ModDataComponents.PACKED, false));
+			assertEquals(1, drop.getOrDefault(ModDataComponents.TANK_HEIGHT, 1));
+			TankItemStorageWrapper contents = new TankItemStorageWrapper(drop);
+			assertTrue(contents.getTankFluidHandler().getFluidInTank(0).isEmpty());
+			assertTrue(contents.getUpgradeHandler().getStackInSlot(0).isEmpty());
+			assertTrue(contents.getUpgradeHandler().getStackInSlot(1).isEmpty());
+			assertEquals(3, contents.getContainerInventory().getAmountAsLong(2));
+		}
+	}
+
+	@Test
+	void onSegmentRemovedPacksFluidBearingSingleTankWithContainerItems() {
+		try (Fixture fixture = new Fixture(1)) {
+			Config.COMMON.dropPacked.set(true);
+			TankStorageWrapper storage = fixture.primary.getStorageWrapper();
+			storage.getContainerInventory().set(2, ItemResource.of(Items.BUCKET), 3);
+			fill(storage.getTankFluidHandler(), new FluidStack(Fluids.WATER, 1000));
+
+			fixture.remove(0, Blocks.AIR.defaultBlockState());
+
+			assertTrue(fixture.segments.isEmpty());
+			assertEquals(1, fixture.drops.size());
+			ItemStack drop = fixture.drops.getFirst();
+			assertTrue(drop.getOrDefault(ModDataComponents.PACKED, false));
+			assertEquals(1, drop.getOrDefault(ModDataComponents.TANK_HEIGHT, 1));
+			TankItemStorageWrapper contents = new TankItemStorageWrapper(drop);
+			assertEquals(1000, contents.getTankFluidHandler().getFluidInTank(0).getAmount());
+			assertTrue(contents.getUpgradeHandler().getStackInSlot(0).isEmpty());
+			assertTrue(contents.getUpgradeHandler().getStackInSlot(1).isEmpty());
+			assertEquals(3, contents.getContainerInventory().getAmountAsLong(2));
+		}
+	}
+
+	@Test
+	void onSegmentRemovedKeepsEmptyColumnsTogetherWhenDropPackedIsEnabled() {
+		try (Fixture fixture = new Fixture()) {
+			Config.COMMON.dropPacked.set(true);
+
+			fixture.remove(1, Blocks.AIR.defaultBlockState());
+
+			assertTrue(fixture.segments.isEmpty());
+			assertEquals(1, fixture.drops.size());
+			assertEquals(3, fixture.drops.getFirst().get(ModDataComponents.TANK_HEIGHT));
+			assertTrue(fixture.drops.getFirst().getOrDefault(ModDataComponents.PACKED, false));
+		}
+	}
+
 	@Test
 	void onSegmentRemovedKeepsSafeSplitSharesInsteadOfDroppingTheWholeGroup() {
 		try (Fixture fixture = new Fixture()) {
 			fill(fixture.primary.getStorageWrapper().getTankFluidHandler(), new FluidStack(Fluids.WATER, 35000));
+
 			fixture.remove(1, Blocks.AIR.defaultBlockState());
+
 			assertEquals(2, fixture.segments.size());
 			assertEquals(1, fixture.primary.getHeight());
 			assertEquals(32000, fixture.primary.getStorageWrapper().getTankFluidHandler().getFluidInTank(0).getAmount());
@@ -114,7 +345,9 @@ class TankRemovalTest {
 		try (Fixture fixture = new Fixture()) {
 			fixture.primary.getStorageWrapper().getUpgradeHandler().setStackInSlot(0, new ItemStack(ModItems.STACK_UPGRADE_TIER_1.get()));
 			fill(fixture.primary.getStorageWrapper().getTankFluidHandler(), new FluidStack(Fluids.WATER, 192000));
+
 			fixture.remove(1, Blocks.STONE.defaultBlockState());
+
 			assertTrue(fixture.segments.isEmpty());
 			assertTrue(fixture.states.get(BlockPos.ZERO.above()).is(Blocks.STONE));
 			assertEquals(1, fixture.drops.size());
@@ -139,6 +372,10 @@ class TankRemovalTest {
 		private final TankBlockEntity primary;
 
 		Fixture() {
+			this(3);
+		}
+
+		Fixture(int height) {
 			RegistryAccess registries = RegistryAccess.fromRegistryOfRegistries(BuiltInRegistries.REGISTRY);
 			registry.when(RegistryHelper::getRegistryAccess).thenReturn(Optional.of(registries));
 			when(level.registryAccess()).thenReturn(registries);
@@ -158,10 +395,13 @@ class TankRemovalTest {
 				return true;
 			});
 			blockDrops.when(() -> Block.popResource(eq(level), any(BlockPos.class), any(ItemStack.class))).thenAnswer(invocation -> {
-				drops.add(((ItemStack) invocation.getArgument(2)).copy());
+				ItemStack drop = invocation.getArgument(2);
+				if (!drop.isEmpty()) {
+					drops.add(drop.copy());
+				}
 				return null;
 			});
-			for (int index = 0; index < 3; index++) {
+			for (int index = 0; index < height; index++) {
 				BlockPos pos = BlockPos.ZERO.above(index);
 				TankBlockEntity tank = new TankBlockEntity(pos, ModBlocks.GOLD_TANK.get().defaultBlockState());
 				tank.setLevel(level);
@@ -169,7 +409,7 @@ class TankRemovalTest {
 				states.put(pos, tank.getBlockState());
 			}
 			primary = segments.get(BlockPos.ZERO);
-			primary.configureGroup(3);
+			primary.configureGroup(height);
 		}
 
 		void remove(int index, BlockState replacement) {
@@ -184,6 +424,7 @@ class TankRemovalTest {
 
 		@Override
 		public void close() {
+			Config.COMMON.dropPacked.set(false);
 			blockDrops.close();
 			registry.close();
 		}

@@ -70,7 +70,8 @@ public class Config {
 
 		public Common(ModConfigSpec.Builder builder) {
 			dropPacked = builder.comment(
-					"Determines whether chests / barrels are always dropped as packed with their contents when broken without the need to use packing tape")
+					"Determines whether chests / barrels are always dropped as packed with their contents when broken without the need to use packing tape",
+					"Tanks drop packed when needed to keep the whole column together or retain upgrades and fluid containers that would otherwise drop separately")
 					.define("dropPacked", false);
 		}
 	}
