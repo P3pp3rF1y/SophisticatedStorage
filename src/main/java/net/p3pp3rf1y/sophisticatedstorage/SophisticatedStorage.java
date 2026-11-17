@@ -45,6 +45,7 @@ public class SophisticatedStorage {
 		if (dist == Dist.CLIENT) {
 			ClientEventHandler.registerHandlers(modBus);
 			modBus.addListener(DataGenerators::gatherData);
+			modBus.addListener(DataGenerators::gatherRegistryEntries);
 		}
 		ModBlocks.registerHandlers(modBus);
 		ModItems.registerHandlers(modBus);
