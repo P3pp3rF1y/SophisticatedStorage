@@ -8,7 +8,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "C": "#c:chests",
+    "C": {
+      "neoforge:ingredient_type": "sophisticatedstorage:non_sophisticated_chest"
+    },
     "L": "minecraft:lever",
     "S": "minecraft:shulker_shell"
   },

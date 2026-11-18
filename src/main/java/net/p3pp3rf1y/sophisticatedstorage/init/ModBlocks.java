@@ -459,6 +459,8 @@ public class ModBlocks {
 			SophisticatedStorage.MOD_ID);
 	public static final Supplier<IngredientType<BaseTierWoodenStorageIngredient>> BASE_TIER_WOODEN_STORAGE_INGREDIENT_TYPE = INGREDIENT_TYPES
 			.register("base_tier_wooden_storage", () -> new IngredientType<>(BaseTierWoodenStorageIngredient.CODEC));
+	public static final Supplier<IngredientType<NonSophisticatedChestIngredient>> NON_SOPHISTICATED_CHEST_INGREDIENT_TYPE = INGREDIENT_TYPES
+			.register("non_sophisticated_chest", () -> new IngredientType<>(NonSophisticatedChestIngredient.CODEC));
 
 	public static void registerHandlers(IEventBus modBus) {
 		BLOCKS.register(modBus);
