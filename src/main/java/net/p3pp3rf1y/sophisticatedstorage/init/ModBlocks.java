@@ -416,6 +416,8 @@ public class ModBlocks {
 		if (event.getRegistryKey().equals(ForgeRegistries.Keys.RECIPE_SERIALIZERS)) {
 			CraftingHelper.register(new ResourceLocation(SophisticatedStorage.MOD_ID, "base_tier_wooden_storage"),
 					BaseTierWoodenStorageIngredient.Serializer.INSTANCE);
+			CraftingHelper.register(new ResourceLocation(SophisticatedStorage.MOD_ID, "non_sophisticated_chest"),
+					NonSophisticatedChestIngredient.Serializer.INSTANCE);
 		}
 	}
 

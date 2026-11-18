@@ -8,7 +8,7 @@
   ],
   "key": {
     "C": {
-      "tag": "forge:chests"
+      "type": "sophisticatedstorage:non_sophisticated_chest"
     },
     "L": {
       "item": "minecraft:lever"

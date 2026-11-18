@@ -1,6 +1,7 @@
 package net.p3pp3rf1y.sophisticatedstorage.crafting;
 
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.BlockItem;
@@ -12,7 +13,7 @@ import net.p3pp3rf1y.sophisticatedcore.crafting.IWrapperRecipe;
 import net.p3pp3rf1y.sophisticatedcore.crafting.RecipeWrapperSerializer;
 import net.p3pp3rf1y.sophisticatedstorage.block.ChestBlock;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
-import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
+import net.p3pp3rf1y.sophisticatedstorage.item.ChestBlockItem;
 import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
 
 import java.util.LinkedHashSet;
@@ -33,7 +34,24 @@ public class ShulkerBoxFromChestRecipe extends ShapedRecipe implements IWrapperR
 
 	@Override
 	public boolean matches(CraftingContainer pInv, Level pLevel) {
-		return super.matches(pInv, pLevel) && getChest(pInv).map(c -> !WoodStorageBlockItem.isPacked(c)).orElse(false);
+		if (!super.matches(pInv, pLevel)) {
+			return false;
+		}
+		ItemStack result = super.assemble(pInv, null);
+		return getChest(pInv).map(chest -> canConvert(chest, result)).orElse(true);
+	}
+
+	private boolean canConvert(ItemStack chest, ItemStack shulker) {
+		return !ChestBlockItem.isDoubleChest(chest) && tiersMatch(chest, shulker);
+	}
+
+	private boolean tiersMatch(ItemStack chest, ItemStack shulker) {
+		return chest.is(ModBlocks.CHEST_ITEM.get()) && shulker.is(ModBlocks.SHULKER_BOX_ITEM.get())
+				|| chest.is(ModBlocks.COPPER_CHEST_ITEM.get()) && shulker.is(ModBlocks.COPPER_SHULKER_BOX_ITEM.get())
+				|| chest.is(ModBlocks.IRON_CHEST_ITEM.get()) && shulker.is(ModBlocks.IRON_SHULKER_BOX_ITEM.get())
+				|| chest.is(ModBlocks.GOLD_CHEST_ITEM.get()) && shulker.is(ModBlocks.GOLD_SHULKER_BOX_ITEM.get())
+				|| chest.is(ModBlocks.DIAMOND_CHEST_ITEM.get()) && shulker.is(ModBlocks.DIAMOND_SHULKER_BOX_ITEM.get())
+				|| chest.is(ModBlocks.NETHERITE_CHEST_ITEM.get()) && shulker.is(ModBlocks.NETHERITE_SHULKER_BOX_ITEM.get());
 	}
 
 	@Override
@@ -54,13 +72,17 @@ public class ShulkerBoxFromChestRecipe extends ShapedRecipe implements IWrapperR
 	@Override
 	public ItemStack assemble(CraftingContainer inv, RegistryAccess registryAccess) {
 		ItemStack shulker = super.assemble(inv, registryAccess);
-		getChest(inv).ifPresent(chest -> {
-			if (chest.hasCustomHoverName()) {
-				shulker.setHoverName(chest.getHoverName());
-			}
-			if (shulker.getItem() instanceof StorageBlockItem storageBlockItem) {
-				StorageBlockItem.getMainColorFromStack(chest).ifPresent(mc -> storageBlockItem.setMainColor(shulker, mc));
-				StorageBlockItem.getAccentColorFromStack(chest).ifPresent(ac -> storageBlockItem.setAccentColor(shulker, ac));
+		Optional<ItemStack> chest = getChest(inv);
+		if (chest.isPresent() && !canConvert(chest.get(), shulker)) {
+			return ItemStack.EMPTY;
+		}
+		chest.ifPresent(chestStack -> {
+			if (chestStack.hasTag()) {
+				CompoundTag tag = chestStack.getTag().copy();
+				tag.remove(WoodStorageBlockItem.PACKED_TAG);
+				tag.remove(WoodStorageBlockItem.WOOD_TYPE_TAG);
+				tag.remove(ChestBlockItem.DOUBLE_CHEST_TAG);
+				shulker.setTag(tag);
 			}
 		});
 		return shulker;

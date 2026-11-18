@@ -35,6 +35,7 @@ import net.p3pp3rf1y.sophisticatedstorage.block.WoodStorageBlockBase;
 import net.p3pp3rf1y.sophisticatedstorage.compat.chipped.ChippedCompat;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.BaseTierWoodenStorageIngredient;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.DropPackedDisabledCondition;
+import net.p3pp3rf1y.sophisticatedstorage.crafting.NonSophisticatedChestIngredient;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
 import net.p3pp3rf1y.sophisticatedstorage.item.*;
@@ -422,7 +423,8 @@ public class StorageRecipeProvider extends RecipeProvider {
 
 	private void addShulkerBoxRecipes(Consumer<FinishedRecipe> consumer) {
 		ShapeBasedRecipeBuilder.shaped(ModBlocks.SHULKER_BOX_ITEM.get()).pattern(" S").pattern("LC").pattern(" S").define('L', Items.LEVER)
-				.define('S', Items.SHULKER_SHELL).define('C', Tags.Items.CHESTS).unlockedBy("has_shulker_shell", has(Items.SHULKER_SHELL)).save(consumer);
+				.define('S', Items.SHULKER_SHELL).define('C', NonSophisticatedChestIngredient.INSTANCE)
+				.unlockedBy("has_shulker_shell", has(Items.SHULKER_SHELL)).save(consumer);
 
 		ShapelessBasedRecipeBuilder.shapeless(ModBlocks.SHULKER_BOX_ITEM.get(), ModBlocks.SHULKER_BOX_FROM_VANILLA_SHAPELESS_RECIPE_SERIALIZER.get())
 				.requires(Items.SHULKER_BOX).requires(Items.LEVER).save(consumer, "shulker_box_from_vanilla_shulker_box");

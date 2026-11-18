@@ -12,7 +12,7 @@ import net.p3pp3rf1y.sophisticatedstorage.client.render.ChestItemRenderer;
 import java.util.function.Consumer;
 
 public class ChestBlockItem extends WoodStorageBlockItem {
-	private static final String DOUBLE_CHEST_TAG = "doubleChest";
+	public static final String DOUBLE_CHEST_TAG = "doubleChest";
 	public ChestBlockItem(Block block) {
 		this(block, new Properties());
 	}

@@ -1,5 +1,6 @@
 package net.p3pp3rf1y.sophisticatedstorage.compat.recipeviewers.common;
 
+import com.mojang.datafixers.util.Pair;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.builder.IRecipeSlotBuilder;
@@ -10,10 +11,7 @@ import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import net.minecraft.SharedConstants;
 import net.minecraft.commands.Commands;
-import net.minecraft.core.LayeredRegistryAccess;
-import net.minecraft.core.NonNullList;
-import net.minecraft.core.Registry;
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.*;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -25,6 +23,7 @@ import net.minecraft.server.WorldLoader;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.server.packs.repository.ServerPacksSource;
 import net.minecraft.server.packs.resources.CloseableResourceManager;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.crafting.*;
@@ -33,6 +32,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import net.minecraft.world.level.material.Fluids;
+import net.minecraftforge.common.Tags;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.common.capabilities.CapabilityToken;
@@ -61,19 +61,10 @@ import net.p3pp3rf1y.sophisticatedstorage.block.BarrelMaterial;
 import net.p3pp3rf1y.sophisticatedstorage.block.DecorationTableBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.block.StorageWrapper;
 import net.p3pp3rf1y.sophisticatedstorage.block.TankItemContents;
-import net.p3pp3rf1y.sophisticatedstorage.crafting.DoubleChestTierUpgradeRecipe;
-import net.p3pp3rf1y.sophisticatedstorage.crafting.DoubleChestTierUpgradeShapelessRecipe;
-import net.p3pp3rf1y.sophisticatedstorage.crafting.GenericWoodStorageRecipe;
-import net.p3pp3rf1y.sophisticatedstorage.crafting.ShulkerBoxFromVanillaShapelessRecipe;
-import net.p3pp3rf1y.sophisticatedstorage.crafting.StorageTierUpgradeRecipe;
-import net.p3pp3rf1y.sophisticatedstorage.crafting.StorageTierUpgradeShapelessRecipe;
+import net.p3pp3rf1y.sophisticatedstorage.crafting.*;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModItems;
-import net.p3pp3rf1y.sophisticatedstorage.item.BarrelBlockItem;
-import net.p3pp3rf1y.sophisticatedstorage.item.ChestBlockItem;
-import net.p3pp3rf1y.sophisticatedstorage.item.StorageBlockItem;
-import net.p3pp3rf1y.sophisticatedstorage.item.TankBlockItem;
-import net.p3pp3rf1y.sophisticatedstorage.item.WoodStorageBlockItem;
+import net.p3pp3rf1y.sophisticatedstorage.item.*;
 import net.p3pp3rf1y.sophisticatedstorage.util.GenericWoodStorageHelper;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -97,13 +88,17 @@ import java.util.*;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @Tag("recipeViewerRegression")
-class StorageRecipeViewerDisplaySpecTest {
+public class StorageRecipeViewerDisplaySpecTest {
+	public static void initializeStorageRegistriesForTests() {
+		TestRecipeResources.ForgeTestRegistries.installStorage();
+	}
 	@Test
 	void getCraftingSpecsIncludesEveryShapedAndShapelessTankUpgrade() {
 		IRecipeViewerDisplayCatalog catalog = createCatalog();
@@ -440,6 +435,43 @@ class StorageRecipeViewerDisplaySpecTest {
 		assertTrue(usages.stream().allMatch(usage -> ItemStack.isSameItem(shulkerBox, usage.inputs().get(4))));
 		assertTrue(usages.stream().anyMatch(usage -> ItemStack.isSameItem(new ItemStack(ModBlocks.COPPER_SHULKER_BOX_ITEM.get()), usage.firstOutput())));
 		assertTrue(usages.stream().anyMatch(usage -> ItemStack.isSameItem(new ItemStack(ModBlocks.IRON_SHULKER_BOX_ITEM.get()), usage.firstOutput())));
+	}
+
+	@Test
+	void genericShulkerRecipeExcludesSophisticatedChests() {
+		NonSophisticatedChestIngredient ingredientBeforeTagLoad = NonSophisticatedChestIngredient.INSTANCE;
+		try (TestRecipeResources.LoadedResources resources = TestRecipeResources.load()) {
+			ShapedRecipe recipe = assertInstanceOf(ShapedRecipe.class,
+					resources.recipeManager().byKey(new ResourceLocation(SophisticatedStorage.MOD_ID, "shulker_box")).orElseThrow());
+			assertFalse(recipe instanceof ShulkerBoxFromChestRecipe);
+			Ingredient chestIngredient = recipe.getIngredients().stream().filter(NonSophisticatedChestIngredient.class::isInstance).findFirst().orElseThrow();
+			assertInstanceOf(NonSophisticatedChestIngredient.class, chestIngredient);
+			assertSame(ingredientBeforeTagLoad, chestIngredient);
+			Map<TagKey<Item>, List<Holder<Item>>> originalTags = BuiltInRegistries.ITEM.getTags()
+					.collect(Collectors.toMap(Pair::getFirst, pair -> pair.getSecond().stream().toList()));
+			Map<TagKey<Item>, List<Holder<Item>>> testTags = new HashMap<>(originalTags);
+			testTags.put(Tags.Items.CHESTS,
+					Stream.of(Items.CHEST, ModBlocks.CHEST_ITEM.get(), ModBlocks.COPPER_CHEST_ITEM.get(), ModBlocks.IRON_CHEST_ITEM.get(),
+							ModBlocks.GOLD_CHEST_ITEM.get(), ModBlocks.DIAMOND_CHEST_ITEM.get(), ModBlocks.NETHERITE_CHEST_ITEM.get())
+							.map(BuiltInRegistries.ITEM::wrapAsHolder).toList());
+			BuiltInRegistries.ITEM.bindTags(testTags);
+			try {
+				assertFalse(chestIngredient.isSimple());
+				ItemStack[] enumeratedChests = chestIngredient.getItems();
+				assertEquals(1, enumeratedChests.length);
+				assertTrue(enumeratedChests[0].is(Items.CHEST));
+				assertTrue(chestIngredient.test(new ItemStack(Items.CHEST)));
+				assertFalse(chestIngredient.test(new ItemStack(ModBlocks.CHEST_ITEM.get())));
+				assertFalse(chestIngredient.test(new ItemStack(ModBlocks.COPPER_CHEST_ITEM.get())));
+				assertFalse(chestIngredient.test(new ItemStack(ModBlocks.IRON_CHEST_ITEM.get())));
+				assertFalse(chestIngredient.test(new ItemStack(ModBlocks.GOLD_CHEST_ITEM.get())));
+				assertFalse(chestIngredient.test(new ItemStack(ModBlocks.DIAMOND_CHEST_ITEM.get())));
+				assertFalse(chestIngredient.test(new ItemStack(ModBlocks.NETHERITE_CHEST_ITEM.get())));
+			} finally {
+				testTags.put(Tags.Items.CHESTS, originalTags.getOrDefault(Tags.Items.CHESTS, List.of()));
+				BuiltInRegistries.ITEM.bindTags(testTags);
+			}
+		}
 	}
 
 	@Test
@@ -955,6 +987,7 @@ class StorageRecipeViewerDisplaySpecTest {
 				registerAlwaysTrueCondition(SophisticatedCore.getRL("item_enabled"));
 				registerAlwaysTrueCondition(SophisticatedStorage.getRL("drop_packed_disabled"));
 				registerRecipeIngredient(new ResourceLocation("minecraft", "item"), VanillaIngredientSerializer.INSTANCE);
+				registerRecipeIngredient(SophisticatedStorage.getRL("non_sophisticated_chest"), NonSophisticatedChestIngredient.Serializer.INSTANCE);
 			}
 
 			private static <T> void registerDeferred(Class<?> owner, String fieldName, IForgeRegistry<T> registry) {
