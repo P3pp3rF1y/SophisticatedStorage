@@ -28,6 +28,7 @@ import net.p3pp3rf1y.sophisticatedstorage.block.DecorationTableBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.DoubleChestTierUpgradeRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.DoubleChestTierUpgradeShapelessRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.GenericWoodStorageRecipe;
+import net.p3pp3rf1y.sophisticatedstorage.crafting.NonSophisticatedChestIngredient;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.StorageTierUpgradeRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.StorageTierUpgradeShapelessRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
@@ -245,6 +246,24 @@ class StorageRecipeViewerDisplaySpecTest {
 		assertTrue(usages.stream().allMatch(usage -> ItemStack.isSameItem(shulkerBox, usage.inputs().get(4))));
 		assertTrue(usages.stream().anyMatch(usage -> ItemStack.isSameItem(new ItemStack(ModBlocks.COPPER_SHULKER_BOX_ITEM.get()), usage.firstOutput())));
 		assertTrue(usages.stream().anyMatch(usage -> ItemStack.isSameItem(new ItemStack(ModBlocks.IRON_SHULKER_BOX_ITEM.get()), usage.firstOutput())));
+	}
+
+	@Test
+	void genericShulkerRecipeExcludesSophisticatedChests() {
+		try (TestRecipeResources.LoadedResources resources = TestRecipeResources.load()) {
+			ShapedRecipe recipe = assertInstanceOf(ShapedRecipe.class, recipeForId(resources, "shulker_box").value());
+			Ingredient chestIngredient = RecipeViewerRecipeHelper.getIngredients(recipe).stream().flatMap(Optional::stream)
+					.filter(ingredient -> ingredient.test(new ItemStack(Items.CHEST))).findFirst().orElseThrow();
+
+			assertInstanceOf(NonSophisticatedChestIngredient.class, chestIngredient.getCustomIngredient());
+			assertTrue(chestIngredient.test(new ItemStack(Items.CHEST)));
+			assertFalse(chestIngredient.test(new ItemStack(ModBlocks.CHEST_ITEM.get())));
+			assertFalse(chestIngredient.test(new ItemStack(ModBlocks.COPPER_CHEST_ITEM.get())));
+			assertFalse(chestIngredient.test(new ItemStack(ModBlocks.IRON_CHEST_ITEM.get())));
+			assertFalse(chestIngredient.test(new ItemStack(ModBlocks.GOLD_CHEST_ITEM.get())));
+			assertFalse(chestIngredient.test(new ItemStack(ModBlocks.DIAMOND_CHEST_ITEM.get())));
+			assertFalse(chestIngredient.test(new ItemStack(ModBlocks.NETHERITE_CHEST_ITEM.get())));
+		}
 	}
 
 	@Test
@@ -521,6 +540,11 @@ class StorageRecipeViewerDisplaySpecTest {
 	private static RecipeHolder<?> recipeHolderForId(IRecipeViewerDisplayCatalog catalog, Identifier id) {
 		CraftingDisplaySpec spec = catalog.getCraftingSpecs().getFirst();
 		return new RecipeHolder<>(ClientRecipeHelper.recipeKey(id), spec.recipeHolder(spec.getGlobalDisplays().getFirst()).value());
+	}
+
+	private static RecipeHolder<?> recipeForId(TestRecipeResources.LoadedResources resources, String path) {
+		Identifier id = Identifier.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, path);
+		return resources.recipeManager().getRecipes().stream().filter(holder -> holder.id().identifier().equals(id)).findFirst().orElseThrow();
 	}
 
 	private static List<CraftingDisplayVariant> getCraftingRecipesFor(IRecipeViewerDisplayCatalog catalog, ItemStack stack) {
