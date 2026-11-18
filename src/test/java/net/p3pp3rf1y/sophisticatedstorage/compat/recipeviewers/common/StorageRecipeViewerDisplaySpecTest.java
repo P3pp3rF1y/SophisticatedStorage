@@ -27,6 +27,7 @@ import net.p3pp3rf1y.sophisticatedstorage.block.DecorationTableBlockEntity;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.DoubleChestTierUpgradeRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.DoubleChestTierUpgradeShapelessRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.GenericWoodStorageRecipe;
+import net.p3pp3rf1y.sophisticatedstorage.crafting.NonSophisticatedChestIngredient;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.StorageTierUpgradeRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.crafting.StorageTierUpgradeShapelessRecipe;
 import net.p3pp3rf1y.sophisticatedstorage.init.ModBlocks;
@@ -250,6 +251,23 @@ class StorageRecipeViewerDisplaySpecTest {
 		assertTrue(usages.stream().allMatch(usage -> ItemStack.isSameItem(shulkerBox, usage.inputs().get(4))));
 		assertTrue(usages.stream().anyMatch(usage -> ItemStack.isSameItem(new ItemStack(ModBlocks.COPPER_SHULKER_BOX_ITEM.get()), usage.firstOutput())));
 		assertTrue(usages.stream().anyMatch(usage -> ItemStack.isSameItem(new ItemStack(ModBlocks.IRON_SHULKER_BOX_ITEM.get()), usage.firstOutput())));
+	}
+
+	@Test
+	void genericShulkerRecipeExcludesSophisticatedChests() {
+		try (TestRecipeResources.LoadedResources resources = TestRecipeResources.load()) {
+			ShapedRecipe recipe = assertInstanceOf(ShapedRecipe.class, recipeForId(resources, "shulker_box").value());
+			Ingredient chestIngredient = recipe.getIngredients().stream().filter(ingredient -> ingredient.test(new ItemStack(Items.CHEST))).findFirst()
+					.orElseThrow();
+
+			assertInstanceOf(NonSophisticatedChestIngredient.class, chestIngredient.getCustomIngredient());
+			assertTrue(chestIngredient.test(new ItemStack(Items.CHEST)));
+			assertFalse(chestIngredient.test(new ItemStack(ModBlocks.COPPER_CHEST_ITEM.get())));
+			assertFalse(chestIngredient.test(new ItemStack(ModBlocks.IRON_CHEST_ITEM.get())));
+			assertFalse(chestIngredient.test(new ItemStack(ModBlocks.GOLD_CHEST_ITEM.get())));
+			assertFalse(chestIngredient.test(new ItemStack(ModBlocks.DIAMOND_CHEST_ITEM.get())));
+			assertFalse(chestIngredient.test(new ItemStack(ModBlocks.NETHERITE_CHEST_ITEM.get())));
+		}
 	}
 
 	@Test
@@ -513,6 +531,10 @@ class StorageRecipeViewerDisplaySpecTest {
 		ItemStack result = WoodStorageBlockItem.setWoodType(new ItemStack(ModBlocks.CHEST_ITEM.get()), WoodType.OAK);
 		ShapedRecipe recipe = new ShapedRecipe("", CraftingBookCategory.MISC, new ShapedRecipePattern(3, 3, ingredients, Optional.empty()), result);
 		return new RecipeHolder<>(ResourceLocation.parse("test:custom_generic_chest"), new GenericWoodStorageRecipe(recipe));
+	}
+
+	private static RecipeHolder<?> recipeForId(TestRecipeResources.LoadedResources resources, String path) {
+		return resources.recipeManager().byKey(ResourceLocation.fromNamespaceAndPath(SophisticatedStorage.MOD_ID, path)).orElseThrow();
 	}
 
 	private static Ingredient allPlanksIngredient() {
