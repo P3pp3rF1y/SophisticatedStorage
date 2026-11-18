@@ -435,7 +435,8 @@ public class StorageRecipeProvider extends RecipeProvider {
 
 	private void addShulkerBoxRecipes(RecipeOutput recipeOutput) {
 		ShapeBasedRecipeBuilder.shaped(items, ModBlocks.SHULKER_BOX_ITEM.get()).pattern(" S").pattern("LC").pattern(" S").define('L', Items.LEVER)
-				.define('S', Items.SHULKER_SHELL).define('C', Tags.Items.CHESTS).unlockedBy("has_shulker_shell", has(Items.SHULKER_SHELL)).save(recipeOutput);
+				.define('S', Items.SHULKER_SHELL).define('C', NonSophisticatedChestIngredient.INSTANCE.toVanilla())
+				.unlockedBy("has_shulker_shell", has(Items.SHULKER_SHELL)).save(recipeOutput);
 
 		ShapelessBasedRecipeBuilder.shapeless(items, ModBlocks.SHULKER_BOX_ITEM.get(), ShulkerBoxFromVanillaShapelessRecipe::new).requires(Items.SHULKER_BOX)
 				.requires(Items.LEVER).unlockedBy("has_shulker_box", has(Items.SHULKER_BOX)).save(recipeOutput, "shulker_box_from_vanilla_shulker_box");
