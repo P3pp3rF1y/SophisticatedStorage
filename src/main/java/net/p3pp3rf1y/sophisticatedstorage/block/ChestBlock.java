@@ -432,7 +432,7 @@ public class ChestBlock extends WoodStorageBlockBase implements SimpleWaterlogge
 				}
 			});
 		}
-		if (state.getValue(TYPE) != ChestType.SINGLE) {
+		if (!state.is(newState.getBlock()) && state.getValue(TYPE) != ChestType.SINGLE) {
 			level.getBlockEntity(pos, ModBlocks.CHEST_BLOCK_ENTITY_TYPE.get()).ifPresent(be -> {
 				if (be.isPacked() && !isLinkedChest(be)) {
 					level.removeBlock(pos.relative(getConnectedDirection(state)), false);
