@@ -1,0 +1,11 @@
+{
+  "replace": false,
+  "values": [
+    "sophisticatedstorage:chest",
+    "sophisticatedstorage:copper_chest",
+    "sophisticatedstorage:iron_chest",
+    "sophisticatedstorage:gold_chest",
+    "sophisticatedstorage:diamond_chest",
+    "sophisticatedstorage:netherite_chest"
+  ]
+}
