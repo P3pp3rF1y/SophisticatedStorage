@@ -181,9 +181,17 @@ public class StorageTierUpgradeItem extends ItemBase {
 			if (!(newBlockState.getBlock() instanceof StorageBlockBase newStorageBlock)) {
 				return false;
 			}
-			upgradeStorageBlock(pos, level, blockEntity, newBlockState, newStorageBlock.getNumberOfInventorySlots(), newStorageBlock.getNumberOfUpgradeSlots())
-					.setBeingUpgraded(false);
+			StorageBlockEntity upgradedBlockEntity = upgradeStorageBlock(pos, level, blockEntity, newBlockState, newStorageBlock.getNumberOfInventorySlots(),
+					newStorageBlock.getNumberOfUpgradeSlots());
+			upgradedBlockEntity.setBeingUpgraded(false);
+			restoreControllerLink(upgradedBlockEntity);
 			return true;
+		}
+
+		private void restoreControllerLink(StorageBlockEntity blockEntity) {
+			if (blockEntity.isLinked()) {
+				blockEntity.runOnController(blockEntity.getStorageBlockLevel(), controller -> controller.addLinkedBlock(blockEntity.getBlockPos()));
+			}
 		}
 
 		private StorageBlockEntity upgradeStorageBlock(BlockPos pos, Level level, StorageBlockEntity blockEntity, BlockState newBlockState,
@@ -242,6 +250,7 @@ public class StorageTierUpgradeItem extends ItemBase {
 			}
 			otherBlockState.updateNeighbourShapes(level, otherPos, 3);
 			newMainBE.changeSlots(newMainBE.getStorageWrapper().getInventoryHandler().getSlots());
+			restoreControllerLink(newMainBE);
 
 			return true;
 		}

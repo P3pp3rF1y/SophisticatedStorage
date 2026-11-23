@@ -237,7 +237,14 @@ public abstract class StorageBlockEntity extends BlockEntity
 	protected abstract String getStorageType();
 
 	protected void onUpgradeCachesInvalidated() {
+		invalidateCapabilitiesAndControllerCache();
+	}
+
+	private void invalidateCapabilitiesAndControllerCache() {
 		invalidateStorageCap();
+		if (level != null) {
+			onInventoryInputOutputHandlerRefresh();
+		}
 	}
 
 	public boolean isOpen() {
@@ -487,6 +494,7 @@ public abstract class StorageBlockEntity extends BlockEntity
 		int currentInventorySlots = getStorageWrapper().getInventoryHandler().getSlots();
 		getStorageWrapper().changeSize(additionalInventorySlots, additionalUpgradeSlots);
 		changeSlots(currentInventorySlots + additionalInventorySlots);
+		invalidateCapabilitiesAndControllerCache();
 	}
 
 	public boolean canUpgradeStorageTier(ServerLevel serverLevel) {
@@ -514,7 +522,7 @@ public abstract class StorageBlockEntity extends BlockEntity
 		manager.updatePrimaryHostDescriptor(linkedStorageEndpoint.groupId(), linkedStorageEndpoint.endpointId(),
 				new LinkedStorageHostDescriptor(StorageLinkedStorageHostWrapper.FACTORY_ID, StorageLinkedStorageHostWrapper.createVirtualCarrier(this)));
 		changeSlots(inventorySlots);
-		invalidateStorageCap();
+		invalidateCapabilitiesAndControllerCache();
 		setChanged();
 		WorldHelper.notifyBlockUpdate(this);
 		return true;
@@ -540,7 +548,7 @@ public abstract class StorageBlockEntity extends BlockEntity
 			storageWrapper.getUpgradeHandler().setStackInSlot(slot, ItemStack.EMPTY);
 		}
 		setChanged();
-		invalidateStorageCap();
+		invalidateCapabilitiesAndControllerCache();
 	}
 
 	public void setCustomName(@Nullable Component customName) {
@@ -1101,7 +1109,7 @@ public abstract class StorageBlockEntity extends BlockEntity
 		updateEmptySlots();
 		if (allowsEmptySlotsMatchingItemInsertsWhenLocked()) {
 			contentsFilteredItemHandler = null;
-			invalidateStorageCap();
+			invalidateCapabilitiesAndControllerCache();
 		}
 		onInventoryInputOutputHandlerRefresh();
 		setChanged();
@@ -1122,7 +1130,7 @@ public abstract class StorageBlockEntity extends BlockEntity
 		updateEmptySlots();
 		if (allowsEmptySlotsMatchingItemInsertsWhenLocked()) {
 			contentsFilteredItemHandler = null;
-			invalidateStorageCap();
+			invalidateCapabilitiesAndControllerCache();
 		}
 		onInventoryInputOutputHandlerRefresh();
 		setChanged();
