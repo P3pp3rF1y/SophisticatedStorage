@@ -51,6 +51,7 @@ public class ItemTagProvider extends ItemTagsProvider {
 		tag(Tags.Items.BARRELS).add(key(ModBlocks.BARREL_ITEM.get()), key(ModBlocks.COPPER_BARREL_ITEM.get()), key(ModBlocks.IRON_BARREL_ITEM.get()),
 				key(ModBlocks.GOLD_BARREL_ITEM.get()), key(ModBlocks.DIAMOND_BARREL_ITEM.get()), key(ModBlocks.NETHERITE_BARREL_ITEM.get()));
 		tag(Tags.Items.BARRELS_WOODEN).add(key(ModBlocks.BARREL_ITEM.get()));
+		tag(Tags.Items.TOOLS_WRENCH).add(key(ModItems.STORAGE_TOOL.get()));
 	}
 
 	private static ResourceKey<Item> key(Item item) {
