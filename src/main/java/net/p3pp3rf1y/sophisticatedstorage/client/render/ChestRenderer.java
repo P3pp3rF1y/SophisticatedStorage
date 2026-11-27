@@ -138,7 +138,7 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity> {
 		if (chestEntity.shouldShowTier()) {
 			subRenderer.renderTier(poseStack, bufferSource, lidAngle, packedLight, packedOverlay);
 		} else if (holdsItemThatShowsHiddenTiers()) {
-			subRenderer.renderHiddenTier(poseStack, bufferSource, packedLight, packedOverlay);
+			subRenderer.renderHiddenTier(poseStack, bufferSource, lidAngle, packedLight, packedOverlay);
 		}
 
 		Optional<RenderInfo.DisplayItem> displayItem = storageWrapper.getRenderInfo().getItemDisplayRenderInfo().getDisplayItem();
@@ -302,7 +302,7 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity> {
 		private final boolean usesStockBody;
 		private final ChestBody body;
 		private final ModelPart lockPart;
-		private final Map<TextureAtlasSprite, ChestBody> tierBodies = new IdentityHashMap<>();
+		private final Map<TextureAtlasSprite, ChestBody> spriteBodies = new IdentityHashMap<>();
 		private Map<StorageTextureManager.ChestMaterial, Material> chestMaterials;
 		private Material tierMaterial;
 
@@ -313,7 +313,7 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity> {
 			lockPart = root.getChild(LOCK);
 			LayerDefinition stock = DEFAULT_LAYERS.get(chestType);
 			usesStockBody = modelSet.roots.get(modelLayer) == stock && root.getClass() == ModelPart.class
-					&& body.matchesStock(new ChestBody(stock.bakeRoot()));
+					&& body.matchesStock(new ChestBody(createBodyLayer(chestType, false, 0, 0, TEXTURE_SIZE, TEXTURE_SIZE).bakeRoot()));
 		}
 
 		private boolean setChestMaterialsFrom(WoodType woodType, Block block) {
@@ -327,7 +327,7 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity> {
 			return true;
 		}
 
-		private void renderHiddenTier(PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
+		private void renderHiddenTier(PoseStack poseStack, MultiBufferSource bufferSource, float lidAngle, int packedLight, int packedOverlay) {
 			TextureAtlasSprite sprite = tierMaterial.sprite();
 			if (bufferSource instanceof MultiBufferSource.BufferSource multiBufferSource) {
 				multiBufferSource.endBatch();
@@ -339,6 +339,7 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity> {
 
 			int color = 0x7F_FFFFFF;
 
+			body.lid().xRot = -(lidAngle * ((float) Math.PI / 2F));
 			body.lid().render(poseStack, translucentConsumer, packedLight, packedOverlay, color);
 			body.bottom().render(poseStack, translucentConsumer, packedLight, packedOverlay, color);
 			poseStack.popPose();
@@ -351,8 +352,7 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity> {
 
 		private void renderBottomAndLidWithTint(PoseStack poseStack, MultiBufferSource bufferSource, float lidAngle, int packedLight, int packedOverlay,
 				int tint, StorageTextureManager.ChestMaterial chestMaterial) {
-			VertexConsumer consumer = chestMaterials.get(chestMaterial).buffer(bufferSource, RenderType::entityCutout);
-			body.render(poseStack, consumer, lidAngle, packedLight, packedOverlay, 0xFF_000000 | tint);
+			renderBody(chestMaterials.get(chestMaterial), poseStack, bufferSource, lidAngle, packedLight, packedOverlay, 0xFF_000000 | tint);
 		}
 
 		private void renderChestLock(PoseStack poseStack, MultiBufferSource bufferSource, float lidAngle, int packedLight, int packedOverlay) {
@@ -377,21 +377,26 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity> {
 		}
 
 		public void renderTier(PoseStack poseStack, MultiBufferSource bufferSource, float lidAngle, int packedLight, int packedOverlay) {
-			VertexConsumer consumer = tierMaterial.buffer(bufferSource, RenderType::entityCutout);
-			ChestBody tierBody = body;
+			renderBody(tierMaterial, poseStack, bufferSource, lidAngle, packedLight, packedOverlay, -1);
+		}
+
+		private void renderBody(Material material, PoseStack poseStack, MultiBufferSource bufferSource, float lidAngle, int packedLight, int packedOverlay,
+				int color) {
+			VertexConsumer consumer = material.buffer(bufferSource, RenderType::entityCutout);
+			ChestBody renderBody = body;
 			if (usesStockBody && consumer.getClass() == SpriteCoordinateExpander.class) {
 				SpriteCoordinateExpander expander = (SpriteCoordinateExpander) consumer;
-				if (expander.delegate.getClass() == BufferBuilder.class && expander.sprite == tierMaterial.sprite()) {
-					tierBody = tierBodies.computeIfAbsent(expander.sprite, this::bakeTierBody);
-					if (tierBody != body) {
+				if (expander.delegate.getClass() == BufferBuilder.class && expander.sprite == material.sprite()) {
+					renderBody = spriteBodies.computeIfAbsent(expander.sprite, this::bakeBody);
+					if (renderBody != body) {
 						consumer = expander.delegate;
 					}
 				}
 			}
-			tierBody.render(poseStack, consumer, lidAngle, packedLight, packedOverlay, -1);
+			renderBody.render(poseStack, consumer, lidAngle, packedLight, packedOverlay, color);
 		}
 
-		private ChestBody bakeTierBody(TextureAtlasSprite sprite) {
+		private ChestBody bakeBody(TextureAtlasSprite sprite) {
 			SpriteContents contents = sprite.contents();
 			if (sprite.getClass() != TextureAtlasSprite.class || contents.getClass() != SpriteContents.class
 					|| contents.width() != TEXTURE_SIZE || contents.height() != TEXTURE_SIZE) {
