@@ -3,6 +3,7 @@ package net.p3pp3rf1y.sophisticatedstorage.client.render;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
@@ -14,6 +15,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.Material;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -117,7 +119,9 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity> {
 		lidAngle = 1.0F - lidAngle;
 		lidAngle = 1.0F - lidAngle * lidAngle * lidAngle;
 
-		StorageWrapper storageWrapper = chestEntity.getMainStorageWrapper();
+		ChestBlockEntity mainChest = chestType == ChestType.LEFT ? chestEntity.getMainChestBlockEntity() : chestEntity;
+		boolean isMainChest = mainChest == null || mainChest == chestEntity;
+		StorageWrapper storageWrapper = isMainChest ? chestEntity.getStorageWrapper() : mainChest.getStorageWrapper();
 		boolean hasMainColor = storageWrapper.hasMainColor();
 		boolean hasAccentColor = storageWrapper.hasAccentColor();
 		Optional<GenericWoodStorageTintCache.TintColors> genericTintColors = isGenericWood
@@ -160,7 +164,7 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity> {
 			poseStack.pushPose();
 			poseStack.translate(-0.5, -0.5, -(0.5 - 1 / 16f));
 
-			if (chestEntity.isMainChest() && (chestEntity.shouldShowUpgrades() || holdsItemThatShowsUpgrades())) {
+			if (isMainChest && (chestEntity.shouldShowUpgrades() || holdsItemThatShowsUpgrades())) {
 				poseStack.pushPose();
 				if (chestType == ChestType.LEFT) {
 					poseStack.translate(1, 0, 0);
@@ -182,21 +186,66 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity> {
 				poseStack.popPose();
 			}
 
-			if (chestEntity.isMainChest()) {
+			if (isMainChest) {
 				renderLocked(chestEntity, poseStack, bufferSource, packedLight, packedOverlay, chestType, lidAngle);
 			}
 			poseStack.popPose();
 
-			if (chestEntity.isMainChest()) {
-				displayItem.ifPresent(di -> renderDisplayItem(di, poseStack, bufferSource, packedLight, packedOverlay, chestType));
+			if (isMainChest && displayItem.isPresent()) {
+				boolean inWorld = chestEntity.hasLevel() && !forceClosed;
+				RenderInfo.DisplayItem di = displayItem.get();
+				if (!inWorld || !isDisplaySideOccludedByChest(chestEntity.getBlockPos(), facing, chestType, di.getDisplaySide())) {
+					renderDisplayItem(di, poseStack, bufferSource, packedLight, packedOverlay, chestType, inWorld);
+				}
 			}
 			poseStack.popPose();
 		}
 		poseStack.popPose();
 	}
 
+	private static boolean isDisplaySideOccludedByChest(BlockPos pos, Direction facing, ChestType chestType, DisplaySide displaySide) {
+		Vec3 cam = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
+		if (cam.y > pos.getY() + 0.9) {
+			return false;
+		}
+		Direction sideDir = switch (displaySide) {
+			case LEFT -> facing.getClockWise();
+			case RIGHT -> facing.getCounterClockWise();
+			default -> facing;
+		};
+		double cx = pos.getX() + 0.5;
+		double cz = pos.getZ() + 0.5;
+		if (chestType == ChestType.RIGHT) {
+			Direction ccw = facing.getCounterClockWise();
+			if (displaySide == DisplaySide.FRONT) {
+				cx += 0.5 * ccw.getStepX();
+				cz += 0.5 * ccw.getStepZ();
+			} else if (displaySide == DisplaySide.RIGHT) {
+				cx += ccw.getStepX();
+				cz += ccw.getStepZ();
+			}
+		} else if (chestType == ChestType.LEFT) {
+			Direction cw = facing.getClockWise();
+			if (displaySide == DisplaySide.FRONT) {
+				cx += 0.5 * cw.getStepX();
+				cz += 0.5 * cw.getStepZ();
+			} else if (displaySide == DisplaySide.LEFT) {
+				cx += cw.getStepX();
+				cz += cw.getStepZ();
+			}
+		}
+		double dx = cam.x - cx;
+		double dz = cam.z - cz;
+		double forward = dx * sideDir.getStepX() + dz * sideDir.getStepZ();
+		if (forward >= -0.5) {
+			return false;
+		}
+		double lateral = dx * sideDir.getStepZ() - dz * sideDir.getStepX();
+		return Math.abs(lateral) <= -forward;
+	}
+
 	private void renderDisplayItem(RenderInfo.DisplayItem displayItem, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay,
-			ChestType chestType) {
+			ChestType chestType, boolean cullBackFaces) {
 		DisplaySide displaySide = displayItem.getDisplaySide();
 
 		if (displaySide == DisplaySide.LEFT) {
@@ -218,7 +267,7 @@ public class ChestRenderer extends StorageRenderer<ChestBlockEntity> {
 		}
 		poseStack.translate(-0.5, -0.5, -(0.5 - 1 / 16f));
 
-		displayItemRenderer.renderDisplayItem(poseStack, bufferSource, packedLight, packedOverlay, displayItem);
+		displayItemRenderer.renderDisplayItem(poseStack, bufferSource, packedLight, packedOverlay, displayItem, cullBackFaces);
 	}
 
 	private void renderLocked(ChestBlockEntity chestEntity, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay,

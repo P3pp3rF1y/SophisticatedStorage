@@ -219,6 +219,7 @@ public class ClientEventHandler {
 			GenericWoodStorageHelper.invalidateCache();
 			BarrelDynamicModelBase.invalidateCache();
 			BarrelBakedModelBase.invalidateCache();
+			DisplayItemRenderer.invalidateCache();
 		});
 	}
 
